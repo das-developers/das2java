@@ -1269,7 +1269,13 @@ public class SeriesRenderer extends Renderer {
             yds= DataSetOps.slice1( yds, 0 );
         }
 
-        if ( xds.rank()==2 ) {
+        if ( yds.rank()==3 ) {
+           firstIndex= 0;
+           lastIndex= xds.length();
+           return;
+        }
+        
+        if ( xds.rank()==2 && SemanticOps.isRank3JoinOfRank2Waveform(dataSet) ) {
             xds= DataSetOps.slice1(xds,0); //BINS dataset
         }
 
@@ -1418,7 +1424,7 @@ public class SeriesRenderer extends Renderer {
             return;
         }
         
-        if ( dataSet.rank()!=1 && ! ( SemanticOps.isBundle(ds) || SemanticOps.isRank2Waveform(ds) ) ) {
+        if ( dataSet.rank()!=1 && ! ( SemanticOps.isBundle(ds) || SemanticOps.isRank2Waveform(ds) || SemanticOps.isRank3JoinOfRank2Waveform(ds) ) ) {
             DasLogger.getLogger(DasLogger.GRAPHICS_LOG).fine("dataset is not rank 1 or a rank 2 waveform");
             lparent.postMessage(this, "dataset is not rank 1 or a rank 2 waveform", DasPlot.INFO, null, null);
             return;
@@ -1700,7 +1706,7 @@ public class SeriesRenderer extends Renderer {
         QDataSet vds = null;
 
         QDataSet xds = SemanticOps.xtagsDataSet(dataSet);
-        if ( !SemanticOps.isRank2Waveform(dataSet) ) {  // xtags are rank 2 bins can happen too
+        if ( dataSet.rank()<3 && !SemanticOps.isRank2Waveform(dataSet) ) {  // xtags are rank 2 bins can happen too
             vds= ytagsDataSet(ds);
             if ( vds==null ) {
                 logger.fine("dataset is not rank 1 or a rank 2 waveform");
@@ -1730,7 +1736,15 @@ public class SeriesRenderer extends Renderer {
                 }
             }
 
-        } else {
+        } else if (SemanticOps.isRank2Waveform(dataSet)) {
+            tds = (QDataSet) dataSet;
+            plottable = SemanticOps.getUnits(tds).isConvertibleTo(yAxis.getUnits());
+            if ( !plottable ) {
+                if ( UnitsUtil.isRatioMeasurement( SemanticOps.getUnits(tds) ) && UnitsUtil.isRatioMeasurement( yAxis.getUnits() ) ) {
+                    unitsWarning= true;
+                }
+            }
+        } else if ( SemanticOps.isRank3JoinOfRank2Waveform(dataSet) ) {
             tds = (QDataSet) dataSet;
             plottable = SemanticOps.getUnits(tds).isConvertibleTo(yAxis.getUnits());
             if ( !plottable ) {
@@ -1805,6 +1819,33 @@ public class SeriesRenderer extends Renderer {
                     if ( vds.rank()==2 ) {
                         vds= DataSetOps.flattenWaveform(vds);
                         LoggerManager.markTime("flatten");
+                    }
+                    xds= SemanticOps.xtagsDataSet(vds); 
+                    updateFirstLast(xAxis, yAxis, xds, vds );  // we need to reset firstIndex, lastIndex
+                    LoggerManager.markTime("updateFirstLast again");
+                } else if ( SemanticOps.isRank3JoinOfRank2Waveform(dataSet) ) { // we shall flatten the whole thing
+                    QDataSet res= DataSetUtil.asDataSet( xAxis.getDatumRange().width().divide(xAxis.getWidth()) );
+                    Units dsxu= SemanticOps.getUnits( (QDataSet)dataSet.slice(0).property(QDataSet.DEPEND_0 ) );
+                    if ( !SemanticOps.getUnits(res).isConvertibleTo(dsxu.getOffsetUnits())  ) {
+                        res= Ops.putProperty( res, QDataSet.UNITS, dsxu.getOffsetUnits() );
+                    }
+                    vds= null;
+                    for ( int k=this.firstIndex; k< this.lastIndex; k++ ) {
+                        QDataSet ds1= dataSet.slice(k);
+                        LoggerManager.markTime("trim");
+                        QDataSet vds1= Reduction.reducex( ds1,res );  // waveform
+                        LoggerManager.markTime("reducex");
+                        if ( SemanticOps.isRank2Waveform(vds1) ) {
+                            vds1= DataSetOps.flattenWaveform(vds1);
+                            LoggerManager.markTime("flatten");
+                        } else if ( vds1.rank()==2 ) {
+                            continue;
+                        }
+                        if ( vds==null ) {
+                            vds= vds1;
+                        } else {
+                            vds= Ops.concatenate( vds,vds1 );
+                        }
                     }
                     xds= SemanticOps.xtagsDataSet(vds); 
                     updateFirstLast(xAxis, yAxis, xds, vds );  // we need to reset firstIndex, lastIndex
