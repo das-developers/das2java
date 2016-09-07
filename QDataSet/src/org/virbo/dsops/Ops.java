@@ -1054,12 +1054,33 @@ public class Ops {
             throw new NullPointerException("ds is null");
         }
         QDataSet dep0= SemanticOps.xtagsDataSet(ds);
+        QDataSet dep0en= dep0;
         if ( dep0.rank()!=1 ) {
-            throw new IllegalArgumentException("dataset must have rank 1 tags");
+            if ( dep0.rank()==2 ) { // join of tags
+                WritableDataSet dep0enc= Ops.copy( Ops.slice1( dep0,0 )  );
+                dep0enc.putProperty( QDataSet.UNITS, SemanticOps.getUnits(dep0) ); // TODO: this should happen automatically
+                WritableDataSet dep0stc= Ops.copy( dep0enc  );
+                dep0stc.putProperty( QDataSet.UNITS, SemanticOps.getUnits(dep0) );
+                for ( int i=0; i<dep0.length(); i++ ) {
+                    QDataSet dep0slice= dep0.slice(i);
+                    double d1= dep0slice.slice(dep0slice.length()-1).value();
+                    double d2= dep0slice.slice(0).value();
+                    if (d1>d2) {
+                        double t= d1;
+                        d1= d2;
+                        d2=t;
+                    }
+                    dep0enc.putValue(i,d1);
+                    dep0stc.putValue(i,d2);
+                }
+                dep0= dep0stc;
+                dep0en= dep0enc;
+                Ops.lt( dep0, dep0en );
+            }
         }
         QDataSet findex= Ops.findex( dep0, st );
         double f1= findex.value();
-        findex= Ops.findex( dep0, en );
+        findex= Ops.findex( dep0en, en );
         double f2= findex.value();
         
         int n= dep0.length();
