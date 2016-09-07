@@ -1832,6 +1832,8 @@ public class SeriesRenderer extends Renderer {
                     vds= null;
                     for ( int k=this.firstIndex; k< this.lastIndex; k++ ) {
                         QDataSet ds1= dataSet.slice(k);
+                        ds1= Ops.trim( ds1, xAxis.getDatumRange() );
+                        if ( ds1.length()==0 ) continue;
                         LoggerManager.markTime("trim");
                         QDataSet vds1= Reduction.reducex( ds1,res );  // waveform
                         LoggerManager.markTime("reducex");
