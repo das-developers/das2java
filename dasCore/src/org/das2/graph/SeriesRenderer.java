@@ -673,7 +673,7 @@ public class SeriesRenderer extends Renderer {
         public int render(Graphics2D g, DasAxis xAxis, DasAxis yAxis, QDataSet vds, ProgressMonitor mon) {
             long t0= System.currentTimeMillis();
             logger.log(Level.FINE, "enter connector render" );
-            if ( vds.rank()!=1 && !SemanticOps.isRank2Waveform(vds) ) {
+            if ( vds.rank()!=1 && !SemanticOps.isRank2Waveform(vds) && !SemanticOps.isRank3JoinOfRank2Waveform(vds)) {
                 renderException( g, xAxis, yAxis, new IllegalArgumentException("dataset is not rank 1"));
             }
             GeneralPath lpath1= getPath();
