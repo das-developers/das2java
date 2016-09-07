@@ -395,13 +395,10 @@ public class ImageVectorDataSetRenderer extends Renderer {
      * @param ds a rank 2 waveform dataset
      * @param plotImageBounds2 the boundaries.
      */
-    private void renderPointsOfRank2Waveform(DasAxis xAxis, DasAxis yAxis, QDataSet ds, Rectangle plotImageBounds2) {
-        int ny = plotImageBounds2.height;
-        int nx = plotImageBounds2.width;
+    private void renderPointsOfRank2Waveform( BufferedImage image, DasAxis xAxis, DasAxis yAxis, QDataSet ds, Rectangle plotImageBounds2) {
 
         logger.exiting( "org.das2.graph.ImageVectorDataSetRenderer", "renderPointsOfRank2Waveform");
         
-        BufferedImage image = new BufferedImage(nx, ny, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = (Graphics2D) image.getGraphics();
 
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -547,13 +544,12 @@ public class ImageVectorDataSetRenderer extends Renderer {
         logger.exiting( "org.das2.graph.ImageVectorDataSetRenderer", "darkenHistogram");
     }
     
-    private FDataSet histogram(RebinDescriptor ddx, RebinDescriptor ddy, QDataSet ds) {
+    private FDataSet histogram( FDataSet tds, RebinDescriptor ddx, RebinDescriptor ddy, QDataSet ds, int firstIndex, int lastIndex ) {
         
         logger.entering( "org.das2.graph.ImageVectorDataSetRenderer", "histogram");
 
         ddx.setOutOfBoundsAction(RebinDescriptor.MINUSONE);
         ddy.setOutOfBoundsAction(RebinDescriptor.MINUSONE);
-        FDataSet tds = FDataSet.createRank2( ddx.numberOfBins(), ddy.numberOfBins() );
 
         if (ds.length() > 0) {
 
@@ -580,8 +576,6 @@ public class ImageVectorDataSetRenderer extends Renderer {
                 vds = (QDataSet) ds;
             }
 
-            QDataSet wds= SemanticOps.weightsDataSet( vds );
-
             Units xunits = SemanticOps.getUnits(xds);
             Units yunits = SemanticOps.getUnits(vds);
 
@@ -591,62 +585,13 @@ public class ImageVectorDataSetRenderer extends Renderer {
             if ( !xunits.isConvertibleTo(ddx.getUnits() ) ) {
                 xunits= ddx.getUnits();
             }
-            boolean xmono = SemanticOps.isMonotonic(xds);
-
-            int firstIndex = xmono ? DataSetUtil.getPreviousIndex(xds,  ddx.binStart(0) ) : 0;
-            int lastIndex = xmono ? DataSetUtil.getNextIndex(xds, ddx.binStop(ddx.numberOfBins() - 1) ) : vds.length()-1;
 
             int i = firstIndex;
             int n = lastIndex;
             int nj= isWaveform ? vds.length(i) : 1;
 
             if ( isWaveform ) {
-                assert xoffsets!=null;
-                int ix0= ddx.whichBin( xds.value(i) + xoffsets.value(0), xunits );
-                int ix1= ddx.whichBin( xds.value(i) + xoffsets.value(xoffsets.length()-1), xunits );
-                if ( ix0==-1 && i+1<n ) {
-                    ix0= ddx.whichBin( xds.value(i+1) + xoffsets.value(0), xunits );
-                    ix1= ddx.whichBin( xds.value(i+1) + xoffsets.value(xoffsets.length()-1), xunits );
-                }
-                
-                boolean wowReduce= ix0!=-1 && ix0==ix1;
-
-                if ( wowReduce ) {
-                    logger.fine("wowReduce");
-                    for (; i <= n; i++) {
-                        int ix = ddx.whichBin( xds.value(i), xunits );
-                        for ( int j=0; j<nj; j++ ) {
-                            boolean isValid = wds.value(i,j)>0;
-                            if ( isValid ) {
-                                int iy = ddy.whichBin( vds.value(i,j), yunits );
-                                if (ix != -1 && iy != -1) {
-                                    double d = tds.value(ix, iy);
-                                    tds.putValue( ix, iy, d+1 );
-                                    //tds.addValue( ix, iy, 1 ); this should be faster
-                                }
-                            }
-                        }
-                    }
-                } else {
-                    Units targetXUnits= ddx.getUnits();
-                    UnitsConverter xuc= xunits.getConverter(targetXUnits);
-                    Units targetYUnits= ddy.getUnits();
-                    UnitsConverter yuc= yunits.getConverter(targetYUnits);
-                    for (; i <= n; i++) {
-                        for ( int j=0; j<nj; j++ ) {
-                            boolean isValid = wds.value(i,j)>0;
-                            if ( isValid ) {
-                                int ix = ddx.whichBin( xuc.convert( xds.value(i) + xoffsets.value(j) ), targetXUnits );
-                                int iy = ddy.whichBin( yuc.convert( vds.value(i,j) ), targetYUnits );
-                                if (ix != -1 && iy != -1) {
-                                    double d = tds.value(ix, iy);
-                                    tds.putValue( ix, iy, d+1 );
-                                    //tds.addValue( ix, iy, 1 ); this should be faster
-                                }
-                            }
-                        }
-                    }
-                }
+                histogramRank2Waveform( ddx, i, n, nj, ddy, vds, yunits, tds);
             } else {
                 Units targetXUnits= ddx.getUnits();
                 UnitsConverter xuc= xunits.getConverter(targetXUnits);
@@ -679,6 +624,63 @@ public class ImageVectorDataSetRenderer extends Renderer {
         return tds;
     }
 
+    private void histogramRank2Waveform( RebinDescriptor ddx, int first0, int last0, int nj, RebinDescriptor ddy, QDataSet vds, Units yunits, FDataSet tds) throws IllegalArgumentException {
+        QDataSet xds= (QDataSet) vds.property( QDataSet.DEPEND_0 );
+        Units xunits= SemanticOps.getUnits( xds );
+        QDataSet wds= SemanticOps.weightsDataSet( vds );
+        ArrayDataSet xoffsets = ArrayDataSet.copy((QDataSet) vds.property(QDataSet.DEPEND_1));
+        if ( xoffsets.rank()>1 ) throw new IllegalArgumentException("rank 2 DEPEND_1 not supported");
+        final UnitsConverter uc= UnitsConverter.getConverter( SemanticOps.getUnits(xoffsets), SemanticOps.getUnits(xds).getOffsetUnits() );
+        if ( !uc.equals( UnitsConverter.IDENTITY ) ) {
+            for ( int j=0; j<xoffsets.length(); j++ ) {
+                xoffsets.putValue( j, uc.convert( xoffsets.value(j) ) );
+            }
+        }
+        int ix0= ddx.whichBin(xds.value(first0) + xoffsets.value(0), xunits );
+        int ix1= ddx.whichBin(xds.value(first0) + xoffsets.value(xoffsets.length()-1), xunits );
+        if ( ix0==-1 && first0+1<last0 ) {
+            ix0= ddx.whichBin(xds.value(first0+1) + xoffsets.value(0), xunits );
+            ix1= ddx.whichBin(xds.value(first0+1) + xoffsets.value(xoffsets.length()-1), xunits );
+        }
+        boolean wowReduce= ix0!=-1 && ix0==ix1;
+        if ( wowReduce ) {
+            logger.fine("wowReduce");
+            for (; first0 <= last0; first0++) {
+                int ix = ddx.whichBin( xds.value(first0), xunits );
+                for ( int j=0; j<nj; j++ ) {
+                    boolean isValid = wds.value(first0,j)>0;
+                    if ( isValid ) {
+                        int iy = ddy.whichBin( vds.value(first0,j), yunits );
+                        if (ix != -1 && iy != -1) {
+                            double d = tds.value(ix, iy);
+                            tds.putValue( ix, iy, d+1 );
+                            //tds.addValue( ix, iy, 1 ); this should be faster
+                        }
+                    }
+                }
+            }
+        } else {
+            Units targetXUnits= ddx.getUnits();
+            UnitsConverter xuc= xunits.getConverter(targetXUnits);
+            Units targetYUnits= ddy.getUnits();
+            UnitsConverter yuc= yunits.getConverter(targetYUnits);
+            for (; first0 <= last0; first0++) {
+                for ( int j=0; j<nj; j++ ) {
+                    boolean isValid = wds.value(first0,j)>0;
+                    if ( isValid ) {
+                        int ix = ddx.whichBin(xuc.convert(xds.value(first0) + xoffsets.value(j) ), targetXUnits );
+                        int iy = ddy.whichBin( yuc.convert( vds.value(first0,j) ), targetYUnits );
+                        if (ix != -1 && iy != -1) {
+                            double d = tds.value(ix, iy);
+                            tds.putValue( ix, iy, d+1 );
+                            //tds.addValue( ix, iy, 1 ); this should be faster
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     /**
      * This is the typical route, where we are making a 2-D histogram of the data in pixel space, and
      * using that with the saturation count to shade each pixel.
@@ -687,7 +689,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
      * @param ds the rank 2 waveform dataset, or rank 2 bundle, or rank 1 dataset.
      * @param plotImageBounds2 the bounds.
      */
-    private void renderHistogram(DasAxis xAxis, DasAxis yAxis, QDataSet ds, Rectangle plotImageBounds2) {
+    private void renderHistogram( BufferedImage plotImage1, DasAxis xAxis, DasAxis yAxis, QDataSet ds, Rectangle plotImageBounds2) {
         
         logger.entering( "org.das2.graph.ImageVectorDataSetRenderer", "renderHistogram" );
        
@@ -707,9 +709,37 @@ public class ImageVectorDataSetRenderer extends Renderer {
                 yAxis.isLog());
 
 
-        WritableDataSet newHist = histogram(ddx, ddy, ds);
-        if ( false ) darkenHistogram( newHist );
+        FDataSet tds = FDataSet.createRank2( ddx.numberOfBins(), ddy.numberOfBins() );
         
+        if ( SemanticOps.isRank3JoinOfRank2Waveform(ds) ) {
+            for ( int k=0; k<ds.length(); k++ ) {
+                QDataSet ds1= ds.slice(k);
+                QDataSet xds= (QDataSet) ds1.property( QDataSet.DEPEND_0 );
+                boolean xmono= SemanticOps.isMonotonic(xds);
+                int firstIndex = xmono ? DataSetUtil.getPreviousIndex( xds, ddx.binStart(0) ) : 0;
+                int lastIndex = xmono ? DataSetUtil.getNextIndex( xds, ddx.binStop(ddx.numberOfBins() - 1) ) : ds1.length()-1;
+                if ( lastIndex>firstIndex ) {
+                    tds = histogram( tds, ddx, ddy, ds1, firstIndex, lastIndex );
+                }
+            }
+            
+        } else if ( SemanticOps.isRank2Waveform(ds)) {
+            QDataSet xds= (QDataSet) ds.property( QDataSet.DEPEND_0 );
+            boolean xmono= SemanticOps.isMonotonic(xds);
+            int firstIndex = xmono ? DataSetUtil.getPreviousIndex(xds,  ddx.binStart(0) ) : 0;
+            int lastIndex = xmono ? DataSetUtil.getNextIndex(xds, ddx.binStop(ddx.numberOfBins() - 1) ) : ds.length()-1;
+            tds = histogram(tds, ddx, ddy, ds, firstIndex, lastIndex );
+        } else {
+            QDataSet xds= (QDataSet) ds.property( QDataSet.DEPEND_0 );
+            boolean xmono= SemanticOps.isMonotonic(xds);
+            int firstIndex = xmono ? DataSetUtil.getPreviousIndex(xds,  ddx.binStart(0) ) : 0;
+            int lastIndex = xmono ? DataSetUtil.getNextIndex(xds, ddx.binStop(ddx.numberOfBins() - 1) ) : ds.length()-1;
+            tds = histogram(tds, ddx, ddy, ds, firstIndex, lastIndex );
+        }
+        
+        if ( false ) darkenHistogram( tds );
+        
+        WritableDataSet newHist= tds;
         if ( yAxis.isFlipped() && xAxis.isFlipped() ) {
             newHist= DataSetOps.applyIndex( newHist, 1, Ops.linspace( newHist.length(0)-1, 0, newHist.length(0) ), false );
             newHist= DataSetOps.applyIndex( newHist, 0, Ops.linspace( newHist.length()-1, 0, newHist.length() ), false );
@@ -781,7 +811,6 @@ public class ImageVectorDataSetRenderer extends Renderer {
             }
         }
 
-        BufferedImage plotImage1 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
         selectionArea= null;
         WritableRaster r = plotImage1.getRaster();
         r.setDataElements(0, 0, w, h, raster);
@@ -811,7 +840,12 @@ public class ImageVectorDataSetRenderer extends Renderer {
             return;
         }
 
-        QDataSet xds= SemanticOps.xtagsDataSet( ds );
+        QDataSet xds;
+        if ( ds.rank()==3 ) {
+            xds= SemanticOps.xtagsDataSet( ds.slice(0) );
+        } else {
+            xds= SemanticOps.xtagsDataSet( ds );
+        }
         
         DasPlot parent= getParent();
         if ( parent==null ) return;
@@ -836,6 +870,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
 
         boolean xmono = SemanticOps.isMonotonic(xds);
 
+        if ( ds.rank()==3 ) xmono= false;
         
         int firstIndex, lastIndex;
         if ( xmono ) {
@@ -856,6 +891,8 @@ public class ImageVectorDataSetRenderer extends Renderer {
                 } else {
                     if ( SemanticOps.isRank2Waveform(ds1) ) {
                         d= DataSetUtil.guessCadenceNew( (QDataSet) ds1.property(QDataSet.DEPEND_1), null );
+                    } else if ( ds1.rank()==3 && SemanticOps.isRank2Waveform(ds1.slice(0)) ) {
+                        d= DataSetUtil.guessCadenceNew( (QDataSet) ds1.slice(0).property(QDataSet.DEPEND_1), null );
                     } else {
                         d= DataSetUtil.guessCadenceNew(xds,ds1);
                     }
@@ -887,19 +924,35 @@ public class ImageVectorDataSetRenderer extends Renderer {
 
         int nj= 1;
         if ( SemanticOps.isRank2Waveform(ds1) ) nj= ds1.length(0);
+        else if ( SemanticOps.isRank3JoinOfRank2Waveform(ds) ) {
+            nj= ds.length(0,0);
+            for ( int k=1; k<ds.length(); k++ ) {
+                nj+= ds.length(k,0);
+            }
+        }
 
+        BufferedImage image; 
+        int ny = plotImageBounds.height;
+        int nx = plotImageBounds.width;
+        image= new BufferedImage(nx, ny, BufferedImage.TYPE_INT_ARGB);
+        
         if ( nj*(lastIndex-firstIndex) > 20 * xAxis.getColumn().getWidth()) {
             if ( lastIndex==firstIndex+1 ) {
-                renderPointsOfRank2Waveform(xAxis, yAxis, ds1, plotImageBounds);
+                renderPointsOfRank2Waveform( image, xAxis, yAxis, ds1, plotImageBounds);
             } else {
-                renderHistogram(xAxis, yAxis, ds1, plotImageBounds);
+                renderHistogram( image, xAxis, yAxis, ds1, plotImageBounds);
             }
         } else {
             if ( SemanticOps.isRank2Waveform(ds1) ) {
-                renderPointsOfRank2Waveform(xAxis, yAxis, ds1, plotImageBounds);
+                renderPointsOfRank2Waveform( image, xAxis, yAxis, ds1, plotImageBounds);
+            } else if ( ds1.rank()==3 ) {
+                //renderHistogram( image, xAxis, yAxis, ds1, plotImageBounds);
+                for ( int k=0; k<ds1.length(); k++ ) {
+                    renderPointsOfRank2Waveform( image, xAxis, yAxis, ds1.slice(k), plotImageBounds);
+                }
             } else {
                 if ( ds.rank()==1 || ( ds.rank()==2 && SemanticOps.isBundle(ds) ) ) {
-                    renderPointsOfRank1(xAxis, yAxis, ds1, plotImageBounds);
+                    renderPointsOfRank1( xAxis, yAxis, ds1, plotImageBounds);
                 } else {
                     parent.postMessage(this, "dataset must be rank 1, rank 2 waveform, or rank 2 bundle", DasPlot.INFO, null, null);
                 }
