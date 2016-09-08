@@ -983,7 +983,6 @@ public class AsciiParser {
                     if ( u!=null ) {
                         this.fieldParsers[j]= UNITS_PARSER;
                         this.units[j]= u;
-                        System.err.println("Units="+u);
                     }
                 }
                 if ( bundleDescriptor.length()!=this.fieldParsers.length ) {
