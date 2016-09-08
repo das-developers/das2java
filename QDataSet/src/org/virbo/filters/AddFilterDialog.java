@@ -210,7 +210,7 @@ public class AddFilterDialog extends javax.swing.JPanel {
         }
     }
     
-    DefaultHandler createHandler(final DefaultMutableTreeNode root) {
+    static DefaultHandler createHandler(final DefaultMutableTreeNode root) {
         final StringBuilder charsBuilder = new StringBuilder();
 
         final Deque<DefaultMutableTreeNode> stack = new ArrayDeque();
@@ -306,9 +306,13 @@ public class AddFilterDialog extends javax.swing.JPanel {
         }
     }
 
-    private DefaultMutableTreeNode build( InputStream in ) {
+    /**
+     * return the tree of filters in the file.
+     * @param in
+     * @return 
+     */
+    public static DefaultMutableTreeNode build( InputStream in ) {
         DefaultMutableTreeNode result = new DefaultMutableTreeNode("root");
-        root= result;
         
         DefaultHandler sax = createHandler(result);
         try {
@@ -343,7 +347,7 @@ public class AddFilterDialog extends javax.swing.JPanel {
         return result;
     }
 
-    private static class Bookmark {
+    public static class Bookmark {
         String title="";
         String filter="";
         String description="";
@@ -355,7 +359,9 @@ public class AddFilterDialog extends javax.swing.JPanel {
 
     private TreeNode getTree() {
         InputStream in = AddFilterDialog.class.getResourceAsStream("filters.xml");
-        return build( in );
+        DefaultMutableTreeNode result= build( in );
+        root= result;
+        return result;
     }
 
     /**
