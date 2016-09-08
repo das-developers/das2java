@@ -781,8 +781,10 @@ public class AverageTableRebinner implements DataSetRebinner {
                                     }
                                 }
                             } else {
-                                rebinData[ibinx][ibiny[j]] += z * w;
-                                rebinWeights[ibinx][ibiny[j]] += w;
+                                if ( w>0 ) {
+                                    rebinData[ibinx][ibiny[j]] += z * w;
+                                    rebinWeights[ibinx][ibiny[j]] += w;
+                                }
                             }
                         }
                     }
