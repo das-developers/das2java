@@ -618,6 +618,10 @@ public class DataSetBuilder {
             }
         }
         
+        if ( fillValueUsed ) {
+            result.putProperty( QDataSet.FILL_VALUE, fillValue );
+        }
+        
         for (String key : properties.keySet()) {
             if ( key.startsWith("BUNDLE_") && dataSetResolver!=null ) {
                 Object okey= properties.get(key);
@@ -720,6 +724,11 @@ public class DataSetBuilder {
     private double fillValue= -1e31;
     
     /**
+     * true if the fill value was read or written.
+     */
+    private boolean fillValueUsed= false;
+    
+    /**
      * Utility field used by bound properties.
      */
     private final java.beans.PropertyChangeSupport propertyChangeSupport =  new java.beans.PropertyChangeSupport(this);
@@ -745,6 +754,7 @@ public class DataSetBuilder {
      * @return Value of property fillValue.
      */
     public double getFillValue() {
+        fillValueUsed= true;
         return this.fillValue;
     }
     
@@ -753,6 +763,7 @@ public class DataSetBuilder {
      * @param fillValue New value of property fillValue.
      */
     public void setFillValue(double fillValue) {
+        fillValueUsed= true;
         double oldFillValue = this.fillValue;
         this.fillValue = fillValue;
         if ( !Double.isNaN(fillValue) ) properties.put( QDataSet.FILL_VALUE, fillValue );
