@@ -248,6 +248,10 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
             result= new AnyFilterEditorPanel();
         }
         result.setFilter(f);
+        String tooltip= TooltipKeeper.getInstance().getTooltipFor(f);
+        if ( tooltip!=null ) {
+            result.getPanel().setToolTipText(tooltip);
+        }
         return result;
     }
     
