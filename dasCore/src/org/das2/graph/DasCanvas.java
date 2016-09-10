@@ -1600,6 +1600,15 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
     }
 
     /**
+     * silly code so that Autoplot can get an image without incrementing paintCount.
+     * @param image 
+     */
+    public void writeToImageImmediatelyNoCount( Image image ) {
+        doIncrementPaintCountTimer= false;
+        writeToImageImmediatelyNonPrint(image);
+    }
+    
+    /**
      * This by passes the normal print method used in writeToImageImmedately, which sets the printing flags which
      * tell the components, like DasPlot, to fully reset.  This was introduced so that Autoplot could get thumbnails
      * and an image of the canvas for its layout tab without having to reset.
@@ -1628,7 +1637,6 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
             g.setColor( this.getForeground() );
             g.setBackground( this.getBackground() );
 
-            doIncrementPaintCountTimer= false;
             // avoid calling the overrided print method, which turns on flags for printing.
             super.print(g);
 
