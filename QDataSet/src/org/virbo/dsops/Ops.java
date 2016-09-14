@@ -8327,11 +8327,11 @@ public class Ops {
         }
                 
         QDataSet result1= result;
-        if ( slice0 ) {
-            result1= result1.slice(0);
-        }
         if ( slice1 ) {
             result1= DataSetOps.slice1(result1,0);
+        }
+        if ( slice0 ) {
+            result1= result1.slice(0);
         }
         return result1;
     }
