@@ -1674,11 +1674,12 @@ public class DataSetOps {
 
 
     /**
-     * normalize the nth-level percentile from:
-     *   rank 1: each element 
-     *   rank 2: each row of the dataset
-     *   rank 3: each row of each rank 2 dataset slice.
-     * There must be at least 10 elements.  If the data is already in dB, then the result is a difference.
+     * normalize the nth-level percentile from:<ul>
+     *   <li>rank 1: each element 
+     *   <li>rank 2: each row of the dataset
+     *   <li>rank 3: each row of each rank 2 dataset slice.
+     * </ul>
+     * If the data is already in dB, then the result is a difference.
      * @param ds
      * @param level the percentile level, e.g. 10= 10%
      * @return the result dataset, in dB above background.
@@ -1689,63 +1690,64 @@ public class DataSetOps {
 
         double fill= -1e31;
         boolean hasFill= false;
-        if ( ds.rank()==1 ) {
-            QDataSet back= getBackgroundLevel( ds, level );
-            result= Ops.copy(ds);
-            boolean db= ds.property(QDataSet.UNITS)==Units.dB;
-
-            WritableDataSet wds= (WritableDataSet)result;
-            QDataSet validDs= Ops.valid(back);
-            QDataSet vds2= DataSetUtil.weightsDataSet(ds);
-            if ( validDs.value()>0 ) {
-                for ( int ii=0; ii<ds.length(); ii++ ) {
-                    if ( vds2.value(ii)>0 ) {
-                        double v= db ? ds.value(ii) - back.value() : 20 * Math.log10( ds.value(ii) / back.value() );
-                        wds.putValue( ii,Math.max( 0,v ) );
+        switch (ds.rank()) {
+            case 1:
+                {
+                    QDataSet back= getBackgroundLevel( ds, level );
+                    result= Ops.copy(ds);
+                    boolean db= ds.property(QDataSet.UNITS)==Units.dB;
+                    WritableDataSet wds= (WritableDataSet)result;
+                    QDataSet validDs= Ops.valid(back);
+                    QDataSet vds2= DataSetUtil.weightsDataSet(ds);
+                    if ( validDs.value()>0 ) {
+                        for ( int ii=0; ii<ds.length(); ii++ ) {
+                            if ( vds2.value(ii)>0 ) {
+                                double v= db ? ds.value(ii) - back.value() : 20 * Math.log10( ds.value(ii) / back.value() );
+                                wds.putValue( ii,Math.max( 0,v ) );
+                            } else {
+                                wds.putValue( ii, fill );
+                            }
+                        }
                     } else {
-                        wds.putValue( ii, fill );
-                    }
+                        for ( int ii=0; ii<ds.length(); ii++ ) {
+                            wds.putValue( ii, fill );
+                        }
+                        hasFill= true;
+                    }       result.putProperty( QDataSet.USER_PROPERTIES,Collections.singletonMap("background", back) );
+                    break;
                 }
-            } else {
-                for ( int ii=0; ii<ds.length(); ii++ ) {
-                    wds.putValue( ii, fill );
+            case 2:
+                {
+                    QDataSet back= getBackgroundLevel( ds, level );
+                    result= Ops.copy(ds);
+                    boolean db= ds.property(QDataSet.UNITS)==Units.dB;
+                    WritableDataSet wds= (WritableDataSet)result;
+                    QDataSet validDs= Ops.valid(back);
+                    QDataSet vds2= DataSetUtil.weightsDataSet(ds);
+                    for ( int jj=0; jj<ds.length(0); jj++ ) {
+                        for ( int ii=0; ii<ds.length(); ii++ ) {
+                            if ( validDs.value(jj)>0 && vds2.value(ii,jj)>0 ) {
+                                double v= db ? ds.value(ii,jj) - back.value(jj) : 20 * Math.log10( ds.value(ii,jj) / back.value(jj) );
+                                wds.putValue( ii,jj, Math.max( 0,v ) );
+                            } else {
+                                wds.putValue( ii,jj, fill );
+                                hasFill= true;
+                            }
+                        }
+                    }       result.putProperty( QDataSet.USER_PROPERTIES,Collections.singletonMap("background", back) );
+                    break;
                 }
-                hasFill= true;
-            }
-            result.putProperty( QDataSet.USER_PROPERTIES,Collections.singletonMap("background", back) );
-
-        } else if ( ds.rank()==2 ) {
-            QDataSet back= getBackgroundLevel( ds, level );
-            result= Ops.copy(ds);
-            boolean db= ds.property(QDataSet.UNITS)==Units.dB;
-
-            WritableDataSet wds= (WritableDataSet)result;
-            QDataSet validDs= Ops.valid(back);
-            QDataSet vds2= DataSetUtil.weightsDataSet(ds);
-            for ( int jj=0; jj<ds.length(0); jj++ ) {
-                for ( int ii=0; ii<ds.length(); ii++ ) {
-                    if ( validDs.value(jj)>0 && vds2.value(ii,jj)>0 ) {
-                        double v= db ? ds.value(ii,jj) - back.value(jj) : 20 * Math.log10( ds.value(ii,jj) / back.value(jj) );
-                        wds.putValue( ii,jj, Math.max( 0,v ) );
-                    } else {
-                        wds.putValue( ii,jj, fill );
+            default:
+                JoinDataSet result1= new JoinDataSet(ds.rank());
+                for ( int i=0; i<ds.length(); i++ ) {
+                    QDataSet ds1= ds.slice(i);
+                    QDataSet r1= dbAboveBackgroundDim1( ds1, level );
+                    result1.join(r1);
+                    if ( r1.property( QDataSet.FILL_VALUE )!=null ) {
                         hasFill= true;
                     }
-                }
-            }
-            result.putProperty( QDataSet.USER_PROPERTIES,Collections.singletonMap("background", back) );
-            
-        } else {
-            JoinDataSet result1= new JoinDataSet(ds.rank());
-            for ( int i=0; i<ds.length(); i++ ) {
-                QDataSet ds1= ds.slice(i);
-                QDataSet r1= dbAboveBackgroundDim1( ds1, level );
-                result1.join(r1);
-                if ( r1.property( QDataSet.FILL_VALUE )!=null ) {
-                    hasFill= true;
-                }
-            }
-            result= result1;
+                }   result= result1;
+                break;
         }
 
         result.putProperty( QDataSet.UNITS, Units.dB );
