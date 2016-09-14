@@ -38,7 +38,7 @@ public class Slice1DataSet extends AbstractDataSet {
             throw new IllegalArgumentException("rank limit > 4");
         }
         if ( ds.rank()<2 ) {
-            throw new IllegalArgumentException("rank limit < 2");
+            throw new IllegalArgumentException("cannot create a Slice1DataSet from rank "+ds.rank() + " dataset");
         }
         if ( index>= ds.length(0) ) throw new IndexOutOfBoundsException("index is out of bounds");
 
