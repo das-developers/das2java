@@ -129,6 +129,23 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
         
         Graphics2D g2= (Graphics2D)g;
         
+        QDataSet xtysData= getDataSet();
+        
+        if ( xtysData==null ) {
+            getParent().postMessage(this, "null data set", DasPlot.WARNING, null, null);
+            return;
+        }
+        
+        if ( xtysData.length()==0 ) {
+            getParent().postMessage(this, "empty data set", DasPlot.WARNING, null, null);
+            return;
+        }
+
+        if ( xtysData.rank()!=2 ) {
+            getParent().postMessage(this, "dataset is not rank 2", DasPlot.WARNING, null, null);
+            return;
+        }
+        
         Point2D p;
         if (getDataSet()==null && lastException!=null ) {
             renderException(g2,xAxis,yAxis,lastException);
@@ -281,12 +298,17 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
         
         if ( xtysData==null ) {
             this.plotImage= null;
-            if ( lastException==null ) this.setLastException( new DasException("null data set" ) );
+            getParent().postMessage(this, "null data set", DasPlot.WARNING, null, null);
             return;
         }
         
         if ( xtysData.length()==0 ) {
-            this.setLastException( new DasException("empty data set") );
+            getParent().postMessage(this, "empty data set", DasPlot.WARNING, null, null);
+            return;
+        }
+
+        if ( xtysData.rank()!=2 ) {
+            getParent().postMessage(this, "dataset is not rank 2", DasPlot.WARNING, null, null);
             return;
         }
         
