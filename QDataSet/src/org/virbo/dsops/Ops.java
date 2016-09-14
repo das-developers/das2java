@@ -8291,20 +8291,31 @@ public class Ops {
                 double alpha0 = ff0 - ic00;
                 double alpha1 = ff1 - ic10;
 
-                double vv00 =  vv.value(ic00, ic10);
-                double vv01 =  vv.value(ic00, ic11);
-                double vv10 =  vv.value(ic01, ic10);
-                double vv11 =  vv.value(ic01, ic11);
-
+                double beta0= 1-alpha0;
+                double beta1= 1-alpha1;
+                
                 double ww00=  wds.value(ic00, ic10);
                 double ww01 = wds.value(ic00, ic11);
                 double ww10 = wds.value(ic01, ic10);
                 double ww11 = wds.value(ic01, ic11);
 
+                double vv00 = ( ww00==0. ) ? 0 : vv.value(ic00, ic10);
+                double vv01 = ( ww01==0. ) ? 0 : vv.value(ic00, ic11);
+                double vv10 = ( ww10==0. ) ? 0 : vv.value(ic01, ic10);
+                double vv11 = ( ww11==0. ) ? 0 : vv.value(ic01, ic11);
+                             
+                double beta0beta1 = beta0 * beta1;
+                double beta0alpha1 = beta0 * alpha1;
+                double alpha0beta1 = alpha0 * beta1;
+                double alpha0alpha1 = alpha0 * alpha1;
+                
+                ww00 = ( beta0beta1 == 0. ) ? 1 : ww00;  // 
+                ww01 = ( beta0alpha1 == 0. ) ? 1 : ww01;
+                ww10 = ( alpha0beta1 == 0. ) ? 1 : ww10;
+                ww11 = ( alpha0alpha1 == 0. ) ? 1 : ww11;
+
                 if ( ww00*ww01*ww10*ww11 > 0 ) {
-                    double beta0= 1-alpha0;
-                    double beta1= 1-alpha1;
-                    double value= vv00 * beta0 * beta1 + vv01 * beta0 * alpha1 + vv10 * alpha0 * beta1 + vv11 * alpha0 * alpha1;
+                    double value= vv00 * beta0beta1 + vv01 * beta0alpha1 + vv10 * alpha0beta1 + vv11 * alpha0alpha1;
                     result.putValue( it.index(0),it2.index(0),value );
                 } else {
                     hasFill= true;
@@ -8335,7 +8346,7 @@ public class Ops {
         }
         return result1;
     }
-
+    
     public static QDataSet interpolateGrid( Object x, Object y, Object z ) {
         return interpolateGrid( dataset(x), dataset(y), dataset(z) );
     }    
