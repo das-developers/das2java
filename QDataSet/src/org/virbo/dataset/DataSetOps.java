@@ -1685,10 +1685,6 @@ public class DataSetOps {
      */
     public static QDataSet dbAboveBackgroundDim1( QDataSet ds, double level ) {
     
-        if ( ds.rank()<3 && ds.length()<10 ) {
-            throw new IllegalArgumentException("not enough elements: "+ds);
-        }
-
         MutablePropertyDataSet result;
 
         double fill= -1e31;
