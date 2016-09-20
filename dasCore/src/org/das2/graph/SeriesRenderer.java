@@ -778,13 +778,16 @@ public class SeriesRenderer extends Renderer {
                 fx = xAxis.transform(x, xUnits);
             } catch ( InconvertibleUnitsException ex ) {
                 xunitsWarning= true;
-                return;
+                xUnits= xAxis.getUnits();
+                fx = xAxis.transform(x, xUnits);
             }
             try {
                 fy = yAxis.transform(y, yUnits);
             } catch ( InconvertibleUnitsException ex ) {
                 unitsWarning= true;
-                return;
+                yUnits= yAxis.getUnits();
+                fy = yAxis.transform(y, yUnits);
+                //return;
             } catch ( IllegalArgumentException ex ) {
                 if ( UnitsUtil.isOrdinalMeasurement( yUnits ) ) {
                     unitsWarning= true;
