@@ -588,7 +588,16 @@ public class DataSetOps {
                 depds = applyIndex(depds, 0, sort, false);
                 cds.putProperty(depprop, depds);
             }
-            //TODO: try to do a nice job with BUNDLE.  This would be tricky.
+            
+            String bundleprop= "BUNDLE_"+idim;
+            QDataSet bds= (QDataSet) ds.property( bundleprop );
+            if ( bds!=null ) {
+                JoinDataSet jds= new JoinDataSet(2);
+                for ( int i=0; i<sort.length(); i++ ) {
+                    jds.join( bds.slice((int)(sort.value(i))) );
+                }
+                cds.putProperty( bundleprop, jds );
+            }
         }
 
         if (idim == 0) {
