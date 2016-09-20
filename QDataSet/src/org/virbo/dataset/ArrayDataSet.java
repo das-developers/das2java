@@ -732,6 +732,20 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
         System.arraycopy( ds1.getBack(), 0, newback, 0, myLength );
         System.arraycopy( ds2.getBack(), 0, newback, myLength, dsLength );
 
+        if ( SemanticOps.isBundle(ds1) && SemanticOps.isBundle(ds2) ) {
+            QDataSet bds1= (QDataSet) ds1.property(QDataSet.BUNDLE_1);
+            QDataSet bds2= (QDataSet) ds2.property(QDataSet.BUNDLE_1);
+            for ( int j=0; j<ds1.length(0); j++ ) {
+                Units u1= (Units) bds1.property(QDataSet.UNITS,j);
+                if ( u1==null ) u1= Units.dimensionless;
+                Units u2= (Units) bds2.property(QDataSet.UNITS,j);
+                if ( u2==null ) u2= Units.dimensionless;
+                if ( u1!=u2 ) { 
+                    logger.log(Level.WARNING, "unable to properly append two bundle datasets with different units: \"{0}\" \"{1}\"", new Object[]{u1, u2});
+                }
+            }
+        }
+        
         Units u1= SemanticOps.getUnits(ds1);
         Units u2= SemanticOps.getUnits(ds2);
         if ( u1!=u2 ) {
