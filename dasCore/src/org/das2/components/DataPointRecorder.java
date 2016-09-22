@@ -283,8 +283,12 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             }
             if (j < x.data.length) {
                 Datum d = x.get(j);
-                DatumFormatter format = d.getFormatter();
-                return format.format(d, unitsArray[j]);
+                if ( j==0 && timeFormatter!=null ) {
+                    return timeFormatter.format(d);
+                } else {
+                    DatumFormatter format = d.getFormatter();
+                    return format.format(d, unitsArray[j]);
+                }
             } else {
                 Object o = x.getPlane(planesArray[j]);
                 if (o instanceof Datum) {
@@ -1768,6 +1772,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     }
     
     private String timeFormat = "$Y-$m-$dT$H:$M:$S.$(subsec,places=3)Z";
+    private TimeParser timeFormatter= TimeParser.create(timeFormat);
 
     /**
      * Get the value of timeFormat
@@ -1784,7 +1789,13 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
      * @param timeFormat new value of timeFormat
      */
     public void setTimeFormat(String timeFormat) {
+        if ( timeFormat==null ) timeFormat= "";
         this.timeFormat = timeFormat;
+        if ( timeFormat.length()==0 ) {
+            this.timeFormatter= null;
+        } else {
+            this.timeFormatter= TimeParser.create(timeFormat);
+        }
     }
 
 
