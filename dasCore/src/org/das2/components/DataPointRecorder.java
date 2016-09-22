@@ -86,7 +86,9 @@ import org.das2.DasApplication;
 import org.das2.dataset.DataSetAdapter;
 import org.das2.datum.EnumerationUnits;
 import org.das2.datum.TimeLocationUnits;
+import org.das2.datum.TimeParser;
 import org.das2.datum.UnitsUtil;
+import org.das2.datum.format.TimeDatumFormatter;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
@@ -570,31 +572,44 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             }
             r.write(header.toString());
             r.newLine();
-            for (int i = 0; i < dataPoints1.size(); i++) {
-                DataPoint x = (DataPoint) dataPoints1.get(i);
-                StringBuilder s = new StringBuilder();
-                for (int j = 0; j < 2; j++) {
-                    DatumFormatter formatter = x.get(j).getFormatter();
-                    s.append(formatter.format(x.get(j), unitsArray[j])).append("\t");
+            
+            if ( dataPoints1.size()>0 ) {
+                TimeParser timeFormatter;
+                if ( getTimeFormat().length()>0 ) {
+                    timeFormatter= TimeParser.create(timeFormat);
+                } else {
+                    timeFormatter = null;
                 }
-                for (int j = 2; j < planesArray.length; j++) {
-                    Object o = x.getPlane(planesArray[j]);
-                    if ( o==null ) {
-                        x.getPlane(planesArray[j]); // for debugging
-                        throw new IllegalArgumentException("unable to find plane: "+planesArray[j]);
+                for (int i = 0; i < dataPoints1.size(); i++) {
+                    DataPoint x = (DataPoint) dataPoints1.get(i);
+                    StringBuilder s = new StringBuilder();
+                    for (int j = 0; j < 2; j++) {
+                        if ( j==0 && timeFormatter!=null ) { //TODO: this should be done by units.
+                            s.append( timeFormatter.format( x.get(j) ) ).append("\t");
+                        } else {
+                            DatumFormatter formatter = x.get(j).getFormatter();
+                            s.append(formatter.format(x.get(j), unitsArray[j])).append("\t");
+                        }
                     }
-                    if (unitsArray[j] == null) {
-                        s.append("\"").append(o).append("\"\t");
-                    } else {
-                        Datum d = (Datum) o;
-                        DatumFormatter f = d.getFormatter();
-                        s.append(f.format(d, unitsArray[j])).append("\t");
+                    for (int j = 2; j < planesArray.length; j++) {
+                        Object o = x.getPlane(planesArray[j]);
+                        if ( o==null ) {
+                            x.getPlane(planesArray[j]); // for debugging
+                            throw new IllegalArgumentException("unable to find plane: "+planesArray[j]);
+                        }
+                        if (unitsArray[j] == null) {
+                            s.append("\"").append(o).append("\"\t");
+                        } else {
+                            Datum d = (Datum) o;
+                            DatumFormatter f = d.getFormatter();
+                            s.append(f.format(d, unitsArray[j])).append("\t");
+                        }
                     }
+                    r.write(s.toString());
+                    r.newLine();
+                    prefs.put("components.DataPointRecorder.lastFileSave", file.toString());
+                    prefs.put("components.DataPointRecorder.lastFileLoad", file.toString());
                 }
-                r.write(s.toString());
-                r.newLine();
-                prefs.put("components.DataPointRecorder.lastFileSave", file.toString());
-                prefs.put("components.DataPointRecorder.lastFileLoad", file.toString());
             }
         } finally {
             r.close();
@@ -1751,6 +1766,27 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
 
         this.snapToGrid = snapToGrid;
     }
+    
+    private String timeFormat = "$Y-$m-$dT$H:$M:$S.$(subsec,places=3)Z";
+
+    /**
+     * Get the value of timeFormat
+     *
+     * @return the value of timeFormat
+     */
+    public String getTimeFormat() {
+        return timeFormat;
+    }
+
+    /**
+     * Set the value of timeFormat
+     *
+     * @param timeFormat new value of timeFormat
+     */
+    public void setTimeFormat(String timeFormat) {
+        this.timeFormat = timeFormat;
+    }
+
 
     /**
      * return true when the data point recorder has been modified.
