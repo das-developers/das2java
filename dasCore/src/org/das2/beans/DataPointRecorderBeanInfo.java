@@ -27,6 +27,7 @@ public class DataPointRecorderBeanInfo extends AccessLevelBeanInfo {
     
     private static final Property[] properties = {   
         new Property("xTagWidth", AccessLevel.DASML, "getXTagWidth", "setXTagWidth", null),        
+        new Property("timeFormat", AccessLevel.DASML, "getTimeFormat", "setTimeFormat", null),        
         new Property("snapToGrid", AccessLevel.DASML, "isSnapToGrid", "setSnapToGrid", null),
         new Property("sorted", AccessLevel.DASML, "isSorted", "setSorted", null),
     };
