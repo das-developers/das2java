@@ -21,6 +21,7 @@ import java.util.WeakHashMap;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.AbstractButton;
 import javax.swing.JCheckBox;
@@ -63,9 +64,13 @@ public final class LoggerManager {
     private static final Level[] levels= new Level[] { Level.ALL, Level.FINEST, Level.FINER, Level.FINE, Level.CONFIG, Level.INFO, Level.WARNING, Level.SEVERE, Level.OFF };
     
     private static class MyLogger extends Logger {
+        
+        public long lastTime= 0;
+        
         private MyLogger( String id ) {
             super(id,null);
         }
+        
         @Override
         public String toString() {
 //            Level l=null;
@@ -77,6 +82,12 @@ public final class LoggerManager {
 //            }
             return this.getName(); // + " @ " + l;
         }
+        
+        public void log(LogRecord record) {
+            super.log(record);
+            this.lastTime= System.currentTimeMillis();
+        }
+        
     }
     
     /**
