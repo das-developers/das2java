@@ -36,7 +36,7 @@ public class TickleTimer {
     /**
      * @param delay time in milliseconds to wait until firing off the change.  
      *   If delay is =<0, then events will be fired off immediately.
-     * @param PropertyChangeListener provides the callback when the timer 
+     * @param listener provides the callback when the timer 
      *    runs out.  The listener is added as one of the bean's property
      *    change listeners.
      */
@@ -45,7 +45,7 @@ public class TickleTimer {
         this.delay= delay;
         addPropertyChangeListener( listener );
         this.running= false;
-        messages= new ArrayList<String>();
+        messages= new ArrayList<>();
     }
     
     private void startTimer() {
@@ -60,6 +60,7 @@ public class TickleTimer {
     
     private Runnable newRunnable() {
         return new Runnable() {
+            @Override
             public void run() {
                 long d=  System.currentTimeMillis() - tickleTime;
                 while ( d < delay ) {
@@ -76,7 +77,7 @@ public class TickleTimer {
                 running= false; //sometimes listeners need to retickle the timer...
                 propertyChangeSupport.firePropertyChange("running",true,false);
                 firing= false;
-                messages= new ArrayList<String>();
+                messages= new ArrayList<>();
             }
         };
     }
@@ -94,7 +95,7 @@ public class TickleTimer {
         if ( message!=null ) messages.add(message);
     }
     
-    private java.beans.PropertyChangeSupport propertyChangeSupport =  new java.beans.PropertyChangeSupport(this);
+    private final java.beans.PropertyChangeSupport propertyChangeSupport =  new java.beans.PropertyChangeSupport(this);
 
     public final void addPropertyChangeListener(java.beans.PropertyChangeListener l) {
         propertyChangeSupport.addPropertyChangeListener(l);
