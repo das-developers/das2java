@@ -52,22 +52,37 @@ public final class LoggerManager {
     private static final Map<String,Logger> log= new HashMap();
     private static final Set<Handler> extraHandlers= new HashSet();
 
-    private static boolean useMyLogger=false;
+    /**
+     * There's something I (jbf) don't get about logging, so I'll abandon this for today.
+     */
+    private static boolean isTimeTaggingLoggers=false;
     
-    public synchronized static void setUseMyLogger( boolean t ) {
-        useMyLogger= t;
+    public synchronized static void setUseTimeTaggingLoggers(boolean t ) {
+        isTimeTaggingLoggers= t;
         loggers.clear();
         extraHandlers.clear();
         log.clear();
     }
     
+    /**
+     * are we keeping track of log message times, so we can sort loggers by 
+     * how recently messages were posted?
+     * @return true if we are keeping track of log message times.
+     */
+    public synchronized static boolean isUseTimeTaggingLoggers( )  {
+        return isTimeTaggingLoggers;
+    }
+    
     private static final Level[] levels= new Level[] { Level.ALL, Level.FINEST, Level.FINER, Level.FINE, Level.CONFIG, Level.INFO, Level.WARNING, Level.SEVERE, Level.OFF };
     
-    private static class MyLogger extends Logger {
+    /**
+     * Logger keeps track of the last record timetag.
+     */
+    public static final class TimeTaggingLogger extends Logger {
         
         public long lastTime= 0;
         
-        private MyLogger( String id ) {
+        private TimeTaggingLogger( String id ) {
             super(id,null);
         }
         
@@ -82,10 +97,34 @@ public final class LoggerManager {
 //            }
             return this.getName(); // + " @ " + l;
         }
+
+        //TODO: Note this is not a complete list of all the log methods which need to be overriden.
         
+        @Override
+        public void log(Level level, String msg) {
+            super.log(level, msg);
+            this.lastTime= System.currentTimeMillis();
+        }
+
+        @Override
+        public void log(Level level, String msg, Object param1) {
+            super.log(level, msg, param1); //To change body of generated methods, choose Tools | Templates.
+            this.lastTime= System.currentTimeMillis();
+        }
+        
+        
+        @Override
         public void log(LogRecord record) {
             super.log(record);
-            this.lastTime= System.currentTimeMillis();
+            this.lastTime= record.getMillis();
+        }
+        
+        /**
+         * return the timestamp of the last log message.
+         * @return 
+         */
+        public long getLastTime() {
+            return lastTime;
         }
         
     }
@@ -100,8 +139,8 @@ public final class LoggerManager {
         if ( result!=null ) {
             return result;
         } else {
-            if ( useMyLogger ) {
-                result= new MyLogger(id);
+            if ( isTimeTaggingLoggers ) {
+                result= new TimeTaggingLogger(id);
             } else {
                 result= Logger.getLogger(id);
             }
