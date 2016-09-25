@@ -453,6 +453,8 @@ public class StreamTool {
         try {
             Element e = pd.getDomElement();
 
+            pd.setValuesInDescriptor(false); // until shown otherwise.
+            
             XPathFactory factory = XPathFactory.newInstance();
             XPath xpath = factory.newXPath();
 
@@ -497,12 +499,14 @@ public class StreamTool {
                     // see below
                     dims= new int[0];
                     isInline= true;
+                    pd.valuesInDescriptor= true;
                 } else {
                     for ( int iv= 0; iv<values.getLength(); iv++ ) {
                         Element vn= (Element)values.item(iv);
 
                         if ( vn.hasAttribute("values") ) {  // TODO: consider "inline"
                             isInline= true;
+                            pd.valuesInDescriptor= true;
                         }
 
                         String sdims;
@@ -577,7 +581,12 @@ public class StreamTool {
                         tt= new AsciiTransferType( 10, true ); // kludge because we need something
                     }
                     if (tt == null ) {
-                        throw new IllegalArgumentException("unrecognized transfer type: " + ttype);
+                        if ( "".equals(ttype) ) {
+                            //TODO: untested branch
+                            throw new IllegalArgumentException(String.format( "either encoding or in-line values attribute is needed in [%02d]", pd.getPacketId() ) );
+                        } else {
+                            throw new IllegalArgumentException("unrecognized transfer type: " + ttype);
+                        }
                     }
                     planeDescriptor.setType(tt);
                 }
@@ -692,6 +701,9 @@ public class StreamTool {
                 throw new StreamException( String.format( "No packet found for key \"%s\"",key ) ); //TODO
             }
             int contentLength = pd.sizeBytes();
+            if ( contentLength==0 ) {
+                if ( pd.isValuesInDescriptor() ) throw new IllegalArgumentException("values cannot be both in the packet descriptor and in the packets.");
+            }
             if ( contentLength>PACKET_LENGTH_LIMIT ) throw new IllegalStateException("stream packet length is too long ("+contentLength+">"+PACKET_LENGTH_LIMIT+"bytes). (bug 0000348: streams with long packet lengths).");
             if (struct.bigBuffer.remaining() < contentLength) {
                 struct.bigBuffer.reset();
