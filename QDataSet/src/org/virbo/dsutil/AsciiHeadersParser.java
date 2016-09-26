@@ -560,6 +560,76 @@ public class AsciiHeadersParser {
         return result;
     }
 
+    private static class ParamDescription {
+        boolean hasFill= false;
+        double fillValue= -1e38;
+        Units units= Units.dimensionless;
+        String name= "";
+        String description= "";
+        private ParamDescription( String name ) {
+            this.name= name;
+        }
+    }
+        
+    public static BundleDescriptor parseMetadataHapi( JSONObject doc ) throws JSONException, ParseException {
+        JSONArray parameters= doc.getJSONArray("parameters");
+        int nparameters= parameters.length();
+
+        ParamDescription[] pds= new ParamDescription[nparameters];
+
+        for ( int i=0; i<nparameters; i++ ) {
+            String name= parameters.getJSONObject(i).getString("name");
+            pds[i]= new ParamDescription( name );
+
+            String type;
+            if ( parameters.getJSONObject(i).has("type") ) {
+                type= parameters.getJSONObject(i).getString("type");
+                if ( type==null ) type="";
+            } else {
+                type= "";
+            }
+            if ( type.equals("") ) {
+                logger.log(Level.FINE, "type is not defined: {0}", name);
+            }
+            if ( type.equalsIgnoreCase("isotime") ) {
+                if ( !type.equals("isotime") ) {
+                    logger.log(Level.WARNING, "isotime should not be capitalized: {0}", type);
+                }
+                pds[i].units= Units.us2000;
+            } else {
+                if ( parameters.getJSONObject(i).has("units") ) {
+                    String sunits= parameters.getJSONObject(i).getString("units");
+                    if ( sunits!=null ) {
+                        pds[i].units= Units.lookupUnits(sunits);
+                    }
+                } else {
+                    pds[i].units= Units.dimensionless;
+                }
+                if ( parameters.getJSONObject(i).has("fill") ) {
+                    String sfill= parameters.getJSONObject(i).getString("fill");
+                    if ( sfill!=null ) {
+                        pds[i].fillValue= pds[i].units.parse( sfill ).doubleValue( pds[i].units );
+                        pds[i].hasFill= true;
+                    }
+                } else {
+                    pds[i].fillValue= -1e31; // when a value cannot be parsed, but it is not identified.
+                }
+                if ( parameters.getJSONObject(i).has("description") ) {                   
+                    pds[i].description= parameters.getJSONObject(i).getString("description");
+                    if ( pds[i].description==null ) pds[i].description= "";
+                } else {
+                    pds[i].description= ""; // when a value cannot be parsed, but it is not identified.
+                }
+            }
+        }
+        BundleDescriptor bds= new BundleDescriptor();
+        for ( int i=0; i<pds.length; i++ ) {
+            bds.addDataSet( Ops.safeName(pds[i].name), i, new int[0] );
+        }
+                
+        return bds; 
+    }
+    
     /**
      * attempt to parse the metadata stored in the header.  The header lines must
      * be prefixed with hash (#).  Loosely formatted test is converted into
@@ -579,10 +649,15 @@ public class AsciiHeadersParser {
             AsciiHeadersParser ahp= new AsciiHeadersParser();
             String sjson= ahp.prep(header);
             jo = new JSONObject( sjson );
-            BundleDescriptor bd= calcBundleDescriptor( jo, columns, columnLabels );
+            if ( jo.has("HAPI") ) {
+                BundleDescriptor bd= parseMetadataHapi( jo );
+                return bd;
+            } else {
+                BundleDescriptor bd= calcBundleDescriptor( jo, columns, columnLabels );
 
-            fillMetadata( bd,jo );
-            return bd;
+                fillMetadata( bd,jo );
+                return bd;
+            }
 
         } catch (JSONException | IllegalArgumentException ex) {
             throw new ParseException( ex.toString(), 0 );
