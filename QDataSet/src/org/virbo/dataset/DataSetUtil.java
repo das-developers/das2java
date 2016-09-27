@@ -1922,6 +1922,26 @@ public class DataSetUtil {
     }
     
     /**
+     * returns 0 for zero-length qube, the sum otherwise.
+     * @param qube int array
+     * @return the sum of the elements of the array
+     */
+    public static int sum( int[] qube ) {
+        switch ( qube.length ) {
+            case 0: return 0;
+            case 1: return qube[0];
+            case 2: return qube[0]+qube[1];
+            case 3: return qube[0]+qube[1]+qube[2];
+            case 4: return qube[0]+qube[1]+qube[2]+qube[3];
+            default: {
+                int result= qube[0];
+                for ( int i=1; i<qube.length; i++ ) result+= qube[i];
+                return result;
+            }
+        }
+    }    
+    
+    /**
      * return string representation of the dimensions of the qube dimensions.
      * For example [2,4] is represented as "[2,4]"
      * @param qube an array of integers, 4 elements or fewer.
