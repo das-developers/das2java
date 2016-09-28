@@ -31,13 +31,13 @@ public class FixedWidthFormatter {
     
     public static String formatWide( String s, int nchars ) {
         if ( s.length() < nchars ) {
-            StringBuffer sb= new StringBuffer(nchars-s.length());            
+            StringBuilder sb= new StringBuilder(nchars-s.length());            
             for ( int i=0; i<(nchars-s.length()); i++ ) {
                 sb.append(' ');               
             }            
             s= sb.toString()+s;
         } else if ( s.length() > nchars ) {
-            StringBuffer sb= new StringBuffer(nchars);            
+            StringBuilder sb= new StringBuilder(nchars);            
             for ( int i=0; i<(nchars); i++ ) {
                 sb.append('*');               
             }    
