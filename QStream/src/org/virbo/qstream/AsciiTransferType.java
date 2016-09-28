@@ -48,9 +48,11 @@ public class AsciiTransferType extends TransferType {
         }
         if ( decimals==0 ) {
             this.formatStr= "0";
-        } else if ( decimals<16 ) {
+        } else if ( decimals>=0 && decimals<16 ) {
             String pounds="################";
             this.formatStr= "0."+pounds.substring(0,decimals);
+        } else if ( decimals<0 ) {
+            throw new IllegalArgumentException("decimals cannot be negative");
         } else {
             throw new IllegalArgumentException("decimals cannot be greater than 16");
         }
