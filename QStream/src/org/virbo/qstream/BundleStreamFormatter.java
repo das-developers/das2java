@@ -143,19 +143,17 @@ public class BundleStreamFormatter {
                 return new AsciiTransferType( 12,true );
             }
         } else {
-        
-            AutoHistogram ah= new AutoHistogram();
-        
-            if ( UnitsUtil.isIntervalOrRatioMeasurement(u) && !UnitsUtil.isTimeLocation(u) ) {
-                QDataSet gcd= Ops.magnitude( DataSetUtil.gcd( Ops.diff(ds), Ops.dataset( u.getOffsetUnits().createDatum(0.0001) ) ) );
-                int fracDigits= (int)Math.ceil( -1 * Math.log10(gcd.value()) );
-                QDataSet extent= Ops.extent(ds);
-                int intDigits= (int) Math.ceil( Math.log10( Math.abs( extent.value(0) ) ) );
-                intDigits= Math.max( intDigits, (int) Math.ceil( Math.log10( Math.abs( extent.value(1) ) ) ) );
-                return new AsciiTransferType( 1+Math.max( 6, intDigits+1+fracDigits ), false, fracDigits );
-            } else {
-                return new AsciiTransferType( 10, true );
-            }
+            return new AsciiTransferType( 12,true );
+//            if ( UnitsUtil.isIntervalOrRatioMeasurement(u) && !UnitsUtil.isTimeLocation(u) ) {
+//                QDataSet gcd= Ops.magnitude( DataSetUtil.gcd( Ops.diff(ds), Ops.dataset( u.getOffsetUnits().createDatum(0.0001) ) ) );
+//                int fracDigits= Math.max( 0, (int)Math.ceil( -1 * Math.log10(gcd.value()) ) );
+//                QDataSet extent= Ops.extent(ds);
+//                int intDigits= (int) Math.ceil( Math.log10( Math.abs( extent.value(0) ) ) );
+//                intDigits= Math.max( intDigits, (int) Math.ceil( Math.log10( Math.abs( extent.value(1) ) ) ) );
+//                return new AsciiTransferType( 1+Math.max( 6, intDigits+1+fracDigits ), false, fracDigits );
+//            } else {
+//                return new AsciiTransferType( 10, true );
+//            }
         }
         
     }
