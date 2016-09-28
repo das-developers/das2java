@@ -172,12 +172,23 @@ public class BundleStreamFormatter {
     public void format( QDataSet ds, OutputStream osout, boolean asciiTypes ) throws StreamException, IOException {
         
         if ( ds.property(QDataSet.BUNDLE_1)==null ) throw new IllegalArgumentException("only rank 2 bundles");
-        
+
+        // if there is a depend0 then bundle it as well.
+        QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);        
+
+        if ( dep0!=null ) {
+            QDataSet newBundle= Ops.bundle( dep0, Ops.unbundle( ds, 0 ) );
+            for ( int j=1; j<ds.length(0); j++ ) {
+                newBundle= Ops.bundle( newBundle, Ops.unbundle( ds, j ) );
+            }
+            ds= newBundle;
+        }
+                
         /**
          * bds describes each field of the dataset.
          */
         QDataSet bds= (QDataSet) ds.property(QDataSet.BUNDLE_1);
-        
+
         /**
          * number of fields.
          */
@@ -187,11 +198,15 @@ public class BundleStreamFormatter {
          * TransferType array specifies how each field is converted to the stream.
          */
         TransferType[] tt= new TransferType[bds.length()];
-        
+
         /**
          * record length in bytes.
          */
         int recordLength= 0;
+        
+        if ( dep0!=null ) {
+
+        }
         
         // calculate the transfer types and total record length.
         for ( int j=0; j<bds.length(); j++ ) {
