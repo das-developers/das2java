@@ -553,7 +553,7 @@ public class Ops {
      * ds= getDataSet('http://autoplot.org/data/autoplot.cdf?BGSM') # BGSM[Epoch=24,cart=3]
      * m= magnitude(ds)
      *}</small></pre></blockquote>
-     * For rank 0, this just returns the absolute value.
+     * For rank 0, this just returns the absolute value, but with the same units.
      * 
      * @param ds dataset of Rank N.
      * @return dataset of Rank N-1.
@@ -1333,6 +1333,7 @@ public class Ops {
      * operator.
      * @param ds1 the dataset
      * @return dataset with the same geometry
+     * @see Ops#magnitude(org.virbo.dataset.QDataSet) which preserves the sign.
      */
     public static QDataSet abs(QDataSet ds1) {
         MutablePropertyDataSet result= applyUnaryOp(ds1, new UnaryOp() {
