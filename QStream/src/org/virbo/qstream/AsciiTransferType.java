@@ -6,13 +6,11 @@ package org.virbo.qstream;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
-import java.text.DecimalFormat;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.das2.util.FixedWidthFormatter;
-import org.das2.util.NumberFormatUtil;
 
 /**
  * Transfer type that represents data as formatted ASCII strings.  See
@@ -22,13 +20,16 @@ import org.das2.util.NumberFormatUtil;
 public class AsciiTransferType extends TransferType {
 
     final int sizeBytes;
-    private DecimalFormat formatter;
-    private String formatStr; // for debugging
+    private String formatterStr;
     
     public AsciiTransferType( int sizeBytes, boolean scientificNotation ) {
         this.sizeBytes = sizeBytes;
-        this.formatStr= getFormat(sizeBytes-1,scientificNotation);
-        formatter = NumberFormatUtil.getDecimalFormat( formatStr );
+        if ( scientificNotation ) {
+            this.formatterStr= "%.2e";
+        } else {
+            this.formatterStr= "%.2f";
+        }
+        //formatter = NumberFormatUtil.getDecimalFormat( formatStr );   
     }
 
     //TODO: see Chris' qstream where ascii5 didn't work...  
@@ -46,50 +47,18 @@ public class AsciiTransferType extends TransferType {
         } else if ( sizeBytes>18 ) {
             throw new IllegalArgumentException("sizeBytes cannot be greater than 18");
         }
-        if ( decimals==0 ) {
-            this.formatStr= "0";
-        } else if ( decimals>=0 && decimals<16 ) {
-            String pounds="################";
-            this.formatStr= "0."+pounds.substring(0,decimals);
-        } else if ( decimals<0 ) {
+        if ( decimals<0 ) {
             throw new IllegalArgumentException("decimals cannot be negative");
-        } else {
-            throw new IllegalArgumentException("decimals cannot be greater than 16");
         }
         if ( scientificNotation ) {
-            this.formatStr= this.formatStr + "E00;-#";
+            formatterStr= String.format( "%%%d.%de", sizeBytes, decimals );
+        } else {
+            formatterStr= String.format( "%%%d.%df", sizeBytes, decimals );
         }
-        formatter = NumberFormatUtil.getDecimalFormat( formatStr );
     }
 
-    private static String getFormat( int length, boolean sci ) {
-        if ( length<9 || sci==false ) {
-            if (length==9  ) {
-                return "0.####";
-            } else if ( length==8 ) {
-                return "0.###";
-            } else if ( length==7 ) {
-                return "0.##";
-            } else if ( length==6 ) {
-                return "0.#";
-            } else if ( length<6 ) {
-                return "0";
-            } else {
-                return "0.####";
-            }
-        } else {
-            StringBuilder buffer = new StringBuilder(length);
-            buffer.append("+0.");
-            for (int i = 0; i < length - 7; i++) {
-                buffer.append('0');
-            }
-            buffer.append("E00;-#");
-            return buffer.toString();
-        }
-    }
-    
     public void write( double d, ByteBuffer buffer) {
-        String s = formatter.format(d);
+        String s= String.format( formatterStr, d );
         if ( s.length() < sizeBytes ) s+=" ";
         if (s.length() < sizeBytes ) {
             s = FixedWidthFormatter.format(s, sizeBytes ) ;
@@ -111,6 +80,7 @@ public class AsciiTransferType extends TransferType {
         
     }
 
+    @Override
     public double read(ByteBuffer buffer) {
         byte[] bytes = new byte[sizeBytes];
         buffer.get(bytes);
@@ -126,14 +96,17 @@ public class AsciiTransferType extends TransferType {
         }
     }
 
+    @Override
     public int sizeBytes() {
         return sizeBytes;
     }
 
+    @Override
     public boolean isAscii() {
         return true;
     }
 
+    @Override
     public String name() {
         return "ascii"+sizeBytes;
     }
