@@ -54,6 +54,9 @@ public class AsciiTransferType extends TransferType {
         } else {
             throw new IllegalArgumentException("decimals cannot be greater than 16");
         }
+        if ( scientificNotation ) {
+            this.formatStr= this.formatStr + "E00;-#";
+        }
         formatter = NumberFormatUtil.getDecimalFormat( formatStr );
     }
 
