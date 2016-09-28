@@ -14,7 +14,7 @@ import java.text.NumberFormat;
 import java.util.Locale;
 
 /**
- *
+ * provide convenient and consistent access to DecimalFormat objects.
  * @author jbf
  */
 public class NumberFormatUtil {
@@ -23,22 +23,27 @@ public class NumberFormatUtil {
      * handles the localization problem (bug 0000294) by always returning a DecimalFormat
      * for Locale.US. (Sorry, rest of world.)
      *
+     * @return DecimalFormat
      * @throws ClassCastException if for some reason, NumberFormat.getInstance doesn't return DecimalFormat.
      */
     public static DecimalFormat getDecimalFormat( ) {
         // see doc for DecimalFormat, which recommends this practice.
         DecimalFormat result= (DecimalFormat) NumberFormat.getInstance( Locale.US );
+        result.setRoundingMode( java.math.RoundingMode.HALF_UP );
         return result;
     }
     
     /**
      * handles the localization problem (bug 0000294) by always returning a DecimalFormat
      * for Locale.US. (Sorry, rest of world.)
+     * @param spec
+     * @return  DecimalFormat
      * @throws ClassCastException if for some reason, NumberFormat.getInstance doesn't return DecimalFormat.
      */
     public static DecimalFormat getDecimalFormat( String spec ) {
         DecimalFormat result= (DecimalFormat) NumberFormat.getInstance( Locale.US );
         result.applyPattern(spec);   
+        result.setRoundingMode( java.math.RoundingMode.HALF_UP );
         return result;        
     }
 }
