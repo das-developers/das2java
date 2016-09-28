@@ -36,7 +36,7 @@ public class NumberFormatUtil {
     /**
      * handles the localization problem (bug 0000294) by always returning a DecimalFormat
      * for Locale.US. (Sorry, rest of world.)
-     * @param spec
+     * @param spec specification for DecimalFormat, like 0.000E00
      * @return  DecimalFormat
      * @throws ClassCastException if for some reason, NumberFormat.getInstance doesn't return DecimalFormat.
      */
