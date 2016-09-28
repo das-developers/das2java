@@ -9,11 +9,16 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.das2.datum.LoggerManager;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
+import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
+import org.virbo.dataset.SemanticOps;
 import org.virbo.dsops.Ops;
+import org.virbo.dsutil.AutoHistogram;
 import test.BundleBinsDemo;
 
 /**
@@ -107,6 +112,55 @@ public class BundleStreamFormatter {
         return name;
     }
     
+    public static TransferType guessAsciiTransferType( QDataSet ds ) {
+        Units u= SemanticOps.getUnits(ds);
+        String format= (String) ds.property( QDataSet.FORMAT );
+        if ( format!=null ) {
+            Pattern p= Pattern.compile(FORMAT_PATTERN);
+            Matcher m= p.matcher(format);
+            if ( m.matches() ) {
+                char ch= format.charAt(format.length()-1);
+                int len= Integer.parseInt(m.group(1));
+                String sdec= m.group(2);
+                int dec= ( sdec!=null ) ? Integer.parseInt(sdec) : 2 ;
+                TransferType result;
+                switch ( ch ) {
+                    case 'f': 
+                        result= new AsciiTransferType( len, false, dec );
+                        break;
+                    case 'e':
+                        result= new AsciiTransferType( len, true, dec );
+                        break;
+                    case 'd':
+                        result= new AsciiIntegerTransferType(len);
+                        break;
+                    default:
+                        result= new AsciiTransferType( 10,true );
+                }
+                return result;
+            } else {
+                logger.warning("format string must match "+FORMAT_PATTERN);
+                return new AsciiTransferType( 10,true );
+            }
+        } else {
+        
+        AutoHistogram ah= new AutoHistogram();
+        
+            if ( UnitsUtil.isRatioMeasurement(u) ) {
+                QDataSet gcd= DataSetUtil.gcd( Ops.diff(ds), Ops.dataset( u.getOffsetUnits().createDatum(0.0001) ) );
+                int fracDigits= (int)Math.ceil( -1 * Math.log10(gcd.value()) );
+                QDataSet extent= Ops.extent(ds);
+                int intDigits= -1 * (int)Math.log10( Math.abs( extent.value(0) ) );
+                intDigits= Math.max( intDigits, (int)Math.log10( Math.abs( extent.value(1) ) ) );
+                return new AsciiTransferType( intDigits+1+fracDigits, false, fracDigits );
+            } else {
+                return new AsciiTransferType( 10, true );
+            }
+        }
+        
+    }
+    private static final String FORMAT_PATTERN = "(\\d*)(\\.\\d*)?([f|e|d])";
+    
     /**
      * format the rank 2 bundle.
      * @param ds  rank 2 bundle dataset.
@@ -142,13 +196,20 @@ public class BundleStreamFormatter {
         // calculate the transfer types and total record length.
         for ( int j=0; j<bds.length(); j++ ) {
             if ( asciiTypes ) {
+                String format=  (String)bds.property( QDataSet.FORMAT, j );
                 Units u= (Units) bds.property( QDataSet.UNITS, j );
-                if ( u!=null && UnitsUtil.isTimeLocation(u) ) {
-                    tt[j]= new AsciiTimeTransferType( 24, u );
-                } else if ( u!=null && UnitsUtil.isNominalMeasurement(u) ) {
-                    tt[j]= new AsciiIntegerTransferType( 10 );
+                if ( u==null ) u= Units.dimensionless;
+                boolean useGuess= false;
+                if ( useGuess && format!=null && !UnitsUtil.isTimeLocation(u) ) {
+                    tt[j]= guessAsciiTransferType( Ops.slice1(ds,j) );
                 } else {
-                    tt[j]= new AsciiTransferType(10,true);
+                    if ( UnitsUtil.isTimeLocation(u) ) {
+                        tt[j]= new AsciiTimeTransferType( 24, u );
+                    } else if ( UnitsUtil.isNominalMeasurement(u) ) {
+                        tt[j]= new AsciiIntegerTransferType( 10 );
+                    } else {
+                        tt[j]= new AsciiTransferType(10,true);
+                    }
                 }
             } else {
                 Units u= (Units) bds.property( QDataSet.UNITS, j );
