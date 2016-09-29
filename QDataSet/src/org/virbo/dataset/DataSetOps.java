@@ -1689,7 +1689,8 @@ public class DataSetOps {
      *   <li>rank 3: each row of each rank 2 dataset slice.
      * </ul>
      * If the data is already in dB, then the result is a difference.
-     * This is assuming the units are similar to voltage, not a power, I think.
+     * This is assuming the units are similar to voltage, not a power, we think,
+     * containing code like 20 * Math.log10( ds / background ).
      * @param ds
      * @param level the percentile level, e.g. 10= 10%
      * @return the result dataset, in dB above background.
@@ -1775,6 +1776,8 @@ public class DataSetOps {
      *   rank 2: each column of the dataset
      *   rank 3: each column of each rank 2 dataset slice.
      * There must be at least 10 elements.  If the data is already in dB, then the result is a difference.
+     * This is assuming the units are similar to voltage, not a power, we think,
+     * containing code like 20 * Math.log10( ds / background ).
      * @param ds
      * @param level the percentile level, e.g. 10= 10%
      * @return the result dataset, in dB above background.
