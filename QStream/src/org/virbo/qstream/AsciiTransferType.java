@@ -6,11 +6,13 @@ package org.virbo.qstream;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
+import java.text.DecimalFormat;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.das2.util.FixedWidthFormatter;
+import org.das2.util.NumberFormatUtil;
 
 /**
  * Transfer type that represents data as formatted ASCII strings.  See
@@ -20,98 +22,84 @@ import org.das2.util.FixedWidthFormatter;
 public class AsciiTransferType extends TransferType {
 
     final int sizeBytes;
-    private String formatterStr;
-    boolean useFormatterStr;
-    boolean scientificNotation;
-    private static String STARS= "**************************************************";
+    private DecimalFormat formatter;
+    private String formatStr; // for debugging
     
-    /**
-     * create a new transfer type with the given number of spaces, which
-     * will format numbers using optionally scientific notation.
-     * @param sizeBytes the number of bytes alloted to the transfer type, at least 6 and no more than 50.
-     * @param scientificNotation if true, use scientific notation (e.g. +3.14e00)
-     */
     public AsciiTransferType( int sizeBytes, boolean scientificNotation ) {
-        if ( sizeBytes<6 ) {
-            throw new IllegalArgumentException("sizeBytes cannot be less than 6");
-        } else if ( sizeBytes>50 ) {
-            throw new IllegalArgumentException("sizeBytes cannot be greater than 18");
-        }
         this.sizeBytes = sizeBytes;
-        if ( scientificNotation ) {
-            int decimals= sizeBytes - 6;
-            if ( decimals>0 ) decimals--; // in case there is room for whitespace, use it.
-            if ( decimals<0 ) {
-                throw new IllegalArgumentException("sizeBytes cannot be less than 6.");
-            }
-            if ( scientificNotation ) {
-                formatterStr= String.format( "%%%d.%de", sizeBytes, Math.min( decimals, 18 ) );
-            } else {
-                formatterStr= String.format( "%%%d.%df", sizeBytes, Math.min( decimals, 18 ) );
-            }
-            this.useFormatterStr= true;
-        } else {
-            this.formatterStr= String.format( "%%%df", sizeBytes-1 ); // -1 is for whitespace.
-            this.useFormatterStr= false;
-        }
-        this.scientificNotation= scientificNotation;
-        //formatter = NumberFormatUtil.getDecimalFormat( formatStr );   
+        this.formatStr= getFormat(sizeBytes-1,scientificNotation);
+        formatter = NumberFormatUtil.getDecimalFormat( formatStr );
     }
 
     //TODO: see Chris' qstream where ascii5 didn't work...  
 
     /**
      * return a transfer type with the given number of decimal places.
-     * @param sizeBytes the number of bytes alloted to the transfer type, at least 6 and no more than 18.
-     * @param scientificNotation if true, use scientific notation (e.g. +3.14e00)
+     * @param sizeBytes
+     * @param scientificNotation
      * @param decimals 0 for integers, number of decimal places otherwise.
      */
     AsciiTransferType( int sizeBytes, boolean scientificNotation, int decimals ) {
         this.sizeBytes = sizeBytes;
         if ( sizeBytes<6 ) {
             throw new IllegalArgumentException("sizeBytes cannot be less than 6");
-        } else if ( sizeBytes>50 ) {
-            throw new IllegalArgumentException("sizeBytes cannot be greater than 50");
+        } else if ( sizeBytes>18 ) {
+            throw new IllegalArgumentException("sizeBytes cannot be greater than 18");
         }
-        if ( decimals<0 ) {
-            throw new IllegalArgumentException("decimals cannot be negative");
+        if ( decimals==0 ) {
+            this.formatStr= "0";
+        } else if ( decimals<16 ) {
+            String pounds="################";
+            this.formatStr= "0."+pounds.substring(0,decimals);
+        } else {
+            throw new IllegalArgumentException("decimals cannot be greater than 16");
         }
         if ( scientificNotation ) {
-            formatterStr= String.format( "%%%d.%de", sizeBytes, Math.min( decimals, 18 ) );
-        } else {
-            formatterStr= String.format( "%%%d.%df", sizeBytes, Math.min( decimals, 18 ) );
+            this.formatStr= this.formatStr + "E00;-#";
         }
-        this.useFormatterStr= true;
-        this.scientificNotation= scientificNotation;
+        formatter = NumberFormatUtil.getDecimalFormat( formatStr );
     }
 
-    @Override
-    public void write( double d, ByteBuffer buffer) {
-        String s;
-        if ( useFormatterStr ) {
-            s= String.format( formatterStr, d );
-        } else {
-            s= String.valueOf(d);
-            if ( s.length()>sizeBytes ) {
-                s= String.format( formatterStr, d );
+    private static String getFormat( int length, boolean sci ) {
+        if ( length<9 || sci==false ) {
+            if (length==9  ) {
+                return "0.####";
+            } else if ( length==8 ) {
+                return "0.###";
+            } else if ( length==7 ) {
+                return "0.##";
+            } else if ( length==6 ) {
+                return "0.#";
+            } else if ( length<6 ) {
+                return "0";
+            } else {
+                return "0.####";
             }
+        } else {
+            StringBuilder buffer = new StringBuilder(length);
+            buffer.append("+0.");
+            for (int i = 0; i < length - 7; i++) {
+                buffer.append('0');
+            }
+            buffer.append("E00;-#");
+            return buffer.toString();
         }
-        
+    }
+    
+    public void write( double d, ByteBuffer buffer) {
+        String s = formatter.format(d);
         if ( s.length() < sizeBytes ) s+=" ";
         if (s.length() < sizeBytes ) {
             s = FixedWidthFormatter.format(s, sizeBytes ) ;
         }
-        if ( s.charAt(sizeBytes-1)!=' ' ) {
-            char c= s.charAt(0);
-            if ( c=='+' || c==' ' ) {
-                s= s.substring(1)+' ';
-            }
+        if ( s.charAt(sizeBytes-1)!=' ' && s.charAt(0)=='+' ) {
+            s= s.substring(1)+' ';
         }
         byte[] bytes=null;
         try {
             bytes = s.getBytes("US-ASCII");
             if ( bytes.length!=sizeBytes ) {
-                bytes = STARS.substring(0,sizeBytes).getBytes("US-ASCII");
+                bytes = "***********************".substring(0,sizeBytes).getBytes("US-ASCII");
             }
         } catch (UnsupportedEncodingException ex) {
             logger.log(Level.SEVERE, "write", ex);
@@ -121,7 +109,6 @@ public class AsciiTransferType extends TransferType {
         
     }
 
-    @Override
     public double read(ByteBuffer buffer) {
         byte[] bytes = new byte[sizeBytes];
         buffer.get(bytes);
@@ -137,17 +124,14 @@ public class AsciiTransferType extends TransferType {
         }
     }
 
-    @Override
     public int sizeBytes() {
         return sizeBytes;
     }
 
-    @Override
     public boolean isAscii() {
         return true;
     }
 
-    @Override
     public String name() {
         return "ascii"+sizeBytes;
     }
