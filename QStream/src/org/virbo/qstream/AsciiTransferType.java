@@ -22,7 +22,7 @@ public class AsciiTransferType extends TransferType {
     final int sizeBytes;
     private String formatterStr;
     boolean useFormatterStr;
-    
+    boolean scientificNotation;
     private static String STARS= "**************************************************";
     
     /**
@@ -54,6 +54,7 @@ public class AsciiTransferType extends TransferType {
             this.formatterStr= String.format( "%%%df", sizeBytes-1 ); // -1 is for whitespace.
             this.useFormatterStr= false;
         }
+        this.scientificNotation= scientificNotation;
         //formatter = NumberFormatUtil.getDecimalFormat( formatStr );   
     }
 
@@ -81,6 +82,7 @@ public class AsciiTransferType extends TransferType {
             formatterStr= String.format( "%%%d.%df", sizeBytes, Math.min( decimals, 18 ) );
         }
         this.useFormatterStr= true;
+        this.scientificNotation= scientificNotation;
     }
 
     @Override
@@ -99,8 +101,11 @@ public class AsciiTransferType extends TransferType {
         if (s.length() < sizeBytes ) {
             s = FixedWidthFormatter.format(s, sizeBytes ) ;
         }
-        if ( s.charAt(sizeBytes-1)!=' ' && s.charAt(0)=='+' ) {
-            s= s.substring(1)+' ';
+        if ( s.charAt(sizeBytes-1)!=' ' ) {
+            char c= s.charAt(0);
+            if ( c=='+' || c==' ' ) {
+                s= s.substring(1)+' ';
+            }
         }
         byte[] bytes=null;
         try {
