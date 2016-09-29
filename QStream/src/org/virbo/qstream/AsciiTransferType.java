@@ -39,9 +39,10 @@ public class AsciiTransferType extends TransferType {
         }
         this.sizeBytes = sizeBytes;
         if ( scientificNotation ) {
-            int decimals= sizeBytes - 4;
+            int decimals= sizeBytes - 6;
+            if ( decimals>0 ) decimals--; // in case there is room for whitespace, use it.
             if ( decimals<0 ) {
-                throw new IllegalArgumentException("decimals cannot be negative");
+                throw new IllegalArgumentException("sizeBytes cannot be less than 6.");
             }
             if ( scientificNotation ) {
                 formatterStr= String.format( "%%%d.%de", sizeBytes, Math.min( decimals, 18 ) );
