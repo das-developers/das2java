@@ -21,13 +21,37 @@ public class AsciiTransferType extends TransferType {
 
     final int sizeBytes;
     private String formatterStr;
+    boolean useFormatterStr;
     
+    private static String STARS= "**************************************************";
+    
+    /**
+     * create a new transfer type with the given number of spaces, which
+     * will format numbers using optionally scientific notation.
+     * @param sizeBytes the number of bytes alloted to the transfer type, at least 6 and no more than 50.
+     * @param scientificNotation if true, use scientific notation (e.g. +3.14e00)
+     */
     public AsciiTransferType( int sizeBytes, boolean scientificNotation ) {
+        if ( sizeBytes<6 ) {
+            throw new IllegalArgumentException("sizeBytes cannot be less than 6");
+        } else if ( sizeBytes>50 ) {
+            throw new IllegalArgumentException("sizeBytes cannot be greater than 18");
+        }
         this.sizeBytes = sizeBytes;
         if ( scientificNotation ) {
-            this.formatterStr= "%.2e";
+            int decimals= sizeBytes - 4;
+            if ( decimals<0 ) {
+                throw new IllegalArgumentException("decimals cannot be negative");
+            }
+            if ( scientificNotation ) {
+                formatterStr= String.format( "%%%d.%de", sizeBytes, Math.min( decimals, 18 ) );
+            } else {
+                formatterStr= String.format( "%%%d.%df", sizeBytes, Math.min( decimals, 18 ) );
+            }
+            this.useFormatterStr= true;
         } else {
-            this.formatterStr= "%.2f";
+            this.formatterStr= String.format( "%%%df", sizeBytes-1 ); // -1 is for whitespace.
+            this.useFormatterStr= false;
         }
         //formatter = NumberFormatUtil.getDecimalFormat( formatStr );   
     }
@@ -36,29 +60,40 @@ public class AsciiTransferType extends TransferType {
 
     /**
      * return a transfer type with the given number of decimal places.
-     * @param sizeBytes
-     * @param scientificNotation
+     * @param sizeBytes the number of bytes alloted to the transfer type, at least 6 and no more than 18.
+     * @param scientificNotation if true, use scientific notation (e.g. +3.14e00)
      * @param decimals 0 for integers, number of decimal places otherwise.
      */
     AsciiTransferType( int sizeBytes, boolean scientificNotation, int decimals ) {
         this.sizeBytes = sizeBytes;
         if ( sizeBytes<6 ) {
             throw new IllegalArgumentException("sizeBytes cannot be less than 6");
-        } else if ( sizeBytes>18 ) {
-            throw new IllegalArgumentException("sizeBytes cannot be greater than 18");
+        } else if ( sizeBytes>50 ) {
+            throw new IllegalArgumentException("sizeBytes cannot be greater than 50");
         }
         if ( decimals<0 ) {
             throw new IllegalArgumentException("decimals cannot be negative");
         }
         if ( scientificNotation ) {
-            formatterStr= String.format( "%%%d.%de", sizeBytes, decimals );
+            formatterStr= String.format( "%%%d.%de", sizeBytes, Math.min( decimals, 18 ) );
         } else {
-            formatterStr= String.format( "%%%d.%df", sizeBytes, decimals );
+            formatterStr= String.format( "%%%d.%df", sizeBytes, Math.min( decimals, 18 ) );
         }
+        this.useFormatterStr= true;
     }
 
+    @Override
     public void write( double d, ByteBuffer buffer) {
-        String s= String.format( formatterStr, d );
+        String s;
+        if ( useFormatterStr ) {
+            s= String.format( formatterStr, d );
+        } else {
+            s= String.valueOf(d);
+            if ( s.length()>sizeBytes ) {
+                s= String.format( formatterStr, d );
+            }
+        }
+        
         if ( s.length() < sizeBytes ) s+=" ";
         if (s.length() < sizeBytes ) {
             s = FixedWidthFormatter.format(s, sizeBytes ) ;
@@ -70,7 +105,7 @@ public class AsciiTransferType extends TransferType {
         try {
             bytes = s.getBytes("US-ASCII");
             if ( bytes.length!=sizeBytes ) {
-                bytes = "***********************".substring(0,sizeBytes).getBytes("US-ASCII");
+                bytes = STARS.substring(0,sizeBytes).getBytes("US-ASCII");
             }
         } catch (UnsupportedEncodingException ex) {
             logger.log(Level.SEVERE, "write", ex);
