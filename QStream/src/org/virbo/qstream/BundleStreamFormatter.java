@@ -122,7 +122,7 @@ public class BundleStreamFormatter {
                 char ch= format.charAt(format.length()-1);
                 int len= Integer.parseInt(m.group(1));
                 String sdec= m.group(2);
-                int dec= ( sdec!=null ) ? Integer.parseInt(sdec.substring(1)) : 2 ;
+                int dec= ( sdec!=null ) ? Integer.parseInt(sdec) : 2 ;
                 TransferType result;
                 switch ( ch ) {
                     case 'f': 
@@ -135,29 +135,31 @@ public class BundleStreamFormatter {
                         result= new AsciiIntegerTransferType(len);
                         break;
                     default:
-                        result= new AsciiTransferType( 12,true );
+                        result= new AsciiTransferType( 10,true );
                 }
                 return result;
             } else {
                 logger.warning("format string must match "+FORMAT_PATTERN);
-                return new AsciiTransferType( 12,true );
+                return new AsciiTransferType( 10,true );
             }
         } else {
-            return new AsciiTransferType( 12,true );
-//            if ( UnitsUtil.isIntervalOrRatioMeasurement(u) && !UnitsUtil.isTimeLocation(u) ) {
-//                QDataSet gcd= Ops.magnitude( DataSetUtil.gcd( Ops.diff(ds), Ops.dataset( u.getOffsetUnits().createDatum(0.0001) ) ) );
-//                int fracDigits= Math.max( 0, (int)Math.ceil( -1 * Math.log10(gcd.value()) ) );
-//                QDataSet extent= Ops.extent(ds);
-//                int intDigits= (int) Math.ceil( Math.log10( Math.abs( extent.value(0) ) ) );
-//                intDigits= Math.max( intDigits, (int) Math.ceil( Math.log10( Math.abs( extent.value(1) ) ) ) );
-//                return new AsciiTransferType( 1+Math.max( 6, intDigits+1+fracDigits ), false, fracDigits );
-//            } else {
-//                return new AsciiTransferType( 10, true );
-//            }
+        
+        AutoHistogram ah= new AutoHistogram();
+        
+            if ( UnitsUtil.isRatioMeasurement(u) ) {
+                QDataSet gcd= DataSetUtil.gcd( Ops.diff(ds), Ops.dataset( u.getOffsetUnits().createDatum(0.0001) ) );
+                int fracDigits= (int)Math.ceil( -1 * Math.log10(gcd.value()) );
+                QDataSet extent= Ops.extent(ds);
+                int intDigits= -1 * (int)Math.log10( Math.abs( extent.value(0) ) );
+                intDigits= Math.max( intDigits, (int)Math.log10( Math.abs( extent.value(1) ) ) );
+                return new AsciiTransferType( intDigits+1+fracDigits, false, fracDigits );
+            } else {
+                return new AsciiTransferType( 10, true );
+            }
         }
         
     }
-    private static final String FORMAT_PATTERN = "\\%(\\d*)(\\.\\d*)?([f|e|d])";
+    private static final String FORMAT_PATTERN = "(\\d*)(\\.\\d*)?([f|e|d])";
     
     /**
      * format the rank 2 bundle.
@@ -212,8 +214,8 @@ public class BundleStreamFormatter {
                 String format=  (String)bds.property( QDataSet.FORMAT, j );
                 Units u= (Units) bds.property( QDataSet.UNITS, j );
                 if ( u==null ) u= Units.dimensionless;
-                boolean useGuess= true;
-                if ( useGuess && !UnitsUtil.isTimeLocation(u) ) {
+                boolean useGuess= false;
+                if ( useGuess && format!=null && !UnitsUtil.isTimeLocation(u) ) {
                     tt[j]= guessAsciiTransferType( Ops.slice1(ds,j) );
                 } else {
                     if ( UnitsUtil.isTimeLocation(u) ) {
