@@ -34,13 +34,16 @@ public class dbAboveBackgroundDim1FilterEditorPanel extends AbstractFilterEditor
         jLabel1 = new javax.swing.JLabel();
         percentTF = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
 
         jLabel1.setText("Show data as decibels above the ");
 
         percentTF.setText("10");
         percentTF.setPreferredSize(new java.awt.Dimension(40, 27));
 
-        jLabel2.setText("% level.");
+        jLabel2.setText("% level,");
+
+        jLabel3.setText("presuming the data is proportional to voltage.");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -48,11 +51,14 @@ public class dbAboveBackgroundDim1FilterEditorPanel extends AbstractFilterEditor
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jLabel1)
-                .add(1, 1, 1)
-                .add(percentTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(3, 3, 3)
-                .add(jLabel2)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .add(jLabel1)
+                        .add(1, 1, 1)
+                        .add(percentTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(3, 3, 3)
+                        .add(jLabel2))
+                    .add(jLabel3))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -63,7 +69,9 @@ public class dbAboveBackgroundDim1FilterEditorPanel extends AbstractFilterEditor
                     .add(jLabel1)
                     .add(percentTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jLabel2))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jLabel3)
+                .addContainerGap(15, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -71,6 +79,7 @@ public class dbAboveBackgroundDim1FilterEditorPanel extends AbstractFilterEditor
     // Variables declaration - do not modify//GEN-BEGIN:variables
     public javax.swing.JLabel jLabel1;
     public javax.swing.JLabel jLabel2;
+    public javax.swing.JLabel jLabel3;
     public javax.swing.JTextField percentTF;
     // End of variables declaration//GEN-END:variables
 
