@@ -883,6 +883,7 @@ public class SemanticOps {
         propertyTypes.put( QDataSet.VALID_MIN, Number.class );
         propertyTypes.put( QDataSet.VALID_MAX, Number.class );
         propertyTypes.put( QDataSet.FILL_VALUE, Number.class );
+        propertyTypes.put( QDataSet.ELEMENT_DIMENSIONS, int[].class ); // this will probably cause grief, Integer[] vs int[]
         propertyTypes.put( QDataSet.CACHE_TAG, org.das2.datum.CacheTag.class );
         propertyTypes.put( QDataSet.CADENCE, QDataSet.class );
         propertyTypes.put( QDataSet.DEPEND_0, QDataSet.class );
