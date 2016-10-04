@@ -10,7 +10,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- *
+ * Controller for dbAboveBackgroundFilter.
  * @author mmclouth
  */
 public class dbAboveBackgroundDim1FilterEditorPanel extends AbstractFilterEditorPanel {
@@ -31,10 +31,14 @@ public class dbAboveBackgroundDim1FilterEditorPanel extends AbstractFilterEditor
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        buttonGroup1 = new javax.swing.ButtonGroup();
         jLabel1 = new javax.swing.JLabel();
         percentTF = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
-        jLabel3 = new javax.swing.JLabel();
+        voltageButton = new javax.swing.JRadioButton();
+        powerRadioButton = new javax.swing.JRadioButton();
+
+        FormListener formListener = new FormListener();
 
         jLabel1.setText("Show data as decibels above the ");
 
@@ -43,7 +47,14 @@ public class dbAboveBackgroundDim1FilterEditorPanel extends AbstractFilterEditor
 
         jLabel2.setText("% level,");
 
-        jLabel3.setText("presuming the data is proportional to voltage.");
+        buttonGroup1.add(voltageButton);
+        voltageButton.setSelected(true);
+        voltageButton.setText("input data are proportional to voltage (20 * log10( ds / background ))");
+        voltageButton.addActionListener(formListener);
+
+        buttonGroup1.add(powerRadioButton);
+        powerRadioButton.setText("input data are proportional to power (10 * log10( ds / background ))");
+        powerRadioButton.addActionListener(formListener);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -58,7 +69,8 @@ public class dbAboveBackgroundDim1FilterEditorPanel extends AbstractFilterEditor
                         .add(percentTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .add(3, 3, 3)
                         .add(jLabel2))
-                    .add(jLabel3))
+                    .add(voltageButton)
+                    .add(powerRadioButton))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -70,17 +82,43 @@ public class dbAboveBackgroundDim1FilterEditorPanel extends AbstractFilterEditor
                     .add(percentTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jLabel2))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jLabel3)
-                .addContainerGap(15, Short.MAX_VALUE))
+                .add(voltageButton)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(powerRadioButton)
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+    }
+
+    // Code for dispatching events from components to event handlers.
+
+    private class FormListener implements java.awt.event.ActionListener {
+        FormListener() {}
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            if (evt.getSource() == voltageButton) {
+                dbAboveBackgroundDim1FilterEditorPanel.this.voltageButtonActionPerformed(evt);
+            }
+            else if (evt.getSource() == powerRadioButton) {
+                dbAboveBackgroundDim1FilterEditorPanel.this.powerRadioButtonActionPerformed(evt);
+            }
+        }
     }// </editor-fold>//GEN-END:initComponents
+
+    private void powerRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_powerRadioButtonActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_powerRadioButtonActionPerformed
+
+    private void voltageButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_voltageButtonActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_voltageButtonActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    public javax.swing.ButtonGroup buttonGroup1;
     public javax.swing.JLabel jLabel1;
     public javax.swing.JLabel jLabel2;
-    public javax.swing.JLabel jLabel3;
     public javax.swing.JTextField percentTF;
+    public javax.swing.JRadioButton powerRadioButton;
+    public javax.swing.JRadioButton voltageButton;
     // End of variables declaration//GEN-END:variables
 
     @Override
@@ -89,14 +127,29 @@ public class dbAboveBackgroundDim1FilterEditorPanel extends AbstractFilterEditor
         Matcher m= p.matcher(filter);
         if ( m.matches() ) {
             percentTF.setText(m.group(1));
+            powerRadioButton.setSelected(false);
+            voltageButton.setSelected(true);
+            
         } else {
-            percentTF.setText("100");
+            Pattern p2= Pattern.compile("\\|dbAboveBackgroundDim1\\((\\d+),(True|False)\\)");
+            Matcher m2= p2.matcher(filter);
+            if ( m2.matches() ) {
+                percentTF.setText(m2.group(1));
+                powerRadioButton.setSelected(m2.group(2).equals("True"));
+                voltageButton.setSelected(!m2.group(2).equals("True"));
+            } else {
+                percentTF.setText("10");
+            }
         }
         
     }
 
     @Override
     public String getFilter() {
-        return "|dbAboveBackgroundDim1(" + percentTF.getText() + ")";
+        if ( powerRadioButton.isSelected() ) {
+            return "|dbAboveBackgroundDim1(" + percentTF.getText() + ",True)";
+        } else {
+            return "|dbAboveBackgroundDim1(" + percentTF.getText() + ")";
+        }
     }
 }
