@@ -1447,13 +1447,24 @@ public class DataSetOps {
         if ( highRank ) {
             Integer s= (Integer)bundle.property(QDataSet.START_INDEX,ib);
             if ( s==null ) s= ib;
-            is= s;
-            int n=1;
-            for (int k = 0; k < bundle.length(is); k++) {
-                 n *= bundle.value(is, k);
+            int[] dimensions= (int[]) bundle.property(QDataSet.ELEMENT_DIMENSIONS);
+            if ( dimensions!=null ) {
+                is= s;
+                int n=1;
+                for (int k = 0; k < dimensions.length; k++) {
+                     n *= dimensions[k];
+                }
+                len= n;
+                j= ib;
+            } else {
+                is= s; // legacy unbundle was to look up the dataset values.
+                int n=1;
+                for (int k = 0; k < bundle.length(is); k++) {
+                     n *= bundle.value(is, k); 
+                }
+                len= n;
+                j= ib;
             }
-            len= n;
-            j= ib;
         }
         
         if ( bundle.length(j)==0 || !highRank ) {
@@ -1681,7 +1692,6 @@ public class DataSetOps {
         }
     }
 
-
     /**
      * normalize the nth-level percentile from:<ul>
      *   <li>rank 1: each element 
@@ -1696,11 +1706,30 @@ public class DataSetOps {
      * @return the result dataset, in dB above background.
      */
     public static QDataSet dbAboveBackgroundDim1( QDataSet ds, double level ) {
+        return dbAboveBackgroundDim1( ds, level, false );
+    }
+    
+    /**
+     * normalize the nth-level percentile from:<ul>
+     *   <li>rank 1: each element 
+     *   <li>rank 2: each row of the dataset
+     *   <li>rank 3: each row of each rank 2 dataset slice.
+     * </ul>
+     * If the data is already in dB, then the result is a difference.
+     * This is assuming the units are similar to voltage, not a power,
+     * containing code like 20 * Math.log10( ds / background ).
+     * @param ds
+     * @param level the percentile level, e.g. 10= 10%
+     * @param power if true, return 10*Math.log10(ds / background ).
+     * @return the result dataset, in dB above background.
+     */
+    public static QDataSet dbAboveBackgroundDim1( QDataSet ds, double level, boolean power ) {
     
         MutablePropertyDataSet result;
 
         double fill= -1e31;
         boolean hasFill= false;
+        final double mult= power ? 10.0 : 20.0;
         switch (ds.rank()) {
             case 1:
                 {
@@ -1713,7 +1742,7 @@ public class DataSetOps {
                     if ( validDs.value()>0 ) {
                         for ( int ii=0; ii<ds.length(); ii++ ) {
                             if ( vds2.value(ii)>0 ) {
-                                double v= db ? ds.value(ii) - back.value() : 20 * Math.log10( ds.value(ii) / back.value() );
+                                double v= db ? ds.value(ii) - back.value() : mult * Math.log10( ds.value(ii) / back.value() );
                                 wds.putValue( ii,Math.max( 0,v ) );
                             } else {
                                 wds.putValue( ii, fill );
@@ -1738,7 +1767,7 @@ public class DataSetOps {
                     for ( int jj=0; jj<ds.length(0); jj++ ) {
                         for ( int ii=0; ii<ds.length(); ii++ ) {
                             if ( validDs.value(jj)>0 && vds2.value(ii,jj)>0 ) {
-                                double v= db ? ds.value(ii,jj) - back.value(jj) : 20 * Math.log10( ds.value(ii,jj) / back.value(jj) );
+                                double v= db ? ds.value(ii,jj) - back.value(jj) : mult * Math.log10( ds.value(ii,jj) / back.value(jj) );
                                 wds.putValue( ii,jj, Math.max( 0,v ) );
                             } else {
                                 wds.putValue( ii,jj, fill );
@@ -1752,7 +1781,7 @@ public class DataSetOps {
                 JoinDataSet result1= new JoinDataSet(ds.rank());
                 for ( int i=0; i<ds.length(); i++ ) {
                     QDataSet ds1= ds.slice(i);
-                    QDataSet r1= dbAboveBackgroundDim1( ds1, level );
+                    QDataSet r1= dbAboveBackgroundDim1( ds1, level, power );
                     result1.join(r1);
                     if ( r1.property( QDataSet.FILL_VALUE )!=null ) {
                         hasFill= true;
