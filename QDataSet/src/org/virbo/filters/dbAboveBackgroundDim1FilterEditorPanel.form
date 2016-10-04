@@ -80,7 +80,7 @@
           <ComponentRef name="buttonGroup1"/>
         </Property>
         <Property name="selected" type="boolean" value="true"/>
-        <Property name="text" type="java.lang.String" value="input data are proportional to voltage (20 * log10( ds / background ))"/>
+        <Property name="text" type="java.lang.String" value="input data are proportional to field intensity (20 * log10( ds / background ))"/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="voltageButtonActionPerformed"/>

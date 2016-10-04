@@ -49,7 +49,7 @@ public class dbAboveBackgroundDim1FilterEditorPanel extends AbstractFilterEditor
 
         buttonGroup1.add(voltageButton);
         voltageButton.setSelected(true);
-        voltageButton.setText("input data are proportional to voltage (20 * log10( ds / background ))");
+        voltageButton.setText("input data are proportional to field intensity (20 * log10( ds / background ))");
         voltageButton.addActionListener(formListener);
 
         buttonGroup1.add(powerRadioButton);
