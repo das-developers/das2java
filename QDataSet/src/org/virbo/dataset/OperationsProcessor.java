@@ -544,7 +544,13 @@ public class OperationsProcessor {
                 } else if ( cmd.equals("|dbAboveBackgroundDim1") ) { // remove the background across slices
                     String qrg= s.next();
                     int iarg= Integer.parseInt(qrg.trim());
-                    fillDs= DataSetOps.dbAboveBackgroundDim1( fillDs, iarg );
+                    if ( s.hasNext() ) {
+                        String arg= s.next();
+                        arg= arg.toLowerCase();
+                        fillDs= DataSetOps.dbAboveBackgroundDim1( fillDs, iarg, arg.startsWith("t") ); 
+                    } else {
+                        fillDs= DataSetOps.dbAboveBackgroundDim1( fillDs, iarg );
+                    }
 
                 } else if ( cmd.equals("|dbAboveBackgroundDim0") ) { // remove the background within slices
                     String qrg= s.next();
