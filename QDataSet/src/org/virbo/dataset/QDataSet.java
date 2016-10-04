@@ -465,6 +465,13 @@ public interface QDataSet {
     public final static String ELEMENT_LABEL="ELEMENT_LABEL";
 
     /**
+     * int array, the dimensions of the element.  A rank 0 is implicitly [], 
+     * a rank 1, n by 1, would be [1].  Note before 2016-09-27, high-rate 
+     * bundles were handled with qds.length(i) and qds.value(j).
+     */
+    public final static String ELEMENT_DIMENSIONS="ELEMENT_DIMENSIONS";
+    
+    /**
      * Map&lt;String,Object&gt; representing additional properties used by client codes.  No
      * interpretation is done of these properties, but they are passed around as much
      * as possible.  The object values should be but don't have to be limited to: double, double array,
