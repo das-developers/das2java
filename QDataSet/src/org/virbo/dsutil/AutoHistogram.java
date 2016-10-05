@@ -145,7 +145,7 @@ public final class AutoHistogram {
                 if (j > 0) {
                     vv[ibin] = (1 - 1. / j) * vv[ibin] + (j + 1) * Math.pow(ss[ibin] - muj, 2);
                     if ( !isFinite(vv[ibin]) ) {
-                        throw new IllegalArgumentException("here man");
+                        throw new IllegalArgumentException("bin contents are no longer finite, after adding to distribution: "+d);
                     }                    
                 }
                 total++;
