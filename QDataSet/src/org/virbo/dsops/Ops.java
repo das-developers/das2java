@@ -7509,6 +7509,7 @@ public class Ops {
     public static QDataSet findex(QDataSet uu, QDataSet vv) {
         if ( uu==null ) throw new IllegalArgumentException("uu parameter of findex is null");
         if ( vv==null ) throw new IllegalArgumentException("vv parameter of findex is null");
+        if ( uu.length()==0 ) throw new IllegalArgumentException("uu has length=0");
         if (!DataSetUtil.isMonotonic(uu)) {
             throw new IllegalArgumentException("u must be monotonic");
         }
