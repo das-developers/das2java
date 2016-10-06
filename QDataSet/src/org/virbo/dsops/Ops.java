@@ -828,7 +828,7 @@ public class Ops {
      * 
      * @param ds rank N qube dataset.
      * @param dim zero-based index number.
-     * @return
+     * @return rank N-1 dataset.
      */
     public static QDataSet reduceMax(QDataSet ds, int dim) {
         try {
@@ -861,7 +861,7 @@ public class Ops {
      * 
      * @param ds rank N qube dataset.
      * @param dim zero-based index number.
-     * @return
+     * @return rank N-1 dataset.
      */
     public static QDataSet reduceMin(QDataSet ds, int dim) {
         try {
@@ -889,7 +889,7 @@ public class Ops {
     }
 
     /**
-     * reduce the dataset's rank by reporting the max of all the elements along a dimension.
+     * reduce the dataset's rank by reporting the mean of all the elements along a dimension.
      * Only QUBEs are supported presently.  Note this does not contain code that would remove
      * large offsets from zero when making the average, so the number of points is limited.
      * 
@@ -906,14 +906,14 @@ public class Ops {
     }
     
     /**
-     * reduce the dataset's rank by reporting the max of all the elements along a dimension.
+     * reduce the dataset's rank by reporting the mean of all the elements along a dimension.
      * Only QUBEs are supported presently.  Note this does not contain code that would remove
      * large offsets from zero when making the average, so the number of points is limited.
      * 
      * @param ds rank N qube dataset.
      * @param dim zero-based index number.
      * @param mon progress monitor.
-     * @return rank N-1 qube datas
+     * @return rank N-1 qube dataset
      * @throws org.das2.util.monitor.CancelledOperationException
      */
     public static QDataSet reduceMean(QDataSet ds, int dim, ProgressMonitor mon ) throws CancelledOperationException {
@@ -1010,7 +1010,7 @@ public class Ops {
     }
     
     /**
-     * return the trim of the dataset ds where its DEPEND_0 (xtags) are
+     * return the trim of the dataset ds where its DEPEND_0 (typically xtags) are
      * within the range dr.
      * @param ds a rank 1 or greater dataset
      * @param dr a range in the same units as ds
@@ -1022,7 +1022,7 @@ public class Ops {
     }
     
     /**
-     * return the trim of the dataset ds where its DEPEND_0 (xtags) are
+     * return the trim of the dataset ds where its DEPEND_0 (typically xtags) are
      * within the range dr.
      * @param ds a rank 1 or greater dataset
      * @param odr an object which can be interpretted as a range.
@@ -1035,7 +1035,7 @@ public class Ops {
     }
 
     /**
-     * return the trim of the dataset ds where its DEPEND_0 (xtags) are
+     * return the trim of the dataset ds where its DEPEND_0 (typically xtags) are
      * within the range dr.  For example,
      * if ds was 7-days from 2014-01-01 through 2014-01-07, and st=2014-01-02
      * and en=2014-01-03 then just the records collected on this one day would
@@ -1095,7 +1095,7 @@ public class Ops {
     }
     
     /**
-     * return the trim of the dataset ds where its DEPEND_1 (ytags) are
+     * return the trim of the dataset ds where its DEPEND_1 (typically ytags) are
      * within the range dr.  For example,
      * if ds was frequencies from 10 Hz to 1e8 Hz, trim1( ds, 100Hz, 1000Hz ) would
 	 * return just the data in this range.
