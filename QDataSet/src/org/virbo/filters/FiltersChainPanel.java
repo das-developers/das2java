@@ -41,6 +41,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.das2.util.LoggerManager;
 import org.das2.util.TickleTimer;
+import org.das2.util.WindowManager;
 import org.das2.util.monitor.NullProgressMonitor;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.MutablePropertyDataSet;
@@ -366,7 +367,8 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
         
     private void addFilterNew( int idx ) {
         AddFilterDialog afd= new AddFilterDialog();
-        int r= JOptionPane.showConfirmDialog( this, afd, "Add Operation", JOptionPane.OK_CANCEL_OPTION );
+        int r= WindowManager.showConfirmDialog( this, afd, "Add Operation", JOptionPane.OK_CANCEL_OPTION );
+        //int r= JOptionPane.showConfirmDialog( this, afd, "Add Operation", JOptionPane.OK_CANCEL_OPTION );
         if ( r==JOptionPane.OK_OPTION ) {
             String ss= afd.getValue();
             FilterEditorPanel filter1= getEditorFor(ss, null);
