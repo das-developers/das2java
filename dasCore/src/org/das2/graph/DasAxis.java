@@ -271,7 +271,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     
     public static final String PROPERTY_DATUMRANGE = "datumRange";
     /* DEBUGGING INSTANCE MEMBERS */
-    private static final boolean DEBUG_GRAPHICS = false;
+    private static final boolean DEBUG_GRAPHICS = true;
     private static final Color[] DEBUG_COLORS;
 
     int tickLen= 0; // this is reset after sizing.
@@ -3079,7 +3079,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             dmin= getRow().getDMinimum();
             dmax= getRow().getDMaximum();
         }
-                
+         
+        int fontDecent= getFontMetrics( getFont() ).getDescent();
+        
         DatumVector ticks = ltickV.tickV;
         for (int i = 0; i < labels.length; i++) {
             Datum d = ticks.get(i);
@@ -3108,12 +3110,14 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 } else {
                     if (getOrientation() == LEFT) {
                         rmin.translate(-(int) rmin.getWidth() - space - zeroOrPosTickLen + getColumn().left(),
-                                (int) (dmin + getEmSize() / 2));
+                                (int) dmin ); // note that gtr.getBounds() already contains the ascent.
                         rmax.translate(-(int) rmax.getWidth() - space - zeroOrPosTickLen + getColumn().left(),
-                                (int) (dmax + getEmSize() / 2) );
+                                (int) (dmax + fontDecent/2) );
                     } else {
-                        rmin.translate( space + zeroOrPosTickLen + getColumn().right(), (int) (dmin + getEmSize() / 2));
-                        rmax.translate( space + zeroOrPosTickLen + getColumn().right(), (int) (dmax + getEmSize() / 2));
+                        rmin.translate( space + zeroOrPosTickLen + getColumn().right(), 
+                                (int) dmin );
+                        rmax.translate( space + zeroOrPosTickLen + getColumn().right(), 
+                                (int) (dmax + fontDecent/2));
                     }
                     if ( bounds==null ) bounds= rmin;
                     bounds.add(rmin);
