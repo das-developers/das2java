@@ -3108,16 +3108,17 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                     bounds.add(rmin);
                     bounds.add(rmax);
                 } else {
+                    double delta= gtr.getAscent() - gtr.getHeight() / 2;
                     if (getOrientation() == LEFT) {
                         rmin.translate(-(int) rmin.getWidth() - space - zeroOrPosTickLen + getColumn().left(),
-                                (int) dmin ); // note that gtr.getBounds() already contains the ascent.
+                                (int) dmin - (int) delta ); // note that gtr.getBounds() already contains the ascent.
                         rmax.translate(-(int) rmax.getWidth() - space - zeroOrPosTickLen + getColumn().left(),
-                                (int) (dmax + fontDecent/2) );
+                                (int) (dmax + fontDecent + 3 ) ); // 3 is fudge
                     } else {
                         rmin.translate( space + zeroOrPosTickLen + getColumn().right(), 
-                                (int) dmin );
+                                (int) dmin + (int)delta );
                         rmax.translate( space + zeroOrPosTickLen + getColumn().right(), 
-                                (int) (dmax + fontDecent/2));
+                                (int) (dmax + fontDecent + 3 )); // 3 is fudge
                     }
                     if ( bounds==null ) bounds= rmin;
                     bounds.add(rmin);
