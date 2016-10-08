@@ -674,11 +674,12 @@ public class Ops {
      * reduce the dataset's rank by combining all the elements along a dimension.
      * AverageOp is used to combine measurements.
      * Only QUBEs are supported presently.
+     * It is assumed that when there is just one element, that one element can be returned.
      * 
      * @param ds rank N qube dataset.
      * @param dim zero-based index number.
      * @param AverageOp operation to combine measurements, such as max or mean.
-     * @return
+     * @return rank N-1 qube dataset.
      */
     private static QDataSet averageGen(QDataSet ds, int dim, AverageOp op, ProgressMonitor mon ) throws CancelledOperationException {
         if ( ds==null ) throw new NullPointerException("ds reference is null");        
@@ -692,6 +693,23 @@ public class Ops {
         DDataSet result = DDataSet.create(newQube);
         DDataSet wresult= DDataSet.create(newQube);
         QubeDataSetIterator it1 = new QubeDataSetIterator(result);
+        
+        // optimize for Ivar's case, where average is done over 1 element.  
+        // This is just a slice!
+        if ( qube[dim]==1 ) {
+            switch (dim) {
+                case 0:
+                    return ds.slice(0);
+                case 1:
+                    return Ops.slice1( ds, 0 );
+                case 2:
+                    return Ops.slice2( ds, 0 );
+                case 3:
+                    return Ops.slice3( ds, 0 );
+                default:
+                    break;
+            }
+        }
         
         it1.setMonitor(mon);
         
