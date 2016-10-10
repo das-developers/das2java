@@ -116,6 +116,7 @@ public class FileSystemUtil {
     
     /**
      * copies data from in to out, sending the number of bytesTransferred to the monitor.
+     * The input and output are not closed.
      * @param is the input stream, which will not be closed.
      * @param out the output stream, which will not be closed.
      * @param monitor a monitor, or null.
