@@ -81,6 +81,10 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
         StringBuffer formData = new StringBuffer();
         formData.append("server=").append(serverType);
 
+        if (extraParameters != null) {
+            formData.append("&params=").append(extraParameters);  //Should already be url encoded.
+        }
+        
         InputStream in= openURLConnection( dsd, start, end, formData );
         in= DasApplication.getDefaultApplication().getInputStreamMeter().meterInputStream(in);
         return in;
