@@ -21,6 +21,7 @@ import java.awt.Graphics2D;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -35,6 +36,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.util.FileUtil;
 import org.das2.util.LoggerManager;
+import org.das2.util.filesystem.FileSystemUtil;
+import org.das2.util.monitor.NullProgressMonitor;
 
 /**
  * support writing to PDF.
@@ -133,28 +136,38 @@ public class PdfGraphicsOutput implements GraphicsOutput {
             }
             String[] ss= new String[] { "Roboto-Regular", "ArchitectsDaughter" };
             for ( String s: ss ) {
-                URL u= PdfGraphics2D.class.getResource("/resources/"+s+".ttf");
-                if ( u!=null ) {
-                    InputStream in = null;
-                    try {
-                        com.itextpdf.text.pdf.BaseFont.createFont( s, BaseFont.IDENTITY_H, BaseFont.EMBEDDED ); // check to see if iText is going to fuss about licensing.
-                        in = PdfGraphics2D.class.getResourceAsStream("/resources/"+s+".ttf");
-                        Font font= Font.createFont(Font.TRUETYPE_FONT, in );
-                        logger.log( Level.FINEST, "adding {0} -> {1}", new Object[]{font.getFontName(), s } );
-                        fontToTtfMap1.put( font.getFontName(), new File("/resources/"+s+".ttf") ); 
-                     } catch ( DocumentException ex ) {
-                        logger.log( Level.SEVERE, ex.getMessage(), ex );
-                    } catch (FontFormatException ex) {
-                        logger.log(Level.SEVERE, ex.getMessage(), ex);
-                    } catch (IOException ex) {
-                        logger.log(Level.SEVERE, ex.getMessage(), ex);
-                    } finally {
+                try {
+                    URL u= PdfGraphics2D.class.getResource("/resources/"+s+".ttf");
+                    if ( u!=null ) {
+                        File fout= File.createTempFile( s, ".ttf" );
+                        FileOutputStream ffout= new FileOutputStream(fout);
+                        InputStream ins=  u.openStream();
+                        FileSystemUtil.copyStream( ins, ffout, new NullProgressMonitor() );
+                        ins.close();
+                        ffout.close();
+                        InputStream in = null;
                         try {
-                            if ( in!=null ) in.close();
+                            com.itextpdf.text.pdf.BaseFont.createFont( fout.toString(), BaseFont.IDENTITY_H, BaseFont.EMBEDDED ); // check to see if iText is going to fuss about licensing.
+                            in = PdfGraphics2D.class.getResourceAsStream("/resources/"+s+".ttf");
+                            Font font= Font.createFont(Font.TRUETYPE_FONT, in );
+                            logger.log( Level.FINEST, "adding {0} -> {1}", new Object[]{font.getFontName(), s } );
+                            fontToTtfMap1.put( font.getFontName(), new File("/resources/"+s+".ttf") );
+                        } catch ( DocumentException ex ) {
+                            logger.log( Level.SEVERE, ex.getMessage(), ex );
+                        } catch (FontFormatException ex) {
+                            logger.log(Level.SEVERE, ex.getMessage(), ex);
                         } catch (IOException ex) {
                             logger.log(Level.SEVERE, ex.getMessage(), ex);
+                        } finally {
+                            try {
+                                if ( in!=null ) in.close();
+                            } catch (IOException ex) {
+                                logger.log(Level.SEVERE, ex.getMessage(), ex);
+                            }
                         }
                     }   
+                } catch (IOException ex) {
+                    Logger.getLogger(PdfGraphicsOutput.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
             fontToTtfMap= fontToTtfMap1;
