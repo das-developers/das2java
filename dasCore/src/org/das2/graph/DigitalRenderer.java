@@ -143,6 +143,7 @@ public class DigitalRenderer extends Renderer {
         PlotSymbol oldPlotSymbol = this.plotSymbol;
         this.plotSymbol = plotSymbol;
         propertyChangeSupport.firePropertyChange(PROP_PLOTSYMBOL, oldPlotSymbol, plotSymbol);
+        updateCacheImage();
     }
 
     /**
@@ -401,7 +402,7 @@ public class DigitalRenderer extends Renderer {
             } else if ( UnitsUtil.isOrdinalMeasurement( SemanticOps.getUnits(ds) ) ) {
                 renderRank0( ds, g, xAxis, yAxis, mon);
             } else if ( ! SemanticOps.isTableDataSet(ds) ) {
-                renderRank1( ds, g, xAxis, yAxis, mon);
+                renderRank1( ds, g, xAxis, yAxis, mon, firstIndex, lastIndex );
             } else if ( ds.rank()!=2 ) {
                 parent.postMessage(this, "unable to render rank "+ds.rank()+" data", DasPlot.WARNING, null, null);
             } else {
@@ -465,7 +466,17 @@ public class DigitalRenderer extends Renderer {
         parent.postMessage(this, sb.toString(), DasPlot.INFO, null, null);
     }
 
-    private void renderRank1( QDataSet ds, Graphics g1, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
+    /**
+     * 
+     * @param ds
+     * @param g1
+     * @param xAxis
+     * @param yAxis
+     * @param mon
+     * @param firstIndexx
+     * @param lastIndexx
+     */
+    private void renderRank1( QDataSet ds, Graphics g1, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon, int firstIndexx, int lastIndexx ) {
         
         Graphics2D g= (Graphics2D)g1;
         
@@ -480,11 +491,25 @@ public class DigitalRenderer extends Renderer {
         FontMetrics fm = g.getFontMetrics();
 
         int ha = 0;
-        if (align == Align.NE || align == Align.NW) ha = fm.getAscent();
-        if (align == Align.CENTER) ha = fm.getAscent() / 2;
+        if (align == Align.NE || align == Align.NW) {
+            ha = fm.getAscent();
+            if ( plotSymbol!=DefaultPlotSymbol.NONE ) ha+=3;
+        } else if (align == Align.CENTER) {
+            ha = fm.getAscent() / 2;
+        } else {
+            if ( plotSymbol!=DefaultPlotSymbol.NONE ) ha-=3;
+        }
         float wa = 0.f; // amount to adjust the position.
-        if (align == Align.NE || align == Align.SE) wa = 1.0f;
-        if (align == Align.CENTER) wa = 0.5f;
+        int widthSymbolOffset;
+        if (align == Align.NE || align == Align.SE) {
+            wa = 1.0f;
+            widthSymbolOffset= -3;
+        } else if (align == Align.CENTER) {
+            wa = 0.5f;
+            widthSymbolOffset= 0;
+        } else {
+            widthSymbolOffset= 3;
+        }
 
         GeneralPath shape = new GeneralPath();
 
@@ -540,7 +565,7 @@ public class DigitalRenderer extends Renderer {
 
         QDataSet wds= SemanticOps.weightsDataSet(zds);
 
-        for (int i = firstIndex; i < lastIndex; i++) {
+        for (int i = firstIndexx; i < lastIndexx; i++) {
             int ix = (int) xAxis.transform( xds.value(i), xunits );
 
             String s;
@@ -565,12 +590,22 @@ public class DigitalRenderer extends Renderer {
                 iy= iy + ha;
                 
             } else {
+                Datum y = yunits.createDatum( yds.value(i) );
                 s = fillLabel;
-                iy = (int) yAxis.getRow().getDMaximum();
+                if ( y.isFill() ) {
+                    iy= (int) yAxis.getRow().getDMaximum();
+                } else {
+                    iy = (int) yAxis.transform(y);
+                    if ( plotSymbol!=DefaultPlotSymbol.NONE ) {
+                        plotSymbol.draw( g, ix,  yAxis.transform(y), 3, FillStyle.STYLE_FILL );
+                    }
+                    iy= iy + ha;
+                }
             }
             
             if (wa > 0.0) ix = ix - (int) (fm.stringWidth(s) * wa);
-
+            ix+= widthSymbolOffset;
+                
             gtr.setString(g, s);
             gtr.draw(g, ix, iy);
             Rectangle r = gtr.getBounds();
@@ -588,124 +623,29 @@ public class DigitalRenderer extends Renderer {
     }
 
     private void renderRank2( QDataSet ds, Graphics g1, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
-        Graphics2D g= (Graphics2D)g1;
-        Font f0= g.getFont();
         
-        if ( size>0 ) {
-            Font f= f0.deriveFont((float)size);
-            g.setFont(f);
-        } else {
-            setUpFont( g, fontSize );
-        }
-        
-        FontMetrics fm = g.getFontMetrics();
-
-        int ha = 0;
-        if (align == Align.NE || align == Align.NW) ha = fm.getAscent();
-        if (align == Align.CENTER) ha = fm.getAscent() / 2;
-        float wa = 0.f; // amount to adjust the position.
-        if (align == Align.NE || align == Align.SE) wa = 1.0f;
-        if (align == Align.CENTER) wa = 0.5f;
-
-        GeneralPath shape = new GeneralPath();
-
-        GrannyTextRenderer gtr = new GrannyTextRenderer();
-
         QDataSet ds1;
         if ( firstIndex<lastIndex ) {
             ds1= ds.trim( firstIndex, lastIndex );
+            if ( ds1.property(QDataSet.DEPEND_0)==null ) {
+                ds1= Ops.putProperty(ds1,QDataSet.DEPEND_0,Ops.linspace(firstIndex,lastIndex-1,lastIndex-firstIndex) );
+            }
+            if ( ds1.property(QDataSet.DEPEND_1)==null ) {
+                ds1= Ops.putProperty(ds1,QDataSet.DEPEND_1,Ops.dindgen(ds1.length(0)));
+            }
         } else {
             ds1= ds;
+            if ( ds1.property(QDataSet.DEPEND_0)==null ) {
+                ds1= Ops.putProperty(ds1,QDataSet.DEPEND_0,Ops.linspace(firstIndex,lastIndex-1,firstIndex-lastIndex) );
+            }
+            if ( ds1.property(QDataSet.DEPEND_1)==null ) {
+                ds1= Ops.putProperty(ds1,QDataSet.DEPEND_1,Ops.dindgen(ds1.length(0)));
+            }
         }
 
-        QDataSet xds;
-        QDataSet yds;
         QDataSet fds= DataSetOps.flattenRank2(ds1);
-        QDataSet zds;
-        Units u = SemanticOps.getUnits(ds1);
 
-        if ( fds.length(0)>1 ) {
-            xds= DataSetOps.unbundle(fds, 0);
-            yds= DataSetOps.unbundle(fds, 1);
-            zds= DataSetOps.unbundle(fds, fds.length(0)-1 );
-        } else {
-            xds= Ops.div( Ops.dindgen(fds.length()), DataSetUtil.asDataSet(ds1.length(0) ) );
-            yds= Ops.mod( Ops.dindgen(fds.length()), DataSetUtil.asDataSet(ds1.length(0) ) );
-            zds= fds;
-        }
-
-        String form=this.format;
-        String dsformat= (String) ds1.property(QDataSet.FORMAT);
-        boolean isInts= false;
-        
-        if ( form.length()==0 && dsformat!=null ) {
-            form= dsformat;
-        }
-        if ( form.length()==0 ) {
-            form= "%.2f";
-        }
-        
-        if ( form.endsWith("d") || form.endsWith("x") || form.endsWith("X") ) {
-            isInts= true; //TODO: rank 1 has a different way of handling int data.
-        }
-
-        Units xunits= SemanticOps.getUnits(xds);
-        Units yunits= SemanticOps.getUnits(yds);
-
-        DasPlot parent= getParent();
-
-        if ( !SemanticOps.getUnits(xds).isConvertibleTo(xAxis.getUnits() ) ) {
-            parent.postMessage( this, "inconvertible xaxis units", DasPlot.INFO, null, null );
-            return;
-        }
-        if ( !SemanticOps.getUnits(yds).isConvertibleTo(yAxis.getUnits() ) ) {
-            parent.postMessage( this, "inconvertible yaxis units", DasPlot.INFO, null, null );
-            return;
-        }
-
-        int n= fds.length();
-
-        QDataSet wds= SemanticOps.weightsDataSet(zds);
-
-        int count = 0;
-        for (int i = 0; i < n; i++) {
-            int ix = (int) xAxis.transform(xds.value(i),xunits);
-            int iy = (int) yAxis.transform(yds.value(i),yunits);
-            if ( plotSymbol!=DefaultPlotSymbol.NONE ) {
-                plotSymbol.draw( g, ix,iy, 3.0f, FillStyle.STYLE_FILL);
-            }
-            iy= iy + ha;
-            
-            String s;
-            if ( wds.value(i)>0 ) {
-                Datum d = u.createDatum( zds.value(i) );
-                DatumFormatter df= d.getFormatter();
-                if ( df instanceof DefaultDatumFormatter ) {
-                    if ( isInts ) {
-                        s = String.format( form, (long)zds.value(i) );
-                    } else {
-                        s = String.format( form, zds.value(i) );
-                    }
-                } else {
-                    s = d.getFormatter().format(d, u);
-                }
-                if (wa > 0.0) ix = ix - (int) (fm.stringWidth(s) * wa);
-            } else {
-                s = fillLabel;
-            }
-
-            gtr.setString(g, s);
-            gtr.draw(g, ix, iy);
-            Rectangle r = gtr.getBounds();
-            r.translate(ix, iy);
-            shape.append(r, false);
-            if (count++ > 10000) {
-                if ( getParent()!=null ) getParent().postMessage(this, "10000 data point limit reached", DasPlot.WARNING, null, null);
-                return;
-            }
-        }
-        selectionArea = shape;
-        g.setFont(f0);
+        renderRank1( fds, g1, xAxis, yAxis, mon, 0, fds.length() );
     }
 
     @Override
