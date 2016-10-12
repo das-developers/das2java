@@ -1275,6 +1275,7 @@ public class DasPlot extends DasCanvasComponent {
                     plotGraphics = (Graphics2D) lcacheImage.getGraphics();
                     plotGraphics.setBackground(getBackground());
                     plotGraphics.setColor(getForeground());
+                    plotGraphics.setFont(getFont());
                     plotGraphics.setRenderingHints(org.das2.DasProperties.getRenderingHints());
                     if (overSize) {
                         plotGraphics.translate(x - lcacheImageBounds.x - 1, y - lcacheImageBounds.y - 1);
