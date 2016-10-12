@@ -131,6 +131,20 @@ public class DigitalRenderer extends Renderer {
         propertyChangeSupport.firePropertyChange(PROP_CONTROL, null, getControl() );
     }
 
+    private PlotSymbol plotSymbol = DefaultPlotSymbol.NONE;
+
+    public static final String PROP_PLOTSYMBOL = "plotSymbol";
+
+    public PlotSymbol getPlotSymbol() {
+        return plotSymbol;
+    }
+
+    public void setPlotSymbol(PlotSymbol plotSymbol) {
+        PlotSymbol oldPlotSymbol = this.plotSymbol;
+        this.plotSymbol = plotSymbol;
+        propertyChangeSupport.firePropertyChange(PROP_PLOTSYMBOL, oldPlotSymbol, plotSymbol);
+    }
+
     /**
      * format, empty string means use either dataset's format, or %.2f
      */
@@ -451,7 +465,10 @@ public class DigitalRenderer extends Renderer {
         parent.postMessage(this, sb.toString(), DasPlot.INFO, null, null);
     }
 
-    private void renderRank1( QDataSet ds, Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
+    private void renderRank1( QDataSet ds, Graphics g1, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
+        
+        Graphics2D g= (Graphics2D)g1;
+        
         Font f0= g.getFont();
         if ( size>0 ) { // legacy support
             Font f= f0.deriveFont((float)size);
@@ -523,8 +540,6 @@ public class DigitalRenderer extends Renderer {
 
         QDataSet wds= SemanticOps.weightsDataSet(zds);
 
-        UnitsConverter uc= UnitsConverter.getConverter(yunits,yAxis.getUnits());
-        
         for (int i = firstIndex; i < lastIndex; i++) {
             int ix = (int) xAxis.transform( xds.value(i), xunits );
 
@@ -543,12 +558,17 @@ public class DigitalRenderer extends Renderer {
                 } else {
                     s = d.getFormatter().format(d, u);
                 }                
-                iy = (int) yAxis.transform(y) + ha;
+                iy = (int) yAxis.transform(y);
+                if ( plotSymbol!=DefaultPlotSymbol.NONE ) {
+                    plotSymbol.draw( g, ix,  yAxis.transform(y), 3, FillStyle.STYLE_FILL );
+                }
+                iy= iy + ha;
+                
             } else {
                 s = fillLabel;
                 iy = (int) yAxis.getRow().getDMaximum();
             }
-
+            
             if (wa > 0.0) ix = ix - (int) (fm.stringWidth(s) * wa);
 
             gtr.setString(g, s);
@@ -567,7 +587,8 @@ public class DigitalRenderer extends Renderer {
         
     }
 
-    private void renderRank2( QDataSet ds, Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
+    private void renderRank2( QDataSet ds, Graphics g1, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
+        Graphics2D g= (Graphics2D)g1;
         Font f0= g.getFont();
         
         if ( size>0 ) {
@@ -649,8 +670,12 @@ public class DigitalRenderer extends Renderer {
         int count = 0;
         for (int i = 0; i < n; i++) {
             int ix = (int) xAxis.transform(xds.value(i),xunits);
-            int iy = (int) yAxis.transform(yds.value(i),yunits) + ha;
-
+            int iy = (int) yAxis.transform(yds.value(i),yunits);
+            if ( plotSymbol!=DefaultPlotSymbol.NONE ) {
+                plotSymbol.draw( g, ix,iy, 3.0f, FillStyle.STYLE_FILL);
+            }
+            iy= iy + ha;
+            
             String s;
             if ( wds.value(i)>0 ) {
                 Datum d = u.createDatum( zds.value(i) );
