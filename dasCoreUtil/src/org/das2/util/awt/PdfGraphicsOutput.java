@@ -111,9 +111,9 @@ public class PdfGraphicsOutput implements GraphicsOutput {
                 if ( !dir.exists() ) {
                     continue;
                 }
-                File[] ttfFonts= FileUtil.listRecursively( dir, "*.otf" );
+                File[] ttfFonts= FileUtil.listRecursively( dir, "*.ttf" );
                 int nttfFonts= ttfFonts.length;
-                File[] otfFonts= FileUtil.listRecursively( dir, "*.ttf" );
+                File[] otfFonts= FileUtil.listRecursively( dir, "*.otf" );
                 ttfFonts= Arrays.copyOf( ttfFonts, ttfFonts.length+otfFonts.length );
                 System.arraycopy( otfFonts, 0, ttfFonts, nttfFonts, otfFonts.length );
                 for ( File f: ttfFonts ) {
