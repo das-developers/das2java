@@ -67,8 +67,14 @@ public class VerticalRangeSelectorMouseModule extends MouseModule {
             Datum nnMin;
             Datum nnMax;
             MouseRangeSelectionEvent e= (MouseRangeSelectionEvent)e0;
-            min= axis.invTransform(e.getMaximum());
-            max= axis.invTransform(e.getMinimum());
+			if (axis.isFlipped()) {
+				max= axis.invTransform(e.getMaximum());
+				min= axis.invTransform(e.getMinimum());
+			}
+			else {
+				min= axis.invTransform(e.getMaximum());
+				max= axis.invTransform(e.getMinimum());
+			}
             DatumRange dr= new DatumRange( min, max );
             DatumRange nndr= axis.getTickV().enclosingRange(dr, true);
             DataRangeSelectionEvent te=
