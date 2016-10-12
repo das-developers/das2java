@@ -28,6 +28,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -110,7 +111,11 @@ public class PdfGraphicsOutput implements GraphicsOutput {
                 if ( !dir.exists() ) {
                     continue;
                 }
-                File[] ttfFonts= FileUtil.listRecursively( dir, "*.ttf" );
+                File[] ttfFonts= FileUtil.listRecursively( dir, "*.otf" );
+                int nttfFonts= ttfFonts.length;
+                File[] otfFonts= FileUtil.listRecursively( dir, "*.ttf" );
+                ttfFonts= Arrays.copyOf( ttfFonts, ttfFonts.length+otfFonts.length );
+                System.arraycopy( otfFonts, 0, ttfFonts, nttfFonts, otfFonts.length );
                 for ( File f: ttfFonts ) {
                     FileInputStream in = null;
                     try {
@@ -134,12 +139,12 @@ public class PdfGraphicsOutput implements GraphicsOutput {
                     }
                 }
             }
-            String[] ss= new String[] { "Roboto-Regular", "ArchitectsDaughter" };
+            String[] ss= new String[] { "Roboto-Regular.ttf", "ArchitectsDaughter.ttf", "scheme_bk.otf" };
             for ( String s: ss ) {
                 try {
-                    URL u= PdfGraphics2D.class.getResource("/resources/"+s+".ttf");
+                    URL u= PdfGraphics2D.class.getResource("/resources/"+s );
                     if ( u!=null ) {
-                        File fout= File.createTempFile( s, ".ttf" );
+                        File fout= File.createTempFile( "temp", s );
                         FileOutputStream ffout= new FileOutputStream(fout);
                         InputStream ins=  u.openStream();
                         FileSystemUtil.copyStream( ins, ffout, new NullProgressMonitor() );
@@ -148,10 +153,10 @@ public class PdfGraphicsOutput implements GraphicsOutput {
                         InputStream in = null;
                         try {
                             com.itextpdf.text.pdf.BaseFont.createFont( fout.toString(), BaseFont.IDENTITY_H, BaseFont.EMBEDDED ); // check to see if iText is going to fuss about licensing.
-                            in = PdfGraphics2D.class.getResourceAsStream("/resources/"+s+".ttf");
+                            in = PdfGraphics2D.class.getResourceAsStream("/resources/"+s);
                             Font font= Font.createFont(Font.TRUETYPE_FONT, in );
                             logger.log( Level.FINEST, "adding {0} -> {1}", new Object[]{font.getFontName(), s } );
-                            fontToTtfMap1.put( font.getFontName(), new File("/resources/"+s+".ttf") );
+                            fontToTtfMap1.put( font.getFontName(), fout );
                         } catch ( DocumentException ex ) {
                             logger.log( Level.SEVERE, ex.getMessage(), ex );
                         } catch (FontFormatException ex) {
