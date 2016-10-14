@@ -35,6 +35,9 @@ public class Slice0DataSet extends AbstractDataSet implements RankZeroDataSet {
         if ( ds.rank() > 4 ) {
             throw new IllegalArgumentException("rank limit > 4");
         }
+        if ( ds.rank()< 1 ) {
+            throw new IllegalArgumentException("slice called on rank 0 dataset");
+        }
         if ( ds.length()==0 ) {
             throw new IndexOutOfBoundsException("can't slice empty dataset "+ds);
         } else if ( index>=ds.length() ) {

@@ -20,6 +20,9 @@ public class TrimDataSet extends AbstractDataSet {
         if ( ds.rank()>4 ) {
             throw new IllegalArgumentException("rank>4 not supported");
         }
+        if ( ds.rank()<1 ) {
+            throw new IllegalArgumentException("trim called on a rank 0 dataset");
+        }
         
      //TODO: uncomment and test this.
      //   if ( ds instanceof TrimDataSet ) {

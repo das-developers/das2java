@@ -399,6 +399,9 @@ public final class FDataSet extends ArrayDataSet {
      */
     @Override
     public QDataSet slice(int i) {
+        if ( this.rank<1 ) {
+            throw new IllegalArgumentException("slice called on rank 0 dataset");
+        }        
         int nrank = this.rank-1;
         int noff1= i * len1 * len2 * len3;
         int noff2= (i+1) * len1 * len2 * len3;
@@ -420,7 +423,7 @@ public final class FDataSet extends ArrayDataSet {
     @Override
     public QDataSet trim(int start, int end) {
         if ( rank==0 ) {
-            logger.warning("trim called on rank 0 dataset, this may soon throw exception");
+            throw new IllegalArgumentException("trim called on rank 0 dataset");
         }
         if ( RANGE_CHECK ) {
             if ( start>len0 ) throw new IndexOutOfBoundsException("start="+start+" > "+len0 );
