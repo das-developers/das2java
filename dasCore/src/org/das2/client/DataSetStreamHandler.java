@@ -387,11 +387,16 @@ public class DataSetStreamHandler implements StreamHandler {
                 
         @Override
         public void packetDescriptor(PacketDescriptor pd) throws StreamException {
-            StreamYScanDescriptor y = (StreamYScanDescriptor)pd.getYDescriptor(0);
-            for (int i = 1; i < pd.getYCount(); i++) {
-                y = (StreamYScanDescriptor)pd.getYDescriptor(i);
-                builder.addPlane(y.getName(), y.getZUnits());
-            }
+           
+			// Set properties for the default plane that is always preset
+			StreamYScanDescriptor y = (StreamYScanDescriptor)pd.getYDescriptor(0);
+			builder.setPlaneProperties(0, y.getProperties());
+				
+			// Add more planes (and thier props) as needed
+			for (int i = 1; i < pd.getYCount(); i++) {
+				y = (StreamYScanDescriptor)pd.getYDescriptor(i);
+				builder.addPlane(y.getName(), y.getZUnits(), y.getProperties()); 
+			}
             String[] planeIDs = new String[pd.getYCount()];
             for (int i = 0; i < pd.getYCount(); i++) {
                 planeIDs[i] = ((StreamYScanDescriptor)pd.getYDescriptor(i)).getName();
@@ -400,11 +405,15 @@ public class DataSetStreamHandler implements StreamHandler {
                 streamPlaneIDs= planeIDs;
             } else {
                 for ( int i=0; i<streamPlaneIDs.length; i++ ) {
+						 // Why is this true?  Seems oddly restrictive, there must be a reason -cwp
                     if ( !streamPlaneIDs[i].equals(planeIDs[i]) ) {
-                        throw new StreamException( "only one name allowed in stream: "+planeIDs[i] + " != "+ streamPlaneIDs[i] );
+                        throw new StreamException( "only one name set allowed in stream: "+
+									planeIDs[i] + " != "+ streamPlaneIDs[i] );
                     }
                 }
             }
+				
+				// Handle properties at the Packet level, not sure this is done correctly
             Map<String,String> p= pd.getProperties();
             for ( Entry e: p.entrySet() ) {
                 String key= (String)e.getKey();
@@ -419,7 +428,6 @@ public class DataSetStreamHandler implements StreamHandler {
                     }
                 }
             }
-            //TODO: see VectorDataSet above, where each plane can have properties.
         }
         
         @Override

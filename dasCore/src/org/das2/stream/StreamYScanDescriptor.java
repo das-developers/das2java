@@ -27,14 +27,20 @@ import org.das2.datum.Units;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.das2.datum.LoggerManager;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 public class StreamYScanDescriptor implements SkeletonDescriptor, Cloneable {
 
-	private static final String g_sCkAry[] = {"name","type","nitems","yTags","yUnits",
-		                                       "zUnits"};
+	private static final Logger logger = LoggerManager.getLogger("das2.d2s.yscan");
+	private static final String g_sCkAry[] = {
+		"name","type","nitems","yTags","yUnits","zUnits"
+	};
 	
     private Units yUnits = Units.dimensionless;
     private Units zUnits = Units.dimensionless;
@@ -42,6 +48,7 @@ public class StreamYScanDescriptor implements SkeletonDescriptor, Cloneable {
     private int nitems;
     private String name = "";
     private DataTransferType transferType = DataTransferType.SUN_REAL4;
+	 Map properties= new HashMap();
 
     public StreamYScanDescriptor( Element element ) throws StreamException {
         if ( element.getTagName().equals("yscan") ) {
@@ -77,6 +84,7 @@ public class StreamYScanDescriptor implements SkeletonDescriptor, Cloneable {
         } else {
             throw new StreamException("yTags not defined");
         }
+		  
         String typeStr = element.getAttribute("type");
         DataTransferType type = DataTransferType.getByName(typeStr);
         if (type != null) {
@@ -85,19 +93,39 @@ public class StreamYScanDescriptor implements SkeletonDescriptor, Cloneable {
         else {
             throw new RuntimeException("Illegal transfer type: " + typeStr);
         }
+		  
 	String yUnitsString = element.getAttribute("yUnits");
 	if (yUnitsString != null) {
             yUnits = Units.lookupUnits(yUnitsString);
         }
+	
         String zUnitsString = element.getAttribute("zUnits");
         if (zUnitsString != null) {
             zUnits = Units.lookupUnits(zUnitsString);
         }
+		  
         String lname = element.getAttribute("name");
         if ( lname != null ) {
             this.name = lname;
         }
-    }
+		  
+		NodeList nl = element.getElementsByTagName("properties");
+		logger.log(Level.FINER, "element y has {0} properties", nl.getLength());
+		for (int i = 0; i < nl.getLength(); i++) {
+			Element el = (Element) nl.item(i);
+			Map<String,Object> m = StreamTool.processPropertiesElement(el);
+				
+			// make sure we don't conflict with the 6 reserved properites above
+			for(String sPropName: m.keySet()){
+				for(String sReserved: g_sCkAry){
+					if(sPropName.equals(sReserved))
+						throw new StreamException("Can't use reserved property name '"+
+							sReserved + "inside a <yscan> plane properties element.");
+				}
+			}
+			properties.putAll(m);
+		}
+	}
     
     private void processLegacyElement(Element element) {
         try {
@@ -185,12 +213,14 @@ public class StreamYScanDescriptor implements SkeletonDescriptor, Cloneable {
         return transferType;
     }
     
+	@Override
     public int getSizeBytes() {
         return nitems * transferType.getSizeBytes();
     }
     
     private double[] values;
     
+	@Override
     public DatumVector read(ByteBuffer input) {
         if (values == null) {
             values = new double[nitems];
@@ -201,6 +231,7 @@ public class StreamYScanDescriptor implements SkeletonDescriptor, Cloneable {
         return DatumVector.newDatumVector(values, zUnits);
     }
     
+	@Override
     public void write(DatumVector input, ByteBuffer output) {
         values = input.toDoubleArray(values, zUnits);
         for (int i = 0; i < nitems; i++) {
@@ -208,6 +239,7 @@ public class StreamYScanDescriptor implements SkeletonDescriptor, Cloneable {
         }
     }
     
+	@Override
     public Element getDOMElement(Document document) {
         Element element = document.createElement("yscan");
         element.setAttribute("nitems", String.valueOf(nitems));
@@ -244,13 +276,13 @@ public class StreamYScanDescriptor implements SkeletonDescriptor, Cloneable {
     public String toString() {
         return "<yScan nitems="+nitems+">";
     }
-
-    Map properties= new HashMap();
     
+	@Override
     public Object getProperty(String name) {
         return properties.get(name);
     }
 
+	@Override
     public Map getProperties() {
         return new HashMap(properties);
     }

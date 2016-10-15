@@ -685,19 +685,18 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
             return DefaultTableDataSet.this.tableStart(table);
         }
         
-        @Override
-        public Object getProperty(String name) {
-            Object result= DefaultTableDataSet.this.getProperty(planeIDs[index] + "." + name);
-            if ( result==null ) result= DefaultTableDataSet.this.getProperty(name);
-            return result;
-        }
+		@Override
+		public Object getProperty(String name) {
+			Object result = DefaultTableDataSet.this.getProperty(index, name);
+			if(result == null) result = DefaultTableDataSet.this.getProperty(name);
+			return result;
+		}
 
-        @Override
-        public Object getProperty(int table, String name) {
-            Object result= DefaultTableDataSet.this.getProperty(table,planeIDs[index] + "." + name);
-            if ( result==null ) result= DefaultTableDataSet.this.getProperty(table,name);
-            return result;
-        }
+		@Override
+		public Object getProperty(int table, String name) {
+			Object result = DefaultTableDataSet.this.getProperty(index, name);
+			return result;
+		}
         
         @Override
         public DatumVector getYTags(int table) {

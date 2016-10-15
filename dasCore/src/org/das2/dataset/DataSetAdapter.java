@@ -9,6 +9,8 @@
 package org.das2.dataset;
 
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -63,7 +65,7 @@ public class DataSetAdapter {
         }
         return das2props;
     }
-
+	 
     /**
      * Created a new QDataSet given a Das2 DataSet
      *
@@ -148,7 +150,9 @@ public class DataSetAdapter {
         if (ds instanceof TableDataSet) {
             TableDataSet tds = (TableDataSet) ds;
             if (tds.tableCount() <= 1) {
-                return new SimpleTable(tds);
+					// Handling table datasets that may come with statistics planes.  These are
+					// denoted by having a "source" and "operations" string properties.
+					return createSimpleTableDS(tds);
             } else {
                 if (tds instanceof DefaultTableDataSet && tds.tableCount() > tds.getXLength() / 2) {
                     return ((DefaultTableDataSet) tds).toQDataSet();
@@ -411,7 +415,78 @@ public class DataSetAdapter {
             return source.tableCount() > 0 ? source.getYLength(table) : 99;
         }
     }
-
+	 
+	///////////////////////////////////////////////////////////////////////////////////
+	// Helper for setting up Table QDataSet's that have statistics
+	 
+	private static AbstractDataSet createSimpleTableDS(TableDataSet tds){
+		
+		// Find the top level plane, expect there to be only one since this isn't a bundle
+		// dataset handler.
+		String sTopDs = null;
+		String sTopSrc = null;
+		String[] lPlanes = tds.getPlaneIds();
+		if(lPlanes.length == 1){ 
+			sTopDs = lPlanes[0];
+		}
+		else{
+			// Take the first plane that meets the criteria as the top-level dataset, the
+			// criteria is, (1) Don't have a source property or (2) be the average
+			for(String sPlane: lPlanes){
+				DataSet ds = tds.getPlanarView(sPlane);
+				sTopSrc = (String)ds.getProperty("source");
+				if(sTopSrc == null){ 
+					sTopDs = sPlane;
+					break;
+				}
+				else{
+					String sOp = (String)ds.getProperty("operation");
+					if((sOp != null)&&(sOp.equals("BIN_AVG"))){
+						sTopDs = sPlane;
+						break;
+					}
+				}
+			}
+		}
+		
+		// TODO: Use some sort of conversion exception instead of this
+		if(sTopDs == null) throw new IllegalArgumentException(
+			"Couldn't locate the top-level <yscan> in the set of <yscans>.  "+
+			"HINT: If this is simple bundle then you've hit a missing feature in Autoplot."+
+			" If this is a peak and averages dataset, use the 'source' and 'operation'"+
+			" properties to clairify the <yscan> relationships. "
+		);
+		
+		AbstractDataSet qds = new SimpleTable((TableDataSet)tds.getPlanarView(sTopDs));
+		
+		// Create every other dataset and bind it to the top level one based on it's 
+		// operation property.  If that's not specified OR it's source disagrees ignore it
+		for(String sPlane: lPlanes){
+			if(sPlane.equals(sTopDs)) continue;
+			TableDataSet dsPlane = (TableDataSet) tds.getPlanarView(sPlane);
+			String sPlaneSrc = (String)dsPlane.getProperty("source");
+			if( ((sPlaneSrc == null)&&(sTopSrc == null)) || sTopSrc.equals(sPlaneSrc)){
+				
+				// Okay, they have the same source see if we understand the operation
+				String sOp = (String)dsPlane.getProperty("operation");
+				
+				if(sOp == null) continue; // TODO: Complain to logger here
+				
+				QDataSet qdsAncillary = new SimpleTable(dsPlane);
+				
+				if(sOp.equals("BIN_MAX")) qds.putProperty(QDataSet.BIN_PLUS, qdsAncillary);
+				if(sOp.equals("BIN_MIN")) qds.putProperty(QDataSet.BIN_MINUS, qdsAncillary);
+				
+				if(sOp.equals(QDataSet.DELTA_PLUS)) qds.putProperty(sOp, qdsAncillary);
+				if(sOp.equals(QDataSet.DELTA_MINUS)) qds.putProperty(sOp, qdsAncillary);
+				
+				// TODO: Complain to logger here
+			}
+			
+		}
+		return qds;
+	}
+	 
 	 ///////////////////////////////////////////////////////////////////////////////////
     // Toplevel QDataSet for X,Y,Z "grid" data
     static class SimpleTable extends AbstractDataSet {

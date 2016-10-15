@@ -64,6 +64,8 @@ public class TableDataSetBuilder {
     private SortedSet yTagSet = new TreeSet(new DoubleArrayComparator());
     
     private Map properties = new HashMap();
+	 
+	 // One property list for each sub-table
     private List<Map> tableProperties= new ArrayList<Map>();
     
     /** Creates a new instance of TableDataSetBuilder with a default plane
@@ -90,6 +92,7 @@ public class TableDataSetBuilder {
 		setYUnits(yUnits);
 		setZUnits(zUnits, name);
 		planeIDs.add(name);
+		tableProperties.add(null);
     }
     
     public void setProperty(String name, Object value) {
@@ -102,6 +105,10 @@ public class TableDataSetBuilder {
         }
         tableProperties.get(table).put( name, value );
     }
+	 
+	 public void setPlaneProperties(int table, Map properties){
+		 tableProperties.set(table, properties);
+	 }
     
     public Object getProperty(String name) {
         return properties.get(name);
@@ -117,6 +124,14 @@ public class TableDataSetBuilder {
             zUnitsMap.put(name, zUnits );
         }
     }
+	 
+	 public void addPlane(String name, Units zUnits, Map properties){
+		 if (name != null && !planeIDs.contains(name)) {
+            planeIDs.add(name);
+            zUnitsMap.put(name, zUnits );
+				tableProperties.add(properties);
+        }
+	 }
     
     public void insertYScan( Datum x, DatumVector y, DatumVector z) {
         insertYScan(x, y, new DatumVector[]{z}, new String[]{""});
