@@ -62,4 +62,9 @@ public class RecordIterator implements Iterator<QDataSet> {
         return src.slice(index++);
     }
     
+    @Override
+    public void remove() {
+        // do nothing
+    }
+    
 }
