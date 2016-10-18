@@ -457,36 +457,38 @@ public class DasAnnotation extends DasCanvasComponent {
 
         g.setColor(back);
 
-        if (borderType == BorderType.RECTANGLE || borderType == BorderType.NONE) {
-            g.fill(r);
-        } else if (borderType == BorderType.ROUNDED_RECTANGLE) {
-            g.fillRoundRect(r.x, r.y, r.width, r.height, em * 2, em * 2);
-        }
-
-        g.setColor(ltextColor);
-
-        if ( gtr!=null ) {
-            gtr.draw(g, r.x+em, r.y + em + (float) gtr.getAscent() );
-        } else {
-            g.drawImage( img, r.x+em, r.y+em, this );
-        }
-
-        g.setColor(fore);
-                
-        if (borderType != BorderType.NONE) {
-            if (borderType == BorderType.RECTANGLE) {
-                g.draw(r);
+        if ( gtr==null || !getString().equals("") ) {
+            if (borderType == BorderType.RECTANGLE || borderType == BorderType.NONE) {
+                g.fill(r);
             } else if (borderType == BorderType.ROUNDED_RECTANGLE) {
-                g.drawRoundRect(r.x, r.y, r.width, r.height, em * 2, em * 2);
+                g.fillRoundRect(r.x, r.y, r.width, r.height, em * 2, em * 2);
             }
-        }
 
-        if ( anchorBorderType!=BorderType.NONE ) {
-            Rectangle anchorRect= getAnchorBounds();
-            if ( anchorBorderType== BorderType.RECTANGLE ) {
-                g.draw(anchorRect);
-            } else if ( anchorBorderType==BorderType.ROUNDED_RECTANGLE ) {
-                g.drawRoundRect(anchorRect.x, anchorRect.y, anchorRect.width, anchorRect.height, em * 2, em * 2);
+            g.setColor(ltextColor);
+
+            if ( gtr!=null ) {
+                gtr.draw(g, r.x+em, r.y + em + (float) gtr.getAscent() );
+            } else {
+                g.drawImage( img, r.x+em, r.y+em, this );
+            }
+        
+            g.setColor(fore);
+                
+            if (borderType != BorderType.NONE) {
+                if (borderType == BorderType.RECTANGLE) {
+                    g.draw(r);
+                } else if (borderType == BorderType.ROUNDED_RECTANGLE) {
+                    g.drawRoundRect(r.x, r.y, r.width, r.height, em * 2, em * 2);
+                }
+            }
+
+            if ( anchorBorderType!=BorderType.NONE ) {
+                Rectangle anchorRect= getAnchorBounds();
+                if ( anchorBorderType== BorderType.RECTANGLE ) {
+                    g.draw(anchorRect);
+                } else if ( anchorBorderType==BorderType.ROUNDED_RECTANGLE ) {
+                    g.drawRoundRect(anchorRect.x, anchorRect.y, anchorRect.width, anchorRect.height, em * 2, em * 2);
+                }
             }
         }
         
