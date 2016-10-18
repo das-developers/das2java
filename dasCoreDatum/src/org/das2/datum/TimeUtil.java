@@ -1045,7 +1045,7 @@ public final class TimeUtil {
         int i, j, len, n;
         String[] tok = new String[10];
         boolean[] want = new boolean[7];
-        int[] format= new int[7];
+        //int[] format= new int[7];
         
         java.util.Arrays.fill(want, false);
         int ptr;
