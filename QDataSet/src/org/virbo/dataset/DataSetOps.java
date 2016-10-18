@@ -600,26 +600,7 @@ public class DataSetOps {
             }
         }
 
-        if (idim == 0) {
-            for (int i = 0; i < qube[0]; i++) {
-                if (ds.rank() > 1) {
-                    for (int j = 0; j < qube[1]; j++) {
-                        if (ds.rank() > 2) {
-                            for (int k = 0; k < qube[2]; k++) {
-                                double d = ds.value((int) sort.value(i), j, k);
-                                cds.putValue(i, j, k, d);
-                            }
-                        } else {
-                            double d = ds.value((int) sort.value(i), j);
-                            cds.putValue(i, j, d);
-                        }
-                    }
-                } else {
-                    double d = ds.value((int) sort.value(i));
-                    cds.putValue(i, d);
-                }
-            }
-        } else if (idim == 1) {
+        if (idim == 1) {
             for (int i = 0; i < qube[0]; i++) {
                 for (int j = 0; j < qube[1]; j++) {
                     if (ds.rank() > 2) {
