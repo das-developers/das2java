@@ -9124,13 +9124,16 @@ public class Ops {
             case 0: {
                 DDataSet result= DDataSet.createRank2(1,1);
                 result.putValue(0,0,ds.value());
-                BundleBuilder bb= new BundleBuilder(2);
-                
                 DataSetUtil.copyDimensionProperties( ds, result );
                 return result;
             }
             case 1:
-                return ds;
+                QDataSet dep0= (QDataSet) ds.property( QDataSet.DEPEND_0 );
+                if ( dep0!=null ) {
+                    return bundle(dep0,ds);
+                } else {
+                    return bundle(ds);
+                }
             case 2:
                 QDataSet result= DataSetOps.flattenRank2(ds);                
                 if ( result.rank()==1 ) {
