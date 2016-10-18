@@ -32,6 +32,7 @@ import java.io.PrintStream;
 
 import java.util.*;
 import java.text.MessageFormat;
+import java.util.Map.Entry;
 import java.util.logging.Logger;
 import static org.das2.dataset.DataSetAdapter.adaptSubstitutions;
 import org.das2.datum.DatumRange;
@@ -574,7 +575,7 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
         
         @Override
         public String[] getPlaneIds() {
-            return new String[0];
+            return new String[ ] { DefaultTableDataSet.this.planeIDs[index] };
         }
         
         @Override
@@ -690,6 +691,23 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
 			Object result = DefaultTableDataSet.this.getProperty(index, name);
 			if(result == null) result = DefaultTableDataSet.this.getProperty(name);
 			return result;
+		}
+		
+		@Override
+		public Map getProperties(){
+			// Planes have no state (or identity appart from the parent dataset) because
+			// of this we have to make our property set everytime it's requested.
+			Map<String,Object> props = new HashMap<>();
+			Map<String,Object> PktProps = DefaultTableDataSet.this.getProperties();
+			for (Map.Entry<String, Object> e: PktProps.entrySet())
+				props.put((String)e.getKey(), e.getValue());
+			
+			Map<String,Object> PlaneProps = DefaultTableDataSet.this.tableProperties.get(index);
+			
+			for (Map.Entry<String, Object> e: PlaneProps.entrySet())
+				props.put((String)e.getKey(), e.getValue());
+			
+			return props;
 		}
 
 		@Override

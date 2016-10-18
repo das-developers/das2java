@@ -434,13 +434,13 @@ public class DataSetAdapter {
 			// criteria is, (1) Don't have a source property or (2) be the average
 			for(String sPlane: lPlanes){
 				DataSet ds = tds.getPlanarView(sPlane);
-				sTopSrc = (String)ds.getProperty("source");
+				sTopSrc = (String)ds.getProperty(DataSet.PROPERTY_SOURCE);
 				if(sTopSrc == null){ 
 					sTopDs = sPlane;
 					break;
 				}
 				else{
-					String sOp = (String)ds.getProperty("operation");
+					String sOp = (String)ds.getProperty(DataSet.PROPERTY_OPERATION);
 					if((sOp != null)&&(sOp.equals("BIN_AVG"))){
 						sTopDs = sPlane;
 						break;
@@ -464,11 +464,11 @@ public class DataSetAdapter {
 		for(String sPlane: lPlanes){
 			if(sPlane.equals(sTopDs)) continue;
 			TableDataSet dsPlane = (TableDataSet) tds.getPlanarView(sPlane);
-			String sPlaneSrc = (String)dsPlane.getProperty("source");
+			String sPlaneSrc = (String)dsPlane.getProperty(DataSet.PROPERTY_SOURCE);
 			if( ((sPlaneSrc == null)&&(sTopSrc == null)) || sTopSrc.equals(sPlaneSrc)){
 				
 				// Okay, they have the same source see if we understand the operation
-				String sOp = (String)dsPlane.getProperty("operation");
+				String sOp = (String)dsPlane.getProperty(DataSet.PROPERTY_OPERATION);
 				
 				if(sOp == null) continue; // TODO: Complain to logger here
 				

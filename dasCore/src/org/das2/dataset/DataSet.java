@@ -167,6 +167,17 @@ public interface DataSet {
      * dataset containing the peaks when available
      */
     final static String PROPERTY_PLANE_PEAKS= "peaks";
+	 
+	 /**
+	  * Indicator that dataset is not intrinsic but was derived from some other dataset
+	  */
+	 final static String PROPERTY_SOURCE = "source";
+	 
+	 /**
+	  * Indicator of which operation was performed on the input source
+	  */
+	 final static String PROPERTY_OPERATION = "operation";
+	 
     
     /**
      * dataset containing the weights when available
