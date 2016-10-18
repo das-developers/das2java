@@ -41,7 +41,6 @@ public class Auralizor {
     int bufferInputIndex;
     double min;
     double max;
-    Units yUnits;
     
     QDataSet ds;
     
@@ -95,7 +94,6 @@ public class Auralizor {
             throw new RuntimeException(e);            
         }
         
-        bufferInputIndex= 0;
         line.start();
         
         int i=0;
