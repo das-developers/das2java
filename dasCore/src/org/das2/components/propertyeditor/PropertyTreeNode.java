@@ -209,7 +209,7 @@ public class PropertyTreeNode implements PropertyTreeNodeInterface {
             return "";
         } else {
             String s= parent.absPropertyName();
-            return ( s=="" ? "" : s+"." ) + propertyDescriptor.getName();
+            return ( s.equals("") ? "" : s+"." ) + propertyDescriptor.getName();
         }
     }
     
