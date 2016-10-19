@@ -99,16 +99,14 @@ public class XAxisDataLoader extends DataLoader implements DataSetUpdateListener
         
         synchronized (lockObject) {
             if ( currentRequest!=null ) {
-                synchronized (currentRequest) {
-                    if ( ! xAxis.getMemento().equals( currentRequest.xmem ) ) {
-                        logger.log( Level.FINE, "cancel old request: {0}", currentRequest);
-                        ProgressMonitor monitor= currentRequest.monitor;
-                        currentRequest= null;
-                        monitor.cancel();
-                    } else {
-                        logger.fine( "ignore repeat request" );
-                        return; // ignore the repeated request
-                    }
+                if ( ! xAxis.getMemento().equals( currentRequest.xmem ) ) {
+                    logger.log( Level.FINE, "cancel old request: {0}", currentRequest);
+                    ProgressMonitor monitor= currentRequest.monitor;
+                    currentRequest= null;
+                    monitor.cancel();
+                } else {
+                    logger.fine( "ignore repeat request" );
+                    return; // ignore the repeated request
                 }
             }
             
