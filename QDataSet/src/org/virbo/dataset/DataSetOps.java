@@ -544,6 +544,17 @@ public class DataSetOps {
     }
     
     /**
+     * return the dataset with records rearranged according to indices.
+     * @param ds rank N dataset, where N>0
+     * @param indices rank 1 dataset, length m.
+     * @return length m rank N dataset.
+     * @see #applyIndex(org.virbo.dataset.QDataSet, int, org.virbo.dataset.QDataSet, boolean) 
+     */
+    public static QDataSet applyIndex( QDataSet ds, QDataSet indices ) {
+        return DataSetOps.applyIndex( ds, 0, indices, true );
+    }    
+    
+    /**
      * Applies the sort index to the idim-th dimension of the qube dataset ds.
      * TODO: consider sorting multiple dimensions at once, to reduce excessive copying.
      * TODO: this should probably (and would easily) be redone by using dataset implementation that applies the sort on the ith index when read.
