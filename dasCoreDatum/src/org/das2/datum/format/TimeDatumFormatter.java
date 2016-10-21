@@ -41,7 +41,7 @@ import org.das2.datum.Units;
  * @author  Edward West
  */
 public class TimeDatumFormatter extends DatumFormatter {
-    
+        
     /** Private constants for referencing an array of timestamp fields */
     private static final int YEAR_FIELD_INDEX = 0;
     private static final int MONTH_FIELD_INDEX = 1;
@@ -143,7 +143,7 @@ public class TimeDatumFormatter extends DatumFormatter {
             format = new MessageFormat(parseTimeFormatString(formatString));
         }
     }
-    
+        
     /**
      * returns a TimeDatumFormatter suitable for the specified scale and context.
      * Context may be null to indicate that the formatted string will be interpretted
@@ -155,12 +155,27 @@ public class TimeDatumFormatter extends DatumFormatter {
      * @throws IllegalArgumentException if the scale is TimeUtil.NANOS or is not found in TimeUtil.
      */
     public static TimeDatumFormatter formatterForScale( int scale, DatumRange context ) {
+        return formatterForScale( scale, context, false );
+    }
+    
+    /**
+     * returns a TimeDatumFormatter suitable for the specified scale and context.
+     * Context may be null to indicate that the formatted string will be interpretted
+     * outside of any context.
+     * @param scale the length we wish to represent, such as TimeUtil.HOUR
+     * @param context the context for the formatter, or null if the formatted string
+     *   will be interpreted outside of any context.
+     * @param useDOY if true then use day-of-year rather than separate month and day.
+     * @return the formatter.
+     * @throws IllegalArgumentException if the scale is TimeUtil.NANOS or is not found in TimeUtil.
+     */
+    public static TimeDatumFormatter formatterForScale( int scale, DatumRange context, boolean useDOY ) {
         try {
             if ( context!=null ) {
                 switch ( scale ) {
                     case TimeUtil.YEAR: return YEARS;
-                    case TimeUtil.MONTH: return MONTHS;
-                    case TimeUtil.DAY: return DAYS;
+                    case TimeUtil.MONTH: return useDOY ? DAY_OF_YEAR : MONTHS;
+                    case TimeUtil.DAY: return useDOY ? DAY_OF_YEAR : DAYS;
                     case TimeUtil.HOUR: return MINUTES;
                     case TimeUtil.MINUTE: return MINUTES;
                     case TimeUtil.SECOND: return SECONDS;
@@ -170,18 +185,33 @@ public class TimeDatumFormatter extends DatumFormatter {
                     default: throw new IllegalArgumentException("unsupported scale: "+scale);
                 }
             } else {
-                switch ( scale ) {
-                    case TimeUtil.YEAR: return YEARS;
-                    case TimeUtil.MONTH: return MONTHS;
-                    case TimeUtil.DAY: return DAYS;
-                    case TimeUtil.HOUR: return HOURS;
-                    case TimeUtil.MINUTE: return new TimeDatumFormatter("yyyy-MM-dd HH:mm");
-                    case TimeUtil.SECOND: return new TimeDatumFormatter("yyyy-MM-dd HH:mm:ss");
-                    case TimeUtil.MILLI: return new TimeDatumFormatter("yyyy-MM-dd HH:mm:ss.SSS");
-                    case TimeUtil.MICRO: return new TimeDatumFormatter("yyyy-MM-dd HH:mm:ss.SSSSSS");
-                    case TimeUtil.NANO: return new TimeDatumFormatter("yyyy-MM-dd HH:mm:ss.SSSSSSSSS");
-                    default: throw new IllegalArgumentException("unsupported scale: "+scale);
-                }                
+                if ( useDOY ) {
+                    switch ( scale ) {
+                        case TimeUtil.YEAR: return YEARS;
+                        case TimeUtil.MONTH: return DAY_OF_YEAR;
+                        case TimeUtil.DAY: return DAY_OF_YEAR;
+                        case TimeUtil.HOUR: return new TimeDatumFormatter("%Y-%j %H:%M");
+                        case TimeUtil.MINUTE: return new TimeDatumFormatter("%Y-%j %H:%M");
+                        case TimeUtil.SECOND: return new TimeDatumFormatter("%Y-%j %H:%M:%S");
+                        case TimeUtil.MILLI: return new TimeDatumFormatter("%Y-%j %H:%M:%S.%(subsec,places=3)");
+                        case TimeUtil.MICRO: return new TimeDatumFormatter("%Y-%j %H:%M:%S.%(subsec,places=6)");
+                        case TimeUtil.NANO: return new TimeDatumFormatter("%Y-%j %H:%M:%S.%(subsec,places=9)");
+                        default: throw new IllegalArgumentException("unsupported scale: "+scale);
+                    } 
+                } else {
+                    switch ( scale ) {
+                        case TimeUtil.YEAR: return YEARS;
+                        case TimeUtil.MONTH: return useDOY ? DAY_OF_YEAR : MONTHS;
+                        case TimeUtil.DAY: return useDOY ? DAY_OF_YEAR : DAYS;
+                        case TimeUtil.HOUR: return new TimeDatumFormatter("yyyy-MM-dd HH:mm");
+                        case TimeUtil.MINUTE: return new TimeDatumFormatter("yyyy-MM-dd HH:mm");
+                        case TimeUtil.SECOND: return new TimeDatumFormatter("yyyy-MM-dd HH:mm:ss");
+                        case TimeUtil.MILLI: return new TimeDatumFormatter("yyyy-MM-dd HH:mm:ss.SSS");
+                        case TimeUtil.MICRO: return new TimeDatumFormatter("yyyy-MM-dd HH:mm:ss.SSSSSS");
+                        case TimeUtil.NANO: return new TimeDatumFormatter("yyyy-MM-dd HH:mm:ss.SSSSSSSSS");
+                        default: throw new IllegalArgumentException("unsupported scale: "+scale);
+                    }       
+                }
             }
         } catch ( ParseException e ) {
             throw new RuntimeException(e);

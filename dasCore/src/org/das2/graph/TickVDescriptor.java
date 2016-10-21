@@ -30,6 +30,16 @@ public class TickVDescriptor {
     Units units = null;
     DatumFormatter datumFormatter;
 
+    private static boolean dayOfYear= false;
+
+    public static boolean isDayOfYear() {
+        return dayOfYear;
+    }
+
+    public static void setDayOfYear(boolean dayOfYear) {
+        TickVDescriptor.dayOfYear = dayOfYear;
+    }
+
     /** This constructor is to support the use when tickVDescriptor was
      * internal to DasAxis.
      */
@@ -715,7 +725,7 @@ public class TickVDescriptor {
         if (bestUnit == null) {
             throw new IllegalArgumentException("failed to find best unit");
         }
-        ticks.datumFormatter = TimeDatumFormatter.formatterForScale(bestUnit.getOrdinal(), new DatumRange(minD, maxD));
+        ticks.datumFormatter = TimeDatumFormatter.formatterForScale( bestUnit.getOrdinal(), new DatumRange(minD, maxD), dayOfYear );
 
         return ticks;
 
