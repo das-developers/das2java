@@ -326,6 +326,12 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
         QDataSet yds= SemanticOps.ytagsDataSet( data );
         Units yunits= SemanticOps.getUnits(yds);
         Units zunits= SemanticOps.getUnits(data);
+        
+        if ( !zunits.isConvertibleTo( zAxis.getUnits() ) ) {
+            String msg= "dataset z units are \""+zunits+"\" while z axis are \"" + zAxis.getUnits() + "\"";
+            zunits= zAxis.getUnits();
+            getParent().postMessage(this, msg, DasPlot.WARNING, null, null);
+        }
 
         int[] yBases= new int[ data.length(0) ];
         for ( int j=0; j<data.length(0); j++ ) {
