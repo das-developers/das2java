@@ -2004,24 +2004,16 @@ public class DataSetOps {
         }
         switch (p) {
             case "|smooth":
-                return false;
             case "|nop":
-                return false;
             case "|trim":
-                return false;
             case "|magnitude":
-                return false;
             case "|abs":
-                return false;
             case "|hanning":
-                return false;
             case "|butterworth":
-                return false;
             case "|detrend":
-                return false;
             case "|medianFilter":
-                return false;
             case "|copy":
+            case "|setDepend0Cadence":
                 return false;
             default:
                 return true;
