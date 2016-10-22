@@ -201,8 +201,8 @@ public class TimeDatumFormatter extends DatumFormatter {
                 } else {
                     switch ( scale ) {
                         case TimeUtil.YEAR: return YEARS;
-                        case TimeUtil.MONTH: return useDOY ? DAY_OF_YEAR : MONTHS;
-                        case TimeUtil.DAY: return useDOY ? DAY_OF_YEAR : DAYS;
+                        case TimeUtil.MONTH: return MONTHS;
+                        case TimeUtil.DAY: return DAYS;
                         case TimeUtil.HOUR: return new TimeDatumFormatter("yyyy-MM-dd HH:mm");
                         case TimeUtil.MINUTE: return new TimeDatumFormatter("yyyy-MM-dd HH:mm");
                         case TimeUtil.SECOND: return new TimeDatumFormatter("yyyy-MM-dd HH:mm:ss");
