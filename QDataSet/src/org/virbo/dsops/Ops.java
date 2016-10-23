@@ -3184,8 +3184,6 @@ public class Ops {
      * @return rank 1 dataset for demos and testing.
      */
     public static QDataSet ripples( int len0 ) {
-        //TableDataSet tds= new RipplesDataSet( len0/10., len1/10., len1/20., len0/2., len1/2., len1/10., len0, len1 );
-        //return DataSetAdapter.create(tds);
         return new RipplesDataSet( len0 );
     }
 
@@ -3196,8 +3194,6 @@ public class Ops {
      * @return rank 2 dataset for demos and testing.
      */
     public static QDataSet ripples( int len0, int len1 ) {
-        //TableDataSet tds= new RipplesDataSet( len0/10., len1/10., len1/20., len0/2., len1/2., len1/10., len0, len1 );
-        //return DataSetAdapter.create(tds);
         return new RipplesDataSet( len0, len1 );
     }
 
