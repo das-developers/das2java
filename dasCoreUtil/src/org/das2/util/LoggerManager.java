@@ -12,7 +12,9 @@ import java.awt.event.FocusEvent;
 import java.awt.event.ItemEvent;
 import java.beans.PropertyChangeEvent;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -177,6 +179,8 @@ public final class LoggerManager {
     }
     
     private static boolean disableTimers = true;
+    
+    private static PrintStream timerLogger= System.err;
 
     public static boolean isEnableTimers() {
         return !disableTimers;
@@ -190,10 +194,33 @@ public final class LoggerManager {
      */
     public static void setEnableTimers(boolean enableTimers) {
         disableTimers = !enableTimers;
+        if ( !enableTimers ) {
+            if ( timerLogger!=System.err ) {
+                timerLogger.close();
+            }
+        }
+    }
+    
+    /**
+     * channel the logging information to here, setEnableTimers(false) to close.
+     * @param f
+     * @throws FileNotFoundException 
+     */
+    public static void setTimerLogfile(String f) throws FileNotFoundException {
+        timerLogger= new PrintStream(f);
     }
 
     // clean up code that times things by keeping track of timer...
-    private static final Map<Thread,Long> timers= new WeakHashMap<Thread, Long>();
+    private static final Map<Thread,TimerInfo> timers= new WeakHashMap<>();
+    
+    private static class TimerInfo {
+        private TimerInfo( long birthNs ) {
+            this.lastNs= this.birthNs= birthNs;
+        }
+        long birthNs;  // birth time
+        long lastNs;   // time since last
+        long count;    // increment the number of times incremented
+    }
     
     /**
      * reset the timer.  The lifecycle is like so:
@@ -228,8 +255,9 @@ public final class LoggerManager {
                 task= task + " (GUI)";
             }
         }
-        System.err.println( String.format( "== %s ==", task ) );
-        timers.put( Thread.currentThread(), System.currentTimeMillis() );
+        timerLogger.println( String.format( "== %s ==", task ) );
+        timers.put( Thread.currentThread(), new TimerInfo( System.nanoTime() ) );
+        timerLogger.println( String.format( "Count Time(ms) TimeSinceLast(ms) Message" ) );
     }
     
     /**
@@ -246,10 +274,13 @@ public final class LoggerManager {
      */
     public static void markTime( String message ) {
         if ( disableTimers ) return;
-        Long t0= timers.get( Thread.currentThread() );
-        if ( t0!=null ) {
+        TimerInfo timerInfo= timers.get( Thread.currentThread() );
+        if ( timerInfo!=null ) {
             if ( message==null ) message= Thread.currentThread().getName();
-            System.err.println( String.format( "%05d: %s", System.currentTimeMillis()-t0, message ) );
+            long t= System.nanoTime();
+            timerLogger.println( String.format( "%d %.6f %.6f %s", timerInfo.count, (t-timerInfo.birthNs)/1e6, (t-timerInfo.lastNs)/1e6, message ) );
+            timerInfo.lastNs= t;
+            timerInfo.count++;
         }
     }
     
