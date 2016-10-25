@@ -144,6 +144,21 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
     }
     
     /**
+     * find the canonical type for the colloquial type.  This was introduced
+     * because the hapi server refers to "integer" but this code refers to "int"
+     * @param type "integer", etc
+     * @return BufferDataSet.INT, etc
+     */
+    public static Object getTypeFor( String type ) {
+        if ( type.equals("integer") ) {
+            type= "int";
+        }
+        int byteCount= byteCount(type); // throw IllegalArgumentException if it is not recognized.
+        logger.log(Level.FINER, "bytecount for {0} is {1}", new Object[]{type, byteCount});
+        return type;
+    }
+    
+    /**
      * return the number of bytes of each type (double=8, etc).
      * @param type DOUBLE, FLOAT, UBYTE, TIME28, etc.
      * @return 8, 4, 1, etc.
@@ -158,7 +173,7 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         } else if ( type.equals(NYBBLE) ) {
             throw new IllegalArgumentException("NYBBLE must be used with bitCount and makeDataSetBits");
         } else if ( type.equals(INT24) ) {
-            return 3;
+            return 3; 
         } else if ( type.equals(UINT24) ) {
             return 3;
         } else if (type.equals(LONG)) {
