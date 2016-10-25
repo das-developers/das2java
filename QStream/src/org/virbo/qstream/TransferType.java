@@ -1,18 +1,15 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 
 package org.virbo.qstream;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
  * A transfer type is an encoding of a double on to the stream.  It must have a fixed length in bytes.
- * Some are pure ASCII, and isAscii can be used to check this.
+ * Some are pure ASCII, and isAscii can be used to check this.  
  * @author jbf
  */
 public abstract class TransferType {
@@ -98,5 +95,18 @@ public abstract class TransferType {
         return name();
     }
 
+    /**
+     * convenient method which gently reminds that the ByteOrder needs to be
+     * specified with ByteBuffers.  ByteBuffers are created with big endian 
+     * turned on, but more often little endian is used.
+     * @param recordLengthBytes
+     * @param byteOrder
+     * @return the byte buffer with the order set.
+     */
+    public static ByteBuffer allocate( int recordLengthBytes, ByteOrder byteOrder ) {
+        ByteBuffer buf = ByteBuffer.allocate(recordLengthBytes);
+        buf.order( ByteOrder.LITTLE_ENDIAN );
+        return buf;
+    }
     
 }
