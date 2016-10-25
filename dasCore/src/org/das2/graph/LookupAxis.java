@@ -6,14 +6,15 @@ import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.logging.Logger;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
 import org.das2.datum.DatumVector;
 import org.das2.datum.DomainDivider;
 import org.das2.datum.DomainDividerUtil;
-import org.das2.datum.Units;
 import org.das2.datum.format.DatumFormatter;
 import org.das2.util.GrannyTextRenderer;
+import org.das2.util.LoggerManager;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
@@ -25,14 +26,21 @@ import org.virbo.dsops.Ops;
  */
 public class LookupAxis extends DasCanvasComponent {
     
+    private static final Logger logger= LoggerManager.getLogger("org.das2.graph.lookupaxis" );
     /**
      * the width of the component.
      */
     int maxWidth;
+    
+    /**
+     * the height of the component.
+     */
+    int maxHeight;
+    
     DasAxis axis;
     
-    QDataSet xx;
-    QDataSet yy;
+    QDataSet tt;
+    QDataSet ff;
     
     
     public LookupAxis( DasAxis axis ) {
@@ -41,13 +49,13 @@ public class LookupAxis extends DasCanvasComponent {
     }
     
     public void setDataSet( QDataSet yy ) {
-        this.xx= SemanticOps.xtagsDataSet(yy);
-        this.yy= yy;
+        this.tt= SemanticOps.xtagsDataSet(yy);
+        this.ff= yy;
     }
 
     public void setDataSet( QDataSet xx, QDataSet yy ) {
-        this.xx= xx;
-        this.yy= yy;
+        this.tt= xx;
+        this.ff= yy;
     }
     
     /**
@@ -56,9 +64,6 @@ public class LookupAxis extends DasCanvasComponent {
      * @param axis the axis.
      */
     public void setAxis( DasAxis axis ) {
-        if ( axis.isHorizontal() ) {
-            throw new IllegalArgumentException("not yet supported.");
-        }
         axis.addPropertyChangeListener( updateListener );
         this.axis= axis;
         
@@ -95,44 +100,49 @@ public class LookupAxis extends DasCanvasComponent {
     @Override
     public void paintComponent( Graphics g ) {
         DatumVector ticks= axis.tickV.getMinorTicks();
-        Datum ymin= Ops.datum(1e20);
-        Datum ymax= Ops.datum(-1e20);
+        Datum fmin= Ops.datum(1e20);
+        Datum fmax= Ops.datum(-1e20);
 
-        if ( xx==null ) return;
-        if ( yy==null ) return;
+        if ( tt==null ) return;
+        if ( ff==null ) return;
 
-        if ( !SemanticOps.getUnits(xx).isConvertibleTo(ticks.getUnits() ) ) {
-            xx= Ops.putProperty( xx, QDataSet.UNITS, ticks.getUnits() );
+        if ( !SemanticOps.getUnits(tt).isConvertibleTo(ticks.getUnits() ) ) {
+            tt= Ops.putProperty(tt, QDataSet.UNITS, ticks.getUnits() );
         }
         for ( int i=0; i<ticks.getLength(); i++ ) {
             Datum x= ticks.get(i);
-            QDataSet f= Ops.findex( xx, Ops.dataset(x) );
-            if ( f.value()>0 && f.value()<xx.length() ) {
-                QDataSet y= Ops.interpolate( yy, f );
-                if ( Ops.valid(y).value()!=0 ) {
-                    ymin= Ops.datum( Ops.lesserOf( ymin, y ) );
-                    ymax= Ops.datum( Ops.greaterOf( ymax, y ) );
+            QDataSet f= Ops.findex(tt, Ops.dataset(x) );
+            if ( f.value()>0 && f.value()<tt.length() ) {
+                QDataSet ffint= Ops.interpolate(ff, f );
+                if ( Ops.valid(ffint).value()!=0 ) {
+                    fmin= Ops.datum( Ops.lesserOf( fmin, ffint ) );
+                    fmax= Ops.datum( Ops.greaterOf( fmax, ffint ) );
                 }
             }
         }
-        DomainDivider ytickvdd= DomainDividerUtil.getDomainDivider( Ops.datum(ymin),Ops.datum(ymax) );
-        while (  ytickvdd.boundaryCount( ymin, ymax )<10 ) {
+        if ( fmin.ge(fmax) ) {
+            logger.fine("no ticks visible");
+            return;
+        }
+        
+        DomainDivider ytickvdd= DomainDividerUtil.getDomainDivider( Ops.datum(fmin),Ops.datum(fmax) );
+        while (  ytickvdd.boundaryCount( fmin, fmax )<10 ) {
             DomainDivider dd= ytickvdd.finerDivider(false);
             if ( dd==null ) break;
             ytickvdd= dd;
         }
-        while (  ytickvdd.boundaryCount( ymin, ymax )>20 ) {
+        while (  ytickvdd.boundaryCount( fmin, fmax )>20 ) {
             DomainDivider dd= ytickvdd.coarserDivider(false);
             if ( dd==null ) break;
             ytickvdd= dd;
         }
 
-        ticks= ytickvdd.boundaries( ymin, ymax );
+        ticks= ytickvdd.boundaries( fmin, fmax );
 
         g.setColor( Color.BLACK );
         int ascent= g.getFontMetrics().getAscent();
         int myY= this.getY();
-        DatumRange dr= new DatumRange(ymin,ymax);
+        DatumRange dr= new DatumRange(fmin,fmax);
         DatumFormatter format= DomainDividerUtil.getDatumFormatter(ytickvdd,dr);
 
         maxWidth= 0;
@@ -140,7 +150,7 @@ public class LookupAxis extends DasCanvasComponent {
         //draw the major ticks
         for ( int i=0; i<ticks.getLength(); i++ ) {
             Datum atick= ticks.get(i);
-            QDataSet dds= interpWow( atick, xx, yy );
+            QDataSet dds= interpWow(atick, tt, ff );
             int ix0= -999;
             for ( int j=0; j<dds.length(); j++ ) {
                 QDataSet d = dds.slice(j);
@@ -156,12 +166,12 @@ public class LookupAxis extends DasCanvasComponent {
             }
         } 
         // draw the minor ticks
-        ticks= ytickvdd.finerDivider( true ).boundaries( ymin, ymax );
+        ticks= ytickvdd.finerDivider( true ).boundaries( fmin, fmax );
         for (  int i=0; i<ticks.getLength(); i++ ) {
             g.setColor( Color.BLACK );
             myY= this.getY();
             Datum atick= ticks.get(i);
-            QDataSet dds= interpWow( atick, xx, yy );
+            QDataSet dds= interpWow(atick, tt, ff );
             int ix0= -999;
             for ( int j=0; j<dds.length(); j++ ) {
                 QDataSet d = dds.slice(j);
@@ -178,9 +188,16 @@ public class LookupAxis extends DasCanvasComponent {
         if ( getColumn()==null || getColumn().getParent()==null ) { 
              return;
         }
-        int x= getColumn().getDMaximum();
-        int y= getRow().getDMinimum();
-        Rectangle rect= new Rectangle( x, y, this.maxWidth, this.getRow().getHeight() );
-        this.setBounds( rect );
+        if ( axis.isHorizontal() ) {
+            int x= getColumn().getDMinimum();
+            int y= getRow().getDMinimum();
+            Rectangle rect= new Rectangle( x, y, getColumn().getWidth(), this.maxHeight );
+            this.setBounds( rect );            
+        } else {
+            int x= getColumn().getDMaximum();
+            int y= getRow().getDMinimum();
+            Rectangle rect= new Rectangle( x, y, this.maxWidth, this.getRow().getHeight() );
+            this.setBounds( rect );
+        }
     }
 }
