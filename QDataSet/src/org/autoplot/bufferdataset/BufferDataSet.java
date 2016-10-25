@@ -114,6 +114,10 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
      */
     public final static Object INT= "int";
     /**
+     * 4 byte signed integers, INT is canonical but INTEGER should be accepted.
+     */
+    public final static Object INTEGER= "integer";
+    /**
      * 4 byte unsigned integers.  Note 4-byte signed ints are used to store the data 
      * which is unpacked in the value() method.
      */
@@ -144,21 +148,6 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
     }
     
     /**
-     * find the canonical type for the colloquial type.  This was introduced
-     * because the hapi server refers to "integer" but this code refers to "int"
-     * @param type "integer", etc
-     * @return BufferDataSet.INT, etc
-     */
-    public static Object getTypeFor( String type ) {
-        if ( type.equals("integer") ) {
-            type= "int";
-        }
-        int byteCount= byteCount(type); // throw IllegalArgumentException if it is not recognized.
-        logger.log(Level.FINER, "bytecount for {0} is {1}", new Object[]{type, byteCount});
-        return type;
-    }
-    
-    /**
      * return the number of bytes of each type (double=8, etc).
      * @param type DOUBLE, FLOAT, UBYTE, TIME28, etc.
      * @return 8, 4, 1, etc.
@@ -179,6 +168,8 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         } else if (type.equals(LONG)) {
             return 8;
         } else if (type.equals(INT)) {
+            return 4;
+        } else if (type.equals("integer") ) {
             return 4;
         } else if (type.equals(UINT)) {
             return 4;
@@ -275,7 +266,7 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
             result= new NybbleDataSet( rank, reclen, recoffs, len0, len1, len2, len3, buf );
         } else if ( type.equals(LONG) ) {
             result=new  LongDataSet( rank, reclen, recoffs, len0, len1, len2, len3, buf );
-        } else if ( type.equals(INT) ) {
+        } else if ( type.equals(INT) || type.equals(INTEGER) ) {
             result=new  IntDataSet( rank, reclen, recoffs, len0, len1, len2, len3, buf );
         } else if ( type.equals(UINT) ) {
             result=new  UIntDataSet( rank, reclen, recoffs, len0, len1, len2, len3, buf );
