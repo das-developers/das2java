@@ -101,6 +101,9 @@ public class LinearDomainDivider implements DomainDivider {
     }
 
     public long boundaryCount(Datum min, Datum max) {
+        if ( min.gt(max) ) {
+            throw new IllegalArgumentException("min is greater than max.");
+        }
         double intervalSize = incSignificand * Math.pow(10, incExponent);
         long mmin = (long)Math.ceil(min.doubleValue()/intervalSize);
         long mmax = (long)Math.floor(max.doubleValue()/intervalSize);
