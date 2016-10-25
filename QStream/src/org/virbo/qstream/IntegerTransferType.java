@@ -9,7 +9,7 @@ import java.nio.ByteBuffer;
 import java.util.Map;
 
 /**
- *
+ * "int4" is the canonical name, but "integer" is accepted as well.
  * @author jbf
  */
 public class IntegerTransferType extends TransferType {
@@ -41,6 +41,8 @@ public class IntegerTransferType extends TransferType {
 
     public static TransferType getByName( String ttype, Map<String,Object> properties ) {
         if ( ttype.equals("int4") ) {
+            return new IntegerTransferType();
+        } else if ( ttype.equals("integer") ) {
             return new IntegerTransferType();
         } else {
             return null;
