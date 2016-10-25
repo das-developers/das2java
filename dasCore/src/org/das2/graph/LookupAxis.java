@@ -12,6 +12,7 @@ import org.das2.datum.DatumRange;
 import org.das2.datum.DatumVector;
 import org.das2.datum.DomainDivider;
 import org.das2.datum.DomainDividerUtil;
+import org.das2.datum.UnitsUtil;
 import org.das2.datum.format.DatumFormatter;
 import org.das2.util.GrannyTextRenderer;
 import org.das2.util.LoggerManager;
@@ -107,7 +108,17 @@ public class LookupAxis extends DasCanvasComponent {
         if ( ff==null ) return;
 
         if ( !SemanticOps.getUnits(tt).isConvertibleTo(ticks.getUnits() ) ) {
-            tt= Ops.putProperty(tt, QDataSet.UNITS, ticks.getUnits() );
+            if ( UnitsUtil.isTimeLocation(SemanticOps.getUnits(tt)) ) {
+                Rectangle r= getBounds();
+                g.setColor( Color.GRAY );
+                g.fillRect( 0, 0, r.width-1, r.height-1 );
+                g.setColor( Color.BLACK );
+                g.drawRect( 0, 0, r.width-1, r.height-1 );
+                g.drawString( "inconvertible units", 0, g.getFont().getSize() );
+                return;
+            } else {
+                tt= Ops.putProperty(tt, QDataSet.UNITS, ticks.getUnits() );
+            }
         }
         for ( int i=0; i<ticks.getLength(); i++ ) {
             Datum x= ticks.get(i);
