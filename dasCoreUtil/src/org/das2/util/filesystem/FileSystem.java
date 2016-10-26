@@ -302,9 +302,13 @@ public abstract class FileSystem  {
         if ( ishouldwait ) { // wait until the other thread is done.  If the other thread doesn't put the result in instances, then there's a problem...
             try {
                 synchronized ( waitObject ) {
-                    logger.log(Level.FINE, "waiting for {0} {1}", new Object[]{waitObject, root});
-                    waitObject.wait();  //TODO: I witnessed a bug where this was stuck and there were no objects in blocks.
-                    logger.log(Level.FINE, "done waiting for {0}", root);
+                    if ( blocks.get(root)!=null ) {                        
+                        logger.log(Level.FINE, "waiting for {0} {1}", new Object[]{waitObject, root});
+                        waitObject.wait();  //TODO: I witnessed a bug where this was stuck and there were no objects in blocks.
+                        logger.log(Level.FINE, "done waiting for {0}", root);
+                    } else {
+                        logger.log(Level.FINE, "process completed before this thread entered wait: {0}", root);
+                    }
                 }
             } catch (InterruptedException ex) {
                 logger.log(Level.SEVERE, ex.getMessage(), ex);
@@ -364,8 +368,8 @@ public abstract class FileSystem  {
             logger.log(Level.FINE, "releasing {0}", waitObject);
             synchronized( waitObject ) {
                 waitObject.notifyAll(); //TODO: the other threads are going to think it's offline.
-            }
-            blocks.remove(root);
+                blocks.remove(root);
+            }                
             logger.log(Level.SEVERE, "unsupported protocol: {0}", root);
             throw new IllegalArgumentException( "unsupported protocol: "+root );
             
