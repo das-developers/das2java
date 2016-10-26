@@ -131,6 +131,14 @@ public class QDataSetTableModel extends AbstractTableModel {
                 labels[i]= "col "+i;
             }
         }
+
+        String format= (String) ds.property(QDataSet.FORMAT);
+        if ( format!=null ) {
+            DatumFormatter thedf= new FormatStringFormatter(format,false);
+            for ( i=0; i<df.length; i++ ) {
+                df[i]= thedf;
+            }
+        }
     }
     
     /**
