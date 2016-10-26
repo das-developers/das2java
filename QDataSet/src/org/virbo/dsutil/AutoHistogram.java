@@ -798,6 +798,9 @@ public final class AutoHistogram {
             for (int j = 0; j < factor; j++) {
                 if (oldWeights[j] > 0) {
                     oldVariances[j] = ((oldWeights[j] - 1) * oldVariances[j] + oldWeights[j] * Math.pow(oldMeans[j] - ss[i], 2));
+                    if ( !isFinite(oldVariances[j]) ) {
+                        throw new IllegalArgumentException("not finite number got into variances, check for malformed numbers");
+                    }
                 } else {
                     oldVariances[j] = 0.0;
                 }
@@ -806,19 +809,19 @@ public final class AutoHistogram {
             // combine the variances with a weighted average
             vv[i] = oldVariances[0];
             if ( !isFinite(vv[i]) ) {
-                throw new IllegalArgumentException("not finite number got into variances");
+                throw new IllegalArgumentException("not finite number got into variances, check for malformed numbers");
             }
 
             for (int j = 1; j < factor; j++) {
                 vv[i] += oldVariances[j];
                 if ( !isFinite(vv[i]) ) {
-                    throw new IllegalArgumentException("not finite number got into variances");
+                    throw new IllegalArgumentException("not finite number got into variances, check for malformed numbers");
                 }                
             }
             if (nn[i] > 1) {
                 vv[i] /= (nn[i] - 1);
                 if ( !isFinite(vv[i]) ) {
-                    throw new IllegalArgumentException("not finite number got into variances");
+                    throw new IllegalArgumentException("not finite number got into variances, check for malformed numbers");
                 }
             }
 
