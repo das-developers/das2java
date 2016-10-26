@@ -531,6 +531,7 @@ public class DigitalRenderer extends Renderer {
         String form=this.format;
         String dsformat= (String) zds.property(QDataSet.FORMAT);
         boolean isInts= false;
+        boolean isLongs= false;
         
         if ( form.length()==0 && dsformat!=null ) {
             form= dsformat;
@@ -539,8 +540,9 @@ public class DigitalRenderer extends Renderer {
             form= "%.2f";
         }
         if ( form.endsWith("x") || form.endsWith("X")
-            || form.endsWith("d") || form.endsWith("o") 
-            || form.endsWith("c") || form.endsWith("C") ) {
+            || form.endsWith("d") || form.endsWith("o") ) {
+            isLongs= true; 
+        } else if ( form.endsWith("c") || form.endsWith("C") ) {
             isInts= true; 
         }        
 
@@ -576,6 +578,8 @@ public class DigitalRenderer extends Renderer {
                 DatumFormatter df= d.getFormatter();
                 if ( df instanceof DefaultDatumFormatter ) {
                     if ( isInts ) {
+                        s = String.format( form, (int)zds.value(i) );
+                    } else if ( isLongs ) {
                         s = String.format( form, (long)zds.value(i) );
                     } else {
                         s = String.format( form, zds.value(i) );
