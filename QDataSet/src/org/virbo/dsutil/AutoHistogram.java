@@ -806,19 +806,19 @@ public final class AutoHistogram {
             // combine the variances with a weighted average
             vv[i] = oldVariances[0];
             if ( !isFinite(vv[i]) ) {
-                throw new IllegalArgumentException("here man");
+                throw new IllegalArgumentException("not finite number got into variances");
             }
 
             for (int j = 1; j < factor; j++) {
                 vv[i] += oldVariances[j];
                 if ( !isFinite(vv[i]) ) {
-                    throw new IllegalArgumentException("here man");
+                    throw new IllegalArgumentException("not finite number got into variances");
                 }                
             }
             if (nn[i] > 1) {
                 vv[i] /= (nn[i] - 1);
                 if ( !isFinite(vv[i]) ) {
-                    throw new IllegalArgumentException("here man");
+                    throw new IllegalArgumentException("not finite number got into variances");
                 }
             }
 
