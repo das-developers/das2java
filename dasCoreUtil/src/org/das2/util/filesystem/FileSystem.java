@@ -82,7 +82,7 @@ public abstract class FileSystem  {
     /**
      * non-null means filesystem is bring created and we should wait.
      */
-    private static final Map<URI,String> blocks= Collections.synchronizedMap( new HashMap() );
+    private static final Map<URI,Object> blocks= Collections.synchronizedMap( new HashMap() );
 
     /**
      *
@@ -286,14 +286,14 @@ public abstract class FileSystem  {
             }
         }
         
-        String waitObject;
+        Object waitObject;
         boolean ishouldwait= false;
         synchronized (blocks) {
             if ( blocks.containsKey(root) ) {
                 waitObject= blocks.get(root);
                 ishouldwait= true;
             } else {
-                waitObject= String.valueOf( Long.valueOf( System.currentTimeMillis() ) ); // just to be sure it's unique.
+                waitObject= new Object(); 
                 blocks.put( root, waitObject );
                 logger.log(Level.FINE, "created waitObject {0} {1}", new Object[]{waitObject, root});
             }
