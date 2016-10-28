@@ -108,6 +108,13 @@ public class BundleStreamFormatter {
         return name;
     }
     
+    /**
+     * guess an ASCII transfer type which can accurately and efficiently 
+     * represent the data in the dataset.  If the format property
+     * is found, then a TransferType based on the format is used.
+     * @param ds the dataset
+     * @return the transfer type.
+     */
     public static TransferType guessAsciiTransferType( QDataSet ds ) {
         Units u= SemanticOps.getUnits(ds);
         String format= (String) ds.property( QDataSet.FORMAT );
@@ -153,13 +160,13 @@ public class BundleStreamFormatter {
         }
         
     }
-    private static final String FORMAT_PATTERN = "(\\d*)(\\.\\d*)?([f|e|d])";
+    public static final String FORMAT_PATTERN = "(\\%)?(\\d*)(\\.\\d*)?([f|e|d])";
     
     /**
      * format the rank 2 bundle.
-     * @param ds  rank 2 bundle dataset.
+     * @param ds rank 2 bundle dataset.
      * @param osout
-     * @param asciiTypes
+     * @param asciiTypes true if ascii types should be used.
      * @throws StreamException
      * @throws IOException 
      */
