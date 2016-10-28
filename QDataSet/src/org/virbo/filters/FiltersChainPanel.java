@@ -58,7 +58,7 @@ import org.virbo.dsops.Ops;
 public final class FiltersChainPanel extends javax.swing.JPanel implements FilterEditorPanel {
     
     private QDataSet inputDs;
-    private String currentFilter= ""; // the currently implemented filter.
+    private String currentFilter= null; // the currently implemented filter.
     private FilterEditorPanel currentFilterPanel=null;
     private boolean implicitUnbundle= false;
     private final TickleTimer timer;
@@ -543,7 +543,7 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
 
         String oldFilter= getFilter();
         
-        if ( currentFilter.equals(filter) ) {
+        if ( currentFilter!=null && currentFilter.equals(filter) ) {
             logger.fine("filter unchanged, so we don't need to do anything, right?");
             return;
         }
