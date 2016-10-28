@@ -110,6 +110,8 @@ public class FileUtil {
     /**
      * deletes all files with the given name, and root, just as "find . -name name -exec rm {} \;" would.
      * TODO: check links.  For example deleteWithinFileTree( root, ".listing" )
+     * @param root the root directory of the tree.
+     * @param name the file name.
      * @throws IllegalArgumentException if it is unable to delete a file
      * @return true if the operation was successful.
      */
@@ -122,15 +124,18 @@ public class FileUtil {
             return true;
         }
         File[] children = root.listFiles();
+        if ( children==null ) {
+            throw new IllegalArgumentException("listFiles returns null, root must be a directory and not a file.");
+        }
         boolean success = true;
-        for (int i = 0; i < children.length; i++) {
-            if (children[i].isDirectory()) {
-                success = success && deleteWithinFileTree(children[i],name);
+        for (File children1 : children) {
+            if (children1.isDirectory()) {
+                success = success && deleteWithinFileTree(children1, name);
             } else {
-                if ( children[i].getName().equals(name) ) {
-                    success = success && ( !children[i].exists() || children[i].delete() );
+                if (children1.getName().equals(name)) {
+                    success = success && (!children1.exists() || children1.delete());
                     if (!success) {
-                        throw new IllegalArgumentException("unable to delete file " + children[i]);
+                        throw new IllegalArgumentException("unable to delete file " + children1);
                     }
                 }
             }
