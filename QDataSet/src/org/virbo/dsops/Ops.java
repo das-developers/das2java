@@ -4650,8 +4650,8 @@ public class Ops {
         }
         
         if ( ds.rank()==1 
-                && Integer.valueOf(0).equals(DataSetAnnotations.getInstance().getAnnotation(ds,DataSetAnnotations.ANNOTATION_ZERO_COUNT))
-                && Integer.valueOf(0).equals(DataSetAnnotations.getInstance().getAnnotation(ds,DataSetAnnotations.ANNOTATION_INVALID_COUNT)) ) {
+                && DataSetAnnotations.VALUE_0.equals(DataSetAnnotations.getInstance().getAnnotation(ds,DataSetAnnotations.ANNOTATION_ZERO_COUNT))
+                && DataSetAnnotations.VALUE_0.equals(DataSetAnnotations.getInstance().getAnnotation(ds,DataSetAnnotations.ANNOTATION_INVALID_COUNT)) ) {
             return Ops.indgen(ds.length());
         }
         
@@ -4671,8 +4671,8 @@ public class Ops {
             }
             builder.putProperty(QDataSet.MONOTONIC, Boolean.TRUE);
             if ( builder.getLength()==ds.length() ) {
-                DataSetAnnotations.getInstance().putAnnotation(ds,DataSetAnnotations.ANNOTATION_INVALID_COUNT, 0);
-                DataSetAnnotations.getInstance().putAnnotation(ds,DataSetAnnotations.ANNOTATION_ZERO_COUNT, 0);
+                DataSetAnnotations.getInstance().putAnnotation(ds,DataSetAnnotations.ANNOTATION_INVALID_COUNT, DataSetAnnotations.VALUE_0 );
+                DataSetAnnotations.getInstance().putAnnotation(ds,DataSetAnnotations.ANNOTATION_ZERO_COUNT, DataSetAnnotations.VALUE_0 );
             }
             builder.putProperty( QDataSet.VALID_MAX, ds.length() );
         } else {
