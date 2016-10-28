@@ -3096,11 +3096,9 @@ public class DataSetUtil {
         }
         
         if ( wds instanceof ConstantDataSet && wds.value(0)==1 ) { // optimize
-            //r= Ops.findgen(ds.length());
             r= null;
         } else {
-            if ( DataSetAnnotations.VALUE_0.equals(DataSetAnnotations.getInstance().getAnnotation(ds,DataSetAnnotations.ANNOTATION_INVALID_COUNT)) ) {
-                //r= Ops.findgen(ds.length());
+            if ( DataSetAnnotations.VALUE_0.equals(DataSetAnnotations.getInstance().getAnnotation(ds,DataSetAnnotations.ANNOTATION_INVALID_COUNT)) ) { 
                 r= null;
             } else {
                 r= Ops.where( wds );
