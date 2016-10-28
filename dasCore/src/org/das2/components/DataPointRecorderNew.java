@@ -108,36 +108,36 @@ public class DataPointRecorderNew extends JPanel {
     protected JTable table;
     protected JScrollPane scrollPane;
     protected JButton updateButton;
-    final protected List<QDataSet> dataPoints;
+    protected final transient List<QDataSet> dataPoints;
     private int selectRow; // this row needs to be selected after the update.
     
     /**
      * units[index]==null if HashMap contains non-datum object.
      */
-    protected Units[] unitsArray;
+    protected transient Units[] unitsArray;
     
-    protected Units[] defaultUnitsArray;
+    protected transient  Units[] defaultUnitsArray;
     
     /**
      * array of names that are also the column headers. 
      */
-    protected String[] namesArray;
+    protected transient  String[] namesArray;
     
-    protected String[] defaultNamesArray;
+    protected transient  String[] defaultNamesArray;
     
     private double[] defaultsArray;
             
     /**
      * bundleDescriptor for the dataset.
      */
-    private QDataSet bundleDescriptor;
+    private transient QDataSet bundleDescriptor;
     
     protected AbstractTableModel myTableModel;
     private File saveFile;
     private boolean modified;
-    private JLabel messageLabel;
+    private final JLabel messageLabel;
     private boolean active = true; // false means don't fire updates
-    Preferences prefs = Preferences.userNodeForPackage(this.getClass());
+    private transient Preferences prefs = Preferences.userNodeForPackage(this.getClass());
     private static final Logger logger = DasLogger.getLogger(DasLogger.GUI_LOG);
     private final JButton clearSelectionButton;
 
