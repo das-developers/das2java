@@ -725,6 +725,7 @@ public class EventsRenderer extends Renderer {
                 if ( current!=null ) sa.append( current, false );
 
                 if ( ganttMode ) {
+                    g1.setColor(color);
                     int di= Math.max( 1, ( gymax-gymin)  / ( row.getHeight() / textHeight ) );
                     for ( int i=gymin; i<gymax+1; i=i+di ) {
                         gtr.setString( g1, eu.createDatum(i).toString() );
