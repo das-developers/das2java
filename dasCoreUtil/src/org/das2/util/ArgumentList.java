@@ -19,40 +19,40 @@ import java.util.prefs.Preferences;
  */
 public class ArgumentList {
     
-    int nposition;
+    private int nposition;
     
-    String programName;
+    private final String programName;
     
-    String[] positionKeys;
+    private final String[] positionKeys;
     
-    Map<String,String> values;
+    private final Map<String,String> values;
     
-    Map<String,String> descriptions;
+    private final Map<String,String> descriptions;
     
-    Map<String,String> names;
+    private final Map<String,String> names;
     
-    Map<String,String> reverseNames;
+    private final Map<String,String> reverseNames;
     
-    Map<String,String> formUsed;
+    private final Map<String,String> formUsed;
     
-    Map<String,String> abbrevs;
+    private final Map<String,String> abbrevs;
     
-    ArrayList<String[]> requireOneOfList;
+    private final ArrayList<String[]> requireOneOfList;
     
     /**
      * if false, then any unrecognized switch is an error.
      */
     boolean allowUndefinedSwitch= false;
     
-    private String UNSPECIFIED = "__unspecified__";
+    private final String UNSPECIFIED = "__unspecified__";
     
-    private String REFERENCEWITHOUTVALUE = "__referencewithoutvalue__";
+    private final String REFERENCEWITHOUTVALUE = "__referencewithoutvalue__";
     
-    private String UNDEFINED_SWITCH = "__undefinedSwitch__";
+    private final String UNDEFINED_SWITCH = "__undefinedSwitch__";
     
-    public String FALSE = "__false__";
+    public final String FALSE = "__false__";
     
-    public String TRUE = "__true__";
+    public final String TRUE = "__true__";
     
     private static final Logger logger= Logger.getLogger( "das2.util" );
     
@@ -60,6 +60,7 @@ public class ArgumentList {
      * creates the processor for the program.  <tt>programName</tt> is provided
      * for the usage statement.  After creating the object, arguments are
      * specified one by one, and then the process method is called.
+     * @param programName the program name
      */
     public ArgumentList(String programName) {
         this.programName= programName;
@@ -118,11 +119,13 @@ public class ArgumentList {
      */
     public Preferences getPreferences() {
         return new AbstractPreferences(null,"") {
+            @Override
             protected void putSpi(String key, String value) {
                 formUsed.put(key,value);
                 values.put(key,value);
             }
             
+            @Override
             protected String getSpi(String key) {
                 if ( formUsed.containsKey(key) ) {
                     return (String) values.get(key);
@@ -131,26 +134,32 @@ public class ArgumentList {
                 }
             }
             
+            @Override
             protected void removeSpi(String key) {
                 // do nothing
             }
             
+            @Override
             protected void removeNodeSpi() throws BackingStoreException {
                 // do nothing
             }
             
+            @Override
             protected String[] keysSpi() throws BackingStoreException {
                 return (String[])values.keySet().toArray(new String[values.size()]);
             }
             
+            @Override
             protected String[] childrenNamesSpi() throws BackingStoreException {
                 return new String[0];
             }
             
+            @Override
             protected AbstractPreferences childSpi(String name) {
                 return null;
             }
             
+            @Override
             protected void syncSpi() throws BackingStoreException {
                 // do nothing
             }
@@ -437,8 +446,7 @@ public class ArgumentList {
     public Map<String,String> getOptions() {
         HashMap<String,String> result= new HashMap<String,String>();
         List exclude= Arrays.asList( positionKeys );
-        for ( Iterator i=values.keySet().iterator(); i.hasNext(); ) {
-            String key= (String)i.next();
+        for (String key : values.keySet()) {
             if( !exclude.contains(key) && formUsed.containsKey(key) ) {
                 result.put( key, values.get(key) );
             }
@@ -516,8 +524,8 @@ public class ArgumentList {
     public void process(String[] args) {
         
         StringBuilder sb= new StringBuilder();
-        for ( int i=0; i<args.length; i++ ) {
-            sb.append(args[i]);
+        for (String arg : args) {
+            sb.append(arg);
             sb.append(" ");
         }
         logger.log(Level.FINER, "args: {0}", sb.toString());
