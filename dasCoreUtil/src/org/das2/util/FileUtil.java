@@ -79,19 +79,22 @@ public class FileUtil {
             throw new IllegalArgumentException("cannot read folder " + root );
         }
         File[] children = root.listFiles(); // root is known to exist.
+        if ( children==null ) {
+            throw new IllegalArgumentException("listFiles returns null, root must be a directory and not a file.");
+        }
         boolean success = true;
         boolean noExclude= true;
-        for (int i = 0; i < children.length; i++) {
-            if ( exclude!=null && exclude.contains(children[i].getName()) ) {
+        for (File children1 : children) {
+            if (exclude!=null && exclude.contains(children1.getName())) {
                 noExclude= false;
                 continue;
             }
-            if (children[i].isDirectory()) {
-                success = success && deleteFileTree(children[i],exclude);
+            if (children1.isDirectory()) {
+                success = success && deleteFileTree(children1, exclude);
             } else {
-                success = success && ( !children[i].exists() || children[i].delete() ); // in case file is deleted by another process, check exists again.
+                success = success && (!children1.exists() || children1.delete()); // in case file is deleted by another process, check exists again.
                 if (!success) {
-                    throw new IllegalArgumentException("unable to delete file " + children[i]);
+                    throw new IllegalArgumentException("unable to delete file " + children1);
                 }
             }
         }
