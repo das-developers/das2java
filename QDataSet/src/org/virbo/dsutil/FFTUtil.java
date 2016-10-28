@@ -307,12 +307,13 @@ public class FFTUtil {
         powTags.putProperty( QDataSet.UNITS, xUnits );
         powTags.putProperty( QDataSet.CADENCE, xtags.property(QDataSet.CADENCE) );
         synchronized (FFTUtil.class ) {
-            freqDomainTagsForPowerBuf= new TTagBufElement();
-            freqDomainTagsForPowerBuf.data= powTags;
-            freqDomainTagsForPowerBuf.dt= ( dep0.value(1) - dep0.value(0) );
-            freqDomainTagsForPowerBuf.ddt= freqDomainTagsForPowerBuf.dt / 1e7;
-            freqDomainTagsForPowerBuf.n = dep0.length();
-            freqDomainTagsForPowerBuf.units= xunits;
+            TTagBufElement buf= new TTagBufElement();
+            buf.data= powTags;
+            buf.dt= ( dep0.value(1) - dep0.value(0) );
+            buf.ddt= buf.dt / 1e7;
+            buf.n = dep0.length();
+            buf.units= xunits;
+            freqDomainTagsForPowerBuf= buf; // findbugs  LI_LAZY_INIT_UPDATE_STATIC
         }
         return powTags;
     }
