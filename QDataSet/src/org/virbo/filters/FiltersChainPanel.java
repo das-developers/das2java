@@ -543,6 +543,11 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
 
         String oldFilter= getFilter();
         
+        if ( currentFilter.equals(filter) ) {
+            logger.fine("filter unchanged, so we don't need to do anything, right?");
+            return;
+        }
+        
         //if ( this.getName()!=null && this.getName().startsWith("post") ) {
         //    
         //} else {
