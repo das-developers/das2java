@@ -191,7 +191,12 @@ public interface QDataSet {
     /**
      * type String, Java/C format string for formatting the values.  This
      * should imply precision, and codes that serialize data can use this
-     * to correctly format the data.  
+     * to correctly format the data.  Examples include:<ul>
+     * <li>%d integers</li>
+     * <li>%5.1f floats with one decimal place</li>
+     * <li>%.3e exponential notation</li>
+     * <li>%x hex of the integer</li>
+     * </ul>
      */
     public final static String FORMAT="FORMAT";
 
