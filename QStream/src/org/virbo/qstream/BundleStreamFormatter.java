@@ -1,7 +1,4 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package org.virbo.qstream;
 
 import java.io.FileOutputStream;
@@ -18,7 +15,6 @@ import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
 import org.virbo.dsops.Ops;
-import org.virbo.dsutil.AutoHistogram;
 import test.BundleBinsDemo;
 
 /**
@@ -143,8 +139,6 @@ public class BundleStreamFormatter {
                 return new AsciiTransferType( 10,true );
             }
         } else {
-        
-        AutoHistogram ah= new AutoHistogram();
         
             if ( UnitsUtil.isRatioMeasurement(u) ) {
                 QDataSet gcd= DataSetUtil.gcd( Ops.diff(ds), Ops.dataset( u.getOffsetUnits().createDatum(0.0001) ) );
