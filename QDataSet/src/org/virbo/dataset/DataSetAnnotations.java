@@ -19,6 +19,16 @@ public class DataSetAnnotations {
     
     private static final DataSetAnnotations instance= new DataSetAnnotations();
     
+    /**
+     * the value 0 to avoid the if statement in valueOf
+     */
+    public static final Integer VALUE_0= 0;
+    
+    /**
+     * the value 1 to avoid the if statement in valueOf
+     */
+    public static final Integer VALUE_1= 1;
+    
     private final WeakHashMap<QDataSet,Map<String,Object>> annotations= new WeakHashMap<QDataSet,Map<String,Object>>();
     
     /**
