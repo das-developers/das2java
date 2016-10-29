@@ -274,7 +274,7 @@ public class FFTUtil {
      * keep track of one result, since one spectrogram will have thousands of these.  This is mostly to conserve space, but
      * we should see some performance gain as well.
      */
-    private static TTagBufElement freqDomainTagsForPowerBuf= null;
+    private static transient TTagBufElement freqDomainTagsForPowerBuf= null;
 
     /**
      * get the frequency tags, for use when calculating the power in each
