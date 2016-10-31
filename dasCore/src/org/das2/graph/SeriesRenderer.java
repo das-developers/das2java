@@ -1834,9 +1834,18 @@ public class SeriesRenderer extends Renderer {
                     }
                     vds= null;
                     for ( int k=this.firstIndex; k< this.lastIndex; k++ ) {
+                        boolean xmono= true;
                         QDataSet ds1= dataSet.slice(k);
-                        ds1= Ops.trim( ds1, xAxis.getDatumRange() );
-                        if ( ds1.length()==0 ) continue;
+                        QDataSet xds1= (QDataSet)ds1.property(QDataSet.DEPEND_0);
+                        int firstIndex1 = xmono ? DataSetUtil.getPreviousIndex( xds1, xAxis.getDatumRange().min() ) : 0;
+                        int lastIndex1 = xmono ? DataSetUtil.getNextIndex( xds1, xAxis.getDatumRange().max() ) : ds1.length();
+                        if ( firstIndex1==lastIndex1 && lastIndex1==ds1.length()-1 ) {
+                            lastIndex1= ds1.length();
+                        }
+                        if ( firstIndex1==lastIndex1 ) {
+                            continue;
+                        }
+                        ds1= ds1.trim(firstIndex1,lastIndex1);
                         LoggerManager.markTime("trim");
                         QDataSet vds1= Reduction.reducex( ds1,res );  // waveform
                         LoggerManager.markTime("reducex");
@@ -1851,6 +1860,10 @@ public class SeriesRenderer extends Renderer {
                         } else {
                             vds= Ops.concatenate( vds,vds1 );
                         }
+                    }
+                    if ( vds==null ) {
+                        getParent().postMessage( this, "first point of waveform package is not visible", Level.WARNING, null, null );
+                        return;
                     }
                     xds= SemanticOps.xtagsDataSet(vds); 
                     updateFirstLast(xAxis, yAxis, xds, vds );  // we need to reset firstIndex, lastIndex
