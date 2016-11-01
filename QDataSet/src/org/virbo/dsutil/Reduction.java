@@ -181,7 +181,13 @@ public class Reduction {
         }
 
         QDataSet x= (QDataSet) ds.property( QDataSet.DEPEND_0 );
-        if ( x==null ) x= new org.virbo.dataset.IndexGenDataSet(ds.length());
+        if ( x==null ) {
+            if ( ds.rank()==2 && SemanticOps.isBundle(ds) ) {
+                x= DataSetOps.unbundle(ds, 0); // often the x values.
+            } else {
+                x= new org.virbo.dataset.IndexGenDataSet(ds.length());
+            }
+        }
 
         int ny= ds.rank()==1 ? 1 : ds.length(0);
 
