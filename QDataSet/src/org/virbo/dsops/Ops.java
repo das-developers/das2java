@@ -9064,6 +9064,29 @@ public class Ops {
             return ArrayDataSet.append( ArrayDataSet.maybeCopy(c,ds1), ArrayDataSet.maybeCopy(c,ds2) );
         }
     }
+    
+    /**
+     * The first dataset's timetags are used to 
+     * synchronize the list of datasets to a set of common timetags. Presently,
+     * only interpolation is used, but other methods may be introduced soon.
+    
+     * @param ds1 the dataset providing timetags, or the timetags themselves.
+     * @param dss the N datasets
+     * @return a list of N datasets, synchronized
+     */
+    public static List<QDataSet> synchronize( QDataSet ds1, QDataSet ... dss ) {
+        QDataSet tt= (QDataSet) ds1.property( QDataSet.DEPEND_0 );
+        if ( tt==null && DataSetUtil.isMonotonic(ds1) ) tt= ds1;
+        List<QDataSet> result= new ArrayList<>();
+    
+        for ( QDataSet ds : dss ) {
+            QDataSet tt1= (QDataSet)ds.property( QDataSet.DEPEND_0 );
+            QDataSet ff= findex( tt1, tt );
+            ds= interpolate( ds, ff );
+            result.add( ds );
+        }
+        return result;        
+    }
             
     /**
      * convert the dataset to the target units
