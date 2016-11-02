@@ -474,8 +474,8 @@ public class DataSetAdapter {
 				
 				QDataSet qdsAncillary = new SimpleTable(dsPlane);
 				
-				if(sOp.equals("BIN_MAX")) qds.putProperty(QDataSet.BIN_PLUS, qdsAncillary);
-				if(sOp.equals("BIN_MIN")) qds.putProperty(QDataSet.BIN_MINUS, qdsAncillary);
+				if(sOp.equals("BIN_MAX")) qds.putProperty(QDataSet.BIN_MAX, qdsAncillary);
+				if(sOp.equals("BIN_MIN")) qds.putProperty(QDataSet.BIN_MIN, qdsAncillary);
 				
 				if(sOp.equals(QDataSet.DELTA_PLUS)) qds.putProperty(sOp, qdsAncillary);
 				if(sOp.equals(QDataSet.DELTA_MINUS)) qds.putProperty(sOp, qdsAncillary);

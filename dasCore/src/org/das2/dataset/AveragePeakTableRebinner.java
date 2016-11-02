@@ -31,6 +31,7 @@ import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.JoinDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
+import org.virbo.dsops.Ops;
 
 /**
  *
@@ -62,7 +63,11 @@ public class AveragePeakTableRebinner implements DataSetRebinner {
         
                 
         QDataSet weights = org.virbo.dataset.DataSetUtil.weightsDataSet(ds);
-        QDataSet peaks = (QDataSet) ds.property( QDataSet.BIN_PLUS );
+        QDataSet peaks = (QDataSet) ds.property( QDataSet.BIN_MAX );
+        if ( peaks==null ) {
+            QDataSet binPlus= (QDataSet) ds.property( QDataSet.BIN_PLUS );
+            if ( binPlus!=null ) peaks= Ops.add( ds, binPlus );
+        }
         
         //long timer= System.currentTimeMillis();
         
@@ -161,7 +166,7 @@ public class AveragePeakTableRebinner implements DataSetRebinner {
         
         result.putProperty( QDataSet.DEPEND_1, ytds );
         result.putProperty( QDataSet.WEIGHTS, wds );
-        result.putProperty( QDataSet.BIN_PLUS, pds );
+        result.putProperty( QDataSet.BIN_MAX, pds );
         
         return result;
         

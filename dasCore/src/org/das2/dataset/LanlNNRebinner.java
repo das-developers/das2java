@@ -22,7 +22,7 @@ import org.virbo.dsops.Ops;
 
 /**
  * DataSetRebinner for explicitly doing NN rebinning.  The AverageTableRebinner had been used for the purpose, and
- * there were numerous problems.  Also, this looks for BIN_PLUS and BIN_MINUS properties in the dataset.
+ * there were numerous problems.  Also, this looks for BIN_PLUS, BIN_MINUS, BIN_MAX, and BIN_MIN properties in the dataset.
  */
 public class LanlNNRebinner implements DataSetRebinner {
 
@@ -99,24 +99,28 @@ public class LanlNNRebinner implements DataSetRebinner {
 
             QDataSet xds= SemanticOps.xtagsDataSet(tds1);
             QDataSet xds0, xds1;
-            QDataSet binPlus= (QDataSet) xds.property(QDataSet.BIN_PLUS);
-            QDataSet binMinus= (QDataSet) xds.property(QDataSet.BIN_MINUS);
-            if ( SemanticOps.isBins(xds) ) {
-                xds0= Ops.slice1( xds, 0 );
-                xds1= Ops.slice1( xds, 1 );
-            } else if ( binPlus!=null && binMinus!=null ) {
-                xds0= Ops.subtract( xds, binMinus );
-                xds1= Ops.add( xds, binPlus );
-            }else {
-                QDataSet dx= getCadence( xds, ddX.binWidthDatum() );
-                if ( UnitsUtil.isRatiometric( SemanticOps.getUnits(dx) ) ) {
-                    double ddx= Math.sqrt( 1. + dx.value()/100. );
-                    xds0= Ops.divide( xds, DataSetUtil.asDataSet(ddx) );
-                    xds1= Ops.multiply( xds, DataSetUtil.asDataSet(ddx) );
+            xds1= (QDataSet) xds.property(QDataSet.BIN_MAX);
+            xds0= (QDataSet) xds.property(QDataSet.BIN_MIN);
+            if ( xds0==null ) {
+                QDataSet binPlus= (QDataSet) xds.property(QDataSet.BIN_PLUS);
+                QDataSet binMinus= (QDataSet) xds.property(QDataSet.BIN_MINUS);
+                if ( SemanticOps.isBins(xds) ) {
+                    xds0= Ops.slice1( xds, 0 );
+                    xds1= Ops.slice1( xds, 1 );
+                } else if ( binPlus!=null && binMinus!=null ) {
+                    xds0= Ops.subtract( xds, binMinus );
+                    xds1= Ops.add( xds, binPlus );
                 } else {
-                    dx= Ops.divide( dx, DataSetUtil.asDataSet(2) );
-                    xds0= Ops.subtract( xds, dx );
-                    xds1= Ops.add( xds, dx );
+                    QDataSet dx= getCadence( xds, ddX.binWidthDatum() );
+                    if ( UnitsUtil.isRatiometric( SemanticOps.getUnits(dx) ) ) {
+                        double ddx= Math.sqrt( 1. + dx.value()/100. );
+                        xds0= Ops.divide( xds, DataSetUtil.asDataSet(ddx) );
+                        xds1= Ops.multiply( xds, DataSetUtil.asDataSet(ddx) );
+                    } else {
+                        dx= Ops.divide( dx, DataSetUtil.asDataSet(2) );
+                        xds0= Ops.subtract( xds, dx );
+                        xds1= Ops.add( xds, dx );
+                    }
                 }
             }
             QDataSet yds= SemanticOps.ytagsDataSet(tds1);
@@ -126,33 +130,37 @@ public class LanlNNRebinner implements DataSetRebinner {
             yds0= yds0c.get(yds); // let's cache the result of this, since rank 2 yds datasets are slow. (http://www.rbsp-ect.lanl.gov/data_pub/rbspa/mageis/level2/rbspa_pre_ect-mageis-L2_$Y$m$d_v$(v,sep).cdf?FEDO)
             yds1= yds1c.get(yds);
 
-            if ( false ) { // set to true for debugging.
+            if ( true ) { // set to true for debugging.
                 yds0= null;
                 yds1= null;
             }
 
             if ( yds0==null || yds1==null ) {
-                binPlus= (QDataSet) yds.property(QDataSet.BIN_PLUS);
-                binMinus= (QDataSet) yds.property(QDataSet.BIN_MINUS);
-                if ( SemanticOps.isBins(yds) ) {
-                    yds0= Ops.slice1( yds, 0 );
-                    yds1= Ops.slice1( yds, 1 );
-                } else if ( binPlus!=null && binMinus!=null ) {
-                    yds0= Ops.subtract( yds, binMinus );
-                    yds1= Ops.add( yds, binPlus );
-                } else {
-                    if ( yds.rank()==2 ) {
-                        logger.info("inferring bounds rank 2 ytags, this can be slow.");
-                        // test code: vap+das2server:http://planet.physics.uiowa.edu/das/das2Server?dataset=juno/waves/flight/burst_hfwbr_hi.dsdf&start_time=2014-04-04T17:00:00.000Z&end_time=2014-04-04T21:00:00.000Z
-                        QDataSet[] bins= DataSetUtil.inferBinsRank2( yds );
-                        yds0= bins[0];
-                        yds1= bins[1];
-                    } else if ( yds.rank()==1 ) {
-                        QDataSet bins= DataSetUtil.inferBins( yds.rank()==2 ? yds.slice(0): yds );
-                        yds0= Ops.slice1( bins, 0 );
-                        yds1= Ops.slice1( bins, 1 );
+                yds0= (QDataSet) yds.property(QDataSet.BIN_MIN);
+                yds1= (QDataSet) yds.property(QDataSet.BIN_MAX);
+                if ( yds0==null ) {
+                    QDataSet binPlus= (QDataSet) yds.property(QDataSet.BIN_PLUS);
+                    QDataSet binMinus= (QDataSet) yds.property(QDataSet.BIN_MINUS);
+                    if ( SemanticOps.isBins(yds) ) {
+                        yds0= Ops.slice1( yds, 0 );
+                        yds1= Ops.slice1( yds, 1 );
+                    } else if ( binPlus!=null && binMinus!=null ) {
+                        yds0= Ops.subtract( yds, binMinus );
+                        yds1= Ops.add( yds, binPlus );
                     } else {
-                        throw new UnsupportedOperationException("bad rank on ytags: "+yds.rank());
+                        if ( yds.rank()==2 ) {
+                            logger.info("inferring bounds rank 2 ytags, this can be slow.");
+                            // test code: vap+das2server:http://planet.physics.uiowa.edu/das/das2Server?dataset=juno/waves/flight/burst_hfwbr_hi.dsdf&start_time=2014-04-04T17:00:00.000Z&end_time=2014-04-04T21:00:00.000Z
+                            QDataSet[] bins= DataSetUtil.inferBinsRank2( yds );
+                            yds0= bins[0];
+                            yds1= bins[1];
+                        } else if ( yds.rank()==1 ) {
+                            QDataSet bins= DataSetUtil.inferBins( yds.rank()==2 ? yds.slice(0): yds );
+                            yds0= Ops.slice1( bins, 0 );
+                            yds1= Ops.slice1( bins, 1 );
+                        } else {
+                            throw new UnsupportedOperationException("bad rank on ytags: "+yds.rank());
+                        }
                     }
                 }
                 yds0c.put( yds, yds0 );

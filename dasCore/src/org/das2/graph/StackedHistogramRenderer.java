@@ -62,6 +62,7 @@ import org.das2.datum.LocationUnits;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
+import org.virbo.dsops.Ops;
 
 /**
  *
@@ -315,7 +316,11 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
         DataSetRebinner rebinner = new Rebinner();
         
         QDataSet data=  rebinner.rebin(xtysData, xbins, null);
-        QDataSet peaks= (QDataSet) data.property(QDataSet.BIN_PLUS); // can be null for NN.
+        QDataSet peaks= (QDataSet) data.property(QDataSet.BIN_MAX); // can be null for NN.
+        if ( peaks==null ) {
+            peaks= (QDataSet) data.property(QDataSet.BIN_PLUS);
+            peaks= Ops.add( data, peaks );
+        }
         QDataSet weights= SemanticOps.weightsDataSet(data);
         
         DasAxis yAxis1= yAxis_1;
@@ -463,15 +468,16 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
 
             try {
                 QDataSet result;
+                QDataSet binMax= (QDataSet) ds.property(QDataSet.BIN_MAX);
                 QDataSet binPlus= (QDataSet) ds.property(QDataSet.BIN_PLUS);
-                if ( binPlus==null && x.binWidthDatum().lt( xwidth ) ) {
+                if ( binPlus==null && binMax==null && x.binWidthDatum().lt( xwidth ) ) {
                     logger.log(Level.FINE, "using rebinner {0}", highResRebinner);
                     result= highResRebinner.rebin( ds, x, y ); //Plasma Wave Group will have to update this
                 } else {
                     logger.log(Level.FINE, "using rebinner {0}", lowResRebinner);
                     result= lowResRebinner.rebin( ds, x, y ); //Plasma Wave Group will have to update this
                 }
-                
+
                 return result;
             } catch ( Exception e ) {
                 throw new DasException(e);
