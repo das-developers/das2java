@@ -330,7 +330,7 @@ public interface QDataSet {
      * This should be interpreted as the lower limit of the 100% confidence 
      * interval where a measurement was collected.  When this is found, BIN_PLUS
      * and BIN_MINUS should be ignored.
-     * @see #BIN_MINUS for one-standard deviation confidence interval.
+     * @see #BIN_MINUS which is the offset. 
      */
     public final static String BIN_MIN="BIN_MIN";
     
