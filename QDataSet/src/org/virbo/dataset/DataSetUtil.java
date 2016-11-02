@@ -301,6 +301,7 @@ public class DataSetUtil {
                     QDataSet.COORDINATE_FRAME,
                     QDataSet.DELTA_MINUS, QDataSet.DELTA_PLUS,
                     QDataSet.BIN_MINUS, QDataSet.BIN_PLUS,
+                    QDataSet.BIN_MIN, QDataSet.BIN_MAX,
                     QDataSet.WEIGHTS,
                     QDataSet.USER_PROPERTIES,
                     QDataSet.NOTES,

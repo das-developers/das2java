@@ -6577,7 +6577,7 @@ public class Ops {
 
     /**
      * like extent, but does not account for DELTA_PLUS, DELTA_MINUS,
-     * BIN_PLUS, or BIN_MINUS properties.  This was introduced to provide
+     * BIN_PLUS, BIN_MINUS, BIN_MIN or BIN_MAX properties.  This was introduced to provide
      * a fast way to identify constant datasets and the extent that non-constant 
      * datasets vary.
      * @param ds the dataset to measure the extent rank 1 or rank 2 bins
@@ -6718,6 +6718,14 @@ public class Ops {
             max= Ops.slice1(ds,1);
             ds= min;
             wds= Ops.slice1(wds,0);
+        }
+        
+        if ( ds.property(QDataSet.BIN_MAX )!=null ) {
+            max= (QDataSet)ds.property(QDataSet.BIN_MAX);
+        }
+        
+        if ( ds.property(QDataSet.BIN_MIN )!=null ) {
+            min= (QDataSet)ds.property(QDataSet.BIN_MIN);
         }
         
         int count=0;

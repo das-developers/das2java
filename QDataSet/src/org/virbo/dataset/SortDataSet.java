@@ -125,7 +125,14 @@ public class SortDataSet extends AbstractDataSet {
             if ( ds.rank()==0 ) ds= Ops.replicate(ds,source.length());
             properties.put( QDataSet.DELTA_MINUS, new SortDataSet( ds, sort ) );
         }
-        
+        ds= (QDataSet) source.property(QDataSet.BIN_MAX);
+        if ( ds!=null ) {
+            properties.put( QDataSet.BIN_MAX, new SortDataSet( ds, sort ) );
+        }
+        ds= (QDataSet) source.property(QDataSet.BIN_MIN);
+        if ( ds!=null ) {
+            properties.put( QDataSet.BIN_MIN, new SortDataSet( ds, sort ) );
+        }        
         properties.put( QDataSet.CACHE_TAG, null ); // note this null needs to hide the CACHE_TAG in the source.
         
         DataSetUtil.putProperties( DataSetUtil.getDimensionProperties(source,null), this );

@@ -330,9 +330,13 @@ public class Reduction {
         result.putProperty( QDataSet.DEPEND_0, xds );
         result.putProperty( QDataSet.WEIGHTS, wbuilder.getDataSet() );
 
-        result.putProperty( QDataSet.DELTA_MINUS, Ops.subtract( result, yminbuilder.getDataSet() ) );
-        result.putProperty( QDataSet.DELTA_PLUS, Ops.subtract( ymaxbuilder.getDataSet(), result ) );
-
+        QDataSet yminDs= yminbuilder.getDataSet();
+        QDataSet ymaxDs= ymaxbuilder.getDataSet();
+        result.putProperty( QDataSet.DELTA_MINUS, Ops.subtract( result, yminDs ) ); // TODO: This bad behavior should be deprecated.
+        result.putProperty( QDataSet.DELTA_PLUS, Ops.subtract( ymaxDs, result ) );
+        result.putProperty( QDataSet.BIN_MIN, yminDs );
+        result.putProperty( QDataSet.BIN_MAX, ymaxDs );
+        
         logger.log( Level.FINE, "time to reducex({0} records -> {1} records) (ms): {2}", new Object[] { ds.length(), result.length(), System.currentTimeMillis()-t0 } );
         
         //System.err.println( String.format( "time to reducex(%d records -> %d records) (ms): %d", ds.length(), result.length(), System.currentTimeMillis()-t0) );

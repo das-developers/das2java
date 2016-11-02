@@ -460,7 +460,14 @@ public class QDataSetStreamHandler implements StreamHandler {
             if (s != null) {
                 result.putProperty(propertyName, getDataSetInternal(s));
             }
-        }        
+        }
+        for (int i = 0; i < 2; i++) {
+            String propertyName = i == 0 ? "BIN_MIN" : "BIN_MAX";
+            String s = (String) result.property(propertyName);
+            if (s != null) {
+                result.putProperty(propertyName, getDataSetInternal(s));
+            }
+        }
         {
             String propertyName = "WEIGHTS";
             String s = (String) result.property(propertyName);
