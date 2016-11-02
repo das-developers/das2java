@@ -275,8 +275,8 @@ public interface QDataSet {
     public final static String MONOTONIC="MONOTONIC";
     
     /**
-     * RankZeroDataSet, the expected distance between successive measurements 
-     * where it is valid to make inferences about the data.
+     * QDataSet of rank0, which is the expected distance between successive 
+     * measurements where it is valid to make inferences about the data.
      * For example, interpolation is disallowed for points 1.5*CADENCE apart.  
      * This property only makes sense with a tags dataset.  Note this may be
      * a "ratiometric" datum, like 110 percentIncrease, for logarithmically 
@@ -310,11 +310,29 @@ public interface QDataSet {
     public final static String BIN_PLUS="BIN_PLUS";
 
     /**
-     * QDataSet of rank 0 or correlated plane identifies boundary. This is subtracted from the
+     * QDataSet of rank 0 or correlated QDataSet identifies boundary. This is subtracted from the
      * measurements and should be interpreted as the lower limit of the 100% confidence interval where a measurement was collected.
      * @see #DELTA_MINUS for one-standard deviation confidence interval.
      */
     public final static String BIN_MINUS="BIN_MINUS";
+
+    /**
+     * QDataSet of rank 1 identifies boundary in the same units as the dataset. 
+     * This should be interpreted as the upper limit of 100% confidence 
+     * interval where a measurement was collected.  When this is found, BIN_PLUS
+     * and BIN_MINUS should be ignored.
+     * @see #BIN_PLUS which is the offset. 
+     */
+    public final static String BIN_MAX="BIN_MAX";
+
+    /**
+     * QDataSet of rank 1 identifies boundary in the same units as the dataset.
+     * This should be interpreted as the lower limit of the 100% confidence 
+     * interval where a measurement was collected.  When this is found, BIN_PLUS
+     * and BIN_MINUS should be ignored.
+     * @see #BIN_MINUS for one-standard deviation confidence interval.
+     */
+    public final static String BIN_MIN="BIN_MIN";
     
     /**
      * CacheTag, indicating the coverage and resolution of a dimension.  This is 
