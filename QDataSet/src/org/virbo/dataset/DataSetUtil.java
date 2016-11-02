@@ -401,7 +401,7 @@ public class DataSetUtil {
             return PROPERTY_TYPE_STRING;
         } else if ( name.startsWith(QDataSet.SOURCE) || name.startsWith(QDataSet.VERSION) || name.equals(QDataSet.METADATA_MODEL) ) {
             return PROPERTY_TYPE_STRING;
-        } else if ( name.startsWith("DEPEND_") || name.startsWith("BUNDLE_") || name.startsWith("DELTA_") || name.startsWith("BIN_")) {
+        } else if ( name.startsWith("DEPEND_") || name.startsWith("BUNDLE_") || name.startsWith("DELTA_") || name.startsWith("BIN_") || name.startsWith("CONTEXT_")) {
             return PROPERTY_TYPE_QDATASET;
         } else {
             return null;
