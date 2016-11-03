@@ -9109,6 +9109,45 @@ public class Ops {
         }
         return result;        
     }
+    
+    /**
+     * The first dataset's timetags are used to 
+     * synchronize the list of datasets to a set of common timetags. This uses
+     * nearest neighbor interpolation.
+     * Note that when one of the dataset's DEPEND_0 is not monotonic, a 
+     * monotonic subset of its points will be used.
+    
+     * @param ds1 the dataset providing timetags, or the timetags themselves.
+     * @param dss the N datasets
+     * @return a list of N datasets, synchronized
+     */
+    public static List<QDataSet> synchronizeNN( QDataSet ds1, QDataSet ... dss ) {
+        QDataSet tt= (QDataSet) ds1.property( QDataSet.DEPEND_0 );
+        if ( tt==null && DataSetUtil.isMonotonic(ds1) ) tt= ds1;
+        
+        List<QDataSet> result= new ArrayList<>();
+    
+        int iarg=0;
+        for ( QDataSet ds : dss ) {
+            QDataSet tt1= (QDataSet)ds.property( QDataSet.DEPEND_0 );
+            QDataSet ff;
+            try {
+                ff= findex( tt1, tt );
+            } catch ( IllegalArgumentException ex ) {  // data is not monotonic
+                logger.log(Level.WARNING, "when calling synchronize, DEPEND_0 was not monotonic for dss argument #{0}, using monotonic subset of points", iarg);
+                QDataSet dsx=Ops.monotonicSubset(ds);
+                logger.log(Level.INFO, "monotonicSubset removes {0} records", (ds.length()-dsx.length()));
+                ds= dsx;
+                tt1= (QDataSet)ds.property( QDataSet.DEPEND_0 );
+                ff= findex( tt1, tt );
+            }
+            ff= Ops.round(ff);
+            ds= interpolate( ds, ff );
+            result.add( ds );
+            iarg++;
+        }
+        return result;        
+    }  
             
     /**
      * convert the dataset to the target units
