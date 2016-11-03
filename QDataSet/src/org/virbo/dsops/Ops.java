@@ -9077,6 +9077,8 @@ public class Ops {
      * The first dataset's timetags are used to 
      * synchronize the list of datasets to a set of common timetags. Presently,
      * only interpolation is used, but other methods may be introduced soon.
+     * Note that when one of the dataset's DEPEND_0 is not monotonic, a 
+     * monotonic subset of its points will be used.
     
      * @param ds1 the dataset providing timetags, or the timetags themselves.
      * @param dss the N datasets
