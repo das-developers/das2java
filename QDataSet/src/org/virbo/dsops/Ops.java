@@ -9112,7 +9112,7 @@ public class Ops {
     
     /**
      * The first dataset's timetags are used to 
-     * synchronize the list of datasets to a set of common timetags. This uses
+     * synchronize the list of datasets to a set of common timetags, using
      * nearest neighbor interpolation.
      * Note that when one of the dataset's DEPEND_0 is not monotonic, a 
      * monotonic subset of its points will be used.
