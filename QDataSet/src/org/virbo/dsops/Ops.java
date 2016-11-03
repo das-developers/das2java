@@ -9087,11 +9087,23 @@ public class Ops {
         if ( tt==null && DataSetUtil.isMonotonic(ds1) ) tt= ds1;
         List<QDataSet> result= new ArrayList<>();
     
+        int iarg=0;
         for ( QDataSet ds : dss ) {
             QDataSet tt1= (QDataSet)ds.property( QDataSet.DEPEND_0 );
-            QDataSet ff= findex( tt1, tt );
+            QDataSet ff;
+            try {
+                ff= findex( tt1, tt );
+            } catch ( IllegalArgumentException ex ) {  // data is not monotonic
+                logger.log(Level.WARNING, "when calling synchronize, DEPEND_0 was not monotonic for dss argument #{0}, using monotonic subset of points", iarg);
+                QDataSet dsx=Ops.monotonicSubset(ds);
+                logger.log(Level.INFO, "monotonicSubset removes {0} records", (ds.length()-dsx.length()));
+                ds= dsx;
+                tt1= (QDataSet)ds.property( QDataSet.DEPEND_0 );
+                ff= findex( tt1, tt );
+            }
             ds= interpolate( ds, ff );
             result.add( ds );
+            iarg++;
         }
         return result;        
     }
