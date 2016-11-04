@@ -966,8 +966,8 @@ public class AsciiParser {
      */
     private void parseMeta( String header, DataSetBuilder builder ) {
 
-        boolean doJSON= isRichHeader(header);
-
+        boolean doJSON= isRichHeader(header); 
+        
         if ( doJSON ) {
             try {
                 //System.err.println( "== JSON Header == \n"+header );
