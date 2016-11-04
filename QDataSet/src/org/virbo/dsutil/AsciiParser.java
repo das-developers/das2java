@@ -926,7 +926,8 @@ public class AsciiParser {
     /**
      * return true if the header appears to contain JSON code which could be
      * interpreted as a "Rich Header" (a.k.a. JSONHeadedASCII).  This is 
-     * a very simple test, simply looking for <code>#{</code> and <code>#}</code>.
+     * a very simple test, simply looking for <code>#{</code> and <code>#}</code>
+     * with a colon contained within.
      * @see https://github.com/JSONheadedASCII/examples
      * @param header string containing the commented header.
      * @return true if parsing as a Rich Header should be attempted.
@@ -938,11 +939,14 @@ public class AsciiParser {
         Pattern p= Pattern.compile(hash+"\\s*\\{");
         Matcher m= p.matcher(header);
         if ( m.find() ) {
-            int istart= m.end();
+            int istart= m.start();
+            int iend= m.end();
             p= Pattern.compile(hash+".*\\}");
             m= p.matcher(header);
-            if ( m.find(istart) ) {
-                return true;
+            if ( m.find( iend ) ) {
+                iend= m.end();
+                String jsonSrc= header.substring(istart,iend);
+                return jsonSrc.length()>30 && jsonSrc.contains(":");
             }
         }
         return false;
