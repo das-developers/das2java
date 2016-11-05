@@ -9077,7 +9077,7 @@ public class Ops {
      * The first dataset's timetags are used to 
      * synchronize the single dataset to common timetags. Presently,
      * only interpolation is used, but other methods may be introduced soon.
-    
+     * Ordinal units use the nearest neighbor interpolation.    
      * @param ds1 the dataset providing timetags, or the timetags themselves.
      * @param ds the dataset to synch up.
      * @return the one dataset, synchronized.
@@ -9088,6 +9088,8 @@ public class Ops {
     
         QDataSet tt1= (QDataSet)ds.property( QDataSet.DEPEND_0 );
         QDataSet ff= findex( tt1, tt );
+        boolean nn= UnitsUtil.isOrdinalMeasurement( SemanticOps.getUnits(ds) );
+        if ( nn ) ff= Ops.round(ff);        
         ds= interpolate( ds, ff );
 
         return ds;        
@@ -9099,7 +9101,7 @@ public class Ops {
      * only interpolation is used, but other methods may be introduced soon.
      * Note that when one of the dataset's DEPEND_0 is not monotonic, a 
      * monotonic subset of its points will be used.
-    
+     * Ordinal units use the nearest neighbor interpolation.
      * @param ds1 the dataset providing timetags, or the timetags themselves.
      * @param dss the N datasets to synch up.
      * @return a list of N datasets, synchronized
@@ -9126,6 +9128,8 @@ public class Ops {
                 tt1= (QDataSet)ds.property( QDataSet.DEPEND_0 );
                 ff= findex( tt1, tt );
             }
+            boolean nn= UnitsUtil.isOrdinalMeasurement( SemanticOps.getUnits(ds) );
+            if ( nn ) ff= Ops.round(ff);
             ds= interpolate( ds, ff );
             result.add( ds );
             iarg++;
