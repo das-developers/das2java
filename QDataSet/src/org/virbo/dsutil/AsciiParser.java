@@ -946,7 +946,7 @@ public class AsciiParser {
             if ( m.find( iend ) ) {
                 iend= m.end();
                 String jsonSrc= header.substring(istart,iend);
-                return jsonSrc.length()>30 && jsonSrc.contains(":");
+                return jsonSrc.contains(":");
             }
         }
         return false;
