@@ -9075,22 +9075,45 @@ public class Ops {
     
     /**
      * The first dataset's timetags are used to 
+     * synchronize the single dataset to common timetags. Presently,
+     * only interpolation is used, but other methods may be introduced soon.
+    
+     * @param ds1 the dataset providing timetags, or the timetags themselves.
+     * @param ds the dataset to synch up.
+     * @return the one dataset, synchronized.
+     */
+    public static QDataSet synchronizeOne( QDataSet ds1, QDataSet ds ) {
+        QDataSet tt= (QDataSet) ds1.property( QDataSet.DEPEND_0 );
+        if ( tt==null && DataSetUtil.isMonotonic(ds1) ) tt= ds1;
+    
+        QDataSet tt1= (QDataSet)ds.property( QDataSet.DEPEND_0 );
+        QDataSet ff= findex( tt1, tt );
+        ds= interpolate( ds, ff );
+
+        return ds;        
+    }
+    
+    /**
+     * The first dataset's timetags are used to 
      * synchronize the list of datasets to a set of common timetags. Presently,
      * only interpolation is used, but other methods may be introduced soon.
      * Note that when one of the dataset's DEPEND_0 is not monotonic, a 
      * monotonic subset of its points will be used.
     
      * @param ds1 the dataset providing timetags, or the timetags themselves.
-     * @param dss the N datasets
+     * @param dss the N datasets to synch up.
      * @return a list of N datasets, synchronized
      */
     public static List<QDataSet> synchronize( QDataSet ds1, QDataSet ... dss ) {
         QDataSet tt= (QDataSet) ds1.property( QDataSet.DEPEND_0 );
         if ( tt==null && DataSetUtil.isMonotonic(ds1) ) tt= ds1;
         List<QDataSet> result= new ArrayList<>();
-    
         int iarg=0;
         for ( QDataSet ds : dss ) {
+            if ( ds==ds1 ) {
+                result.add( ds );
+                continue;
+            }
             QDataSet tt1= (QDataSet)ds.property( QDataSet.DEPEND_0 );
             QDataSet ff;
             try {
@@ -9129,6 +9152,10 @@ public class Ops {
     
         int iarg=0;
         for ( QDataSet ds : dss ) {
+            if ( ds==ds1 ) {
+                result.add( ds );
+                continue;
+            }
             QDataSet tt1= (QDataSet)ds.property( QDataSet.DEPEND_0 );
             QDataSet ff;
             try {
