@@ -327,7 +327,7 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
                     yds= SemanticOps.ytagsDataSet(tds);
 
                     String zAsString;
-                    if (tds != null && snapping) {
+                    if ( snapping) {
                         int[] ij = new int[2];
                         zAsString = getZString(tds, x, y, ij);
                         x = SemanticOps.getDatum( xds, xds.value(ij[0]) );
@@ -335,9 +335,7 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
                         y = SemanticOps.getDatum( yds, yds.value(ij[1]) );
                         yAsString = nfy.format(y);
                     } else {
-                        if ( tds==null ) {
-                            zAsString= "N/A";
-                        } else if ( Schemes.isCompositeImage(ds) ) {
+                        if ( Schemes.isCompositeImage(ds) ) {
                             zAsString = "!c" + getZComponentsString( tds, x, y );
                         } else {
                             zAsString = getZString(tds, x, y, null);
