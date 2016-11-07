@@ -141,16 +141,14 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
     protected byte[] readBytes(InputStream in) throws DasException {
         LinkedList<byte[]> list = new LinkedList();
         byte[] data = new byte[4096];
-        int bytesRead=0;
-        //int totalBytesRead=0;
+        int bytesRead;
+
         int lastBytesRead = -1;
         int offset=0;
-        //long time = System.currentTimeMillis();
         
         try {
             bytesRead= in.read(data,offset,4096-offset);
             while (bytesRead != -1) {
-                //int bytesSoFar = totalBytesRead;
                 offset+=bytesRead;
                 lastBytesRead= offset;
                 if (offset==4096) {
@@ -158,7 +156,6 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
                     data = new byte[4096];
                     offset=0;
                 }
-                //totalBytesRead+= bytesRead;
                 bytesRead= in.read(data,offset,4096-offset);
             }
         } catch ( IOException e ) {
@@ -169,7 +166,7 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
             list.addLast(data);
         }
         
-        if (list.size()== 0) {
+        if (list.isEmpty()) {
             throw new DasIOException("Error reading data: no data available");
         }
         int dataLength = (list.size()-1)*4096 + lastBytesRead;
@@ -328,10 +325,8 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
             }
             StreamMultiYDescriptor[] yDescriptors = (StreamMultiYDescriptor[])sd.getYDescriptors().toArray(new StreamMultiYDescriptor[0]);
             int planeCount = yDescriptors.length - 1;
-            String[] planeIDs = new String[planeCount];
             int recordSize = sd.getXDescriptor().getSizeBytes() + yDescriptors[0].getSizeBytes();
             for (int planeIndex = 0; planeIndex < planeCount; planeIndex++) {
-                planeIDs[planeIndex] = yDescriptors[planeIndex+1].getName();
                 recordSize += yDescriptors[planeIndex+1].getSizeBytes();
             }
             ByteBuffer data = getByteBuffer(in);
@@ -352,7 +347,7 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
             }
             
             if ( properties.containsKey("x_sample_width") ) {
-                properties.put( "xTagWidth", Datum.create( ((Double)properties.get("x_sample_width")).doubleValue(),
+                properties.put( "xTagWidth", Datum.create( ((Double)properties.get("x_sample_width") ),
                 Units.seconds ) );
             }
             
@@ -361,7 +356,7 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
             return result;
         }
         catch (DasException de) {
-            de.printStackTrace();
+            logger.log( Level.WARNING, de.getMessage(), de );
             throw de;
         }
     }
@@ -412,7 +407,7 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
         }
         
         if ( properties.containsKey("x_sample_width") ) {
-            properties.put( "xTagWidth", Datum.create( ((Double)properties.get("x_sample_width")).doubleValue(),
+            properties.put( "xTagWidth", Datum.create( ((Double)properties.get("x_sample_width") ),
             Units.seconds ) );
         }
         
@@ -450,12 +445,7 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
         catch ( ParserConfigurationException ex ) {
             throw new IllegalStateException(ex.getMessage());
         }
-        catch ( StreamTool.DelimeterNotFoundException dnfe) {
-            DasIOException dioe = new DasIOException(dnfe.getMessage());
-            dioe.initCause(dioe);
-            throw dioe;
-        }
-        catch ( StreamException dnfe) {
+        catch ( StreamTool.DelimeterNotFoundException | StreamException dnfe) {
             DasIOException dioe = new DasIOException(dnfe.getMessage());
             dioe.initCause(dioe);
             throw dioe;
