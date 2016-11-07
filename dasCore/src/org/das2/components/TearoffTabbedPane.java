@@ -458,8 +458,8 @@ public class TearoffTabbedPane extends JTabbedPane {
      */
     public void peek() {
         System.err.println("--");
-        for ( Component key: tabs.keySet() ) {
-            TabDesc d = (TabDesc) tabs.get(key);
+        for ( Entry<Component,TabDesc> entry : tabs.entrySet() ) {
+            TabDesc d = (TabDesc) entry.getValue();
             System.err.println(d);
         }
     }
@@ -468,11 +468,11 @@ public class TearoffTabbedPane extends JTabbedPane {
 
         TabDesc desc = null;
         Component babyComponent = null;
-        for ( Component key: tabs.keySet() ) {
-            TabDesc d = (TabDesc) tabs.get(key);
+        for (  Entry<Component,TabDesc> entry : tabs.entrySet() ) {
+            TabDesc d = (TabDesc) entry.getValue();
             if (d.index == selectedTab) {
                 desc = d;
-                babyComponent = key;
+                babyComponent = entry.getKey();
                 break;
             }
         }
@@ -546,8 +546,8 @@ public class TearoffTabbedPane extends JTabbedPane {
         TearoffTabbedPane last=null;
         TearoffTabbedPane me= getTabbedPane( draggingFrame );
 
-        for ( Component key: tabs.keySet() ) {
-            TabDesc d = (TabDesc) tabs.get(key);
+        for (  Entry<Component,TabDesc> entry : tabs.entrySet() ) {
+            TabDesc d = (TabDesc) entry.getValue();
             if ( d.babysitter!=null ) {
                 Component maybe= getTabbedPane(d.babysitter);
                 if ( maybe!=null && maybe!=me ) {
@@ -1119,10 +1119,10 @@ public class TearoffTabbedPane extends JTabbedPane {
      * @return 
      */
     private Component getTabComponentByIndex(int index) {
-        for (Component key : tabs.keySet()) {
-            TabDesc td = tabs.get(key);
+        for (  Entry<Component,TabDesc> entry : tabs.entrySet() ) {
+            TabDesc td = entry.getValue();
             if (td.index == index) {
-                return key;
+                return entry.getKey();
             }
         }
         return null;
