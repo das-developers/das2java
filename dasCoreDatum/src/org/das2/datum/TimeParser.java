@@ -1368,6 +1368,8 @@ public class TimeParser {
                         case 9:
                             time.micros = digit;
                             break;
+                        default:
+                            throw new IllegalArgumentException("handlers[idigit] was not expected value (which shouldn't happen)");
                     }
                 } else if (handlers[idigit] == 100) {
                     FieldHandler handler = (FieldHandler) fieldHandlers.get(fc[idigit]);
