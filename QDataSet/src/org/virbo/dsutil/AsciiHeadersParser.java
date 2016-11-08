@@ -430,11 +430,15 @@ public class AsciiHeadersParser {
                 } else {
                     String lookFor= name;
                     int icol= -1;
+                    elementNames= new String[total];
+                    for ( int i=0; i<total; i++ ) {
+                        elementNames[i]= name + "_" + i;
+                    }
                     for ( int j=0; j<columns.length; j++ ) {
                         if ( columns[j].equals(lookFor) ) {
                             logger.log( Level.FINE, "found column named {0} at {1}", new Object[]{lookFor, j} );
                             icol= j;
-                            bd.addDataSet( name, ids, idims, null, labels ); // findbugs NP_LOAD_OF_KNOWN_NULL_VALUE
+                            bd.addDataSet( name, ids, idims, elementNames, labels ); // findbugs NP_LOAD_OF_KNOWN_NULL_VALUE
                             break;
                         }
                     }
@@ -442,7 +446,7 @@ public class AsciiHeadersParser {
                         if ( jo1.has("START_COLUMN") ) {
                             icol=  jo1.getInt("START_COLUMN");
                             logger.log( Level.FINE, "using START_COLUMN={1} property for {0}", new Object[]{lookFor, icol } );
-                            bd.addDataSet( name, ids, idims );
+                            bd.addDataSet( name, ids, idims, elementNames, labels );
                         } else {
                             if ( jo1.has("VALUES") ) {
                                 int n= DataSetUtil.product(idims);
