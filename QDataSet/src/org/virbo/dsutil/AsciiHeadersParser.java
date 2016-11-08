@@ -303,9 +303,9 @@ public class AsciiHeadersParser {
                         throw new IllegalArgumentException( "Expected array for DIMENSION in "+ jsonName );
                     }
                 }
-                if ( idims.length>1 ) {
-                    throw new IllegalArgumentException("only rank 2 datasets supported, DIMENSION len="+ idims.length );
-                }
+                //if ( idims.length>1 ) {
+                //    throw new IllegalArgumentException("only rank 2 datasets supported, DIMENSION len="+ idims.length );
+                //}
                 int total= idims.length==0 ? 1 : idims[0];
                 for ( int j=1;j<idims.length; j++) {
                     total*= idims[j];
@@ -348,12 +348,18 @@ public class AsciiHeadersParser {
                         int count= 0;
                         List<Integer> icols= new ArrayList();
                         if ( !jo1.has("VALUES") ) {
-                            for ( int j=0; j<columns.length; j++ ) {
-                                if ( columns[j].equals(lookFor) ) {
-                                    logger.log( Level.FINE, "found column named {0} at {1}", new Object[]{lookFor, j} );
-                                    if ( count==0 ) icol= j;
-                                    count++;
-                                    icols.add(j);
+                            if ( jo1.has("START_COLUMN") ) {
+                                icol= jo1.getInt("START_COLUMN");
+                                icols.add( icol );
+                            } else {
+                                //early version of JSONHeadedASCII (rich ascii) allowed lookups.
+                                for ( int j=0; j<columns.length; j++ ) {
+                                    if ( columns[j].equals(lookFor) ) {
+                                        logger.log( Level.FINE, "found column named {0} at {1}", new Object[]{lookFor, j} );
+                                        if ( count==0 ) icol= j;
+                                        count++;
+                                        icols.add(j);
+                                    }
                                 }
                             }
                         }
@@ -372,9 +378,6 @@ public class AsciiHeadersParser {
                                 }
                                 bd.addDataSet( name, ids, idims, elementNames, labels );
                             } else {
-                                if ( jo1.has("START_COLUMN") ) {
-                                    logger.log( Level.FINE, "ignoring START_COLUMN property for {0}", new Object[]{lookFor } );
-                                }
                                 if ( labels==null ) {
                                     labels= new String[elementNames.length];
                                     for ( int i=0; i<elementNames.length; i++ ) labels[i]= columnLabels[i+icol];
