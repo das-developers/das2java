@@ -348,18 +348,13 @@ public class AsciiHeadersParser {
                         int count= 0;
                         List<Integer> icols= new ArrayList();
                         if ( !jo1.has("VALUES") ) {
-                            if ( jo1.has("START_COLUMN") ) {
-                                icol= jo1.getInt("START_COLUMN");
-                                icols.add( icol );
-                            } else {
-                                //early version of JSONHeadedASCII (rich ascii) allowed lookups.
-                                for ( int j=0; j<columns.length; j++ ) {
-                                    if ( columns[j].equals(lookFor) ) {
-                                        logger.log( Level.FINE, "found column named {0} at {1}", new Object[]{lookFor, j} );
-                                        if ( count==0 ) icol= j;
-                                        count++;
-                                        icols.add(j);
-                                    }
+                            //early version of JSONHeadedASCII (rich ascii) allowed lookups.
+                            for ( int j=0; j<columns.length; j++ ) {
+                                if ( columns[j].equals(lookFor) ) {
+                                    logger.log( Level.FINE, "found column named {0} at {1}", new Object[]{lookFor, j} );
+                                    if ( count==0 ) icol= j;
+                                    count++;
+                                    icols.add(j);
                                 }
                             }
                         }
