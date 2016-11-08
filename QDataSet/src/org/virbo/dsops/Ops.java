@@ -68,6 +68,7 @@ import org.virbo.dataset.SDataSet;
 import org.virbo.dataset.SemanticOps;
 import org.virbo.dataset.TransposeRank2DataSet;
 import org.virbo.dataset.DataSetAnnotations;
+import static org.virbo.dataset.DataSetUtil.propertyNames;
 import org.virbo.dataset.IndexListDataSetIterator;
 import org.virbo.dataset.SortDataSet;
 import org.virbo.dataset.SparseDataSet;
@@ -98,7 +99,7 @@ import org.virbo.math.Contour;
 public class Ops {
 
     private static final Logger logger= LoggerManager.getLogger("qdataset.ops");
-    
+
     /**
      * this class cannot be instantiated.
      */
@@ -3807,6 +3808,32 @@ public class Ops {
 
         return result;
     }
+
+    /**
+     * copy over all the indexed properties into the mutable property dataset.
+     * This was introduced to support DataSetOps.unbundle, but should probably
+     * always be used.
+     * See https://sourceforge.net/p/autoplot/bugs/1704/
+     *
+     * @param srcds the source dataset
+     * @param mds the destination dataset
+     */
+    public static void copyIndexedProperties(QDataSet srcds, MutablePropertyDataSet mds) {
+        
+        String[] names = propertyNames();
+
+        for (String name : names) {
+            for ( int i=0; i<srcds.length(); i++ ) {
+                Object p= srcds.property(name, i);
+                if ( p!=null ) {
+                    mds.putProperty( name, i, p );
+                }
+            }
+        }
+
+    }
+    
+    
 
     /**
      * copy the dataset to make a new one that is writable.  When a join dataset is copied, a WritableJoinDataSet is used
