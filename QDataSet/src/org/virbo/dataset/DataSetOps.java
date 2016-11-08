@@ -1538,7 +1538,9 @@ public class DataSetOps {
                 }
             }
             if ( last!=first ) {
-                props.put( QDataSet.BUNDLE_1, bundle.trim(first,last+1) );
+                MutablePropertyDataSet mds= Ops.copy(bundle.trim(first,last+1) );
+                mds.putProperty( QDataSet.START_INDEX, 0, 0 );
+                props.put( QDataSet.BUNDLE_1, mds );
             }
 
             if ( bundleDs.rank()>1 ) {
