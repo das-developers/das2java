@@ -430,9 +430,11 @@ public class AsciiHeadersParser {
                 } else {
                     String lookFor= name;
                     int icol= -1;
-                    elementNames= new String[total];
-                    for ( int i=0; i<total; i++ ) {
-                        elementNames[i]= name + "_" + i;
+                    if ( total>1 ) {
+                        elementNames= new String[total];
+                        for ( int i=0; i<total; i++ ) {
+                            elementNames[i]= name + "_" + i;
+                        }
                     }
                     for ( int j=0; j<columns.length; j++ ) {
                         if ( columns[j].equals(lookFor) ) {
