@@ -283,7 +283,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             }
             if (j < x.data.length) {
                 Datum d = x.get(j);
-                if ( j==0 && timeFormatter!=null ) {
+                if ( j==0 && timeFormatter!=null && UnitsUtil.isTimeLocation( d.getUnits() ) ) {
                     return timeFormatter.format(d);
                 } else {
                     DatumFormatter format = d.getFormatter();
