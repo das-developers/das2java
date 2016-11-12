@@ -578,18 +578,21 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             r.newLine();
             
             if ( dataPoints1.size()>0 ) {
-                TimeParser timeFormatter;
+                TimeParser ltimeFormatter;
                 if ( getTimeFormat().length()>0 ) {
-                    timeFormatter= TimeParser.create(timeFormat);
+                    ltimeFormatter= TimeParser.create(timeFormat);
                 } else {
-                    timeFormatter = null;
+                    ltimeFormatter = null;
                 }
                 for (int i = 0; i < dataPoints1.size(); i++) {
                     DataPoint x = (DataPoint) dataPoints1.get(i);
+                    if ( ltimeFormatter!=null && !UnitsUtil.isTimeLocation( x.get(0).getUnits() ) ) {
+                        ltimeFormatter= null;
+                    }
                     StringBuilder s = new StringBuilder();
                     for (int j = 0; j < 2; j++) {
-                        if ( j==0 && timeFormatter!=null ) { //TODO: this should be done by units.
-                            s.append( timeFormatter.format( x.get(j) ) ).append("\t");
+                        if ( j==0 && ltimeFormatter!=null ) { //TODO: this should be done by units.
+                            s.append( ltimeFormatter.format( x.get(j) ) ).append("\t");
                         } else {
                             DatumFormatter formatter = x.get(j).getFormatter();
                             s.append(formatter.format(x.get(j), unitsArray[j])).append("\t");
