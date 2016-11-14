@@ -1470,14 +1470,16 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     }
 
     /**
-     * append the rank 2 data.
+     * append the rank 2 data.  The data should be rank 2, with a DEPEND_0.
      * TODO: untested!!!!
      * @param ds rank 2 bundle dataset.
      */
     public void appendDataSet( QDataSet ds ) {
         Map planesMap = new LinkedHashMap();
 
+        if ( ds.rank()!=2 ) throw new IllegalArgumentException("dataset should be rank 2");
         QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
+        if ( dep0==null ) throw new IllegalArgumentException("dataset should have DEPEND_0");
         
         if ( dep0.property(QDataSet.CADENCE) != null) {
             DataPointRecorder.this.xTagWidth = DataSetUtil.asDatum( (QDataSet)dep0.property(QDataSet.CADENCE) );
@@ -1492,7 +1494,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                 if (!planes[j].equals("")) {
                     planesMap.put( planes[j], DataSetUtil.asDatum( DataSetOps.unbundle( ds, planes[j] ).slice(i) ) );
                 }
-                }
+            }
             addDataPoint( DataSetUtil.asDatum( dep0.slice(i) ), DataSetUtil.asDatum( ds.slice(i).slice(0) ), planesMap );
         }
 
