@@ -214,7 +214,7 @@ public class DatumRangeUtil {
      * @return the lsd least significant digit
      */
     public static int parseISO8601Datum( String str, int[] result, int lsd ) {
-        StringTokenizer st= new StringTokenizer( str, "-T:.Z", true );
+        StringTokenizer st= new StringTokenizer( str, "-T:.Z+", true );
         Object dir= null;
         final Object DIR_FORWARD = "f";
         final Object DIR_REVERSE = "r";
