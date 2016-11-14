@@ -33,6 +33,7 @@ import org.das2.datum.DatumRange;
 import org.das2.datum.DatumRangeUtil;
 import org.das2.datum.DatumUtil;
 import org.das2.datum.InconvertibleUnitsException;
+import org.das2.datum.TimeLocationUnits;
 import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
 import org.das2.math.filter.Butterworth;
@@ -4288,7 +4289,7 @@ public class Ops {
                return DataSetUtil.asDataSet( DatumUtil.parse(sarg) ); //TODO: someone is going to want lookupUnits that will allocate new units.
             } catch (ParseException ex) {
                try {
-                   return DataSetUtil.asDataSet(TimeUtil.create(sarg));
+                   return DataSetUtil.asDataSet( Units.us2000.parse(sarg) );
                } catch ( ParseException ex2 ) {
                    try {
                       DatumRange dr= DatumRangeUtil.parseISO8601Range(sarg);
