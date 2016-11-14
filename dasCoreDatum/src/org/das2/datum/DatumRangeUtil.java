@@ -195,6 +195,15 @@ public class DatumRangeUtil {
     }
     
     /**
+     * for convenience, this formats the decomposed time.
+     * @param result seven-element time [ Y,m,d,H,M,S,nanos ] 
+     * @return formatted time
+     */
+    public static String formatISO8601Datum( int[] result ) {
+        return String.format( "%04d-%02d-%02dT%02d:%02d:%02d.%09dZ", result[0], result[1], result[2], result[3], result[4], result[5], result[6] );
+    }
+    
+    /**
      * new attempt to write a clean ISO8601 parser.  This should also parse 02:00
      * in the context of 2010-002T00:00/02:00.  This does not support 2-digit years, which
      * were removed in ISO 8601:2004.
@@ -211,10 +220,36 @@ public class DatumRangeUtil {
         final Object DIR_REVERSE = "r";
         int want= 0;
         boolean haveDelim= false;
+        boolean afterT= false;
         while ( st.hasMoreTokens() ) {
             char delim= ' ';
             if ( haveDelim ) {
                 delim= st.nextToken().charAt(0);
+                if ( delim=='T' ) afterT= true;
+                if ( afterT && ( delim=='-' || delim=='+' ) ) { // Time offset
+                    StringBuilder toff= new StringBuilder( String.valueOf(delim) );
+                    while ( st.hasMoreElements() ) {
+                        toff.append(st.nextToken());
+                    }
+                    int deltaHours= Integer.parseInt(toff.substring(0,3));
+                    switch ( toff.length() ) {
+                        case 6: 
+                            result[3]-= deltaHours;
+                            result[4]-= Math.signum(deltaHours) * Integer.parseInt(toff.substring(4) );
+                            break;
+                        case 5: 
+                            result[3]-= deltaHours;
+                            result[4]-= Math.signum(deltaHours) * Integer.parseInt(toff.substring(3) );
+                            break;
+                        case 3:
+                            result[3]-= deltaHours;
+                            break;
+                        default:
+                            throw new IllegalArgumentException("malformed time zone designator: "+str);
+                    }
+                    normalizeTimeComponents(result);
+                    break;
+                }
                 if ( st.hasMoreElements()==false ) { // "Z"
                     break;
                 }
@@ -223,39 +258,46 @@ public class DatumRangeUtil {
             }
             String tok= st.nextToken();
             if ( dir==null ) {
-                if ( tok.length()==4 ) { // typical route
-                    int iyear= Integer.parseInt( tok ); 
-                    result[0]= iyear;
-                    want= 1;
-                    dir=DIR_FORWARD;
-                } else if ( tok.length()==6 ) {
-                    want= lsd;
-                    if ( want!=6 ) throw new IllegalArgumentException("lsd must be 6");
-                    result[want]= Integer.parseInt( tok.substring(0,2) );
-                    want--;
-                    result[want]= Integer.parseInt( tok.substring(2,4) );
-                    want--;
-                    result[want]= Integer.parseInt( tok.substring(4,6) );
-                    want--;
-                    dir=DIR_REVERSE; 
-                } else if ( tok.length()==7 ) {
-                    result[0]= Integer.parseInt( tok.substring(0,4) );
-                    result[1]= 1;
-                    result[2]= Integer.parseInt( tok.substring(4,7) );
-                    want= 3;                    
-                    dir=DIR_FORWARD; 
-                } else if ( tok.length()==8 ) {
-                    result[0]= Integer.parseInt( tok.substring(0,4) );
-                    result[1]= Integer.parseInt( tok.substring(4,6) );
-                    result[2]= Integer.parseInt( tok.substring(6,8) );
-                    want= 3;                    
-                    dir=DIR_FORWARD;
-                } else {
-                    dir= DIR_REVERSE;
-                    want= lsd;  // we are going to have to reverse these when we're done.
-                    int i= Integer.parseInt( tok );
-                    result[want]= i;
-                    want--;
+                switch (tok.length()) {
+                    case 4:
+                        // typical route
+                        int iyear= Integer.parseInt( tok );
+                        result[0]= iyear;
+                        want= 1;
+                        dir=DIR_FORWARD;
+                        break;
+                    case 6:
+                        want= lsd;
+                        if ( want!=6 ) throw new IllegalArgumentException("lsd must be 6");
+                        result[want]= Integer.parseInt( tok.substring(0,2) );
+                        want--;
+                        result[want]= Integer.parseInt( tok.substring(2,4) );
+                        want--;
+                        result[want]= Integer.parseInt( tok.substring(4,6) );
+                        want--;
+                        dir=DIR_REVERSE;
+                        break;
+                    case 7:
+                        result[0]= Integer.parseInt( tok.substring(0,4) );
+                        result[1]= 1;
+                        result[2]= Integer.parseInt( tok.substring(4,7) );
+                        want= 3;
+                        dir=DIR_FORWARD;
+                        break;
+                    case 8:
+                        result[0]= Integer.parseInt( tok.substring(0,4) );
+                        result[1]= Integer.parseInt( tok.substring(4,6) );
+                        result[2]= Integer.parseInt( tok.substring(6,8) );
+                        want= 3;
+                        dir=DIR_FORWARD;
+                        break;
+                    default:
+                        dir= DIR_REVERSE;
+                        want= lsd;  // we are going to have to reverse these when we're done.
+                        int i= Integer.parseInt( tok );
+                        result[want]= i;
+                        want--;
+                        break;
                 }
             } else if ( dir==DIR_FORWARD) {
                 if ( want==1 && tok.length()==3 ) { // $j
