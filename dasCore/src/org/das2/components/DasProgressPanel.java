@@ -481,7 +481,11 @@ public class DasProgressPanel implements ProgressMonitor {
         }
 
         if (!running) {
-            throw new IllegalStateException("setTaskProgress called before started");
+            if ( finished ) {
+                throw new IllegalStateException("setTaskProgress called after finished");
+            } else {
+                throw new IllegalStateException("setTaskProgress called before started");
+            }
         }
 
         if (position != 0 && position < currentTaskPosition) {
