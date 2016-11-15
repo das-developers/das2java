@@ -9288,7 +9288,7 @@ public class Ops {
     }
     
     /**
-     * Opposite of the flatten function, takes rank 2 link (x,y,z) and 
+     * Opposite of the flatten function, takes rank 2 bundle (x,y,z) and 
      * makes a table from it z(x,y). This presumes that the rank 1 X and
      * Y data contain repeating elements for the rows and columns of the grid.
      * @param ds rank 2 bundle of X,Y, and Z data.
