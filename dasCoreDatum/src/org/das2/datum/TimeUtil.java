@@ -599,6 +599,39 @@ public final class TimeUtil {
     }
 
     /**
+     * get the datum from the 6 or 7 element timeArray.  The elements are:
+     * 0:year, 1:month, 2:day, 3:hour, 4:minute, 5:second, [ 6:nanoseconds ] 
+     * 
+     * @param timeArray, an int[6] or int[7].
+     * @param u target units.
+     * @return a datum representing the time.
+     */
+    public static Datum toDatum( int[] timeArray, Units u ) {
+        int year = timeArray[0];
+        int month = timeArray[1];
+        int day = timeArray[2];
+        int jd = 367 * year - 7 * (year + (month + 9) / 12) / 4 -
+                3 * ((year + (month - 9) / 7) / 100 + 1) / 4 +
+                275 * month / 9 + day + 1721029;
+        int nanos= timeArray.length==6 ? 0 : timeArray[6];
+        if ( u==Units.cdfTT2000 ) {
+            double us2000= ( jd - 2451545 ) * 86400e6; 
+            double tt2000= Units.us2000.convertDoubleTo( Units.cdfTT2000, us2000 );
+            Units.cdfTT2000.createDatum(tt2000);
+            Datum rtt2000= Datum.create( timeArray[3] * 3600.0e9 + timeArray[4] * 60e9 + timeArray[5] * 1e9 + nanos + tt2000, Units.cdfTT2000  );
+            return rtt2000;
+        } else if ( u!=Units.us2000 ) { // TODO: sub-optimal implementation...
+            double us2000= ( jd - 2451545 ) * 86400e6; 
+            Datum rus2000= Datum.create( timeArray[3] * 3600.0e6 + timeArray[4] * 60e6 + timeArray[5] * 1e6 + nanos / 1e3 + us2000, Units.us2000  );
+            return rus2000.convertTo(u);
+        } else {
+            double us2000= ( jd - 2451545 ) * 86400e6; // TODO: leap seconds 
+            Datum rus2000= Datum.create( timeArray[3] * 3600.0e6 + timeArray[4] * 60e6 + timeArray[5] * 1e6 + nanos / 1e3 + us2000, Units.us2000  );
+            return rus2000;
+        }        
+    }
+    
+    /**
      * return the leap year for years 1901-2099.
      * @param year
      * @return
