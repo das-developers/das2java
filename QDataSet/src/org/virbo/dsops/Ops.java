@@ -4289,7 +4289,7 @@ public class Ops {
                return DataSetUtil.asDataSet( DatumUtil.parse(sarg) ); //TODO: someone is going to want lookupUnits that will allocate new units.
             } catch (ParseException ex) {
                try {
-                   return DataSetUtil.asDataSet(TimeUtil.create(sarg)); // rfe 543: ISO8601 support for time zones.  Back off feature.
+                   return DataSetUtil.asDataSet( Units.us2000.parse(sarg) );// rfe 543: ISO8601 support for time zones.  Back off feature.
                } catch ( ParseException ex2 ) {
                    try {
                       DatumRange dr= DatumRangeUtil.parseISO8601Range(sarg); 
