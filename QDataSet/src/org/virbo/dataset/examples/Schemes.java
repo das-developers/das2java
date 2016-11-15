@@ -456,6 +456,38 @@ public class Schemes {
     }
 
     /**
+     * "scatter" is meant to indicate there is no connection between 
+     * successive points, and that there is no dependence indicates no 
+     * clean relation between points.
+     * @return 
+     */
+    public static QDataSet xyScatter() {
+        QDataSet xx= Ops.randomn(5334,30);
+        QDataSet yy= Ops.randomn(5335,30);
+        return Ops.bundle(xx,yy);
+    }
+    
+    public static boolean isXYScatter( QDataSet ds ) {
+        return ds.rank()==2 && ds.length(0)==2;
+    }
+    
+    /**
+     * Here there is a Z that is a function of X and Y of a xyScatter.
+     * @return rank 1 dataset that has bundle for DEPEND_0.
+     */    
+    public static QDataSet rank1AtXYScatter() {
+        QDataSet xx= Ops.randomn(5334,30);
+        QDataSet yy= Ops.randomn(5335,30);
+        QDataSet zz= Ops.sqrt( Ops.add( Ops.pow(xx,2),Ops.pow(yy,2) ) );
+        return Ops.link(Ops.bundle(xx,yy),zz);
+    }
+
+    public static boolean isRank1AtXYScatter( QDataSet ds ) {
+        QDataSet xy= (QDataSet) ds.property(QDataSet.DEPEND_0);
+        return ( xy!=null && isXYScatter(xy) && ds.rank()==1 );
+    }
+    
+    /**
      * return true if the data is a rank 2 list of M bins.  The data
      * will have rank=2 and the property BINS_1='min,max'
      * @param dep
