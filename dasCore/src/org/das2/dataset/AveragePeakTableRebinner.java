@@ -23,6 +23,7 @@
 
 package org.das2.dataset;
 
+import java.util.Arrays;
 import org.das2.datum.Units;
 import org.das2.datum.Datum;
 import java.util.HashMap;
@@ -133,22 +134,29 @@ public class AveragePeakTableRebinner implements DataSetRebinner {
             xTagWidthDouble= u.convertDoubleTo( ddX.getUnits().getOffsetUnits(), xTagWidth.value() );
         }
         
-        AverageTableRebinner.fillInterpolateX(averageData, averageWeights, xTags, xTagMin, xTagMax, xTagWidthDouble, AverageTableRebinner.Interpolate.Linear );
+        double[][] averageWeightsCopy= new double[averageWeights.length][];
+        for ( int i=0; i<averageData.length; i++ ) {
+            averageWeightsCopy[i]= Arrays.copyOf( averageWeights[i], averageWeights[i].length );
+            
+        }
+        AverageTableRebinner.fillInterpolateX(averageData, averageWeights, xTags, xTagMin, xTagMax, xTagWidthDouble, AverageTableRebinner.Interpolate.NearestNeighbor );
         
         if ( ddY!=null ) {
             QDataSet yTagWidth= org.virbo.dataset.DataSetUtil.guessCadenceNew(ytds,null);
             if ( yTagWidth==null ) {
-                AverageTableRebinner.fillInterpolateY(averageData, averageWeights, ddY, null, AverageTableRebinner.Interpolate.Linear );
+                AverageTableRebinner.fillInterpolateY(averageData, averageWeights, ddY, null, AverageTableRebinner.Interpolate.NearestNeighbor );
             } else {
-                AverageTableRebinner.fillInterpolateY(averageData, averageWeights, ddY, org.virbo.dataset.DataSetUtil.asDatum(yTagWidth), AverageTableRebinner.Interpolate.Linear );
+                AverageTableRebinner.fillInterpolateY(averageData, averageWeights, ddY, org.virbo.dataset.DataSetUtil.asDatum(yTagWidth), AverageTableRebinner.Interpolate.NearestNeighbor );
             }            
         }
         
         if (peaks == null) {
             PeakTableRebinner.peaks(tds, peakData, ddX, ddY);
+            AverageTableRebinner.fillInterpolateX(peakData, averageWeightsCopy, xTags, xTagMin, xTagMax, xTagWidthDouble, AverageTableRebinner.Interpolate.NearestNeighbor );
         }
         else {
             PeakTableRebinner.peaks(peaks, peakData, ddX, ddY);
+            AverageTableRebinner.fillInterpolateX(peakData, averageWeightsCopy, xTags, xTagMin, xTagMax, xTagWidthDouble, AverageTableRebinner.Interpolate.NearestNeighbor );
         }
                           
         double[] dd= new double[nx*ny];
