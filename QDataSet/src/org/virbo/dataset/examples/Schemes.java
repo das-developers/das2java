@@ -458,7 +458,7 @@ public class Schemes {
     /**
      * "scatter" is meant to indicate there is no connection between 
      * successive points, and that there is no dependence indicates no 
-     * clean relation between points.
+     * clean relation between the bundled datasets.
      * @return 
      */
     public static QDataSet xyScatter() {
@@ -468,7 +468,7 @@ public class Schemes {
     }
     
     public static boolean isXYScatter( QDataSet ds ) {
-        return ds.rank()==2 && ds.length(0)==2;
+        return ds.rank()==2 && ds.length(0)==2 && Schemes.isBundleDataSet(ds);
     }
     
     /**
