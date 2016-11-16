@@ -21,6 +21,7 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.net.URL;
 import java.text.ParseException;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
@@ -199,7 +200,7 @@ public class DasAnnotation extends DasCanvasComponent {
         String offset= getAnchorOffset();
         double em = getEmSize();
         if ( offset.trim().length()==0 ) {
-            offset= String.format("%.2fem,%.2fem", dx/em, dy/em );
+            offset= String.format( Locale.US, "%.2fem,%.2fem", dx/em, dy/em );
             this.setAnchorOffset(offset);
         } else {
             try {

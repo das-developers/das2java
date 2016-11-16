@@ -1,6 +1,7 @@
 package org.das2.datum;
 
 import java.io.Serializable;
+import java.util.Locale;
 import java.util.logging.Logger;
 
 /**
@@ -150,7 +151,7 @@ public class DatumRange implements Comparable, Serializable {
             try {
                 return DatumRangeUtil.formatTimeRange(this);
             } catch ( IllegalArgumentException ex ) {
-                return String.format( "%f %f \"%s\"", this.s1.doubleValue(this.getUnits()), this.s2.doubleValue(this.getUnits()), this.getUnits() );
+                return String.format( Locale.US, "%f %f \"%s\"", this.s1.doubleValue(this.getUnits()), this.s2.doubleValue(this.getUnits()), this.getUnits() );
             }
         } else {
             Units u= getUnits();

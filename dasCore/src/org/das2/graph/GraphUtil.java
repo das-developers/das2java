@@ -14,6 +14,7 @@ import java.awt.geom.*;
 import java.awt.image.BufferedImage;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
@@ -832,11 +833,11 @@ public class GraphUtil {
             }
             if (enumeratePoints) {
                 if ( type==PathIterator.SEG_MOVETO ) {
-                   System.err.println( String.format( "moveTo( %9.2f, %9.2f )\n", seg[0], seg[1] ) );
+                   System.err.println( String.format( Locale.US, "moveTo( %9.2f, %9.2f )\n", seg[0], seg[1] ) );
                 } else if ( type==PathIterator.SEG_LINETO ) {
-                   System.err.println( String.format( "lineTo( %9.2f, %9.2f )\n", seg[0], seg[1] ) );
+                   System.err.println( String.format( Locale.US, "lineTo( %9.2f, %9.2f )\n", seg[0], seg[1] ) );
                 } else {
-                    System.err.println( String.format( "%4d( %9.2f, %9.2f )\n", type, seg[0], seg[1] ) );
+                    System.err.println( String.format( Locale.US, "%4d( %9.2f, %9.2f )\n", type, seg[0], seg[1] ) );
                 }
             }
             count++;
