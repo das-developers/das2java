@@ -319,7 +319,11 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
         QDataSet peaks= (QDataSet) data.property(QDataSet.BIN_MAX); // can be null for NN.
         if ( peaks==null ) {
             peaks= (QDataSet) data.property(QDataSet.BIN_PLUS);
-            peaks= Ops.add( data, peaks );
+            if ( peaks==null ) {
+                peaks= data;
+            } else {
+                peaks= Ops.add( data, peaks );
+            }
         }
         QDataSet weights= SemanticOps.weightsDataSet(data);
         
