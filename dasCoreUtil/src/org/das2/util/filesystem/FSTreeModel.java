@@ -8,6 +8,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
@@ -99,7 +100,7 @@ public class FSTreeModel extends DefaultTreeModel {
             long t0= System.currentTimeMillis();
             logger.log(Level.FINE, "listImmediately {0}", folder);
             final String[] folderKids= fs.listDirectory(folder);
-            logger.fine( String.format( "done in %5.2f sec: listImmediately %s", (System.currentTimeMillis()-t0)/1000.0, folder ) );
+            logger.fine( String.format( Locale.US, "done in %5.2f sec: listImmediately %s", (System.currentTimeMillis()-t0)/1000.0, folder ) );
             final DefaultMutableTreeNode[] listCache1 = new DefaultMutableTreeNode[folderKids.length];
             final int[] nodes= new int[folderKids.length];
             for ( int i=0; i<listCache1.length; i++ ) {

@@ -154,7 +154,7 @@ public final class TimeUtil {
         public String toString() {
             if ( isLocation ) {
                 int dayOfYear= dayOfYear( month, day, year );
-                return String.format( "%4d/%02d/%02d %02d:%02d:%06.3f (doy=%03d)", year,month,day,hour,minute,seconds+millis/1000.+micros/1000000.,dayOfYear );
+                return String.format( Locale.US, "%4d/%02d/%02d %02d:%02d:%06.3f (doy=%03d)", year,month,day,hour,minute,seconds+millis/1000.+micros/1000000.,dayOfYear );
             } else {
                 int intSeconds= (int)seconds;
                 int nanos= (int)( 1000000000 * ( seconds - intSeconds ) );
