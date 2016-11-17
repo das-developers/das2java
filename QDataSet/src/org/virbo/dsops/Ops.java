@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
@@ -3263,7 +3264,7 @@ public class Ops {
         ArrayDataSet result= ArrayDataSet.copy( DataSetOps.slice1(rip,20) );
         MutablePropertyDataSet t;
         try {
-            t = (MutablePropertyDataSet) Ops.timegen("2011-10-24", String.format("%f sec", 86400. / len), len);
+            t = (MutablePropertyDataSet) Ops.timegen("2011-10-24", String.format( Locale.US, "%f sec", 86400. / len), len);
             t.putProperty( QDataSet.NAME, "Epoch" );
             result.putProperty(QDataSet.DEPEND_0,t);
             return result;
@@ -3311,7 +3312,7 @@ public class Ops {
         MutablePropertyDataSet result= (MutablePropertyDataSet) Ops.bundle( x, y, z );
         MutablePropertyDataSet t;
         try {
-            t = (MutablePropertyDataSet) Ops.timegen("2011-10-24", String.format("%f sec", 86400. / len), len);
+            t = (MutablePropertyDataSet) Ops.timegen("2011-10-24", String.format( Locale.US, "%f sec", 86400. / len), len);
             t.putProperty( QDataSet.NAME, "Epoch" );
             result.putProperty(QDataSet.DEPEND_0,t);
             return result;
@@ -3338,7 +3339,7 @@ public class Ops {
 
         MutablePropertyDataSet t;
         try {
-            t = (MutablePropertyDataSet) Ops.timegen("2011-10-24", String.format("%f sec", 86400. / len), len);
+            t = (MutablePropertyDataSet) Ops.timegen("2011-10-24", String.format( Locale.US, "%f sec", 86400. / len), len);
             t.putProperty( QDataSet.NAME, "Epoch" );
             result.putProperty(QDataSet.DEPEND_0,t);
             return result;
@@ -3369,7 +3370,7 @@ public class Ops {
             result.putProperty( QDataSet.DEPEND_1, y );
 
             MutablePropertyDataSet t;
-            t = (MutablePropertyDataSet)Ops.timegen("2011-10-24", String.format("%f sec", 86400. / len3), len3);
+            t = (MutablePropertyDataSet)Ops.timegen("2011-10-24", String.format( Locale.US, "%f sec", 86400. / len3), len3);
             t.putProperty( QDataSet.NAME, "Epoch" );
             result.putProperty(QDataSet.DEPEND_0,t);
 
@@ -3383,7 +3384,7 @@ public class Ops {
             y.putProperty( QDataSet.NAME, "Energy" );
             result.putProperty( QDataSet.DEPEND_1, y );
 
-            t = (MutablePropertyDataSet)Ops.timegen("2011-10-25", String.format("%f sec", 86400. / len3), len3);
+            t = (MutablePropertyDataSet)Ops.timegen("2011-10-25", String.format( Locale.US, "%f sec", 86400. / len3), len3);
             //t = (MutablePropertyDataSet)Ops.timegen("2011-10-24T23:01", String.format("%f sec", 86400. / len3), len3);
             t.putProperty( QDataSet.NAME, "Epoch" );
             result.putProperty(QDataSet.DEPEND_0,t);
@@ -3399,7 +3400,7 @@ public class Ops {
             y.putProperty( QDataSet.NAME, "Energy" );
             result.putProperty( QDataSet.DEPEND_1, y );
 
-            t = (MutablePropertyDataSet)Ops.timegen("2011-10-26", String.format("%f sec", 86400. / lenr), lenr);
+            t = (MutablePropertyDataSet)Ops.timegen("2011-10-26", String.format( Locale.US, "%f sec", 86400. / lenr), lenr);
             //t = (MutablePropertyDataSet)Ops.timegen("2011-10-25T20:00", String.format("%f sec", 86400. / lenr), lenr);
             t.putProperty( QDataSet.NAME, "Epoch" );
             result.putProperty(QDataSet.DEPEND_0,t);
