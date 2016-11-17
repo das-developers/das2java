@@ -3,6 +3,7 @@ package org.das2.graph;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -12,6 +13,7 @@ import org.das2.datum.DatumRange;
 import org.das2.datum.DatumVector;
 import org.das2.datum.DomainDivider;
 import org.das2.datum.DomainDividerUtil;
+import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
 import org.das2.datum.format.DatumFormatter;
 import org.das2.util.GrannyTextRenderer;
@@ -46,6 +48,7 @@ public class LookupAxis extends DasCanvasComponent {
     
     public LookupAxis( DasAxis axis ) {
         this.maxWidth=100;
+        this.maxHeight=100;
         this.axis= axis;
     }
     
@@ -94,27 +97,47 @@ public class LookupAxis extends DasCanvasComponent {
         //QDataSet t2= Ops.subtract( DataSetOps.applyIndex( yy, Ops.add( r,1 ) ), DataSetOps.applyIndex( yy, r ) );
         QDataSet ff= Ops.divide( Ops.subtract( Ops.dataset(y),                            DataSetOps.applyIndex( yy,r ) ) , 
                                  Ops.subtract( DataSetOps.applyIndex( yy, Ops.add(r,1) ), DataSetOps.applyIndex( yy,r ) ) );
-        return Ops.add( Ops.multiply( DataSetOps.applyIndex( xx,r ), Ops.subtract(1,ff) ), 
+        if ( UnitsUtil.isIntervalMeasurement( SemanticOps.getUnits(xx) ) ) {
+            return Ops.interpolate( xx, ff );
+            //return Ops.add( Ops.multiply( DataSetOps.applyIndex( xx,r ), Ops.subtract(1,ff) ), 
+            //            Ops.multiply( DataSetOps.applyIndex( xx,Ops.add(r,1)), ff ) );            
+        } else {
+            return Ops.add( Ops.multiply( DataSetOps.applyIndex( xx,r ), Ops.subtract(1,ff) ), 
                         Ops.multiply( DataSetOps.applyIndex( xx,Ops.add(r,1)), ff ) );
+        }
+    }
+    
+    private void drawMessage( Graphics g1, String message ) {
+        Graphics2D g= (Graphics2D)g1;
+        Rectangle r= getBounds();
+        g.setColor( Color.GRAY );
+        g.fillRoundRect( 0, 0, r.width-1, r.height-1,7,7 );
+        g.setColor( Color.BLACK );
+        g.drawRect( 0, 0, r.width-1, r.height-1 );
+        g.drawString( message, 0, g.getFont().getSize() );
     }
     
     @Override
     public void paintComponent( Graphics g ) {
-        DatumVector ticks= axis.tickV.getMinorTicks();
+        TickVDescriptor tickV= axis.tickV;
+        if ( tickV==null ) return;
+        
+        DatumVector ticks= tickV.getMinorTicks();
         Datum fmin= Ops.datum(1e20);
         Datum fmax= Ops.datum(-1e20);
 
-        if ( tt==null ) return;
-        if ( ff==null ) return;
+        if ( tt==null ) {
+            drawMessage( g,"no times" );
+            return;
+        }
+        if ( ff==null ) {
+            drawMessage( g,"no data" );
+            return;
+        }
 
         if ( !SemanticOps.getUnits(tt).isConvertibleTo(ticks.getUnits() ) ) {
             if ( UnitsUtil.isTimeLocation(SemanticOps.getUnits(tt)) ) {
-                Rectangle r= getBounds();
-                g.setColor( Color.GRAY );
-                g.fillRect( 0, 0, r.width-1, r.height-1 );
-                g.setColor( Color.BLACK );
-                g.drawRect( 0, 0, r.width-1, r.height-1 );
-                g.drawString( "inconvertible units", 0, g.getFont().getSize() );
+                drawMessage( g,"inconvertible units" );
                 return;
             } else {
                 tt= Ops.putProperty(tt, QDataSet.UNITS, ticks.getUnits() );
@@ -152,12 +175,16 @@ public class LookupAxis extends DasCanvasComponent {
 
         g.setColor( Color.BLACK );
         int ascent= g.getFontMetrics().getAscent();
+        int height= this.getHeight();
+        
         int myY= this.getY();
+        int myX= this.getX();
         DatumRange dr= new DatumRange(fmin,fmax);
         DatumFormatter format= DomainDividerUtil.getDatumFormatter(ytickvdd,dr);
 
         maxWidth= 0;
-
+        maxHeight= 0;
+        
         //draw the major ticks
         for ( int i=0; i<ticks.getLength(); i++ ) {
             Datum atick= ticks.get(i);
@@ -168,12 +195,22 @@ public class LookupAxis extends DasCanvasComponent {
                 int ix = (int)axis.transform( d );
                 if ( ix==ix0 ) continue;
                 ix0= ix;
-                g.drawLine( 0, ix-myY, 5, ix-myY );
+                if ( axis.isHorizontal() ) {
+                    g.drawLine( ix-myX, height+1, ix-myX, height-5 );
+                } else {
+                    g.drawLine( 0, ix-myY, 5, ix-myY );
+                }
                 GrannyTextRenderer gtr= new GrannyTextRenderer( );
                 gtr.setString( g, format.format( atick ) );
-                gtr.draw( g, 5+3, ix+ascent/2-myY );
-                int width0= (int)gtr.getWidth();
-                if ( width0>maxWidth ) maxWidth=width0;
+                if ( axis.isHorizontal() ) {
+                    gtr.draw( g, ix - myX - (int)gtr.getWidth()/2, height-5-3 );
+                    int height0= (int)gtr.getHeight()+8;
+                    if ( height0>maxWidth ) maxHeight=height0;              
+                } else {
+                    gtr.draw( g, 5+3, ix+ascent/2-myY );
+                    int width0= (int)gtr.getWidth();
+                    if ( width0>maxWidth ) maxWidth=width0;
+                }
             }
         } 
         // draw the minor ticks
@@ -189,7 +226,11 @@ public class LookupAxis extends DasCanvasComponent {
                 int ix = (int) axis.transform( d );
                 if ( ix==ix0 ) continue;
                 ix0= ix;
-                g.drawLine( 0, ix-myY, 3, ix-myY );
+                if ( axis.isHorizontal() ) {
+                    g.drawLine( ix-myX, height+1, ix-myX, height-3 );
+                } else {
+                    g.drawLine( 0, ix-myY, 3, ix-myY ); 
+                }
             }
         }
     }
@@ -202,7 +243,7 @@ public class LookupAxis extends DasCanvasComponent {
         if ( axis.isHorizontal() ) {
             int x= getColumn().getDMinimum();
             int y= getRow().getDMinimum();
-            Rectangle rect= new Rectangle( x, y, getColumn().getWidth(), this.maxHeight );
+            Rectangle rect= new Rectangle( x, y-this.maxHeight, getColumn().getWidth(), this.maxHeight );
             this.setBounds( rect );            
         } else {
             int x= getColumn().getDMaximum();
