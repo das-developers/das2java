@@ -196,7 +196,7 @@ public abstract class WebFileSystem extends FileSystem {
         File result= null;
 
         if ( !localRoot.toString().startsWith(stopFile.toString()) ) {
-            throw new IllegalArgumentException("localRoot filename must start with start filename");
+            throw new IllegalArgumentException("localRoot filename ("+stopFile+") must be parent of local root: "+start);
         }
         
         while ( !( localRoot.equals(stopFile) ) ) {
