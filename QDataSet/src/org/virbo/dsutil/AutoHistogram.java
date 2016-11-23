@@ -333,13 +333,13 @@ public final class AutoHistogram {
                 }
                 d = iter.getValue(ds);
                 if ( !isFinite(d) ) {
-                    logger.log(Level.WARNING, "weights imply that infinite value is valid: {0}", iter);
+                    logger.log(Level.WARNING, "weights imply that infinite value is valid: {0}", iter); 
                     invalidCount++;
                     continue;
                 }
             } catch ( IndexOutOfBoundsException ex ) {
                 //TODO: it would be nice if we could promote the exception to show iterator and also show cause.
-                System.err.println( "Index out of bounds: "+iter );
+                logger.log(Level.WARNING, "Index out of bounds: {0}", iter);
                 throw ex;
             }
 
