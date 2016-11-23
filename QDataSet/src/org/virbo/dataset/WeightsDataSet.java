@@ -46,9 +46,9 @@ public abstract class WeightsDataSet implements QDataSet {
     protected WeightsDataSet(QDataSet ds) {
         this.ds = ds;
         Number validMin = (Number) ds.property(QDataSet.VALID_MIN);
-        if (validMin == null) validMin = Double.NEGATIVE_INFINITY;
+        if (validMin == null) validMin = -1*Double.MAX_VALUE;
         Number validMax = (Number) ds.property(QDataSet.VALID_MAX);
-        if (validMax == null) validMax = Double.POSITIVE_INFINITY;
+        if (validMax == null) validMax = Double.MAX_VALUE;
         Number ofill = (Number) ds.property(QDataSet.FILL_VALUE);
         fill = (ofill == null ? Double.NaN : ofill.doubleValue());
         if ( fill<0 ) {
