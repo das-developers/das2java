@@ -333,7 +333,7 @@ public final class AutoHistogram {
                 }
                 d = iter.getValue(ds);
                 if ( !isFinite(d) ) {
-                    logger.log(Level.WARNING, "weights imply that infinite value is valid: {0}", iter); 
+                    logger.log(Level.FINE, "weights imply that infinite value is valid: {0}", iter);  // there is nothing alarming about this, just don't count.
                     invalidCount++;
                     continue;
                 }
