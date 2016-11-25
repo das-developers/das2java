@@ -1363,7 +1363,7 @@ public class DataSetUtil {
                 f= new LinFit( Ops.findgen(xdsr.length()), Ops.log(xdsr) );
                 double chilog= f.getChi2();
                 if ( chilog < ( chilin/2 ) ) {
-                    QDataSet ext= Ops.extent(xds);
+                    QDataSet ext= Ops.extent(xdsr);
                     everIncreasing= ext.value(1)/ext.value(0);
                 }
             }
