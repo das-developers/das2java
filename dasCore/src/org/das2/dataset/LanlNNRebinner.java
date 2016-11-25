@@ -34,16 +34,21 @@ public class LanlNNRebinner implements DataSetRebinner {
     WeakHashMap<QDataSet,QDataSet> yds0c= new WeakHashMap();
     WeakHashMap<QDataSet,QDataSet> yds1c= new WeakHashMap();
     WeakHashMap<QDataSet,QDataSet> cadence= new WeakHashMap();
+    WeakHashMap<QDataSet,QDataSet> xds0c= new WeakHashMap<>();
+    
     /**
      * get cadence that checks for null and returns the pixel cadence in this case.
      * @param ds the xtags or ytags 
      * @param res fall-back cadence, that is the axis resolution
-     * @return
+     * @return the rank0 cadence, as linear in the units, or ratiometric log10ratio.
      */
     private QDataSet getCadence( QDataSet ds, Datum res ) {
         QDataSet dds= cadence.get(ds);
-        if ( dds==null && !cadence.containsKey(ds) ) {
+        if ( dds==null ) { //&& !cadence.containsKey(ds) ) {
             dds= DataSetUtil.guessCadenceNew( ds, null );
+            if ( UnitsUtil.isRatiometric( SemanticOps.getUnits(dds) ) ) {
+                dds= Ops.convertUnitsTo( dds, Units.log10Ratio );
+            }
             cadence.put( ds,dds );
         }
         if ( dds==null ) {
@@ -52,6 +57,7 @@ public class LanlNNRebinner implements DataSetRebinner {
             return dds;
         }
     }
+    
     /**
      * rebin the data, using the interpolate control to define the interpolation between measurements.  Data that fall into the
      * same pixel are always averaged in the linear space, regardless of interpolation method.
@@ -111,26 +117,24 @@ public class LanlNNRebinner implements DataSetRebinner {
                     xds0= Ops.subtract( xds, binMinus );
                     xds1= Ops.add( xds, binPlus );
                 } else {
-                    QDataSet dx= getCadence( xds, ddX.binWidthDatum() );
-                    if ( UnitsUtil.isRatiometric( SemanticOps.getUnits(dx) ) ) {
-                        double ddx= Math.sqrt( 1. + dx.value()/100. );
-                        xds0= Ops.divide( xds, DataSetUtil.asDataSet(ddx) );
-                        xds1= Ops.multiply( xds, DataSetUtil.asDataSet(ddx) );
-                    } else {
-                        dx= Ops.divide( dx, DataSetUtil.asDataSet(2) );
-                        xds0= Ops.subtract( xds, dx );
-                        xds1= Ops.add( xds, dx );
+                    QDataSet xds2= xds0c.get(xds);
+                    if ( xds2==null ) {
+                        xds2= DataSetUtil.inferBins(xds);
+                        xds0c.put( xds, xds2 );
                     }
+                    xds0= Ops.slice1( xds2, 0 );
+                    xds1= Ops.slice1( xds2, 1 );
                 }
             }
+            
             QDataSet yds= SemanticOps.ytagsDataSet(tds1);
             QDataSet yds0, yds1;
             boolean rank2y;
-
+            
             yds0= yds0c.get(yds); // let's cache the result of this, since rank 2 yds datasets are slow. (http://www.rbsp-ect.lanl.gov/data_pub/rbspa/mageis/level2/rbspa_pre_ect-mageis-L2_$Y$m$d_v$(v,sep).cdf?FEDO)
             yds1= yds1c.get(yds);
 
-            if ( true ) { // set to true for debugging.
+            if ( false ) { // set to true for debugging.
                 yds0= null;
                 yds1= null;
             }
