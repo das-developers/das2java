@@ -251,7 +251,7 @@ public class QDataSetStreamHandler implements StreamHandler {
 
             List<PlaneDescriptor> planes = pd.getPlanes();
             if (planes.size() != nodes.getLength()) {
-                logger.log(Level.WARNING, "these should be the same length, QDataSetStreamHandler line 189");
+                logger.log(Level.WARNING, "planes.size and nodes.getLength should be the same length, QDataSetStreamHandler line 254");
             }
             for (int i = 0; i < nodes.getLength(); i++) {
                 Element n = (Element) nodes.item(i);
@@ -407,7 +407,7 @@ public class QDataSetStreamHandler implements StreamHandler {
                 }
                 QDataSet dep0ds = getDataSetInternal(s);
                 if ( dep0ds==null ) {
-                    logger.warning("unable to resolve property DEPENDNAME_"+i+"=\""+s+"\"");
+                    logger.log(Level.WARNING, "unable to resolve property DEPENDNAME_{0}=\"{1}\"", new Object[]{i, s});
                 } else if (dep0ds.rank() == 1) {
                     result.putProperty("DEPEND_" + i, dep0ds);
                 } else if (i > 0 && dep0ds.rank() == 2) {
@@ -526,7 +526,14 @@ public class QDataSetStreamHandler implements StreamHandler {
         return new DataSetBuilder.DataSetResolver() {
             @Override
             public QDataSet resolve( String name ) {
-                return joinDataSets.get(name);
+                QDataSet result= joinDataSets.get(name);
+                if ( result==null ) {
+                    DataSetBuilder builder= builders.get(name);
+                    if ( builder!=null ) {
+                        result= builder.getDataSet();
+                    }
+                }
+                return result;
             }
         };
     }
@@ -711,12 +718,14 @@ public class QDataSetStreamHandler implements StreamHandler {
                 if (pname.equals(QDataSet.DELTA_MINUS) || pname.equals(QDataSet.DELTA_PLUS)) {
                     logger.warning("skipping DELTA_MINUS and DELTA_PLUS because bug");
                     builder.putProperty(pname, svalue);
+                    builder.putUnresolvedProperty(DataSetBuilder.UNRESOLVED_PROP_QDATASET,pname,svalue);
                 }
                 if (pname.matches("DEPEND_\\d+")) {
                     String si = pname.substring(7);
                     builder.putProperty("DEPENDNAME_" + si, svalue);
                 } else {
                     builder.putProperty(pname, svalue);
+                    builder.putUnresolvedProperty(DataSetBuilder.UNRESOLVED_PROP_QDATASET,pname,svalue);
                 }
             } else {
                 SerializeDelegate delegate = SerializeRegistry.getByName(stype);
