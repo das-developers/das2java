@@ -135,14 +135,32 @@ public class ToAsciiStreamHandler implements StreamHandler {
 
     @Override
     public void packet(PacketDescriptor pd, ByteBuffer data) throws StreamException {
-        ByteBuffer dataOut= ByteBuffer.allocate(newPacketSize);
-        data.flip();
+        
+        int newPacketSizeLocal=0;
+        int inPacketSizeLocal=0;
         PacketDescriptor pdout= pdouts.get(pd.getPacketId());
+        int np1= pdout.getPlanes().size();
+        for ( int ip=0; ip<np1; ip++ ) {
+            PlaneDescriptor p= pdout.getPlanes().get(ip);
+            newPacketSizeLocal+= p.getType().sizeBytes() * p.getElements();
+            PlaneDescriptor plin= pd.getPlanes().get(ip);
+            inPacketSizeLocal+= plin.getType().sizeBytes() * plin.getElements();
+            //System.err.println("plane "+ip+ ": "+ p.getType().sizeBytes() +"*"+ p.getElements() + "=" + ( p.getType().sizeBytes() * p.getElements() ) );
+        }
+        
+//        if ( newPacketSizeLocal!=newPacketSize ) {
+//            System.err.println("wow, it does happen...");
+//        }
+                    
+        ByteBuffer dataOut= ByteBuffer.allocate(newPacketSizeLocal);
+        data.flip();
+        pdout= pdouts.get(pd.getPacketId());
         int np= pd.getPlanes().size();
         for ( int ip=0; ip<np; ip++ ) {
             PlaneDescriptor pout= pdout.getPlanes().get(ip);
             PlaneDescriptor pin= pd.getPlanes().get(ip);
             data.limit( data.limit() + pin.getElements() * pin.getType().sizeBytes() );
+            //System.err.println(" -> "+ data.position() );
             for ( int i=0; i<pin.getElements(); i++ ) {
                 double d= pin.getType().read(data);
                 if ( ip==np-1 && i==pin.getElements()-1 ) {
@@ -151,6 +169,7 @@ public class ToAsciiStreamHandler implements StreamHandler {
                 } else {
                     pout.getType().write( d, dataOut );
                 }
+                //System.err.println("  -> "+ data.position() + " of " + data.limit() + "  into  "+ dataOut.position() + " of " + dataOut.limit() );
             }            
         }
         dataOut.flip();
@@ -182,6 +201,9 @@ public class ToAsciiStreamHandler implements StreamHandler {
         InputStream in= System.in;
         OutputStream out= System.out;
 
+        //args= new String[] { "/Users/jbf/ct/pw/foo.qds", "/tmp/foo.ascii.qds" };
+        //
+        
         if ( args.length>0 ) {
             in= new FileInputStream(args[0]);
             System.err.println("reading "+args[0] );
