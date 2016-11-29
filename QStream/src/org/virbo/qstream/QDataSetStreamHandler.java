@@ -1,7 +1,4 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package org.virbo.qstream;
 
 import java.nio.ByteBuffer;
@@ -56,10 +53,10 @@ public class QDataSetStreamHandler implements StreamHandler {
     boolean readPackets = true;
 
     public QDataSetStreamHandler() {
-        builders = new HashMap<String, DataSetBuilder>();
-        joinDataSets = new HashMap<String, JoinDataSet>();
-        bundleDataSets = new HashMap<String, String[]>();
-        ranks= new HashMap<String,Integer>();
+        builders = new HashMap<>();
+        joinDataSets = new HashMap<>();
+        bundleDataSets = new HashMap<>();
+        ranks= new HashMap<>();
     }
 
     /**
@@ -86,7 +83,7 @@ public class QDataSetStreamHandler implements StreamHandler {
      * @return
      */
     public List<String> getDataSetNames() {
-        return new ArrayList<String>(builders.keySet());
+        return new ArrayList<>(builders.keySet());
     }
 
     /**
