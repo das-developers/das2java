@@ -1,7 +1,4 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package org.qstream.filter;
 
 import java.io.FileInputStream;
@@ -24,7 +21,6 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
-import org.virbo.dataset.SemanticOps;
 import org.virbo.qstream.AsciiTimeTransferType;
 import org.virbo.qstream.AsciiTransferType;
 import org.virbo.qstream.FormatStreamHandler;
@@ -49,8 +45,8 @@ public class ToAsciiStreamHandler implements StreamHandler {
     public ToAsciiStreamHandler( OutputStream out ) {
         format= new FormatStreamHandler();
         format.setOutputStream( out );
-        pdouts= new LinkedHashMap<Integer, PacketDescriptor>();
-        newEncodings= new LinkedHashMap<String,TransferType>();
+        pdouts= new LinkedHashMap<>();
+        newEncodings= new LinkedHashMap<>();
         newEncodings.put( "double",new AsciiTransferType(20,false) );
         newEncodings.put( "float",new AsciiTransferType(10,false) );
         newEncodings.put( "int8",new AsciiTransferType(20,false) );
@@ -93,7 +89,7 @@ public class ToAsciiStreamHandler implements StreamHandler {
                         u= Units.dimensionless;  // we're not going to use this.
                     } else {
                         String sunit= String.valueOf(o1);
-                        u= SemanticOps.lookupUnits(sunit);
+                        u= Units.lookupUnits(sunit);
                         isTime= UnitsUtil.isTimeLocation(u);
                     }
                     
