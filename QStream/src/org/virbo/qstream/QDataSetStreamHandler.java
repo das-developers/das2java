@@ -437,40 +437,25 @@ public class QDataSetStreamHandler implements StreamHandler {
         }
         for (int i = 0; i < QDataSet.MAX_PLANE_COUNT; i++) {
             String propertyName= "PLANE_" + i;
-            String s = (String) result.property(propertyName);
-            if (s != null) {
-                result.putProperty( propertyName, getDataSetInternal(s));
-            } else {
+            Object o= result.property(propertyName);
+            if ( o instanceof String ) {
+                String s = (String) o;
+                result.putProperty( propertyName, getDataSetInternal(s) );
+            } else if ( o==null ) {
                 break;
             }
         }
-        for (int i = 0; i < 2; i++) {
-            String propertyName = i == 0 ? "DELTA_MINUS" : "DELTA_PLUS";
-            String s = (String) result.property(propertyName);
-            if (s != null) {
-                result.putProperty(propertyName, getDataSetInternal(s));
+        
+        String[] propertyNames= new String[] { "DELTA_MINUS", "DELTA_PLUS", 
+            "BIN_MINUS", "BIN_PLUS",
+            "BIN_MIN", "BIN_MAX", "WEIGHTS"
+        };
+        for (String propertyName : propertyNames) {
+            Object o= result.property(propertyName);
+            if ( o instanceof String ) {
+                String s = (String) o;
+                result.putProperty( propertyName, getDataSetInternal(s) );
             }
-        }
-        for (int i = 0; i < 2; i++) {
-            String propertyName = i == 0 ? "BIN_MINUS" : "BIN_PLUS";
-            String s = (String) result.property(propertyName);
-            if (s != null) {
-                result.putProperty(propertyName, getDataSetInternal(s));
-            }
-        }
-        for (int i = 0; i < 2; i++) {
-            String propertyName = i == 0 ? "BIN_MIN" : "BIN_MAX";
-            String s = (String) result.property(propertyName);
-            if (s != null) {
-                result.putProperty(propertyName, getDataSetInternal(s));
-            }
-        }
-        {
-            String propertyName = "WEIGHTS";
-            String s = (String) result.property(propertyName);
-            if (s != null) {
-                result.putProperty(propertyName, getDataSetInternal(s));
-            } 
         }
         return result;
     }
