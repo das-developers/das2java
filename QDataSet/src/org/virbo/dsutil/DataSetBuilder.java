@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.datum.Datum;
@@ -46,12 +47,16 @@ public class DataSetBuilder {
     int offset;
     int length;  // number of records or partial records written
     HashMap<String,Object> properties;
-    
+    private HashMap<String,String> unresolvedPropertyTypes;
+    private HashMap<String,String> unresolvedPropertyValues;
+
     Units u= null;
     Units[] us= null; // for Rank 1 bundles
     String[] labels= null; // for Rank 1 bundles
     String[] names= null; // for Rank 1 bundles
     boolean isBundle= false;
+
+    public static final String UNRESOLVED_PROP_QDATASET= "qdataset";
     
     /**
      * Create a new builder for a rank 0 dataset.
@@ -103,7 +108,9 @@ public class DataSetBuilder {
         this.recElements= dim1 * dim2;
         newCurrent();
         index=0;
-        properties= new HashMap<String,Object>();
+        properties= new HashMap<>();
+        unresolvedPropertyValues= new HashMap<>();
+        unresolvedPropertyTypes= new HashMap<>();
     }
 
     /**
@@ -642,11 +649,52 @@ public class DataSetBuilder {
             }
         }
         
+        for ( Entry<String,String> key: unresolvedPropertyTypes.entrySet() ) {
+            String type= key.getValue();
+            if ( type.equals(UNRESOLVED_PROP_QDATASET) ) {
+                String svalue= unresolvedPropertyValues.get(key.getKey());
+                QDataSet value= dataSetResolver.resolve(svalue);
+                if ( value!=null ) result.putProperty( key.getKey(), value );
+            }
+        }
+        
         return result;
     }
     
+    /**
+     * add the property to the dataset
+     * @param string name like QDataSet.UNITS 
+     * @param o the value
+     */
     public void putProperty( String string, Object o ) {
         properties.put( string, o );
+    }
+    
+    /**
+     * mark the property as unresolved, for reference later.  This was
+     * added for the QStream reader, which doesn't resolve
+     * @param type the property type, if qdataset this is resolved with dataSetResolver.
+     * @param pname the property name ("gain")
+     * @param svalue the arbitrary reference ("gain_04")
+     */
+    public void putUnresolvedProperty( String type, String pname, String svalue) {
+        unresolvedPropertyTypes.put( pname, type );
+        unresolvedPropertyValues.put( pname, svalue );
+    }
+    
+    /**
+     * we now know the value, so resolve any unresolved properties containing the
+     * string representation.  Note
+     * the entry is left in the unresolved properties.
+     * @param svalue the string reference
+     * @param value the object value
+     */
+    public void resolveProperty( String svalue, Object value ) {
+        for ( Entry<String,String> e: unresolvedPropertyValues.entrySet() ) {
+            if ( e.getValue().equals(svalue) ) {
+                properties.put( e.getKey(), value );
+            }
+        }
     }
     
     /**
