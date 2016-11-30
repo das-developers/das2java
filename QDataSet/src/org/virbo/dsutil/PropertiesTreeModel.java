@@ -12,6 +12,7 @@ import java.util.Map.Entry;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
+import javax.swing.tree.TreeNode;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
 import org.das2.util.DasMath;
@@ -55,13 +56,8 @@ public class PropertiesTreeModel extends DefaultTreeModel {
             }
             MutableTreeNode nextChild;
             if ( key.startsWith("BUNDLE_") && ( value instanceof QDataSet ) ) {
-                QDataSet bdsd= (QDataSet)value;
-                StringBuilder svalue= new StringBuilder();
-                if ( bdsd.length()>0 ) svalue.append( bdsd.property( QDataSet.NAME, 0 ) );
-                for ( int i=1; i<bdsd.length(); i++ ) {
-                    svalue.append( "," ).append( bdsd.property( QDataSet.NAME, i ) );
-                }
-                nextChild= new DefaultMutableTreeNode(""+key+"="+svalue);
+                BundleDescriptorTreeModel rm= new BundleDescriptorTreeModel(key,(QDataSet)value);
+                nextChild= (MutableTreeNode) rm.getRoot();
             } else if ( value instanceof QDataSet ) {
                 PropertiesTreeModel model= new PropertiesTreeModel( key + "=", (QDataSet)value,valuesSizeLimit);
                 nextChild= (MutableTreeNode) model.getRoot();
@@ -124,6 +120,19 @@ public class PropertiesTreeModel extends DefaultTreeModel {
         }
     }
 
+    private static class BundleDescriptorTreeModel extends DefaultTreeModel {
+        public BundleDescriptorTreeModel( String label, QDataSet root ) {
+            super(new DefaultMutableTreeNode(root));
+            MutableTreeNode mrt= ((MutableTreeNode)getRoot());
+            ((DefaultMutableTreeNode)mrt).setUserObject(label);
+            for ( int i=0; i<root.length(); i++ ) {
+                PropertiesTreeModel m= new PropertiesTreeModel(root.slice(i),20);
+                mrt.insert( (MutableTreeNode)m.getRoot(), mrt.getChildCount() );
+            }
+        }
+        
+    }
+    
     private static class MapTreeModel extends DefaultTreeModel {
         MapTreeModel( Object root, Map values ) {
             super( new DefaultMutableTreeNode(root) );
