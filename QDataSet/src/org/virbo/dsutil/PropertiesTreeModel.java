@@ -56,7 +56,14 @@ public class PropertiesTreeModel extends DefaultTreeModel {
             }
             MutableTreeNode nextChild;
             if ( key.startsWith("BUNDLE_") && ( value instanceof QDataSet ) ) {
-                BundleDescriptorTreeModel rm= new BundleDescriptorTreeModel(key,(QDataSet)value);
+                QDataSet bdsd= (QDataSet)value;
+                StringBuilder svalue= new StringBuilder();
+                svalue.append(key).append("=");
+                if ( bdsd.length()>0 ) svalue.append( bdsd.property( QDataSet.NAME, 0 ) );
+                for ( int i=1; i<bdsd.length(); i++ ) {
+                    svalue.append( "," ).append( bdsd.property( QDataSet.NAME, i ) );
+                }
+                BundleDescriptorTreeModel rm= new BundleDescriptorTreeModel(svalue.toString(),(QDataSet)value);
                 nextChild= (MutableTreeNode) rm.getRoot();
             } else if ( value instanceof QDataSet ) {
                 PropertiesTreeModel model= new PropertiesTreeModel( key + "=", (QDataSet)value,valuesSizeLimit);
