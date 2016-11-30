@@ -4131,18 +4131,18 @@ public class Ops {
     
     /**
      * element-wise atan2, 4-quadrant atan.
-     * @param dsy
-     * @param dsx
-     * @return
+     * @param y the y values
+     * @param x the x values
+     * @return angles between -PI and PI
      */
-    public static QDataSet atan2(QDataSet dsy, QDataSet dsx) {
-         MutablePropertyDataSet result= applyBinaryOp(dsy, dsx, new BinaryOp() {
+    public static QDataSet atan2(QDataSet y, QDataSet x) {
+         MutablePropertyDataSet result= applyBinaryOp(y, x, new BinaryOp() {
             @Override
             public double op(double y, double x) {
                 return Math.atan2(y, x);
             }
         });
-        result.putProperty(QDataSet.LABEL, maybeLabelBinaryOp(dsy,dsx, "atan2" ) );
+        result.putProperty(QDataSet.LABEL, maybeLabelBinaryOp(y,x, "atan2" ) );
         return result;
     }
     
