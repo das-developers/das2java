@@ -98,11 +98,17 @@ public class TwoCanvasTCADemo {
         bpng.addActionListener( new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                try {
-                    plot.getCanvas().writeToPng("/tmp/TwoCanvasTCADemo.png");
-                } catch (IOException ex) {
-                    logger.log(Level.SEVERE, null, ex);
-                }
+                Runnable run= new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            plot.getCanvas().writeToPng("/tmp/TwoCanvasTCADemo.png");
+                        } catch (IOException ex) {
+                            logger.log(Level.SEVERE, null, ex);
+                        }
+                    }
+                };
+                new Thread(run,"createPng").start();
             }
         });
         p.add( bpng );
