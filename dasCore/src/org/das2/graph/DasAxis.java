@@ -1218,18 +1218,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             tcaTimer= new TickleTimer( 200, new PropertyChangeListener() {
                 @Override
                 public void propertyChange(PropertyChangeEvent evt) {
-                    DasCanvas mycanvas= getCanvas();
-		    logger.log( Level.FINER, "mstca, mycanvas={0}", mycanvas);
-                    
-                    DasCanvas otherCanvas= null;
-                    if ( lcanvas!=null  ) {
-                        if ( mycanvas!=lcanvas ) otherCanvas= mycanvas;
-                        mycanvas= lcanvas;  // I don't understand this.  When we entered maybeStartTcaTimer, lcanvas was not null.  
-                        // Be careful that this canvas is the same one that set the lock!
-                    }
-                    if ( mycanvas!=null ) {
-                        mycanvas.performingChange( DasAxis.this, tcaLock );
-                        if ( otherCanvas!=null ) otherCanvas.performingChange( DasAxis.this, tcaLock );
+		    logger.log( Level.FINER, "mstca, lcanvas={0}", lcanvas);
+                    if ( lcanvas!=null ) {
+                        lcanvas.performingChange( DasAxis.this, tcaLock );
                     } else {
                         maybeStartTcaTimer();
                         return;
@@ -1237,8 +1228,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                     try {
                         updateTCASoon();
                     } finally {
-                        mycanvas.changePerformed( DasAxis.this, tcaLock );
-                        if ( otherCanvas!=null ) otherCanvas.changePerformed( DasAxis.this, tcaLock );
+                        lcanvas.changePerformed( DasAxis.this, tcaLock );
                     }
                 }
             });
@@ -3890,6 +3880,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     @Override
     protected void uninstallComponent() {
         super.uninstallComponent();
+        tcaTimer= null; // Thanks, Ed!
     }
 
 
