@@ -846,18 +846,20 @@ public class DasPlot extends DasCanvasComponent {
             if (parent != null) {
                 parent.remove(this.xAxis);
             }
-            xAxis.removePropertyChangeListener("dataMinimum", rebinListener);
-            xAxis.removePropertyChangeListener("dataMaximum", rebinListener);
-            xAxis.removePropertyChangeListener(DasAxis.PROPERTY_DATUMRANGE, rebinListener);
-            xAxis.removePropertyChangeListener("log", rebinListener);
-            xAxis.removePropertyChangeListener(DasAxis.PROP_FLIPPED,rebinListener);
-            xAxis.removePropertyChangeListener(DasAxis.PROPERTY_TICKS, ticksListener);
+            this.xAxis.removePropertyChangeListener("dataMinimum", rebinListener);
+            this.xAxis.removePropertyChangeListener("dataMaximum", rebinListener);
+            this.xAxis.removePropertyChangeListener(DasAxis.PROPERTY_DATUMRANGE, rebinListener);
+            this.xAxis.removePropertyChangeListener("log", rebinListener);
+            this.xAxis.removePropertyChangeListener(DasAxis.PROP_FLIPPED,rebinListener);
+            this.xAxis.removePropertyChangeListener(DasAxis.PROPERTY_TICKS, ticksListener);
         }
         this.xAxis = xAxis;
         if (xAxis != null) {
             if (!xAxis.isHorizontal()) {
                 throw new IllegalArgumentException("xAxis is not horizontal");
             }
+            xAxis.setRow(getRow());
+            xAxis.setColumn(getColumn());
             if (parent != null) {
                 parent.add(this.xAxis);
                 parent.validate();
