@@ -17,6 +17,7 @@ import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import org.das2.DasNameException;
 import org.das2.datum.Units;
 import org.das2.graph.DasAxis;
 import org.das2.graph.DasCanvas;
@@ -53,12 +54,20 @@ public class TwoCanvasTCADemo {
         panel.setLayout( new BoxLayout( panel, BoxLayout.X_AXIS ) );
 
         final DasCanvas canvas1 = new DasCanvas(width, height);
-        canvas1.setName("canvas1");
+        try {
+            canvas1.setDasName("canvas1");
+        } catch (DasNameException ex) {
+            logger.log(Level.SEVERE, null, ex);  // Grr--Why is this a checked exception???
+        }
         canvas1.setAntiAlias(true);
         panel.add(canvas1 );
 
         final DasCanvas canvas2 = new DasCanvas(width, height);
-        canvas1.setName("canvas2");
+        try {
+            canvas2.setDasName("canvas2");
+        } catch (DasNameException ex) {
+            logger.log(Level.SEVERE, null, ex);
+        }
         canvas2.setAntiAlias(true);
         panel.add(canvas2 );
         
@@ -113,6 +122,22 @@ public class TwoCanvasTCADemo {
         });
         p.add( bpng );
 
+        JButton bstat= new JButton("Dump Stats");
+        bstat.addActionListener( new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Runnable run= new Runnable() {
+                    @Override
+                    public void run() {
+                        System.err.println("canvas1: " + canvas1.isPendingChanges() );
+                        System.err.println("canvas2: " + canvas2.isPendingChanges() );
+                    }
+                };
+                new Thread(run,"createPng").start();
+            }
+        });
+        p.add( bstat );
+        
         panel.add(p);
         
         // here's autoplot as of 2005
@@ -149,9 +174,9 @@ public class TwoCanvasTCADemo {
 
                 DDataSet sec= DDataSet.createRank1(parms.length());
                 sec.putProperty( QDataSet.LABEL, "Sec" );
-                DDataSet rand= DDataSet.createRank1(parms.length());
-                rand.putProperty( QDataSet.LABEL, "Rand" );
-                rand.putProperty( QDataSet.FORMAT, "%5.2f" );
+                DDataSet rand1= DDataSet.createRank1(parms.length());
+                rand1.putProperty( QDataSet.LABEL, "Rand" );
+                rand1.putProperty( QDataSet.FORMAT, "%5.2f" );
                 DDataSet rand2= DDataSet.createRank1(parms.length());
                 rand2.putProperty( QDataSet.LABEL, "Rand2" );
                 rand2.putProperty( QDataSet.FORMAT, "%5.3f" );
@@ -162,13 +187,13 @@ public class TwoCanvasTCADemo {
                     QDataSet time= parm.slice(0);
 
                     sec.putValue( i, Ops.mod( time, DataSetUtil.asDataSet(3600,Units.seconds) ).value() );
-                    rand.putValue(i, Ops.randu(1).slice(0).value() );
-                    rand2.putValue( Ops.randu(1).slice(0).value() );
+                    rand1.putValue(i, Ops.randu(1).slice(0).value() );
+                    rand2.putValue( i,Ops.randu(1).slice(0).value() );
 
                 }
 
                 outbds1.bundle(sec);
-                outbds1.bundle(rand);
+                outbds1.bundle(rand1);
                 outbds1.bundle(rand2);
 
                 return outbds1;
