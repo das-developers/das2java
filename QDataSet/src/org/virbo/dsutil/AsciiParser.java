@@ -1282,7 +1282,8 @@ public class AsciiParser {
                 return u.parse(field.substring(1,field.length()-1)).doubleValue(u); // TODO: untested..
             } else {
                 try {
-                    return u.createDatum(field).doubleValue(u);            
+                    Datum d= u.createDatum(field); // rte_2038937185 that Ivar sees.
+                    return d.doubleValue(u);            
                 } catch ( NullPointerException ex ) {
                     throw ex; // w/Ivar
                 }
