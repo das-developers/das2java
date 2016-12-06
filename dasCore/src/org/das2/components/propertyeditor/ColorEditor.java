@@ -170,21 +170,21 @@ public class ColorEditor extends AbstractCellEditor implements java.beans.Proper
         Object oldValue= this.editorSupport.getValue();
         editorSupport.setValue(obj);
         if ( oldValue!=obj ) {
-            choice.setSelectedItem(obj);
+            ((ColorChoiceModel)choice.getModel()).setSelectedItem(obj);
             choice.repaint();
         }
     }
 
     public Component getTableCellEditorComponent(JTable table, Object value, boolean selected, int row, int column) {
         setValue(value);
-        choice.setSelectedItem(value);
+        ((ColorChoiceModel)choice.getModel()).setSelectedItem(value);
         choice.setForeground(table.getForeground());
         choice.setBackground(table.getBackground());
         return choice;
     }
     
     public Component getSmallEditor() {
-        choice.setSelectedItem(getValue());
+        ((ColorChoiceModel)choice.getModel()).setSelectedItem(getValue());
         return choice;
     }
     
