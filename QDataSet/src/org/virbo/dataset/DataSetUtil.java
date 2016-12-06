@@ -2256,8 +2256,14 @@ public class DataSetUtil {
             //} else {
             //    if ( dep.rank()==2 && dep.length(0)!=ds.length(0) ) problems.add(String.format("DEPEND_%d length(0) is %d while data.length(0) is %d.", dimOffset, dep.length(0), ds.length(0)) );
             //}
-            if ( dep.rank()>1 && !Schemes.isRank2Bins(dep) ) {
-                problems.add( "DEPEND_0 is greater than rank 1 and is not bins dataset.");
+            if ( dep.rank()>1 ) {
+                if ( Schemes.isRank2Bins(dep) ) {
+                    // okay
+                } else if ( Schemes.isXYScatter(dep) ) {
+                    // okay
+                } else {
+                    problems.add( "DEPEND_0 is greater than rank 1 and is not bins dataset.");
+                }
             }
             if (ds.rank() > 1 && ds.length() > 0) {
                 QDataSet dep1= (QDataSet)ds.property(QDataSet.DEPEND_1);
