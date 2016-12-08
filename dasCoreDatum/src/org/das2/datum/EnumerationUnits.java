@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.datum.format.DatumFormatterFactory;
@@ -46,12 +47,12 @@ public class EnumerationUnits extends Units {
 
     private static final Logger logger= LoggerManager.getLogger("das2.units.enum");
     
-    private HashMap<Integer, Datum> ordinals;  // maps from ordinal to Datum.Integer
+    private Map<Integer, Datum> ordinals;  // maps from ordinal to Datum.Integer
     private int highestOrdinal; // highest ordinal for each Units type
-    private HashMap<Object, Datum> objects;    // maps from object to Datum.Integer
-    private HashMap<Datum, Object> invObjects; // maps from Datum.Integer to object
-    private HashMap<Integer,Integer> colors;   // maps from ordinal to the color for the ordinal.
-    private static HashMap<String, EnumerationUnits> unitsInstances;
+    private Map<Object, Datum> objects;    // maps from object to Datum.Integer
+    private Map<Datum, Object> invObjects; // maps from Datum.Integer to object
+    private Map<Integer,Integer> colors;   // maps from ordinal to the color for the ordinal.
+    private static Map<String, EnumerationUnits> unitsInstances;
 
     public EnumerationUnits(String id) {
         this(id, "");
@@ -61,7 +62,7 @@ public class EnumerationUnits extends Units {
         super(id, description);
         synchronized (this) {
             if (unitsInstances == null) {
-                unitsInstances = new HashMap<String, EnumerationUnits>();
+                unitsInstances = new HashMap<>();
             }
         }
         // Note that there's a class of EnumerationUnits, where the id doesn't have
@@ -69,10 +70,10 @@ public class EnumerationUnits extends Units {
         // works and what limitations this introduces, but this may happen.  The code
         // briefly checked for this condition and issued a warning that was not helpful.
         highestOrdinal = 0;
-        ordinals = new HashMap<Integer, Datum>();
-        objects = new HashMap<Object, Datum>();
-        invObjects = new HashMap<Datum, Object>();
-        colors= new HashMap<Integer,Integer>();
+        ordinals = new ConcurrentHashMap<>();
+        objects = new ConcurrentHashMap<>();
+        invObjects = new ConcurrentHashMap<>();
+        colors= new ConcurrentHashMap<>();
         unitsInstances.put(id,this);
     }
 
@@ -85,6 +86,7 @@ public class EnumerationUnits extends Units {
      * @param ival the integer value of the datum
      * @param sval the object to associate.  This can be an object for legacy reasons, but should be a String.
      * @param color RGB color to associate with this value.  
+     * @return the Datum, which may have been created already.
      * @throws IllegalArgumentException if this ordinal is already taken by a different value.
      */
     public Datum createDatum(int ival, Object sval, int color ) {
@@ -95,23 +97,26 @@ public class EnumerationUnits extends Units {
             return objects.get(sval);
         } else {
             synchronized (this) {
+                if ( objects.containsKey(sval)) { // double check in synchronized block
+                    return objects.get(sval);
+                } 
                 if (highestOrdinal < ival) {
                     highestOrdinal = ival;
                 }
-            }
-            Integer ordinal = ival;
-            Datum result = new Datum.Double(ordinal, this);
-            if ( ordinals.containsKey(ordinal) ) {
-                Datum d=  ordinals.get(ordinal);
-                if ( ! invObjects.get( d ).equals(sval) ) {
-                    throw new IllegalArgumentException("value already exists for this ordinal!");
+                Integer ordinal = ival;
+                Datum result = new Datum.Double(ordinal, this);
+                if ( ordinals.containsKey(ordinal) ) {
+                    Datum d=  ordinals.get(ordinal);
+                    if ( ! invObjects.get( d ).equals(sval) ) {
+                        throw new IllegalArgumentException("value already exists for this ordinal!");
+                    }
                 }
+                ordinals.put(ordinal, result);
+                invObjects.put(result, sval);
+                objects.put(sval, result);
+                colors.put(ordinal,color);
+                return result;
             }
-            ordinals.put(ordinal, result);
-            invObjects.put(result, sval);
-            objects.put(sval, result);
-            colors.put(ordinal,color);
-            return result;
         }
     }
     
@@ -123,6 +128,7 @@ public class EnumerationUnits extends Units {
      * creates the datum, explicitly setting the ordinal.  Use with caution.
      * @param ival the integer value of the datum
      * @param sval the object to associate.  This can be an object for legacy reasons.
+     * @return a Datum representing sval.
      * @throws IllegalArgumentException if this ordinal is already taken by a different value.
      */    
     public Datum createDatum( int ival, Object sval ) {
@@ -149,7 +155,7 @@ public class EnumerationUnits extends Units {
      * return the Datum that represents this object, or create a Datum for 
      * the object.  The object should be a String, but to support legacy applications
      * it is an object 
-     * @param object
+     * @param object an object, typically a string.
      * @return Datum representing the object.
      */
     public Datum createDatum(Object object) {
@@ -161,42 +167,54 @@ public class EnumerationUnits extends Units {
         } else {
             Integer ordinal;
             synchronized (this) {
+                if ( objects.containsKey(object)) { // double check
+                    return objects.get(object);
+                }
                 highestOrdinal++;
                 ordinal = highestOrdinal;  
-            }
-            Datum result = new Datum.Double(ordinal, this);
-            ordinals.put(ordinal, result);
-            invObjects.put(result, object);
-            objects.put(object, result);
-            return result;
+                Datum result = new Datum.Double(ordinal, this);
+                ordinals.put(ordinal, result);
+                invObjects.put(result, object);
+                objects.put(object, result);
+                return result;
+            }            
         }
     }
 
     /**
      * provides access to map of all values.
-     * @return
+     * @return all the values
      */
-    public Map<Integer, Datum> getValues() {
+    public synchronized Map<Integer, Datum> getValues() {
         return Collections.unmodifiableMap(ordinals);
     }
 
+    @Override
     public Datum createDatum(int value) {
         Integer key = value;
-        if (ordinals.containsKey(key)) {
-            return ordinals.get(key);
+        Datum d= ordinals.get(key);
+        if ( d!=null ) {
+            return d;
         } else {
             throw new IllegalArgumentException("No Datum exists for this ordinal: " + value);
         }
     }
 
+    @Override
     public Datum createDatum(long value) {
         return createDatum((int) value);
     }
 
+    @Override
     public Datum createDatum(Number value) {
         return createDatum(value.intValue());
     }
 
+    /**
+     * return the object (typically a string) associated with this Datum
+     * @param datum
+     * @return the object associated with the Datum.
+     */
     public Object getObject(Datum datum) {
         if (invObjects.containsKey(datum)) {
             return invObjects.get(datum);
@@ -214,7 +232,7 @@ public class EnumerationUnits extends Units {
         String ss= o.toString();
         ss= ss.trim();
         if (unitsInstances == null) {
-            unitsInstances = new HashMap<String, EnumerationUnits>();
+            unitsInstances = new HashMap<>();
         }
         if (unitsInstances.containsKey(ss)) {
             return unitsInstances.get(ss);
@@ -225,39 +243,47 @@ public class EnumerationUnits extends Units {
         }
     }
 
+    @Override
     public Datum createDatum(double d) {
         return createDatum((int) d);
     }
 
+    @Override
     public Datum createDatum(double d, double resolution) {
         return createDatum((int) d);
     }
 
+    @Override
     public DatumFormatterFactory getDatumFormatterFactory() {
         return EnumerationDatumFormatterFactory.getInstance();
     }
 
+    @Override
     public Datum subtract(Number a, Number b, Units bUnits) {
         throw new IllegalArgumentException("subtract on EnumerationUnit");
     }
 
+    @Override
     public Datum add(Number a, Number b, Units bUnits) {
         throw new IllegalArgumentException("add on EnumerationUnit");
     }
 
+    @Override
     public Datum divide(Number a, Number b, Units bUnits) {
         throw new IllegalArgumentException("divide on EnumerationUnit");
     }
 
+    @Override
     public Datum multiply(Number a, Number b, Units bUnits) {
         throw new IllegalArgumentException("multiply on EnumerationUnit");
     }
 
+    @Override
     public Datum parse(String s) throws java.text.ParseException {
         Datum result = null;
         for (Iterator i = objects.keySet().iterator(); i.hasNext();) {
             Object key = i.next();
-            Object value = objects.get(key);
+            //Object value = objects.get(key);
             if (key.toString().equals(s)) { // if the look the same, they are the same
                 if (result == null) {
                     result = (Datum) objects.get(key);
