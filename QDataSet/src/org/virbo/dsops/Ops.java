@@ -7629,7 +7629,7 @@ public class Ops {
                 uc1 = uu.value(ic1);
                 double ff = d==uc0 ? 0 : (d - uc0) / (uc1 - uc0); // may be 1.0
 
-                if ( ic0 + ff < -50 || ic0 + ff > n+50 ) {
+                if ( ( ( ic0 + ff ) / n ) < -3 || ( ( ic0 + ff - n ) / n ) > 3 ) {
                     extentWarning++;
                 }
                 it.putValue(result, ic0 + ff);
