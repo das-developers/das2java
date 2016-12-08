@@ -796,11 +796,11 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
      * @param pt points offset from the normal position.
      */
     public void setMin( double norm, double em, int pt ) {
-        double[] old= new double[ ] { this.minimum, this.emMinimum, this.emMaximum };
+        double[] old= new double[ ] { this.minimum, this.emMinimum, this.ptMinimum };
         this.minimum= norm;
         this.emMinimum= em;
         this.ptMinimum= pt;
-        firePropertyChange(PROP_PTMINIMUM, old[2], ptMinimum );
+        firePropertyChange(PROP_PTMINIMUM, old[2], pt );
         firePropertyChange(PROP_EMMINIMUM, old[1], em );
         firePropertyChange(PROP_MINIMUM, old[0], norm );
         revalidate();
@@ -813,11 +813,11 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
      * @param pt points offset from the normal position.
      */
     public void setMax( double norm, double em, int pt ) {
-        double[] old= new double[ ] { this.maximum, this.emMaximum, this.emMaximum };
+        double[] old= new double[ ] { this.maximum, this.emMaximum, this.ptMaximum };
         this.maximum= norm;
         this.emMaximum= em;
         this.ptMaximum= pt;
-        firePropertyChange(PROP_PTMAXIMUM, old[2], ptMaximum );
+        firePropertyChange(PROP_PTMAXIMUM, old[2], pt );
         firePropertyChange(PROP_EMMAXIMUM, old[1], em );
         firePropertyChange(PROP_MAXIMUM, old[0], norm );
         revalidate();
