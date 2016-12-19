@@ -259,6 +259,21 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
         }
     }
 
+    protected Painter topDecorator = null;
+
+    public static final String PROP_TOPDECORATOR = "topDecorator";
+
+    public Painter getTopDecorator() {
+        return topDecorator;
+    }
+
+    public void setTopDecorator(Painter topDecorator) {
+        Painter oldTopDecorator = this.topDecorator;
+        this.topDecorator = topDecorator;
+        updateCacheImage();
+        propertyChangeSupport.firePropertyChange(PROP_TOPDECORATOR, oldTopDecorator, topDecorator);
+    }
+
     /**
      * TODO: what is the difference between lastException and exception?
      * @param e 
