@@ -650,7 +650,7 @@ public class DasPlot extends DasCanvasComponent {
 
         /* clear all the messages */
         messages = new ArrayList();
-        legendElements = new ArrayList<LegendElement>();
+        legendElements = new ArrayList<>();
 
         if (!drawGridOver) {
             maybeDrawGrid(plotGraphics);
@@ -667,6 +667,10 @@ public class DasPlot extends DasCanvasComponent {
                 try {
                     rend.incrementRenderCount();
                     rend.render(plotGraphics.create(), lxaxis, lyaxis, new NullProgressMonitor());
+                    Painter p= rend.topDecorator;
+                    if ( p!=null ) {
+                        p.paint((Graphics2D)plotGraphics.create());
+                    }
                 } catch ( RuntimeException ex ) {
                     logger.log( Level.WARNING, ex.getMessage(), ex );
                     //put breakpoint here:
