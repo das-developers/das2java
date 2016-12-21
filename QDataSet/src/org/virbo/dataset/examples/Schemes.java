@@ -2,11 +2,13 @@
 package org.virbo.dataset.examples;
 
 import java.text.ParseException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.datum.EnumerationUnits;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
 import org.virbo.dataset.ArrayDataSet;
+import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.JoinDataSet;
 import org.virbo.dataset.MutablePropertyDataSet;
@@ -413,6 +415,65 @@ public class Schemes {
      */
     public static boolean isBundleDataSet( QDataSet ds ) {
         return Ops.isBundle(ds);
+    }
+    
+    /**
+     * return bundle with Time, Density, Speed, and Flux, to demonstrate
+     * a bundle of datasets with differing rank.
+     * @return 
+     */
+    public static QDataSet complexBundleDataSet() {
+        try {
+            QDataSet tt= Ops.timegen( "2016-12-21T00:00", "60s", 1440 );
+            tt= Ops.putProperty( tt, QDataSet.NAME, "time" );
+            Ops.randomSeed(5334);
+            QDataSet density= Ops.pow( 10, Ops.add( Ops.divide( Ops.randn(1440),10 ), 1 ) );  // 10**(1+randn/10)
+            density= Ops.putProperty( density, QDataSet.UNITS, Units.pcm3 );
+            density= Ops.putProperty( density, QDataSet.NAME, "density" );
+            density= Ops.putProperty( density, QDataSet.DEPENDNAME_0, "time" );
+            QDataSet vv= Ops.transpose( Ops.reform( Ops.accum( Ops.randn(1440*3) ), new int[] { 3, 1440 } ) );
+            vv= Ops.putProperty( vv, QDataSet.UNITS, Units.cmps );
+            vv= Ops.putProperty( vv, QDataSet.NAME, "speed" );
+            vv= Ops.putProperty( vv, QDataSet.DEPENDNAME_0, "time" );
+            DDataSet ff= DDataSet.createRank2(1440,4);
+            ff.putProperty( QDataSet.UNITS, Units.lookupUnits("s!E-1!Ncm!E-2!Nster!E-1!NkeV!E-1!N") );
+            ff.putProperty( QDataSet.NAME, "flux" );
+            for ( int i=0; i<1440; i++ ) {
+                ff.putValue( i, 0, 23.0 + vv.value(i,0) );
+                ff.putValue( i, 1, 45.0 + vv.value(i,0) );
+                ff.putValue( i, 2, 31.0 + vv.value(i,0) );
+                ff.putValue( i, 3, 11.0 + vv.value(i,0) );
+            }
+            ff.putProperty( QDataSet.DEPEND_1, Ops.pow( 10, linspace(1.,4.,4) ) );
+            QDataSet result= Ops.bundle( tt, density );
+            for ( int j=0; j<vv.length(0); j++ ) {
+                MutablePropertyDataSet mpds= (MutablePropertyDataSet) Ops.slice1(vv,j);
+                mpds.putProperty( QDataSet.NAME, "speed_"+(char)('x'+j) );
+                mpds.putProperty( QDataSet.DEPENDNAME_0, "time" );
+                result= Ops.bundle( result, mpds ); // presently the bundle operator works only on rank 1 datasets.
+            }
+            for ( int j=0; j<ff.length(0); j++ ) {
+                MutablePropertyDataSet mpds= (MutablePropertyDataSet) Ops.slice1(ff,j);
+                mpds.putProperty( QDataSet.NAME, "flux_"+j );
+                mpds.putProperty( QDataSet.DEPENDNAME_0, "time" );
+                result= Ops.bundle( result, mpds );
+            }
+            MutablePropertyDataSet bds= (MutablePropertyDataSet)result.property(QDataSet.BUNDLE_1);
+            for ( int j=0; j<vv.length(0); j++ ) {
+                bds.putProperty( QDataSet.START_INDEX, 2+j, 2 );
+                bds.putProperty( QDataSet.ELEMENT_DIMENSIONS, 2+j, new int[] { 3 } );
+                bds.putProperty( QDataSet.ELEMENT_NAME, 2+j, "speed" );
+            }
+            for ( int j=0; j<ff.length(0); j++ ) {
+                bds.putProperty( QDataSet.START_INDEX, 5+j, 5 );
+                bds.putProperty( QDataSet.ELEMENT_DIMENSIONS, 5+j, new int[] { 4 } );
+                bds.putProperty( QDataSet.ELEMENT_NAME, 5+j, "flux" );
+                bds.putProperty( QDataSet.DEPEND_1, ff.property(QDataSet.DEPEND_1) );
+            }
+            return result;
+        } catch (ParseException ex) {
+            throw new RuntimeException(ex);
+        }
     }
     
     /**
