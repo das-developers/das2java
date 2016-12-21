@@ -1198,7 +1198,8 @@ public class DataSetOps {
             if ( n1!=null && n1.equals(name) ) {
                 ib= j;
             }
-            if ( bundle1.length(j)>0 ) {
+            int[] dims= (int[])bundle1.property( QDataSet.ELEMENT_DIMENSIONS, j );
+            if ( bundle1.length(j)>0 || ( dims!=null && dims.length>0 ) ) {
                 n1= (String) bundle1.property( QDataSet.ELEMENT_NAME, j );
                 if ( n1!=null ) n1= Ops.saferName(n1);
                 if ( n1!=null && n1.equals(name) ) {
@@ -1271,7 +1272,10 @@ public class DataSetOps {
         int ib= indexOfBundledDataSet( bundleDs, name );
 
         boolean highRank= false; // we have to see if they referred to the high-rank dataset, or the rank 1 dataset.  Chris, wouldn't it be nice if Java could return two things?
-        if ( bundle1!=null && bundle1.length(ib)>0 ) {
+        
+        int[] dims=null;
+        if ( ib>-1 ) dims= (int[])bundle1.property( QDataSet.ELEMENT_DIMENSIONS, ib );
+        if ( bundle1!=null && ( bundle1.length(ib)>0 || ( dims!=null && dims.length>0 ) ) ) {
             String n1= (String) bundle1.property( QDataSet.ELEMENT_NAME, ib );
             if ( n1!=null ) n1= Ops.saferName(n1);
             if ( n1!=null && n1.equals(name) ) {
@@ -1436,10 +1440,21 @@ public class DataSetOps {
         int j=ib;   // column requested
         int is= ib; // start index of the high-rank dataset
 
+        // since 2016-09-27, the dimensions should be a property now, and the dataset should be [n,0].
+        int[] dimensions= (int[]) bundle.property(QDataSet.ELEMENT_DIMENSIONS,ib);
+        if ( dimensions==null && bundle.length(j)>0 ) {
+            dimensions= new int[bundle.length()];
+            for ( int ii=0; ii<bundle.length(); ii++ ) {
+                dimensions[ii]= (int)bundle.value( j, ii );
+            }
+        }
+        if ( dimensions!=null && dimensions.length==0 ) {
+            dimensions= null;
+        }
+        
         if ( highRank ) {
             Integer s= (Integer)bundle.property(QDataSet.START_INDEX,ib);
             if ( s==null ) s= ib;
-            int[] dimensions= (int[]) bundle.property(QDataSet.ELEMENT_DIMENSIONS);
             if ( dimensions!=null ) {
                 is= s;
                 int n=1;
@@ -1448,21 +1463,17 @@ public class DataSetOps {
                 }
                 len= n;
                 j= ib;
-            } else {
-                is= s; // legacy unbundle was to look up the dataset values.
-                int n=1;
-                for (int k = 0; k < bundle.length(is); k++) {
-                     n *= bundle.value(is, k); 
-                }
-                len= n;
-                j= ib;
-            }
+            } 
         }
         
-        if ( bundle.length(j)==0 || !highRank ) {
+        if ( dimensions==null || !highRank ) {
             if ( bundleDs instanceof BundleDataSet ) {
                 QDataSet r= ((BundleDataSet)bundleDs).unbundle(j);
                 QDataSet dep0= (QDataSet) bundleDs.property( QDataSet.DEPEND_0 );
+                String dependName= (String)r.property(QDataSet.DEPENDNAME_0);
+                if ( dependName!=null ) {
+                    dep0= unbundle( bundleDs, dependName );
+                }
                 if ( dep0!=null && r.property(QDataSet.DEPEND_0)==null ) {
                     MutablePropertyDataSet rc= new DataSetWrapper(r);
                     rc.putProperty( QDataSet.DEPEND_0, dep0 );
@@ -1513,7 +1524,7 @@ public class DataSetOps {
 
                 return result;
             }
-        } else if ( bundle.length(j)==1 || bundle.length(j)==2 ) {
+        } else if ( dimensions.length==1 || dimensions.length==2 ) {
             if ( bundleDs.rank()==1 ) {
                 return bundleDs.trim(is, is+len);
             }
@@ -1597,8 +1608,8 @@ public class DataSetOps {
                     }
                 }
             }
-            if ( bundle.length(j)==2 ) {
-                int[] qube= new int[] { result.length(), (int)(bundle.value(j,0)), (int)(bundle.value(j,1)) };
+            if ( dimensions.length==2 ) {
+                int[] qube= new int[] { result.length(), dimensions[0], dimensions[1] };
                 return Ops.reform( result, qube );
             } else {
                 return result;
