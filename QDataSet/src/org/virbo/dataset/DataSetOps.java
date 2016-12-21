@@ -1443,8 +1443,8 @@ public class DataSetOps {
         // since 2016-09-27, the dimensions should be a property now, and the dataset should be [n,0].
         int[] dimensions= (int[]) bundle.property(QDataSet.ELEMENT_DIMENSIONS,ib);
         if ( dimensions==null && bundle.length(j)>0 ) {
-            dimensions= new int[bundle.length()];
-            for ( int ii=0; ii<bundle.length(); ii++ ) {
+            dimensions= new int[bundle.length(j)];
+            for ( int ii=0; ii<bundle.length(j); ii++ ) {
                 dimensions[ii]= (int)bundle.value( j, ii );
             }
         }
