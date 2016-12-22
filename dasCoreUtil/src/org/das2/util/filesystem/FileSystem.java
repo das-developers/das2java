@@ -42,14 +42,12 @@ import org.das2.util.monitor.ProgressMonitor;
 
 /**
  * Filesystems provide an abstraction layer so that clients can access
- * any heirarchy of files in a implementation-independent way.  For example,
- * remote filesystems accessible via http are accessible through the same
+ * any hierarchy of files in a implementation-independent way.  For example,
+ * remote filesystems accessible via HTTP are accessible through the same
  * interface as a local filesystem.
  *
  * @author  Jeremy
  */
-
-
 public abstract class FileSystem  {
 
     URI root;
@@ -77,7 +75,7 @@ public abstract class FileSystem  {
         }
     }
     
-    private static final Map<URI,FileSystem> instances= Collections.synchronizedMap( new HashMap() );
+    private static final Map<URI,FileSystem> instances= Collections.synchronizedMap( new HashMap<URI,FileSystem>() );
 
     /**
      * non-null means filesystem is bring created and we should wait.
@@ -346,9 +344,7 @@ public abstract class FileSystem  {
                 } else {
                     result= new SubFileSystem(zipfs, subdir);
                 }
-            } catch (UnknownHostException ex ) {
-                throw ex;
-            } catch ( FileNotFoundException ex ) {
+            } catch (UnknownHostException | FileNotFoundException ex ) {
                 throw ex;
             } catch (URISyntaxException ex) {
                 //this shouldn't happen
@@ -402,6 +398,10 @@ public abstract class FileSystem  {
        return result;
     }
 
+    /**
+     * access the file system settings.
+     * @return the single settings object.
+     */
     public static FileSystemSettings settings() {
         return settings;
     }
@@ -417,6 +417,12 @@ public abstract class FileSystem  {
         registry.put("ftp",new FtpFileSystemFactory() );
     }
         
+    /**
+     * register a code for handling a filesystem type.  For example, an
+     * FTP implementation can be registered to handle URIs like "ftp://autoplot.org/"
+     * @param proto protocol identifier, like "ftp" "http" or "sftp"
+     * @param factory the factory which will handle the URI.
+     */
     public static void registerFileSystemFactory( String proto, FileSystemFactory factory ) {
         registry.put( proto, factory );
     }
@@ -434,6 +440,10 @@ public abstract class FileSystem  {
         this.root= root;
     }
     
+    /**
+     * return the URI identifying the root of the filesystem.
+     * @return 
+     */
     public URI getRootURI() {
         return root;
     }
@@ -491,9 +501,15 @@ public abstract class FileSystem  {
      * @param filename the file name within the filesystem
      * @return the FileObject
      */
-    abstract public FileObject getFileObject( String filename );
+    public abstract FileObject getFileObject( String filename );
     
-    abstract public boolean isDirectory( String filename ) throws IOException;
+    /**
+     * return true if the name is a directory.
+     * @param filename the name
+     * @return true if the name is a directory.
+     * @throws IOException 
+     */
+    public abstract boolean isDirectory( String filename ) throws IOException;
     
     /**
      * returns a list of the names of the files in a directory.  Names ending
@@ -575,28 +591,28 @@ public abstract class FileSystem  {
         List<String> result= new ArrayList();
         int i= regex.indexOf( "/" );
         logger.fine( String.format( "listDirectoryDeep(%s,%s)\n",directory,regex) );
-        if ( i==-1 ) {
-            return listDirectory( directory, regex );
-        } else if ( i==0 ) {
-            return listDirectory( directory, regex.substring(1) );
-        } else {
-            String[] ss= listDirectory( directory, regex.substring(0,i) );
-            if ( ss.length==1 && ss[0].length()==(i+1) && ss[0].substring(0,i).equals(regex.substring(0,i) ) ) {
-                String dir= ss[0];
-                String[] ss1= listDirectoryDeep( directory + dir, regex.substring(dir.length()) );
-                for ( int j=0; j<ss1.length; j++ ) {
-                    ss1[j]= dir + ss1[j];
-                }
-                return ss1;
-            }
-            for ( String s: ss ) {
-                if ( s.endsWith("/") ) {
-                    String[] ss1= listDirectoryDeep( directory+s, regex.substring(i+1) );
-                    for ( String s1: ss1 ) {
-                        result.add( directory + s + s1 );
+        switch (i) {
+            case -1:
+                return listDirectory( directory, regex );
+            case 0:
+                return listDirectory( directory, regex.substring(1) );
+            default:
+                String[] ss= listDirectory( directory, regex.substring(0,i) );
+                if ( ss.length==1 && ss[0].length()==(i+1) && ss[0].substring(0,i).equals(regex.substring(0,i) ) ) {
+                    String dir= ss[0];
+                    String[] ss1= listDirectoryDeep( directory + dir, regex.substring(dir.length()) );
+                    for ( int j=0; j<ss1.length; j++ ) {
+                        ss1[j]= dir + ss1[j];
                     }
-                }
-            }
+                    return ss1;
+                }   for ( String s: ss ) {
+                    if ( s.endsWith("/") ) {
+                        String[] ss1= listDirectoryDeep( directory+s, regex.substring(i+1) );
+                        for ( String s1: ss1 ) {
+                            result.add( directory + s + s1 );
+                        }
+                    }
+                }   break;
         }
         return result.toArray( new String[result.size()] );
     }
@@ -618,7 +634,7 @@ public abstract class FileSystem  {
      * Note File.getAbsolutePath() returns the string representation of this root.
      * @return the folder that is a local copy of the filesystem. 
      */
-    abstract public File getLocalRoot();
+    public abstract File getLocalRoot();
         
     /**
      * create a new filesystem that is a part of this filesystem, rooted at
@@ -636,13 +652,14 @@ public abstract class FileSystem  {
     }
     
     /**
-     * returns a String[5]:
+     * returns a String[5]:<code>
      *   [0] is proto "http://"
      *   [1] will be the host
      *   [2] is proto + path
      *   [3] is proto + path + file
      *   [4] is file ext
      *   [5] is params, not including ?.
+     * </code>
      * @param surl a URL string to parse.
      * @return the parsed URL.
      */
@@ -702,9 +719,12 @@ public abstract class FileSystem  {
     /**
      * allow applications to specify their own exception handler.
      */
-    
     private static ExceptionHandler exceptionHandler= null;
 
+    /**
+     * return the exception handler.
+     * @return  the exception handler.
+     */
     public static synchronized ExceptionHandler getExceptionHandler() {
         if ( exceptionHandler==null ) {
             String name= "java.awt.headless";
@@ -725,6 +745,10 @@ public abstract class FileSystem  {
         return exceptionHandler;
     }
 
+    /**
+     * set the exception handler that is called when exceptions occur.
+     * @param eh the exception handler.
+     */
     public static synchronized void setExceptionHandler( ExceptionHandler eh ) {
         exceptionHandler= eh;
     }
