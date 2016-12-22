@@ -446,15 +446,13 @@ public abstract class FileSystem  {
     
     /**
      * returns the canonical name /a/b/c.dat of a string that
-     * contains backslashes and might not have the leading /
+     * may contain backslashes and might not have the leading /
      * and trailing slashes.  Also, double slashes (//) are
-     * removed.  Note this is the name of the FileObject
-     * within the FileSystem.  Folder names will not necessarily
-     * be suffixed with '/'
+     * removed.  Even for Windows files, forward slashes are used.
      * @param filename name 
      * @return name with \ converted to /, etc.
      */
-    protected static String toCanonicalFilename( String filename ) {
+    public static String toCanonicalFilename( String filename ) {
         filename= filename.replaceAll( "\\\\", "/" );
         if ( filename.length()==0 || filename.charAt(0)!='/' ) {
             filename= "/"+filename;
@@ -463,7 +461,16 @@ public abstract class FileSystem  {
         return filename;
     }
     
-    protected static String toCanonicalFolderName( String name ) {
+    /**
+     * returns the canonical name (/a/b/) of a string that
+     * may contain backslashes and might not have the leading /
+     * and trailing slashes.  Also, double slashes (//) are
+     * removed.  Note this is the name of the FileObject
+     * within the FileSystem.  
+     * @param name folder name
+     * @return name with \ converted to /, etc.
+     */
+    public static String toCanonicalFolderName( String name ) {
         name= toCanonicalFilename( name );
         if ( !name.endsWith("/") ) name= name + "/";
         return name;
