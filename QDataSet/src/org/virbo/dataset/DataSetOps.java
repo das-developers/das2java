@@ -1274,7 +1274,7 @@ public class DataSetOps {
         boolean highRank= false; // we have to see if they referred to the high-rank dataset, or the rank 1 dataset.  Chris, wouldn't it be nice if Java could return two things?
         
         int[] dims=null;
-        if ( ib>-1 ) dims= (int[])bundle1.property( QDataSet.ELEMENT_DIMENSIONS, ib );
+        if ( ib>-1 && bundle1!=null ) dims= (int[])bundle1.property( QDataSet.ELEMENT_DIMENSIONS, ib );
         if ( bundle1!=null && ( bundle1.length(ib)>0 || ( dims!=null && dims.length>0 ) ) ) {
             String n1= (String) bundle1.property( QDataSet.ELEMENT_NAME, ib );
             if ( n1!=null ) n1= Ops.saferName(n1);
