@@ -26,6 +26,7 @@ package org.das2.datum.format;
 import java.text.Format;
 import java.text.MessageFormat;
 import java.text.ParseException;
+import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.das2.datum.Datum;
@@ -38,6 +39,8 @@ import org.das2.datum.Units;
  * or % percent format (%Y-%m-%d) specifiers.  
  * SimpleDateFormat is discouraged because most other parts of das2 use the
  * shorter form.
+ * This does not support formats with seconds but no hours and minutes, like "$Y $j $S"
+ * 
  * @author  Edward West
  */
 public class TimeDatumFormatter extends DatumFormatter {
@@ -330,18 +333,20 @@ public class TimeDatumFormatter extends DatumFormatter {
         frmtString.append(ss[0]);
         int offset= ss[0].length();
         
+        int lsb=0;
         for ( int i=1; i<ss.length; i++ ) {
             offset+= 1;
             char c= ss[i].charAt(0);
+            int oldLsb= lsb;
             switch (c) {
-                case 'Y': appendSubFormat(frmtString, YEAR_FIELD_INDEX, 4 ); break;
-                case 'y': appendSubFormat(frmtString, YEAR_FIELD_INDEX, 2 ); break;
-                case 'j': appendSubFormat(frmtString, DOY_FIELD_INDEX, 3 ); break;
-                case 'm': appendSubFormat(frmtString, MONTH_FIELD_INDEX, 2 ); break;
-                case 'd': appendSubFormat(frmtString, DAY_FIELD_INDEX, 2 ); break;
-                case 'H': appendSubFormat(frmtString, HOUR_FIELD_INDEX, 2 ); break;
-                case 'M': appendSubFormat(frmtString, MINUTE_FIELD_INDEX, 2 ); break;
-                case 'S': appendSubFormat(frmtString, SECONDS_FIELD_INDEX, 2 ); break;
+                case 'Y': appendSubFormat(frmtString, YEAR_FIELD_INDEX, 4 ); lsb=YEAR_FIELD_INDEX; break;
+                case 'y': appendSubFormat(frmtString, YEAR_FIELD_INDEX, 2 ); lsb=YEAR_FIELD_INDEX; break;
+                case 'j': appendSubFormat(frmtString, DOY_FIELD_INDEX, 3 ); lsb=DOY_FIELD_INDEX; break;
+                case 'm': appendSubFormat(frmtString, MONTH_FIELD_INDEX, 2 ); lsb=MONTH_FIELD_INDEX; break;
+                case 'd': appendSubFormat(frmtString, DAY_FIELD_INDEX, 2 ); lsb=DAY_FIELD_INDEX; break;
+                case 'H': appendSubFormat(frmtString, HOUR_FIELD_INDEX, 2 ); lsb=HOUR_FIELD_INDEX; break;
+                case 'M': appendSubFormat(frmtString, MINUTE_FIELD_INDEX, 2 ); lsb=MINUTE_FIELD_INDEX; break;
+                case 'S': appendSubFormat(frmtString, SECONDS_FIELD_INDEX, 2 ); lsb=SECONDS_FIELD_INDEX; break;
                 case '{': 
                     int i1= ss[i].indexOf('}');
                     String spec= ss[i].substring(1,i1);
@@ -360,6 +365,9 @@ public class TimeDatumFormatter extends DatumFormatter {
                     }
                     break;
                 default: throw new ParseException("bad format code: "+c,offset);
+            }
+            if ( oldLsb>2 && lsb-oldLsb > 1 ) {
+                logger.log(Level.WARNING, "gap in time digits detected: {0}", format);
             }
             frmtString.append(ss[i].substring(1));
             offset+= ss[i].length();
