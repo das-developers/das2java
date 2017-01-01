@@ -12,6 +12,7 @@ package org.virbo.dataset;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.das2.datum.Units;
 import org.das2.util.LoggerManager;
 
 /**
@@ -97,6 +98,11 @@ public abstract class AbstractDataSet implements QDataSet, MutablePropertyDataSe
         if ( name.equals(QDataSet.DEPEND_0) ) {
             if ( value!=null && !( value instanceof QDataSet ) ) {
                 logger.warning( String.format( "AbstractDataSet.checkPropertyType: %s is not a QDataSet (%s)", name, value.toString() ) );
+            }
+        }
+        if ( name.equals(QDataSet.UNITS) ) {
+            if ( value!=null && !( value instanceof Units ) ) {
+                logger.warning( String.format( "AbstractDataSet.checkPropertyType: %s is not as Unit (%s)", name, value.toString() ) );
             }
         }
     }
