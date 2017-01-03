@@ -185,11 +185,13 @@ public class DatumRange implements Comparable, Serializable {
     }
     
     /**
-     * Ordered by the lesser point, then the greater point.  This is mostly provided for .equals, but also so there is a
-     * consistent ordering convention though out the system.
-     * @param o
-     * @return 
+     * Compare this to another DatumRange, ordered by the lesser datum, 
+     * then the greater datum.  This is mostly provided for .equals, but also 
+     * so there is a consistent ordering convention though out the system.
+     * @param o the DatumRange to compare this DatumRange to. 
+     * @return an int &lt; 0 if this comes before DatumRange a in this DatumRange's units space, 0 if they are equal, and &gt; 0 otherwise.
      */
+    @Override
     public int compareTo(Object o) {
         if ( o == null) {
             throw new NullPointerException("Cannot compare to null");
@@ -221,11 +223,9 @@ public class DatumRange implements Comparable, Serializable {
     
     /**
      * returns DatumRange relative to this, where 0.0 is the minimum, and 1.0 is the maximum.
-     * For example rescale(1,2) is scanNext, rescale(0.5,1.5) is zoomOut.
-     * @param min the new min normalized with respect to this range.  0.0 is this range's min, 1.0 is this range's max
-     * min-width.
-     * @param max the new max with normalized with respect to this range.  0.0 is this range's min, 1.0 is this range's max
-     * min-width.
+     * For example rescale(1,2) is scanNext, rescale(-0.5,1.5) is zoomOut.
+     * @param min the new min normalized with respect to this range.  0.0 is this range's min, 1.0 is this range's max.
+     * @param max the new max with normalized with respect to this range.  0.0 is this range's min, 1.0 is this range's max.
      * @return new DatumRange.
      * @deprecated Use DatumRangeUtil.rescale
      * @see DatumRangeUtil#rescale(org.das2.datum.DatumRange, double, double) 
