@@ -19,6 +19,7 @@ import java.awt.Rectangle;
  * @author Jeremy
  */
 public class ArrowDragRenderer implements DragRenderer {
+    @Override
     public Rectangle[] renderDrag(Graphics g, Point p1, Point p2) {
         g.setClip( null );
         Arrow.paintArrow( (Graphics2D)g, p2, p1, 12 , Arrow.HeadStyle.DRAFTING );
@@ -32,18 +33,22 @@ public class ArrowDragRenderer implements DragRenderer {
         return new Rectangle[] { result };
     }
     
+    @Override
     public void clear(Graphics g) {
         
     }
     
+    @Override
     public MouseDragEvent getMouseDragEvent(Object source, Point p1, Point p2, boolean isModified) {
         return null;
     }
     
+    @Override
     public boolean isPointSelection() {
         return true;
     }
     
+    @Override
     public boolean isUpdatingDragSelection() {
         return true;
     }
