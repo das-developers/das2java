@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 
 package org.das2.graph;
 
@@ -14,5 +10,11 @@ import java.awt.Graphics2D;
  * @author jbf
  */
 public interface Painter {
+    
+    /**
+     * the graphics context, in the canvas coordinates, is provided for additional
+     * painting.
+     * @param g the graphics context.
+     */
     void paint( Graphics2D g );
 }

@@ -267,6 +267,11 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
         return topDecorator;
     }
 
+    /**
+     * add additional painting code to the renderer, which is called after 
+     * the renderer is called.
+     * @param topDecorator the Painter to call, or null to clear.
+     */
     public void setTopDecorator(Painter topDecorator) {
         Painter oldTopDecorator = this.topDecorator;
         this.topDecorator = topDecorator;
