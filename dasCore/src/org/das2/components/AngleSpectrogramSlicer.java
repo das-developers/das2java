@@ -65,6 +65,7 @@ public class AngleSpectrogramSlicer extends DasPlot implements BoxSelectionListe
         super(xAxis, yAxis);
         parentPlot = plot;
         renderer= new SeriesRenderer();
+        renderer.setAntiAliased(true);
         this.consumer= consumer;
         addRenderer(renderer);
     }
@@ -216,6 +217,7 @@ public class AngleSpectrogramSlicer extends DasPlot implements BoxSelectionListe
     @Override
     public void drawContent(Graphics2D g) {
         
+        g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
         double[] ixs;
         double ix;
         if ( sliceDir==SLICEDIR_HORIZ ) {
