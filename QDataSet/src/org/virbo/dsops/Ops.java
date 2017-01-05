@@ -4959,8 +4959,22 @@ public class Ops {
     }
     
     /**
+     * retrieve a property from the dataset.  This was introduced for use
+     * in the Data Mash Up tool.
+     * @param ds the dataset
+     * @param name the property name
+     * @return the property or null (None) if the dataset doesn't have the property.
+     */
+    public static Object getProperty( QDataSet ds, String name ) {
+        return ds.property(name);
+    }
+            
+    /**
      * converts types often seen in Jython and Java codes to the correct type.  For
-     * example, ds= putProperty( [1400,2800], 'UNITS', 'seconds since 2012-01-01').  
+     * example,
+     * <pre>ds= putProperty( [1400,2800], 'UNITS', 'seconds since 2012-01-01')</pre>
+     * will convert the string 'seconds since 2012-01-01' into a Unit before assigning
+     * it to the dataset.
      * 
      * @param ds the object which can be interpreted as a dataset, such as a number or array of numbers.
      * @param name the property name
@@ -9110,6 +9124,7 @@ public class Ops {
      * @param ds1 the dataset providing timetags, or the timetags themselves.
      * @param ds the dataset to synch up.
      * @return the one dataset, synchronized.
+     * @see #synchronize(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet...) 
      */
     public static QDataSet synchronizeOne( QDataSet ds1, QDataSet ds ) {
         QDataSet tt= (QDataSet) ds1.property( QDataSet.DEPEND_0 );
@@ -9134,6 +9149,7 @@ public class Ops {
      * @param ds1 the dataset providing timetags, or the timetags themselves.
      * @param dss the N datasets to synch up.
      * @return a list of N datasets, synchronized
+     * @see #synchronizeNN(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet...) 
      */
     public static List<QDataSet> synchronize( QDataSet ds1, QDataSet ... dss ) {
         QDataSet tt= (QDataSet) ds1.property( QDataSet.DEPEND_0 );
@@ -9176,6 +9192,7 @@ public class Ops {
      * @param ds1 the dataset providing timetags, or the timetags themselves.
      * @param dss the N datasets
      * @return a list of N datasets, synchronized
+     * @see #synchronize(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet...) 
      */
     public static List<QDataSet> synchronizeNN( QDataSet ds1, QDataSet ... dss ) {
         QDataSet tt= (QDataSet) ds1.property( QDataSet.DEPEND_0 );
