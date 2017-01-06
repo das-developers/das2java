@@ -34,10 +34,10 @@ public class ScatterRebinner implements DataSetRebinner {
 		rebinDescY.setOutOfBoundsAction(RebinDescriptor.MINUSONE);
 		
 		QDataSet xds = null, yds = null;
-		if(!(zds.property("DEPEND_0") == null)){
+		if(!(zds.property(QDataSet.DEPEND_0) == null)){
 			xds = (QDataSet) zds.property(QDataSet.UNITS);
 		}
-		if(!(zds.property("DEPEND_1") == null)){
+		if(!(zds.property(QDataSet.DEPEND_1) == null)){
 			 yds = (QDataSet) zds.property(QDataSet.DEPEND_1);
 		}
 		
