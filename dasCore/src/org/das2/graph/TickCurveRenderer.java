@@ -32,8 +32,6 @@ import java.awt.image.BufferedImage;
 import java.text.ParseException;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.das2.datum.DatumRange;
@@ -55,7 +53,7 @@ import org.virbo.dsops.Ops;
  * assuming YYYY-MM-DD is shown elsewhere.
  * @author  jbf
  */
-public class TickCurveRenderer extends Renderer {
+public final class TickCurveRenderer extends Renderer {
     
     TickVDescriptor tickv;
     DomainDivider ticksDivider;
@@ -66,8 +64,11 @@ public class TickCurveRenderer extends Renderer {
     private QDataSet yds;
     private Units xunits; // xUnits of the axis
     private Units yunits; // yUnits of the axis
-    private double[][] ddata;  // data transformed to pixel space
-    
+    /**
+     * data transformed to pixel space
+     */
+    private double[][] ddata; 
+        
     TickLabeller tickLabeller;
     
     private TickStyle tickStyle= TickCurveRenderer.TickStyle.outer;
@@ -285,32 +286,20 @@ public class TickCurveRenderer extends Renderer {
         if ( nvert<3 ) {
             return 0;
         }
-        int index0, index1, index2;
-        if ( findex<1 ) {
-            index0= 0;
-        } else if ( findex>nvert-4 ) {
-            index0= nvert-5;
-        } else {
-            index0= (int)Math.floor(findex)-1;
-        }
+        int dd= 4;
+        int index1= (int)Math.floor(findex);
+        int index0= index1-dd;
         if ( index0<0 ) index0= 0;
-        if ( index0+4>nvert ) {
-            index0= nvert-3;
-            index1= nvert-2;
-            index2= nvert-1;
-        } else {
-            index1= index0+2;
-            index2= index1+2;            
-        }
+        int index2= index1+dd;
+        if ( index2>=nvert ) index2=nvert-1;             
         
-        
-        return turnDir( xds.value(index0), yds.value(index0),
-                        xds.value(index1), yds.value(index1),
-                        xds.value(index2), yds.value(index2) );
+        return turnDir( ddata[0][index0], ddata[1][index0],
+                        ddata[0][index1], ddata[1][index1],
+                        ddata[0][index2], ddata[1][index2] );
     }
     
     /**
-     * return the outsize normal (length 1) line segment.  Then the findex
+     * return the outsize normal (length 1) line segment.  When the findex
      * is at two points that repeat, then an exception is thrown.
      * @param findex
      * @return return the outsize normal
@@ -319,11 +308,16 @@ public class TickCurveRenderer extends Renderer {
     private Line2D outsideNormalAt( double findex ) {
         int nvert= xds.length();
         int index0= (int)Math.floor(findex);
-        if ( index0==nvert-1 ) index0--;            
+        int dd= 4;
+        index0= index0-dd;
+        if ( index0<0 ) index0=0;
+        if ( index0>nvert ) index0= nvert-2;
+        int index2= index0+dd+dd;
+        if ( index2>=nvert ) index2=nvert-1;     
         double x1= ddata[0][index0];
-        double x2= ddata[0][index0+1];
+        double x2= ddata[0][index2];
         double y1= ddata[1][index0];
-        double y2= ddata[1][index0+1];
+        double y2= ddata[1][index2];
 
         double xinterp= DasMath.interpolate( ddata[0], findex );
         double yinterp= DasMath.interpolate( ddata[1], findex );
@@ -341,7 +335,7 @@ public class TickCurveRenderer extends Renderer {
         
         double turnDirTick= -1*(dx*dyNorm-dxNorm*dy);        
         
-        if ( turnDir*turnDirTick > 0 ) {  // same sign, use the other perp direction.
+        if ( turnDir*turnDirTick < 0 ) {  // this was determined experimentally.
             dxNorm= -dy;
             dyNorm= dx;
         }
