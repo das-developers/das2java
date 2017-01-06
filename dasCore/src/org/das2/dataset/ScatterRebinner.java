@@ -7,11 +7,14 @@ package org.das2.dataset;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.das2.datum.Units;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.WritableDataSet;
 import org.virbo.dsops.Ops;
 import org.das2.datum.Datum;
+import org.das2.datum.LoggerManager;
 
 /** 
  *
@@ -19,6 +22,8 @@ import org.das2.datum.Datum;
  */
 public class ScatterRebinner implements DataSetRebinner {
 	
+	private static final Logger logger= LoggerManager.getLogger("das2.data.rebinner");
+			  
 	@Override
 	public QDataSet rebin(QDataSet zds, RebinDescriptor rebinDescX, RebinDescriptor rebinDescY){
 		// throws IllegalArgumentException, DasException {
@@ -30,16 +35,24 @@ public class ScatterRebinner implements DataSetRebinner {
 		
 		QDataSet xds = null, yds = null;
 		if(!(zds.property("DEPEND_0") == null)){
-			xds = (QDataSet) zds.property("DEPEND_0");
+			xds = (QDataSet) zds.property(QDataSet.UNITS);
 		}
 		if(!(zds.property("DEPEND_1") == null)){
-			 yds = (QDataSet) zds.property("DEPEND_1");
+			 yds = (QDataSet) zds.property(QDataSet.DEPEND_1);
 		}
 		
 		int nx = rebinDescX.numberOfBins()-1;
 		int ny = rebinDescY.numberOfBins()-1;
 
 		int xB = 0,yB = 0;
+		
+		Units xdsUnits;
+		Units ydsUnits;
+		
+		xdsUnits = (Units) xds.property(QDataSet.UNITS);
+		ydsUnits = (Units) yds.property(QDataSet.UNITS);
+		
+		
 		
 		switch(zds.rank()){
 			case 0:
@@ -51,13 +64,13 @@ public class ScatterRebinner implements DataSetRebinner {
 					} else{
 							switch (xds.rank()) {
 								case 0:
-									xB = rebinDescX.whichBin(xds.value(), (Units) xds.property("UNITS"));
+									xB = rebinDescX.whichBin(xds.value(), xdsUnits);
 									break;
 								case 1:
-									xB = rebinDescX.whichBin(xds.value(i), (Units) xds.property("UNITS"));
+									xB = rebinDescX.whichBin(xds.value(i), ydsUnits);
 									break;
 								case 2:
-									System.err.println(" Don't know what to do with rank 2 Depend 0 datasets yet.");
+									logger.fine(" Don't know what to do with rank 2 Depend 0 datasets yet.");
 									break;
 								default:
 									break;
@@ -68,13 +81,13 @@ public class ScatterRebinner implements DataSetRebinner {
 					}	else{
 							switch (yds.rank()) {
 								case 0:
-									yB = rebinDescY.whichBin(yds.value(), (Units) yds.property("UNITS"));
+									yB = rebinDescY.whichBin(yds.value(), ydsUnits);
 									break;
 								case 1:
-									yB = rebinDescY.whichBin(yds.value(i), (Units) yds.property("UNITS"));
+									yB = rebinDescY.whichBin(yds.value(i), ydsUnits);
 									break;
 								case 2:
-									System.err.println(" Don't know what to do with rank 2 Depend 0 datasets yet.");
+									logger.fine(" Don't know what to do with rank 2 Depend 0 datasets yet.");
 									break;
 								default:
 									break;
@@ -94,13 +107,13 @@ public class ScatterRebinner implements DataSetRebinner {
 						} else{
 							switch (xds.rank()) {
 								case 0:
-									xB = rebinDescX.whichBin(xds.value(), (Units) xds.property("UNITS"));
+									xB = rebinDescX.whichBin(xds.value(), xdsUnits);
 									break;
 								case 1:
-									xB = rebinDescX.whichBin(xds.value(i), (Units) xds.property("UNITS"));
+									xB = rebinDescX.whichBin(xds.value(i), xdsUnits);
 									break;
 								case 2:
-									System.err.println(" Don't know what to do with rank 2 dataset here.");
+									logger.fine(" Don't know what to do with rank 2 dataset here.");
 									break;
 								default:
 									break;
@@ -111,13 +124,13 @@ public class ScatterRebinner implements DataSetRebinner {
 						}	else{
 								switch (yds.rank()) {
 									case 0:
-										yB = rebinDescY.whichBin(yds.value(), (Units) yds.property("UNITS"));
+										yB = rebinDescY.whichBin(yds.value(), ydsUnits);
 										break;
 									case 1:
-										yB = rebinDescY.whichBin(yds.value(j), (Units) yds.property("UNITS"));
+										yB = rebinDescY.whichBin(yds.value(j), ydsUnits);
 										break;
 									case 2:
-										System.err.println(" Don't know what to do with rank 2 dataset here.");
+										logger.fine(" Don't know what to do with rank 2 dataset here.");
 										break;
 									default:
 										break;
@@ -131,10 +144,10 @@ public class ScatterRebinner implements DataSetRebinner {
 				}
 				break;
 			case 3:
-				System.err.println("Does not support rank 3 datasets.");
+				logger.fine("Does not support rank 3 datasets.");
 				break;
 			default:
-				System.err.println("Rank is not 0, 1, 2 or 3 or not recognized.");
+				logger.fine("Rank is not 0, 1, 2 or 3 or not recognized.");
 				break;
 		}
 		
@@ -145,15 +158,15 @@ public class ScatterRebinner implements DataSetRebinner {
 		int [] xcadencesInBins = new int[xbinWidths.length];
 	
 		if(xds != null){
-			QDataSet xPlus = (QDataSet) xds.property("BIN_PLUS");	
+			QDataSet xPlus = (QDataSet) xds.property(QDataSet.BIN_PLUS);	
 			if(xPlus != null){
-				xHardBinPlus = (int) (xPlus.value() / xDat.doubleValue((Units) xPlus.property("UNITS")));
+				xHardBinPlus = (int) (xPlus.value() / xDat.doubleValue((Units) xPlus.property(QDataSet.UNITS)));
 			} 
-			QDataSet xMinus = (QDataSet) xds.property("BIN_MINUS");
+			QDataSet xMinus = (QDataSet) xds.property(QDataSet.BIN_MINUS);
 			if(xMinus != null){
-				xHardBinMinus = (int) (xMinus.value() / xDat.doubleValue((Units) xMinus.property("UNITS")));
+				xHardBinMinus = (int) (xMinus.value() / xDat.doubleValue((Units) xMinus.property(QDataSet.UNITS)));
 			} 
-			QDataSet xCad = (QDataSet) xds.property("CADENCE");
+			QDataSet xCad = (QDataSet) xds.property(QDataSet.CADENCE);
 			double xCadenceVal = 0;
 			if(xCad != null){
 				xCadenceVal = xCad.value();
@@ -161,14 +174,14 @@ public class ScatterRebinner implements DataSetRebinner {
 					xcadencesInBins = getCadenceValues(xbinWidths, xCadenceVal,-1);
 				}else{
 					xcadencesInBins = null;
-					xSoftRad = (int) Math.round(xCadenceVal / xDat.doubleValue((Units) xCad.property("UNITS")));
+					xSoftRad = (int) Math.round(xCadenceVal / xDat.doubleValue((Units) xCad.property(QDataSet.UNITS)));
 				}
 				
 			} else{
 				int currentDataWidthx;
 				for(int i =0; i< xds.length()-1; i++){
-					currentDataWidthx = rebinDescX.whichBin(xds.value(i+1), (Units) xds.property("UNITS")) - 
-							  rebinDescX.whichBin(xds.value(i), (Units) xds.property("UNITS"));
+					currentDataWidthx = rebinDescX.whichBin(xds.value(i+1), (Units) xds.property(QDataSet.UNITS)) - 
+							  rebinDescX.whichBin(xds.value(i), (Units) xds.property(QDataSet.UNITS));
 					if(currentDataWidthx >=1){
 						xCadencesToSort.add(currentDataWidthx);
 					}
@@ -178,7 +191,7 @@ public class ScatterRebinner implements DataSetRebinner {
 				if(xCadencesToSort.size() >= 1){
 					xCadenceVal = xCadencesToSort.get((int) Math.round(0.6*xCadencesToSort.size()));
 				} else{
-					System.err.println("No Cadences.");
+					logger.fine("No Cadences.");
 				}
 				if(rebinDescX.isLog){
 					xcadencesInBins = getCadenceValues(xbinWidths, xCadenceVal, xCadencesToSort.get(0));
@@ -196,15 +209,15 @@ public class ScatterRebinner implements DataSetRebinner {
 		int [] ycadencesInBins = new int[ybinWidths.length];
 		
 		if(yds != null){
-			QDataSet yPlus = (QDataSet) yds.property("BIN_PLUS");	
+			QDataSet yPlus = (QDataSet) yds.property(QDataSet.BIN_PLUS);	
 			if(yPlus != null){
-				yHardBinPlus = (int) (yPlus.value() / yDat.doubleValue((Units) yPlus.property("UNITS")));
+				yHardBinPlus = (int) (yPlus.value() / yDat.doubleValue((Units) yPlus.property(QDataSet.UNITS)));
 			} 
-			QDataSet yMinus = (QDataSet) yds.property("BIN_MINUS");
+			QDataSet yMinus = (QDataSet) yds.property(QDataSet.BIN_MINUS);
 			if(yMinus != null){
-				yHardBinMinus = (int) (yMinus.value() / yDat.doubleValue((Units) yMinus.property("UNITS")));
+				yHardBinMinus = (int) (yMinus.value() / yDat.doubleValue((Units) yMinus.property(QDataSet.UNITS)));
 			}
-			QDataSet yCad = (QDataSet) yds.property("CADENCE");
+			QDataSet yCad = (QDataSet) yds.property(QDataSet.CADENCE);
 			double yCadenceVal = 0;
 			int yCadenceValueBin = 0;
 			if(yCad != null){
@@ -214,14 +227,14 @@ public class ScatterRebinner implements DataSetRebinner {
 					
 				}else{
 					ycadencesInBins = null;
-					ySoftRad = (int) Math.round(yCadenceVal / yDat.doubleValue((Units) yCad.property("UNITS")));
+					ySoftRad = (int) Math.round(yCadenceVal / yDat.doubleValue((Units) yCad.property(QDataSet.UNITS)));
 				}
 				
 			} else{
 				int currentDataWidthy;
 				for(int i =0; i< yds.length()-1; i++){
-					currentDataWidthy = rebinDescY.whichBin(yds.value(i+1), (Units) yds.property("UNITS")) - 
-							  rebinDescY.whichBin(yds.value(i), (Units) yds.property("UNITS"));
+					currentDataWidthy = rebinDescY.whichBin(yds.value(i+1), (Units) yds.property(QDataSet.UNITS)) - 
+							  rebinDescY.whichBin(yds.value(i), (Units) yds.property(QDataSet.UNITS));
 					if(currentDataWidthy >=1){
 						yCadencesToSort.add(currentDataWidthy);
 						yCadencesToSortValues.add(yds.value(i+1) - yds.value(i));
@@ -234,14 +247,14 @@ public class ScatterRebinner implements DataSetRebinner {
 				if(yCadencesToSortValues.size() >= 1){
 					yCadSortIndex = (int) Math.round(0.1*yCadencesToSortValues.size());
 					yCadenceVal = yCadencesToSortValues.get(yCadSortIndex );
-					System.err.println(" Y cadence from sorted list = " + yCadenceVal);
+					logger.log(Level.FINE, " Y cadence from sorted list = {0}", yCadenceVal);
 				} else{
-					System.err.println("No Cadences.");
+					logger.fine("No Cadences.");
 				}
 				if(rebinDescY.isLog){
 					//QDataSet guessYCad = org.virbo.dataset.DataSetUtil.guessCadence(yds, null);
 					//yCadenceVal = guessYCad.value();
-					//System.err.println(" The Guess Cadence Dataset has a value of: " + yCadenceVal);
+					//logger.fine(" The Guess Cadence Dataset has a value of: " + yCadenceVal);
 					ycadencesInBins = getCadenceValues(ybinWidths, yCadenceVal, yCadencesToSort.get(yCadSortIndex));
 				} else{
 					ycadencesInBins = null;
@@ -253,14 +266,14 @@ public class ScatterRebinner implements DataSetRebinner {
 		
 		
 		if(xcadencesInBins != null){
-			System.err.println(" Cadences vary in X");
+			logger.fine(" Cadences vary in X");
 		} else{
-			System.err.println(" x Cadence is = " + xSoftRad);
+			logger.log(Level.FINE, " x Cadence is = {0}", xSoftRad);
 		}
 		if(ycadencesInBins != null){
-			System.err.println(" Cadences vary in Y");
+			logger.fine(" Cadences vary in Y");
 		} else{
-			System.err.println(" y Cadence is = " + ySoftRad);
+			logger.log(Level.FINE, " y Cadence is = {0}", ySoftRad);
 		}
 		
 		
@@ -303,7 +316,7 @@ public class ScatterRebinner implements DataSetRebinner {
 	 * @param yVaryingCadence
 	 * @return 
 	 */
-	public WritableDataSet InterpolateHardAndSoftEdge(int xHardBinPlus, int xHardBinMinus, int yHardBinPlus,int yHardBinMinus, 
+	private WritableDataSet InterpolateHardAndSoftEdge(int xHardBinPlus, int xHardBinMinus, int yHardBinPlus,int yHardBinMinus, 
 			  int xSoftRad1, int ySoftRad1, int xbins, int ybins, WritableDataSet data, int[] xVaryingCadenceBin, int[] yVaryingCadenceBin ){
 		// Create template array of weights to be used for each data point
 		double[][] ValTimesWeightSum = new double[xbins+1][ybins+1];
@@ -413,7 +426,7 @@ public class ScatterRebinner implements DataSetRebinner {
 		double [] binStarts = rebinDesc.binStarts();
 		double [] binStops = rebinDesc.binStops();
 		if(binStarts.length != binStops.length){
-			System.err.println("Number of start bins is not equal to number of stop bins.");
+			logger.fine("Number of start bins is not equal to number of stop bins.");
 			return null;
 		}
 		double[] binWidths = new double [binStarts.length];
