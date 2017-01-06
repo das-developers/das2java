@@ -111,20 +111,24 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
 
     private String getZComponentsString( QDataSet tds, Datum x, Datum y ) {
         assert tds.rank()==3;
-        QDataSet xds= SemanticOps.xtagsDataSet(tds);
-        int i = DataSetUtil.closestIndex(xds, x);
-        QDataSet tds1= Ops.copy( tds.slice(i) );
-        QDataSet yds= (QDataSet) tds1.property(QDataSet.DEPEND_0);  // Can't use SemanticOps.xtagsDataSet, because it picks up "red" not the index.
-        if ( yds==null ) yds= Ops.indgen(tds1.length());
-        int j;
         try {
-            yds= Ops.copy(yds);
-            j= DataSetUtil.closestIndex(yds, y);
-        } catch ( IllegalArgumentException ex ) {
-            return ex.getMessage();
+            QDataSet xds= SemanticOps.xtagsDataSet(tds);
+            int i = DataSetUtil.closestIndex(xds, x);
+            QDataSet tds1= Ops.copy( tds.slice(i) );
+            QDataSet yds= (QDataSet) tds1.property(QDataSet.DEPEND_0);  // Can't use SemanticOps.xtagsDataSet, because it picks up "red" not the index.
+            if ( yds==null ) yds= Ops.indgen(tds1.length());
+            int j;
+            try {
+                yds= Ops.copy(yds);
+                j= DataSetUtil.closestIndex(yds, y);
+            } catch ( IllegalArgumentException ex ) {
+                return ex.getMessage();
+            }
+            QDataSet rgb= tds1.slice(j);
+            return DataSetUtil.toString(rgb);
+        } catch ( InconvertibleUnitsException ex ) {
+            return "N/A";
         }
-        QDataSet rgb= tds1.slice(j);
-        return DataSetUtil.toString(rgb);
     }
     
     private String getZString( QDataSet tds, Datum x, Datum y, int[] ij) {

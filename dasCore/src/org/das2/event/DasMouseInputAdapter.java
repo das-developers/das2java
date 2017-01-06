@@ -337,6 +337,17 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
                     pinned = true;
                     ev.consume();
                     feedback.setMessage("pinned, will stay active until escape is pressed");
+                } else if ( ev.getKeyCode()==KeyEvent.VK_UP || ev.getKeyCode()==KeyEvent.VK_DOWN
+                    || ev.getKeyCode()==KeyEvent.VK_LEFT || ev.getKeyCode()==KeyEvent.VK_RIGHT ) {
+                    try {
+                        int dx= ev.getKeyCode()==KeyEvent.VK_LEFT ? -1 : ( ev.getKeyCode()==KeyEvent.VK_RIGHT ? 1 : 0 );
+                        int dy= ev.getKeyCode()==KeyEvent.VK_UP ? -1 : ( ev.getKeyCode()==KeyEvent.VK_DOWN ? 1 : 0 );
+                        Robot robot= new Robot();
+                        Point p= MouseInfo.getPointerInfo().getLocation();
+                        robot.mouseMove( p.x+dx, p.y+dy );
+                    } catch (AWTException ex) {
+                        logger.log(Level.SEVERE, null, ex);
+                    }
                 } else {
                     if (active == null) {
                         return;
