@@ -6,6 +6,8 @@
 package org.das2.dataset;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -24,6 +26,13 @@ public class ScatterRebinner implements DataSetRebinner {
 	
 	private static final Logger logger= LoggerManager.getLogger("das2.data.rebinner");
 			  
+		private static final Comparator REVERSE= new Comparator<Integer>() {
+			@Override
+			public int compare(Integer o1, Integer o2) {
+				return o2.compareTo(o1);
+			}
+		};
+
 	@Override
 	public QDataSet rebin(QDataSet zds, RebinDescriptor rebinDescX, RebinDescriptor rebinDescY){
 		// throws IllegalArgumentException, DasException {
@@ -186,8 +195,8 @@ public class ScatterRebinner implements DataSetRebinner {
 						xCadencesToSort.add(currentDataWidthx);
 					}
 				}
-				
-				xCadencesToSort.sort( (x,y) -> y-x );
+				Collections.sort(xCadencesToSort,REVERSE);
+				//xCadencesToSort.sort( (x,y) -> y-x );
 				if(xCadencesToSort.size() >= 1){
 					xCadenceVal = xCadencesToSort.get((int) Math.round(0.6*xCadencesToSort.size()));
 				} else{
@@ -241,8 +250,10 @@ public class ScatterRebinner implements DataSetRebinner {
 					}
 				}
 				
-				yCadencesToSort.sort( (x,y) -> y-x );
-				yCadencesToSortValues.sort( (x,y) -> y.compareTo(x));
+				Collections.sort(yCadencesToSort,REVERSE);
+				//yCadencesToSort.sort( (x,y) -> y-x );
+				Collections.sort(yCadencesToSortValues,REVERSE);
+				//yCadencesToSortValues.sort( (x,y) -> y.compareTo(x));
 				int yCadSortIndex = 0;
 				if(yCadencesToSortValues.size() >= 1){
 					yCadSortIndex = (int) Math.round(0.1*yCadencesToSortValues.size());
