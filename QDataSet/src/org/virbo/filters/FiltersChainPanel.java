@@ -566,7 +566,7 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
         //}
 
         // will contain an empty string when there is no initial unbundle, 
-        String[] ss= filter.split("\\|");
+        String[] ss= filter.split("\\|",-2);
         
         List<FilterEditorPanel> recycle= new ArrayList(editors);
         for ( int i= editors.size(); i<ss.length; i++ ) {
