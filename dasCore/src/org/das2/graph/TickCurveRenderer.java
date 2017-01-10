@@ -292,7 +292,12 @@ public final class TickCurveRenderer extends Renderer {
         if ( index0<0 ) index0= 0;
         int index2= index1+dd;
         if ( index2>=nvert ) index2=nvert-1;             
-        
+        if ( index2-index1 > index1-index0 ) {
+			index2= index1 + ( index1-index0 );
+		}
+		if ( index1-index0 > index2-index1 ) {
+			index0= index1 - ( index2-index1 );
+		}
         return turnDir( ddata[0][index0], ddata[1][index0],
                         ddata[0][index1], ddata[1][index1],
                         ddata[0][index2], ddata[1][index2] );
@@ -307,13 +312,19 @@ public final class TickCurveRenderer extends Renderer {
      */
     private Line2D outsideNormalAt( double findex ) {
         int nvert= xds.length();
-        int index0= (int)Math.floor(findex);
+        int index1= (int)Math.floor(findex);
         int dd= 4;
-        index0= index0-dd;
+        int index0= index1-dd;
         if ( index0<0 ) index0=0;
         if ( index0>nvert ) index0= nvert-2;
         int index2= index0+dd+dd;
-        if ( index2>=nvert ) index2=nvert-1;     
+        if ( index2>=nvert ) index2=nvert-1;
+		if ( index2-index1 > index1-index0 ) {
+			index2= index1 + ( index1-index0 );
+		}
+		if ( index1-index0 > index2-index1 ) {
+			index0= index1 - ( index2-index1 );
+		}
         double x1= ddata[0][index0];
         double x2= ddata[0][index2];
         double y1= ddata[1][index0];
