@@ -63,6 +63,7 @@ import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.das2.dataset.LanlNNRebinner;
+import org.das2.dataset.ScatterRebinner;
 import org.das2.datum.Datum;
 import org.das2.datum.UnitsUtil;
 import static org.das2.graph.Renderer.formatControl;
@@ -149,7 +150,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         public static final RebinnerEnum binAverageNoInterpolate;
         public static final RebinnerEnum binAverageNoInterpolateNoEnlarge;
         public static final RebinnerEnum binXinterpY;
-
+        public static final RebinnerEnum scatter;
 
         static {
             AverageTableRebinner rebinner = new AverageTableRebinner();
@@ -171,7 +172,9 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
             rebinner = new AverageTableRebinner();
             rebinner.setInterpolateType( AverageTableRebinner.Interpolate.BinXInterpY );
             binXinterpY = new RebinnerEnum(rebinner, "binXinterpY");
-            
+
+            scatter = new RebinnerEnum( new ScatterRebinner(), "scatter");
+
             //nearestNeighbor = new RebinnerEnum(rebinner, "nearestNeighbor");
             
         }
