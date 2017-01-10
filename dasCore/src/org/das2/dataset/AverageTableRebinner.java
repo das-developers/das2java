@@ -350,7 +350,9 @@ public class AverageTableRebinner implements DataSetRebinner {
         }
     }
     
-    static void doBoundaries2RL( QDataSet tds, QDataSet weights, double[][] rebinData, double[][] rebinWeights, RebinDescriptor ddX, RebinDescriptor ddY, Interpolate interpolateType) {
+    static void doBoundaries2RL( QDataSet tds, QDataSet weights, 
+        double[][] rebinData, double[][] rebinWeights, 
+        RebinDescriptor ddX, RebinDescriptor ddY, Interpolate interpolateType) {
 
         if ( tds.rank()!=3 ) throw new IllegalArgumentException("rank 3 expected");
 
@@ -426,7 +428,9 @@ public class AverageTableRebinner implements DataSetRebinner {
 
     }
 
-    static void doBoundaries2TB( QDataSet tds, QDataSet weights, double[][] rebinData, double[][] rebinWeights, RebinDescriptor ddX, RebinDescriptor ddY, Interpolate interpolateType) {
+    static void doBoundaries2TB( QDataSet tds, QDataSet weights, 
+        double[][] rebinData, double[][] rebinWeights, 
+        RebinDescriptor ddX, RebinDescriptor ddY, Interpolate interpolateType) {
 
         if (ddY == null) {
             return;
@@ -513,7 +517,9 @@ public class AverageTableRebinner implements DataSetRebinner {
         }
     }
 
-    static void doCorners( QDataSet tds, QDataSet weights, double[][] rebinData, double[][] rebinWeights, RebinDescriptor ddX, RebinDescriptor ddY, Interpolate interpolateType) {
+    static void doCorners( QDataSet tds, QDataSet weights, 
+        double[][] rebinData, double[][] rebinWeights, 
+        RebinDescriptor ddX, RebinDescriptor ddY, Interpolate interpolateType) {
         if (ddY == null) {
             return;
         }
@@ -603,9 +609,10 @@ public class AverageTableRebinner implements DataSetRebinner {
         }
     }
 
-    static void averageBundle( QDataSet tds, QDataSet weights, double[][] rebinData, double[][] rebinWeights, 
-            RebinDescriptor ddX, RebinDescriptor ddY,
-            Interpolate interpolateType ) {
+    static void averageBundle( QDataSet tds, QDataSet weights, 
+        double[][] rebinData, double[][] rebinWeights, 
+        RebinDescriptor ddX, RebinDescriptor ddY,
+        Interpolate interpolateType ) {
         
         QDataSet tds1= tds.slice(0);
         QDataSet xds= SemanticOps.xtagsDataSet( tds1 );
@@ -682,9 +689,10 @@ public class AverageTableRebinner implements DataSetRebinner {
      * @param ddY describes the vertical bins
      * @param interpolateType if NearestNeighbor, then we set weight=1.  Why? see http://autoplot.org/developer.spectrogram
      */
-    static void average( QDataSet tds, QDataSet weights, double[][] rebinData, double[][] rebinWeights, 
-            RebinDescriptor ddX, RebinDescriptor ddY,
-            Interpolate interpolateType) {
+    static void average( QDataSet tds, QDataSet weights, 
+        double[][] rebinData, double[][] rebinWeights, 
+        RebinDescriptor ddX, RebinDescriptor ddY,
+        Interpolate interpolateType) {
         int nTables;
         Units zunits;
         int nx, ny;
@@ -810,7 +818,9 @@ public class AverageTableRebinner implements DataSetRebinner {
 
     //still used by AveragePeakTableRebinner
                                        //    final double[][] data, final double[][] weights, RebinDescriptor ddY, Datum yTagWidth, Interpolate interpolateType
-    static void fillInterpolateX(final double[][] data, final double[][] weights, final double[] xTags, double[] xTagMin, double[] xTagMax, final double xSampleWidth, Interpolate interpolateType) {
+    static void fillInterpolateX(final double[][] data, final double[][] weights, 
+        final double[] xTags, double[] xTagMin, double[] xTagMax, 
+        final double xSampleWidth, Interpolate interpolateType) {
 
         final int nx = xTags.length;
         final int ny = data[0].length;
@@ -903,7 +913,8 @@ public class AverageTableRebinner implements DataSetRebinner {
      * @param xTagWidth the nominal cadence between measurements.  This defines acceptably close, and we apply a fudge factor.
      * @param interpolateType if NearestNeighbor, then special actions can occur.
      */
-    static void fillInterpolateXNew(final double[][] data, final double[][] weights, RebinDescriptor ddX, Datum xTagWidth, Interpolate interpolateType) {
+    static void fillInterpolateXNew(final double[][] data, final double[][] weights, 
+        RebinDescriptor ddX, Datum xTagWidth, Interpolate interpolateType) {
 
         final int ny = data[0].length;
         final int nx = ddX.numberOfBins();
@@ -1051,7 +1062,8 @@ public class AverageTableRebinner implements DataSetRebinner {
      * @param xTagWidth the nominal cadence between measurements.  This defines acceptably close, and we apply a fudge factor.
      * @param interpolateType if NearestNeighbor, then special actions can occur.
      */
-    static void fillInterpolateY(final double[][] data, final double[][] weights, RebinDescriptor ddY, Datum yTagWidth, Interpolate interpolateType) {
+    static void fillInterpolateY(final double[][] data, final double[][] weights, 
+        RebinDescriptor ddY, Datum yTagWidth, Interpolate interpolateType) {
 
         final int nx = data.length;
         final int ny = ddY.numberOfBins();
