@@ -68,6 +68,11 @@ public final class TickCurveRenderer extends Renderer {
      * data transformed to pixel space
      */
     private double[][] ddata; 
+	
+	/**
+	 * current indeces--careful not thread safe.
+	 */
+	private final int[] index= new int[3];
         
     TickLabeller tickLabeller;
     
@@ -276,6 +281,42 @@ public final class TickCurveRenderer extends Renderer {
         return dx1*dy2 - dx2*dy1;        
     }
     
+	/**
+	 * 
+	 * @param findex
+	 * @param points three-element array containing the points to use.
+	 */
+	private void id3( double findex, int[] points ) {
+        int dd=4;
+		int nvert= xds.length();
+		int index1= (int)Math.floor(findex);
+        int index0= index1-dd;
+        if ( index0<0 ) index0= 0;
+		while ( index0<index1 && ( ( ddata[0][index0]==-10000 ) || ( ddata[1][index0]==10000 ) ) ) {
+			index0++;
+		}
+        int index2= index1+dd;		
+        if ( index2>=nvert ) index2=nvert-1;             
+		while ( index2>index1 && ( ( ddata[0][index2]==-10000 ) || ( ddata[1][index2]==10000 ) ) ) {
+			index2--;
+		}
+        if ( index2-index1 > index1-index0 ) {
+			index2= index1 + ( index1-index0 );
+		}
+		while ( index2>index1 && ( ( ddata[0][index2]==-10000 ) || ( ddata[1][index2]==10000 ) ) ) {
+			index2--;
+		}
+		if ( index1-index0 > index2-index1 ) {
+			index0= index1 - ( index2-index1 );
+		}
+		while ( index0<index1 && ( ( ddata[0][index0]==-10000 ) || ( ddata[1][index0]==10000 ) ) ) {
+			index0++;
+		}
+		points[0]= index0;
+		points[1]= index1;
+		points[2]= index2;
+	}
+	
     /**
      * returns a positive double if turning clockwise, negative if ccw.
      * @param findex the floating point index
@@ -286,23 +327,12 @@ public final class TickCurveRenderer extends Renderer {
         if ( nvert<3 ) {
             return 0;
         }
-        int dd= 4;
-        int index1= (int)Math.floor(findex);
-        int index0= index1-dd;
-        if ( index0<0 ) index0= 0;
-        int index2= index1+dd;
-        if ( index2>=nvert ) index2=nvert-1;             
-        if ( index2-index1 > index1-index0 ) {
-			index2= index1 + ( index1-index0 );
-		}
-		if ( index1-index0 > index2-index1 ) {
-			index0= index1 - ( index2-index1 );
-		}
-        return turnDir( ddata[0][index0], ddata[1][index0],
-                        ddata[0][index1], ddata[1][index1],
-                        ddata[0][index2], ddata[1][index2] );
+		id3( findex, index );
+        return turnDir( ddata[0][index[0]], ddata[1][index[0]],
+                        ddata[0][index[1]], ddata[1][index[1]],
+                        ddata[0][index[2]], ddata[1][index[2]] );
     }
-    
+
     /**
      * return the outsize normal (length 1) line segment.  When the findex
      * is at two points that repeat, then an exception is thrown.
@@ -311,24 +341,13 @@ public final class TickCurveRenderer extends Renderer {
      * @throws IllegalArgumentException when points repeat.
      */
     private Line2D outsideNormalAt( double findex ) {
-        int nvert= xds.length();
-        int index1= (int)Math.floor(findex);
-        int dd= 4;
-        int index0= index1-dd;
-        if ( index0<0 ) index0=0;
-        if ( index0>nvert ) index0= nvert-2;
-        int index2= index0+dd+dd;
-        if ( index2>=nvert ) index2=nvert-1;
-		if ( index2-index1 > index1-index0 ) {
-			index2= index1 + ( index1-index0 );
-		}
-		if ( index1-index0 > index2-index1 ) {
-			index0= index1 - ( index2-index1 );
-		}
-        double x1= ddata[0][index0];
-        double x2= ddata[0][index2];
-        double y1= ddata[1][index0];
-        double y2= ddata[1][index2];
+
+		id3( findex, index );
+		
+		double x1= ddata[0][index[0]];
+        double x2= ddata[0][index[2]];
+        double y1= ddata[1][index[0]];
+        double y2= ddata[1][index[2]];
 
         double xinterp= DasMath.interpolate( ddata[0], findex );
         double yinterp= DasMath.interpolate( ddata[1], findex );
@@ -641,10 +660,15 @@ public final class TickCurveRenderer extends Renderer {
         }
 
         int n= ddata[0].length;
+		int index1= n-1;
+		int index2= n-3;
+		if ( Math.pow(ddata[0][index1]-ddata[0][index2],2)  + Math.pow((ddata[1][index1]-ddata[1][index2]), 2 ) > 2 ) {
+			index2= n-2;
+		}
         int em= 10;
         Arrow.paintArrow( g,
-                new Point2D.Double( ddata[0][n-1],ddata[1][n-1] ),
-                new Point2D.Double( ddata[0][n-3],ddata[1][n-3] ), em, Arrow.HeadStyle.DRAFTING );
+                new Point2D.Double( ddata[0][index1],ddata[1][index1] ),
+                new Point2D.Double( ddata[0][index2],ddata[1][index2] ), em, Arrow.HeadStyle.DRAFTING );
         tickLabeller.finished();
         
     }
