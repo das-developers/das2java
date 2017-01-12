@@ -263,7 +263,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         }
     }
 
-    private QDataSet bounds( QDataSet ds ) {
+    private static QDataSet bounds( QDataSet ds ) {
         return DataSetOps.dependBoundsSimple(ds);
     }
 
@@ -795,17 +795,21 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
 
                     if ( fds!=null ) {
                         if ( bounds==null ) bounds= bounds(fds);
-                        DatumRange xdr= org.virbo.dataset.DataSetUtil.asDatumRange( bounds.slice(0), true );
-                        DatumRange ydr= org.virbo.dataset.DataSetUtil.asDatumRange( bounds.slice(1), true );
-                        if ( xunits!=null && !xunits.isConvertibleTo(xAxis.getUnits()) ) {
-                            xdr= new DatumRange( xdr.min().doubleValue(xdr.getUnits()), xdr.max().doubleValue(xdr.getUnits()),xAxis.getUnits() );
+                        if ( Double.isInfinite( bounds.value(1,0) ) )  {
+                            selectionArea= rr;
+                        } else {
+                            DatumRange xdr= org.virbo.dataset.DataSetUtil.asDatumRange( bounds.slice(0), true );
+                            DatumRange ydr= org.virbo.dataset.DataSetUtil.asDatumRange( bounds.slice(1), true );
+                            if ( xunits!=null && !xunits.isConvertibleTo(xAxis.getUnits()) ) {
+                                xdr= new DatumRange( xdr.min().doubleValue(xdr.getUnits()), xdr.max().doubleValue(xdr.getUnits()),xAxis.getUnits() );
+                            }
+                            if ( yunits!=null && !yunits.isConvertibleTo(yAxis.getUnits()) ) {
+                                ydr= new DatumRange( ydr.min().doubleValue(ydr.getUnits()), ydr.max().doubleValue(ydr.getUnits()),yAxis.getUnits() );
+                            }
+                            double[] yy= GraphUtil.transformRange( yAxis, ydr );
+                            double[] xx= GraphUtil.transformRange( xAxis, xdr );
+                            selectionArea= rr.intersection( new Rectangle( (int)xx[0], (int)yy[0], (int)(xx[1]-xx[0]), (int)(yy[1]-yy[0]) ) );
                         }
-                        if ( yunits!=null && !yunits.isConvertibleTo(yAxis.getUnits()) ) {
-                            ydr= new DatumRange( ydr.min().doubleValue(ydr.getUnits()), ydr.max().doubleValue(ydr.getUnits()),yAxis.getUnits() );
-                        }
-                        double[] yy= GraphUtil.transformRange( yAxis, ydr );
-                        double[] xx= GraphUtil.transformRange( xAxis, xdr );
-                        selectionArea= rr.intersection( new Rectangle( (int)xx[0], (int)yy[0], (int)(xx[1]-xx[0]), (int)(yy[1]-yy[0]) ) );
                     }
 
                 } //synchronized (lockObject)
