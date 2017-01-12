@@ -2107,6 +2107,7 @@ public class DataSetOps {
      *   <li>rank 3 table:r.slice(0) x bounds  r.slice(1)  DEPEND_0 bounds.
      * </ul>
      * This does not take DELTA_PLUS and DELTA_MINUS into account.
+     * When all the data is fill, ds[0,0] will be positive infinity.
      * @param ds a rank 1,2, or 3 dataset.
      * @return a bounding qube of the independent dimensions 
      */
