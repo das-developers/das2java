@@ -320,13 +320,13 @@ public final class TickCurveRenderer extends Renderer {
 		while ( index0<index1 && ( ( ddata[0][index0]==-10000 ) || ( ddata[1][index0]==10000 ) ) ) {
 			index0++;
 		}
-		if ( index2==index1 && index1>0 && Math.abs( ddata[0][index2-1])<10000 ) {
+		if ( index2-index0<2 && index0>1 && Math.abs( ddata[0][index2-2])<10000 ) {
+			index0= index2-2;
 			index1= index2-1;
-			index0= Math.min( index0, index1 );
 		}
-		if ( index0==index2 && index2<(nvert-1) && Math.abs( ddata[0][index2+1])<10000 ) {
+		if ( index2-index0<2 && index2<(nvert-2) && Math.abs( ddata[0][index2+2])<10000 ) {
 			index1= index0+1;
-			index2= Math.max( index2, index1 );
+			index2= index0+2;
 		}
 		points[0]= index0;
 		points[1]= index1;
