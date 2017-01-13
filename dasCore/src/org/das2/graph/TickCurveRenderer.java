@@ -207,7 +207,9 @@ public final class TickCurveRenderer extends Renderer {
         g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
         g.setColor( color );
         g.setStroke( new BasicStroke((float)lineWidth) );
-        g.drawLine(2,10,14,6);
+        g.drawLine(2,12,14,8);
+		g.drawLine(8,10,6,6);
+		g.drawLine(4,2,4,2);
         return new ImageIcon( img );
     }
     
@@ -312,6 +314,14 @@ public final class TickCurveRenderer extends Renderer {
 		while ( index0<index1 && ( ( ddata[0][index0]==-10000 ) || ( ddata[1][index0]==10000 ) ) ) {
 			index0++;
 		}
+		if ( index2==index1 && index1>0 && Math.abs( ddata[0][index2-1])<10000 ) {
+			index1= index2-1;
+			index0= Math.min( index0, index1 );
+		}
+		if ( index0==index2 && index2<(nvert-1) && Math.abs( ddata[0][index2+1])<10000 ) {
+			index1= index0+1;
+			index2= Math.max( index2, index1 );
+		}
 		points[0]= index0;
 		points[1]= index1;
 		points[2]= index2;
@@ -344,16 +354,16 @@ public final class TickCurveRenderer extends Renderer {
 
 		id3( findex, index );
 		
-		double x1= ddata[0][index[0]];
+		double x0= ddata[0][index[0]];
         double x2= ddata[0][index[2]];
-        double y1= ddata[1][index[0]];
+        double y0= ddata[1][index[0]];
         double y2= ddata[1][index[2]];
 
         double xinterp= DasMath.interpolate( ddata[0], findex );
         double yinterp= DasMath.interpolate( ddata[1], findex );
         
-        double dx= x2-x1;
-        double dy= y2-y1;
+        double dx= x2-x0;
+        double dy= y2-y0;
         
         if ( dx==0. && dy==0. ) throw new IllegalArgumentException("findex as at a point that repeats");
         
@@ -532,7 +542,7 @@ public final class TickCurveRenderer extends Renderer {
 
         Graphics2D g= (Graphics2D)g1;
         
-        BasicStroke stroke= new BasicStroke((float)lineWidth);
+        BasicStroke stroke= new BasicStroke( (float)lineWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND );
         g.setStroke( stroke );
 
         g.setFont( getParent().getFont() );
