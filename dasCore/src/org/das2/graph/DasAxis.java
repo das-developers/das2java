@@ -271,8 +271,19 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     
     public static final String PROPERTY_DATUMRANGE = "datumRange";
     /* DEBUGGING INSTANCE MEMBERS */
-    private static final boolean DEBUG_GRAPHICS = false;
-    private static final Color[] DEBUG_COLORS;
+    
+	
+	
+	
+	
+	private static final boolean DEBUG_GRAPHICS = true;
+    
+	
+	
+	
+	
+	
+	private static final Color[] DEBUG_COLORS;
 
     int tickLen= 0; // this is reset after sizing.
 
@@ -2550,7 +2561,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         Font tickLabelFont = getTickLabelFont();
         FontMetrics fm = getFontMetrics(tickLabelFont);
         Font labelFont = getLabelFont();
-        int tickLength = tickLabelFont.getSize() * 2 / 3;
+		int zeroOrPosTickLen= Math.max(0,tickLen);
+        //int tickLength = this.tickLen; // tickLabelFont.getSize() * 2 / 3;
 
         GrannyTextRenderer gtr = new GrannyTextRenderer();
         if ( dasPlot!=null ) gtr.setAlignment( dasPlot.getMultiLineTextAlignment() );
@@ -2559,7 +2571,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         int offset;
 
         if (orientation == BOTTOM) {
-            offset = tickLabelFont.getSize() + tickLength + fm.stringWidth(" ") + labelFont.getSize() + labelFont.getSize() / 2;
+            offset = tickLabelFont.getSize() + zeroOrPosTickLen + fm.stringWidth(" ") + labelFont.getSize() + labelFont.getSize() / 2;
             if ( drawTca && tcaData != null ) {
                 offset += Math.min( MAX_TCA_LINES, tcaData.length(0) ) * (tickLabelFont.getSize() + getLineSpacing());
             }
@@ -2567,9 +2579,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 offset= tickLabelFont.getSize() + (int)DasDevicePosition.parseLayoutStr( labelOffset, getEmSize(), getRow().getHeight(), 0 );
             }
         } else if (orientation == TOP) {
-            offset = tickLength + fm.stringWidth(" ") + labelFont.getSize() + labelFont.getSize() / 2 + (int) gtr.getDescent();
+            offset = zeroOrPosTickLen + fm.stringWidth(" ") + labelFont.getSize() + labelFont.getSize() / 2 + (int) gtr.getDescent();
         } else if (orientation == LEFT) {
-            //offset = tickLength + (int)this.blLabelRect.getWidth() + fm.stringWidth(" ") + labelFont.getSize() / 2 + (int) gtr.getDescent();
+            //offset = zeroOrPosTickLen + (int)this.blLabelRect.getWidth() + fm.stringWidth(" ") + labelFont.getSize() / 2 + (int) gtr.getDescent();
             offset = getColumn().getDMinimum() - blLabelRect.x + labelFont.getSize() / 2 + (int) gtr.getDescent();
         } else {
             if ( trLabelRect==null ) {
