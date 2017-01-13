@@ -272,17 +272,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     public static final String PROPERTY_DATUMRANGE = "datumRange";
     /* DEBUGGING INSTANCE MEMBERS */
     
-	
-	
-	
-	
-	private static final boolean DEBUG_GRAPHICS = true;
+	private static final boolean DEBUG_GRAPHICS = false;
     
-	
-	
-	
-	
-	
 	private static final Color[] DEBUG_COLORS;
 
     int tickLen= 0; // this is reset after sizing.
