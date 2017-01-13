@@ -671,7 +671,7 @@ public final class TickCurveRenderer extends Renderer {
         txds= DDataSet.wrap( tickv.tickV.toDoubleArray( tunits ), tunits );
         findex= Ops.findex( tds, txds );
         for ( int i=0; i<tickv.tickV.getLength(); i++ ) {            
-            if ( findex.value(i)>=0 && findex.value(i)<xds.length() ) {
+            if ( findex.value(i)>=0 && findex.value(i)<xds.length()-1.0 ) {
                 drawLabelTick( g, findex.value(i), i );
             }
         }
