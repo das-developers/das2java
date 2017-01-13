@@ -258,8 +258,14 @@ public final class TickCurveRenderer extends Renderer {
 //        return dist;
 //    }
     
+	/**
+	 * make line segment length len, starting at line.getP1() and
+	 * having the same direction.
+	 * @param line the line segment, with non-zero length.
+	 * @param len the new length of the line.
+	 * @return the new line.
+	 */
     private static Line2D normalize(Line2D line, double len) {
-        // make line segment length len, starting at line.getP1()
         Point2D p1= line.getP1();
         double dx= line.getX2()-line.getX1();
         double dy= line.getY2()-line.getY1();
@@ -449,7 +455,8 @@ public final class TickCurveRenderer extends Renderer {
             g.draw( tick );
         }
 
-
+		tick= normalize( tick, tl + lineWidth );
+				
         tickLabeller.labelMajorTick( g, tickNumber, tick );
         
     }
