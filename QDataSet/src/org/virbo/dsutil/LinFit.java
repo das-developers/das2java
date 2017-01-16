@@ -1,8 +1,11 @@
 package org.virbo.dsutil;
 
+import org.das2.datum.Datum;
+import org.das2.datum.Units;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.FDataSet;
 import org.virbo.dataset.QDataSet;
+import org.virbo.dataset.SemanticOps;
 
 /**
  * Linear Fit routine.  This will allow errors on the Y values, and
@@ -150,7 +153,28 @@ public class LinFit {
         }
         return b;
     }
+	
+	/**
+	 * return the slope as a datum with units of Yunits/Xunits.  Note
+	 * the current version of the library is unable to do many unit 
+	 * calculations.
+	 * @return 
+	 */
+	public Datum getSlope() {
+		Units xunits= SemanticOps.getUnits(x).getOffsetUnits();
+		Units yunits= SemanticOps.getUnits(y).getOffsetUnits();
+		return yunits.divide( getB(), 1, xunits );
+	}
 
+	/**
+	 * return the intercept as a datum with units of y.
+	 * @return 
+	 */
+	public Datum getIntercept() {
+		Units yunits= SemanticOps.getUnits(y).getOffsetUnits();
+		return yunits.createDatum( getA() );		
+	}
+	
     /**
      * return Chi-Squared result from the fit.
      */
