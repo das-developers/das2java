@@ -1967,7 +1967,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                     TickMaster.getInstance().offerTickV( this, newTicks );
                 } else {
                     TickVDescriptor newTicks;
-                    synchronized ( tickLock ) {
+                    synchronized ( tickLock ) { // deadlock observed here with JMC.
                         if (getUnits() instanceof TimeLocationUnits) {
                             newTicks= updateTickVTime(dr);
                         } else if (dataRange.isLog()) {
