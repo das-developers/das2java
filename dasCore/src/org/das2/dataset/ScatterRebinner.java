@@ -17,6 +17,9 @@ import org.virbo.dataset.WritableDataSet;
 import org.virbo.dsops.Ops;
 import org.das2.datum.Datum;
 import org.das2.datum.LoggerManager;
+import org.virbo.dataset.DataSetOps;
+import org.virbo.dataset.SemanticOps;
+import org.virbo.dataset.examples.Schemes;
 
 /** 
  *
@@ -26,12 +29,6 @@ public class ScatterRebinner implements DataSetRebinner {
 	
 	private static final Logger logger= LoggerManager.getLogger("das2.data.rebinner");
 			  
-		private static final Comparator REVERSE= new Comparator<Integer>() {
-			@Override
-			public int compare(Integer o1, Integer o2) {
-				return o2.compareTo(o1);
-			}
-		};
 
 	@Override
 	public QDataSet rebin(QDataSet zds, RebinDescriptor rebinDescX, RebinDescriptor rebinDescY){
@@ -43,12 +40,19 @@ public class ScatterRebinner implements DataSetRebinner {
 		rebinDescY.setOutOfBoundsAction(RebinDescriptor.MINUSONE);
 		
 		QDataSet xds = null, yds = null;
-		if(!(zds.property(QDataSet.DEPEND_0) == null)){
-			xds = (QDataSet) zds.property(QDataSet.UNITS);
-		}
-		if(!(zds.property(QDataSet.DEPEND_1) == null)){
-			 yds = (QDataSet) zds.property(QDataSet.DEPEND_1);
-		}
+        
+        if ( Schemes.isBundleDataSet(zds) ) {
+            xds= DataSetOps.slice1(zds,0);
+            yds= DataSetOps.slice1(zds,1);
+            zds= DataSetOps.slice1(zds,zds.length(0)-1);
+        } else {
+    		if(!(zds.property(QDataSet.DEPEND_0) == null)){
+        		xds = (QDataSet) zds.property(QDataSet.UNITS);
+            }
+    		if(!(zds.property(QDataSet.DEPEND_1) == null)){
+        		 yds = (QDataSet) zds.property(QDataSet.DEPEND_1);
+            }
+        }
 		
 		int nx = rebinDescX.numberOfBins()-1;
 		int ny = rebinDescY.numberOfBins()-1;
@@ -58,10 +62,8 @@ public class ScatterRebinner implements DataSetRebinner {
 		Units xdsUnits;
 		Units ydsUnits;
 		
-		xdsUnits = (Units) xds.property(QDataSet.UNITS);
-		ydsUnits = (Units) yds.property(QDataSet.UNITS);
-		
-		
+		xdsUnits = SemanticOps.getUnits( xds );
+		ydsUnits = SemanticOps.getUnits( yds );
 		
 		switch(zds.rank()){
 			case 0:
@@ -189,13 +191,13 @@ public class ScatterRebinner implements DataSetRebinner {
 			} else{
 				int currentDataWidthx;
 				for(int i =0; i< xds.length()-1; i++){
-					currentDataWidthx = rebinDescX.whichBin(xds.value(i+1), (Units) xds.property(QDataSet.UNITS)) - 
-							  rebinDescX.whichBin(xds.value(i), (Units) xds.property(QDataSet.UNITS));
+					currentDataWidthx = rebinDescX.whichBin(xds.value(i+1), xdsUnits ) - 
+							  rebinDescX.whichBin(xds.value(i), xdsUnits );
 					if(currentDataWidthx >=1){
 						xCadencesToSort.add(currentDataWidthx);
 					}
 				}
-				Collections.sort(xCadencesToSort,REVERSE);
+				Collections.sort(xCadencesToSort,Collections.reverseOrder());
 				//xCadencesToSort.sort( (x,y) -> y-x );
 				if(xCadencesToSort.size() >= 1){
 					xCadenceVal = xCadencesToSort.get((int) Math.round(0.6*xCadencesToSort.size()));
@@ -220,11 +222,11 @@ public class ScatterRebinner implements DataSetRebinner {
 		if(yds != null){
 			QDataSet yPlus = (QDataSet) yds.property(QDataSet.BIN_PLUS);	
 			if(yPlus != null){
-				yHardBinPlus = (int) (yPlus.value() / yDat.doubleValue((Units) yPlus.property(QDataSet.UNITS)));
+				yHardBinPlus = (int) (yPlus.value() / yDat.doubleValue( ydsUnits.getOffsetUnits() ) );
 			} 
 			QDataSet yMinus = (QDataSet) yds.property(QDataSet.BIN_MINUS);
 			if(yMinus != null){
-				yHardBinMinus = (int) (yMinus.value() / yDat.doubleValue((Units) yMinus.property(QDataSet.UNITS)));
+				yHardBinMinus = (int) (yMinus.value() / yDat.doubleValue( ydsUnits.getOffsetUnits() ) );
 			}
 			QDataSet yCad = (QDataSet) yds.property(QDataSet.CADENCE);
 			double yCadenceVal = 0;
@@ -236,23 +238,23 @@ public class ScatterRebinner implements DataSetRebinner {
 					
 				}else{
 					ycadencesInBins = null;
-					ySoftRad = (int) Math.round(yCadenceVal / yDat.doubleValue((Units) yCad.property(QDataSet.UNITS)));
+					ySoftRad = (int) Math.round(yCadenceVal / yDat.doubleValue( ydsUnits.getOffsetUnits() ) );
 				}
 				
 			} else{
 				int currentDataWidthy;
 				for(int i =0; i< yds.length()-1; i++){
-					currentDataWidthy = rebinDescY.whichBin(yds.value(i+1), (Units) yds.property(QDataSet.UNITS)) - 
-							  rebinDescY.whichBin(yds.value(i), (Units) yds.property(QDataSet.UNITS));
+					currentDataWidthy = rebinDescY.whichBin(yds.value(i+1), ydsUnits.getOffsetUnits() ) - 
+							  rebinDescY.whichBin(yds.value(i), (Units) ydsUnits.getOffsetUnits() );
 					if(currentDataWidthy >=1){
 						yCadencesToSort.add(currentDataWidthy);
 						yCadencesToSortValues.add(yds.value(i+1) - yds.value(i));
 					}
 				}
 				
-				Collections.sort(yCadencesToSort,REVERSE);
+				Collections.sort(yCadencesToSort,Collections.reverseOrder());
 				//yCadencesToSort.sort( (x,y) -> y-x );
-				Collections.sort(yCadencesToSortValues,REVERSE);
+				Collections.sort(yCadencesToSortValues,Collections.reverseOrder());
 				//yCadencesToSortValues.sort( (x,y) -> y.compareTo(x));
 				int yCadSortIndex = 0;
 				if(yCadencesToSortValues.size() >= 1){
