@@ -129,10 +129,6 @@ public class Authenticator extends JPanel {
                 lockingKeyWarning+= ", CAPS LOCK is on";
             }
             
-            if ( Toolkit.getDefaultToolkit().getLockingKeyState( KeyEvent.VK_NUM_LOCK ) ) {
-                lockingKeyWarning+= ", NUM LOCK is on";
-            }
-            
             if ( !"".equals( lockingKeyWarning ) ) {
                 feedbackLabel.setText(lockingKeyWarning.substring(2));
             }
