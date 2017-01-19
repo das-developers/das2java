@@ -285,7 +285,7 @@ public class WebFileObject extends FileObject {
             File ff= new File( f, this.pathname );
             if ( ff.exists() ) return true;
         }
-        if ( localFile!=null && localFile.exists()) { // applet support
+        if ( localFile!=null && localFile.exists() &&  wfs.isAppletMode() ) { // applet support
             return true;
         } else {
             try {
