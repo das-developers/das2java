@@ -29,11 +29,11 @@ public class ScatterRebinner implements DataSetRebinner {
 	
 	private static final Logger logger= LoggerManager.getLogger("das2.data.rebinner");
 			  
-
+	
 	@Override
 	public QDataSet rebin(QDataSet zds, RebinDescriptor rebinDescX, RebinDescriptor rebinDescY){
 		// throws IllegalArgumentException, DasException {
-
+		
 		WritableDataSet result = Ops.zeros( rebinDescX.numberOfBins(), rebinDescY.numberOfBins() );
 		
 		rebinDescX.setOutOfBoundsAction(RebinDescriptor.MINUSONE);
@@ -42,6 +42,7 @@ public class ScatterRebinner implements DataSetRebinner {
 		QDataSet xds = null, yds = null;
         
         if ( Schemes.isBundleDataSet(zds) ) {
+			  logger.fine("is bundle");
             xds= DataSetOps.slice1(zds,0);
             yds= DataSetOps.slice1(zds,1);
             zds= DataSetOps.slice1(zds,zds.length(0)-1);
@@ -200,7 +201,8 @@ public class ScatterRebinner implements DataSetRebinner {
 				Collections.sort(xCadencesToSort,Collections.reverseOrder());
 				//xCadencesToSort.sort( (x,y) -> y-x );
 				if(xCadencesToSort.size() >= 1){
-					xCadenceVal = xCadencesToSort.get((int) Math.round(0.6*xCadencesToSort.size()));
+					xCadenceVal = xCadencesToSort.get((int) Math.round(0.95*xCadencesToSort.size()));
+					logger.log(Level.FINE, " X cadence from sorted list = {0}", xCadenceVal);
 				} else{
 					logger.fine("No Cadences.");
 				}
@@ -258,7 +260,7 @@ public class ScatterRebinner implements DataSetRebinner {
 				//yCadencesToSortValues.sort( (x,y) -> y.compareTo(x));
 				int yCadSortIndex = 0;
 				if(yCadencesToSortValues.size() >= 1){
-					yCadSortIndex = (int) Math.round(0.1*yCadencesToSortValues.size());
+					yCadSortIndex = (int) Math.round(0.95*yCadencesToSortValues.size());
 					yCadenceVal = yCadencesToSortValues.get(yCadSortIndex );
 					logger.log(Level.FINE, " Y cadence from sorted list = {0}", yCadenceVal);
 				} else{
