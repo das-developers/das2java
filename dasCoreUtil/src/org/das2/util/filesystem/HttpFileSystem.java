@@ -508,7 +508,11 @@ public class HttpFileSystem extends WebFileSystem {
             } catch ( FileNotFoundException ex ) {
                 if ( !filename.endsWith("/") ) {
                     remoteURL= new URL(root.toString() + filename.substring(1) + ".gz" );
-                    doDownload( filename, remoteURL, f, partFile, monitor );
+                    try {
+                        doDownload( filename, remoteURL, f, partFile, monitor );
+                    } catch ( FileNotFoundException exgz ) {
+                        throw ex;
+                    }
                 }
             }
 
