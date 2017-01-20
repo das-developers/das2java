@@ -652,9 +652,8 @@ public final class TickCurveRenderer extends Renderer {
         }
         
         //fo.close();
-        GeneralPath rp= p;
-        //GeneralPath rp= new GeneralPath();
-        //GraphUtil.reducePath( p.getPathIterator(null), rp, 2 );
+        GeneralPath rp= new GeneralPath();
+        GraphUtil.reducePath( p.getPathIterator(null), rp, 2 );
         g.draw(rp);
         
         path= rp;
@@ -662,7 +661,7 @@ public final class TickCurveRenderer extends Renderer {
         QDataSet findex;
         Units tunits= SemanticOps.getUnits(tds);
 
-        if ( tickv==null ) {
+        if ( tickv==null || !tickv.getMinorTicks().getUnits().isConvertibleTo(tunits) ) {
             tickv= resetTickV( tds );
         } else {
             double check= checkTickV(tds);
@@ -684,8 +683,9 @@ public final class TickCurveRenderer extends Renderer {
         tickLabeller.init( tickv );
         
         for ( int i=0; i<tickv.minorTickV.getLength(); i++ ) {
-            if ( findex.value(i)>=0 && findex.value(i)<lastValid ) {
-                drawTick( g, findex.value(i) ); // TODO: in/out logic needs to be based on tickv index, not data point index.
+            double v= findex.value(i);
+            if ( v>=0 && v<lastValid ) {
+                drawTick( g, v ); // TODO: in/out logic needs to be based on tickv index, not data point index.
             }
         }
         
