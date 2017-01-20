@@ -3077,8 +3077,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             dmin= getRow().getDMinimum();
             dmax= getRow().getDMaximum();
         }
-         
-        int fontDecent= getFontMetrics( getFont() ).getDescent();
+
+        if ( font==null ) return bounds;
+        FontMetrics fm= getFontMetrics( font );
+        int fontDecent= fm.getDescent();
         
         DatumVector ticks = ltickV.tickV;
         for (int i = 0; i < labels.length; i++) {
