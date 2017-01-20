@@ -32,8 +32,10 @@ import java.awt.image.BufferedImage;
 import java.text.ParseException;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import javafx.scene.Parent;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import org.das2.dataset.NoDataInIntervalException;
 import org.das2.datum.DatumRange;
 import org.das2.datum.DatumVector;
 import org.das2.datum.DomainDivider;
@@ -603,37 +605,56 @@ public final class TickCurveRenderer extends Renderer {
         
         QDataSet wds= Ops.multiply( Ops.valid(xds), Ops.valid(yds) );
         
+        int lastValid=0;
+        
+        // we will populate this general path, inserting moveTo's when there is a data gap.
         GeneralPath p= new GeneralPath();
-        p.moveTo( ddata[0][0],ddata[1][0] );
         
-        double w0= wds.value(0);
-        
-        //PrintStream fo=null;
-        //try {
-        //    fo= new PrintStream( "/tmp/foo.txt" );
-        //} catch (Exception ex) {
-        //    Logger.getLogger(TickCurveRenderer.class.getName()).log(Level.SEVERE, null, ex);
-        //}
-        
-        for ( int i=1; i<xds.length(); i++ ) {
-            double w1= wds.value(i);
-            double len1=  Math.sqrt( Math.pow(ddata[0][i]- ddata[0][i-1],2 ) 
-                        + Math.pow(ddata[1][i]- ddata[1][i-1],2 ) );
-        //    fo.println(""+i+" "+len1+" " + limit);
-            if ( len1>limit ) {
-                p.moveTo( ddata[0][i],ddata[1][i] );
-            } else {
-                if ( w0==0 || w1==0 ) {
-                    p.moveTo( ddata[0][i],ddata[1][i] );
+        { // limit scope if variable i
+            // find the first valid point
+            int i;
+            for ( i=0; i<xds.length(); i++ ) {
+                if ( wds.value(i)>0 ) break;
+            }
+
+            if ( i==xds.length() ) {
+                getParent().postException( this, new NoDataInIntervalException("no valid data") );
+                return;
+            }
+
+            p.moveTo( ddata[0][i],ddata[1][i] );
+
+            i++;
+            boolean brk= false;
+            for ( ; i<xds.length(); i++ ) {
+                double w1= wds.value(i);
+            //    fo.println(""+i+" "+len1+" " + limit);
+                if ( w1==0 ) {
+                    brk= true;
+                    //p.moveTo( ddata[0][i],ddata[1][i] );
                 } else {
-                    p.lineTo( ddata[0][i],ddata[1][i] );
+                    double len1=  Math.sqrt( Math.pow(ddata[0][i]- ddata[0][i-1],2 ) 
+                            + Math.pow(ddata[1][i]- ddata[1][i-1],2 ) );
+                    if ( len1>limit ) {
+                        p.moveTo( ddata[0][i],ddata[1][i] );  // TODO: verify this
+                        brk= true;
+                    } else {
+                        if ( brk ) {
+                            p.moveTo( ddata[0][i],ddata[1][i] );
+                            brk= false;
+                        } else {
+                            p.lineTo( ddata[0][i],ddata[1][i] );
+                            lastValid= i;
+                        }
+                    }
                 }
             }
-            w0= w1;
         }
+        
         //fo.close();
-        GeneralPath rp= new GeneralPath();
-        GraphUtil.reducePath( p.getPathIterator(null), rp, 2 );
+        GeneralPath rp= p;
+        //GeneralPath rp= new GeneralPath();
+        //GraphUtil.reducePath( p.getPathIterator(null), rp, 2 );
         g.draw(rp);
         
         path= rp;
@@ -663,25 +684,30 @@ public final class TickCurveRenderer extends Renderer {
         tickLabeller.init( tickv );
         
         for ( int i=0; i<tickv.minorTickV.getLength(); i++ ) {
-            if ( findex.value(i)>=0 && findex.value(i)<xds.length()-1.0 ) {
-                drawTick( g, findex.value(i) );
+            if ( findex.value(i)>=0 && findex.value(i)<lastValid ) {
+                drawTick( g, findex.value(i) ); // TODO: in/out logic needs to be based on tickv index, not data point index.
             }
         }
-
+        
         txds= DDataSet.wrap( tickv.tickV.toDoubleArray( tunits ), tunits );
         findex= Ops.findex( tds, txds );
         for ( int i=0; i<tickv.tickV.getLength(); i++ ) {            
-            if ( findex.value(i)>=0 && findex.value(i)<xds.length()-1.0 ) {
+            if ( findex.value(i)>=0 && findex.value(i)<lastValid ) {
                 drawLabelTick( g, findex.value(i), i );
             }
         }
 
         int n= ddata[0].length;
-		int index1= n-1;
-		int index2= n-3;
-		if ( Math.pow(ddata[0][index1]-ddata[0][index2],2)  + Math.pow((ddata[1][index1]-ddata[1][index2]), 2 ) > 2 ) {
-			index2= n-2;
-		}
+        int i= n-1;
+        for ( ; i>0; i-- ) {
+            if ( wds.value(i)>0 ) break;
+        }
+		int index1= i;
+        i-=1;
+        for ( ; i>=0; i-- ) {
+            if ( wds.value(i)>0 ) break;
+        }    
+		int index2= i;
         int em= 10;
         Arrow.paintArrow( g,
                 new Point2D.Double( ddata[0][index1],ddata[1][index1] ),
