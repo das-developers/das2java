@@ -32,7 +32,7 @@ import java.awt.image.BufferedImage;
 import java.text.ParseException;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import javafx.scene.Parent;
+import java.util.logging.Level;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.das2.dataset.NoDataInIntervalException;
@@ -78,7 +78,7 @@ public final class TickCurveRenderer extends Renderer {
         
     TickLabeller tickLabeller;
     
-    private TickStyle tickStyle= TickCurveRenderer.TickStyle.outer;
+    private TickStyle tickStyle= TickCurveRenderer.TickStyle.OUTER;
     
     private double lineWidth=  1.0f;
     private Color color= Color.BLACK;
@@ -89,9 +89,9 @@ public final class TickCurveRenderer extends Renderer {
     private GeneralPath path;
     
     public static class TickStyle implements Enumeration {
-        private String name;
-        public static final TickStyle outer= new TickStyle("Outer");
-        public static final TickStyle both= new TickStyle("Both");
+        private final String name;
+        public static final TickStyle OUTER= new TickStyle("Outer");
+        public static final TickStyle BOTH= new TickStyle("Both");
         private TickStyle(String name) {
             this.name= name;
         }
@@ -99,6 +99,7 @@ public final class TickCurveRenderer extends Renderer {
         public String toString() {
             return this.name;
         }
+        @Override
         public javax.swing.Icon getListIcon() {
             return null;
         }
@@ -402,7 +403,7 @@ public final class TickCurveRenderer extends Renderer {
                 this.tickLen = (int) ( Math.round( pos[1]* f.getSize2D() + pos[2] ) );
             }
         } catch ( ParseException ex ) {
-            ex.printStackTrace();
+            logger.log( Level.WARNING, ex.getMessage(), ex );
         }
     }
     
@@ -420,7 +421,7 @@ public final class TickCurveRenderer extends Renderer {
             return;
         }
 
-        if ( tickStyle==TickStyle.both ) {
+        if ( tickStyle==TickStyle.BOTH ) {
             Line2D flipTick= normalize( tick, -tl );
             Line2D bothTick= new Line2D.Double( flipTick.getP2(), tick.getP2() );
             g.draw( bothTick );            
@@ -449,7 +450,7 @@ public final class TickCurveRenderer extends Renderer {
             return;
         }
 
-        if ( tickStyle==TickStyle.both ) {
+        if ( tickStyle==TickStyle.BOTH ) {
             Line2D flipTick= normalize( tick, -tl );
             Line2D bothTick= new Line2D.Double( flipTick.getP2(), tick.getP2() );
             g.draw( bothTick );            
@@ -628,10 +629,8 @@ public final class TickCurveRenderer extends Renderer {
             boolean brk= false;
             for ( ; i<xds.length(); i++ ) {
                 double w1= wds.value(i);
-            //    fo.println(""+i+" "+len1+" " + limit);
                 if ( w1==0 ) {
                     brk= true;
-                    //p.moveTo( ddata[0][i],ddata[1][i] );
                 } else {
                     double len1=  Math.sqrt( Math.pow(ddata[0][i]- ddata[0][i-1],2 ) 
                             + Math.pow(ddata[1][i]- ddata[1][i-1],2 ) );
@@ -651,7 +650,6 @@ public final class TickCurveRenderer extends Renderer {
             }
         }
         
-        //fo.close();
         GeneralPath rp= new GeneralPath();
         GraphUtil.reducePath( p.getPathIterator(null), rp, 2 );
         g.draw(rp);
@@ -792,6 +790,7 @@ public final class TickCurveRenderer extends Renderer {
 
     /**
      * set the ticks for the renderer.
+     * @param ticks
      */
     public void setTickVDescriptor(TickVDescriptor ticks) {
         this.tickv= ticks;
