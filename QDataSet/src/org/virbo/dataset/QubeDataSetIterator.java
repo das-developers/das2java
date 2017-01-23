@@ -374,7 +374,7 @@ public final class QubeDataSetIterator implements DataSetIterator {
      */
     public void setMonitor( ProgressMonitor mon ) {
         this.monitor= mon;
-        this.monitor.setTaskSize( this.dimLength(0) );
+        this.monitor.setTaskSize( this.rank==0 ? 1 : this.dimLength(0) );
         this.monitor.started();
     }
 
