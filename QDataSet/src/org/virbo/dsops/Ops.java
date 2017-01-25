@@ -608,6 +608,7 @@ public class Ops {
      *
      * @param ds
      * @return the unweighted total of the dataset, or -1e31 if fill was encountered.
+     * @see #total(org.virbo.dataset.QDataSet, int) which should be used instead.
      */
     public static double total(QDataSet ds) {
         return total(ds,new NullProgressMonitor());
@@ -621,6 +622,7 @@ public class Ops {
      * @param ds
      * @param mon progress monitor
      * @return the unweighted total of the dataset, or -1e31 if fill was encountered.
+     * @see #total(org.virbo.dataset.QDataSet, int, org.das2.util.monitor.ProgressMonitor) which should be used instead.
      */
     public static double total(QDataSet ds,ProgressMonitor mon) {
         double s = 0;
@@ -4764,6 +4766,25 @@ public class Ops {
     public static QDataSet within( QDataSet ds, QDataSet bounds ) {
         return and( ge( ds, bounds.slice(0) ), lt( ds, bounds.slice(1) ) );
     }
+
+    /**
+     * return non-zero where the data in ds are within the bounds.  In Jython,
+     *<blockquote><pre>
+     *print within( [0,1,2,3,4], '2 to 4' ) --> [ 0,0,1,1,0 ]
+     *print within( ttag, 'orbit:rbspa-pp:172' )
+     *</pre></blockquote>
+     * 
+     * Note, before March 2, 2015, this would incorrectly return the where of the result.
+     * @param ds object which can be converted to rank N dataset where N &gt; 0
+     * @param bounds a rank 1 bounding box, DatumRange, or two-element array.  
+     * @return rank N dataset containing non-zero where the condition is true.
+     * @see #without(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     * @see #binsWithin(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     */
+    public static QDataSet within( Object ds, Object bounds ) {
+        QDataSet boundsDs= dataset( datumRange( bounds ) );
+        return and( ge( ds, boundsDs.slice(0) ), lt( ds, boundsDs.slice(1) ) );
+    }
     
     /**
      * return non-zero where the bins of ds are within the bounds.  
@@ -4793,6 +4814,23 @@ public class Ops {
         return or( lt( ds, bounds.slice(0) ), ge( ds, bounds.slice(1) ) );
     }
 
+    /**
+     * return non-zero where the data in ds are outside of the bounds.  In Jython,
+     *<blockquote><pre>
+     *print without( [0,1,2,3,4], '2 to 4' ) --> [ 1,1,0,0,1 ]
+     *print without( ttag, 'orbit:rbspa-pp:172' )
+     *</pre></blockquote>
+     * 
+     * @param ds rank N dataset where N &gt; 0
+     * @param bounds a rank 1 bounding box.  
+     * @return rank N dataset containing non-zero where the condition is true.
+     * @see #within(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     */
+    public static QDataSet without( Object ds, Object bounds ) {
+        QDataSet boundsDs= dataset( datumRange( bounds ) );
+        return or( lt( ds, boundsDs.slice(0) ), ge( ds, boundsDs.slice(1) ) );
+    }
+    
     /**
      * return non-zero where the bins of ds are outside of the bounds.
      * @param ds rank 2 bins dataset
