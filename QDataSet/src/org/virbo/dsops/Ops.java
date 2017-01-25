@@ -643,6 +643,14 @@ public class Ops {
         return s;
     }
 
+    /**
+     * return the total of all the elements in the object which can be converted
+     * to a dataset.
+     *
+     * @param ds1 the object which can be converted to a dataset.
+     * @return 
+     * @see #total(org.virbo.dataset.QDataSet) 
+     */
     public static double total( Object ds1 ) {
         return total( dataset(ds1) );
     }    
@@ -764,6 +772,7 @@ public class Ops {
      * @param ds rank N qube dataset.  N=1,2,3,4
      * @param dim zero-based index number.
      * @return rank N-1 dataset.
+     * @see #total(org.virbo.dataset.QDataSet) which is an earlier deprecated routine.
      */
     public static QDataSet total(QDataSet ds, int dim) {
         try {
