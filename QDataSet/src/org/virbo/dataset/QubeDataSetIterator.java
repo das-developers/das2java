@@ -670,12 +670,27 @@ public final class QubeDataSetIterator implements DataSetIterator {
                         result.putProperty( "DEPEND_"+i, depSlice );
                     }
                 } else if ( dep!=null && dep.rank()==2 ) {
-                    StartStopStepIterator sssi= (StartStopStepIterator)it[idim];
-                    if ( sssi.step==1 && sssi.start==0 && sssi.stop==dep.length(0) ) {
-                        result.putProperty( "DEPEND_"+i, dep );
-                    } else  {
-                        logger.log(Level.FINE, "dropping rank 2 depend {0}", result);
+                    DimensionIteratorFactory[] dif= new DimensionIteratorFactory[2];
+                    if ( it[0] instanceof StartStopStepIterator ) {
+                        StartStopStepIterator sssi= (StartStopStepIterator)it[0];
+                        dif[0]= new StartStopStepIteratorFactory( sssi.start, sssi.stop, sssi.step );
+                    } else if ( it[0] instanceof IndexListIterator ) {
+                        IndexListIterator ili= (IndexListIterator)it[0];
+                        dif[0]= new IndexListIteratorFactory( ili.ds );
+                    } else if ( it[0] instanceof SingletonIterator ) {
+                        SingletonIterator ili= (SingletonIterator)it[0];
+                        dif[0]= new SingletonIteratorFactory( ili.index );
                     }
+                    dif[1]= fit[idim];
+                    QubeDataSetIterator iter2= new QubeDataSetIterator(dep,dif);
+                    DDataSet depNew= iter2.createEmptyDs();
+                    QubeDataSetIterator itOut= new QubeDataSetIterator(depNew);
+                    while ( iter2.hasNext() ) {
+                        iter2.next();
+                        itOut.next();
+                        itOut.putValue( depNew, iter2.getValue(dep) );
+                    }
+                    result.putProperty( "DEPEND_"+i, depNew );
                 }
                 if ( bund!=null && it[idim].length()==bund.length() ) { 
                     result.putProperty( "BUNDLE_"+i, bund );
@@ -684,8 +699,30 @@ public final class QubeDataSetIterator implements DataSetIterator {
                     result.putProperty( "BINS_"+i, bins );
                 }
             } else if ( fit[idim] instanceof IndexListIteratorFactory && !isAllIndexLists ) {
-                IndexListIteratorFactory sssi= (IndexListIteratorFactory)fit[idim];
-                if ( dep!=null ) {
+                if ( dep!=null && dep.rank()==2 ) {
+                    DimensionIteratorFactory[] dif= new DimensionIteratorFactory[2];
+                    if ( it[0] instanceof StartStopStepIterator ) {
+                        StartStopStepIterator sssi= (StartStopStepIterator)it[0];
+                        dif[0]= new StartStopStepIteratorFactory( sssi.start, sssi.stop, sssi.step );
+                    } else if ( it[0] instanceof IndexListIterator ) {
+                        IndexListIterator ili= (IndexListIterator)it[0];
+                        dif[0]= new IndexListIteratorFactory( ili.ds );
+                    } else if ( it[0] instanceof SingletonIterator ) {
+                        SingletonIterator ili= (SingletonIterator)it[0];
+                        dif[0]= new SingletonIteratorFactory( ili.index );
+                    }
+                    dif[1]= fit[idim];
+                    QubeDataSetIterator iter2= new QubeDataSetIterator(dep,dif);
+                    DDataSet depNew= iter2.createEmptyDs();
+                    QubeDataSetIterator itOut= new QubeDataSetIterator(depNew);
+                    while ( iter2.hasNext() ) {
+                        iter2.next();
+                        itOut.next();
+                        itOut.putValue( depNew, iter2.getValue(dep) );
+                    }
+                    result.putProperty( "DEPEND_"+i, depNew );
+                } else if ( dep!=null ) {
+                    IndexListIteratorFactory sssi= (IndexListIteratorFactory)fit[idim];
                     result.putProperty( "DEPEND_"+i, DataSetOps.applyIndex( dep, 0, sssi.getList(), false ) );
                 }
             }
