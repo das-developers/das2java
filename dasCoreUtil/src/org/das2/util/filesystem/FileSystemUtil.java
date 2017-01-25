@@ -22,8 +22,16 @@ import java.nio.channels.Channel;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 import org.das2.util.LoggerManager;
 import org.das2.util.monitor.NullProgressMonitor;
@@ -92,9 +100,20 @@ public class FileSystemUtil {
      * @param fz zipped input file
      * @param file unzipped destination file
      * @throws java.io.IOException
+     * @deprecated use gunzip instead.
      */
     public static void unzip( File fz, File file) throws IOException {
-        GZIPInputStream in= null;
+        gunzip( fz, file );
+    }
+    
+    /**
+     * un-gzip the file.  This is similar to the unix gunzip command.
+     * @param fz zipped input file
+     * @param file unzipped destination file
+     * @throws java.io.IOException
+     */
+    public static void gunzip( File fz, File file) throws IOException {
+    GZIPInputStream in= null;
         OutputStream out= null;
         try {
             in = new GZIPInputStream(new FileInputStream(fz));
@@ -110,6 +129,39 @@ public class FileSystemUtil {
                 if ( in!=null ) in.close();
             } finally {
                 if ( out!=null ) out.close();
+            }
+        }
+    }
+
+    /**
+     * create a zip file of everything with and under the directory.
+     * @param fz the output 
+     * @param dir the root directory.
+     * @throws java.io.IOException 
+     */
+    public static void zip( File fz, File dir ) throws IOException {
+        if ( !dir.isDirectory() ) throw new IllegalArgumentException("dir should be a directory");
+        //if ( fz.exists() ) throw new IllegalArgumentException("output file "+fz+ " exists");
+        new ZipFiles().zipDirectory( dir, fz.getAbsolutePath() );
+    }
+    
+    /**
+     * delete all files under the directory, with names matching the regex.
+     * @param dir the directory
+     * @param regex the regular expression, like ".*\.png"
+     * @see Glob#getRegex(java.lang.String) 
+     */
+    public static void deleteAllFiles( File dir, String regex ) {
+        File[] ff= dir.listFiles();
+        for ( File f : ff ) {
+            if ( f.isDirectory() ) {
+                deleteAllFiles(f,regex);
+            } else if ( f.isFile() ) {
+                if ( f.getName().matches( regex ) ) {
+                    if ( !f.delete() ) {
+                        logger.log(Level.WARNING, "failed to delete: {0}", f);
+                    }
+                }
             }
         }
     }
