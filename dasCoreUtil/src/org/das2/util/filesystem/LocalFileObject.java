@@ -149,7 +149,7 @@ public class LocalFileObject extends FileObject {
                                 throw new FileNotFoundException("unable to create parent directories: "+tempFile );
                             }
                         }
-                        FileSystemUtil.unzip( localGzFile, tempFile );
+                        FileSystemUtil.gunzip( localGzFile, tempFile );
                         tempFile.deleteOnExit(); //TODO: verify this on all platforms.
                         return tempFile;
                     }
