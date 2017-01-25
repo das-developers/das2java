@@ -763,7 +763,7 @@ public class Ops {
      * 
      * @param ds rank N qube dataset.  N=1,2,3,4
      * @param dim zero-based index number.
-     * @return
+     * @return rank N-1 dataset.
      */
     public static QDataSet total(QDataSet ds, int dim) {
         try {
