@@ -490,7 +490,8 @@ public class Orbits {
                 }
             }
             if ( result==null ) {
-                throw new IllegalArgumentException("unable to find orbit for timerange");
+                DatumRange dr= new DatumRange( TimeUtil.toDatum( startTime ), TimeUtil.toDatum( startTime.add(timeWidth) ) );
+                throw new IllegalArgumentException("unable to find orbit for timerange for range: "+dr);
             }
 
             if ( length<0 ) length= 5; // 5 by default.
