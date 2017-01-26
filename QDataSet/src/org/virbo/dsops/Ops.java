@@ -772,7 +772,7 @@ public class Ops {
      * @param ds rank N qube dataset.  N=1,2,3,4
      * @param dim zero-based index number.
      * @return rank N-1 dataset.
-     * @see #total(org.virbo.dataset.QDataSet) which is an earlier deprecated routine.
+     * @see #total(org.virbo.dataset.QDataSet) total(ds) which is an earlier deprecated routine.
      */
     public static QDataSet total(QDataSet ds, int dim) {
         try {
@@ -1365,7 +1365,7 @@ public class Ops {
      * operator.
      * @param ds1 the dataset
      * @return dataset with the same geometry
-     * @see Ops#magnitude(org.virbo.dataset.QDataSet) which preserves the sign.
+     * @see Ops#magnitude(org.virbo.dataset.QDataSet) magnitude(ds) which preserves the sign.
      */
     public static QDataSet abs(QDataSet ds1) {
         MutablePropertyDataSet result= applyUnaryOp(ds1, new UnaryOp() {
@@ -2775,7 +2775,7 @@ public class Ops {
      * @param ds2 dataset of length n to be concatenated.
      * @return a dataset length m+n.
      * @throws IllegalArgumentException if the two datasets don't have the same rank.
-     * @see #merge(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) which will interleave to preserve monotonic.
+     * @see #merge(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) merge(ds1,ds2), which will interleave to preserve monotonic.
      * @see #append(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
      */
     public static QDataSet concatenate(QDataSet ds1, QDataSet ds2) {
@@ -7733,7 +7733,7 @@ public class Ops {
      * @param vv rank 1 dataset having length L that is the data to be interpolated.
      * @param findex rank N dataset of fractional indeces.  This must be dimensionless, between -0.5 and L-0.5 and is typically calculated by the findex command.
      * @return the result.  
-     * @see #interpolateMod for data like longitude where 259 deg is 2 degrees away from 1 deg.
+     * @see #interpolateMod interpolateMod for data like longitude where 259 deg is 2 degrees away from 1 deg
      */
     public static QDataSet interpolate( QDataSet vv, QDataSet findex ) {
         if ( vv.rank()!=1 ) {
@@ -7845,8 +7845,8 @@ public class Ops {
      * @param findex0 rank N dataset of fractional indeces for the zeroth index.  This must be dimensionless, between -0.5 and L-0.5 and is typically calculated by the findex command.
      * @param findex1 rank N dataset of fractional indeces for the first index.  This must be dimensionless, between -0.5 and L-0.5 and is typically calculated by the findex command.
      * @return rank N dataset 
-     * @see #findex the 1-D findex command.
-     * @see #interpolateGrid 
+     * @see #findex, the 1-D findex command
+     * @see #interpolateGrid(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet)  
      */
     public static QDataSet interpolate(QDataSet vv, QDataSet findex0, QDataSet findex1) {
 
@@ -7979,7 +7979,7 @@ public class Ops {
      * interpolate values from rank 2 dataset vv using fractional indeces
      * in rank N findex, using bilinear interpolation.  See also interpolateGrid.
      *
-     * @see #findex the 1-D findex command.
+     * @see #findex the 1-D findex command
      * @param vv object convertible to rank 2 dataset.
      * @param findex0 object convertible to rank N dataset of fractional indeces for the zeroth index.
      * @param findex1 object convertible to rank N dataset of fractional indeces for the first index.
@@ -7998,7 +7998,7 @@ public class Ops {
      * @param findex1 rank N dataset of fractional indeces for the first index.  This must be dimensionless, between -0.5 and L-0.5 and is typically calculated by the findex command.
      * @param findex2 rank N dataset of fractional indeces for the second index.  This must be dimensionless, between -0.5 and L-0.5 and is typically calculated by the findex command.
      * @return rank N dataset 
-     * @see #findex the 1-D findex command.
+     * @see #findex the 1-D findex command
      * @see #interpolateGrid 
      */
     public static QDataSet interpolate( QDataSet vv, QDataSet findex0, QDataSet findex1, QDataSet findex2 ) {
@@ -8311,7 +8311,7 @@ public class Ops {
      * in rank N findex, using bilinear interpolation.  Here the two rank1
      * indexes form a grid and the result is rank 2.
      *
-     * @see #findex(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) the 1-D findex command.
+     * @see #findex the 1-D findex command
      * @param vv rank 2 dataset.
      * @param findex0 rank 1 dataset of fractional indeces for the zeroth index.
      * @param findex1 rank 1 dataset of fractional indeces for the first index.
@@ -9130,7 +9130,7 @@ public class Ops {
      * the result will have this type as well.  Otherwise DDataSet is returned.
      * @param ds1 null or rank N dataset
      * @param ds2 rank N dataset with compatible geometry.
-     * @see #concatenate(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet)  which may do the same thing.
+     * @see #concatenate(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) concatenate, which may do the same thing.
      * @return 
      */
     public static QDataSet append( QDataSet ds1, QDataSet ds2 ) {
@@ -11047,6 +11047,7 @@ public class Ops {
     
     /**
      * closest double to &tau; or 2*PI
+     * @see Math#PI
      */
     public static final double TAU = Math.PI * 2;
     
