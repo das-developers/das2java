@@ -613,6 +613,8 @@ public class Schemes {
      * a problem, however, where there is no way to indicate the dependencies
      * for the columns.  The Z column can have DEPENDNAME_0, but how does one
      * declare the dependence on Y as well?  
+     * In https://sourceforge.net/p/autoplot/bugs/1710/, I propose 
+     * CONTEXT_0=field0,field2, which seems like it would work nicely.
      * @return  
      * @see #rank1AlongTrajectory() 
      * @see #rank1AtXYScatter() 
