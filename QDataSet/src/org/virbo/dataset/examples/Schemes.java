@@ -535,6 +535,7 @@ public class Schemes {
     /**
      * Here there is a Z that is a function of X and Y of a xyScatter.
      * @return rank 1 dataset that has bundle for DEPEND_0.
+     * @see #xyzScatter() 
      */    
     public static QDataSet rank1AtXYScatter() {
         QDataSet xx= Ops.randomn(5334,30);
@@ -565,6 +566,67 @@ public class Schemes {
     public static QDataSet rank2Bins() {
         MutablePropertyDataSet result= Ops.maybeCopy( Ops.findgen( 20,2 ) );
         result.putProperty( QDataSet.BINS_1, QDataSet.VALUE_BINS_MIN_MAX );
+        return result;
+    }
+
+    /**
+     * Many of Autoplot's codes use the "legacyXYZScatter" QDataSet scheme,
+     * where the X tags are in DEPEND_0, the Y tags are the QDataSet, and
+     * PLANE_0 contains the Z values.
+     * @param zds
+     * @return 
+     */
+    public static boolean isLegacyXYZScatter(QDataSet zds) {
+        return zds.rank()==1 && zds.property(QDataSet.PLANE_0)!=null;
+    }
+    
+    /**
+     * Many code use this form of data to represent Z(X,Y).  This is not preferred,
+     * and ds[n;x,y,z] should be used instead.  This is available for testing.
+     * @return rank 1 dataset with DEPEND_0 and PLANE_0 properties.
+     * @see #rank1AtXYScatter
+     */
+    public static QDataSet legacyXYZScatter() {
+        QDataSet xx= Ops.outerProduct( Ops.linspace( "2015-03-01T00:00", "2015-03-01T10:00", 150 ), Ops.ones(30) );
+        QDataSet yy= Ops.outerProduct( Ops.ones(150), Ops.linspace( 10., 40., 30 ) );
+        QDataSet zz= Ops.ripples( 150, 30 );
+        xx= Ops.reform( xx, new int[] {4500} );
+        yy= Ops.reform( yy, new int[] {4500} );
+        yy= Ops.putProperty( yy, QDataSet.UNITS, Units.hertz );
+        zz= Ops.reform( zz, new int[] {4500} );
+        yy= Ops.putProperty( yy, QDataSet.DEPEND_0, xx );
+        yy= Ops.putProperty( yy, QDataSet.PLANE_0, zz );
+        return yy;
+    }
+    
+    /**
+     * @see #xyzScatter() 
+     * @param zds
+     * @return true is it is an xyzScatter scheme.
+     */
+    public static boolean isXYZScatter(QDataSet zds) {
+        return zds.rank()==2 && isBundleDataSet(zds) && zds.length(0)==3;
+    }
+    
+    /**
+     * This will be the preferred way to represent X,Y &rarr; Z.  This shows
+     * a problem, however, where there is no way to indicate the dependencies
+     * for the columns.  The Z column can have DEPENDNAME_0, but how does one
+     * declare the dependence on Y as well?  
+     * @return  
+     * @see #rank1AlongTrajectory() 
+     * @see #rank1AtXYScatter() 
+     */
+    public static QDataSet xyzScatter() {
+        QDataSet xx= Ops.outerProduct( Ops.linspace( "2015-03-01T00:00", "2015-03-01T10:00", 150 ), Ops.ones(30) );
+        QDataSet yy= Ops.outerProduct( Ops.ones(150), Ops.linspace( 10., 40., 30 ) );
+        QDataSet zz= Ops.ripples( 150, 30 );
+        xx= Ops.reform( xx, new int[] {4500} );
+        yy= Ops.reform( yy, new int[] {4500} );
+        yy= Ops.putProperty( yy, QDataSet.UNITS, Units.hertz );
+        zz= Ops.reform( zz, new int[] {4500} );
+        zz= Ops.putProperty( zz, QDataSet.DEPEND_0, xx );
+        QDataSet result= Ops.bundle( xx,yy,zz );
         return result;
     }
 }
