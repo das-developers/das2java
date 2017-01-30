@@ -296,9 +296,11 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                     } else {
                         if ( !SemanticOps.isTableDataSet( zds ) ) {
                             if ( !SemanticOps.isBundle( zds ) ) {
-                                parent.postMessage(this, "expected table dataset, got "+zds, DasPlot.INFO, null, null );
-                                logger.exiting( "org.das2.graph.SpectrogramRenderer", "render" );
-                                return;
+                                if ( zds.property( QDataSet.PLANE_0 )==null ) {
+                                    parent.postMessage(this, "expected table dataset, got "+zds, DasPlot.INFO, null, null );
+                                    logger.exiting( "org.das2.graph.SpectrogramRenderer", "render" );
+                                    return;
+                                }
                             }
                         }
 
@@ -308,6 +310,10 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         } else if ( zds.rank()==3 ) {
                             xds= SemanticOps.xtagsDataSet(zds.slice(0));
                             yds= SemanticOps.ytagsDataSet(zds.slice(0));
+                        } else if ( zds.rank()==1 ) {
+                            xds= SemanticOps.xtagsDataSet(zds);
+                            yds= zds;
+                            zds= (QDataSet)yds.property( QDataSet.PLANE_0 );
                         }
 
                         if ( getDataSet().length() == 0 ) {
@@ -550,7 +556,8 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                             yunits= SemanticOps.getUnits( SemanticOps.ytagsDataSet(fds) );
                         }
                     } else if ( fds.rank()<2 ) {
-                        logger.log(Level.FINE, "dataset rank is less than 2: {0}", fds);
+                        xunits= SemanticOps.getUnits( SemanticOps.xtagsDataSet(fds) );
+                        yunits= SemanticOps.getUnits( SemanticOps.ytagsDataSet(fds) );
 
                     } else {
                         xunits= SemanticOps.getUnits( SemanticOps.xtagsDataSet(fds.slice(0)) );
@@ -656,11 +663,13 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                             if ( SemanticOps.isBundle( fds ) ) { // this should be true because of code above
                                 zds= SemanticOps.getDependentDataSet(fds);
                             } else {
-                                logger.finer("dataset is not TableDataSet.");
-                                plotImage = null;
-                                plotImageBounds= null;
-                                logger.exiting( "org.das2.graph.SpectrogramRenderer", "updatePlotImage" );
-                                return;
+                                if ( zds.property(QDataSet.PLANE_0)==null ) {
+                                    logger.finer("dataset is not TableDataSet.");
+                                    plotImage = null;
+                                    plotImageBounds= null;
+                                    logger.exiting( "org.das2.graph.SpectrogramRenderer", "updatePlotImage" );
+                                    return;
+                                }
                             }
                         }
 
