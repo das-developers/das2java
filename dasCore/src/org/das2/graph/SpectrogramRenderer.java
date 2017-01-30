@@ -71,6 +71,7 @@ import org.das2.util.LoggerManager;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
+import org.virbo.dataset.examples.Schemes;
 
 /**
  * Renderer for spectrograms.  A setting for rebinning data controls how data is binned into pixel space,
@@ -352,6 +353,14 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         return;
                     }
                     switch (zds.rank()) {
+                        case 1:
+                            if ( Schemes.isLegacyXYZScatter(zds) ) {
+                                xds= SemanticOps.xtagsDataSet(zds);
+                                yds= SemanticOps.ytagsDataSet(zds);
+                            } else {
+                                throw new IllegalArgumentException("only type rank 1 datasets with PLANE_0 supported");
+                            }
+                            break;
                         case 2:
                             xds= SemanticOps.xtagsDataSet(zds);
                             yds= SemanticOps.ytagsDataSet(zds);
@@ -370,7 +379,9 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         parent.postMessage( this, "dataset x units are \""+SemanticOps.getUnits(xds)+"\" while xaxis is \"" + xAxis.getUnits() + "\"", DasPlot.INFO, null, null );
                     }
                     if ( ! SemanticOps.getUnits(zds).isConvertibleTo(colorBar.getUnits()) ) {
-                        parent.postMessage( this, "dataset z units are \""+SemanticOps.getUnits(zds)+"\" while zaxis is \"" + colorBar.getUnits() + "\"", DasPlot.INFO, null, null );
+                        if ( !Schemes.isLegacyXYZScatter(zds) ) {
+                            parent.postMessage( this, "dataset z units are \""+SemanticOps.getUnits(zds)+"\" while zaxis is \"" + colorBar.getUnits() + "\"", DasPlot.INFO, null, null );
+                        }
                     }
                 }
                 
@@ -624,9 +635,11 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                             } else {
                                 yunits= SemanticOps.getUnits( SemanticOps.ytagsDataSet(fds) );
                             }
-                        } else if ( fds.rank()<2 ) {
+                        } else if ( fds.rank()<2 && !Schemes.isLegacyXYZScatter(fds) ) {
                             xunits= xAxis.getUnits(); // there's code later to catch the error
                             yunits= yAxis.getUnits();
+                        } else if ( Schemes.isLegacyXYZScatter(fds) ) {
+                            yunits= SemanticOps.getUnits( SemanticOps.ytagsDataSet(fds) );
                         } else {
                             xunits= SemanticOps.getUnits( SemanticOps.xtagsDataSet(fds.slice(0)) );
                             yunits= SemanticOps.getUnits( SemanticOps.ytagsDataSet(fds.slice(0)) );
