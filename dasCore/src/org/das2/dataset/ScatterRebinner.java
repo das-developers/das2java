@@ -48,11 +48,17 @@ public class ScatterRebinner implements DataSetRebinner {
             zds= DataSetOps.slice1(zds,zds.length(0)-1);
         } else {
     		if(!(zds.property(QDataSet.DEPEND_0) == null)){
-        		xds = (QDataSet) zds.property(QDataSet.UNITS);
+        		xds = (QDataSet) zds.property(QDataSet.DEPEND_0);
             }
     		if(!(zds.property(QDataSet.DEPEND_1) == null)){
         		 yds = (QDataSet) zds.property(QDataSet.DEPEND_1);
+            } else {
+                if ( Schemes.isLegacyXYZScatter(zds) ) {
+                    yds= zds;
+                    zds= (QDataSet)yds.property(QDataSet.PLANE_0);
+                }
             }
+            
         }
 		
 		int nx = rebinDescX.numberOfBins()-1;
@@ -79,7 +85,7 @@ public class ScatterRebinner implements DataSetRebinner {
 									xB = rebinDescX.whichBin(xds.value(), xdsUnits);
 									break;
 								case 1:
-									xB = rebinDescX.whichBin(xds.value(i), ydsUnits);
+									xB = rebinDescX.whichBin(xds.value(i), xdsUnits);
 									break;
 								case 2:
 									logger.fine(" Don't know what to do with rank 2 Depend 0 datasets yet.");
@@ -169,14 +175,15 @@ public class ScatterRebinner implements DataSetRebinner {
 		double [] xbinWidths = getBinWidths(rebinDescX);
 		int [] xcadencesInBins = new int[xbinWidths.length];
 	
+        Units xoffsetUnits= xdsUnits.getOffsetUnits();
 		if(xds != null){
 			QDataSet xPlus = (QDataSet) xds.property(QDataSet.BIN_PLUS);	
 			if(xPlus != null){
-				xHardBinPlus = (int) (xPlus.value() / xDat.doubleValue((Units) xPlus.property(QDataSet.UNITS)));
+				xHardBinPlus = (int) (xPlus.value() / xDat.doubleValue( xoffsetUnits ));
 			} 
 			QDataSet xMinus = (QDataSet) xds.property(QDataSet.BIN_MINUS);
 			if(xMinus != null){
-				xHardBinMinus = (int) (xMinus.value() / xDat.doubleValue((Units) xMinus.property(QDataSet.UNITS)));
+				xHardBinMinus = (int) (xMinus.value() / xDat.doubleValue( xoffsetUnits ));
 			} 
 			QDataSet xCad = (QDataSet) xds.property(QDataSet.CADENCE);
 			double xCadenceVal = 0;
@@ -186,7 +193,7 @@ public class ScatterRebinner implements DataSetRebinner {
 					xcadencesInBins = getCadenceValues(xbinWidths, xCadenceVal,-1);
 				}else{
 					xcadencesInBins = null;
-					xSoftRad = (int) Math.round(xCadenceVal / xDat.doubleValue((Units) xCad.property(QDataSet.UNITS)));
+					xSoftRad = (int) Math.round(xCadenceVal / xDat.doubleValue( xoffsetUnits ));
 				}
 				
 			} else{
@@ -221,14 +228,15 @@ public class ScatterRebinner implements DataSetRebinner {
 		double [] ybinWidths = getBinWidths(rebinDescY);
 		int [] ycadencesInBins = new int[ybinWidths.length];
 		
+        Units yoffsetUnits= ydsUnits.getOffsetUnits();
 		if(yds != null){
 			QDataSet yPlus = (QDataSet) yds.property(QDataSet.BIN_PLUS);	
 			if(yPlus != null){
-				yHardBinPlus = (int) (yPlus.value() / yDat.doubleValue( ydsUnits.getOffsetUnits() ) );
+				yHardBinPlus = (int) (yPlus.value() / yDat.doubleValue( yoffsetUnits ) );
 			} 
 			QDataSet yMinus = (QDataSet) yds.property(QDataSet.BIN_MINUS);
 			if(yMinus != null){
-				yHardBinMinus = (int) (yMinus.value() / yDat.doubleValue( ydsUnits.getOffsetUnits() ) );
+				yHardBinMinus = (int) (yMinus.value() / yDat.doubleValue( yoffsetUnits ) );
 			}
 			QDataSet yCad = (QDataSet) yds.property(QDataSet.CADENCE);
 			double yCadenceVal = 0;
@@ -240,14 +248,14 @@ public class ScatterRebinner implements DataSetRebinner {
 					
 				}else{
 					ycadencesInBins = null;
-					ySoftRad = (int) Math.round(yCadenceVal / yDat.doubleValue( ydsUnits.getOffsetUnits() ) );
+					ySoftRad = (int) Math.round(yCadenceVal / yDat.doubleValue( yoffsetUnits ) );
 				}
 				
 			} else{
 				int currentDataWidthy;
 				for(int i =0; i< yds.length()-1; i++){
-					currentDataWidthy = rebinDescY.whichBin(yds.value(i+1), ydsUnits.getOffsetUnits() ) - 
-							  rebinDescY.whichBin(yds.value(i), (Units) ydsUnits.getOffsetUnits() );
+					currentDataWidthy = rebinDescY.whichBin(yds.value(i+1), yoffsetUnits ) - 
+							  rebinDescY.whichBin(yds.value(i), (Units) yoffsetUnits );
 					if(currentDataWidthy >=1){
 						yCadencesToSort.add(currentDataWidthy);
 						yCadencesToSortValues.add(yds.value(i+1) - yds.value(i));
