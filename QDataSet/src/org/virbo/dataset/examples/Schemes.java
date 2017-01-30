@@ -283,7 +283,7 @@ public class Schemes {
     
     /**
      * return example events list.  This is a four-column rank 2 dataset with
-     * start time, duration, RGB color, and ordinal data for the message.
+     * start time, end time, RGB color, and ordinal data for the message.
      * @return example events list.
      */
     public static QDataSet eventsList( ) {
@@ -294,7 +294,7 @@ public class Schemes {
             for ( int i=100; i<200; i++ ) ((WritableDataSet)color).putValue( i, 0xFFAAFF );
             EnumerationUnits eu= EnumerationUnits.create("default");
             QDataSet msgs= Ops.putProperty( Ops.replicate( eu.createDatum("on1").doubleValue(eu), 1440 ), QDataSet.UNITS, eu );
-            QDataSet result= Ops.bundle( xx, dxx, color, msgs );
+            QDataSet result= Ops.bundle( xx, Ops.add(xx,dxx), color, msgs );
             return result;
         } catch (ParseException ex) {
             throw new IllegalArgumentException(ex);
