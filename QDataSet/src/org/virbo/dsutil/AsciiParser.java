@@ -455,10 +455,13 @@ public class AsciiParser {
         String fieldSep;
 
         int tabDelimFieldCount= line.split("\t",-2 ).length;
+        int semiColonDelimFieldCount= line.split(";",-2 ).length;
         int commaDelimFieldCount= line.split( ",",-2 ).length;
         int whitespaceDelimFieldCount= line.split("\\s+",-2 ).length;
 
-        if ( tabDelimFieldCount > 1 && tabDelimFieldCount!=whitespaceDelimFieldCount ) {  // always use tabs over others, but only if other doesn't work
+        if ( semiColonDelimFieldCount > 1 && semiColonDelimFieldCount>=whitespaceDelimFieldCount/2 ) {
+            fieldSep = ";";
+        } else if ( tabDelimFieldCount > 1 && tabDelimFieldCount!=whitespaceDelimFieldCount ) {  // always use tabs over others, but only if other doesn't work
             fieldSep = "\t";
         } else if ( commaDelimFieldCount > 1 && commaDelimFieldCount>= whitespaceDelimFieldCount/2 ) { //TODO: improve this
             fieldSep = ",";
