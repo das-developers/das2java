@@ -1332,9 +1332,9 @@ public class DataSetUtil {
             }
             last= xds.value(i);
         }
-        if ( ( repeatValues + monoIncreasing ) >(99*count/100) ) { // 99% increasing
+        if ( ( repeatValues + monoIncreasing ) >(90*count/100) ) { // 90% increasing
             monoMag= 1;
-        } else if ( ( repeatValues + monoDecreasing ) >(99*count/100) ) { // 99% decreasing
+        } else if ( ( repeatValues + monoDecreasing ) >(90*count/100) ) { // 90% decreasing
             monoMag= -1;
         } else {
             monoMag= 0;
