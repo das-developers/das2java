@@ -229,8 +229,6 @@ public class BinAverage {
                     if ( i>=nx || j>=ny ) continue;
                     sresult.putValue( i, j, z + sresult.value( i, j ) );
                     nresult.putValue( i, j, w + nresult.value( i, j ) );
-                } else {
-                    System.err.println("here");
                 }
             }
         }
