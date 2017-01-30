@@ -93,7 +93,13 @@ public class AverageTableRebinner implements DataSetRebinner {
             if ( SemanticOps.isBundle(ds) ) {
                 bundle=true;
             } else {
-                throw new IllegalArgumentException("Data set must be an instanceof TableDataSet or Bundle: " + ds.getClass().getName());
+                QDataSet zds= (QDataSet) ds.property( QDataSet.PLANE_0 );
+                if ( zds==null ) {
+                    throw new IllegalArgumentException("Data set must be an instanceof TableDataSet or Bundle: " + ds.getClass().getName());
+                } else {
+                    ds= Ops.bundle( SemanticOps.xtagsDataSet(ds), ds, zds );
+                    bundle=true;
+                }
             }
         }
 
@@ -259,7 +265,7 @@ public class AverageTableRebinner implements DataSetRebinner {
                 return cadence;
             }
         } else {
-            xds= (QDataSet) tds.property(QDataSet.DEPEND_0);
+            xds= SemanticOps.xtagsDataSet(tds);
             if ( xds==null ) {
                 return xunits.createDatum(1);
             } else if ( xds.length()>2 ) {
