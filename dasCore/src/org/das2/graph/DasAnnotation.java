@@ -252,7 +252,9 @@ public class DasAnnotation extends DasCanvasComponent {
     public static final String PROP_TEXT = "text";
     
     /**
-     * Set the text, which can be Granny Text.
+     * Set the text, which can be Granny Text, or image URL.  URLs 
+     * must start with http:, https:, or file:.
+     *
      * @param string the text
      * @see GrannyTextRenderer
      */
@@ -260,7 +262,7 @@ public class DasAnnotation extends DasCanvasComponent {
         String oldValue= this.templateString;
         this.templateString = string;
         if ( this.getGraphics()!=null ) {
-            if ( string.startsWith("http:") ) {
+            if ( string.startsWith("http:") || string.startsWith("https:" ) || string.startsWith("file:" ) ) {
                 try {
                     img= ImageIO.read(new URL(string));
                     gtr= null;
@@ -576,7 +578,11 @@ public class DasAnnotation extends DasCanvasComponent {
                         
         Rectangle r;
         if ( gtr==null ) {
-            r= new Rectangle( 0, 0, img.getWidth(), img.getHeight() );
+            if ( img==null ) {
+                r= new Rectangle( 0, 0, 64, 64 );
+            } else {
+                r= new Rectangle( 0, 0, img.getWidth(), img.getHeight() );
+            }
         } else {
             r= gtr.getBounds();
         }
