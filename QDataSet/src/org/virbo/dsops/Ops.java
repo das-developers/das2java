@@ -9656,7 +9656,22 @@ public class Ops {
         sliceProperties(removeDim, ds, result);
         return result;
     }
-
+    
+    /**
+     * allow reform record-by-record, which comes up often.
+     * @param ds rank 2 or greater dataset of length nrec.
+     * @param nrec number of records in ds
+     * @param qube length nn array with the new geometry of each record.
+     * @return ds of rank nn+1.
+     */
+    public static QDataSet reform(QDataSet ds, int nrec, int[] qube) {
+        if ( nrec!=ds.length() ) throw new IllegalArgumentException("rec should be equal to the number of records in ds");
+        int[] newArray= new int[qube.length+1];
+        newArray[0]= nrec;
+        System.arraycopy( qube, 0, newArray, 1, qube.length );
+        return reform( ds, newArray );
+    }
+    
     /**
      * change the dimensionality of the elements of the QUBE dataset.  For example,
      * convert [1,2,3,4,5,6] to [[1,2],[3,4],[5,6]].
