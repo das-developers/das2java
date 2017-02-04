@@ -21,7 +21,6 @@ import org.das2.datum.Datum;
 import org.das2.datum.DatumUtil;
 import org.das2.datum.TimeUtil;
 import org.das2.DasException;
-import org.das2.util.DasExceptionHandler;
 import org.das2.util.monitor.NullProgressMonitor;
 import org.das2.util.monitor.ProgressMonitor;
 import org.das2.components.propertyeditor.PropertyEditor;
@@ -30,7 +29,6 @@ import org.das2.system.DasLogger;
 import java.awt.BorderLayout;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.BufferedReader;
@@ -88,7 +86,6 @@ import org.das2.datum.EnumerationUnits;
 import org.das2.datum.TimeLocationUnits;
 import org.das2.datum.TimeParser;
 import org.das2.datum.UnitsUtil;
-import org.das2.datum.format.TimeDatumFormatter;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
@@ -251,7 +248,9 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                 if (unitsArray[j] != null) {
                     if ( unitsArray[j] instanceof EnumerationUnits ) {
                         result += "(ordinal)";
-                    } else {
+                    } else if ( UnitsUtil.isTimeLocation( unitsArray[j] ) ) {
+                        result+= "(UTC)";
+                    } else if ( unitsArray[j]!=Units.dimensionless ) {
                         result += "(" + unitsArray[j] + ")";
                     }
                 }
@@ -412,6 +411,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
      * minus one, and with DEPEND_0 containing the X values.
      * @see #getBundleDataSet() 
      * @return  a data set of the table data. 
+     * @deprecated see #getDataPoints
      */
     public QDataSet getDataSet( ) {
         if ( unitsArray[0]==null ) return null;
@@ -426,6 +426,41 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             QDataSet ds= Ops.copy( Ops.trim1( bds, 1, bds.length(0) ) );
             return Ops.link( xds, ds  );
         }
+    }
+    
+    /**
+     * returns a entire set of data points as a rank 2 bundle.
+     * This is the same as getBundleDataSet.
+     * @return 
+     */
+    public QDataSet getDataPoints() {
+        return getBundleDataSet();
+    }
+    
+    /**
+     * return the subset of the data points which are selected, as a rank 2 bundle.
+     * @return 
+     */
+    public QDataSet getSelectedDataPoints() {
+        if ( unitsArray[0]==null ) return null;
+        DataSetBuilder builder= new DataSetBuilder( 2, dataPoints.size(), planesArray.length );
+        builder.setName( 0, "x" );
+        builder.setName( 1, "y" );
+        for ( int i=2; i<planesArray.length; i++ ) {
+            builder.setName( i, planesArray[i] );
+        }
+        int[] selectedRows = getSelectedRowsInModel();        
+        for ( int isrow = 0; isrow < selectedRows.length; isrow++) {
+            int irow= selectedRows[isrow];
+            DataPoint dp = (DataPoint) dataPoints.get(irow);
+            builder.putValue( -1, 0, dp.get(0) );
+            builder.putValue( -1, 1, dp.get(1) );
+            for ( int i=2; i<planesArray.length; i++ ) {
+                builder.putValue( -1, i, (Datum)dp.getPlane(planesArray[i] ) );
+            }
+            builder.nextRecord();
+        }
+        return builder.getDataSet();
     }
     
     /**
@@ -572,7 +607,11 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             StringBuilder header = new StringBuilder();
             //header.append("## "); // don't use comment characters so that labels and units are used in Autoplot's ascii parser.
             for (int j = 0; j < planesArray.length; j++) {
-                header.append(myTableModel.getColumnName(j)).append("\t");
+                String s= myTableModel.getColumnName(j);
+                if ( !s.endsWith(")") ) {
+                    s= s+"()"; // backward compatibility
+                }
+                header.append(s).append("\t");
             }
             r.write(header.toString());
             r.newLine();
@@ -1361,6 +1400,22 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         table.repaint();
     }
     
+    /**
+     * add a record, which should be a rank 1 bundle.
+     * @param ds 
+     */
+    public void addDataPoint( QDataSet ds ) {
+        Datum x,y;
+        x= DataSetUtil.asDatum( ds.slice(0) );
+        y= DataSetUtil.asDatum( ds.slice(1) );
+        Map<String,Datum> planes= new LinkedHashMap<>();
+        String[] planeNames = DataSetUtil.bundleNames(ds);
+        for ( int i=2; i<ds.length(); i++ ) {
+            QDataSet d= ds.slice(i);
+            planes.put( planeNames[i], DataSetUtil.asDatum(d) );
+        }
+        addDataPoint( x, y, planes );
+    }
     
     /**
      * add just the x and y values.
@@ -1470,17 +1525,29 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     }
 
     /**
-     * append the rank 2 data.  The data should be rank 2, with a DEPEND_0.
-     * TODO: untested!!!!
-     * @param ds rank 2 bundle dataset.
+     * @deprecated see #addDataPoints, which does not use DEPEND_0.
+     * @see #addDataPoints(org.virbo.dataset.QDataSet) 
+     * @param ds 
      */
     public void appendDataSet( QDataSet ds ) {
+        throw new IllegalArgumentException("not supported");
+    }
+    
+    /**
+     * append the rank 2 data.  The data should be rank 2, without DEPEND_0.
+     * Note earlier versions of this code assumed there would be a DEPEND_0.
+     * 
+     * @param ds rank 2 bundle dataset.
+     * @see #addDataPoint(org.virbo.dataset.QDataSet) 
+     */
+    public void addDataPoints( QDataSet ds ) {
         Map planesMap = new LinkedHashMap();
 
         if ( ds.rank()!=2 ) throw new IllegalArgumentException("dataset should be rank 2");
         QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
-        if ( dep0==null ) throw new IllegalArgumentException("dataset should have DEPEND_0");
+        if ( dep0!=null ) throw new IllegalArgumentException("dataset should not have DEPEND_0");
         
+        dep0= Ops.slice1( ds,0  );
         if ( dep0.property(QDataSet.CADENCE) != null) {
             DataPointRecorder.this.xTagWidth = DataSetUtil.asDatum( (QDataSet)dep0.property(QDataSet.CADENCE) );
         } else {
@@ -1490,12 +1557,12 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         String[] planes = DataSetUtil.bundleNames(ds);
 
         for (int i = 0; i < ds.length(); i++) {
-            for (int j = 0; j < planes.length; j++) {
+            for (int j = 2; j < planes.length; j++) {
                 if (!planes[j].equals("")) {
                     planesMap.put( planes[j], DataSetUtil.asDatum( DataSetOps.unbundle( ds, planes[j] ).slice(i) ) );
                 }
             }
-            addDataPoint( DataSetUtil.asDatum( dep0.slice(i) ), DataSetUtil.asDatum( ds.slice(i).slice(0) ), planesMap );
+            addDataPoint( DataSetUtil.asDatum( ds.slice(i).slice(0) ), DataSetUtil.asDatum( ds.slice(i).slice(1) ), planesMap );
         }
 
         updateClients();
