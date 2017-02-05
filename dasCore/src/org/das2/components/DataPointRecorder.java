@@ -1347,7 +1347,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                         DataPoint p1= (DataPoint)(dataPoints.get(i));
                         DataPoint p0= (DataPoint)(dataPoints.get(i-1));
                         if ( p1.data[0].subtract(p0.data[0]).lt(doff) ) {
-                            System.err.println("here not sorted");
+                            logger.fine("here not sorted");
                         }
                     }
                 }
