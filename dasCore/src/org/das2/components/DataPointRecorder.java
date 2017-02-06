@@ -1004,12 +1004,13 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     public boolean saveBeforeExit( ) {
         if ( this.modified ) {
             int i= JOptionPane.showConfirmDialog( this, "Save changes before exiting?");
-            if ( i==JOptionPane.OK_OPTION ) {
-                return save();
-            } else if ( i==JOptionPane.CANCEL_OPTION ) {
-                return false;
-            } else {
-                return true;
+            switch (i) {
+                case JOptionPane.OK_OPTION:
+                    return save();
+                case JOptionPane.CANCEL_OPTION:
+                    return false;
+                default:
+                    return true;
             }
         } else {
             return true;
@@ -1151,6 +1152,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         JMenu editMenu = new JMenu("Edit");
         editMenu.add(new JMenuItem(getPropertiesAction()));
         editMenu.add( new JMenuItem( new AbstractAction("Clear Table Sorting") {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 table.setAutoCreateRowSorter(false);
                 table.setAutoCreateRowSorter(true);
@@ -1202,6 +1204,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                     fireDataPointSelectionListenerDataPointSelected(e2);
                 }
                 Runnable run= new Runnable() {
+                    @Override
                     public void run() {
                         deleteSelectionButton.setEnabled( table.getSelectedRowCount()>0 );
                         clearSelectionButton.setEnabled( table.getSelectedRowCount()>0 );                
@@ -1587,14 +1590,11 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
 
         String[] planes = ds.getPlaneIds();
 
-        for (int i = 0; i <
-                ds.getXLength(); i++) {
-            for (int j = 0; j <
-                    planes.length; j++) {
-                if (!planes[j].equals("")) {
-                    planesMap.put(planes[j], ((VectorDataSet) ds.getPlanarView(planes[j])).getDatum(i));
+        for (int i = 0; i<ds.getXLength(); i++) {
+            for (String plane : planes) {
+                if (!plane.equals("")) {
+                    planesMap.put(plane, ((VectorDataSet) ds.getPlanarView(plane)).getDatum(i));
                 }
-
             }
             addDataPoint(ds.getXTagDatum(i), ds.getDatum(i), planesMap);
         }
@@ -1637,8 +1637,8 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         } else {
             String[] x = e.getPlaneIds();
             planesMap = new LinkedHashMap();
-            for (int i = 0; i <x.length; i++) {
-                planesMap.put(x[i], e.getPlane(x[i]));
+            for (String x1 : x) {
+                planesMap.put(x1, e.getPlane(x1));
             }
 
         }
