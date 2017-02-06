@@ -831,11 +831,17 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             r.close();
 
             saveFile= file;  // go ahead and set this in case client is going to do something with this.
-            updateStatus();
-            updateClients();
             
+            Runnable run= new Runnable() {
+                @Override
+                public void run() {
+                    updateStatus();
+                    updateClients();            
+                    fireDataSetUpdateListenerDataSetUpdated(new DataSetUpdateEvent(this));
+                }
+            };
+            SwingUtilities.invokeLater(run);
             prefs.put("components.DataPointRecorder.lastFileLoad", file.toString());
-            fireDataSetUpdateListenerDataSetUpdated(new DataSetUpdateEvent(this));
             
         } finally {
 
@@ -847,9 +853,15 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             active= active0;
             modified = false;
 
-            table.getColumnModel();
-            myTableModel.fireTableStructureChanged();
-            table.repaint();
+            Runnable run= new Runnable() {
+                @Override
+                public void run() {
+                    table.getColumnModel();
+                    myTableModel.fireTableStructureChanged();
+                    table.repaint();
+                }
+            };
+            SwingUtilities.invokeLater(run);      
         }
 
     }
@@ -1410,9 +1422,11 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             selectRow = newSelect;
         }
         modified = true;
-        updateStatus();
-        updateClients();
-        table.repaint();
+        if ( SwingUtilities.isEventDispatchThread() ) {
+            updateStatus();
+            updateClients();
+            table.repaint();
+        }
     }
     
     /**
