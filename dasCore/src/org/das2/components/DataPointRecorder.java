@@ -732,8 +732,8 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                 if (line.startsWith("## ") || line.length()>0 && Character.isJavaIdentifierStart( line.charAt(0) ) ) {
                     if ( unitsArray1!=null ) continue;
                     while ( line.startsWith("#") ) line = line.substring(1);
-                    if ( line.indexOf("\t")==-1 ) delim= "\\s+";
-                    String[] s = line.split(delim);
+                    if ( !line.contains("\t") ) delim= "\\s+";
+                    String[] s = line.split(delim,-2);
                     for ( int i=0; i<s.length; i++ ) {
                         s[i]= s[i].trim();
                     }                    
@@ -745,20 +745,20 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                         if (m.matches()) {
                             //System.err.printf("%d %s\n", i, m.group(1) );
                             planesArray1[i] = m.group(1).trim();
-                            try {
-                                if ( m.group(2).trim().equals("UTC") ) {
+                            switch (m.group(2).trim()) {
+                                case "UTC":
                                     unitsArray1[i] = Units.cdfTT2000;
-                                } else if ( m.group(2).trim().equals("ordinal") ) {
+                                    break;
+                                case "ordinal":
                                     unitsArray1[i] = EnumerationUnits.create("ordinal");
-                                } else {
+                                    break;
+                                default:
                                     unitsArray1[i] = Units.lookupUnits(m.group(2).trim());
-                                }
-                            } catch (IndexOutOfBoundsException e) {
-                                throw e;
+                                    break;
                             }
                         } else {
                             planesArray1[i] = s[i].trim();
-                            unitsArray1[i] = null;
+                            unitsArray1[i] = Units.dimensionless;
                         }
                     }
                     continue;
@@ -811,9 +811,6 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                         }
                     }
 
-                    if ( s[0].trim().length()==0 ) {
-                        System.err.println("here");
-                    }
                     x = unitsArray1[0].parse(s[0]);
                     y = unitsArray1[1].parse(s[1]);
 
