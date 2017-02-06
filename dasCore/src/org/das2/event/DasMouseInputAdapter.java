@@ -1339,8 +1339,8 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
      */
     @Override
     public void mouseWheelMoved(MouseWheelEvent e) {
-        if (primary != null) { // this seems more clear.
-            primary.mouseWheelMoved(e);
+        if ( secondary != null ) {
+            secondary.mouseWheelMoved(e);
         }
     }
     
