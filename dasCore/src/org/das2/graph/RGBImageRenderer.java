@@ -331,7 +331,11 @@ public class RGBImageRenderer extends Renderer {
     public Shape selectionArea() {
         //GeneralPath gp= new GeneralPath();
         //gp.append( new BasicStroke( Math.min(14,1.f+8.f), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ).createStrokedShape(rect), true );
-        return rect;
+        if ( rect==null ) {
+            return SelectionUtil.NULL;
+        } else {
+            return rect;
+        }
     }
 
     @Override
