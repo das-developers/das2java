@@ -1388,8 +1388,19 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                 }
 
             } else {
-                dataPoints.add(newPoint);
-                newSelect = dataPoints.size() - 1;
+                boolean insertCheck = false; //TODO: consider how this can be done safely.
+                if ( table.getSelectedRows().length==1 && insertCheck ) {
+                    int[] isel= getSelectedRowsInModel();
+                    newSelect= isel[0]+1;
+                    if ( newSelect==dataPoints.size() ) {
+                        dataPoints.add(newPoint);
+                    } else {
+                        dataPoints.add(newSelect,newPoint);
+                    }
+                } else {
+                    dataPoints.add(newPoint);
+                    newSelect = dataPoints.size() - 1;
+                }
             }
 
             selectRow = newSelect;
