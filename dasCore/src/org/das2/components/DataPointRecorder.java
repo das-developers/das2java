@@ -576,7 +576,11 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                 if ( closestDist.gt( xrange.width() ) ) {
                     return -1;
                 } else {
-                    selectMe= Collections.singletonList(iclosest);
+                    if ( sorted ) {
+                        selectMe= Collections.singletonList(iclosest);
+                    } else {
+                        return -1;
+                    }
                 }
             }
             table.getSelectionModel().clearSelection();
