@@ -49,6 +49,8 @@ public class ScatterRebinner implements DataSetRebinner {
         } else {
     		if(!(zds.property(QDataSet.DEPEND_0) == null)){
         		xds = (QDataSet) zds.property(QDataSet.DEPEND_0);
+            } else {
+                xds= Ops.findgen(zds.length());
             }
     		if(!(zds.property(QDataSet.DEPEND_1) == null)){
         		 yds = (QDataSet) zds.property(QDataSet.DEPEND_1);
@@ -56,6 +58,8 @@ public class ScatterRebinner implements DataSetRebinner {
                 if ( Schemes.isLegacyXYZScatter(zds) ) {
                     yds= zds;
                     zds= (QDataSet)yds.property(QDataSet.PLANE_0);
+                } else {
+                    yds= Ops.findgen(zds.length());
                 }
             }
             
@@ -77,40 +81,33 @@ public class ScatterRebinner implements DataSetRebinner {
 				break;
 			case 1:
 				for(int i = 0; i < zds.length(); i++){
-					if (xds == null){
-							xB = rebinDescX.whichBin(i, Units.dimensionless);
-					} else{
-							switch (xds.rank()) {
-								case 0:
-									xB = rebinDescX.whichBin(xds.value(), xdsUnits);
-									break;
-								case 1:
-									xB = rebinDescX.whichBin(xds.value(i), xdsUnits);
-									break;
-								case 2:
-									logger.fine(" Don't know what to do with rank 2 Depend 0 datasets yet.");
-									break;
-								default:
-									break;
-						}
-					}
-					if(yds == null){
-							yB = rebinDescY.whichBin(i, Units.dimensionless);
-					}	else{
-							switch (yds.rank()) {
-								case 0:
-									yB = rebinDescY.whichBin(yds.value(), ydsUnits);
-									break;
-								case 1:
-									yB = rebinDescY.whichBin(yds.value(i), ydsUnits);
-									break;
-								case 2:
-									logger.fine(" Don't know what to do with rank 2 Depend 0 datasets yet.");
-									break;
-								default:
-									break;
-							}
-						}
+                    switch (xds.rank()) {
+                        case 0:
+                            xB = rebinDescX.whichBin(xds.value(), xdsUnits);
+                            break;
+                        case 1:
+                            xB = rebinDescX.whichBin(xds.value(i), xdsUnits);
+                            break;
+                        case 2:
+                            logger.fine(" Don't know what to do with rank 2 Depend 0 datasets yet.");
+                            break;
+                        default:
+                            break;
+                    }
+					switch (yds.rank()) {
+                        case 0:
+                            yB = rebinDescY.whichBin(yds.value(), ydsUnits);
+                            break;
+                        case 1:
+                            yB = rebinDescY.whichBin(yds.value(i), ydsUnits);
+                            break;
+                        case 2:
+                            logger.fine(" Don't know what to do with rank 2 Depend 0 datasets yet.");
+                            break;
+                        default:
+                            break;
+                    }
+						
 					if(xB == -1 || yB == -1){
 						continue;
 					}
@@ -120,40 +117,32 @@ public class ScatterRebinner implements DataSetRebinner {
 			case 2:
 				for(int i = 0; i < zds.length(); i++){
 					for(int j = 0; j < zds.length(i); j++){
-						if (xds == null){
-							xB = rebinDescX.whichBin(i, Units.dimensionless);
-						} else{
-							switch (xds.rank()) {
-								case 0:
-									xB = rebinDescX.whichBin(xds.value(), xdsUnits);
-									break;
-								case 1:
-									xB = rebinDescX.whichBin(xds.value(i), xdsUnits);
-									break;
-								case 2:
-									logger.fine(" Don't know what to do with rank 2 dataset here.");
-									break;
-								default:
-									break;
-							}
-						}
-						if(yds == null){
-							yB = rebinDescY.whichBin(i, Units.dimensionless);
-						}	else{
-								switch (yds.rank()) {
-									case 0:
-										yB = rebinDescY.whichBin(yds.value(), ydsUnits);
-										break;
-									case 1:
-										yB = rebinDescY.whichBin(yds.value(j), ydsUnits);
-										break;
-									case 2:
-										logger.fine(" Don't know what to do with rank 2 dataset here.");
-										break;
-									default:
-										break;
-								}
-							}
+                        switch (xds.rank()) {
+                            case 0:
+                                xB = rebinDescX.whichBin(xds.value(), xdsUnits);
+                                break;
+                            case 1:
+                                xB = rebinDescX.whichBin(xds.value(i), xdsUnits);
+                                break;
+                            case 2:
+                                logger.fine(" Don't know what to do with rank 2 dataset here.");
+                                break;
+                            default:
+                                break;
+                        }
+                        switch (yds.rank()) {
+                            case 0:
+                                yB = rebinDescY.whichBin(yds.value(), ydsUnits);
+                                break;
+                            case 1:
+                                yB = rebinDescY.whichBin(yds.value(j), ydsUnits);
+                                break;
+                            case 2:
+                                logger.fine(" Don't know what to do with rank 2 dataset here.");
+                                break;
+                            default:
+                                break;
+                        }
 						if(xB == -1 || yB == -1){
 							continue;
 						}
