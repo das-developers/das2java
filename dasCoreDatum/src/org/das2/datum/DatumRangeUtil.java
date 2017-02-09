@@ -819,6 +819,17 @@ public class DatumRangeUtil {
                 int length= matcher.end()-matcher.start();
                 token= string.substring( ipos, ipos+r );
                 delim= string.substring( ipos+r, ipos+r+length );
+                if ( delim.equals("to") && token.length()==2 && Character.toLowerCase(token.charAt(0))=='o' && Character.toLowerCase(token.charAt(1))=='c' ) {
+                    token= token + delim;
+                    ipos+=r + length;
+                    matcher= delimPattern.matcher( string.substring(ipos) );
+                    if ( matcher.find() ) {
+                        r= matcher.start();
+                        length= matcher.end()-matcher.start();
+                        token= token+ string.substring(ipos,ipos+r);
+                        delim= string.substring( ipos+r, ipos+r+length );
+                    }
+                }
                 ipos= ipos + r + length;
             } else {
                 token= string.substring(ipos);
