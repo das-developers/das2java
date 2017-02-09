@@ -67,6 +67,8 @@ public class AttachedLabel extends DasCanvasComponent implements Cloneable {
     private double emOffset;
 
 	private boolean flipLabel = false;
+	
+	private Font font = null;   // Stays null unless setLabelFont is called
     
     /* DEBUGGING INSTANCE MEMBERS */
     private static final boolean DEBUG_GRAPHICS = false;
@@ -343,6 +345,7 @@ public class AttachedLabel extends DasCanvasComponent implements Cloneable {
      * @return Font of the component.
      */
     public Font getLabelFont() {
+		  if(font != null) return font;
         return this.getFont();
     }
     
@@ -350,7 +353,8 @@ public class AttachedLabel extends DasCanvasComponent implements Cloneable {
      * @param labelFont Font for the component.  Currently this is ignored.
      */
     public void setLabelFont(Font labelFont) {
-        // TODO: whah?--jbf
+		font = labelFont;
+		repaint();
     }
     
     /** clones the component

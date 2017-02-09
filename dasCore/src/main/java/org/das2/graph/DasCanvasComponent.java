@@ -81,7 +81,7 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
     private ResizeListener rl;
     protected DasMouseInputAdapter mouseAdapter;
     private String dasName;
-    
+	 
     /**
      * constructs a DasCanvasComponent, creating the
      * DasMouseInputAdapter for it and assigning a

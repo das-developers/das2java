@@ -56,6 +56,7 @@ extends DasPlot implements DataPointSelectionListener {
     private long eventBirthMilli;
     private SymbolLineRenderer renderer;
     private Color yMarkColor = new Color(230,230,230);
+	 private String frameTitle = "Vertical Slicer";
     
     protected VerticalSpectrogramSlicer(DasPlot parent, DasAxis xAxis, DasAxis yAxis) {
         super( xAxis, yAxis);
@@ -103,6 +104,14 @@ extends DasPlot implements DataPointSelectionListener {
         }
         popupWindow.setVisible(true);
     }
+	 
+	 /* Would have done this in a base class but I didn't see one that handled the 
+	  * popup window */
+	 public void setFrameTitle(String s){  
+		 frameTitle = s; 
+		 if(popupWindow != null) popupWindow.setTitle(frameTitle);
+	 }
+	 public String getFrameTitle(){ return frameTitle; }
     
     /** This method should ONLY be called by the AWT event thread */
     private void createPopup() {
@@ -140,7 +149,7 @@ extends DasPlot implements DataPointSelectionListener {
         else {
             popupWindow = new JDialog();
         }
-        popupWindow.setTitle("Vertical Slicer");
+        popupWindow.setTitle(frameTitle);
         popupWindow.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         popupWindow.setContentPane(content);
         popupWindow.pack();
