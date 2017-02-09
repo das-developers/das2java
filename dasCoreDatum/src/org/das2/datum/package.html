@@ -9,13 +9,10 @@ The Units class also contains a registry of Units and the conversions between th
     A Datum object has methods for formatting itself as a String, representing 
     itself as a double in the context of another Unit, and mathematical
 operators that allow simple calculations to be made at the physical quantities.
-Also, a Datum's precision can be limited to improve formatting.  See Datum.createValid
-and Units.parse which parse strings into Datums.
+Also, a Datum's precision can be limited to improve formatting.  
 </p>
 <p>A DatumRange is a pair of Datums that identify a range in the physical space
 of a Unit.  An example of a formatted DatumRange is "January, 2005" or "0 to 50Hz".
-DatumRangeUtil.parseDatumRange or DatumRangeUtil.parseTimeRange can be used to 
-parse strings into DatumRanges.
 </p>
 
 <p>Time ranges are a special case of DatumRange that are used often.  These include "March 2010",
@@ -26,6 +23,8 @@ parse strings into DatumRanges.
     for orbit 5 of the RBSP-A (Van Allen) probe.</p>
 
 
-<p>Also there are utility classes for parsing and formatting times.</p>
+<p>Also there are utility classes for parsing and formatting times.  DatumRangeUtil.parseDatumRange or DatumRangeUtil.parseTimeRange can be used to 
+parse strings into DatumRanges.  See Datum.createValid
+and Units.parse which parse strings into Datums.</p>
 
 </body>
