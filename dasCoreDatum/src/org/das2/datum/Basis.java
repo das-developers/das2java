@@ -10,7 +10,7 @@ import java.util.IdentityHashMap;
 
 /**
  * Model a basis vector that defines a dimension.  For example, Units.us2000 has the
- * getOffsetUnits() -> Units.microseconds  and getBasis() -> "since 2000-01-01T00:00".
+ * getOffsetUnits() &rarr; Units.microseconds  and getBasis()&rarr; "since 2000-01-01T00:00".
  * 
  * @author jbf
  */

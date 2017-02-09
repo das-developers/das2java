@@ -709,7 +709,7 @@ public abstract class Units {
     
     /**
      * lookupUnits canonical units object, or allocate one.  If one is
-     * allocated, then parse for "&lt;unit&gt; since &ltdatum&gt" and add conversion to
+     * allocated, then parse for "&lt;unit&gt; since &lt;datum&gt;" and add conversion to
      * "microseconds since 2000-001T00:00" (us2000).  Note leap seconds are ignored
      * in the returned units, so each day is 86400 seconds long, and differences in
      * times should not include leap seconds.  Note this contains a few kludges 

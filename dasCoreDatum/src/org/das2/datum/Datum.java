@@ -103,7 +103,7 @@ public class Datum implements Comparable, Serializable {
     
     /**
      * returns the double value without the unit, as long as the Units indicate this is a ratio measurement, and there is a meaningful 0.
-     * For example "5 Kg" -> 5, but "2012-02-16T00:00" would throw an IllegalArgumentException.  Note this was introduced because often we just need
+     * For example "5 Kg" &rarr; 5, but "2012-02-16T00:00" would throw an IllegalArgumentException.  Note this was introduced because often we just need
      * to check to see if a value is zero.
      * @return
      */
@@ -403,10 +403,10 @@ public class Datum implements Comparable, Serializable {
      * @param d the magnitude of the divisor.
      * @return the quotient.
      */
-    public Datum divide( double d ) {  return divide( new java.lang.Double(d), Units.dimensionless ); }
+    public Datum divide( double d ) {  return divide( d, Units.dimensionless ); }
     
     /**
-     * multiply this by the datum <tt>a</tt>.  Currently, only multiplication is only supported:<pre>
+     * multiply this by the datum <tt>a</tt>.  Currently, only multiplication is only supported
      *   by a dimensionless datum, or when this is dimensionless.
      * This may change, as a generic SI units class is planned.
      *
@@ -423,7 +423,7 @@ public class Datum implements Comparable, Serializable {
     }
     
     /**
-     * multiply this by the Number provided in the context of units.  Currently, only multiplication is only supported:<pre>
+     * multiply this by the Number provided in the context of units.  Currently, only multiplication is only supported
      *   by a dimensionless datum, or when this is dimensionless.
      * This may change, as a generic SI units class is planned.
      *

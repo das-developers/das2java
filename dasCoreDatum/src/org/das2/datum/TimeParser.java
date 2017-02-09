@@ -315,7 +315,7 @@ public class TimeParser {
     }
 
     /**
-     * $(subsec;places=6)  "36" -> "36 microseconds"
+     * $(subsec;places=6)  "36" &rarr; "36 microseconds"
      */
     public static class SubsecFieldHandler implements TimeParser.FieldHandler {
 
@@ -358,7 +358,7 @@ public class TimeParser {
     }
     
     /**
-     * $(hrinterval;names=a,b,c,d)  "b" -> "06:00/12:00"
+     * $(hrinterval;names=a,b,c,d)  "b" &rarr; "06:00/12:00"
      */
     public static class HrintervalFieldHandler implements TimeParser.FieldHandler {
 
@@ -1105,7 +1105,7 @@ public class TimeParser {
      * elsewhere.
      *
      * An effort has begun to try and unify to an agreeable specification for this.  See http://tsds.org/uri_templates
-     * <pre>
+     * <pre>{@code
      *  $[fieldLength]<1-char code>  or
      *  $[fieldLength](<code>)
      *  $[fieldLength](<code>;qualifiers)
@@ -1140,7 +1140,7 @@ public class TimeParser {
      *      $(H;Y=2004;j=117) means the hour of day 2004-117
      *      $(m;span=6) means the 6-month interval starting at the given month.
      *
-     *  </pre>
+     *  }</pre>
      *
      * @param formatString the format string.
      * @return the time parser.
@@ -1825,10 +1825,10 @@ public class TimeParser {
      * and getDatumRange() would go from midnight to midnight.
      * This will try to create MonthDatumRanges when possible, to keep it abstract,
      * so for example, 
-     * <blockquote><pre><small>{@code
+     * <blockquote><pre>{@code
      *tr= tp.getTimeRange()  // "Jan 2015"
      *tr= tr.next()          // "Feb 2015", not 31 days starting Feb 1
-     *}</small></pre></blockquote>
+     *}</pre></blockquote>
      * 
      * This accesses time, timeWidth, orbitDatumRange, startTime.
      * @return the DatumRange

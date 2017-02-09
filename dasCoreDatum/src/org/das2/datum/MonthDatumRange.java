@@ -13,9 +13,9 @@ import java.util.Arrays;
  * DatumRange implementation that preserves month and year boundaries in the next() and previous() implementations.  For example,
  *<blockquote><pre>
  *   dr= MonthDatumRange( [ 1999, 01, 01, 00, 00, 00, 0 ], [ 1999, 02, 01, 00, 00, 00, 0 ] )
- *   dr.toString() -> "Jan 1999"
+ *   dr.toString() &rarr; "Jan 1999"
  *   dr= dr.next()
- *   dr.toString() -> "Feb 1999"  ; a normal datumRange would simply advance 31 days.
+ *   dr.toString() &rarr; "Feb 1999"  ; a normal datumRange would simply advance 31 days.
  *</pre></blockquote>
  * @author  Jeremy
  */

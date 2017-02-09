@@ -66,12 +66,19 @@ public final class DatumVector {
         this.length = length;
     }
     
-    /** T0DO: check start and end for out of bounds condition */
+    /** 
+     * return a subset of a vector
+     * @param start the start index
+     * @param end the end index, exclusive.
+     * @return the DatumVector
+     */
     public DatumVector getSubVector(int start, int end) {
         if (start == 0 && end == length) {
             return this;
-        }
-        else return new DatumVector((double[])store, offset + start, end - start, units, resolution, false);
+        }        
+        if ( start<0 ) throw new IllegalArgumentException("start less than 0");
+        if ( end>=length ) throw new IllegalArgumentException("end greater than or equal to length");
+        return new DatumVector((double[])store, offset + start, end - start, units, resolution, false);
     }
     
     public Datum get(int index) {

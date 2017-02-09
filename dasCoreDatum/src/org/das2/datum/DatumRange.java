@@ -73,7 +73,7 @@ public class DatumRange implements Comparable, Serializable {
      * @return the intersection of the two intersecting ranges.
      * @param dr a valid datum range.
      * @throws IllegalArgumentException if the two do not overlap.
-     * @see DatumRangeUtil.sloppyIntersection
+     * @see DatumRangeUtil#sloppyIntersection(org.das2.datum.DatumRange, org.das2.datum.DatumRange) 
      */
     public DatumRange intersection( DatumRange dr ) {
         if ( this.intersects(dr) ) {
@@ -313,9 +313,9 @@ public class DatumRange implements Comparable, Serializable {
     /**
      * return a new DatumRange that includes the given Datum, extending the
      * range if necessary.  For example, 
-     * <pre> [0,1).include(2)->[0,2)  (note this is exclusive of 2 since it's the end).
-     * [0,1).include(-1)->[-1,1).
-     * [0,1).include(0.5)->[0,1]  (and returns the same DatumRange object)
+     * <pre> [0,1).include(2)&rarr; [0,2)  (note this is exclusive of 2 since it's the end).
+     * [0,1).include(-1)&rarr; [-1,1).
+     * [0,1).include(0.5) &rarr; [0,1]  (and returns the same DatumRange object)
      * </pre>
      * Also, including a fill Datum returns the same DatumRange as well.
      * @param d the Datum to include
@@ -339,7 +339,7 @@ public class DatumRange implements Comparable, Serializable {
     
     /**
      * creates a new DatumRange object with the range specified in the space
-     * identified by units.  Note that min must be &lt;&eq; max.
+     * identified by units.  Note that min must be &lt;= max.
      * @param min the minimum value
      * @param max the maximum value which is greater than or equal to the min.
      * @param units the units of the two doubles.

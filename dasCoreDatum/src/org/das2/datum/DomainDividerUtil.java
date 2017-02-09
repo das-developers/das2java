@@ -56,10 +56,9 @@ public final class DomainDividerUtil {
     /**
      * encapsulate the kludges that allow us to identify a good formatter for the divider and
      * a given range.
-     * @param div
-     * @param min
-     * @param max
-     * @return
+     * @param div the divider
+     * @param range the range
+     * @return a good formatter
      */
     public static DatumFormatter getDatumFormatter(DomainDivider div, DatumRange range) {
         if (div instanceof OrdinalTimeDomainDivider) {

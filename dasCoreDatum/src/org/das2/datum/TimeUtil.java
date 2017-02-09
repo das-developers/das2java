@@ -642,7 +642,7 @@ public final class TimeUtil {
     
     /**
      * Normalize the TimeStruct by incrementing higher digits.  For
-     * example, 2002-01-01T24:00 -->  2002-01-02T00:00.
+     * example, 2002-01-01T24:00 &rarr;  2002-01-02T00:00.
      * This will only carry one to the next higher place, so 70 seconds is handled but not 130.
      * 2015-09-08: this now supports leap seconds.
      * @param t a time structure
@@ -903,7 +903,7 @@ public final class TimeUtil {
      * step to the next month.
      * @param datum
      * @return the next month.
-     * @deprecated.  Use next(MONTH,datum) instead
+     * @deprecated Use next(MONTH,datum) instead
      */
     public static Datum nextMonth(Datum datum) {
         return next(MONTH,datum);
@@ -1047,7 +1047,7 @@ public final class TimeUtil {
     /**
      * parse the time into a timestruct.
      * @param s
-     * @see also createValid which creates a Datum.
+     * @see #createValid(java.lang.String) createValid which creates a Datum.
      * @return
      * @throws java.text.ParseException
      */
@@ -1451,7 +1451,7 @@ public final class TimeUtil {
      * must be at least 1000, and must be a four-digit year.  A double in Units.us2000 is used to represent the
      * Datum, so resolution will drop as the year drops away from 2000.
      *
-     * @param year four digit year >= 1060.
+     * @param year four digit year &gt;= 1060.
      * @param month integer month, 1..12.
      * @param day integer day of month.
      * @param hour additional hours

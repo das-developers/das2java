@@ -519,7 +519,7 @@ public class DatumRangeUtil {
     }
     
     /**
-     * format ISO8601 duration string, for example [1,0,0,1,0,0,0] -> P1YT1H
+     * format ISO8601 duration string, for example [1,0,0,1,0,0,0] &rarr; P1YT1H
      * @param t 6 or 7-element array with [year,mon,day,hour,min,sec,nanos]
      * @return the formatted ISO8601 duration
      */
@@ -1288,13 +1288,14 @@ public class DatumRangeUtil {
     /**
      * parse the string into a DatumRange with time location units.
      * This parse allows several different forms of time ranges, such as:
+     * <ul>
      * <li> orbit:rbspa-pp:3  S/C orbits
      * <li> orbit:rbspa-pp:3-6  S/C orbits, three orbits.
      * <li> P10D  the last 10 days, immediately resolved into static time range.
      * <li> 1972/now-P10D, immediately resolved into static time range.
      * <li> 1972/2002  ISO8601 time ranges
      * <li> 1972 to 2002  legacy das2 colloquial time ranges.
-     * 
+     * </ul>
      * @param string
      * @return the range interpreted.
      * @throws ParseException when the string cannot be parsed.
@@ -1780,7 +1781,7 @@ public class DatumRangeUtil {
     /**
      * returns DatumRange relative to this, where 0. is the minimum, and 1. is the maximum, but the
      * scaling is done in the log space.
-     * For example, rescaleLog( [0.1,1.0], -1, 2 )-> [ 0.01, 10.0 ]
+     * For example, rescaleLog( [0.1,1.0], -1, 2 ) &rarr; [ 0.01, 10.0 ]
      * @param dr a DatumRange with nonzero width.
      * @param min the new min normalized with respect to this range.  0. is this range's min, 1 is this range's max, 0 is
      * min-width.
@@ -1921,7 +1922,7 @@ public class DatumRangeUtil {
      * @param context the datum range.
      * @param datum the data point
      * @return true if the range contains the datum.
-     * @see DatumRange.contains.
+     * @see DatumRange#contains(org.das2.datum.DatumRange) 
      */
     public static boolean sloppyContains(DatumRange context, Datum datum) {
         return context.contains(datum) || context.max().equals(datum);
@@ -2006,9 +2007,9 @@ public class DatumRangeUtil {
     /**
      * round to a nice interval with very roughly n divisions.  For example,
      * <pre>
-     *   -0.048094730687625806 to 0.047568, 100  -> -0.048 to 0.048
-     *   2012-04-18 0:00:00 to 23:59:40, 24 -> 2012-04-18  
-     *   2014-08-10 0:00:00 to 2014-08-11T00:00:59, 24 -> 2014-08-10
+     *   -0.048094730687625806 to 0.047568, 100  &rarr; -0.048 to 0.048
+     *   2012-04-18 0:00:00 to 23:59:40, 24 &rarr; 2012-04-18  
+     *   2014-08-10 0:00:00 to 2014-08-11T00:00:59, 24 &rarr; 2014-08-10
      * </pre>
      * @param dr
      * @param n

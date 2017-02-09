@@ -1,5 +1,5 @@
 <body>
-<p>Provides classes representing physical quanties.  The Units class
+<p>Provides classes representing physical quantities.  The Units class
 defines an enumeration of physical units such as Units.hertz and Units.microseconds.  It 
 also contains a convention for identifying locations in time with units like
 Units.t1970, the number of microseconds elapsed since midnight, January 1, 1970.
@@ -9,10 +9,14 @@ The Units class also contains a registry of Units and the conversions between th
     A Datum object has methods for formatting itself as a String, representing 
     itself as a double in the context of another Unit, and mathematical
 operators that allow simple calculations to be made at the physical quantities.
-Also, a Datum's precision can be limited to improve formatting.
+Also, a Datum's precision can be limited to improve formatting.  See Datum.createValid
+and Units.parse which parse strings into Datums.
 </p>
 <p>A DatumRange is a pair of Datums that identify a range in the physical space
-of a Unit.  An example of a formatted DatumRange is "January, 2005" or "0 to 50Hz".</p>
+of a Unit.  An example of a formatted DatumRange is "January, 2005" or "0 to 50Hz".
+DatumRangeUtil.parseDatumRange or DatumRangeUtil.parseTimeRange can be used to 
+parse strings into DatumRanges.
+</p>
 
 <p>Time ranges are a special case of DatumRange that are used often.  These include "March 2010",
     "2012-12-14T00:00/2012-12-14T01:00", and "2012-12-14T00:00:00.001/2012-12-14T00:00:00.002".

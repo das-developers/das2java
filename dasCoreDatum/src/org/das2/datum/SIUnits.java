@@ -104,8 +104,8 @@ public class SIUnits extends NumberUnits {
     
     /**
      * apply the power to the exponent.  For example
-     * pow(Units.kg,2)-> kg**2
-     * pow(Units.cm,2)-> cm**2 == .01^2 * m^2.
+     * pow(Units.kg,2)&rarr; kg**2
+     * pow(Units.cm,2)&rarr; cm**2 == .01^2 * m^2.
      * Units.kg
      * @param s1 the unit, e.g. SIUnits.si_Hz
      * @param pow the exponent e.g. -1
@@ -256,7 +256,7 @@ public class SIUnits extends NumberUnits {
 
     /**
      * Cluster CDFs had "SI_Conversion" that showed how to convert to SI units.
-     * Parse this string. For example: SI_conversion="1.0e-3>V m^-1"
+     * Parse this string. For example: SI_conversion=<code>{@code"1.0e-3>V m^-1"}</code>
      *
      * @param si the string.
      * @return the SIUnits

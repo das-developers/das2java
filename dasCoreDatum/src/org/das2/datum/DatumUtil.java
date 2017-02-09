@@ -352,16 +352,16 @@ public final class DatumUtil {
 
     /**
      * Split the string to separate magnitude component from units component.
-     * "5" -> [ "5", "" ]
-     * "5 m" -> [ "5", "m" ]
-     * "5m" -> [ "5", "m" ]
-     * "4.5m^2" -> [ "4.5", "m^2" ] 
-     * "4.5e6m^2" -> [ "4.5e6", "m^2" ]
-     * "-1" -> [ "-1", "" ]
-     * "-1s" -> [ "-1", "s" ]
-     * "-1.0e-6s" -> [ "-1e-6", "s" ]
-     * "5 Deg N" ->  [ "5", "Deg N" ]
-     * " 10 days" -> [ "10", "days" ]
+     * "5" &rarr; [ "5", "" ]
+     * "5 m" &rarr; [ "5", "m" ]
+     * "5m" &rarr; [ "5", "m" ]
+     * "4.5m^2" &rarr; [ "4.5", "m^2" ] 
+     * "4.5e6m^2" &rarr; [ "4.5e6", "m^2" ]
+     * "-1" &rarr; [ "-1", "" ]
+     * "-1s" &rarr; [ "-1", "s" ]
+     * "-1.0e-6s" &rarr; [ "-1e-6", "s" ]
+     * "5 Deg N" &rarr;  [ "5", "Deg N" ]
+     * " 10 days" &rarr; [ "10", "days" ]
      * See http://jfaden.net:8080/hudson/job/autoplot-test037/ws/splitDatumString.jy
      * @param s the string to break up
      * @return two element array
@@ -451,7 +451,7 @@ public final class DatumUtil {
      * @param s
      * @return a Datum containing the value.
      * @throws java.text.ParseException
-     * @see units.parseDatum(String);
+     * @see Units#parse(java.lang.String) 
      */
     public static Datum lookupDatum( String s ) throws ParseException {
         String [] ss= s.trim().split("\\s+");
