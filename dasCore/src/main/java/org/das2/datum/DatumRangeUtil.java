@@ -936,6 +936,54 @@ public class DatumRangeUtil {
             }
         }
     }
+	 
+ 
+	 /**  Temporary Hack until apps are moved over to the new dasQCore --cwp
+	  * 
+     * This provides unambiguous rules for parsing all types datum ranges strictly 
+     * from strings, with no out of band information.  This was introduced to 
+     * support das2stream parsing.
+     *
+     * Examples include: "2013 to 2015 UTC" "3 to 4 kg" "2015-05-05T00:00/2015-06-02T00:00"
+     * @param str the string representing a time.
+     * @return the DatumRange interpreted.
+     * @throws java.text.ParseException
+     */
+    public static DatumRange parseDatumRange(String str) throws ParseException {
+        str= str.trim();
+        if ( str.endsWith("UTC" ) ) {
+            return parseTimeRange(str.substring(0,str.length()-3));
+        // Version in DasQCore can look for times without UTC appended, this version 
+		  // can't
+        } else {
+            // consider Patterns -- dash not handled because of negative sign.
+            // 0to4 apples -> 0 to 4 units=apples
+            // 0 to 35 sector -> 0 to 35 units=sector  note "to" in sector.
+            String[] ss= str.split("to",2);
+            if ( ss.length==1 ) {
+                ss= str.split("\u2013");
+            }
+            if ( ss.length==1 ) {
+                return parseTimeRange(ss[0]);
+            } else if ( ss.length != 2 ) {
+                throw new ParseException("failed to parse: "+str,0);
+            }
+            
+            Datum d2;
+            Datum d1;
+            try {
+                d2= DatumUtil.parse(ss[1]);
+                d1= d2.getUnits().parse( ss[0] );
+                return new DatumRange( d1, d2 );
+            } catch ( ParseException ex ) {
+                try { 
+                    return parseTimeRange(str);
+                } catch ( ParseException ex2 ) {
+                    throw ex;
+                }
+            }
+        }
+    }            
     
     public static DatumRange parseDatumRange( String str, DatumRange orig ) throws ParseException {
         return parseDatumRange( str, orig.getUnits() );
