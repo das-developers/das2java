@@ -77,7 +77,9 @@ public final class DatumVector {
             return this;
         }        
         if ( start<0 ) throw new IllegalArgumentException("start less than 0");
-        if ( end>=length ) throw new IllegalArgumentException("end greater than or equal to length");
+        if ( end>length ) {
+            throw new IllegalArgumentException("end greater than length");
+        }
         return new DatumVector((double[])store, offset + start, end - start, units, resolution, false);
     }
     
