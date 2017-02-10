@@ -15,6 +15,7 @@ import org.das2.datum.TimeUtil;
 import org.das2.util.DasMath;
 import java.text.ParseException;
 import java.util.*;
+import org.das2.datum.DomainDivider;
 import org.das2.datum.EnumerationUnits;
 import org.das2.datum.UnitsUtil;
 
@@ -151,7 +152,10 @@ public class TickVDescriptor {
      * Defining method for getting the range close to the given range,
      * but containing at least one minor(or major) tick interval.
      *
+     * @param dr
      * @param minor  find the range from the minor ticks.
+     * @return 
+     * @see DomainDivider
      */
     public DatumRange enclosingRange(DatumRange dr, boolean minor) {
         Datum s1 = findTick(dr.min(), 0, minor);
@@ -201,7 +205,7 @@ public class TickVDescriptor {
 
         int targetTicks = Math.max(Math.min(6, nTicksMax), nTicksMin);
 
-        double maj = 0;
+        double maj;
         double absissa=0;
         double mag=0;
         int nTicks= 0;
@@ -214,21 +218,21 @@ public class TickVDescriptor {
 
             if (absissa < 1.666) {
                 absissa = 1.0;
-                double abmag= absissa*mag;
-                maj = ( Math.floor(maximum/abmag)*abmag -  Math.ceil(minimum/abmag)*abmag ) / (targetTicks - 1);
+                //double abmag= absissa*mag;
+                //maj = ( Math.floor(maximum/abmag)*abmag -  Math.ceil(minimum/abmag)*abmag ) / (targetTicks - 1);
             } else if (absissa < 3.333) {
                 absissa = 2.0;
-                double abmag= absissa*mag;
-                maj = ( Math.floor(maximum/abmag)*abmag -  Math.ceil(minimum/abmag)*abmag ) / (targetTicks - 1);
+                //double abmag= absissa*mag;
+                //maj = ( Math.floor(maximum/abmag)*abmag -  Math.ceil(minimum/abmag)*abmag ) / (targetTicks - 1);
             } else if (absissa < 9.0) {
                 absissa = 5.0;
-                double abmag= absissa*mag;
-                maj = ( Math.floor(maximum/abmag)*abmag -  Math.ceil(minimum/abmag)*abmag ) / (targetTicks - 1);
+                //double abmag= absissa*mag;
+                //maj = ( Math.floor(maximum/abmag)*abmag -  Math.ceil(minimum/abmag)*abmag ) / (targetTicks - 1);
             } else {
                 absissa = 1.;
                 mag *= 10;
-                double abmag= mag;
-                maj = ( Math.floor(maximum/abmag)*abmag -  Math.ceil(minimum/abmag)*abmag ) / (targetTicks - 1);
+                //double abmag= mag;
+                //maj = ( Math.floor(maximum/abmag)*abmag -  Math.ceil(minimum/abmag)*abmag ) / (targetTicks - 1);
             }
 
             double majorTickSize = absissa * mag;
@@ -285,7 +289,7 @@ public class TickVDescriptor {
             Map<Integer,Datum> ords= eu.getValues();
             int imax= eu.getHighestOrdinal();
             for ( int i=0; i<result.length; i++ ) {
-                while ( result[i]<=imax && !ords.containsKey( Integer.valueOf((int)result[i])) ) result[i]= result[i]+1;
+                while ( result[i]<=imax && !ords.containsKey((int)result[i]) ) result[i]= result[i]+1;
                 if ( result[i]>imax ) result[i]=imax;
             }
             //System.err.println("here245");
@@ -309,7 +313,7 @@ public class TickVDescriptor {
             int imax= eu.getHighestOrdinal();
             Map<Integer,Datum> ords= eu.getValues();
             for ( int i=0; i<minorTickV.length; i++ ) {
-                while ( minorTickV[i]<=imax && !ords.containsKey( Integer.valueOf((int)minorTickV[i])) ) minorTickV[i]= minorTickV[i]+1;
+                while ( minorTickV[i]<=imax && !ords.containsKey((int)minorTickV[i]) ) minorTickV[i]= minorTickV[i]+1;
                 if ( minorTickV[i]>imax ) minorTickV[i]=imax;
             }
         }
@@ -332,6 +336,12 @@ public class TickVDescriptor {
 
     /**
      * return a set of log ticks, within the given constraints.
+     * @param minD the minimum
+     * @param maxD the maximum
+     * @param nTicksMin the minimum number of ticks.
+     * @param nTicksMax the maximum number of ticks.
+     * @param fin final, useful when debugging.
+     * @return
      */
     public static TickVDescriptor bestTickVLogNew(Datum minD, Datum maxD, int nTicksMin, int nTicksMax, boolean fin) {
 
@@ -504,7 +514,7 @@ public class TickVDescriptor {
      */
     private static List/*<Integer>*/ getMantissas(int divisionsPerDecade, int exclude, int include) {
         int[] tt = new int[]{1, 2, 3, 5, 6, 10, 12, 15, 20, 25, 30, 45, 60, 90, 100, 200, 500, 1000, 2000, 5000, 10000};
-        int biggest = 1;
+        //int biggest = 1;
         ArrayList result = new ArrayList();
         for (int i = 0; i < tt.length && tt[i] < divisionsPerDecade; i++) {
             boolean incl = include != 0 && tt[i] % include == 0;
@@ -618,6 +628,12 @@ public class TickVDescriptor {
 
     /**
      * return a set of ticks counting off ordinal time ranges, such as months, years, days, etc.
+     * @param minD the minimum
+     * @param maxD the maximum
+     * @param nTicksMin the minimum number of ticks.
+     * @param nTicksMax the maximum number of ticks.
+     * @param fin final, useful when debugging.
+     * @return 
      */
     public static TickVDescriptor bestTickVTimeOrdinal(Datum minD, Datum maxD, int nTicksMin, int nTicksMax, boolean fin) {
 
@@ -683,7 +699,7 @@ public class TickVDescriptor {
             TickVDescriptor test;
 
             for (int imant = 0; imant < mantissas.size(); imant++) {
-                mantissa = ((Integer) mantissas.get(imant)).intValue();
+                mantissa = ((Integer) mantissas.get(imant));
 
                 int biggerUnitsCount = units[iunit] == biggerUnits ? mantissa : 1;
 
