@@ -80,22 +80,13 @@ public class DefaultHttpProtocol implements WebProtocol {
                     connect.setRequestProperty("Cookie", hfs.getCookie());
                 }
             }
+            
+            HttpURLConnection.setFollowRedirects(true);
+            connect= (HttpURLConnection)HtmlUtil.checkRedirect(connect);
+            
             FileSystem.loggerUrl.log(Level.FINE, "HEAD to get metadata: {0}", new Object[] { ur } );
             connect.connect();
-            HttpURLConnection.setFollowRedirects(true);
-            // check for rename, which means we'll do another request
-            if (connect.getResponseCode() == 303) {
-                String surl = connect.getHeaderField("Location");
-                if (surl.startsWith(fo.wfs.root.toString())) {
-                    realName = surl.substring(fo.wfs.root.toString().length());
-                }
-                connect.disconnect();
-                ur = new URL(fo.wfs.getRootURL(), realName);
-                connect = (HttpURLConnection) ur.openConnection();
-                connect.setRequestMethod("HEAD");
-                FileSystem.loggerUrl.log(Level.FINE, "HEAD to get metadata after 303: {0}", new Object[] { ur } );
-                connect.connect();
-            }
+            
             exists = connect.getResponseCode() != 404;
 
             Map<String, String> result = new HashMap<>();

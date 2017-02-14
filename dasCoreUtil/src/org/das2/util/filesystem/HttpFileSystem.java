@@ -366,6 +366,8 @@ public class HttpFileSystem extends WebFileSystem {
             urlc.addRequestProperty("Cookie", cookie );
         }
 
+        urlc= HtmlUtil.checkRedirect(urlc);
+        
         InputStream in;
 
         loggerUrl.log(Level.FINE, "getInputStream {0}", new Object[] { urlc.getURL() } );
