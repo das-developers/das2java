@@ -232,13 +232,21 @@ public class HtmlUtil {
             HttpURLConnection huc= ((HttpURLConnection)urlConnection);
             huc.setInstanceFollowRedirects(true);
             
-            if ( huc.getResponseCode()==HttpURLConnection.HTTP_MOVED_PERM 
-                    || huc.getResponseCode()==HttpURLConnection.HTTP_MOVED_TEMP 
-                    || huc.getResponseCode()==HttpURLConnection.HTTP_SEE_OTHER ) {
+            int responseCode=  huc.getResponseCode();
+            if ( responseCode==HttpURLConnection.HTTP_MOVED_PERM 
+                    || responseCode==HttpURLConnection.HTTP_MOVED_TEMP 
+                    || responseCode==HttpURLConnection.HTTP_SEE_OTHER ) {
                 String newUrl = huc.getHeaderField("Location");
-                
+                String cookie= huc.getHeaderField("Cookie");
+                String acceptEncoding= huc.getRequestProperty( "Accept-Encoding" );
+                String requestMethod= huc.getRequestMethod();
                 HttpURLConnection newUrlConnection = (HttpURLConnection) new URL(newUrl).openConnection();
                 newUrlConnection.addRequestProperty("Referer", urlConnection.getURL().toString() );
+                if ( cookie!=null ) newUrlConnection.setRequestProperty( "Cookie", cookie );
+                if ( acceptEncoding!=null ) newUrlConnection.setRequestProperty("Accept-Encoding",acceptEncoding);
+                if ( requestMethod!=null ) {
+                    newUrlConnection.setRequestMethod(requestMethod);
+                }
                 urlConnection= newUrlConnection;
             }
         
