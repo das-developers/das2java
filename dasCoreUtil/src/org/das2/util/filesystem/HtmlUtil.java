@@ -232,7 +232,9 @@ public class HtmlUtil {
             HttpURLConnection huc= ((HttpURLConnection)urlConnection);
             huc.setInstanceFollowRedirects(true);
             
-            if ( huc.getResponseCode()==HttpURLConnection.HTTP_MOVED_PERM || huc.getResponseCode()==HttpURLConnection.HTTP_MOVED_TEMP  ) {
+            if ( huc.getResponseCode()==HttpURLConnection.HTTP_MOVED_PERM 
+                    || huc.getResponseCode()==HttpURLConnection.HTTP_MOVED_TEMP 
+                    || huc.getResponseCode()==HttpURLConnection.HTTP_SEE_OTHER ) {
                 String newUrl = huc.getHeaderField("Location");
                 HttpURLConnection newUrlConnection = (HttpURLConnection) new URL(newUrl).openConnection();
                 newUrlConnection.addRequestProperty("Referer", urlConnection.getURL().toString() );
