@@ -168,15 +168,12 @@ public class HtmlUtil {
      * Get the listing of the web directory, returning links that are "under" the given URL.
      * Note this does not handle off-line modes where we need to log into
      * a website first, as is often the case for a hotel.
-     * TODO: check for 302 redirect that Holiday Inn used to get credentials page
      * @param url
      * @return list of URIs referred to in the page.
      * @throws IOException
      * @throws CancelledOperationException
      */
     public static URL[] getDirectoryListing( URL url ) throws IOException, CancelledOperationException {
-
-        long t0= System.currentTimeMillis();
 
         FileSystem.logger.log(Level.FINER, "listing {0}", url);
         
@@ -185,29 +182,70 @@ public class HtmlUtil {
             url= new URL( url.toString()+'/' );
         }
         
+        InputStream urlStream= getInputStream(url);
+        
+        return getDirectoryListing( url, urlStream );
+    }
+    
+    /**
+     * get the inputStream, following redirects if a 301 or 302 is encountered.  The scientist may be
+     * prompted for a password.
+     * @param url
+     * @return input stream
+     * @throws IOException 
+     * @throws org.das2.util.monitor.CancelledOperationException 
+     */
+    public static InputStream getInputStream( URL url ) throws IOException, CancelledOperationException {
+
+        loggerUrl.log(Level.FINE, "getInputStream {0}", new Object[] { url } );
+        
+        long t0= System.currentTimeMillis();
+        
         String userInfo= KeyChain.getDefault().getUserInfo(url);
 
         //long t0= System.currentTimeMillis();
+        loggerUrl.log(Level.FINE, "openConnect {0}", new Object[] { url } );
         URLConnection urlConnection = url.openConnection();
 
         urlConnection.setAllowUserInteraction(false);
         urlConnection.setConnectTimeout(FileSystem.settings().getConnectTimeoutMs() );
-
-        //int contentLength=10000;
         
         logger.log(Level.FINER, "connected in {0} millis", (System.currentTimeMillis() - t0));
         if ( userInfo != null) {
             String encode = Base64.encodeBytes( userInfo.getBytes());
             urlConnection.setRequestProperty("Authorization", "Basic " + encode);
         }
+                
+        urlConnection= checkRedirect( urlConnection );
+        return urlConnection.getInputStream();
+           
+    }
 
-        //HERE is where we should support offline use.
-        InputStream urlStream;
+    /**
+     * check for 302 or 301 redirects, and return a new connection in this case.
+     * @param urlConnection if an HttpUrlConnection, check for 301 or 302; return connection otherwise.
+     * @return a connection, typically the same one as passed in.
+     * @throws IOException 
+     */
+    public static URLConnection checkRedirect( URLConnection urlConnection ) throws IOException {
+        if ( urlConnection instanceof HttpURLConnection ) {
+            HttpURLConnection huc= ((HttpURLConnection)urlConnection);
+            huc.setInstanceFollowRedirects(true);
+            
+            if ( huc.getResponseCode()==HttpURLConnection.HTTP_MOVED_PERM || huc.getResponseCode()==HttpURLConnection.HTTP_MOVED_TEMP  ) {
+                String newUrl = huc.getHeaderField("Location");
+                HttpURLConnection newUrlConnection = (HttpURLConnection) new URL(newUrl).openConnection();
+                newUrlConnection.addRequestProperty("Referer", urlConnection.getURL().toString() );
+                urlConnection= newUrlConnection;
+            }
         
-        loggerUrl.log(Level.FINE, "getInputStream {0}", new Object[] { urlConnection.getURL() } );
-        urlStream= urlConnection.getInputStream();
-        
-        return getDirectoryListing( url, urlStream );
+            return urlConnection;
+            
+        } else {
+            
+            return urlConnection;
+            
+        }
     }
     
 }
