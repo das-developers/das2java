@@ -222,7 +222,7 @@ public class HtmlUtil {
     }
 
     /**
-     * check for 302 or 301 redirects, and return a new connection in this case.
+     * check for 301, 302 or 303 redirects, and return a new connection in this case.
      * @param urlConnection if an HttpUrlConnection, check for 301 or 302; return connection otherwise.
      * @return a connection, typically the same one as passed in.
      * @throws IOException 
@@ -236,6 +236,7 @@ public class HtmlUtil {
                     || huc.getResponseCode()==HttpURLConnection.HTTP_MOVED_TEMP 
                     || huc.getResponseCode()==HttpURLConnection.HTTP_SEE_OTHER ) {
                 String newUrl = huc.getHeaderField("Location");
+                
                 HttpURLConnection newUrlConnection = (HttpURLConnection) new URL(newUrl).openConnection();
                 newUrlConnection.addRequestProperty("Referer", urlConnection.getURL().toString() );
                 urlConnection= newUrlConnection;

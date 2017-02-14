@@ -429,6 +429,8 @@ public class WebFileObject extends FileObject {
                 connection.setRequestProperty("Cookie", cookie );
             }
 
+            connection= (HttpURLConnection)HtmlUtil.checkRedirect(connection);
+            
             try {
                 connection.connect();
                 remoteDate = new Date(connection.getLastModified()); // here bug 1393 w/webstart https://sourceforge.net/p/autoplot/bugs/1393/
