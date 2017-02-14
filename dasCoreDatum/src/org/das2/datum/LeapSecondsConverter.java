@@ -44,13 +44,14 @@ public class LeapSecondsConverter extends UnitsConverter {
         try {
             in= url.openStream();
         } catch ( IOException ex ) {
-            url= new URL("http://cdf.gsfc.nasa.gov/html/CDFLeapSeconds.txt");
+            logger.info("unable to read internal leap seconds file.");
+            LoggerManager.getLogger("das2.url").log(Level.FINE, "openStream {0}", url);
+            url= new URL("https://cdf.gsfc.nasa.gov/html/CDFLeapSeconds.txt");
             in= url.openStream();
-            logger.info("Using local copy of leap seconds!!!");
+            logger.log(Level.FINE, "Using remote copy of leap seconds file at {0}", url);
         }
         
-        BufferedReader r = new BufferedReader(new InputStreamReader(in));
-        try {
+        try (BufferedReader r = new BufferedReader(new InputStreamReader(in))) {
             String s = "";
             leapSeconds = new ArrayList(50);
             withoutLeapSeconds = new ArrayList(50);
@@ -80,8 +81,6 @@ public class LeapSecondsConverter extends UnitsConverter {
             withoutLeapSeconds.add( Double.MAX_VALUE );
 
             lastUpdateMillis = System.currentTimeMillis();
-        } finally {
-            r.close();
         }
     }
 
@@ -97,7 +96,7 @@ public class LeapSecondsConverter extends UnitsConverter {
 
     /**
      * calculate the number of leap seconds in the us2000, since 2000.
-     * This is intended to replicate the table http://cdf.gsfc.nasa.gov/html/CDFLeapSeconds.txt
+     * This is intended to replicate the table https://cdf.gsfc.nasa.gov/html/CDFLeapSeconds.txt
      * @param us2000 the time in us2000, which include the leap seconds.
      * @return the number of leap seconds for the time.
      * @throws IOException
@@ -126,7 +125,7 @@ public class LeapSecondsConverter extends UnitsConverter {
 
     /**
      * calculate the number of leap seconds in the tt2000, since 2000.
-     * This is intended to replicate the table http://cdf.gsfc.nasa.gov/html/CDFLeapSeconds.txt
+     * This is intended to replicate the table https://cdf.gsfc.nasa.gov/html/CDFLeapSeconds.txt
      * @param tt2000 the time in tt2000, which include the leap seconds.
      * @return the number of leap seconds for the time.
      * @throws IOException
