@@ -223,6 +223,8 @@ public class HtmlUtil {
 
     /**
      * check for 301, 302 or 303 redirects, and return a new connection in this case.
+     * This should be called immediately before the urlConnection.connect call,
+     * as this must connect to get the response code.
      * @param urlConnection if an HttpUrlConnection, check for 301 or 302; return connection otherwise.
      * @return a connection, typically the same one as passed in.
      * @throws IOException 
@@ -232,6 +234,7 @@ public class HtmlUtil {
             HttpURLConnection huc= ((HttpURLConnection)urlConnection);
             huc.setInstanceFollowRedirects(true);
             
+            loggerUrl.fine("getResponseCode "+urlConnection.getURL());
             int responseCode=  huc.getResponseCode();
             if ( responseCode==HttpURLConnection.HTTP_MOVED_PERM 
                     || responseCode==HttpURLConnection.HTTP_MOVED_TEMP 
