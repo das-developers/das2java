@@ -318,26 +318,14 @@ public abstract class WebFileSystem extends FileSystem {
         @Override
         public Object doOp(String key) throws IOException {
             URL url = getURL(key);
-            loggerUrl.log( Level.FINE, "HEAD to get timestamp: {0}",url);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            try {
-                String encode= KeyChain.getDefault().getUserInfoBase64Encoded(url);
-                if ( encode!=null ) {
-                    connection.setRequestProperty("Authorization", "Basic " + encode);
-                }
-            } catch (CancelledOperationException ex) {
-                logger.log(Level.INFO,"user cancelled auth dialog");
-                // this is what we would do before.
-            }
-            connection.setRequestMethod("HEAD");
-            connection= (HttpURLConnection)HtmlUtil.checkRedirect(connection);
-            connection.connect();
+            
+            Map<String,String> meta= HtmlUtil.getMetadata( url, null );
+
             DirectoryEntry result= new DirectoryEntry();
-            result.modified= connection.getLastModified();
+            result.modified= Long.parseLong( meta.get( WebProtocol.META_LAST_MODIFIED ) );
             result.name= key;
-            result.size= connection.getContentLength();
-            connection.disconnect();
-            logger.log(Level.FINER, "done HEAD request to get timestamp ({0})", url);
+            result.size= Long.parseLong( meta.get( WebProtocol.META_CONTENT_LENGTH ) );
+            
             return result;
         }
     }

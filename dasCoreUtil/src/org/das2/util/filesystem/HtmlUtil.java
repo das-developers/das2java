@@ -33,6 +33,7 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.das2.util.LoggerManager;
+import org.das2.util.filesystem.WebProtocol;
 
 /**
  *
@@ -221,6 +222,110 @@ public class HtmlUtil {
            
     }
 
+    private static class MetadataRecord {
+        Map<String,String> metadata;
+        long birthMilli;
+    }
+    
+    private static Map<URL,MetadataRecord> cache= Collections.synchronizedMap( new HashMap<URL,MetadataRecord>() );
+    
+    /**
+     * return the metadata about a URL.  This will support http, https,
+     * and ftp, and will check for redirects.  This will 
+     * allow caching of head requests.
+     * TODO: locking
+     * @param url ftp,https, or http URL
+     * @param props, if non-null, may be a map containing cookie.
+     * @return the metadata
+     */
+    public static Map<String,String> getMetadata( URL url, Map<String,String> props ) throws IOException {
+        MetadataRecord mr= cache.get(url);
+        if ( mr!=null && ( System.currentTimeMillis()-mr.birthMilli < WebFileSystem.LISTING_TIMEOUT_MS ) ) {
+            logger.fine("using cached metadata for "+ url);
+            return mr.metadata;
+        }
+            
+        logger.fine("reading metadata for "+ url);
+        Map<String,String> theResult;
+        
+        if (!url.getProtocol().equals("ftp")) {
+
+            boolean exists;
+
+            HttpURLConnection connect = (HttpURLConnection) url.openConnection();
+            connect.setRequestMethod("HEAD");
+            HttpURLConnection.setFollowRedirects(false);
+            
+            try {
+                String encode= KeyChain.getDefault().getUserInfoBase64Encoded(url);
+                if ( encode!=null ) {
+                    connect.setRequestProperty("Authorization", "Basic " + encode);
+                }
+            } catch (CancelledOperationException ex) {
+                logger.log(Level.INFO,"user cancelled auth dialog");
+                // this is what we would do before.
+            }
+            
+            if ( props!=null ) {
+                String cookie= props.get(WebProtocol.META_COOKIE);
+                if ( cookie!=null ) {
+                    connect.setRequestProperty(WebProtocol.META_COOKIE, cookie );
+                }
+            }
+            
+            HttpURLConnection.setFollowRedirects(true);
+            connect= (HttpURLConnection)HtmlUtil.checkRedirect(connect);
+            
+            FileSystem.loggerUrl.log(Level.FINE, "HEAD to get metadata: {0}", new Object[] { url } );
+            connect.connect();
+            
+            exists = connect.getResponseCode() != 404;
+
+            Map<String, String> result = new HashMap<>();
+
+            Map<String, List<String>> fields = connect.getHeaderFields();
+            for (Map.Entry<String,List<String>> e : fields.entrySet()) {
+                String key= e.getKey();
+                List<String> value = e.getValue();
+                result.put(key, value.get(0));
+            }
+
+            result.put( WebProtocol.META_EXIST, String.valueOf(exists) );
+            result.put( WebProtocol.META_LAST_MODIFIED, String.valueOf( connect.getLastModified() ) );
+            result.put( WebProtocol.META_CONTENT_LENGTH, String.valueOf( connect.getContentLength() ) );
+            result.put( WebProtocol.META_CONTENT_TYPE,connect.getContentType() );
+
+            theResult= result;
+
+        } else {
+            
+            Map<String, String> result = new HashMap<>();
+
+            URLConnection urlc = url.openConnection();
+            try { 
+                FileSystem.loggerUrl.log(Level.FINE, "FTP connection: {0}", new Object[] { url } );
+                urlc.connect();
+                urlc.getInputStream().close();
+                result.put( WebProtocol.META_EXIST, "true" );
+                
+            } catch ( IOException ex ) {
+                result.put( WebProtocol.META_EXIST, "false" );
+            }
+            
+            theResult= result;
+            
+        }
+        
+        mr= new MetadataRecord();
+        mr.birthMilli= System.currentTimeMillis();
+        mr.metadata= theResult;
+        
+        cache.put( url, mr );
+        
+        return theResult;
+
+    }
+    
     /**
      * check for 301, 302 or 303 redirects, and return a new connection in this case.
      * This should be called immediately before the urlConnection.connect call,
@@ -233,7 +338,7 @@ public class HtmlUtil {
         if ( urlConnection instanceof HttpURLConnection ) {
             HttpURLConnection huc= ((HttpURLConnection)urlConnection);
             huc.setInstanceFollowRedirects(true);
-            
+             
             loggerUrl.fine("getResponseCode "+urlConnection.getURL());
             int responseCode=  huc.getResponseCode();
             if ( responseCode==HttpURLConnection.HTTP_MOVED_PERM 

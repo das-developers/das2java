@@ -65,62 +65,9 @@ public class DefaultHttpProtocol implements WebProtocol {
     
     @Override
     public Map<String, String> getMetadata(WebFileObject fo) throws IOException {
-        if (!fo.wfs.getRootURL().getProtocol().equals("ftp")) {
-            String realName = fo.pathname;
-            boolean exists;
-            URL ur = new URL(fo.wfs.getRootURL(), urlEncodeSansSlash(realName).replaceAll("\\+", "%20") );
-            //URL ur = new URL(fo.wfs.getRootURL(), URLEncoder.encode(realName,"UTF-8").replaceAll("\\+", "%20") );
-            HttpURLConnection connect = (HttpURLConnection) ur.openConnection();
-            connect.setRequestMethod("HEAD");
-            HttpURLConnection.setFollowRedirects(false);
-            
-            if ( fo.wfs instanceof HttpFileSystem ) {
-                HttpFileSystem hfs= ((HttpFileSystem)fo.wfs);
-                if ( hfs.getCookie()!=null ) {
-                    connect.setRequestProperty("Cookie", hfs.getCookie());
-                }
-            }
-            
-            HttpURLConnection.setFollowRedirects(true);
-            connect= (HttpURLConnection)HtmlUtil.checkRedirect(connect);
-            
-            FileSystem.loggerUrl.log(Level.FINE, "HEAD to get metadata: {0}", new Object[] { ur } );
-            connect.connect();
-            
-            exists = connect.getResponseCode() != 404;
-
-            Map<String, String> result = new HashMap<>();
-
-            Map<String, List<String>> fields = connect.getHeaderFields();
-            for (Entry<String,List<String>> e : fields.entrySet()) {
-                String key= e.getKey();
-                List<String> value = e.getValue();
-                result.put(key, value.get(0));
-            }
-
-            result.put(META_EXIST, String.valueOf(exists));
-
-            connect.disconnect();
-
-            return result;
-
-        } else {
-            
-            Map<String, String> result = new HashMap<>();
-
-            URL url= new URL( fo.wfs.getRootURL(), fo.pathname );
-            URLConnection urlc = url.openConnection();
-            try { 
-                FileSystem.loggerUrl.log(Level.FINE, "FTP connection: {0}", new Object[] { url } );
-                urlc.connect();
-                urlc.getInputStream().close();
-                result.put( META_EXIST, "true" );
-                
-            } catch ( IOException ex ) {
-                result.put( META_EXIST, "false" );
-            }
-            return result;
-            
-        }
+        
+        URL ur = new URL( fo.wfs.getRootURL(), urlEncodeSansSlash(fo.pathname).replaceAll("\\+", "%20") );
+        
+        return HtmlUtil.getMetadata( ur, null );
     }
 }
