@@ -331,6 +331,7 @@ public abstract class WebFileSystem extends FileSystem {
                 // this is what we would do before.
             }
             connection.setRequestMethod("HEAD");
+            connection= (HttpURLConnection)HtmlUtil.checkRedirect(connection);
             connection.connect();
             DirectoryEntry result= new DirectoryEntry();
             result.modified= connection.getLastModified();
