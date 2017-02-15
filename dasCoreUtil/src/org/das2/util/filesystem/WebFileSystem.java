@@ -32,7 +32,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -257,7 +256,7 @@ public abstract class WebFileSystem extends FileSystem {
         if ( f!=null ) {
             String[] ss= new File( f, directory ).list();
             if ( ss==null ) return remoteList;
-            List<DirectoryEntry> add= new ArrayList<DirectoryEntry>();
+            List<DirectoryEntry> add= new ArrayList<>();
             for ( String s: ss ) {
                 File f1= new File( f, directory+s );
                 if ( f1.isDirectory() ) {
@@ -761,9 +760,7 @@ public abstract class WebFileSystem extends FileSystem {
                 try {
                     URI rooturi2= new URI( root.getScheme() + "://" + userInfo_.toString()+"@"+auth + root.getPath() );
                     return rooturi2.toURL();
-                } catch ( URISyntaxException ex2 ) {
-                    throw new RuntimeException(ex2);
-                } catch ( MalformedURLException ex2 ) {
+                } catch ( URISyntaxException | MalformedURLException ex2 ) {
                     throw new RuntimeException(ex2);
                 }
             } else {
