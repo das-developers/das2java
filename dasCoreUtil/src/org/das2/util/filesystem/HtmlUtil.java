@@ -241,27 +241,35 @@ public class HtmlUtil {
      */
     public static Map<String,String> getMetadata( URL url, Map<String,String> props ) throws IOException {
         
+        long ageMillis=Long.MAX_VALUE;
+        
         MetadataRecord mr;
-        synchronized (cache) {
+        synchronized ( cache ) {
             mr= cache.get(url);
-            if ( mr!=null && ( System.currentTimeMillis() - mr.birthMilli < WebFileSystem.LISTING_TIMEOUT_MS ) ) {
+            if ( mr!=null ) {
+                ageMillis=  System.currentTimeMillis() - mr.birthMilli;
+            }
+            if ( mr!=null && ( ageMillis< WebFileSystem.LISTING_TIMEOUT_MS ) ) {
                 if ( mr.metadata!=null ) {
                     logger.log(Level.FINE, "using cached metadata for {0}", url);
                     return mr.metadata;
                 }
             }
-        
-            mr= new MetadataRecord();
-            mr.birthMilli= System.currentTimeMillis();
-            mr.metadata= null;
-            cache.put(url,mr);
-
+            if ( mr==null ) {
+                mr= new MetadataRecord();
+                mr.birthMilli= System.currentTimeMillis();
+                mr.metadata= null;
+                cache.put(url,mr);
+            }
         }
         
         synchronized ( mr ) {
             
             if ( mr.metadata!=null ) {
-                return mr.metadata;
+                ageMillis=  System.currentTimeMillis() - mr.birthMilli;
+                if ( ageMillis<WebFileSystem.LISTING_TIMEOUT_MS ) {
+                    return mr.metadata;
+                }
             }
         
             logger.log(Level.FINE, "reading metadata for {0}", url);
@@ -335,6 +343,7 @@ public class HtmlUtil {
 
             }
 
+            mr.birthMilli= System.currentTimeMillis();
             mr.metadata= theResult;
 
             return theResult;
