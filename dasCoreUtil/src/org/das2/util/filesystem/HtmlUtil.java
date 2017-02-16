@@ -189,7 +189,13 @@ public class HtmlUtil {
     
     /**
      * get the inputStream, following redirects if a 301 or 302 is encountered.  The scientist may be
-     * prompted for a password.
+     * prompted for a password.  
+     * 
+     * Note this does not explicitly close the connections
+     * to the server, and Java may not know to release the resources.  
+     * TODO: fix this by wrapping the input stream and closing the connection
+     * when the stream is closed.
+     * 
      * @param url
      * @return input stream
      * @throws IOException 
@@ -320,7 +326,8 @@ public class HtmlUtil {
                 result.put( WebProtocol.META_LAST_MODIFIED, String.valueOf( connect.getLastModified() ) );
                 result.put( WebProtocol.META_CONTENT_LENGTH, String.valueOf( connect.getContentLength() ) );
                 result.put( WebProtocol.META_CONTENT_TYPE,connect.getContentType() );
-
+                connect.disconnect();
+                
                 theResult= result;
 
             } else {
@@ -333,7 +340,7 @@ public class HtmlUtil {
                     urlc.connect();
                     urlc.getInputStream().close();
                     result.put( WebProtocol.META_EXIST, "true" );
-
+                    
                 } catch ( IOException ex ) {
                     result.put( WebProtocol.META_EXIST, "false" );
                 }
@@ -374,14 +381,16 @@ public class HtmlUtil {
                 }
                 String cookie= huc.getHeaderField("Cookie");
                 String acceptEncoding= huc.getRequestProperty( "Accept-Encoding" );
+                String authorization= huc.getRequestProperty("Authorization");
                 String requestMethod= huc.getRequestMethod();
                 HttpURLConnection newUrlConnection = (HttpURLConnection) new URL(newUrl).openConnection();
                 newUrlConnection.addRequestProperty("Referer", urlConnection.getURL().toString() );
                 if ( cookie!=null ) newUrlConnection.setRequestProperty( "Cookie", cookie );
                 if ( acceptEncoding!=null ) newUrlConnection.setRequestProperty("Accept-Encoding",acceptEncoding);
-                if ( requestMethod!=null ) {
-                    newUrlConnection.setRequestMethod(requestMethod);
-                }
+                if ( authorization!=null ) newUrlConnection.setRequestProperty( "Authorization", authorization );
+                if ( requestMethod!=null ) newUrlConnection.setRequestMethod(requestMethod);
+                
+                ((HttpURLConnection) urlConnection).disconnect();
                 urlConnection= newUrlConnection;
             }
         
