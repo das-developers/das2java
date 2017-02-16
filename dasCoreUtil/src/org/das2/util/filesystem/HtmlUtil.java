@@ -237,25 +237,25 @@ public class HtmlUtil {
      * @param url ftp,https, or http URL
      * @param props, if non-null, may be a map containing cookie.
      * @return the metadata
+     * @throws java.io.IOException when HEAD requests are made.
      */
     public static Map<String,String> getMetadata( URL url, Map<String,String> props ) throws IOException {
         
         MetadataRecord mr;
         synchronized (cache) {
             mr= cache.get(url);
-            if ( mr!=null && ( System.currentTimeMillis()-mr.birthMilli < WebFileSystem.LISTING_TIMEOUT_MS ) ) {
+            if ( mr!=null && ( System.currentTimeMillis() - mr.birthMilli < WebFileSystem.LISTING_TIMEOUT_MS ) ) {
                 if ( mr.metadata!=null ) {
                     logger.log(Level.FINE, "using cached metadata for {0}", url);
                     return mr.metadata;
                 }
             }
         
-            if ( mr==null ) {
-                mr= new MetadataRecord();
-                mr.birthMilli= System.currentTimeMillis();
-                mr.metadata= null;
-                cache.put(url,mr);
-            }
+            mr= new MetadataRecord();
+            mr.birthMilli= System.currentTimeMillis();
+            mr.metadata= null;
+            cache.put(url,mr);
+
         }
         
         synchronized ( mr ) {
