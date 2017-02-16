@@ -476,13 +476,12 @@ public class HttpFileSystem extends WebFileSystem {
                     throw new IllegalArgumentException("unable to delete "+partFile );
                 }
                 throw e;
-            } finally {
-                if ( urlc instanceof HttpURLConnection ) {
-                    ((HttpURLConnection)urlc).disconnect();
-                }
             }
         } else {
             throw new IOException("could not create local file: " + f);
+        }
+        if ( urlc instanceof HttpURLConnection ) {
+            ((HttpURLConnection)urlc).disconnect();
         }
         
     }
