@@ -407,9 +407,6 @@ public class WebFileObject extends FileObject {
             
         } else if (wfs instanceof HttpFileSystem && !wfs.isOffline() ) {
             URL url = wfs.getURL(this.getNameExt());
-            loggerUrl.log( Level.FINE, "HEAD to get timestamp: {0}",url);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("HEAD");
 
             String userInfo= null;
 
@@ -419,32 +416,26 @@ public class WebFileObject extends FileObject {
                 throw new FileSystemOfflineException("user cancelled credentials");
             }
             
+            Map<String,String> requestProperties= new HashMap<>();
+            
             if ( userInfo != null) {
                 String encode = Base64.encodeBytes( userInfo.getBytes());
-                connection.setRequestProperty("Authorization", "Basic " + encode);
+                requestProperties.put( "Authorization", "Basic " + encode );
             }
 
             String cookie= ((HttpFileSystem)wfs).getCookie();
             if ( cookie!=null ) {
-                connection.setRequestProperty("Cookie", cookie );
+                requestProperties.put( "Cookie", cookie  );
             }
 
-            connection= (HttpURLConnection)HtmlUtil.checkRedirect(connection);
+            Map<String,String> meta= HtmlUtil.getMetadata( url, requestProperties );
             
-            try {
-                connection.connect();
-                remoteDate = new Date(connection.getLastModified()); // here bug 1393 w/webstart https://sourceforge.net/p/autoplot/bugs/1393/
-                logger.log(Level.FINE, "HEAD request reports connection.getLastModified()={0}", remoteDate);
-                int contentLength= connection.getContentLength();
-                if ( contentLength>-1 ) remoteLength= contentLength;
+            long lastModified= Long.parseLong( meta.get( WebProtocol.META_LAST_MODIFIED ) );
+            remoteDate = new Date(lastModified); // here bug 1393 w/webstart https://sourceforge.net/p/autoplot/bugs/1393/
+            logger.log(Level.FINE, "HEAD request reports connection.getLastModified()={0}", remoteDate);
+            long contentLength= Long.parseLong( meta.get( WebProtocol.META_CONTENT_LENGTH ) );
+            if ( contentLength>-1 ) remoteLength= contentLength;
                 
-            } catch ( IOException ex ) {
-                if ( !((HttpFileSystem)wfs).isOffline() ) {
-                    throw ex;
-                } else {
-                    remoteDate= new Date(0);
-                }
-            }
         } else {
             if ( this.lastModified().getTime()==0 || this.lastModified().getTime()==Long.MAX_VALUE ) {
                 DirectoryEntry result= wfs.maybeUpdateDirectoryEntry( this.getNameExt(), true ); // trigger load of the modifiedDate
