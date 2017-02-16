@@ -369,6 +369,9 @@ public class HtmlUtil {
                     || responseCode==HttpURLConnection.HTTP_MOVED_TEMP 
                     || responseCode==HttpURLConnection.HTTP_SEE_OTHER ) {
                 String newUrl = huc.getHeaderField("Location");
+                if ( responseCode==HttpURLConnection.HTTP_MOVED_PERM ) {
+                    logger.log(Level.FINE, "URL {0} permanently moved to {1}", new Object[]{urlConnection.getURL(), newUrl});
+                }
                 String cookie= huc.getHeaderField("Cookie");
                 String acceptEncoding= huc.getRequestProperty( "Accept-Encoding" );
                 String requestMethod= huc.getRequestMethod();
