@@ -33,7 +33,6 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.das2.util.LoggerManager;
-import org.das2.util.filesystem.WebProtocol;
 
 /**
  *
@@ -364,7 +363,7 @@ public class HtmlUtil {
             HttpURLConnection huc= ((HttpURLConnection)urlConnection);
             huc.setInstanceFollowRedirects(true);
              
-            loggerUrl.fine("getResponseCode "+urlConnection.getURL());
+            loggerUrl.log(Level.FINEST, "getResponseCode {0}", urlConnection.getURL());
             int responseCode=  huc.getResponseCode();
             if ( responseCode==HttpURLConnection.HTTP_MOVED_PERM 
                     || responseCode==HttpURLConnection.HTTP_MOVED_TEMP 
