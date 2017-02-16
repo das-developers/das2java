@@ -40,25 +40,10 @@ public class AppletHttpProtocol implements WebProtocol {
         FileSystem.loggerUrl.log(Level.FINE, "openConnection {0}", new Object[] { ur } );
         HttpURLConnection connect = (HttpURLConnection) ur.openConnection();
         connect.setRequestMethod("HEAD");
-        HttpURLConnection.setFollowRedirects(false);
-        connect.connect();
-        HttpURLConnection.setFollowRedirects(true);
-        // check for rename, which means we'll do another request
-        if (connect.getResponseCode() == 303) {
-            String surl = connect.getHeaderField("Location");
-            if (surl.startsWith(fo.wfs.root.toString())) {
-                realName = surl.substring(fo.wfs.root.toString().length());
-            }
-            connect.disconnect();
-            ur = new URL(fo.wfs.getRootURL(), realName);
-            FileSystem.loggerUrl.log(Level.FINE, "openConnection {0}", new Object[] { ur } );
-            connect = (HttpURLConnection) ur.openConnection();
-            connect.setRequestMethod("HEAD");
-            connect.connect();
-        }
+        connect= (HttpURLConnection)HtmlUtil.checkRedirect(connect);
         exists = connect.getResponseCode() != 404;
 
-        Map<String, String> result = new HashMap<String, String>();
+        Map<String, String> result = new HashMap<>();
 
         Map<String, List<String>> fields = connect.getHeaderFields();
         for (Entry<String,List<String>> e : fields.entrySet()) {
