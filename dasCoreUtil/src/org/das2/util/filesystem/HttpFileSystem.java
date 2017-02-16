@@ -191,6 +191,7 @@ public class HttpFileSystem extends WebFileSystem {
                     logger.log( Level.FINER, "made connection, now consume rest of stream: {0}", urlc );
                     HtmlUtil.consumeStream( urlc.getInputStream() );
                     logger.log( Level.FINER, "done consuming and initial connection is complete: {0}" );
+                    urlc.disconnect();
                     offline= false;
                     doCheck= false;
                     logger.finer( "Verify Credentials exits with okay");
@@ -475,6 +476,10 @@ public class HttpFileSystem extends WebFileSystem {
                     throw new IllegalArgumentException("unable to delete "+partFile );
                 }
                 throw e;
+            } finally {
+                if ( urlc instanceof HttpURLConnection ) {
+                    ((HttpURLConnection)urlc).disconnect();
+                }
             }
         } else {
             throw new IOException("could not create local file: " + f);
@@ -546,38 +551,17 @@ public class HttpFileSystem extends WebFileSystem {
      * @throws org.das2.util.monitor.CancelledOperationException
      */
     protected Map<String, Object> getHeadMeta(String f) throws IOException, CancelledOperationException {
-        String realName = f;
-        boolean exists;
+
         try {
             URL ur = new URL(this.root.toURL(), f);
-            HttpURLConnection connect = (HttpURLConnection) ur.openConnection();
-            String userInfo= KeyChain.getDefault().getUserInfo(ur);
-            if ( userInfo != null) {
-                String encode = Base64.encodeBytes(userInfo.getBytes());
-                connect.setRequestProperty("Authorization", "Basic " + encode);
-            }
-            connect.setRequestMethod("HEAD");
-            HttpURLConnection.setFollowRedirects(false);
-            connect.connect();
-            HttpURLConnection.setFollowRedirects(true);
-            // check for rename, which means we'll do another request
-            if (connect.getResponseCode() == 303) {
-                String surl = connect.getHeaderField("Location");
-                if (surl.startsWith(root.toString())) {
-                    realName = surl.substring(root.toString().length());
-                }
-                connect.disconnect();
-                ur = new URL(this.root.toURL(), realName);
-                connect = (HttpURLConnection) ur.openConnection();
-                connect.setRequestMethod("HEAD");
-                connect.connect();
-            }
-            exists = connect.getResponseCode() != 404;
-
-            Map<String, Object> result = new HashMap<>();
-            result.putAll(connect.getHeaderFields());
-            result.put( "EXIST", exists );
-            connect.disconnect();
+            Map<String,String> meta= HtmlUtil.getMetadata( ur, null );
+            
+            Map<String,Object> result= new HashMap<>();
+            result.putAll(meta);
+            
+            result.put( "EXIST", Boolean.parseBoolean(meta.get( WebProtocol.META_EXIST ) ) );
+            result.put( WebProtocol.META_CONTENT_LENGTH, Long.parseLong(meta.get(WebProtocol.META_CONTENT_LENGTH) ) );
+            result.put( WebProtocol.META_LAST_MODIFIED, Long.parseLong(meta.get(WebProtocol.META_LAST_MODIFIED ) ) );
 
             return result;
 
