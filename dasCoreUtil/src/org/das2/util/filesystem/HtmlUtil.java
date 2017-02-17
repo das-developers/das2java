@@ -232,13 +232,12 @@ public class HtmlUtil {
         long birthMilli;
     }
     
-    private static final Map<URL,MetadataRecord> cache= Collections.synchronizedMap( new HashMap<URL,MetadataRecord>() );
+    private static final Map<String,MetadataRecord> cache= Collections.synchronizedMap( new HashMap<String,MetadataRecord>() );
     
     /**
      * return the metadata about a URL.  This will support http, https,
      * and ftp, and will check for redirects.  This will 
      * allow caching of head requests.
-     * TODO: locking
      * @param url ftp,https, or http URL
      * @param props, if non-null, may be a map containing cookie.
      * @return the metadata
@@ -248,9 +247,11 @@ public class HtmlUtil {
         
         long ageMillis=Long.MAX_VALUE;
         
+        String surl= url.toString();
+        
         MetadataRecord mr;
         synchronized ( cache ) {
-            mr= cache.get(url);
+            mr= cache.get(surl);
             if ( mr!=null ) {
                 ageMillis=  System.currentTimeMillis() - mr.birthMilli;
             }
@@ -264,7 +265,7 @@ public class HtmlUtil {
                 mr= new MetadataRecord();
                 mr.birthMilli= System.currentTimeMillis();
                 mr.metadata= null;
-                cache.put(url,mr);
+                cache.put(surl,mr);
             }
         }
         
