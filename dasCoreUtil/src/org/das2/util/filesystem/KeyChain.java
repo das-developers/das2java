@@ -590,8 +590,8 @@ public class KeyChain {
                     conn.setDoOutput(true);
                     conn.connect();
                     
-                    HtmlUtil.consumeStream(conn.getErrorStream());
-                    HtmlUtil.consumeStream(conn.getInputStream());
+                    HttpUtil.consumeStream(conn.getErrorStream());
+                    HttpUtil.consumeStream(conn.getInputStream());
                     
                     String cookie0= conn.getHeaderField("Set-Cookie");
                     conn.disconnect();
