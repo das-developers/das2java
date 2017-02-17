@@ -2326,8 +2326,10 @@ public class SeriesRenderer extends Renderer {
            if (colorByDataSetId != null && !colorByDataSetId.equals("")) {
                if ( evt.getPropertyName().equals(DasColorBar.PROPERTY_TYPE) ) {
                    updatePsym();
+                   update();
+               } else if ( evt.getPropertyName().equals(DasAxis.PROPERTY_DATUMRANGE) ) {
+                   update();
                }
-               update();
            }
         }
     };
