@@ -32,30 +32,11 @@ public class AppletHttpProtocol implements WebProtocol {
 
     @Override
     public Map<String, String> getMetadata(WebFileObject fo) throws IOException {
-        String realName = fo.pathname;
-        boolean exists;
 
-        URL ur = new URL(fo.wfs.getRootURL(), realName);
+        URL ur = new URL(fo.wfs.getRootURL(), fo.pathname );
         
-        FileSystem.loggerUrl.log(Level.FINE, "openConnection {0}", new Object[] { ur } );
-        HttpURLConnection connect = (HttpURLConnection) ur.openConnection();
-        connect.setRequestMethod("HEAD");
-        connect= (HttpURLConnection)HtmlUtil.checkRedirect(connect);
-        exists = connect.getResponseCode() != 404;
-
-        Map<String, String> result = new HashMap<>();
-
-        Map<String, List<String>> fields = connect.getHeaderFields();
-        for (Entry<String,List<String>> e : fields.entrySet()) {
-            String key= e.getKey();
-            List<String> value = e.getValue();
-            result.put(key, value.get(0));
-        }
-
-        result.put( META_EXIST, String.valueOf(exists) );
+        Map<String, String> result= HttpUtil.getMetadata( ur, null );
         
-        connect.disconnect();
-
         return result;
 
     }
