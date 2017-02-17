@@ -553,7 +553,7 @@ public class HttpFileSystem extends WebFileSystem {
 
         try {
             URL ur = new URL(this.root.toURL(), f);
-            Map<String,String> meta= HtmlUtil.getMetadata( ur, null );
+            Map<String,String> meta= HttpUtil.getMetadata( ur, null );
             
             Map<String,Object> result= new HashMap<>();
             result.putAll(meta);

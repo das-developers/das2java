@@ -58,18 +58,9 @@ public class HtmlUtil {
      * @param err the input stream
      * @throws IOException 
      */
+    @Deprecated
     public static void consumeStream( InputStream err ) throws IOException {
-        byte[] buf= new byte[2048];
-        try {
-            if ( err!=null ) {
-                int ret = 0;
-                while ((ret = err.read(buf)) > 0) {
-                   // empty out the error stream.
-                }
-            }
-        } finally {
-            if ( err!=null ) err.close();
-        }
+        HttpUtil.consumeStream(err);
     }
     
     /**
@@ -227,13 +218,6 @@ public class HtmlUtil {
            
     }
 
-    private static class MetadataRecord {
-        Map<String,String> metadata;
-        long birthMilli;
-    }
-    
-    private static final Map<String,MetadataRecord> cache= Collections.synchronizedMap( new HashMap<String,MetadataRecord>() );
-    
     /**
      * return the metadata about a URL.  This will support http, https,
      * and ftp, and will check for redirects.  This will 
@@ -243,119 +227,9 @@ public class HtmlUtil {
      * @return the metadata
      * @throws java.io.IOException when HEAD requests are made.
      */
+    @Deprecated
     public static Map<String,String> getMetadata( URL url, Map<String,String> props ) throws IOException {
-        
-        long ageMillis=Long.MAX_VALUE;
-        
-        String surl= url.toString();
-        
-        MetadataRecord mr;
-        synchronized ( cache ) {
-            mr= cache.get(surl);
-            if ( mr!=null ) {
-                ageMillis=  System.currentTimeMillis() - mr.birthMilli;
-            }
-            if ( mr!=null && ( ageMillis< WebFileSystem.LISTING_TIMEOUT_MS ) ) {
-                if ( mr.metadata!=null ) {
-                    logger.log(Level.FINE, "using cached metadata for {0}", url);
-                    return mr.metadata;
-                }
-            }
-            if ( mr==null ) {
-                mr= new MetadataRecord();
-                mr.birthMilli= System.currentTimeMillis();
-                mr.metadata= null;
-                cache.put(surl,mr);
-            }
-        }
-        
-        synchronized ( mr ) {
-            
-            if ( mr.metadata!=null ) {
-                ageMillis=  System.currentTimeMillis() - mr.birthMilli;
-                if ( ageMillis<WebFileSystem.LISTING_TIMEOUT_MS ) {
-                    return mr.metadata;
-                }
-            }
-        
-            logger.log(Level.FINE, "reading metadata for {0}", url);
-            Map<String,String> theResult;
-
-            if (!url.getProtocol().equals("ftp")) {
-
-                boolean exists;
-
-                HttpURLConnection connect = (HttpURLConnection) url.openConnection();
-                connect.setRequestMethod("HEAD");
-                HttpURLConnection.setFollowRedirects(false);
-
-                try {
-                    String encode= KeyChain.getDefault().getUserInfoBase64Encoded(url);
-                    if ( encode!=null ) {
-                        connect.setRequestProperty("Authorization", "Basic " + encode);
-                    }
-                } catch (CancelledOperationException ex) {
-                    logger.log(Level.INFO,"user cancelled auth dialog");
-                    // this is what we would do before.
-                }
-
-                if ( props!=null ) {
-                    String cookie= props.get(WebProtocol.META_COOKIE);
-                    if ( cookie!=null ) {
-                        connect.setRequestProperty(WebProtocol.META_COOKIE, cookie );
-                    }
-                }
-
-                HttpURLConnection.setFollowRedirects(true);
-                connect= (HttpURLConnection)HtmlUtil.checkRedirect(connect);
-
-                FileSystem.loggerUrl.log(Level.FINE, "HEAD to get metadata: {0}", new Object[] { url } );
-                connect.connect();
-
-                exists = connect.getResponseCode() != 404;
-
-                Map<String, String> result = new HashMap<>();
-
-                Map<String, List<String>> fields = connect.getHeaderFields();
-                for (Map.Entry<String,List<String>> e : fields.entrySet()) {
-                    String key= e.getKey();
-                    List<String> value = e.getValue();
-                    result.put(key, value.get(0));
-                }
-
-                result.put( WebProtocol.META_EXIST, String.valueOf(exists) );
-                result.put( WebProtocol.META_LAST_MODIFIED, String.valueOf( connect.getLastModified() ) );
-                result.put( WebProtocol.META_CONTENT_LENGTH, String.valueOf( connect.getContentLength() ) );
-                result.put( WebProtocol.META_CONTENT_TYPE,connect.getContentType() );
-                connect.disconnect();
-                
-                theResult= result;
-
-            } else {
-
-                Map<String, String> result = new HashMap<>();
-
-                URLConnection urlc = url.openConnection();
-                try { 
-                    FileSystem.loggerUrl.log(Level.FINE, "FTP connection: {0}", new Object[] { url } );
-                    urlc.connect();
-                    urlc.getInputStream().close();
-                    result.put( WebProtocol.META_EXIST, "true" );
-                    
-                } catch ( IOException ex ) {
-                    result.put( WebProtocol.META_EXIST, "false" );
-                }
-
-                theResult= result;
-
-            }
-
-            mr.birthMilli= System.currentTimeMillis();
-            mr.metadata= theResult;
-
-            return theResult;
-        }
-        
+        return HttpUtil.getMetadata(url, props);
     }
     
     /**
@@ -366,42 +240,9 @@ public class HtmlUtil {
      * @return a connection, typically the same one as passed in.
      * @throws IOException 
      */
+    @Deprecated
     public static URLConnection checkRedirect( URLConnection urlConnection ) throws IOException {
-        if ( urlConnection instanceof HttpURLConnection ) {
-            HttpURLConnection huc= ((HttpURLConnection)urlConnection);
-            huc.setInstanceFollowRedirects(true);
-             
-            loggerUrl.log(Level.FINEST, "getResponseCode {0}", urlConnection.getURL());
-            int responseCode=  huc.getResponseCode();
-            if ( responseCode==HttpURLConnection.HTTP_MOVED_PERM 
-                    || responseCode==HttpURLConnection.HTTP_MOVED_TEMP 
-                    || responseCode==HttpURLConnection.HTTP_SEE_OTHER ) {
-                String newUrl = huc.getHeaderField("Location");
-                if ( responseCode==HttpURLConnection.HTTP_MOVED_PERM ) {
-                    logger.log(Level.FINE, "URL {0} permanently moved to {1}", new Object[]{urlConnection.getURL(), newUrl});
-                }
-                String cookie= huc.getHeaderField("Cookie");
-                String acceptEncoding= huc.getRequestProperty( "Accept-Encoding" );
-                String authorization= huc.getRequestProperty("Authorization");
-                String requestMethod= huc.getRequestMethod();
-                HttpURLConnection newUrlConnection = (HttpURLConnection) new URL(newUrl).openConnection();
-                newUrlConnection.addRequestProperty("Referer", urlConnection.getURL().toString() );
-                if ( cookie!=null ) newUrlConnection.setRequestProperty( "Cookie", cookie );
-                if ( acceptEncoding!=null ) newUrlConnection.setRequestProperty("Accept-Encoding",acceptEncoding);
-                if ( authorization!=null ) newUrlConnection.setRequestProperty( "Authorization", authorization );
-                if ( requestMethod!=null ) newUrlConnection.setRequestMethod(requestMethod);
-                
-                ((HttpURLConnection) urlConnection).disconnect();
-                urlConnection= newUrlConnection;
-            }
-        
-            return urlConnection;
-            
-        } else {
-            
-            return urlConnection;
-            
-        }
+        return HttpUtil.checkRedirect(urlConnection);
     }
     
 }

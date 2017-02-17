@@ -68,6 +68,6 @@ public class DefaultHttpProtocol implements WebProtocol {
         
         URL ur = new URL( fo.wfs.getRootURL(), urlEncodeSansSlash(fo.pathname).replaceAll("\\+", "%20") );
         
-        return HtmlUtil.getMetadata( ur, null );
+        return HttpUtil.getMetadata( ur, null );
     }
 }

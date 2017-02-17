@@ -319,7 +319,7 @@ public abstract class WebFileSystem extends FileSystem {
         public Object doOp(String key) throws IOException {
             URL url = getURL(key);
             
-            Map<String,String> meta= HtmlUtil.getMetadata( url, null );
+            Map<String,String> meta= HttpUtil.getMetadata( url, null );
 
             DirectoryEntry result= new DirectoryEntry();
             result.modified= Long.parseLong( meta.get( WebProtocol.META_LAST_MODIFIED ) );

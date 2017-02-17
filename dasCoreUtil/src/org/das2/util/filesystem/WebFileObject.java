@@ -428,7 +428,7 @@ public class WebFileObject extends FileObject {
                 requestProperties.put( "Cookie", cookie  );
             }
 
-            Map<String,String> meta= HtmlUtil.getMetadata( url, requestProperties );
+            Map<String,String> meta= HttpUtil.getMetadata( url, requestProperties );
             
             long lastModified= Long.parseLong( meta.get( WebProtocol.META_LAST_MODIFIED ) );
             remoteDate = new Date(lastModified); // here bug 1393 w/webstart https://sourceforge.net/p/autoplot/bugs/1393/
