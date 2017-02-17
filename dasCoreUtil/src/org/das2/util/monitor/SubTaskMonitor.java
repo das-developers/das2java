@@ -172,6 +172,9 @@ public class SubTaskMonitor implements ProgressMonitor {
 
     @Override
     public void setTaskSize(long taskSize) {
+        if ( taskSize==0 ) {
+            throw new IllegalArgumentException("taskSize set to zero.");
+        }
         this.size= taskSize;
         if ( max==min && min==-1 && doEchoToParent ) {
             min= 0;
