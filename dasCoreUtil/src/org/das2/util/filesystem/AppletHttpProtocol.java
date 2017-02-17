@@ -54,7 +54,7 @@ public class AppletHttpProtocol implements WebProtocol {
 
         result.put( META_EXIST, String.valueOf(exists) );
         
-        connect.disconnect();
+        //connect.disconnect();
 
         return result;
 

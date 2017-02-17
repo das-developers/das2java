@@ -191,7 +191,7 @@ public class HttpFileSystem extends WebFileSystem {
                     logger.log( Level.FINER, "made connection, now consume rest of stream: {0}", urlc );
                     HtmlUtil.consumeStream( urlc.getInputStream() );
                     logger.log( Level.FINER, "done consuming and initial connection is complete: {0}" );
-                    urlc.disconnect();
+                    //urlc.disconnect();
                     offline= false;
                     doCheck= false;
                     logger.finer( "Verify Credentials exits with okay");
@@ -481,7 +481,7 @@ public class HttpFileSystem extends WebFileSystem {
             }
         } finally {
             if ( urlc instanceof HttpURLConnection ) {
-                ((HttpURLConnection)urlc).disconnect();
+                //((HttpURLConnection)urlc).disconnect();
             }
         }
     }

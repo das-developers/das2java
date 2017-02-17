@@ -140,7 +140,7 @@ public final class HttpUtil {
                 result.put(WebProtocol.META_LAST_MODIFIED, String.valueOf(connect.getLastModified()));
                 result.put(WebProtocol.META_CONTENT_LENGTH, String.valueOf(connect.getContentLength()));
                 result.put(WebProtocol.META_CONTENT_TYPE, connect.getContentType());
-                connect.disconnect();
+                //connect.disconnect();
                 theResult = result;
             } else {
                 Map<String, String> result = new HashMap<>();
@@ -198,7 +198,7 @@ public final class HttpUtil {
                 if (requestMethod != null) {
                     newUrlConnection.setRequestMethod(requestMethod);
                 }
-                ((HttpURLConnection) urlConnection).disconnect();
+                //((HttpURLConnection) urlConnection).disconnect();
                 urlConnection = newUrlConnection;
             }
             return urlConnection;
