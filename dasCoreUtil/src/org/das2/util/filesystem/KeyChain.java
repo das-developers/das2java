@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 
 package org.das2.util.filesystem;
 
@@ -200,12 +196,8 @@ public class KeyChain {
         }
         
         if ( toFile ) {
-            FileOutputStream fout=null;
-            try {
-                fout= new FileOutputStream(keysFile);
+            try (FileOutputStream fout = new FileOutputStream(keysFile)) {
                 fout.write( out.toByteArray() );
-            } finally {
-                if ( fout!=null ) fout.close();
             }
             if ( !keysFile.setReadable(false) ) logger.warning("setReadable failure");
             if ( !keysFile.setReadable(false,false) ) logger.warning("setReadable failure");
@@ -240,12 +232,12 @@ public class KeyChain {
     /**
      * map from URL, without trailing slash, to key.
      */
-    private final Map<String,String> keys= new HashMap<String,String>();
+    private final Map<String,String> keys= new HashMap<>();
     
     /**
      * map from URL, without trailing slash, to cookie.
      */
-    private final Map<String,String> cookies= new HashMap<String,String>();
+    private final Map<String,String> cookies= new HashMap<>();
 
     /**
      * parent component for password dialog.
@@ -518,7 +510,9 @@ public class KeyChain {
 
     /**
      * plug the username and password into the URI.
-     * @param root
+     * @param root the URI, possibly needing a username and password.
+     * @return the URI with the username and password.
+     * @throws org.das2.util.monitor.CancelledOperationException
      */
     public URI resolveUserInfo(URI root) throws CancelledOperationException {
         try {
@@ -618,9 +612,7 @@ public class KeyChain {
                     cookie= cookie1;
                 } catch (MalformedURLException ex) {
                     Logger.getLogger(KeyChain.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (CancelledOperationException ex) {
-                    Logger.getLogger(KeyChain.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (IOException ex) {
+                } catch (CancelledOperationException | IOException ex) {
                     Logger.getLogger(KeyChain.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
