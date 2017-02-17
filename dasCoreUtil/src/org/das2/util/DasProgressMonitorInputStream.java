@@ -27,6 +27,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.das2.util.monitor.ProgressMonitor;
 
 /**
@@ -35,23 +39,30 @@ import org.das2.util.monitor.ProgressMonitor;
  */
 public class DasProgressMonitorInputStream extends java.io.FilterInputStream {
     
-    private ProgressMonitor monitor;
+    private static final Logger logger= LoggerManager.getLogger("das2.system.monitor");
+    
+    private final ProgressMonitor monitor;
     private boolean started = false;
     private int bytesRead = 0;
-    long birthTimeMilli;
-    long deathTimeMilli;
-    DecimalFormat transferRateFormat;
+    private final long birthTimeMilli;
+    private long deathTimeMilli;
+    private DecimalFormat transferRateFormat;
     boolean enableProgressPosition= true; 
 
     private long streamLength= 1000000; // this is usually close because of server side averaging.
     private long taskSize= streamLength/1000;
+    private final List<Runnable> runWhenClosedRunnables;
     
-    /** Creates a new instance of DasProgressMonitorInputStream */
+    /** Creates a new instance of DasProgressMonitorInputStream
+     * @param in the InputStream to monitor as data comes in.
+     * @param monitor the monitor to report feedback
+     */
     public DasProgressMonitorInputStream( InputStream in, ProgressMonitor monitor ) {
         super(in);
         this.monitor = monitor;
         this.birthTimeMilli= System.currentTimeMillis();
         this.deathTimeMilli= -1;
+        this.runWhenClosedRunnables= new ArrayList<>();
     }
     
     private void reportTransmitSpeed() {
@@ -60,7 +71,9 @@ public class DasProgressMonitorInputStream extends java.io.FilterInputStream {
             transferRateFormat.setMaximumFractionDigits(2);
             transferRateFormat.setMinimumFractionDigits(2);
         }
-        monitor.setProgressMessage("("+ transferRateFormat.format(calcTransmitSpeed()/1024) +"kB/s)");
+        String s= transferRateFormat.format(calcTransmitSpeed()/1024);
+        monitor.setProgressMessage("("+ s +"kB/s)");
+        logger.log(Level.FINER, "transmit speed {0}", s );
         if ( enableProgressPosition ) monitor.setTaskProgress(bytesRead/1000);
     }
     
@@ -78,6 +91,7 @@ public class DasProgressMonitorInputStream extends java.io.FilterInputStream {
         return 1000. * totalBytesRead / timeElapsed;
     }
     
+    @Override
     public int read() throws IOException {
         checkCancelled();
         int result = super.read();
@@ -99,6 +113,7 @@ public class DasProgressMonitorInputStream extends java.io.FilterInputStream {
         return result;
     }
     
+    @Override
     public int read(byte[] b) throws IOException {
         checkCancelled();
         int result = super.read(b);
@@ -120,6 +135,7 @@ public class DasProgressMonitorInputStream extends java.io.FilterInputStream {
         return result;
     }
     
+    @Override
     public int read(byte[] b, int off, int len) throws IOException {
         checkCancelled();
         int result = super.read(b, off, len);
@@ -152,12 +168,41 @@ public class DasProgressMonitorInputStream extends java.io.FilterInputStream {
         }
     }
     
+    /**
+     * should an action be needed when the transaction is complete, for example
+     * closing a network connection, this can be used.
+     * @param run 
+     */
+    public void addRunWhenClosedRunnable( Runnable run ) {
+        runWhenClosedRunnables.add(run);
+    }
+    
+    /**
+     * close resources needed and set the monitor finished flag.  If
+     * and runWhenClosedRunnables have been added, call them.
+     * @throws IOException 
+     */
+    @Override
     public void close() throws IOException {
+        logger.fine("close monitor");
         super.close();
+        if ( deathTimeMilli>-1 ) {
+            logger.fine("close called twice.");
+        }
+        boolean doRunWhenClosedRunnables= deathTimeMilli==-1;
         deathTimeMilli= System.currentTimeMillis();
         if (monitor != null) {
             if ( !monitor.isFinished() ) monitor.finished();  // it should be finished already from the read command.
             started= false;
+        }
+        if ( doRunWhenClosedRunnables ) {
+            for ( Runnable run: runWhenClosedRunnables ) {
+                try {
+                    run.run();
+                } catch ( RuntimeException ex ) {
+                    logger.log(Level.WARNING,ex.getMessage(),ex);
+                }
+            }
         }
     }
     
@@ -166,6 +211,7 @@ public class DasProgressMonitorInputStream extends java.io.FilterInputStream {
      * rate will still be reported. This is introduced in case another agent 
      * (the das2Stream reader, in particular) can set the progress position 
      * more accurately.
+     * @param value
      */
     public void setEnableProgressPosition( boolean value ) {
         this.enableProgressPosition= value;
@@ -174,7 +220,7 @@ public class DasProgressMonitorInputStream extends java.io.FilterInputStream {
     /**
      * Utility field used by bound properties.
      */
-    private java.beans.PropertyChangeSupport propertyChangeSupport =  new java.beans.PropertyChangeSupport(this);
+    private final java.beans.PropertyChangeSupport propertyChangeSupport =  new java.beans.PropertyChangeSupport(this);
 
     /**
      * Adds a PropertyChangeListener to the listener list.
@@ -193,16 +239,17 @@ public class DasProgressMonitorInputStream extends java.io.FilterInputStream {
     }
 
     /**
-     * Getter for property taskSize.
-     * @return Value of property taskSize.
+     * the length of the stream in bytes.  Note often the length is not known,
+     * and it is by default 1000000.
+     * @return length of the stream in bytes, or 10000000.
      */
     public long getStreamLength() {
         return this.streamLength;
     }
 
     /**
-     * Setter for property taskSize.
-     * @param taskSize New value of property taskSize.
+     * set the length of the stream in bytes.
+     * @param taskSize the length of the stream in bytes.
      */
     public void setStreamLength(long taskSize) {
         long oldTaskSize = this.streamLength;
