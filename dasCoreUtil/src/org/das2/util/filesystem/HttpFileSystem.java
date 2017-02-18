@@ -79,7 +79,12 @@ public class HttpFileSystem extends WebFileSystem {
     private final Map<String,DirectoryEntry> listingEntries= new HashMap();
     private final Map<String,Long> listingEntryFreshness= new HashMap();
     
-    /** Creates a new instance of WebFileSystem */
+    /** 
+     * Create a new HttpFileSystem mirroring the root, a URL pointing to "http" or "https", 
+     * in the local folder.
+     * @param root the root of the filesystem
+     * @param localRoot the local root where files are downloaded.
+     */
     protected HttpFileSystem(URI root, File localRoot) {
         super(root, localRoot);
     }
