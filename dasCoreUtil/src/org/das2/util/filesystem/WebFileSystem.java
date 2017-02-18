@@ -77,12 +77,12 @@ public abstract class WebFileSystem extends FileSystem {
     /**
      * we keep a cached listing in memory for performance.  This is backed by the .listing file.
      */
-    public static final int MEMORY_LISTING_TIMEOUT_MS= 4000;
+    public static final int MEMORY_LISTING_TIMEOUT_MS= 10000;
 
     /**
      * timestamp checks will occur no more often than this.
      */
-    public static final int HTTP_CHECK_TIMESTAMP_LIMIT_MS = 4000;
+    public static final int HTTP_CHECK_TIMESTAMP_LIMIT_MS = 10000;
 
     public static File getDownloadDirectory() {
         File local = FileSystem.settings().getLocalCacheDir();
