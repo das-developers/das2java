@@ -69,7 +69,7 @@ public final class HttpUtil {
      * and ftp, and will check for redirects.  This will
      * allow caching of head requests.
      * @param url ftp,https, or http URL
-     * @param props, if non-null, may be a map containing cookie.
+     * @param props if non-null, may be a map containing cookie.
      * @return the metadata
      * @throws java.io.IOException when HEAD requests are made.
      */
@@ -108,7 +108,6 @@ public final class HttpUtil {
                 boolean exists;
                 HttpURLConnection connect = (HttpURLConnection) url.openConnection();
                 connect.setRequestMethod("HEAD");
-                HttpURLConnection.setFollowRedirects(false);
                 try {
                     String encode = KeyChain.getDefault().getUserInfoBase64Encoded(url);
                     if (encode != null) {
@@ -124,10 +123,14 @@ public final class HttpUtil {
                         connect.setRequestProperty(WebProtocol.META_COOKIE, cookie);
                     }
                 }
-                HttpURLConnection.setFollowRedirects(true);
-                connect = (HttpURLConnection) HttpUtil.checkRedirect(connect);
+                //HttpURLConnection.setFollowRedirects(true);
+                //connect = (HttpURLConnection) HttpUtil.checkRedirect(connect);
                 FileSystem.loggerUrl.log(Level.FINE, "HEAD to get metadata: {0}", new Object[]{url});
                 connect.connect();
+                int responseCode= connect.getResponseCode();
+                if (responseCode == HttpURLConnection.HTTP_MOVED_PERM || responseCode == HttpURLConnection.HTTP_MOVED_TEMP || responseCode == HttpURLConnection.HTTP_SEE_OTHER) {
+                    connect= (HttpURLConnection) HttpUtil.checkRedirect(connect);
+                }
                 exists = connect.getResponseCode() != 404;
                 Map<String, String> result = new HashMap<>();
                 Map<String, List<String>> fields = connect.getHeaderFields();
