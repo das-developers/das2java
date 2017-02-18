@@ -446,6 +446,12 @@ public class WebFileObject extends FileObject {
             logger.log(Level.FINE, "HEAD request reports connection.getLastModified()={0}", remoteDate);
             long contentLength= Long.parseLong( meta.get( WebProtocol.META_CONTENT_LENGTH ) );
             if ( contentLength>-1 ) remoteLength= contentLength;
+            if ( "application/x-gzip".equals( meta.get("ContentType") ) ) {
+                String contentLocation= meta.get("Content-Location");
+                if ( contentLocation!=null && contentLocation.endsWith(".gz") ) {
+                    remoteLength=-1;
+                }
+            }
                 
         } else {
             if ( this.lastModified().getTime()==0 || this.lastModified().getTime()==Long.MAX_VALUE ) {
@@ -469,7 +475,7 @@ public class WebFileObject extends FileObject {
 
         if (localFile.exists()) {
             Date localFileLastModified = new Date(localFile.lastModified()); 
-            if (remoteDate.after(localFileLastModified) || remoteLength!=localFile.length() ) {
+            if (remoteDate.after(localFileLastModified) || ( remoteLength>-1 && remoteLength!=localFile.length() ) ) {
                 logger.log(Level.FINE, "remote file length is different or is newer than local copy of {0}, download.", this.getNameExt());
                 download = true;
             }
