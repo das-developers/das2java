@@ -151,8 +151,13 @@ public class WebFileObject extends FileObject {
         if ( this.isFolderResolved ) {        
             return this.isFolder;
         } else {    
-            //TODO: make HttpFileObject that does HEAD requests to properly answer these questions.  See HttpFileSystem.getHeadMeta()
-            throw new RuntimeException("IOException in constructor prevented us from resolving");
+            try {
+                this.isFolder= wfs.isDirectory(this.pathname);
+                this.isFolderResolved= true;
+                return this.isFolder;
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
         }
     }
 
@@ -324,19 +329,21 @@ public class WebFileObject extends FileObject {
 
             try {
                 if (!localFile.canRead()) {
-                    if ( !( pathname.endsWith(".zip") || pathname.endsWith(".ZIP") ) && wfs.isDirectory(pathname) ) {  // klugde, see https://sourceforge.net/tracker/index.php?func=detail&aid=3049303&group_id=199733&atid=970682
+                    if ( pathname.equals("") || pathname.endsWith("/") ) {  // this used to check the file listing.
                         FileSystemUtil.maybeMkdirs(localFile);
                         this.isFolder = true;
                         if ("".equals(pathname)) {
                             this.isRoot = true;
                         }
+                        this.isFolderResolved= true;
                     } else {
-                        this.isFolder = false;
+                        this.isFolderResolved= false;
+                        // do nothing, we still don't know
                     }
                 } else {
                     this.isFolder = localFile.isDirectory();
+                    this.isFolderResolved= true;
                 }
-                this.isFolderResolved= true;
             } catch ( ConnectException ex ) {
                 ex.printStackTrace();
                 logger.log(Level.SEVERE,ex.getMessage(), ex);
