@@ -41,6 +41,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.UnknownHostException;
+import java.sql.Time;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -725,6 +726,8 @@ public class HttpFileSystem extends WebFileSystem {
 
                 downloadFile( directory, listing, getPartFile(listing), new NullProgressMonitor() );
 
+                listing.setLastModified( System.currentTimeMillis() );
+                
                 try (FileInputStream fin = new FileInputStream(listing)) {
                     list = HtmlUtil.getDirectoryListing( getURL(directory), fin );
                 }
