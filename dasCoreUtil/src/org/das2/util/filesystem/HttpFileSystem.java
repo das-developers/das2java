@@ -482,7 +482,11 @@ public class HttpFileSystem extends WebFileSystem {
             }
         } finally {
             if ( urlc instanceof HttpURLConnection ) {
-                ((HttpURLConnection)urlc).disconnect();
+                if ( remoteURL.getPath().endsWith("/") ) {
+                    logger.fine("not closing, because it was a listing file.");
+                } else {
+                    ((HttpURLConnection)urlc).disconnect();
+                }
             }
         }
     }
