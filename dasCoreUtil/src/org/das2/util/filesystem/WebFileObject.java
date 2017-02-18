@@ -27,6 +27,7 @@ import java.util.logging.Level;
 import org.das2.util.monitor.ProgressMonitor;
 import org.das2.util.monitor.NullProgressMonitor;
 import java.io.*;
+import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.channels.Channels;
@@ -336,8 +337,11 @@ public class WebFileObject extends FileObject {
                     this.isFolder = localFile.isDirectory();
                 }
                 this.isFolderResolved= true;
+            } catch ( ConnectException ex ) {
+                ex.printStackTrace();
+                logger.log(Level.SEVERE,ex.getMessage(), ex);
             } catch (IOException ex) {
-                logger.log(Level.SEVERE,"unable construct web file object",ex);
+                logger.log(Level.SEVERE,"unable to construct web file object",ex);
                 this.isFolderResolved = false;
             }
         }
