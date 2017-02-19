@@ -23,6 +23,7 @@
 
 package org.das2.util.monitor;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.util.LoggerManager;
 
@@ -172,8 +173,9 @@ public class SubTaskMonitor implements ProgressMonitor {
 
     @Override
     public void setTaskSize(long taskSize) {
-        if ( taskSize==0 ) {
-            throw new IllegalArgumentException("taskSize set to zero.");
+        if ( taskSize<1 ) {
+            logger.log(Level.FINER, "taskSize cannot be set to {0}", taskSize);
+            return;
         }
         this.size= taskSize;
         if ( max==min && min==-1 && doEchoToParent ) {
