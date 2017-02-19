@@ -26,6 +26,7 @@
 
 package org.das2.util.monitor;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.util.LoggerManager;
 
@@ -50,7 +51,12 @@ public class AbstractProgressMonitor implements ProgressMonitor {
     
     @Override
     public void setTaskSize(long taskSize) {
-        this.taskSize= taskSize;
+        if ( taskSize<1 ) {
+            logger.log(Level.FINER, "taskSize set to {0}, resetting", taskSize);
+            this.taskSize= -1;
+        } else {
+            this.taskSize= taskSize;
+        }
     }
     
     @Override
