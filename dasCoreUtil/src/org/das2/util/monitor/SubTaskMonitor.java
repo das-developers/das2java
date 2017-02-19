@@ -174,8 +174,8 @@ public class SubTaskMonitor implements ProgressMonitor {
     @Override
     public void setTaskSize(long taskSize) {
         if ( taskSize<1 ) {
-            logger.log(Level.FINER, "taskSize cannot be set to {0}", taskSize);
-            return;
+            logger.log(Level.FINER, "taskSize set to {0}, resetting", taskSize);
+            taskSize= -1;
         }
         this.size= taskSize;
         if ( max==min && min==-1 && doEchoToParent ) {

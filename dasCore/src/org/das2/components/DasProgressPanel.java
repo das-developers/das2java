@@ -644,6 +644,7 @@ public class DasProgressPanel implements ProgressMonitor {
         if (taskSize < -1) {
             throw new IllegalArgumentException("taskSize must be positive, -1, or 0, not " + taskSize);
         } else {
+            if ( taskSize==0 ) taskSize=-1;
             if (componentsInitialized) {
                 SwingUtilities.invokeLater( new Runnable() {
                     @Override
