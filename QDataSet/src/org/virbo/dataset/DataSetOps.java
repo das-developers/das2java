@@ -1154,12 +1154,14 @@ public class DataSetOps {
      * 
      * Last, extraneous spaces and underscores are removed to see if this will result in a match.
      * 
-     * @param bundleDs a bundle dataset with the property BUNDLE_1 or DEPEND_1 having EnumerationUnits.
+     * @param bundleDs a bundle dataset with the property BUNDLE_1 or DEPEND_1 having EnumerationUnits, (or BUNDLE_0 for a rank 1 dataset).
      * @param name the named dataset.
      * @return the index or -1 if the name is not found.
      */
     public static int indexOfBundledDataSet( QDataSet bundleDs, String name ) {
-        QDataSet bundle1= (QDataSet) bundleDs.property(QDataSet.BUNDLE_1);
+        int rank= bundleDs.rank();
+        QDataSet bundle1= (QDataSet) bundleDs.property( "BUNDLE_"+(rank-1) );
+        
         int ib= -1;
         int i= name.indexOf("["); // allow name to be "Flux[Time=1440,en=10]"
         if ( i>0 ) {
@@ -1175,7 +1177,7 @@ public class DataSetOps {
         }
 
         if ( bundle1==null ) {
-            bundle1= (QDataSet) bundleDs.property(QDataSet.DEPEND_1); //simple legacy bundle was once DEPEND_1.
+            bundle1= (QDataSet) bundleDs.property( "DEPEND_"+(rank-1) ); //simple legacy bundle was once DEPEND_1.
             if ( bundle1!=null && bundle1.rank()>1 ) {
                 throw new IllegalArgumentException("high rank DEPEND_1 found where rank 1 was expected");
             } else if ( bundle1!=null ) {
