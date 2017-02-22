@@ -213,7 +213,7 @@ public class HtmlUtil {
             urlConnection.setRequestProperty("Authorization", "Basic " + encode);
         }
                 
-        urlConnection= checkRedirect( urlConnection );
+        urlConnection= HttpUtil.checkRedirect( urlConnection );
         return urlConnection.getInputStream();
            
     }
