@@ -1112,7 +1112,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
             encoder.addText(DasPNGConstants.KEYWORD_PLOT_INFO, getImageMetadata() );
             encoder.write(image, out);
         } else {
-            logger.info("ImageIO used to create image with transparent background, no metadata will be put in image.");
+            logger.fine("ImageIO used to create image with transparent background, no metadata will be put in image.");
             ImageIO.write(image, "png", out );
         }
     }
