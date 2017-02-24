@@ -418,6 +418,32 @@ public class Schemes {
     }
     
     /**
+     * return true if the data describes the columns of another dataset.
+     * @param bds
+     * @return 
+     */
+    public static boolean isBundleDescriptor( QDataSet bds ) {
+        if ( bds.rank()!=2 ) {
+            return false;
+        } else {
+            if ( bds.length(0)==0 ) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+    
+    /**
+     * return data that describes the columns of another dataset.  Note these
+     * are typically not found in APIs.
+     * @return data that describes the columns of another dataset.
+     */
+    public static QDataSet bundleDescriptor() {
+        return (QDataSet)bundleDataSet().property(QDataSet.BUNDLE_1);
+    }
+    
+    /**
      * return bundle with Time, Density, Speed, and Flux, to demonstrate
      * a bundle of datasets with differing rank.
      * @return 
