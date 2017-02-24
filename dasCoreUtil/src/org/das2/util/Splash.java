@@ -37,7 +37,7 @@ public class Splash extends JWindow {
     private static Splash instance=null;
     
     private Handler handler;
-    private JLabel messageLabel;
+    private final JLabel messageLabel;
     
     public static String getVersion() {
         //DName: das_20030505_01_beta D
@@ -60,11 +60,14 @@ public class Splash extends JWindow {
     
     private Handler createhandler() {
         Handler result= new Handler() {
+            @Override
             public void publish( LogRecord logRecord ) {                
                 System.out.println( logRecord.getMessage() );
                 messageLabel.setText(logRecord.getMessage() );
             }
+            @Override
             public void flush() {}
+            @Override
             public void close() {}
         };
         return result;

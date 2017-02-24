@@ -25,16 +25,18 @@ public class AboutUtil {
 
     private static final Logger logger= LoggerManager.getLogger("das2");
     
+    /**
+     * return HTML code describing the release version, Java version, build time, etc.
+     * @return 
+     */
     public static String getAboutHtml() {
         String dasVersion = Splash.getVersion();
         String javaVersion = System.getProperty("java.version"); // applet okay
         String buildTime = "???";
         java.net.URL buildURL = AboutUtil.class.getResource("/buildTime.txt");
         if (buildURL != null) {
-            try {
-                BufferedReader reader = new BufferedReader(new InputStreamReader(buildURL.openStream()));
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(buildURL.openStream()))) {
                 buildTime = reader.readLine();
-                reader.close();
             } catch (IOException ex) {
                 logger.log( Level.WARNING, ex.getMessage(), ex );
             }
@@ -75,7 +77,7 @@ public class AboutUtil {
         if ( loader==null ) loader= ClassLoader.getSystemClassLoader();
         Enumeration<URL> urls = loader.getResources("META-INF/build.txt");
 
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
 
         while (urls.hasMoreElements()) {
             URL url = urls.nextElement();
@@ -103,7 +105,9 @@ public class AboutUtil {
                 version = cvsTagName.substring(6, cvsTagName.length() - 2);
             }
 
-            String ch= name + ": " + version + "(" + props.getProperty("build.timestamp") + " " + props.getProperty("build.user.name") + ")";
+            String userName= " " + props.getProperty("build.user.name");
+            if ( userName.trim().length()==0 ) userName= "";
+            String ch= name + ": " + version + "(" + props.getProperty("build.timestamp") + userName + ")";
             if ( result.contains(ch) ) {
                 
             } else {
@@ -115,6 +119,12 @@ public class AboutUtil {
 
     }
 
+    /**
+     * return the tag assigned to the class, but looking for "META-INF/build.txt" in the jar file.
+     * @param clas
+     * @return release tag or "(dev)" if the tag is not found.
+     * @throws IOException 
+     */
     public static String getReleaseTag( Class clas ) throws IOException {
         Properties props = new Properties();
         String clasFile= clas.getName().replaceAll("\\.","/")+".class";
@@ -134,8 +144,7 @@ public class AboutUtil {
     /**
      * Identify the release version by looking a non-null build.tag.  It's expected
      * that the build script will insert build.tag into META-INF/build.txt
-     * @return build tag, which should not contain spaces, or
-     *    (dev) if no tag is found.
+     * @return build tag, which should not contain spaces, or (dev) if no tag is found.
      * @throws java.io.IOException
      */
     public static String getReleaseTag() throws IOException {
