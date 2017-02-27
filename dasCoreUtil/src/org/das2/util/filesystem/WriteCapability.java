@@ -21,15 +21,16 @@ public interface WriteCapability {
     public OutputStream getOutputStream( ) throws IOException;
 
     /**
-     * Test to see if we can write to this file.
-     * @return
-     * @throws IOException
+     * Test to see if we can write to this file.  This should not
+     * create a file, only getOutputStream should do this.  
+     * TODO: someday we'll want a locking mechanism.
+     * @return true if the file can be created.
      */
-    public boolean canWrite() throws IOException;
+    public boolean canWrite();
 
     /**
      * delete the file
-     * @return
+     * @return true if the file was deleted.
      * @throws IOException
      */
     public boolean delete() throws IOException;
