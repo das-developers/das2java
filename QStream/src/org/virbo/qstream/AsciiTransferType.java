@@ -1,7 +1,4 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package org.virbo.qstream;
 
 import java.io.UnsupportedEncodingException;
@@ -22,7 +19,7 @@ import org.das2.util.NumberFormatUtil;
 public class AsciiTransferType extends TransferType {
 
     final int sizeBytes;
-    private DecimalFormat formatter;
+    private final DecimalFormat formatter;
     private String formatStr; // for debugging
     
     public AsciiTransferType( int sizeBytes, boolean scientificNotation ) {
@@ -86,6 +83,7 @@ public class AsciiTransferType extends TransferType {
         }
     }
     
+    @Override
     public void write( double d, ByteBuffer buffer) {
         String s = formatter.format(d);
         if ( s.length() < sizeBytes ) s+=" ";
@@ -109,6 +107,7 @@ public class AsciiTransferType extends TransferType {
         
     }
 
+    @Override
     public double read(ByteBuffer buffer) {
         byte[] bytes = new byte[sizeBytes];
         buffer.get(bytes);
@@ -124,14 +123,17 @@ public class AsciiTransferType extends TransferType {
         }
     }
 
+    @Override
     public int sizeBytes() {
         return sizeBytes;
     }
 
+    @Override
     public boolean isAscii() {
         return true;
     }
 
+    @Override
     public String name() {
         return "ascii"+sizeBytes;
     }
