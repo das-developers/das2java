@@ -45,7 +45,10 @@ public class BoxRangeSelectorMouseModule extends MouseModule {
     private EventListenerList listenerList =  new javax.swing.event.EventListenerList();
     
     /**
+	 * @param parent the DasCanvasComponent this module will be associated with
      * @param consumer is the source context of the data set selection
+	 * @param xAxis the horizontal axis to use when transforming from pixel to data space
+	 * @param yAxis the vertical axis to use when transforming from pixel to data space
      */
     public BoxRangeSelectorMouseModule(DasCanvasComponent parent, DataSetConsumer consumer, DasAxis xAxis, DasAxis yAxis) {
         super( parent, new BoxGesturesRenderer(parent), "Box Selection" );
@@ -66,14 +69,22 @@ public class BoxRangeSelectorMouseModule extends MouseModule {
         return result;
     }
     
+	@Override
     public void mouseRangeSelected(MouseDragEvent e0) {
         if (e0 instanceof MouseBoxEvent) {
             MouseBoxEvent e= (MouseBoxEvent)e0;
 
             Datum xMin = xAxis.invTransform(e.getXMinimum());
             Datum xMax = xAxis.invTransform(e.getXMaximum());
-            Datum yMin = yAxis.invTransform(e.getYMaximum());
-            Datum yMax = yAxis.invTransform(e.getYMinimum());
+			Datum yMin, yMax;
+			if (yAxis.isFlipped()) {
+				yMin = yAxis.invTransform(e.getYMinimum());
+				yMax = yAxis.invTransform(e.getYMaximum());
+			}
+			else {
+				yMin = yAxis.invTransform(e.getYMaximum());
+				yMax = yAxis.invTransform(e.getYMinimum());
+			}
             BoxSelectionEvent evt = new BoxSelectionEvent(this, new DatumRange( xMin, xMax ), new DatumRange( yMin, yMax) );
             if (consumer != null) {
                 evt.setDataSet(consumer.getConsumedDataSet());
