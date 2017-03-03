@@ -184,6 +184,7 @@ public class HttpFileSystem extends WebFileSystem {
                     urlc.setRequestProperty("Cookie",cookie);
                 }
                 
+                int responseCode= -1;
                 try {
                     logger.log( Level.FINER, "Verify Credentials {0}", urlc );
                     if ( userInfo!=null && !userInfo.contains(":") ) {
@@ -193,6 +194,8 @@ public class HttpFileSystem extends WebFileSystem {
                         logger.log( Level.FINER, "userInfo.length={0}", ( userInfo==null ? -1 : userInfo.length() ));
                     }
                     urlc.connect();
+                    responseCode= urlc.getResponseCode();
+                    
                     logger.log( Level.FINER, "made connection, now consume rest of stream: {0}", urlc );
                     HtmlUtil.consumeStream( urlc.getInputStream() );
                     logger.log( Level.FINER, "done consuming and initial connection is complete: {0}" );
@@ -246,8 +249,8 @@ public class HttpFileSystem extends WebFileSystem {
                     offlineResponseCode= code;
                 }
 
-                if (urlc.getResponseCode() != HttpURLConnection.HTTP_OK && urlc.getResponseCode() != HttpURLConnection.HTTP_FORBIDDEN) {
-                    if ( urlc.getResponseCode()==HttpURLConnection.HTTP_UNAUTHORIZED ) {
+                if ( responseCode != HttpURLConnection.HTTP_OK && responseCode != HttpURLConnection.HTTP_FORBIDDEN) {
+                    if ( responseCode==HttpURLConnection.HTTP_UNAUTHORIZED ) {
                         // might be nice to modify URL so that credentials are used.
                         KeyChain.getDefault().clearUserPassword(root);
                         if ( userInfo==null ) {
