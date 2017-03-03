@@ -98,7 +98,14 @@ public class DataTransferType {
             return units;
         }
         
+        /**
+         * https://bugs-pw.physics.uiowa.edu/mantis/view.php?id=478
+         * @param units 
+         */
         public void resetUnits( Units units ) {
+            if ( units!=Units.us2000 ) {
+                System.err.println("das2stream units set to something other than Units.us2000: See https://bugs-pw.physics.uiowa.edu/mantis/view.php?id=478" );
+            }
             this.units= units;
         }
         
