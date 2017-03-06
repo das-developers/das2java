@@ -268,9 +268,7 @@ public interface QDataSet {
     /**
      * Boolean, Boolean.TRUE if dataset is monotonically increasing.  Data may 
      * only contain invalid values at the beginning or end, and may contain repeated 
-     * values.  Generally this will be used with tags datasets. TODO: can cadence 
-     * be negative?
-     * TODO: consider adding boolean UNIQUE property.
+     * values.  Generally this will be used with tags datasets. 
      */
     public final static String MONOTONIC="MONOTONIC";
     
@@ -280,21 +278,22 @@ public interface QDataSet {
      * For example, interpolation is disallowed for points 1.5*CADENCE apart.  
      * This property only makes sense with a tags dataset.  Note this may be
      * a "ratiometric" datum, like 110 percentIncrease, for logarithmically 
-     * spaced data.
-     * TODO: can cadence be negative?
+     * spaced data.  Cadence must be positive.
      */
     public final static String CADENCE="CADENCE";
     
     /**
      * QDataSet of rank 0, or correlated QDataSet that limits accuracy.  This should
-     * be interpreted as the one standard deviation confidence level.  
+     * be interpreted as the one standard deviation confidence level, and must
+     * be positive. 
      * @see #BIN_PLUS for measurement intervals.  
      */
     public final static String DELTA_PLUS="DELTA_PLUS";
     
     /**
      * QDataSet of rank 0, or correlated QDataSet that limits accuracy.  This should
-     * be interpreted as the one standard deviation confidence level.   
+     * be interpreted as the one standard deviation confidence level, and must
+     * be positive.
      * @see #BIN_MINUS for measurement intervals.
      */
     public final static String DELTA_MINUS="DELTA_MINUS";
