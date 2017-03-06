@@ -6803,6 +6803,15 @@ public class Ops {
         if ( ds.property(QDataSet.BIN_PLUS )!=null ) deltaplus= (QDataSet)ds.property(QDataSet.BIN_PLUS );
         if ( ds.property(QDataSet.BIN_MINUS )!=null ) deltaminus= (QDataSet)ds.property(QDataSet.BIN_MINUS );
 
+        if ( deltaplus!=null ) {
+            Units u= SemanticOps.getUnits(deltaplus);
+            deltaplus= Ops.greaterOf(u.createDatum(0),deltaplus);
+        }
+        if ( deltaminus!=null ) {
+            Units u= SemanticOps.getUnits(deltaminus);
+            deltaminus= Ops.greaterOf(u.createDatum(0),deltaminus);
+        }
+        
         if ( ds.rank()==2 && SemanticOps.isBins(ds) ) {
             min= Ops.slice1(ds,0);
             max= Ops.slice1(ds,1);
