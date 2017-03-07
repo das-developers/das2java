@@ -79,8 +79,8 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
     private JPanel pngFileNamePanel;
     private JTextField pngFileTextField;
     private JFileChooser pngFileChooser;
-    JCheckBoxMenuItem primarySelectedItem;
-    JCheckBoxMenuItem secondarySelectedItem;    // must be non-null, but may contain null elements
+    JRadioButtonMenuItem primarySelectedItem;
+    JRadioButtonMenuItem secondarySelectedItem;    // must be non-null, but may contain null elements
     Rectangle[] dirtyBoundsList;
     
     private static final Logger logger = LoggerManager.getLogger( "das2.gui.dmia" );
@@ -202,7 +202,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
     }
     
     public void replaceMouseModule(MouseModule oldModule, MouseModule newModule) {
-        JCheckBoxMenuItem j = (JCheckBoxMenuItem) primaryActionButtonMap.get(oldModule);
+        JRadioButtonMenuItem j = (JRadioButtonMenuItem) primaryActionButtonMap.get(oldModule);
         primaryActionButtonMap.put(newModule, j);
         primaryActionButtonMap.remove(oldModule);
         secondaryActionButtonMap.put(newModule, secondaryActionButtonMap.get(oldModule));
@@ -212,15 +212,15 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
     }
     
     public synchronized void removeMouseModule(MouseModule module) {
-        JCheckBoxMenuItem j;
-        j= (JCheckBoxMenuItem) primaryActionButtonMap.remove(module);
+        JRadioButtonMenuItem j;
+        j= (JRadioButtonMenuItem) primaryActionButtonMap.remove(module);
         if ( j!=null && !headless ) {
             if ( primaryPopup.isAncestorOf(j) ) {
                 primaryPopup.remove(j);
                 numInserted--;
             }
         }
-        j= (JCheckBoxMenuItem) secondaryActionButtonMap.remove(module);
+        j= (JRadioButtonMenuItem) secondaryActionButtonMap.remove(module);
         if ( j!=null && !headless ) {
             if ( secondaryPopup.isAncestorOf(j) ) {
                 secondaryPopup.remove(j);
@@ -253,8 +253,8 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
 
                 String name = module.getLabel();
 
-                JCheckBoxMenuItem primaryNewItem = new JCheckBoxMenuItem(name);
-                JCheckBoxMenuItem secondaryNewItem = new JCheckBoxMenuItem(name);
+                JRadioButtonMenuItem primaryNewItem = new JRadioButtonMenuItem(name);
+                JRadioButtonMenuItem secondaryNewItem = new JRadioButtonMenuItem(name);
 
                 primaryNewItem.addActionListener(popupListener);
                 primaryNewItem.setActionCommand("primary");
@@ -385,7 +385,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
     public MouseModule getPrimaryModule() {
         ArrayList activ = new ArrayList();
         for (Object module : modules) {
-            JCheckBoxMenuItem j = (JCheckBoxMenuItem) primaryActionButtonMap.get(module);
+            JRadioButtonMenuItem j = (JRadioButtonMenuItem) primaryActionButtonMap.get(module);
             if (j.isSelected()) {
                 activ.add(module);
             }
@@ -396,7 +396,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
     public MouseModule getSecondaryModule() {
         ArrayList activ = new ArrayList();
         for (Object module : modules) {
-            JCheckBoxMenuItem j = (JCheckBoxMenuItem) secondaryActionButtonMap.get(module);
+            JRadioButtonMenuItem j = (JRadioButtonMenuItem) secondaryActionButtonMap.get(module);
             if (j.isSelected()) {
                 activ.add(module);
             }
@@ -414,21 +414,21 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         if (headless) {
             return;
         }
-        JCheckBoxMenuItem j = (JCheckBoxMenuItem) primaryActionButtonMap.get(module);
+        JRadioButtonMenuItem j = (JRadioButtonMenuItem) primaryActionButtonMap.get(module);
         if (j == null) {
             addMouseModule(module);
         }
         for (Iterator i = primaryActionButtonMap.entrySet().iterator(); i.hasNext();) {
             try {
                 Object ii = ((Map.Entry) i.next()).getValue();
-                ((JCheckBoxMenuItem) ii).setSelected(false);
+                ((JRadioButtonMenuItem) ii).setSelected(false);
             } catch (RuntimeException ex) {
                 logger.log( Level.SEVERE, ex.getMessage(), ex );
                 throw ex;
             }
         }
 
-        j = (JCheckBoxMenuItem) primaryActionButtonMap.get(module);
+        j = (JRadioButtonMenuItem) primaryActionButtonMap.get(module);
         if (j != null) {
             j.setSelected(true);
         }
@@ -448,21 +448,21 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         if (headless) {
             return;
         }
-        JCheckBoxMenuItem j = (JCheckBoxMenuItem) secondaryActionButtonMap.get(module);
+        JRadioButtonMenuItem j = (JRadioButtonMenuItem) secondaryActionButtonMap.get(module);
         if (j == null) {
             addMouseModule(module);
         }
         for (Iterator i = secondaryActionButtonMap.entrySet().iterator(); i.hasNext();) {
             try {
                 Object ii = ((Map.Entry) i.next()).getValue();
-                ((JCheckBoxMenuItem) ii).setSelected(false);
+                ((JRadioButtonMenuItem) ii).setSelected(false);
             } catch (RuntimeException ex) {
                 logger.log( Level.SEVERE, ex.getMessage(), ex );
                 throw ex;
             }
         }
 
-        j = (JCheckBoxMenuItem) secondaryActionButtonMap.get(module);
+        j = (JRadioButtonMenuItem) secondaryActionButtonMap.get(module);
         if (j != null) {
             j.setSelected(true);
         }
@@ -571,7 +571,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
                         primarySelectedItem.setSelected(false);
                     }
                     for (Object module : modules) {
-                        JCheckBoxMenuItem j = (JCheckBoxMenuItem) primaryActionButtonMap.get(module);
+                        JRadioButtonMenuItem j = (JRadioButtonMenuItem) primaryActionButtonMap.get(module);
                         if (j.isSelected()) {
                             primarySelectedItem = j;
                             break;
@@ -583,7 +583,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
                         secondarySelectedItem.setSelected(false);
                     }
                     for (Object module : modules) {
-                        JCheckBoxMenuItem j = (JCheckBoxMenuItem) secondaryActionButtonMap.get(module);
+                        JRadioButtonMenuItem j = (JRadioButtonMenuItem) secondaryActionButtonMap.get(module);
                         if (j.isSelected()) {
                             secondarySelectedItem = j;
                             break;
@@ -839,10 +839,12 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         if ( menu != primaryPopup && menu != secondaryPopup) {
             throw new IllegalArgumentException("menu must be primary or secondary popup menu");
         }
+        ButtonGroup bg= new ButtonGroup();
         for (Iterator i = modules.iterator(); i.hasNext();) { //TODO: it looks like this strange bit of code just sets the label.
             MouseModule mm = (MouseModule) i.next();
-            JCheckBoxMenuItem j = (JCheckBoxMenuItem) primaryActionButtonMap.get(mm);
+            JRadioButtonMenuItem j = (JRadioButtonMenuItem) primaryActionButtonMap.get(mm);
             j.setText(mm.getLabel());
+            bg.add(j);
         }
         menu.show(ev.getComponent(), ev.getX(), ev.getY());
     }
@@ -913,14 +915,14 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
 
                     if (button == MouseEvent.BUTTON1 || button == MouseEvent.BUTTON3) {
                         for (Object module : modules) {
-                            JCheckBoxMenuItem j = (JCheckBoxMenuItem) primaryActionButtonMap.get(module);
+                            JRadioButtonMenuItem j = (JRadioButtonMenuItem) primaryActionButtonMap.get(module);
                             if (j.isSelected()) {
                                 active.add(module);
                             }
                         }
                     } else {
                         for (Object module : modules) {
-                            JCheckBoxMenuItem j = (JCheckBoxMenuItem) secondaryActionButtonMap.get(module);
+                            JRadioButtonMenuItem j = (JRadioButtonMenuItem) secondaryActionButtonMap.get(module);
                             if (j.isSelected()) {
                                 active.add(module);
                             }
@@ -1220,7 +1222,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
             JPopupMenu c= (JPopupMenu)b;
 
             for ( MenuElement me : c.getSubElements() ) {
-                if ( me.getComponent() instanceof JCheckBoxMenuItem ) continue;   //TODO: kludge
+                if ( me.getComponent() instanceof JRadioButtonMenuItem ) continue;   //TODO: kludge
                 primaryPopup.insert( me.getComponent(), numInserted );
                 numInserted++;
             }
