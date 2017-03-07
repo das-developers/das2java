@@ -534,7 +534,7 @@ public class DigitalRenderer extends Renderer {
         boolean isLongs= false;
         
         if ( form.length()==0 && dsformat!=null ) {
-            form= dsformat;
+            form= dsformat.trim();
         }
         if ( form.length()==0 ) {
             form= "%.2f";
