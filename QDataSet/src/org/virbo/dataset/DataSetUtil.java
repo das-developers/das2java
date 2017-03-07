@@ -37,6 +37,7 @@ import org.das2.util.LoggerManager;
 import org.virbo.dataset.examples.Schemes;
 import org.virbo.dsops.Ops;
 import org.virbo.dsutil.AutoHistogram;
+import org.virbo.dsutil.DataSetBuilder;
 import org.virbo.dsutil.LinFit;
 
 /**
@@ -1753,8 +1754,46 @@ public class DataSetUtil {
         
         return dephh.slice(imaxhh);
                 
+    }    
+    
+    /**
+     * return the cadence in X for the given X tags and Y tags.  The Y tags can repeat, and when this is the
+     * case, the X cadence will be span between successive X tags with the same Y tag.
+     * The goal will be a rank 0
+     * dataset that describes the intervals, but this will also return a rank 1
+     * dataset when multiple cadences are found.
+     * @param xds the x tags, which may not contain fill values for non-null result.
+     * @param yds the y values, which may not contain fill values for non-null result.
+     * @param zds the z values
+     * @return rank 0 or rank 1 dataset.
+     */
+    public static QDataSet guessCadence( QDataSet xds, QDataSet yds, QDataSet zds ) {
+        
+        QDataSet dxds= Ops.diff( xds );
+        
+        if ( yds.rank()==1 && xds.rank()==1 && yds.length()==xds.length() ) {
+            DataSetBuilder dsb= new DataSetBuilder(1,100);
+            
+        }
+        
+        dxds= Ops.divide( Ops.add( Ops.append( dxds.slice(0), dxds ), Ops.append( dxds, dxds.slice(dxds.length()-1) ) ), Ops.dataset(2) );
+        
+        QDataSet hh= Ops.autoHistogram( dxds );
+        
+        int maxhh= -1;
+        int imaxhh= -1;
+        for ( int i=0; i<hh.length(); i++ ) {
+            if ( hh.value(i)>maxhh) {
+                maxhh= (int)hh.value(i);
+                imaxhh= i;
+            }
+        }
+        QDataSet dephh= (QDataSet)hh.property(QDataSet.DEPEND_0);
+        
+        return dephh.slice(imaxhh);
+                
     }
-
+    
     /**
      * return true if each record of DEPEND_0 is the same.  Rank 0 datasets
      * are trivially constant.
@@ -2095,7 +2134,7 @@ public class DataSetUtil {
             if ( name!=null ) {
                 result.append(name).append("=");
             }
-            if ( format!=null ) {
+            if ( format!=null && format.trim().length()>0 ) {
                 if ( u!=null ) {
                     if ( UnitsUtil.isTimeLocation(u) ) {
                         double millis= u.convertDoubleTo(Units.t1970, ds.value() );
@@ -2588,7 +2627,7 @@ public class DataSetUtil {
             if ( wds.value()==0 ) {
                 return u.getFillDatum();
             } else {
-                if ( format==null ) {
+                if ( format==null || format.trim().length()==0 ) {
                     return Datum.create( ds.value(), u );
                 } else {
                     return Datum.create( ds.value(), u, new FormatStringFormatter(format, true) );
@@ -3258,7 +3297,7 @@ public class DataSetUtil {
         DatumFormatter df= d.getFormatter();
         String s;
         if ( df instanceof DefaultDatumFormatter ) {
-            if ( form==null ) {
+            if ( form==null || form.trim().length()==0 ) {
                 if ( "log".equals( yds.property(QDataSet.SCALE_TYPE) ) ) {
                     s = String.format( Locale.US, "%9.3e", value ).trim();
                 } else {
