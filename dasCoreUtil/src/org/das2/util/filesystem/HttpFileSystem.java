@@ -892,12 +892,12 @@ public class HttpFileSystem extends WebFileSystem {
         try {
             Map<String,Object> meta= getHeadMeta(filename);
             DirectoryEntry de= new DirectoryEntry();
-            List odate= (List)meta.get("Date");
-            List osize= (List)meta.get("Content-Length");
+            String odate= (String)meta.get("Date");
+            String osize= (String)meta.get("Content-Length");
             de.type= filename.endsWith("/") ? 'd' : 'f';
             if ( odate!=null && osize!=null ) {
-                de.modified= new Date((String)odate.get(0)).getTime();
-                de.size= Long.parseLong((String)osize.get(0));
+                de.modified= new Date(odate).getTime();
+                de.size= Long.parseLong(osize);
                 synchronized ( this ) {
                     listingEntries.put(filename,de);
                     listingEntryFreshness.put(filename,new Date().getTime());
