@@ -164,7 +164,7 @@ public class DataTransferType {
                 if ( m.matches()) {
                     int charCount = Integer.parseInt(m.group(1));
                     type = new DataTransferType.Time( charCount );
-                    map.put(name, type);
+                    //map.put(name, type); // don't cache Time Types.
                 } else {
                     throw new RuntimeException( "Unsupported type: "+name );
                 }
