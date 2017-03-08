@@ -76,7 +76,11 @@ public class DataTransferType {
         this.id = id;
         this.sizeBytes = sizeBytes;
         this.ascii = ascii;
-        map.put(name, this);
+        if ( name.startsWith("sun_" ) ) {
+            map.put(name, this);
+        } else if ( name.startsWith("little_endian" ) ) {
+            map.put(name, this);
+        }
         if (ascii) {
             doubleFormatter = NumberFormatUtil.getDecimalFormat(getFormat(sizeBytes-1));
         }
@@ -164,7 +168,7 @@ public class DataTransferType {
                 if ( m.matches()) {
                     int charCount = Integer.parseInt(m.group(1));
                     type = new DataTransferType.Time( charCount );
-                    //map.put(name, type); // don't cache Time Types.
+                    //map.put(name, type); // don't cache Time Types. //https://bugs-pw.physics.uiowa.edu/mantis/view.php?id=478
                 } else {
                     throw new RuntimeException( "Unsupported type: "+name );
                 }
