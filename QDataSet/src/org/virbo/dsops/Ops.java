@@ -10262,7 +10262,7 @@ public class Ops {
 
 
     public static QDataSet link( Object x, Object y, Object z ) {
-        return link( dataset(x), dataset(y) );
+        return link( dataset(x), dataset(y), dataset(z) );
     }
 
 
