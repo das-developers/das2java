@@ -361,6 +361,10 @@ public class VFSFileSystem extends org.das2.util.filesystem.FileSystem {
 
     /**
      * copies data from in to out, sending the number of bytesTransferred to the monitor.
+     * @param is the input stream source of data
+     * @param out the output stream to where the data is copied.
+     * @param monitor monitor for the transfer, where only setTaskProgress and isCancelled are called.
+     * @throws java.io.IOException if the transfer is interrupted.
      */
     protected void copyStream(InputStream is, OutputStream out, ProgressMonitor monitor) throws IOException {
         byte[] buffer = new byte[2048];
@@ -385,6 +389,7 @@ public class VFSFileSystem extends org.das2.util.filesystem.FileSystem {
      * @param filename the name of the file, relative to the filesystem.
      * @param f the file to where the file is downloaded.
      * @param partfile the temporary file during download.
+     * @param monitor progress monitor
      */
     protected void downloadFile(String filename, File f, File partfile, ProgressMonitor monitor) throws IOException {
         // This shouldn't be called for local files, but just in case...
