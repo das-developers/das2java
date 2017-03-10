@@ -68,6 +68,7 @@ import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.MutablePropertyDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
+import org.virbo.dataset.examples.Schemes;
 import org.virbo.dsops.Ops;
 import org.virbo.dsutil.DataSetBuilder;
 import org.virbo.dsutil.Reduction;
@@ -1709,6 +1710,7 @@ public class SeriesRenderer extends Renderer {
         QDataSet vds = null;
 
         QDataSet xds = SemanticOps.xtagsDataSet(dataSet);
+
         if ( dataSet.rank()<3 && !SemanticOps.isRank2Waveform(dataSet) ) {  // xtags are rank 2 bins can happen too
             vds= ytagsDataSet(ds);
             if ( vds==null ) {
@@ -1783,7 +1785,9 @@ public class SeriesRenderer extends Renderer {
             if (vds != null) {
 
                 updateFirstLast(xAxis, yAxis, xds, vds );
-
+                if ( Schemes.isBundleDataSet(ds) ) {
+                    dataSetReduced= false;
+                }
                 if ( dataSetReduced ) {
                     logger.fine("reducing data that is bigger than dataSetSizeLimit");
 
