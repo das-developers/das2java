@@ -283,21 +283,10 @@ public class JoinDataSet extends AbstractDataSet {
     @Override
     public QDataSet slice( int idx ) {
         QDataSet result= datasets.get(idx);
-        if ( !( result instanceof MutablePropertyDataSet ) ) {
-            result= DataSetOps.makePropertiesMutable(result);
-        }
-        if ( result instanceof MutablePropertyDataSet ) {
-            MutablePropertyDataSet mpds= (MutablePropertyDataSet)result;
-            Map<String,Object> props= DataSetOps.sliceProperties0( idx, properties );
-            if ( props.size()>0 ) {
-                //System.err.println("slice result is being mutated with "+props );
-            }
-            //Object odep0= props.get( QDataSet.DEPEND_0 );
-            //if ( odep0!=null ) {
-            //    props.put( QDataSet.DEPEND_0, null ); //TODO: we can put DEPEND_0 in.
-            //}
-            DataSetUtil.putProperties(props, mpds); //TODO: this is a little dangerous because we mutate the original datasets.
-        }
+        MutablePropertyDataSet mpds= DataSetOps.makePropertiesMutable(result);
+        Map<String,Object> props= DataSetOps.sliceProperties0( idx, properties );
+        DataSetUtil.putProperties(props, mpds); 
+        mpds.makeImmutable();
         return result;
     }
 }
