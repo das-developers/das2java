@@ -386,8 +386,9 @@ public class SeriesRenderer extends Renderer {
             DasColorBar fcolorBar= colorBar;
             
             Units cunits = null;
+            Units zunits= SemanticOps.getUnits( colorByDataSet1 );
             if (colorByDataSet1 != null && fcolorBar!=null ) {
-                cunits = SemanticOps.getUnits( colorByDataSet1 );
+                cunits = zunits;
                 if ( cunits.isConvertibleTo(fcolorBar.getUnits()) ) {
                     cunits= fcolorBar.getUnits();
                 }
@@ -431,8 +432,8 @@ public class SeriesRenderer extends Renderer {
             } else {
                 window= new Rectangle( window.x- buffer, window.y-buffer, window.width + 2*buffer, window.height + 2 * buffer );
             }
-
-            boolean rgbColor= colorByDataSet1!=null && Units.rgbColor.equals( colorByDataSet1.property(QDataSet.UNITS) );
+            
+            boolean rgbColor= colorByDataSet1!=null && Units.rgbColor.equals( zunits );
             int i = 0;
             for (; index < lastIndex; index++) {
                 x = xds.value(index);
@@ -456,7 +457,7 @@ public class SeriesRenderer extends Renderer {
                                 if ( rgbColor ) {
                                     colors[i] = (int)colorByDataSet1.value(index);
                                 } else {
-                                    colors[i] = fcolorBar.indexColorTransform( colorByDataSet1.value(index), cunits);
+                                    colors[i] = fcolorBar.indexColorTransform( colorByDataSet1.value(index), zunits );
                                 }
                             } else {
                                 colors[i] = -1;
