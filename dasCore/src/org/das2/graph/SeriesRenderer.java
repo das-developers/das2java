@@ -385,13 +385,9 @@ public class SeriesRenderer extends Renderer {
 
             DasColorBar fcolorBar= colorBar;
             
-            Units cunits = null;
-            Units zunits= SemanticOps.getUnits( colorByDataSet1 );
+            Units zunits = null;
             if (colorByDataSet1 != null && fcolorBar!=null ) {
-                cunits = zunits;
-                if ( cunits.isConvertibleTo(fcolorBar.getUnits()) ) {
-                    cunits= fcolorBar.getUnits();
-                }
+                zunits= SemanticOps.getUnits( colorByDataSet1 );
             }
 
             double x, y;            
