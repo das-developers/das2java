@@ -72,6 +72,7 @@ import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
 import org.virbo.dataset.examples.Schemes;
+import org.virbo.dsops.Ops;
 
 /**
  * Renderer for spectrograms.  A setting for rebinning data controls how data is binned into pixel space,
@@ -685,9 +686,11 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                                 }
                             }
                         }
-
+                        
+                        Units zunits= SemanticOps.getUnits(zds);
+                        
                         boolean plottable;
-                        plottable = SemanticOps.getUnits(zds).isConvertibleTo(lcolorBar.getUnits());
+                        plottable = zunits.isConvertibleTo(lcolorBar.getUnits());
                         if ( !plottable ) {
                             if ( UnitsUtil.isRatioMeasurement( SemanticOps.getUnits(zds) ) && UnitsUtil.isRatioMeasurement( lcolorBar.getUnits() ) ) {
                                 //plottable= true; // we'll provide a warning
@@ -758,6 +761,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         //t0= System.currentTimeMillis();
                         try {
                             rebinDataSet = (QDataSet) rebinner.rebin( fds, xRebinDescriptor, yRebinDescriptor );
+                            rebinDataSet= Ops.putProperty( rebinDataSet, QDataSet.UNITS, zunits );
                         } catch ( RuntimeException ex ) {
                             logger.log( Level.WARNING, ex.getMessage(), ex );  //TODO: catch this...  See sftp://jbf@papco.org/home/jbf/ct/autoplot/script/bugs/3237397/gapsTest.jy
                             plotImage= null;
