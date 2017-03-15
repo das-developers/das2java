@@ -639,7 +639,7 @@ public abstract class Units {
      * @return list of all the known units.
      */
     public static List<Units> getAllUnits() {
-        return new ArrayList<Units>(unitsMap.keySet());
+        return new ArrayList<>(unitsMap.values());
     }
     
     /**
