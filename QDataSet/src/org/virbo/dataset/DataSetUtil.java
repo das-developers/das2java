@@ -26,13 +26,18 @@ import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
 import org.das2.datum.DatumRangeUtil;
 import org.das2.datum.DatumUtil;
+import static org.das2.datum.DatumUtil.bestFormatter;
 import org.das2.datum.DatumVector;
 import org.das2.datum.EnumerationUnits;
+import org.das2.datum.LocationUnits;
+import org.das2.datum.TimeLocationUnits;
 import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
 import org.das2.datum.format.DatumFormatter;
 import org.das2.datum.format.DefaultDatumFormatter;
+import org.das2.datum.format.EnumerationDatumFormatterFactory;
 import org.das2.datum.format.FormatStringFormatter;
+import org.das2.datum.format.TimeDatumFormatter;
 import org.das2.util.LoggerManager;
 import org.virbo.dataset.examples.Schemes;
 import org.virbo.dsops.Ops;
@@ -3271,6 +3276,88 @@ public class DataSetUtil {
             return DataSetUtil.getStringValue( ds, value );
         }
     }
+
+    /**
+     * return a DatumFormatter that can accurately format all of the datums
+     * in the dataset.  The goal is to identify a formatter which is also 
+     * efficient, and doesn't waste an excess of digits.  This sort of code
+     * is often needed, and is also found in: <ul>
+     * <li>QStream--where ASCII mode needs efficient representation
+     * </ul>
+     * TODO: make one code for this.
+     * TODO: there also needs to be an optional external context ('2017-03-15') so that 'HH:mm' is a valid response.
+     * See sftp://jbf@jfaden.net/home/jbf/ct/autoplot/script/development/bestDataSetFormatter.jy
+     * @param datums a rank 1 dataset, or if rank&gt;1, then return the formatter for a slice.
+     * @return DatumFormatter for the dataset.
+     */
+    public static DatumFormatter bestFormatter( QDataSet datums ) {
+        if ( datums.rank()==0 ) {
+            return bestFormatter( Ops.join(null,datums) );
+        } else if ( datums.rank()>1 ) {
+            //TODO: find formatter for each, and then reconcile.
+            return bestFormatter( datums.slice(0) );
+        }
+        
+        Units units= SemanticOps.getUnits(datums);
+        if ( units==null && Schemes.isBundleDataSet(datums) && datums.length()>0 ) {
+            throw new IllegalArgumentException("dataset is a bundle");
+        }
+        
+        if ( units instanceof EnumerationUnits ) {
+            return EnumerationDatumFormatterFactory.getInstance().defaultFormatter();
+        } else if ( units instanceof TimeLocationUnits ) {
+            Datum gcd= asDatum( gcd( Ops.subtract( datums, datums.slice(0) ), DataSetUtil.asDataSet( Units.microseconds.createDatum(1) ) ) );
+            try {
+                if ( gcd.lt( Units.nanoseconds.createDatum(1) ) ) {
+                    return new TimeDatumFormatter("yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSSSSS)");
+                } else if ( gcd.lt( Units.nanoseconds.createDatum(1000) ) ) {
+                    return new TimeDatumFormatter("yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSS)");
+                } else if ( gcd.lt( Units.microseconds.createDatum(1000) ) ) {
+                    return new TimeDatumFormatter("yyyy-MM-dd'T'HH:mm:ss.SSSSSS)");
+                } else if ( gcd.lt( Units.milliseconds.createDatum(1000) ) ) {
+                    return new TimeDatumFormatter("yyyy-MM-dd'T'HH:mm:ss.SSS)");
+                } else if ( gcd.lt( Units.seconds.createDatum(60) ) ) {
+                    return new TimeDatumFormatter("yyyy-MM-dd'T'HH:mm:ss.SSS)");
+                } else if ( gcd.lt( Units.seconds.createDatum(600) ) ) {
+                    return new TimeDatumFormatter("yyyy-MM-dd'T'HH:mm:ss)");
+                } else {
+                    return new TimeDatumFormatter("yyyy-MM-dd'T'HH:mm");
+                }
+            } catch ( ParseException ex ) {
+                throw new RuntimeException(ex);
+            }
+        } else if ( units instanceof LocationUnits ) {
+            units= units.getOffsetUnits();
+            datums= Ops.subtract( datums, datums.slice(0) );
+        } 
+        
+        QDataSet limit= Ops.dataset( Math.pow( 10, (int)Math.log10( Ops.reduceMax( datums, 0 ).value() ) - 7 ), units );
+        datums= Ops.round( Ops.divide( datums, limit ) );
+        QDataSet gcd= gcd( datums, asDataSet(1.0) );
+        datums= Ops.multiply( datums, limit );
+        gcd= Ops.multiply( gcd, limit );
+        
+        int smallestExp=99;
+        int ismallestExp=-1;
+        for ( int j=0; j<datums.length(); j++ ) {
+            double d= datums.value(j);
+            if ( Math.abs(d)>(gcd.value()*0.1) ) { // don't look at fuzzy zero
+                int ee= (int)Math.floor(0.05+Math.log10(Math.abs(d)));
+                if ( ee<smallestExp ) {
+                    smallestExp=ee;
+                    ismallestExp= j;
+                }
+            }
+        }
+        
+        Datum resolution= asDatum(gcd);
+        Datum base= asDatum( datums.slice(ismallestExp) );
+        if ( base.lt(units.createDatum(0.) ) ) {
+            base= base.multiply(-1);
+        }
+        return DatumUtil.bestFormatter( base, base.add( resolution ), 1 );
+    }    
+    
 
     /**
      * return the string value of the double, considering QDataSet.FORMAT, the units and the value.
