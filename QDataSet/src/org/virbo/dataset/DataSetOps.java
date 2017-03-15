@@ -870,7 +870,7 @@ public class DataSetOps {
             }
         }
         if ( dep1!=null ) { //DEPEND_1 rank 1 implies qube
-            if ( dep1.rank()==2 ) {
+            if ( dep1.rank()==2 && !Schemes.isRank2Bins(dep1)) {
                 result.put( QDataSet.DEPEND_0, dep1.slice( index ) );
             } else {
                 result.put( QDataSet.DEPEND_0, dep1 );

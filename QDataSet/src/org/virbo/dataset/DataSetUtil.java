@@ -3294,8 +3294,12 @@ public class DataSetUtil {
         if ( datums.rank()==0 ) {
             return bestFormatter( Ops.join(null,datums) );
         } else if ( datums.rank()>1 ) {
-            //TODO: find formatter for each, and then reconcile.
-            return bestFormatter( datums.slice(0) );
+            if ( datums.rank()==2 && datums.property(QDataSet.BINS_1)!=null ) {
+                
+            } else {
+                //TODO: find formatter for each, and then reconcile.
+                return bestFormatter( datums.slice(0) );
+            }
         }
         
         Units units= SemanticOps.getUnits(datums);
