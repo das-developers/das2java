@@ -100,7 +100,11 @@ public class EventsRenderer extends Renderer {
             xmaxs= xmins;
         } else {
             xmins= SemanticOps.xtagsDataSet(ds);
-            xmaxs= DataSetOps.unbundle( ds,1 );
+            if ( ds.length(0)>1 ) {
+                xmaxs= DataSetOps.unbundle( ds,1 );
+            } else {
+                xmaxs= xmins;
+            }
         }
 
         Units u0= SemanticOps.getUnits(xmins);
