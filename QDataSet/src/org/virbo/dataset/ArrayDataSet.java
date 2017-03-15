@@ -572,7 +572,7 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
     /**
      * Copy to array of specific type.  For example, copy( double.class, ds ) 
      * would return a copy in a DDataSet.
-     * @param c  the primitive type to use (e.g. double.class).
+     * @param c  the primitive type to use (e.g. double.class, float.class, int.class).
      * @param ds the data to copy.
      * @return ArrayDataSet of specific type.
      */
