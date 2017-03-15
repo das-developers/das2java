@@ -3337,9 +3337,15 @@ public class DataSetUtil {
         
         QDataSet limit= Ops.dataset( Math.pow( 10, (int)Math.log10( Ops.reduceMax( datums, 0 ).value() ) - 7 ), units );
         datums= Ops.round( Ops.divide( datums, limit ) );
-        QDataSet gcd= gcd( datums, asDataSet(1.0) );
-        datums= Ops.multiply( datums, limit );
-        gcd= Ops.multiply( gcd, limit );
+        QDataSet gcd;
+        try {
+            gcd= gcd( datums, asDataSet(1.0) );
+            datums= Ops.multiply( datums, limit );
+            gcd= Ops.multiply( gcd, limit );
+        } catch ( IllegalArgumentException ex ) { // java.lang.IllegalArgumentException: histogram has too few bins
+            gcd= limit;
+            datums= Ops.multiply( datums, limit );
+        }
         
         int smallestExp=99;
         int ismallestExp=-1;
