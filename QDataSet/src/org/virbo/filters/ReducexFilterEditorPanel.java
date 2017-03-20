@@ -53,7 +53,7 @@ public class ReducexFilterEditorPanel extends AbstractFilterEditorPanel {
 
         unitsCB.setEditable(true);
         List<Units> units = getAllUnits();
-        String[] array = units.toArray(new String[units.size()]);
+        Units[] array = units.toArray(new Units[units.size()]);
         unitsCB.setModel(new javax.swing.DefaultComboBoxModel(array));
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
@@ -101,21 +101,21 @@ public class ReducexFilterEditorPanel extends AbstractFilterEditorPanel {
                 } else {
                     scalarTF.setText(String.valueOf(dv));
                 }
-                unitsCB.setSelectedItem(d.getUnits().toString());
+                unitsCB.setSelectedItem(d.getUnits());
             } catch (ParseException ex) {
                 Pattern p2= Pattern.compile("\\|reducex\\('?(\\d+)\\s*(\\S+)'?\\)");
                 Matcher m2= p2.matcher(filter);
                 if ( m2.matches() ) {
                     scalarTF.setText(m.group(1));
-                    unitsCB.setSelectedItem(m.group(2));
+                    unitsCB.setSelectedItem(Units.lookupUnits(m.group(2)));
                 } else {
                     scalarTF.setText("1");
-                    unitsCB.setSelectedItem("hr");
+                    unitsCB.setSelectedItem(Units.hours);
                 }
             }
         } else {
             scalarTF.setText("1");
-            unitsCB.setSelectedItem("hr");
+            unitsCB.setSelectedItem(Units.hours);
         }
     }
 
