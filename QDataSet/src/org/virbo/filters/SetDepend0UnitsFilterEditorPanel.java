@@ -41,7 +41,7 @@ public class SetDepend0UnitsFilterEditorPanel extends AbstractFilterEditorPanel 
         jLabel1.setText("Depend0 Units:  ");
 
         List<Units> units = getAllUnits();
-        String[] array = units.toArray(new String[units.size()]);
+        Units[] array = units.toArray(new Units[units.size()]);
         unitsCB.setEditable(true);
         unitsCB.setModel(new javax.swing.DefaultComboBoxModel(array));
         unitsCB.setPreferredSize(new java.awt.Dimension(200, 27));
@@ -87,16 +87,16 @@ public class SetDepend0UnitsFilterEditorPanel extends AbstractFilterEditorPanel 
         Pattern p= Pattern.compile("\\|setDepend0Units\\('(\\w+)'\\)");
         Matcher m= p.matcher(filter);
         if ( m.matches() ) {
-            unitsCB.setSelectedItem( m.group(1) );
+            unitsCB.setSelectedItem( Units.lookupUnits(m.group(1)) );
         }
         else {
-            unitsCB.setSelectedItem( "s" );
+            unitsCB.setSelectedItem( Units.lookupUnits("s") );
         }
         
     }
 
     @Override
     public String getFilter() {
-        return "|setDepend0Units('" + unitsCB.getSelectedItem() + "')";
+        return "|setDepend0Units('" + unitsCB.getSelectedItem().toString() + "')";
     }
 }

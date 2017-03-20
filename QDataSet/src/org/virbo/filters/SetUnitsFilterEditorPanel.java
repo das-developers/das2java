@@ -44,7 +44,7 @@ public class SetUnitsFilterEditorPanel extends AbstractFilterEditorPanel {
         jLabel1.setText("Units:  ");
 
         List<Units> units = getAllUnits();
-        String[] array = units.toArray(new String[units.size()]);
+        Units[] array = units.toArray(new Units[units.size()]);
         unitsCB.setEditable(true);
         unitsCB.setModel(new javax.swing.DefaultComboBoxModel(array));
         unitsCB.setPreferredSize(new java.awt.Dimension(200, 27));
@@ -83,10 +83,10 @@ public class SetUnitsFilterEditorPanel extends AbstractFilterEditorPanel {
         Matcher m= p.matcher(filter);
         if ( m.matches() ) {
             //System.out.println("M matches");
-            unitsCB.setSelectedItem( m.group(1) );
+            unitsCB.setSelectedItem( Units.lookupUnits(m.group(1)) );
         }
         else {
-            unitsCB.setSelectedItem( "s" );
+            unitsCB.setSelectedItem( Units.lookupUnits("s") );
         }
     }
 
@@ -98,6 +98,6 @@ public class SetUnitsFilterEditorPanel extends AbstractFilterEditorPanel {
         
     @Override
     public String getFilter() {
-        return "|setUnits('" + unitsCB.getSelectedItem() + "')";
+        return "|setUnits('" + unitsCB.getSelectedItem().toString() + "')";
     }
 }
