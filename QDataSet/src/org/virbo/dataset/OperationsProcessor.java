@@ -256,16 +256,33 @@ public class OperationsProcessor {
                 } else if ( cmd.equals("|trim") ) {
                     Object arg1= getArgumentIndex( s.next(),0 );
                     Object arg2= getArgumentIndex( s.next(),fillDs.length() );
-                    if ( arg1 instanceof Integer ) {
-                        int d0= (Integer) arg1;
-                        int d1= (Integer) arg2;
-                        if ( d0<0 ) d0+= fillDs.length();
-                        if ( d1<0 ) d1+= fillDs.length();
-                        fillDs= fillDs.trim(d0,d1);    
+                    if ( s.hasNext() && arg1 instanceof Integer && ((Integer)arg1)>0 ) {
+                        int dim= (Integer)arg1;
+                        arg1= arg2;
+                        arg2= getArgumentIndex( s.next(),0 );
+                        if ( arg1 instanceof Integer ) {
+                            int d0= (Integer) arg1;
+                            int d1= (Integer) arg2;
+                            if ( d0<0 ) d0+= fillDs.length();
+                            if ( d1<0 ) d1+= fillDs.length();
+                            fillDs= Ops.trim( dim, fillDs, d0, d1 );
+                        } else {
+                            QDataSet d0= (QDataSet)arg1;
+                            QDataSet d1= (QDataSet)arg2;
+                            fillDs= Ops.trim( dim, fillDs, d0, d1 ); 
+                        }	
                     } else {
-                        QDataSet d0= (QDataSet)arg1;
-                        QDataSet d1= (QDataSet)arg2;
-                        fillDs= Ops.trim( fillDs, d0, d1 ); 
+                        if ( arg1 instanceof Integer ) {
+                            int d0= (Integer) arg1;
+                            int d1= (Integer) arg2;
+                            if ( d0<0 ) d0+= fillDs.length();
+                            if ( d1<0 ) d1+= fillDs.length();
+                            fillDs= fillDs.trim(d0,d1);    
+                        } else {
+                            QDataSet d0= (QDataSet)arg1;
+                            QDataSet d1= (QDataSet)arg2;
+                            fillDs= Ops.trim( fillDs, d0, d1 ); 
+                        }
                     }
                 } else if ( cmd.equals("|trim1") ) {
                     Object arg1= getArgumentIndex( s.next(),0 );
@@ -281,8 +298,8 @@ public class OperationsProcessor {
                         QDataSet d1= (QDataSet)arg2;
                         fillDs= Ops.trim1( fillDs, d0, d1 ); 
                     }					
-                } else if ( cmd.startsWith("|trim") && cmd.length()==6) {
-                    int dim= cmd.charAt(6)-'0';
+                } else if ( cmd.equals("|trim") && cmd.length()==5) {
+                    int dim= s.nextInt();
                     Object arg1= getArgumentIndex( s.next(),0 );
                     Object arg2= getArgumentIndex( s.next(),fillDs.length(0) );
                     if ( arg1 instanceof Integer ) {

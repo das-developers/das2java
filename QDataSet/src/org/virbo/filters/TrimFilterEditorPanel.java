@@ -92,8 +92,10 @@ public class TrimFilterEditorPanel extends AbstractFilterEditorPanel {
         String lowerBoundPoint = lowerBound.getText().replaceAll("\\s","");
         if ( dimensionCB.getSelectedIndex()==0 ) {
             return "|trim(" + lowerBoundPoint + "," + upperBoundPoint +  ")";
-        } else {
+        } else if ( dimensionCB.getSelectedIndex()==1 ) {
             return "|trim" + dimensionCB.getSelectedIndex() + "(" + lowerBoundPoint + "," + upperBoundPoint +  ")";
+        } else {
+            return "|trim(" + dimensionCB.getSelectedIndex() + "," + lowerBoundPoint + "," + upperBoundPoint +  ")";
         }
     }
 
