@@ -245,6 +245,8 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
             result= new PutPropertyFilterEditorPanel();
         } else if ( f.matches( TrimFilterEditorPanel.PROP_REGEX)){
             result= new TrimFilterEditorPanel();
+        } else if ( f.matches( TrimFilterEditorPanel.PROP_TRIMI_REGEX)){
+            result= new TrimFilterEditorPanel();
         } else {
             result= new AnyFilterEditorPanel();
         }

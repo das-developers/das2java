@@ -7,6 +7,7 @@ package org.virbo.filters;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JOptionPane;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dsops.Ops;
@@ -18,6 +19,7 @@ import org.virbo.dsops.Ops;
 public class TrimFilterEditorPanel extends AbstractFilterEditorPanel {
 
     public final static String PROP_REGEX= "\\|trim\\(\\s*(\\S+)\\s*\\,\\s*(\\S+)\\s*\\)";
+    public final static String PROP_TRIMI_REGEX= "\\|trim(\\d)\\(\\s*(\\S+)\\s*\\,\\s*(\\S+)\\s*\\)";
 
     private boolean automaticSetting= true;
             
@@ -43,10 +45,14 @@ public class TrimFilterEditorPanel extends AbstractFilterEditorPanel {
     }
     
     @Override
-    public void setInput(QDataSet listSize){
+    public void setInput(QDataSet ds){
         if ( automaticSetting ) { 
-            endLabel.setText( String.format( "Up to but not including (%d bins):",listSize.length() ) );
+            endLabel.setText( String.format( "Up to but not including (%d bins):",ds.length() ) );
         }
+        String[] depNames1= FilterEditorPanelUtil.getDimensionNames(ds);
+        int index= dimensionCB.getSelectedIndex();
+        dimensionCB.setModel(new DefaultComboBoxModel(depNames1));
+        dimensionCB.setSelectedIndex(index);
     }
     
     
@@ -55,16 +61,26 @@ public class TrimFilterEditorPanel extends AbstractFilterEditorPanel {
         
         Pattern p= Pattern.compile( PROP_REGEX );
         Matcher m= p.matcher(filter);
+        Pattern p2= Pattern.compile( PROP_TRIMI_REGEX );
+        Matcher m2= p2.matcher(filter);
         
         if ( m.matches() ) {
             lowerBound.setText(m.group(1));
             upperBound.setText( m.group(2) );
             automaticSetting= false;
+            dimensionCB.setSelectedIndex(0);
+            
+        } else if ( (m2.matches() )) {
+            lowerBound.setText(m2.group(2));
+            upperBound.setText( m2.group(3) );
+            automaticSetting= false;
+            dimensionCB.setSelectedIndex( Integer.parseInt(m2.group(1)) );
             
         } else {
             //String maxUpperBound=m.group(3);
             lowerBound.setText( "0" );
             upperBound.setText( "10" );
+            dimensionCB.setSelectedIndex(0);
             automaticSetting= true;
         }
     }
@@ -74,7 +90,11 @@ public class TrimFilterEditorPanel extends AbstractFilterEditorPanel {
     public String getFilter() {
         String upperBoundPoint = upperBound.getText().replaceAll("\\s","");
         String lowerBoundPoint = lowerBound.getText().replaceAll("\\s","");
-        return "|trim(" + lowerBoundPoint + "," + upperBoundPoint +  ")";
+        if ( dimensionCB.getSelectedIndex()==0 ) {
+            return "|trim(" + lowerBoundPoint + "," + upperBoundPoint +  ")";
+        } else {
+            return "|trim" + dimensionCB.getSelectedIndex() + "(" + lowerBoundPoint + "," + upperBoundPoint +  ")";
+        }
     }
 
     /**
@@ -90,6 +110,8 @@ public class TrimFilterEditorPanel extends AbstractFilterEditorPanel {
         jLabel3 = new javax.swing.JLabel();
         upperBound = new javax.swing.JTextField();
         lowerBound = new javax.swing.JTextField();
+        jLabel1 = new javax.swing.JLabel();
+        dimensionCB = new javax.swing.JComboBox();
 
         endLabel.setText("Up to but not including:");
         endLabel.setToolTipText("Negative indeces are allowed, so -1 refers to the last index.  Blank may be used to include the last index.");
@@ -101,6 +123,10 @@ public class TrimFilterEditorPanel extends AbstractFilterEditorPanel {
 
         lowerBound.setText("0");
 
+        jLabel1.setText("Trim Dimension:");
+
+        dimensionCB.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -109,19 +135,27 @@ public class TrimFilterEditorPanel extends AbstractFilterEditorPanel {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(endLabel)
-                        .addGap(40, 40, 40)
-                        .addComponent(upperBound, javax.swing.GroupLayout.DEFAULT_SIZE, 59, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel3)
+                        .addComponent(jLabel1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(lowerBound, javax.swing.GroupLayout.DEFAULT_SIZE, 59, Short.MAX_VALUE)))
+                        .addComponent(dimensionCB, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(endLabel)
+                            .addComponent(jLabel3))
+                        .addGap(14, 14, 14)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(lowerBound)
+                            .addComponent(upperBound, javax.swing.GroupLayout.DEFAULT_SIZE, 163, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel1)
+                    .addComponent(dimensionCB, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel3)
                     .addComponent(lowerBound, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -129,13 +163,15 @@ public class TrimFilterEditorPanel extends AbstractFilterEditorPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(endLabel)
                     .addComponent(upperBound, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(19, 19, 19))
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JComboBox dimensionCB;
     private javax.swing.JLabel endLabel;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JTextField lowerBound;
     private javax.swing.JTextField upperBound;

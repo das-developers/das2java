@@ -76,6 +76,7 @@ import org.virbo.dataset.SortDataSet;
 import org.virbo.dataset.SparseDataSet;
 import org.virbo.dataset.TailBundleDataSet;
 import org.virbo.dataset.TrimDataSet;
+import org.virbo.dataset.TrimStrideWrapper;
 import org.virbo.dataset.WeightsDataSet;
 import org.virbo.dataset.WritableDataSet;
 import org.virbo.dataset.WritableJoinDataSet;
@@ -1127,6 +1128,59 @@ public class Ops {
     }
     
     /**
+     * trim the qube dataset on any of its indices, for example ds[:,:,5:10]
+     * would use this operation.
+     * @param dim the index (0, 1, 2, 3, or 4) on which to trim.
+     * @param ds the dataset, which must be a qube.
+     * @param st the first index, inclusive
+     * @param en the last index, exclusive
+     * @return the trimmed dataset with same number of dimensions and fewer indeces in one dimension.
+     */
+    public static QDataSet trim( int dim, QDataSet ds, int st, int en ) {
+        if ( dim==0 ) {
+            return trim( ds, st, en );
+        } else {
+            TrimStrideWrapper tsw= new TrimStrideWrapper(ds);
+            tsw.setTrim( dim, st, en, 1 );
+            return tsw;
+        }
+    }
+    
+    /**
+     * trim the qube dataset on any of its indices, for example ds[:,:,5:10]
+     * would use this operation.
+     * @param dim the index (0, 1, 2, 3, or 4) on which to trim.
+     * @param ds the dataset, which must be a qube.
+     * @param st rank 0 min value
+     * @param en rank 0 max value
+     * @return the trimmed dataset with same number of dimensions and fewer indeces in one dimension.
+     */
+    public static QDataSet trim( int dim, QDataSet ds, QDataSet st, QDataSet en ) {
+        if ( dim==0 ) {
+            return trim( ds, st, en );
+        } else {
+            QDataSet dep= (QDataSet) ds.property( "DEPEND_"+dim );
+            
+            QDataSet findex= Ops.findex( dep, st );
+            double f1= findex.value();
+            findex= Ops.findex( dep, en );
+            double f2= findex.value();
+        
+            int n= dep.length();
+            f1= 0>f1 ? 0 : f1;
+            f1= n<f1 ? n : f1;
+            f2= 0>f2 ? 0 : f2;
+            f2= n<f2 ? n : f2;
+            
+            TrimStrideWrapper tsw= new TrimStrideWrapper(ds);
+            tsw.setTrim( dim, (int)f1, (int)f2, 1 );
+            return tsw;
+        }
+    }
+    
+    
+    
+    /**
      * return the trim of the dataset ds where its DEPEND_1 (typically ytags) are
      * within the range dr.  For example,
      * if ds was frequencies from 10 Hz to 1e8 Hz, trim1( ds, 100Hz, 1000Hz ) would
@@ -1180,7 +1234,9 @@ public class Ops {
             if ( bundle1!=null ) ds= putProperty( ds, QDataSet.BUNDLE_1, bundle1 );
             return ds;
         } else {
-            throw new IllegalArgumentException("only rank 2 is supported");
+            TrimStrideWrapper tsw= new TrimStrideWrapper(ds);
+            tsw.setTrim( 1, st, en, 1 );
+            return tsw;
         }
     }
     
