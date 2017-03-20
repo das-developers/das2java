@@ -77,6 +77,23 @@ public class TrimStrideWrapper extends AbstractDataSet {
                 putProperty( "DEPEND_"+dim, depw );
             }
         }
+        
+        for ( int i=0; i<QDataSet.MAX_RANK; i++ ) {
+            if ( i!=dim ) {
+                QDataSet depi= (QDataSet) ds.property("DEPEND_"+i);
+                if ( depi!=null ) {
+                    putProperty( "DEPEND_"+i, depi );
+                }
+                depi= (QDataSet) ds.property("BUNDLE_"+i);
+                if ( depi!=null ) {
+                    putProperty( "BUNDLE_"+i, depi );
+                }
+                depi= (QDataSet) ds.property("BINS_"+i);
+                if ( depi!=null ) {
+                    putProperty( "BINS_"+i, depi );
+                }
+            }
+        }
     }
 
     @Override
