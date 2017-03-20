@@ -281,6 +281,21 @@ public class OperationsProcessor {
                         QDataSet d1= (QDataSet)arg2;
                         fillDs= Ops.trim1( fillDs, d0, d1 ); 
                     }					
+                } else if ( cmd.startsWith("|trim") && cmd.length()==6) {
+                    int dim= cmd.charAt(6)-'0';
+                    Object arg1= getArgumentIndex( s.next(),0 );
+                    Object arg2= getArgumentIndex( s.next(),fillDs.length(0) );
+                    if ( arg1 instanceof Integer ) {
+                        int d0= (Integer) arg1;
+                        int d1= (Integer) arg2;
+                        if ( d0<0 ) d0+= fillDs.length();
+                        if ( d1<0 ) d1+= fillDs.length();
+                        fillDs= Ops.trim( dim, fillDs, d0, d1 );
+                    } else {
+                        QDataSet d0= (QDataSet)arg1;
+                        QDataSet d1= (QDataSet)arg2;
+                        fillDs= Ops.trim( dim, fillDs, d0, d1 ); 
+                    }	
                 } else if ( cmd.startsWith("|collapse") && cmd.length()>9 ) {
                     int dim= cmd.charAt(9)-'0';
                     if ( s.hasNextInt() ) {
