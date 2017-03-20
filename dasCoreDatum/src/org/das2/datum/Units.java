@@ -25,6 +25,9 @@ package org.das2.datum;
 
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -425,8 +428,17 @@ public abstract class Units {
     /**
      * return the units to which this unit is convertible.
      * @return the units to which this unit is convertible.
+     * @deprecated use getConvertibleUnits, which is spelled correctly.
      */
     public Units[] getConvertableUnits() {
+        return getConvertibleUnits();
+    }
+    
+    /**
+     * return the units to which this unit is convertible.
+     * @return the units to which this unit is convertible.
+     */
+    public Units[] getConvertibleUnits() {
         Set result= new HashSet();
         LinkedList queue = new LinkedList();
         queue.add(this);
@@ -440,7 +452,18 @@ public abstract class Units {
                 }
             }
         }
-        return (Units[])result.toArray( new Units[result.size()] );
+        // sort the list
+        Comparator c= new Comparator() {
+            @Override
+            public int compare(Object o1, Object o2) {
+                Units u1= (Units)o1;
+                Units u2= (Units)o2;
+                return u1.convertDoubleTo( u2, 1.0 ) < 1.0 ? -1 : 1;
+            }
+        };
+        Units[] resultArray= (Units[])result.toArray( new Units[result.size()] );
+        Arrays.sort(resultArray, c);
+        return resultArray;
     }
     
     /**
