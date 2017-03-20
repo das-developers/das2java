@@ -749,6 +749,8 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
                             //results.set( i, ds );
 
                         } catch ( Exception ex ) {
+                            //p.getPanel().setBackground(Color.RED);
+                            p.getPanel().setToolTipText(ex.getMessage());
                             ds= null;
                         }
                     }
