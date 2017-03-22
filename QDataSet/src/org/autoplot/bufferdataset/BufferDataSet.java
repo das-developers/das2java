@@ -351,7 +351,7 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         }
         if ( rank==1 && len1>1 ) throw new IllegalArgumentException("rank is 1, but len1 is not 1");
         if ( reclen < byteCount(type) ) throw new IllegalArgumentException("reclen " + reclen + " is smaller that length of type "+type);
-        if ( reclen*len0 > back.limit() ) throw new IllegalArgumentException("buffer is too short (len="+back.limit()+") to contain data ("+len0+" "+reclen+" byte records)");
+        if ( reclen>0 && reclen*len0 > back.limit() ) throw new IllegalArgumentException("buffer is too short (len="+back.limit()+") to contain data ("+len0+" "+reclen+" byte records)");
         if ( len0<0 ) throw new IllegalArgumentException("len0 is negative: "+len0);
         this.back= back;
         this.rank = rank;
@@ -368,9 +368,6 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         }
         if ( reclen>0 && fieldLen>reclen ) { // negative reclen supported 9-bit floats.
             logger.warning( String.format( "field length (%d) is greater than record length (%d) for len0=%d.", (int)fieldLen, (int)reclen, (int)len0 ) );
-        }
-        if ( reclen>0 && ( back.remaining()< ( reclen*len0 ) ) ) {
-            logger.warning( String.format( "back buffer is too short (len=%d) for %d records each reclen=%d.", (int)back.remaining(), (int)len0, (int)reclen ) );
         }
     }
 
