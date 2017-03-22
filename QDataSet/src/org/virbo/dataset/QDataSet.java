@@ -355,6 +355,11 @@ public interface QDataSet {
     public final static String VALUE_RENDER_TYPE_SERIES="series";
     
     /**
+     * use blocks to draw each point, so data extents can be seen.
+     */
+    public final static String VALUE_RENDER_TYPE_NNSPECTROGRAM="nnSpectrogram";
+    
+    /**
      * draw events bars
      */
     public final static String VALUE_RENDER_TYPE_EVENTS_BAR="eventsBar";
