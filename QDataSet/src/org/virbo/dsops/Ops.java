@@ -6952,18 +6952,27 @@ public class Ops {
                 min = Ops.subtract(min, deltaminus);
             }
 
-            QubeDataSetIterator it = new QubeDataSetIterator(ds);
+            if ( ds.rank()==1 ) { // optimize for rank 1, see https://sourceforge.net/p/autoplot/bugs/1801/
+                for ( int i=0; i<min.length(); i++ ) {
+                    if ( wds.value(i)>0 ) {
+                        count++;
+                        result[0]= Math.min( result[0], min.value(i) );
+                        result[1]= Math.max( result[1], max.value(i) );
+                    }
+                }
+            } else {
+                QubeDataSetIterator it = new QubeDataSetIterator(ds);
 
-            while (it.hasNext()) {
-                it.next();
-                if (it.getValue(wds) > 0.) {
-                    count++;
-                    result[0] = Math.min(result[0], it.getValue(min));
-                    result[1] = Math.max(result[1], it.getValue(max));
-                } else {
-
+                while (it.hasNext()) {
+                    it.next();
+                    if (it.getValue(wds) > 0.) {
+                        count++;
+                        result[0] = Math.min(result[0], it.getValue(min));
+                        result[1] = Math.max(result[1], it.getValue(max));
+                    }
                 }
             }
+            
             if ( count==0 ) {  // no valid data!
                 result[0] = fill;
                 result[1] = fill;
@@ -9253,6 +9262,24 @@ public class Ops {
     
     /**
      * The first dataset's timetags are used to 
+     * synchronize the second dataset to a set of common timetags. Presently,
+     * only interpolation is used, but other methods may be introduced soon.
+     * Note that when one of the dataset's DEPEND_0 is not monotonic, a 
+     * monotonic subset of its points will be used.
+     * Ordinal units use the nearest neighbor interpolation.
+     * @param ds1 the dataset providing timetags, or the timetags themselves.
+     * @param ds the single datasets to synch up.
+     * @return the single dataset evaluated at the other dataset's timetags.
+     * @see #synchronizeNN(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     * @see #synchronize(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet...) 
+     */
+    public static QDataSet synchronize( QDataSet ds1, QDataSet ds ) {
+        List<QDataSet> dss= synchronize( ds1, new QDataSet[] { ds } );
+        return dss.get(0);
+    }
+    
+    /**
+     * The first dataset's timetags are used to 
      * synchronize the list of datasets to a set of common timetags. Presently,
      * only interpolation is used, but other methods may be introduced soon.
      * Note that when one of the dataset's DEPEND_0 is not monotonic, a 
@@ -9262,6 +9289,7 @@ public class Ops {
      * @param dss the N datasets to synch up.
      * @return a list of N datasets, synchronized
      * @see #synchronizeNN(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet...) 
+     * @see #synchronize(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
      */
     public static List<QDataSet> synchronize( QDataSet ds1, QDataSet ... dss ) {
         QDataSet tt= (QDataSet) ds1.property( QDataSet.DEPEND_0 );
@@ -9296,6 +9324,24 @@ public class Ops {
     
     /**
      * The first dataset's timetags are used to 
+     * synchronize the second dataset to a set of common timetags, using
+     * nearest neighbor interpolation. 
+     * Note that when one of the dataset's DEPEND_0 is not monotonic, a 
+     * monotonic subset of its points will be used.
+     * Ordinal units use the nearest neighbor interpolation.
+     * @param ds1 the dataset providing timetags, or the timetags themselves.
+     * @param ds the single datasets to synch up.
+     * @return the single dataset evaluated at the other dataset's timetags.
+     * @see #synchronize(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     * @see #synchronizeNN(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet...) 
+     */
+    public static QDataSet synchronizeNN( QDataSet ds1, QDataSet ds ) {
+        List<QDataSet> dss= synchronizeNN( ds1, new QDataSet[] { ds } );
+        return dss.get(0);
+    }
+    
+    /**
+     * The first dataset's timetags are used to 
      * synchronize the list of datasets to a set of common timetags, using
      * nearest neighbor interpolation.
      * Note that when one of the dataset's DEPEND_0 is not monotonic, a 
@@ -9304,7 +9350,8 @@ public class Ops {
      * @param ds1 the dataset providing timetags, or the timetags themselves.
      * @param dss the N datasets
      * @return a list of N datasets, synchronized
-     * @see #synchronize(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet...) 
+     * @see #synchronize(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet...)      
+     * @see #synchronizeNN(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
      */
     public static List<QDataSet> synchronizeNN( QDataSet ds1, QDataSet ... dss ) {
         QDataSet tt= (QDataSet) ds1.property( QDataSet.DEPEND_0 );
