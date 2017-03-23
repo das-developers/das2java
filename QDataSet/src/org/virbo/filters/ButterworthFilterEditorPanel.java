@@ -231,18 +231,25 @@ public class ButterworthFilterEditorPanel extends AbstractFilterEditorPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void setType( int type ) {
-        if ( type==0 ) {
-            subPanel3.setVisible(true);
-            subPanel4.setVisible(false);
-        } else if ( type == 1) {
-            subPanel3.setVisible(true);
-            subPanel4.setVisible(false);
-        } else if (type == 2) {
-            subPanel3.setVisible(false);
-            subPanel4.setVisible(true);
-        } else if ( type == 3) {
-            subPanel3.setVisible(false);
-            subPanel4.setVisible(true);
+        switch (type) {
+            case 0:
+                subPanel3.setVisible(true);
+                subPanel4.setVisible(false);
+                break;
+            case 1:
+                subPanel3.setVisible(true);
+                subPanel4.setVisible(false);
+                break;
+            case 2:
+                subPanel3.setVisible(false);
+                subPanel4.setVisible(true);
+                break;
+            case 3:
+                subPanel3.setVisible(false);
+                subPanel4.setVisible(true);
+                break;
+            default:
+                break;
         }
         
     }
@@ -267,19 +274,14 @@ public class ButterworthFilterEditorPanel extends AbstractFilterEditorPanel {
                     break;
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(ButterworthFilterEditorPanel.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(ButterworthFilterEditorPanel.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(ButterworthFilterEditorPanel.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(ButterworthFilterEditorPanel.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | javax.swing.UnsupportedLookAndFeelException ex) {
+            logger.log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
-
+        
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 FilterEditorPanel p= new ButterworthFilterEditorPanel();
                 p.setFilter("|butterworth(1,45.,46.,True)");
@@ -321,14 +323,16 @@ public class ButterworthFilterEditorPanel extends AbstractFilterEditorPanel {
             //System.out.println("M matches");
             orderCB.setSelectedItem( m.group(1) );
             cutoffFreq.setText( m.group(2) );
-            if ( m.group(3).equals("True")) {
-                type1CB.setSelectedIndex(1);
-            }
-            else if (m.group(3).equals("False")) {
-                type1CB.setSelectedIndex(0);
-            }
-            else {
-                type1CB.setSelectedIndex(0);
+            switch (m.group(3)) {
+                case "True":
+                    type1CB.setSelectedIndex(1);
+                    break;
+                case "False":
+                    type1CB.setSelectedIndex(0);
+                    break;
+                default:
+                    type1CB.setSelectedIndex(0);
+                    break;
             }
         }
         else if (n.matches()) {
@@ -336,14 +340,16 @@ public class ButterworthFilterEditorPanel extends AbstractFilterEditorPanel {
             orderCB.setSelectedItem( n.group(1) );
             lowFreq.setText( n.group(2) );
             highFreq.setText( n.group(3) );
-            if ( n.group(4).equals("True")) {
-                type1CB.setSelectedIndex(2);
-            }
-            else if (n.group(4).equals("False")) {
-                type1CB.setSelectedIndex(3);
-            }
-            else {
-                type1CB.setSelectedIndex(0);
+            switch (n.group(4)) {
+                case "True":
+                    type1CB.setSelectedIndex(2);
+                    break;
+                case "False":
+                    type1CB.setSelectedIndex(3);
+                    break;
+                default:
+                    type1CB.setSelectedIndex(0);
+                    break;
             }
         }
         else {
