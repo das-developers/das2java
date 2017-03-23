@@ -31,7 +31,7 @@ import org.virbo.dsops.Ops;
  */
 public final class QubeDataSetIterator implements DataSetIterator {
 
-    private static final Logger logger= LoggerManager.getLogger("qdataset");
+    private static final Logger logger= LoggerManager.getLogger("qdataset.iterator");
     
     /**
      * DimensionIterator iterates over an index.  For example, using 
@@ -325,6 +325,7 @@ public final class QubeDataSetIterator implements DataSetIterator {
      * @param ds the dataset we will iterate over.
      */
     public QubeDataSetIterator( QDataSet ds ) {
+        logger.log(Level.FINE, "new dataset iterator for {0}", ds);
         List<String> problems= new ArrayList();
         if ( ! DataSetUtil.validate(ds,problems) ) {
             throw new IllegalArgumentException("data doesn't validate: "+problems );
