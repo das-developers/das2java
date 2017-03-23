@@ -320,24 +320,16 @@ public class ReferenceCache {
                 } catch ( NoSuchMethodException ex) {
                     try {
                         m= dsclass.getSuperclass().getDeclaredMethod( "jvmMemory" );
-                    } catch (NoSuchMethodException ex1) {
-                        Logger.getLogger(ReferenceCache.class.getName()).log(Level.SEVERE, null, ex1);
-                    } catch (SecurityException ex1) {
-                        Logger.getLogger(ReferenceCache.class.getName()).log(Level.SEVERE, null, ex1);
+                    } catch (NoSuchMethodException | SecurityException ex1) {
+                        logger.log(Level.SEVERE, null, ex1);
                     }
                 }
                 if ( m!=null ) {
                     try {
                         Object r= m.invoke( ds );
                         System.err.println("     jvmMemory (bytes): "+r + "  "+dsclass.getName() );                    
-                    } catch (SecurityException ex) {
-                        Logger.getLogger(ReferenceCache.class.getName()).log(Level.SEVERE, null, ex);
-                    } catch (IllegalAccessException ex) {
-                        Logger.getLogger(ReferenceCache.class.getName()).log(Level.SEVERE, null, ex);
-                    } catch (IllegalArgumentException ex) {
-                        Logger.getLogger(ReferenceCache.class.getName()).log(Level.SEVERE, null, ex);
-                    } catch (InvocationTargetException ex) {
-                        Logger.getLogger(ReferenceCache.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+                        logger.log(Level.SEVERE, null, ex);
                     }
                 }
             }
