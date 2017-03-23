@@ -5215,7 +5215,7 @@ public class Ops {
                             }
                             mds.putProperty( name, result );
                         } catch (JSONException ex) {
-                            Logger.getLogger(Ops.class.getName()).log(Level.SEVERE, null, ex);
+                            logger.log(Level.SEVERE, null, ex);
                         }
                     } else {
                         mds.putProperty( name, value);
