@@ -2791,6 +2791,10 @@ public class DasPlot extends DasCanvasComponent {
                 || dasPlot.getYAxis().isLog() ) {
             return;
         }
+        
+        if ( dasPlot.getXAxis().getDLength()==1 || dasPlot.getYAxis().getDLength()==1 ) {
+            return;
+        }
 
         if ( axis==null ) {
             axis= scalex.gt(scaley) ?  dasPlot.getXAxis()  : dasPlot.getYAxis() ;
