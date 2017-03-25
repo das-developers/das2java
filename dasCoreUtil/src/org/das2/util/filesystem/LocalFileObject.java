@@ -177,7 +177,7 @@ public class LocalFileObject extends FileObject {
                     return new FileOutputStream(localFile);
                 }
                 public boolean canWrite() {
-                    return localFile.canWrite();
+                    return localFile.canWrite() || localFile.getParentFile().canWrite();
                 }
                 public boolean delete() {
                     return localFile.delete();
