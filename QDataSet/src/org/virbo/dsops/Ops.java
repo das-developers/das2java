@@ -1124,7 +1124,7 @@ public class Ops {
         
         if ( f1>f2 ) throw new IllegalArgumentException("st must be less than (or earlier than) en");
         
-        return ds.trim((int)f1,(int)f2);
+        return ds.trim((int)f1,(int)Math.ceil(f2));
     }
     
     /**
