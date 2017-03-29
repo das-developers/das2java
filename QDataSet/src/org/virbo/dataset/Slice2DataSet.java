@@ -41,6 +41,7 @@ public class Slice2DataSet extends AbstractDataSet {
                 if ( addContext ) {
                     context= DataSetOps.getContextForUnbundle( bundle, index );
                     DataSetUtil.addContext( this, context );
+                    putProperty( QDataSet.NAME, bundle.property(QDataSet.NAME,index) );
                 }
             } else {
                 if ( dep2!=null ) {

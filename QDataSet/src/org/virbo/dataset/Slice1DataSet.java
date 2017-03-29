@@ -71,6 +71,7 @@ public class Slice1DataSet extends AbstractDataSet {
                 }
                 putProperty( QDataSet.LABEL, label );
                 putProperty( QDataSet.NAME, org.virbo.dsops.Ops.safeName(label) );
+                //putProperty( QDataSet.NAME, bds.property(QDataSet.NAME,index) ); //TODO: slice2 and slice3 are different.
             } else {
                 if ( addContext ) {
                     DataSetUtil.addContext( this, context );
