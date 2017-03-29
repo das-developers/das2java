@@ -40,11 +40,12 @@ public class LeapSecondsConverter extends UnitsConverter {
 
     private static void updateLeapSeconds() throws IOException, MalformedURLException, NumberFormatException {
         URL url = LeapSecondsConverter.class.getResource("/orbits/CDFLeapSeconds.txt");
+        logger.log(Level.FINE, "try reading leap seconds from {0}", url);
         InputStream in;
         try {
             in= url.openStream();
         } catch ( IOException ex ) {
-            logger.info("unable to read internal leap seconds file.");
+            logger.log(Level.INFO,"unable to read internal leap seconds file: {0}", url);
             LoggerManager.getLogger("das2.url").log(Level.FINE, "openStream {0}", url);
             url= new URL("https://cdf.gsfc.nasa.gov/html/CDFLeapSeconds.txt");
             in= url.openStream();
@@ -56,8 +57,14 @@ public class LeapSecondsConverter extends UnitsConverter {
             leapSeconds = new ArrayList(50);
             withoutLeapSeconds = new ArrayList(50);
             String lastLine= s;
+            boolean firstLine= true;
             while ( true ) {  
                 s = r.readLine();
+                if ( firstLine ) {
+                    if ( s==null ) throw new RuntimeException("Leap seconds file is empty: "+url );
+                    if ( !s.startsWith(";") ) throw new RuntimeException( "Leap seconds file should start with semicolon (;): "+url);
+                    firstLine= false;
+                }
                 if (s == null) {
                     logger.log( Level.FINE, "Last leap second read from {0} {1}", new Object[]{url, lastLine});
                     break;
