@@ -10426,6 +10426,17 @@ public class Ops {
     }
 
     /**
+     * This one-argument join was used in a script that George had, so 
+     * it must have been a function at some point.
+     * @param ds2 rank N dataset
+     * @return rank N+1 dataset
+     * @deprecated use join(null,ds2) instead.
+     */
+    public static QDataSet join( QDataSet ds2 ) {
+        return join(null,ds2);
+    }
+    
+    /**
      * Join two rank N datasets to make a rank N+1 dataset, with the first dimension
      * having two elements.  This is the anti-slice operator.
      * 
