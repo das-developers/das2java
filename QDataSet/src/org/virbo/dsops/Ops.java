@@ -9852,14 +9852,13 @@ public class Ops {
                 TailBundleDataSet ds= new TailBundleDataSet( ds1.rank() + 1 );
                 ds.bundle(ds1);
                 ds.bundle(ds2);
-                if ( Ops.equivalent( (QDataSet)ds1.property(QDataSet.DEPEND_0), (QDataSet)ds2.property(QDataSet.DEPEND_0) ) ) {
-                    ds.putProperty( QDataSet.DEPEND_0, ds1.property(QDataSet.DEPEND_0) );
-                }
-                for ( int k=1; k<ds1.rank(); k++ ) {
+                for ( int k=0; k<ds1.rank(); k++ ) {
                     if ( ds1.rank()>k ) {
                         String depName= "DEPEND_"+k;
-                        if ( Ops.equivalent( (QDataSet)ds1.property(depName), (QDataSet)ds2.property(depName) ) ) {
-                            ds.putProperty( depName, ds1.property(depName) );
+                        QDataSet d1= (QDataSet)ds1.property(depName);
+                        QDataSet d2= (QDataSet)ds2.property(depName);
+                        if ( d1!=null && d2!=null && Ops.equivalent( d1, d2 ) ) {
+                            ds.putProperty( depName, d1 );
                         }
                     }
                 }
