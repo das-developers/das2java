@@ -9851,7 +9851,18 @@ public class Ops {
             if ( ds1.rank()>1 ) {
                 TailBundleDataSet ds= new TailBundleDataSet( ds1.rank() + 1 );
                 ds.bundle(ds1);
-                ds.bundle(ds2);                
+                ds.bundle(ds2);
+                if ( Ops.equivalent( (QDataSet)ds1.property(QDataSet.DEPEND_0), (QDataSet)ds2.property(QDataSet.DEPEND_0) ) ) {
+                    ds.putProperty( QDataSet.DEPEND_0, ds1.property(QDataSet.DEPEND_0) );
+                }
+                for ( int k=1; k<ds1.rank(); k++ ) {
+                    if ( ds1.rank()>k ) {
+                        String depName= "DEPEND_"+k;
+                        if ( Ops.equivalent( (QDataSet)ds1.property(depName), (QDataSet)ds2.property(depName) ) ) {
+                            ds.putProperty( depName, ds1.property(depName) );
+                        }
+                    }
+                }
                 return ds;
             } else {
                 BundleDataSet ds= new BundleDataSet( ds1.rank() + 1 );
@@ -9861,6 +9872,9 @@ public class Ops {
             }
         } else if ( ds1 instanceof BundleDataSet && ds1.rank()-1==ds2.rank() ) {
             ((BundleDataSet)ds1).bundle(ds2);
+            return ds1;
+        } else if ( ds1 instanceof TailBundleDataSet && ds1.rank()-1==ds2.rank() ) {
+            ((TailBundleDataSet)ds1).bundle(ds2);
             return ds1;
         } else if ( ds1.rank()-1==ds2.rank() ) {
             switch (ds1.rank()) {
