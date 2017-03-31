@@ -80,6 +80,8 @@ public class NumberUnits extends Units {
             return new double[] { Integer.parseInt(s.substring(1),16), 0 };
         } else if ( s.startsWith("0x") ) {
             return new double[] { Integer.parseInt(s.substring(2),16), 0 };
+        } else if ( s.equalsIgnoreCase("nan") ) {
+            return new double[] { Double.NaN, 0 };
         } else {
             bd= new BigDecimal(s);
         }
@@ -209,7 +211,7 @@ public class NumberUnits extends Units {
                     return Datum.create( uc.convert(dd[0]), this, 0. );
                 }
             } catch (NumberFormatException nfe) {
-                if ( s.equals("fill") ) {
+                if ( s.equalsIgnoreCase("fill") ) {
                     return getFillDatum();
                 } else {
                     ParseException pe = new ParseException(nfe.getMessage(), 0);
