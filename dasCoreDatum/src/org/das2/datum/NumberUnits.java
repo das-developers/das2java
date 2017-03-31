@@ -44,27 +44,32 @@ public class NumberUnits extends Units {
         super(id,description);
     }
     
+    @Override
     public Datum createDatum( double value ) {
         return new Datum.Double( value, this, 0. );
     }
     
+    @Override
     public Datum createDatum( double value, double resolution ) {
         return new Datum.Double( value, this, resolution );
     }
     
+    @Override
     public Datum createDatum( int value ) {
         return new Datum.Double( value, this );
     }
     
+    @Override
     public Datum createDatum( long value ) {
         return new Datum.Double( value, this );
     }
     
+    @Override
     public Datum createDatum( Number value ) {
         return new Datum.Double( value, this );
     }
     
-    
+    @Override
     public DatumFormatterFactory getDatumFormatterFactory() {
         return DefaultDatumFormatterFactory.getInstance();
     }
@@ -135,12 +140,15 @@ public class NumberUnits extends Units {
             operand2= this.parse( m.group(3) );
         }
         Datum result;
-        if ( operator.equals("*") ) {
-            result= operand1.multiply(operand2);
-        } else if ( operator.equals("/") ) {
-            result= operand1.divide(operand2);
-        } else {
-            throw new IllegalArgumentException("Bad operator: "+operator+" of expression "+s);
+        switch (operator) {
+            case "*":
+                result= operand1.multiply(operand2);
+                break;
+            case "/":
+                result= operand1.divide(operand2);
+                break;
+            default:
+                throw new IllegalArgumentException("Bad operator: "+operator+" of expression "+s);
         }
         return result;
     }
@@ -152,6 +160,7 @@ public class NumberUnits extends Units {
      * At some point, we introduced support for simple expressions like "3*22"
      * Note strings starting with "x" or "0x" are parsed as hexidecimal.
      */
+    @Override
     public Datum parse(String s) throws ParseException {
         if ( false && expressionPattern.matcher(s).matches() ) {
             Datum result= parseExpression( s );
@@ -227,7 +236,7 @@ public class NumberUnits extends Units {
         if ( ( a instanceof Integer ) && ( value instanceof Integer ) ) {
             return a.intValue() + value.intValue();
         } else {
-            return new java.lang.Double( a.doubleValue()+value.doubleValue() );
+            return a.doubleValue()+value.doubleValue();
         }
     }
     
@@ -235,7 +244,7 @@ public class NumberUnits extends Units {
         if ( ( from instanceof Integer ) && ( value instanceof Integer ) ) {
             return from.intValue() - value.intValue();
         } else {
-            return new java.lang.Double( from.doubleValue()-value.doubleValue() );
+            return from.doubleValue()-value.doubleValue();
         }
     }
     
@@ -243,7 +252,7 @@ public class NumberUnits extends Units {
         if ( ( a instanceof Integer ) && ( value instanceof Integer ) ) {
             return a.intValue() / value.intValue();
         } else {
-            return new java.lang.Double( a.doubleValue()/value.doubleValue() );
+            return a.doubleValue()/value.doubleValue();
         }
     }
     
@@ -251,10 +260,11 @@ public class NumberUnits extends Units {
         if ( ( a instanceof Integer ) && ( value instanceof Integer ) ) {
             return a.intValue() * value.intValue();
         } else {
-            return new java.lang.Double( a.doubleValue()*value.doubleValue() );
+            return a.doubleValue()*value.doubleValue();
         }
     }
     
+    @Override
     public Datum add( Number a, Number b, Units bUnits ) {
         if ( bUnits!=this ) {
             UnitsConverter uc= Units.getConverter( bUnits, this );
@@ -263,6 +273,7 @@ public class NumberUnits extends Units {
         return createDatum( add( a, b ) );
     }
     
+    @Override
     public Datum subtract( Number a, Number b, Units bUnits ) {
         if ( bUnits!=this ) {
             UnitsConverter uc= Units.getConverter( bUnits, this );
@@ -271,6 +282,7 @@ public class NumberUnits extends Units {
         return createDatum( subtract( a, b ) );
     }
     
+    @Override
     public Datum multiply( Number a, Number b, Units bUnits ) {
         if ( bUnits==Units.dimensionless ) {
             return createDatum( multiply( a, b ) );
@@ -290,6 +302,7 @@ public class NumberUnits extends Units {
         }
     }
     
+    @Override
     public Datum divide( Number a, Number b, Units bUnits ) {
         if ( bUnits==Units.dimensionless ) {
             return createDatum( divide( a, b ) );
