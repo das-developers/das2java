@@ -39,9 +39,9 @@ public class Orbits {
 
     private static final Logger logger= LoggerManager.getLogger("datum.orbits");
 
-    private String sc;
+    private final String sc;
 
-    private LinkedHashMap<String,DatumRange> orbits;
+    private final LinkedHashMap<String,DatumRange> orbits;
 
     /**
      * the resource used to populate the orbits.
@@ -73,30 +73,34 @@ public class Orbits {
      * @return the list of orbits found for the spacecraft.
      */
     private static LinkedHashMap<String,DatumRange> readOrbits( String sc, List<URL> source ) throws IOException {
-        List<URL> urls= new ArrayList<URL>();
+        List<URL> urls= new ArrayList<>();
         try {
             if ( sc.contains(":") ) {
                 urls.add( new URL( sc ) );  // orbit:http://das2.org/wiki/index.php/Orbits/crres:6 allowed.
             } else {
-                if ( sc.equals("rbspa-pp") || sc.equals("rbspb-pp") ) {
-                    String fsc= sc.replace("-","_");
-                    urls.add( new URL( "http://www-pw.physics.uiowa.edu/rbsp/orbits/"+fsc ) );
-                    urls.add( new URL( "ftp://stevens.lanl.gov/pub/projects/rbsp/autoplot/orbits/"+fsc ) );
-                    urls.add( new URL( "ftp://virbo.org/mirror/stevens.lanl.gov/pub/projects/rbsp/autoplot/orbits/"+fsc ) );
-                    URL lurl= Orbits.class.getResource("/orbits/"+fsc );
-                    if ( lurl==null ) {
-                        logger.warning("null found in orbits URLs indicates expected orbit was not found on classpath");
-                    } else {
-                        urls.add( lurl );
-                    }
-                } else if ( sc.equals("crres" ) ) {
-                    urls.add( new URL( "http://www-pw.physics.uiowa.edu/das2/Orbits/crres.dat" ) );
-                    urls.add( new URL( "ftp://virbo.org/mirror/das2.org/wiki/index.php/Oribts/crres/crres-orbits.dat" ) );
-
-                } else if ( sc.equals("cassini") ) {
-                    urls.add( new URL( "http://www-pw.physics.uiowa.edu/~jbf/cassini/cassiniOrbits.txt" ) );
-                } else {
-                    urls.add( new URL( "http://www-pw.physics.uiowa.edu/das2/Orbits/"+sc+".dat" ) );
+                switch (sc) {
+                    case "rbspa-pp":
+                    case "rbspb-pp":
+                        String fsc= sc.replace("-","_");
+                        urls.add( new URL( "http://www-pw.physics.uiowa.edu/rbsp/orbits/"+fsc ) );
+                        urls.add( new URL( "ftp://stevens.lanl.gov/pub/projects/rbsp/autoplot/orbits/"+fsc ) );
+                        urls.add( new URL( "ftp://virbo.org/mirror/stevens.lanl.gov/pub/projects/rbsp/autoplot/orbits/"+fsc ) );
+                        URL lurl= Orbits.class.getResource("/orbits/"+fsc );
+                        if ( lurl==null ) {
+                            logger.warning("null found in orbits URLs indicates expected orbit was not found on classpath");
+                        } else {
+                            urls.add( lurl );
+                        }   break;
+                    case "crres":
+                        urls.add( new URL( "http://www-pw.physics.uiowa.edu/das2/Orbits/crres.dat" ) );
+                        urls.add( new URL( "ftp://virbo.org/mirror/das2.org/wiki/index.php/Oribts/crres/crres-orbits.dat" ) );
+                        break;
+                    case "cassini":
+                        urls.add( new URL( "http://www-pw.physics.uiowa.edu/~jbf/cassini/cassiniOrbits.txt" ) );
+                        break;
+                    default:
+                        urls.add( new URL( "http://www-pw.physics.uiowa.edu/das2/Orbits/"+sc+".dat" ) );
+                        break;
                 }
             }
         } catch ( MalformedURLException ex ) {
@@ -133,8 +137,7 @@ public class Orbits {
 
         LinkedHashMap<String,DatumRange> result= new LinkedHashMap();
 
-        BufferedReader rin= new BufferedReader( new InputStreamReader( in ) );
-        try {
+        try (BufferedReader rin = new BufferedReader( new InputStreamReader( in ) )) {
             String s= rin.readLine();
             int col= -1; // the first time column, 0 is the first column.
             while ( s!=null ) {
@@ -191,11 +194,10 @@ public class Orbits {
                 s= rin.readLine();
             }
         } finally {
-            rin.close();
             logger.log(Level.FINE, "read orbits for {0}", sc);
         }
 
-        if ( result.size()==0 ) {
+        if ( result.isEmpty() ) {
             throw new IOException("no orbits found in files: "+urls);
         }
         
