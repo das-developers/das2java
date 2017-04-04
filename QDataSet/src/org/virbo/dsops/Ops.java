@@ -85,6 +85,7 @@ import org.virbo.dsutil.BinAverage;
 import org.virbo.dsutil.BundleBuilder;
 import org.virbo.dsutil.DataSetBuilder;
 import org.virbo.dsutil.FFTUtil;
+import org.virbo.dsutil.LSpec;
 import org.virbo.dsutil.LinFit;
 import org.virbo.math.Contour;
 
@@ -9477,6 +9478,22 @@ public class Ops {
     }
     
     /**
+     * This finds sweeps of Y and interpolates T->Y->Z to make a regular 
+     * spectrogram T,yTags->Z[T,yTags] 
+     * This function was once known as "LvT" because it was used to create a spectrogram
+     * of Flux(Time,Lshell) by interpolating along sweeps.
+     * @param t the rank 1 x values (often time)
+     * @param y the rank 1 y values (for example, L)
+     * @param z the rank 1 z values at each y.
+     * @param ytags the rank 1 y tags for the result.
+     * @return the rank 2 spectrogram.
+     */
+    public static QDataSet gridIrregularY( QDataSet t, QDataSet y, QDataSet z, QDataSet ytags ) {
+        QDataSet result= LSpec.rebin( link( t, y ), z, ytags, 0 );
+        return result;
+    }
+
+    /**
      * create a labels dataset for tagging rows of a dataset.  If the context
      * has been used already, including "default", then the EnumerationUnit
      * for the data will be preserved.  labels(["red","green","blue"],"default")
@@ -11188,7 +11205,7 @@ public class Ops {
         return result;
         
     };
-
+    
     
     /**
      * closest double to &pi; or TAU/2
