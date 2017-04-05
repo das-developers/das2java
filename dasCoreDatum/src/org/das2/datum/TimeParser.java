@@ -2022,7 +2022,7 @@ public class TimeParser {
                         throw new RuntimeException("shouldn't get here");
                 }
                 if ( span>1 ) {
-                    if ( handlers[idigit]>0 && handlers[idigit]<5 ) logger.warning("uh-oh, span used on ordinal like month, day");
+                    if ( handlers[idigit]>0 && handlers[idigit]<5 ) logger.fine("uh-oh, span used on ordinal like month, day");
                     digit= ( digit / span ) * span;
                 }
                 if ( len<0 ) {
