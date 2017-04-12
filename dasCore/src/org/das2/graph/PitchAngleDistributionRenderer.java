@@ -13,6 +13,7 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.awt.geom.Arc2D;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.beans.PropertyChangeEvent;
@@ -334,14 +335,19 @@ public class PitchAngleDistributionRenderer extends Renderer {
                         GeneralPath gp= new GeneralPath( GeneralPath.WIND_NON_ZERO,6);
                         gp.moveTo( xx[i][j], yy[i][j] );
                         gp.lineTo( xx[i][j+1], yy[i][j+1] );
-                        //gp.curveTo( 0,0, 0,0, xx[i+1][j+1], yy[i+1][j+1] );
+                        
+                        Arc2D arc0 = new Arc2D.Double( x0-r0x, y0-r0y, r0x*2, r0y*2, Math.toDegrees(a0), Math.toDegrees(a1-a0), Arc2D.OPEN );
+                        gp.append( arc0.getPathIterator(null), true );
                         gp.lineTo( xx[i+1][j+1], yy[i+1][j+1] );
-                        gp.lineTo( xx[i+1][j], yy[i+1][j] );
+                        
+                        Arc2D arc1 = new Arc2D.Double( x0-r1x, y0-r1y, r1x*2, r1y*2, Math.toDegrees(a1), Math.toDegrees(a0-a1), Arc2D.OPEN );
+                        gp.append( arc1.getPathIterator(null), true );
+                        
                         gp.lineTo( xx[i][j], yy[i][j] );
                         
                         g.fill(gp);
                         g.draw(gp);
-
+                        
                     } else {
                         //g.setColor( Color.lightGray );
                     }
