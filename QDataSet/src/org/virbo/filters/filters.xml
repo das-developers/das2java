@@ -173,13 +173,13 @@
                             </bookmark>
                             <bookmark>
                                 <title>Add</title>
-                                <filter>|add(1.)</filter>
+                                <filter>|add(0.)</filter>
                                 <description>Add a scalar</description>
                             </bookmark>
                             <bookmark>
-                                <title>Diff</title>
-                                <filter>|diff()</filter>
-                                <description> Returns the finite differences between adjacent elements in a rank 1 dataSet</description>
+                                <title>Subtract</title>
+                                <filter>|subtract(0.)</filter>
+                                <description>Subtract a scalar</description>
                             </bookmark>
                             <bookmark>
                                 <title>Divide</title>
@@ -189,12 +189,17 @@
                             <bookmark>
                                 <title>Multiply</title>
                                 <filter>|multiply(2.)</filter>
-                                <description>Initilializes the Multiply filter</description>
+                                <description>Multiply by a scalar</description>
                             </bookmark>
                             <bookmark>
                                 <title>Negate</title>
                                 <filter>|negate()</filter>
                                 <description>Flips the sign of the dataSet</description>
+                            </bookmark>
+                            <bookmark>
+                                <title>Diff</title>
+                                <filter>|diff()</filter>
+                                <description> Returns the finite differences between adjacent elements in a rank 1 dataSet</description>
                             </bookmark>
                         </bookmark-list>
                     </bookmark-folder>

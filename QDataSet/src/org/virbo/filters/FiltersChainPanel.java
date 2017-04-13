@@ -163,6 +163,8 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
         FilterEditorPanel result;
         if ( f.matches("\\|add\\((.*)\\)") ) {
             result= new AddFilterEditorPanel();
+        } else if ( f.matches("\\|subtract\\((.*)\\)") ) {
+            result= new SubtractFilterEditorPanel();
         } else if ( f.matches("\\|butterworth\\((\\d),(\\S+),(\\S+)\\)") ) {
             result= new ButterworthFilterEditorPanel();
         } else if ( f.matches("\\|butterworth\\((\\d),(\\S+),(\\S+),(\\S+)\\)") ) {
@@ -171,8 +173,6 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
             result= new CollapseFilterEditorPanel();
         } else if ( f.matches("\\|contour\\((.*)\\)") ) {
             result= new ContourFilterEditorPanel();
-        } else if ( f.matches("\\|cos\\(\\)") ) { // TODO: FilterEditorPanel might choose to accept a filter.
-            result= new NoArgFilterEditorPanel();
         } else if ( f.matches("\\|detrend\\((.*)\\)") ) {
             result= new DetrendFilterEditorPanel();
         } else if ( f.matches("\\|divide\\((.*)\\)") ) {
@@ -197,6 +197,8 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
             result= new SliceFilterEditorPanel();
         } else if ( f.matches("\\|slice(\\d)\\(\\'(\\S+)\\'\\)") ) { // TODO: FilterEditorPanel might choose to accept a filter.
             result= new SliceFilterEditorPanel();
+        } else if ( f.matches("\\|cos\\(\\)") ) { // TODO: FilterEditorPanel might choose to accept a filter.
+            result= new NoArgFilterEditorPanel();
         } else if ( f.matches("\\|sin\\(\\)") ) { // TODO: FilterEditorPanel might choose to accept a filter.
             result= new NoArgFilterEditorPanel();
         } else if ( f.matches("\\|total(\\d)\\(()\\)") ) {

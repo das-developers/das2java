@@ -14,12 +14,12 @@ import javax.swing.JOptionPane;
  *
  * @author mmclouth
  */
-public class AddFilterEditorPanel extends AbstractFilterEditorPanel implements FilterEditorPanel {
+public class SubtractFilterEditorPanel extends AbstractFilterEditorPanel implements FilterEditorPanel {
 
     /**
      * Creates new form AddFilterEditorPanel
      */
-    public AddFilterEditorPanel() {
+    public SubtractFilterEditorPanel() {
         initComponents();
     }
 
@@ -38,7 +38,7 @@ public class AddFilterEditorPanel extends AbstractFilterEditorPanel implements F
         scalar.setText("0");
         scalar.setPreferredSize(new java.awt.Dimension(75, 27));
 
-        jLabel2.setText("Scalar to add:");
+        jLabel2.setText("Scalar to subtract:");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -47,9 +47,9 @@ public class AddFilterEditorPanel extends AbstractFilterEditorPanel implements F
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(jLabel2)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(scalar, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(scalar, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 95, Short.MAX_VALUE)
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -58,7 +58,7 @@ public class AddFilterEditorPanel extends AbstractFilterEditorPanel implements F
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel2)
                     .add(scalar, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -70,14 +70,12 @@ public class AddFilterEditorPanel extends AbstractFilterEditorPanel implements F
 
     @Override
     public String getFilter() {
-        return "|add("+scalar.getText()+")";
+        return "|subtract("+scalar.getText()+")";
     }
 
     @Override
     public void setFilter(String filter) {
-        Pattern p= Pattern.compile("\\|add\\((.*)\\)");
-        //Pattern p1= Pattern.compile("\\|butterworth\\((.*,.*,.*,.*)\\)");
-        //Pattern p2= Pattern.compile("\\|butterworth\\((.*,.*,.*)\\)");
+        Pattern p= Pattern.compile("\\|subtract\\((.*)\\)");
         Matcher m= p.matcher(filter);
         if ( m.matches() ) {
             scalar.setText(m.group(1));
@@ -92,8 +90,8 @@ public class AddFilterEditorPanel extends AbstractFilterEditorPanel implements F
      * @param args the args are ignored
      */
     public static void main(String[] args) {
-        FilterEditorPanel filter= new AddFilterEditorPanel();
-        filter.setFilter("|add(0.)");
+        FilterEditorPanel filter= new SubtractFilterEditorPanel();
+        filter.setFilter("|subtract(0.)");
         JOptionPane.showMessageDialog( null, filter);
         System.err.println( filter.getFilter() );
     }
