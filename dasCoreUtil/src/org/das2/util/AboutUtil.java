@@ -9,12 +9,15 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.text.DecimalFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * method for getting useful build and version information.
@@ -141,6 +144,35 @@ public class AboutUtil {
         return "(dev)";
     }
 
+    /**
+     * evaluate if the current JRE version is at least a given level.  This
+     * was introduced that 
+     * @param neededVersion the Java version, such as "1.8.0_102"
+     * @return true if the JRE is at least the version, or if the JRE cannot be parsed.
+     * @throws java.text.ParseException if the JRE version reported doesn't match "(\\d+)\\.(\\d+)\\.\\d+\\_(\\d+)"
+     */
+    public static boolean isJreVersionAtLeast( String neededVersion ) throws ParseException {
+        String javaVersion=  System.getProperty("java.version"); // applet okay
+        Pattern p= Pattern.compile("(\\d+)\\.(\\d+)\\.\\d+\\_(\\d+)");
+        Matcher mneeded= p.matcher(neededVersion);
+        if ( !mneeded.matches() ) {
+            throw new IllegalArgumentException("requested jre version must be of the form like 1.8.0_102 to match "+p.pattern());
+        }
+        Matcher mhave= p.matcher(javaVersion);
+        if ( mhave.matches() ) {
+            for ( int i=1; i<4; i++ ) {
+                if ( mneeded.group(i).compareTo(mhave.group(i) ) > 0 ) {
+                    return false;
+                } else if ( mneeded.group(i).compareTo(mhave.group(i) ) < 0 )  {
+                    return true;
+                }
+            }
+        } else {
+            throw new ParseException("JRE version is not identified properly: "+javaVersion,0 );
+        }
+        return neededVersion.equals(javaVersion);
+    }
+    
     /**
      * Identify the release version by looking a non-null build.tag.  It's expected
      * that the build script will insert build.tag into META-INF/build.txt
