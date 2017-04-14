@@ -15,6 +15,7 @@ import java.awt.geom.GeneralPath;
 import java.util.IllegalFormatConversionException;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Scanner;
 import org.das2.DasException;
 import org.virbo.dataset.DataSetUtil;
 import org.das2.datum.Datum;
@@ -413,24 +414,106 @@ public class DigitalRenderer extends Renderer {
         }
     }
 
+    private String getFormat( QDataSet zds ) {
+        String form=this.format;
+        String dsformat= (String) zds.property(QDataSet.FORMAT);
+        
+        if ( form.length()==0 && dsformat!=null ) {
+            form= dsformat.trim();
+        }
+        if ( form.length()==0 ) {
+            form= "%.2f";
+        }
+        return form;
+    }
+    
+    private char typeForFormat(String form) {
+        int i= form.indexOf("%");
+        if ( i==-1 ) {
+            throw new IllegalArgumentException("format should contain %");
+        } else {
+            form= form.substring(i+1);
+            while ( i>0 && form.length()>0 && form.charAt(0)=='%' ) {
+                form= form.substring(i+1);
+                i= form.indexOf("%");
+            }
+            if ( i==-1 ) {
+                throw new IllegalArgumentException("format should contain % where the number is inserted, like %f");
+            }
+            //find conversion character
+            Scanner s= new Scanner(form);
+            String sc= s.findInLine("[xXdocCf]");
+            if ( sc==null ) {
+                throw new IllegalArgumentException("expected to find one of [xXdocCf]");
+            } else {
+                return sc.charAt(0);
+            }
+        }
+    }
+
+    /**
+     * format the datum into a string, using the format and the 
+     * pre-calculated type.
+     * @param form the format, such as %.2f or "x=%d cc"
+     * @param d
+     * @param type 'x' 'X' 'd' 'o' 'c' 'C' or 'f'
+     * @return the string
+     */
+    private String formatDatum( String form, Datum d, char type) {
+
+        String s;
+        boolean isLongs=false;
+        boolean isInts=false;
+        Units u= d.getUnits();
+        
+        switch (type ) {
+            case 'x':
+            case 'X':
+            case 'd':
+            case 'o':
+                isLongs= true;
+            case 'c':
+            case 'C':
+                isInts= true;
+        }
+    
+        DatumFormatter df= d.getFormatter();
+        if ( df instanceof DefaultDatumFormatter ) {
+            if ( isInts ) {
+                s = String.format( form, (int)d.doubleValue(u) );
+            } else if ( isLongs ) {
+                s = String.format( form, (long)d.doubleValue(u) );
+            } else {
+                s = String.format( form, d.doubleValue(u) );
+            }
+        } else {
+            s = d.getFormatter().format(d, u);
+        }           
+
+        return s;
+        
+    }
+        
     private void renderRank0( QDataSet ds, Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
         DasPlot parent= getParent();
-        StringBuilder sb= new StringBuilder();
+        
+        Font f0= g.getFont();
+        if ( size>0 ) { // legacy support
+            Font f= f0.deriveFont((float)size);
+            g.setFont(f);
+        } else {
+            setUpFont( g, fontSize );
+        }
+                
+        String s;
+        
         if ( ds.rank()==0 ) {
-            String label= (String)ds.property( QDataSet.LABEL );
-            if ( label==null ) {
-                label= (String) ds.property( QDataSet.NAME );
-            }
-            if ( label!=null ) {
-                sb.append(label).append( "=");
-            }
-            Datum d=  DataSetUtil.asDatum(ds);
-            if ( d.isFill() ) {
-                sb.append(fillLabel).append(" (").append(ds.value()).append( ")");
-            } else {
-                sb.append(d.toString());
-            }
+            String form= getFormat( ds );
+            char type= typeForFormat(form);
+            s= formatDatum(form, DataSetUtil.asDatum(ds), type );
+
         } else if ( SemanticOps.isBins(ds) ) {
+            StringBuilder sb= new StringBuilder();
             String label= (String)ds.property( QDataSet.LABEL );
             if ( label==null ) {
                 label= (String) ds.property( QDataSet.NAME );
@@ -439,7 +522,11 @@ public class DigitalRenderer extends Renderer {
                 sb.append(label).append( "=");
             }
             sb.append( DataSetUtil.toString(ds) );
+            
+            s= sb.toString();
+            
         } else if ( SemanticOps.isBundle(ds) ) {
+            StringBuilder sb= new StringBuilder();
             for ( int i=0; i<Math.min(4,ds.length()); i++ ) {
                 if ( i>0 ) sb.append(", ");
                 QDataSet ds1= DataSetOps.unbundle(ds, i);
@@ -452,7 +539,9 @@ public class DigitalRenderer extends Renderer {
                 } 
                 sb.append(  DataSetUtil.asDatum(ds1).toString() );
             }
+            s= sb.toString();
         } else {
+            StringBuilder sb= new StringBuilder();
             for ( int i=0; i<Math.min(4,ds.length()); i++ ) {
                 if ( i>0 ) sb.append(", ");
                 QDataSet ds1= ds.slice(i);
@@ -462,8 +551,18 @@ public class DigitalRenderer extends Renderer {
             if ( ds.length()>4 ) {
                 sb.append(  ", ..." );
             }
+            s= sb.toString();
         }
-        parent.postMessage(this, sb.toString(), DasPlot.INFO, null, null);
+        
+        FontMetrics fm= g.getFontMetrics();
+        
+        int offs= 5;
+        
+        GrannyTextRenderer gtr= new GrannyTextRenderer();
+        gtr.setString(g, s);
+        gtr.draw(g, parent.getColumn().getDMinimum() + offs, parent.getRow().getDMinimum() + fm.getAscent() + offs );
+            
+        //parent.postMessage(this, sb.toString(), DasPlot.INFO, null, null);
     }
 
     /**
@@ -528,23 +627,7 @@ public class DigitalRenderer extends Renderer {
         Units xunits= SemanticOps.getUnits(xds);
         Units yunits= SemanticOps.getUnits(yds);
 
-        String form=this.format;
-        String dsformat= (String) zds.property(QDataSet.FORMAT);
-        boolean isInts= false;
-        boolean isLongs= false;
-        
-        if ( form.length()==0 && dsformat!=null ) {
-            form= dsformat.trim();
-        }
-        if ( form.length()==0 ) {
-            form= "%.2f";
-        }
-        if ( form.endsWith("x") || form.endsWith("X")
-            || form.endsWith("d") || form.endsWith("o") ) {
-            isLongs= true; 
-        } else if ( form.endsWith("c") || form.endsWith("C") ) {
-            isInts= true; 
-        }        
+        String form= getFormat(zds);
 
         DasPlot parent= getParent();
 
@@ -567,26 +650,17 @@ public class DigitalRenderer extends Renderer {
 
         QDataSet wds= SemanticOps.weightsDataSet(zds);
 
+        char type= typeForFormat(form);
+        
         for (int i = firstIndexx; i < lastIndexx; i++) {
             int ix = (int) xAxis.transform( xds.value(i), xunits );
 
             String s;
             int iy;
-            if ( wds.value(i)>0 ) {
+            if ( wds.value(i)>0 ) { //HERE refactore
                 Datum d = u.createDatum( zds.value(i) );
                 Datum y = yunits.createDatum( yds.value(i) );
-                DatumFormatter df= d.getFormatter();
-                if ( df instanceof DefaultDatumFormatter ) {
-                    if ( isInts ) {
-                        s = String.format( form, (int)zds.value(i) );
-                    } else if ( isLongs ) {
-                        s = String.format( form, (long)zds.value(i) );
-                    } else {
-                        s = String.format( form, zds.value(i) );
-                    }
-                } else {
-                    s = d.getFormatter().format(d, u);
-                }                
+                s= formatDatum(form, d, type );
                 iy = (int) yAxis.transform(y);
                 if ( plotSymbol!=DefaultPlotSymbol.NONE ) {
                     plotSymbol.draw( g, ix,  yAxis.transform(y), 3, FillStyle.STYLE_FILL );
