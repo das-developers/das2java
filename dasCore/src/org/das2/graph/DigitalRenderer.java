@@ -560,7 +560,26 @@ public class DigitalRenderer extends Renderer {
         
         GrannyTextRenderer gtr= new GrannyTextRenderer();
         gtr.setString(g, s);
-        gtr.draw(g, parent.getColumn().getDMinimum() + offs, parent.getRow().getDMinimum() + fm.getAscent() + offs );
+        
+        int x,y;
+        
+        if (align == Align.NE || align == Align.NW) {
+            y = parent.getRow().getDMinimum() + fm.getAscent() + offs;
+        } else if (align == Align.CENTER) {
+            y = parent.getRow().getDMinimum() + fm.getAscent() + offs;
+        } else {
+            y= parent.getRow().getDMaximum() - (int)gtr.getDescent() - offs;
+        }
+        
+        if (align == Align.NW || align == Align.SW ) {
+            x = parent.getColumn().getDMinimum() + offs;
+        } else if (align == Align.CENTER) {
+            x = parent.getColumn().getDMinimum() + offs;
+        } else {
+            x = parent.getColumn().getDMaximum() - offs - (int)gtr.getWidth();
+        }
+        
+        gtr.draw(g, x, y );
             
         //parent.postMessage(this, sb.toString(), DasPlot.INFO, null, null);
     }
