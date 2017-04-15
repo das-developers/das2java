@@ -406,9 +406,15 @@ public final class IDataSet extends ArrayDataSet {
         if ( rank==0 ) {
             throw new IllegalArgumentException("trim called on rank 0 dataset");
         }
+        if ( start==0 && end==len0 ) {
+            return this;
+        }
         if ( RANGE_CHECK ) {
             if ( start>len0 ) throw new IndexOutOfBoundsException("start="+start+" > "+len0 );
+            if ( start<0 ) throw new IndexOutOfBoundsException("start="+start+" < 0");
             if ( end>len0 ) throw new IndexOutOfBoundsException("end="+end+" > "+len0 );
+            if ( end<0 ) throw new IndexOutOfBoundsException("end="+end+" < 0");
+            if ( start>end ) throw new IllegalArgumentException("trim called with start>end: "+start +">"+end);
         }
         int nrank = this.rank;
         int noff1= start * len1 * len2 * len3;

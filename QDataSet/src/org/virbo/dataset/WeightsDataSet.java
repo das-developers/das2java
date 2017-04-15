@@ -1,7 +1,4 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package org.virbo.dataset;
 
 /**
@@ -75,6 +72,7 @@ public abstract class WeightsDataSet implements QDataSet {
         dsname= name==null ? "wds" : "wds_"+name;
     }
 
+    @Override
     public int rank() {
         return ds.rank();
     }
@@ -84,16 +82,22 @@ public abstract class WeightsDataSet implements QDataSet {
         return DataSetUtil.toString(ds);
     }
 
+    @Override
     public abstract double value();
 
+    @Override
     public abstract double value(int i);
 
+    @Override
     public abstract double value(int i0, int i1);
 
+    @Override
     public abstract double value(int i0, int i1, int i2);
 
+    @Override
     public abstract double value(int i0, int i1, int i2, int i3);
 
+    @Override
     public Object property(String name) {
         if ( name.equals(QDataSet.FILL_VALUE) ) return reportFill; // https://sourceforge.net/p/autoplot/bugs/1458/
         if ( name.equals(QDataSet.NAME ) ) return dsname;
@@ -102,6 +106,7 @@ public abstract class WeightsDataSet implements QDataSet {
 
     }
 
+    @Override
     public Object property(String name, int i) {
         return property(name);
     }
@@ -118,31 +123,41 @@ public abstract class WeightsDataSet implements QDataSet {
         return property(name);
     }
 
+    @Override
     public int length() {
         return ds.length();
     }
 
+    @Override
     public int length(int i) {
         return ds.length(i);
     }
 
+    @Override
     public int length(int i, int j) {
         return ds.length(i, j);
     }
 
+    @Override
     public int length(int i, int j, int k) {
         return ds.length(i, j, k);
     }
 
+    @Override
     public <T> T capability(Class<T> clazz) {
         return null;
     }
 
+    @Override
     public QDataSet slice(int i) {
         return new Slice0DataSet( this, i);
     }
 
+    @Override
     public QDataSet trim(int start, int end) {
+        if ( start==0 && end==ds.length() ) {
+            return this;
+        }
         return new TrimDataSet( this, start, end );
     }
 

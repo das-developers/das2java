@@ -528,28 +528,26 @@ public final class DDataSet extends ArrayDataSet {
         return result;
     }
 
-    /**
-     * trim operator copies the data into a new dataset.
-     * @param start the first index
-     * @param end the last index, exclusive
-     * @return a shorter dataset of the same rank.
-     */
     @Override
     public QDataSet trim(int start, int end) {
         if ( rank==0 ) {
             throw new IllegalArgumentException("trim called on rank 0 dataset");
         }
+        if ( start==0 && end==len0 ) {
+            return this;
+        }
         if ( RANGE_CHECK ) {
             if ( start>len0 ) throw new IndexOutOfBoundsException("start="+start+" > "+len0 );
+            if ( start<0 ) throw new IndexOutOfBoundsException("start="+start+" < 0");
             if ( end>len0 ) throw new IndexOutOfBoundsException("end="+end+" > "+len0 );
+            if ( end<0 ) throw new IndexOutOfBoundsException("end="+end+" < 0");
+            if ( start>end ) throw new IllegalArgumentException("trim called with start>end: "+start +">"+end);
         }
         int nrank = this.rank;
         int noff1= start * len1 * len2 * len3;
         int noff2= end * len1 * len2 * len3;
         double[] newback = new double[noff2-noff1];
-        if ( end>this.len0 ) {
-            throw new IndexOutOfBoundsException();
-        }
+
         if ( noff2-noff1>0 ) {
             System.arraycopy( this.back, noff1, newback, 0, noff2-noff1 );
         }

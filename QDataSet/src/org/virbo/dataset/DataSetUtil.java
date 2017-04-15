@@ -527,7 +527,7 @@ public class DataSetUtil {
             String prop= "DEPEND_"+i;
             QDataSet dep= (QDataSet) ds.property(prop);
             if ( dep!=null ) {
-                if ( dep.rank()>1 ) {
+                if ( dep.rank()>1 && !Schemes.isRank2Bins(dep) ) {
                     dep= dep.trim(start,stop);
                 }
                 result.put( prop, dep );
