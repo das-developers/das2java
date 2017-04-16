@@ -976,8 +976,8 @@ public class Ops {
     /**
      * reduce each bin to its center.  If the spacing is
      * log, then geometric centers are used.
-     * @param dep1 rank 2 n,2 min,max bins
-     * @return rank 2 n element dataset
+     * @param dep1 rank 2 [N,2] bins dataset, where bins are min,max boundaries.
+     * @return rank 1 N element dataset
      */
     public static QDataSet reduceBins(QDataSet dep1) {
         if ( dep1.property(QDataSet.BINS_1).equals(QDataSet.VALUE_BINS_MIN_MAX) ) {
