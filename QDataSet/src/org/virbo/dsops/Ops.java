@@ -974,6 +974,33 @@ public class Ops {
     }
     
     /**
+     * reduce each bin to its center.  If the spacing is
+     * log, then geometric centers are used.
+     * @param dep1 rank 2 n,2 min,max bins
+     * @return rank 2 n element dataset
+     */
+    public static QDataSet reduceBins(QDataSet dep1) {
+        if ( dep1.property(QDataSet.BINS_1).equals(QDataSet.VALUE_BINS_MIN_MAX) ) {
+            DDataSet result= DDataSet.createRank1(dep1.length());
+            int n= result.length();
+            if ( QDataSet.VALUE_SCALE_TYPE_LOG.equals(dep1.property(QDataSet.SCALE_TYPE)) ) {        
+                for ( int i=0; i<n; i++ ) {
+                    result.putValue(i,Math.sqrt(dep1.value(i,0)*dep1.value(i,1)));
+                }
+            } else {
+                for ( int i=0; i<n; i++ ) {
+                    result.putValue(i,(dep1.value(i,0)+dep1.value(i,1))/2);
+                }                
+            }
+            DataSetUtil.copyDimensionProperties( dep1, result );
+            return result;
+        } else {
+            throw new IllegalArgumentException("dataset must be rank 2 bins dataset, with min,max");
+        }
+    }
+
+
+    /**
      * this is introduced to mimic the in-line function which reduces the dimensionality by averaging over the zeroth dimension.
      *   collapse0( ds[30,20] ) &rarr; ds[20]
      * @param fillDs
