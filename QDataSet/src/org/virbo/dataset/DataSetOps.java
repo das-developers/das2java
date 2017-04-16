@@ -202,7 +202,7 @@ public class DataSetOps {
         DataSetBuilder xbuilder= new DataSetBuilder( 1, 100 );
         DataSetBuilder ybuilder= new DataSetBuilder( 1, 100 );
         if ( dep1.rank()==2 && Schemes.isRank2Bins(dep1) ) {
-            dep1= Ops.reduceBins( dep1,1 );
+            dep1= Ops.reduceBins( dep1 );
         }
         boolean dep1rank2= dep1!=null && dep1.rank()==2;
         for ( int i=0; i<ds.length(); i++ ) {
