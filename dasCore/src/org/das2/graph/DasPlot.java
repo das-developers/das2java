@@ -935,10 +935,14 @@ public class DasPlot extends DasCanvasComponent {
         //paintImmediately(0, 0, getWidth(), getHeight());
         super.updateImmediately();
         logger.finer("DasPlot.updateImmediately");
-        List<Renderer> renderers1= Arrays.asList(getRenderers());
+        Renderer[] renderers1= getRenderers();
         for (org.das2.graph.Renderer renderers11 : renderers1) {
             Renderer rend = (Renderer) renderers11;
-            rend.update();
+            if ( rend==null ) {
+                logger.info("odd branch presumed to be caused by thread mis-management.");
+            } else {
+                rend.update();
+            }
         }
     }
 
