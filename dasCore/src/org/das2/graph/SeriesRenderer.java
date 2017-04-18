@@ -1541,7 +1541,7 @@ public class SeriesRenderer extends Renderer {
 
             logger.log(Level.FINEST, "connectCount: {0}", connectCount);
             
-            if ( drawError ) {
+            if ( drawError ) { // error bars
                 errorElement.render(graphics, xAxis, yAxis, tds, mon.getSubtaskMonitor("errorElement.render"));
             }
 
@@ -1557,7 +1557,7 @@ public class SeriesRenderer extends Renderer {
             int connectCount= psymConnectorElement.render(graphics, xAxis, yAxis, vds, mon.getSubtaskMonitor("psymConnectorElement.render")); // vds is only to check units
             logger.log(Level.FINEST, "connectCount: {0}", connectCount);
             
-            if ( drawError ) {
+            if ( drawError ) { // error bars
                 errorElement.render(graphics, xAxis, yAxis, vds, mon.getSubtaskMonitor("errorElement.render"));
             }
 
