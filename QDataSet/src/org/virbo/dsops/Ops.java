@@ -9857,9 +9857,9 @@ public class Ops {
     }
 
     /**
-     * bundle the dataset, adding a bundle dimension.  
-     * @param ds a rank N-1 dataset
-     * @return rank N bundle dataset
+     * bundle the dataset, making an initial bundle, adding a bundle dimension.  
+     * @param ds a rank N dataset
+     * @return rank N+1 bundle dataset
      */
     public static QDataSet bundle( QDataSet ds ) {
         return bundle( null, ds );
@@ -9870,9 +9870,9 @@ public class Ops {
      * will try to bundle on the second dimension, unlike join.  This will also
      * isolate the semantics of bundle dimensions as it's introduced.  Note the
      * first argument can be null in order to simplify loops in client code.
-     * @param ds1 null, rank N-1 dataset, or a rank N bundle dataset.
-     * @param ds2 rank N-1 dataset.
-     * @return rank N bundle dataset
+     * @param ds1 null, rank N dataset with n records or rank N+1 bundle dataset
+     * @param ds2 rank N dataset.
+     * @return rank N+1 bundle dataset
      * @see #join(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
      */
     public static QDataSet bundle( QDataSet ds1, QDataSet ds2 ) {
@@ -9970,13 +9970,15 @@ public class Ops {
     }
 
     /**
-     * shorthand for bundling three datasets.  This bundles on the second dimension,
+     * bundle three datasets, giving them a common zeroth index, typically time.
+     * unlike join.  This bundles on the second dimension,
      * unlike join.  This is just like bundle(ds1,ds2), in fact this just calls 
      * bundle( bundle( ds1,ds2 ), ds3 )
-     * @param ds1 rank 1 (for now) dataset or rank 2 bundle dataset
-     * @param ds2 rank 1 (for now) dataset
-     * @param ds3 rank 1 (for now) dataset
+     * @param ds1 rank 1 (for now) dataset with n records or rank 2 bundle dataset
+     * @param ds2 rank 1 (for now) dataset with n records
+     * @param ds3 rank 1 (for now) dataset with n records
      * @return rank 2 [n,3] bundle dataset
+     * @see #join(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
      */
     public static QDataSet bundle( QDataSet ds1, QDataSet ds2, QDataSet ds3 ) {
         return bundle( bundle( ds1, ds2 ), ds3 );
@@ -9984,14 +9986,15 @@ public class Ops {
 
 
     /**
-     * shorthand for bundling four datasets.  This bundles on the second dimension,
+     * bundle four datasets, making them share their zeroth index, typically time,
      * unlike join.  This is just like bundle(ds1,ds2), in fact this just calls
      * bundle( bundle( bundle( ds1,ds2 ), ds3 ), ds4 )
-     * @param ds1 rank 1 (for now) dataset or rank 2 bundle dataset
-     * @param ds2 rank 1 (for now) dataset
-     * @param ds3 rank 1 (for now) dataset
-     * @param ds4 rank 1 (for now) dataset
+     * @param ds1 rank 1 (for now) dataset with n records or rank 2 bundle dataset
+     * @param ds2 rank 1 (for now) dataset with n records
+     * @param ds3 rank 1 (for now) dataset with n records
+     * @param ds4 rank 1 (for now) dataset with n records
      * @return rank 2 [n,4] bundle dataset
+     * @see #join(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
      */
     public static QDataSet bundle( QDataSet ds1, QDataSet ds2, QDataSet ds3, QDataSet ds4 ) {
         return bundle( bundle( bundle( ds1, ds2 ), ds3 ), ds4 );
