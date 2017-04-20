@@ -58,6 +58,8 @@ import org.virbo.dsops.Ops;
 public final class TickCurveRenderer extends Renderer {
     
     TickVDescriptor tickv;
+    TickVDescriptor manualTickV=null;
+            
     DomainDivider ticksDivider;
     private String xplane;
     private String yplane;
@@ -112,7 +114,7 @@ public final class TickCurveRenderer extends Renderer {
      * @param ds
      * @param xplane
      * @param yplane
-     * @param tickv
+     * @param tickv null or ticks for manual specification.
      */
     public TickCurveRenderer( QDataSet ds, String xplane, String yplane, TickVDescriptor tickv) {
         this();
@@ -132,7 +134,7 @@ public final class TickCurveRenderer extends Renderer {
         this.lineWidth= getDoubleControl( PROP_LINETHICK, lineWidth );
         this.color= getColorControl( CONTROL_KEY_COLOR, color );
         this.fontSize= getControl( CONTROL_KEY_FONT_SIZE, fontSize );
-        this.tickLength= getControl( "tickLength", tickLength );
+        this.tickLength= getControl(CONTROL_TICK_LENGTH, tickLength );
         update();
     }
     
@@ -142,9 +144,11 @@ public final class TickCurveRenderer extends Renderer {
         controls.put( PROP_LINETHICK, String.valueOf(lineWidth) );
         controls.put( CONTROL_KEY_COLOR, encodeColorControl(color) );
         controls.put( CONTROL_KEY_FONT_SIZE, fontSize );
-        controls.put( "tickLength", tickLength );
+        controls.put( CONTROL_TICK_LENGTH, tickLength );
         return Renderer.formatControl(controls);
     }
+    
+    public static final String CONTROL_TICK_LENGTH = "tickLength";
     
     private String fontSize = "";
 
@@ -659,14 +663,18 @@ public final class TickCurveRenderer extends Renderer {
         QDataSet findex;
         Units tunits= SemanticOps.getUnits(tds);
 
-        if ( tickv==null || !tickv.getMinorTicks().getUnits().isConvertibleTo(tunits) ) {
-            tickv= resetTickV( tds );
+        if ( manualTickV!=null ) {
+            tickv= manualTickV;
         } else {
-            double check= checkTickV(tds);
-            if ( check<30 ) {
+            if ( tickv==null || !tickv.getMinorTicks().getUnits().isConvertibleTo(tunits) ) {
                 tickv= resetTickV( tds );
-            } else if ( check>100 ) {
-                tickv= resetTickV( tds );
+            } else {
+                double check= checkTickV(tds);
+                if ( check<30 ) {
+                    tickv= resetTickV( tds );
+                } else if ( check>100 ) {
+                    tickv= resetTickV( tds );
+                }
             }
         }
         
@@ -789,11 +797,11 @@ public final class TickCurveRenderer extends Renderer {
     }
 
     /**
-     * set the ticks for the renderer.
+     * manually set the ticks for the renderer, or null means use automatic.
      * @param ticks
      */
     public void setTickVDescriptor(TickVDescriptor ticks) {
-        this.tickv= ticks;
+        this.manualTickV= ticks;
         this.invalidateParentCacheImage();
     }
     
