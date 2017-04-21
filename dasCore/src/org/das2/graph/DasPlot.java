@@ -1761,9 +1761,6 @@ public class DasPlot extends DasCanvasComponent {
         Object oldValue = plotTitle;
         plotTitle = t;
         if ( t==null ) t="";
-        if ( t.contains("0.0 to 100.0" ) ) {
-            new Exception("temporary for test002_022").printStackTrace(); // TODO: temporary
-        }
         if (getCanvas() != null) {
             FontMetrics fm = getFontMetrics(getCanvas().getFont());
             titleHeight = fm.getHeight() + fm.getHeight() / 2;
