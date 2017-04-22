@@ -611,6 +611,7 @@ public final class TickCurveRenderer extends Renderer {
         if ( limit==0 ) limit= 10000;  // we failed to find two valid adjacent points.
         
         QDataSet wds= Ops.multiply( Ops.valid(xds), Ops.valid(yds) );
+        double[] len= new double[tds.length()];
         
         int lastValid=0;
         
@@ -637,9 +638,11 @@ public final class TickCurveRenderer extends Renderer {
                 double w1= wds.value(i);
                 if ( w1==0 ) {
                     brk= true;
+                    len[i]= 9999;
                 } else {
                     double len1=  Math.sqrt( Math.pow(ddata[0][i]- ddata[0][i-1],2 ) 
                             + Math.pow(ddata[1][i]- ddata[1][i-1],2 ) );
+                    len[i]= len1;
                     if ( len1>limit ) {
                         p.moveTo( ddata[0][i],ddata[1][i] );  // TODO: verify this
                         brk= true;
@@ -692,7 +695,7 @@ public final class TickCurveRenderer extends Renderer {
         
         for ( int i=0; i<tickv.minorTickV.getLength(); i++ ) {
             double v= findex.value(i);
-            if ( v>=0 && v<lastValid ) {
+            if ( v>=0 && v<lastValid && len[(int)Math.ceil(v)]<limit ) {
                 drawTick( g, v ); // TODO: in/out logic needs to be based on tickv index, not data point index.
             }
         }
@@ -700,8 +703,9 @@ public final class TickCurveRenderer extends Renderer {
         txds= DDataSet.wrap( tickv.tickV.toDoubleArray( tunits ), tunits );
         findex= Ops.findex( tds, txds );
         for ( int i=0; i<tickv.tickV.getLength(); i++ ) {            
-            if ( findex.value(i)>=0 && findex.value(i)<lastValid ) {
-                drawLabelTick( g, findex.value(i), i );
+            double v= findex.value(i);
+            if ( findex.value(i)>=0 && findex.value(i)<lastValid && len[(int)Math.ceil(v)]<limit) {
+                drawLabelTick( g, v, i );
             }
         }
 
