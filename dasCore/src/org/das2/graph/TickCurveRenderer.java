@@ -72,11 +72,11 @@ public final class TickCurveRenderer extends Renderer {
      * data transformed to pixel space
      */
     private double[][] ddata; 
-	
-	/**
-	 * current indeces--careful not thread safe.
-	 */
-	private final int[] index= new int[3];
+
+   /**
+    * current indeces--careful not thread safe.
+    */
+    private final int[] index= new int[3];
         
     TickLabeller tickLabeller;
     
@@ -215,8 +215,8 @@ public final class TickCurveRenderer extends Renderer {
         g.setColor( color );
         g.setStroke( new BasicStroke((float)lineWidth) );
         g.drawLine(2,12,14,8);
-		g.drawLine(8,10,6,6);
-		g.drawLine(4,2,4,2);
+        g.drawLine(8,10,6,6);
+        g.drawLine(4,2,4,2);
         return new ImageIcon( img );
     }
     
@@ -240,7 +240,7 @@ public final class TickCurveRenderer extends Renderer {
 
     }
 
-    static QDataSet makeCanonical( QDataSet ds ) {
+    private static QDataSet makeCanonical( QDataSet ds ) {
         if ( ds.rank()==2 && ds.length(0)==3 ) {
             return ds;
         }
@@ -265,13 +265,13 @@ public final class TickCurveRenderer extends Renderer {
 //        return dist;
 //    }
     
-	/**
-	 * make line segment length len, starting at line.getP1() and
-	 * having the same direction.
-	 * @param line the line segment, with non-zero length.
-	 * @param len the new length of the line.
-	 * @return the new line.
-	 */
+    /**
+     * make line segment length len, starting at line.getP1() and
+     * having the same direction.
+     * @param line the line segment, with non-zero length.
+     * @param len the new length of the line.
+     * @return the new line.
+     */
     private static Line2D normalize(Line2D line, double len) {
         Point2D p1= line.getP1();
         double dx= line.getX2()-line.getX1();
@@ -296,48 +296,50 @@ public final class TickCurveRenderer extends Renderer {
         return dx1*dy2 - dx2*dy1;        
     }
     
-	/**
-	 * 
-	 * @param findex
-	 * @param points three-element array containing the points to use.
-	 */
-	private void id3( double findex, int[] points ) {
+    /**
+     * 
+     * @param findex
+     * @param points three-element array containing the points to use.
+     */
+    private void id3( double findex, int[] points ) {
         int dd=4;
-		int nvert= xds.length();
-		int index1= (int)Math.floor(findex);
+        int nvert= xds.length();
+        int index1= (int)Math.floor(findex);
         int index0= index1-dd;
         if ( index0<0 ) index0= 0;
-		while ( index0<index1 && ( ( ddata[0][index0]==-10000 ) || ( ddata[1][index0]==10000 ) ) ) {
-			index0++;
-		}
-        int index2= index1+dd;		
-        if ( index2>=nvert ) index2=nvert-1;             
-		while ( index2>index1 && ( ( ddata[0][index2]==-10000 ) || ( ddata[1][index2]==10000 ) ) ) {
-			index2--;
-		}
-        if ( index2-index1 > index1-index0 ) {
-			index2= index1 + ( index1-index0 );
-		}
-		while ( index2>index1 && ( ( ddata[0][index2]==-10000 ) || ( ddata[1][index2]==10000 ) ) ) {
-			index2--;
-		}
-		if ( index1-index0 > index2-index1 ) {
-			index0= index1 - ( index2-index1 );
-		}
-		while ( index0<index1 && ( ( ddata[0][index0]==-10000 ) || ( ddata[1][index0]==10000 ) ) ) {
-			index0++;
-		}
-		if ( index2-index0<2 && index0>1 && Math.abs( ddata[0][index2-2])<10000 ) {
-			index0= index2-2;
-			index1= index2-1;
-		}
-		if ( index2-index0<2 && index2<(nvert-2) && Math.abs( ddata[0][index2+2])<10000 ) {
-			index1= index0+1;
-			index2= index0+2;
-		}
-		points[0]= index0;
-		points[1]= index1;
-		points[2]= index2;
+        while (index0 < index1 && ((ddata[0][index0] == -10000) || (ddata[1][index0] == 10000))) {
+            index0++;
+        }
+        int index2 = index1 + dd;
+        if (index2 >= nvert) {
+            index2 = nvert - 1;
+        }
+        while (index2 > index1 && ((ddata[0][index2] == -10000) || (ddata[1][index2] == 10000))) {
+            index2--;
+        }
+        if (index2 - index1 > index1 - index0) {
+            index2 = index1 + (index1 - index0);
+        }
+        while (index2 > index1 && ((ddata[0][index2] == -10000) || (ddata[1][index2] == 10000))) {
+            index2--;
+        }
+        if (index1 - index0 > index2 - index1) {
+            index0 = index1 - (index2 - index1);
+        }
+        while (index0 < index1 && ((ddata[0][index0] == -10000) || (ddata[1][index0] == 10000))) {
+            index0++;
+        }
+        if (index2 - index0 < 2 && index0 > 1 && Math.abs(ddata[0][index2 - 2]) < 10000) {
+            index0 = index2 - 2;
+            index1 = index2 - 1;
+        }
+        if (index2 - index0 < 2 && index2 < (nvert - 2) && Math.abs(ddata[0][index2 + 2]) < 10000) {
+            index1 = index0 + 1;
+            index2 = index0 + 2;
+        }
+        points[0] = index0;
+        points[1] = index1;
+        points[2] = index2;
 	}
 	
     /**
@@ -350,7 +352,7 @@ public final class TickCurveRenderer extends Renderer {
         if ( nvert<3 ) {
             return 0;
         }
-		id3( findex, index );
+        id3( findex, index );
         return turnDir( ddata[0][index[0]], ddata[1][index[0]],
                         ddata[0][index[1]], ddata[1][index[1]],
                         ddata[0][index[2]], ddata[1][index[2]] );
@@ -365,9 +367,9 @@ public final class TickCurveRenderer extends Renderer {
      */
     private Line2D outsideNormalAt( double findex ) {
 
-		id3( findex, index );
-		
-		double x0= ddata[0][index[0]];
+        id3( findex, index );
+
+        double x0= ddata[0][index[0]];
         double x2= ddata[0][index[2]];
         double y0= ddata[1][index[0]];
         double y2= ddata[1][index[2]];
@@ -462,8 +464,8 @@ public final class TickCurveRenderer extends Renderer {
             g.draw( tick );
         }
 
-		tick= normalize( tick, tl + lineWidth );
-				
+        tick= normalize( tick, tl + lineWidth );
+
         tickLabeller.labelMajorTick( g, tickNumber, tick );
         
     }
@@ -708,12 +710,12 @@ public final class TickCurveRenderer extends Renderer {
         for ( ; i>0; i-- ) {
             if ( wds.value(i)>0 ) break;
         }
-		int index1= i;
+        int index1= i;
         i-=1;
         for ( ; i>=0; i-- ) {
             if ( wds.value(i)>0 ) break;
         }    
-		int index2= i;
+        int index2= i;
         int em= 10;
         Arrow.paintArrow( g,
                 new Point2D.Double( ddata[0][index1],ddata[1][index1] ),
