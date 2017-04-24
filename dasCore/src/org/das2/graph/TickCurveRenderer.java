@@ -695,7 +695,7 @@ public final class TickCurveRenderer extends Renderer {
         
         for ( int i=0; i<tickv.minorTickV.getLength(); i++ ) {
             double v= findex.value(i);
-            if ( v>=0 && v<lastValid && len[(int)Math.ceil(v)]<limit ) {
+            if ( v>=0 && v<lastValid && len[(int)Math.ceil(v)]<=limit ) {
                 drawTick( g, v ); // TODO: in/out logic needs to be based on tickv index, not data point index.
             }
         }
@@ -704,7 +704,7 @@ public final class TickCurveRenderer extends Renderer {
         findex= Ops.findex( tds, txds );
         for ( int i=0; i<tickv.tickV.getLength(); i++ ) {            
             double v= findex.value(i);
-            if ( findex.value(i)>=0 && findex.value(i)<lastValid && len[(int)Math.ceil(v)]<limit) {
+            if ( findex.value(i)>=0 && findex.value(i)<lastValid && len[(int)Math.ceil(v)]<=limit) {
                 drawLabelTick( g, v, i );
             }
         }
