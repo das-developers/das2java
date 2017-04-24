@@ -698,10 +698,10 @@ public final class QubeDataSetIterator implements DataSetIterator {
                     if ( sssi.step==1 && sssi.start==0 && sssi.stop==bund.length() ) {
                         result.putProperty( "BUNDLE_"+i, bund );
                     } else if ( sssi.step==1 ) {
-                        result.putProperty( "BUNDLE_"+i, bund.trim( sssi.start, sssi.stop ) );
+                        //result.putProperty( "BUNDLE_"+i, bund.trim( sssi.start, sssi.stop ) );
                     } else {
-                        QDataSet bundSlice= DataSetOps.trim( bund, sssi.start, sssi.stop, sssi.step );
-                        result.putProperty( "BUNDLE_"+i, bundSlice );
+                        //QDataSet bundSlice= DataSetOps.trim( bund, sssi.start, sssi.stop, sssi.step );
+                        //result.putProperty( "BUNDLE_"+i, bundSlice );
                     }
                 }
                 if ( bins!=null && it[idim].length()==bins.split(",").length ) { //TODO: verify this
