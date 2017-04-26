@@ -1613,7 +1613,16 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     }
 
     private DatumFormatter resolveFormatter(TickVDescriptor tickV) {
-        return getUserDatumFormatter() == null ? tickV.getFormatter() : getUserDatumFormatter();
+        DatumFormatter udf= getUserDatumFormatter();
+        if ( udf == null ) {
+            if ( tickV==null ) {
+                return DefaultDatumFormatterFactory.getInstance().defaultFormatter();
+            } else {
+                return tickV.getFormatter();
+            }
+        } else {
+            return udf;
+        }
     }
 
     private Rectangle getMaxBounds(DatumFormatter tdf, TickVDescriptor tickV) {
@@ -4717,7 +4726,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * changes while valueIsAdjusting is true, as they should receive a
      * final propertyChangeEvent after the lock is released.  (note it's not
      * clear who is responsible for this.
-     * See http://www.das2.org/wiki/index.php/Das2.valueIsAdjusting)
+     * See http://das2.org/wiki/index.php/Das2.valueIsAdjusting)
      */
     public boolean valueIsAdjusting() {
         return dataRange.valueIsAdjusting();

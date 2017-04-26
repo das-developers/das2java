@@ -84,8 +84,8 @@ public class TickMaster {
     /**
      * offer a set of ticks.  This can be called from off or on the event thread,
      * but a new thread is started so the task is performed off the event thread.
-     * @param h
-     * @param ticks 
+     * @param h the axis
+     * @param ticks null or the new ticks.
      */
     public synchronized void offerTickV( final DasAxis h, final TickVDescriptor ticks ) {
         
@@ -102,9 +102,13 @@ public class TickMaster {
         this.axes.addAll(rm);
 
         List<String> axesUsing= new ArrayList();
-
+        
         if ( h.isVisible() && h.isTickLabelsVisible() ) {
-            logger.log( Level.FINE, "axes {0} offers ticks: {1}", new Object[] { h.getDasName(), ticks.toString() } );
+            if ( ticks==null ) {
+                logger.log( Level.FINE, "axes {0} offers ticks: null", new Object[] { h.getDasName() } );
+            } else {
+                logger.log( Level.FINE, "axes {0} offers ticks: {1}", new Object[] { h.getDasName(), ticks.toString() } );
+            }
 
             int count=0;
             int mecount=0; // how many times to do I see myself in the list?
