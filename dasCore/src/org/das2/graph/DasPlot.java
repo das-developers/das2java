@@ -40,7 +40,6 @@ import org.das2.DasApplication;
 import org.das2.CancelledOperationException;
 import org.das2.DasProperties;
 import org.das2.util.GrannyTextRenderer;
-import org.das2.util.DasExceptionHandler;
 import org.das2.util.DnDSupport;
 import java.beans.PropertyChangeEvent;
 import org.das2.util.monitor.NullProgressMonitor;
@@ -359,30 +358,34 @@ public class DasPlot extends DasCanvasComponent {
         int iconColumnWidth = maxIconWidth + em / 4;
         mrect = new Rectangle(boundRect);
         mrect.width += iconColumnWidth;
-        if ( legendPosition==LegendPosition.NE || legendPosition==LegendPosition.NW ) {
-            mrect.y= yAxis.getRow().getDMinimum() + em/2;
-            if ( legendPosition==LegendPosition.NE ) {
-                mrect.x = xAxis.getColumn().getDMaximum() - em - mrect.width;
-
-            } else if ( legendPosition==LegendPosition.NW ) {
-                mrect.x = xAxis.getColumn().getDMinimum() + em ;
-            }
-        } else if ( legendPosition==LegendPosition.SE || legendPosition==LegendPosition.SW ) {
-            mrect.y=  yAxis.getRow().getDMaximum() - boundRect.height - em; // note em not em/2 is intentional
-            if ( legendPosition==LegendPosition.SE ) {
-                mrect.x = xAxis.getColumn().getDMaximum() - em - mrect.width;
-
-            } else if ( legendPosition==LegendPosition.SW ) {
-                mrect.x = xAxis.getColumn().getDMinimum() + em ;
-            }
-
-        } else if ( legendPosition==LegendPosition.OutsideNE ) {
-            mrect.x = xAxis.getColumn().getDMaximum() + em + maxIconWidth;
-            boundRect.x = mrect.x;
-            mrect.y= yAxis.getRow().getDMinimum(); // em/5 determined by experiment.
-
-        } else {
+        if ( null == legendPosition ) {
             throw new IllegalArgumentException("not supported: "+legendPosition);
+        } else switch (legendPosition) {
+            case NE:
+            case NW:
+                mrect.y= yAxis.getRow().getDMinimum() + em/2;
+                if ( legendPosition==LegendPosition.NE ) {
+                    mrect.x = xAxis.getColumn().getDMaximum() - em - mrect.width;
+                    
+                } else if ( legendPosition==LegendPosition.NW ) {
+                    mrect.x = xAxis.getColumn().getDMinimum() + em ;
+                }   break;
+            case SE:
+            case SW:
+                mrect.y=  yAxis.getRow().getDMaximum() - boundRect.height - em; // note em not em/2 is intentional
+                if ( legendPosition==LegendPosition.SE ) {
+                    mrect.x = xAxis.getColumn().getDMaximum() - em - mrect.width;
+                    
+                } else if ( legendPosition==LegendPosition.SW ) {
+                    mrect.x = xAxis.getColumn().getDMinimum() + em ;
+                }   break;
+            case OutsideNE:
+                mrect.x = xAxis.getColumn().getDMaximum() + em + maxIconWidth;
+                boundRect.x = mrect.x;
+                mrect.y= yAxis.getRow().getDMinimum(); // em/5 determined by experiment.
+                break;
+            default:
+                throw new IllegalArgumentException("not supported: "+legendPosition);
         }
 
         Rectangle axisBounds= DasDevicePosition.toRectangle( getRow(), getColumn() );
@@ -392,6 +395,11 @@ public class DasPlot extends DasCanvasComponent {
         return new Rectangle( (int)rr.getX(),(int)rr.getY(),(int)rr.getWidth(),(int)rr.getHeight() );
     }
 
+    /**
+     * draw the legend elements, substituting the plot context if the macro %{CONTEXT} is found.
+     * @param g graphics context
+     * @param llegendElements the legend elements
+     */
     private void drawLegend(Graphics2D g, List<LegendElement> llegendElements ) {
 
         Graphics2D graphics= (Graphics2D) g.create();
@@ -2161,8 +2169,7 @@ public class DasPlot extends DasCanvasComponent {
                 addRenderer(r);
                 revalidate();
                 success = true;
-            } catch (UnsupportedFlavorException ufe) {
-            } catch (IOException ioe) {
+            } catch (UnsupportedFlavorException | IOException ufe) {
             }
             return success;
         }
