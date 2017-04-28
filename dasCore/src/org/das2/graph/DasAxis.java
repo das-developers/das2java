@@ -2301,16 +2301,21 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             int DMin = getColumn().getDMinimum();
 
             TickVDescriptor ticks = getTickV();
-
+            
             if ( getCanvas().isPrintingThread() ) {
                 // check that the ticks are up-to-date.  autoplot_test033 showed this was happening.
                 if ( ticks!=null ) {
-                    final DatumVector majorTicks = ticks.getMajorTicks();
+                    DatumVector majorTicks = ticks.getMajorTicks();
                     DatumRange x= DatumRangeUtil.union( majorTicks.get(0), majorTicks.get(majorTicks.getLength()-1));
                     if ( ! x.intersects(this.getDatumRange() ) ) {
                         logger.fine("last ditch effort to get useful ticks that we didn't get before because of thread order");
                         TickVDescriptor ticks2= TickMaster.getInstance().requestTickV(this);
                         if ( ticks2!=null ) ticks= ticks2;
+                        majorTicks = ticks.getMajorTicks();
+                        x= DatumRangeUtil.union( majorTicks.get(0), majorTicks.get(majorTicks.getLength()-1));
+                        if ( ! x.intersects(this.getDatumRange() ) ) {
+                            System.err.println("still doesn't fit, see https://sourceforge.net/p/autoplot/bugs/1820/");
+                        }
                     }
                 } else {
                     throw new IllegalArgumentException("ticks are not calculated");
