@@ -59,6 +59,10 @@ public final class LoggerManager {
      */
     private static boolean isTimeTaggingLoggers=false;
     
+    /**
+     *
+     * @param t
+     */
     public synchronized static void setUseTimeTaggingLoggers(boolean t ) {
         isTimeTaggingLoggers= t;
         loggers.clear();
@@ -157,7 +161,7 @@ public final class LoggerManager {
 
     /**
      * return the list of known loggers.
-     * @return
+     * @return the list of known loggers.
      */
     public static Set<String> getLoggers() {
         return loggers;
@@ -182,6 +186,10 @@ public final class LoggerManager {
     
     private static PrintStream timerLogger= System.err;
 
+    /**
+     * return enableTimers property.
+     * @return enableTimers property.
+     */
     public static boolean isEnableTimers() {
         return !disableTimers;
     }
@@ -285,7 +293,8 @@ public final class LoggerManager {
     }
     
     /**
-     * explicitly remove this timer.  @see resetTimer.
+     * explicitly remove this timer.  
+     * @see #resetTimer() 
      */
     public static void clearTimer() {
         if ( disableTimers ) return;
@@ -487,6 +496,10 @@ public final class LoggerManager {
         getLogger("gui").log( Level.FINE, "handled \"{0}\" in (ms): {1}", new Object[]{ "actionEvent", t1-lastEventTime });
     }    
     
+    /**
+     * log the GUI ChangeEvent
+     * @param e
+     */
     public static void logGuiEvent( ChangeEvent e ) {
         if ( !( getLogger("gui").isLoggable(Level.FINE ) ) ) {
             return;
@@ -502,7 +515,11 @@ public final class LoggerManager {
         long t1= System.currentTimeMillis();
         getLogger("gui").log( Level.FINE, "handled \"{0}\" in (ms): {1}", new Object[]{ "changeEvent", t1-lastEventTime });
     }    
-    
+
+    /**
+     * log the GUI ItemEvent
+     * @param e 
+     */    
     public static void logGuiEvent( ItemEvent e ) {
         if ( !( getLogger("gui").isLoggable(Level.FINE ) ) ) {
             return;
@@ -519,6 +536,10 @@ public final class LoggerManager {
         getLogger("gui").log( Level.FINE, "handled \"{0}\" in (ms): {1}", new Object[]{ "itemEvent", t1-lastEventTime });
     }    
                 
+    /**
+     * log the GUI FocusEvent
+     * @param e 
+     */
     public static void logGuiEvent( FocusEvent e ) {
         if ( !( getLogger("gui").isLoggable(Level.FINE ) ) ) {
             return;
@@ -556,15 +577,15 @@ public final class LoggerManager {
         getLogger("gui").log(Level.FINE, "PropertyChange {0}={1} {2}", new Object[]{e.getPropertyName(), e.getNewValue(), source});
     }
             
-    
-    public static void main( String[] args ) {
-        Logger l= LoggerManager.getLogger("test");
-        Exception e= new java.lang.Exception("this is the problem") ;
-        l.log( Level.WARNING, null, e ); // BUG 1119 DEMONSTRATION PURPOSES
-        l.log( Level.WARNING, e.getMessage(), e );
-        l.log( Level.WARNING, "Exception: {0}", e );
-        l.log( Level.INFO, "hello there..." );
-    }
+//    
+//    public static void main( String[] args ) {
+//        Logger l= LoggerManager.getLogger("test");
+//        Exception e= new java.lang.Exception("this is the problem") ;
+//        l.log( Level.WARNING, null, e ); // BUG 1119 DEMONSTRATION PURPOSES
+//        l.log( Level.WARNING, e.getMessage(), e );
+//        l.log( Level.WARNING, "Exception: {0}", e );
+//        l.log( Level.INFO, "hello there..." );
+//    }
 
     /**
      * A slightly more transparent logging configuration would provide feedback
