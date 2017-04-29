@@ -227,6 +227,8 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
             result= new NoArgFilterEditorPanel();
         } else if ( f.matches("\\|valid\\(\\)") ) {
             result= new NoArgFilterEditorPanel();
+        } else if ( f.matches("\\|extent\\(\\)") ) {
+            result= new NoArgFilterEditorPanel();            
         } else if ( f.matches("\\|diff\\(\\)") ) {
             result= new NoArgFilterEditorPanel();
         } else if ( f.matches("\\|sqrt\\(\\)") ) {

@@ -134,6 +134,11 @@
                         <description>Replaces data with 1 where valid and 0 where invalid</description>
                     </bookmark>          
                     <bookmark>
+                        <title>Extent</title>
+                        <filter>|extent()</filter>
+                        <description>returns a range (min,max) for the data</description>
+                    </bookmark>          
+                    <bookmark>
                         <title>Get Property</title>
                         <filter>|getProperty(DEPEND_0)</filter>
                         <description>Replace the dataset with one of its properties, for example DEPEND_0 to get its timetags.</description>
