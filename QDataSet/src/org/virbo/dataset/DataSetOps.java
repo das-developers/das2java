@@ -1765,7 +1765,8 @@ public class DataSetOps {
                             wds.putValue( ii, fill );
                         }
                         hasFill= true;
-                    }       result.putProperty( QDataSet.USER_PROPERTIES,Collections.singletonMap("background", back) );
+                    }       
+                    result.putProperty( QDataSet.USER_PROPERTIES,Collections.singletonMap("background", back) );
                     break;
                 }
             case 2:
@@ -1774,14 +1775,17 @@ public class DataSetOps {
                     result= Ops.copy(ds);
                     boolean db= ds.property(QDataSet.UNITS)==Units.dB;
                     WritableDataSet wds= (WritableDataSet)result;
-                    QDataSet validDs= Ops.valid(back);
+                    QDataSet validDs= Ops.copy(Ops.valid(back));
                     QDataSet vds2= DataSetUtil.weightsDataSet(ds);
                     for ( int jj=0; jj<ds.length(0); jj++ ) {
                         for ( int ii=0; ii<ds.length(); ii++ ) {
                             if ( validDs.value(jj)>0 && vds2.value(ii,jj)>0 ) {
                                 double v= db ? ds.value(ii,jj) - back.value(jj) : mult * Math.log10( ds.value(ii,jj) / back.value(jj) );
                                 wds.putValue( ii,jj, Math.max( 0,v ) );
-                            } else {
+                            } else {                            
+                                if ( ii>200 ) {
+                                   System.err.println("here man200");
+                                }
                                 wds.putValue( ii,jj, fill );
                                 hasFill= true;
                             }
@@ -1806,6 +1810,9 @@ public class DataSetOps {
         result.putProperty( QDataSet.TYPICAL_MIN, 0 );
         result.putProperty( QDataSet.TYPICAL_MAX, 120 );
         result.putProperty( QDataSet.SCALE_TYPE, "linear" );
+        result.putProperty( QDataSet.VALID_MIN, null );
+        result.putProperty( QDataSet.VALID_MAX, null );
+        
         if ( hasFill ) result.putProperty( QDataSet.FILL_VALUE, fill );
 
         return result;
@@ -1830,78 +1837,87 @@ public class DataSetOps {
         double fill= -1e31;
         boolean hasFill= false;
 
-        if ( ds.rank()==1 ) {
-            QDataSet back= getBackgroundLevel( ds, level );
-            result= Ops.copy(ds);
-            boolean db= ds.property(QDataSet.UNITS)==Units.dB;
-
-            QDataSet validDs= Ops.valid(back);
-            QDataSet vds2= DataSetUtil.weightsDataSet(ds);
-            WritableDataSet wds= (WritableDataSet) result;
-            if ( validDs.value()>0 ) {
-                for ( int ii=0; ii<ds.length(); ii++ ) {
-                    if ( vds2.value(ii)>0 ) {
-                        double v= db ? wds.value(ii) - back.value() : 20 * Math.log10( wds.value(ii) / back.value() );
-                        wds.putValue( ii,Math.max( 0,v ) );
-                    } else {
-                        wds.putValue( ii, fill );
-                    }
-                }
-            } else {
-                for ( int ii=0; ii<ds.length(); ii++ ) {
-                    wds.putValue( ii, fill );
-                }
-                hasFill= true;
-            }
-            result.putProperty( QDataSet.USER_PROPERTIES,Collections.singletonMap("background", back) );
-        } else if ( ds.rank()==2 ) {
-            boolean db= ds.property(QDataSet.UNITS)==Units.dB;
-
-            JoinDataSet result1= new JoinDataSet(ds.rank());
-            for ( int ii=0; ii<ds.length(); ii++ ) {
-                QDataSet ds1= ds.slice(ii);
-                QDataSet back= getBackgroundLevel( ds1, level );
-                QDataSet validDs= Ops.valid(back);
-                QDataSet vds2= DataSetUtil.weightsDataSet(ds1);
-                ds1= Ops.copy(ds1);
-                WritableDataSet wds= (WritableDataSet) ds1;
-                if ( validDs.value()>0 ) {
-                    for ( int jj=0; jj<ds1.length(); jj++ ) {
-                        if ( vds2.value(jj)>0 ) {
-                            double v= db ? wds.value(jj) - back.value() : 20 * Math.log10( wds.value(jj) / back.value() );
-                            wds.putValue( jj, Math.max( 0,v ) );
-                        } else {
-                            wds.putValue( jj, fill );
+        switch (ds.rank()) {
+            case 1:
+                {
+                    QDataSet back= getBackgroundLevel( ds, level );
+                    result= Ops.copy(ds);
+                    boolean db= ds.property(QDataSet.UNITS)==Units.dB;
+                    QDataSet validDs= Ops.valid(back);
+                    QDataSet vds2= DataSetUtil.weightsDataSet(ds);
+                    WritableDataSet wds= (WritableDataSet) result;
+                    if ( validDs.value()>0 ) {
+                        for ( int ii=0; ii<ds.length(); ii++ ) {
+                            if ( vds2.value(ii)>0 ) {
+                                double v= db ? wds.value(ii) - back.value() : 20 * Math.log10( wds.value(ii) / back.value() );
+                                wds.putValue( ii,Math.max( 0,v ) );
+                            } else {
+                                wds.putValue( ii, fill );
+                            }
                         }
-                    }
-                } else {
-                    for ( int jj=0; jj<ds1.length(); jj++ ) {
-                        wds.putValue( jj, fill );
-                    }
-                    hasFill= true;
+                    } else {
+                        for ( int ii=0; ii<ds.length(); ii++ ) {
+                            wds.putValue( ii, fill );
+                        }
+                        hasFill= true;
+                    }       
+                    result.putProperty( QDataSet.USER_PROPERTIES,Collections.singletonMap("background", back) );
+                    break;
                 }
-                result1.join(wds);
-            }
-            result1.putProperty(QDataSet.DEPEND_0,ds.property(QDataSet.DEPEND_0));
-            result= result1;
-            
-        } else {
-            JoinDataSet result1= new JoinDataSet(ds.rank());
-            for ( int i=0; i<ds.length(); i++ ) {
-                QDataSet ds1= ds.slice(i);
-                QDataSet r1= dbAboveBackgroundDim0( ds1, level );
-                result1.join(r1);
-                if ( r1.property( QDataSet.FILL_VALUE )!=null ) {
-                    hasFill= true;
+            case 2:
+                {
+                    boolean db= ds.property(QDataSet.UNITS)==Units.dB;
+                    JoinDataSet result1= new JoinDataSet(ds.rank());
+                    for ( int ii=0; ii<ds.length(); ii++ ) {
+                        QDataSet ds1= ds.slice(ii);
+                        QDataSet back= getBackgroundLevel( ds1, level );
+                        QDataSet validDs= Ops.valid(back);
+                        QDataSet vds2= DataSetUtil.weightsDataSet(ds1);
+                        ds1= Ops.copy(ds1);
+                        WritableDataSet wds= (WritableDataSet) ds1;
+                        if ( validDs.value()>0 ) {
+                            for ( int jj=0; jj<ds1.length(); jj++ ) {
+                                if ( vds2.value(jj)>0 ) {
+                                    double v= db ? wds.value(jj) - back.value() : 20 * Math.log10( wds.value(jj) / back.value() );
+                                    wds.putValue( jj, Math.max( 0,v ) );
+                                } else {
+                                    wds.putValue( jj, fill );
+                                }
+                            }
+                        } else {
+                            for ( int jj=0; jj<ds1.length(); jj++ ) {
+                                wds.putValue( jj, fill );
+                            }
+                            hasFill= true;
+                        }
+                        result1.join(wds);
+                    }       
+                    result1.putProperty(QDataSet.DEPEND_0,ds.property(QDataSet.DEPEND_0));
+                    result= result1;
+                    break;
                 }
-            }
-            result= result1;
+            default:
+                {
+                    JoinDataSet result1= new JoinDataSet(ds.rank());
+                    for ( int i=0; i<ds.length(); i++ ) {
+                        QDataSet ds1= ds.slice(i);
+                        QDataSet r1= dbAboveBackgroundDim0( ds1, level );
+                        result1.join(r1);
+                        if ( r1.property( QDataSet.FILL_VALUE )!=null ) {
+                            hasFill= true;
+                        }
+                    }       
+                    result= result1;
+                    break;
+                }
         }
 
         result.putProperty( QDataSet.UNITS, Units.dB );
         result.putProperty( QDataSet.TYPICAL_MIN, 0 );
         result.putProperty( QDataSet.TYPICAL_MAX, 120 );
         result.putProperty( QDataSet.SCALE_TYPE, "linear" );
+        result.putProperty( QDataSet.VALID_MIN, null );
+        result.putProperty( QDataSet.VALID_MAX, null );
         if ( hasFill ) result.putProperty( QDataSet.FILL_VALUE, fill );
 
         return (MutablePropertyDataSet)result;
