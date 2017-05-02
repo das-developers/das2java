@@ -552,11 +552,6 @@ public class StreamTool {
                             units = (Units) delegate.parse(stype,sunits);
                         } catch (StringIndexOutOfBoundsException ex ) {
                             logger.log(Level.SEVERE, ex.getMessage(), ex);
-                            try {
-                                units = (Units) delegate.parse(stype,sunits);
-                            } catch (ParseException ex1) {
-                                Logger.getLogger(StreamTool.class.getName()).log(Level.SEVERE, null, ex1);
-                            }
                             throw ex;
                         } catch (ParseException ex) {
                             logger.log(Level.SEVERE, ex.getMessage(), ex);
