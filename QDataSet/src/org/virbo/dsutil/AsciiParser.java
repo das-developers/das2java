@@ -882,7 +882,8 @@ public class AsciiParser {
                         if ( whereParm!=null ) {
                             String[] fields= new String[recordParser.fieldCount()];
                             if ( recordParser.splitRecord(line,fields) ) {
-                                int icomp= whereComp.compare( fields[iwhereParm].trim(), whereValue );
+                                String field= fields[iwhereParm].trim();
+                                int icomp= whereComp.compare( field, whereValue );
                                 acceptRecord= false;
                                 if ( whereEq && icomp==0 ) {
                                     acceptRecord= true;
@@ -1157,6 +1158,23 @@ public class AsciiParser {
                 this.whereEq= true;
                 this.whereNe= false;
                 break;
+            case "matches":
+                this.whereSign= 0;
+                this.whereEq= true;
+                this.whereNe= false;
+                final Pattern p= Pattern.compile(sval);
+                this.whereComp= new Comparator() {
+                    @Override
+                    public int compare(Object o1, Object o2) {
+                        String s1= o1.toString();
+                        if ( p.matcher(s1).matches() ) {
+                            return 0;
+                        } else {
+                            return 1;
+                        }
+                    }
+                };
+                break;
             default:
                 throw new IllegalArgumentException("where constraint not supported: "+op);
         }
@@ -1168,7 +1186,6 @@ public class AsciiParser {
         } else {
             try {
                 if ( op.equals("within") ) {
-                    
                     this.dwhereWithin= DatumRangeUtil.parseDatumRange( this.whereValue, units[iwhereParm] );
                 } else {
                     this.dwhereValue= units[iwhereParm].parse( this.whereValue );
