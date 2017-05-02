@@ -3300,10 +3300,6 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         //Add room for the axis label
         Font labelFont = getLabelFont();
 
-        if ( labelFont==null ) {
-            return new Rectangle();
-        }
-
         GrannyTextRenderer gtr = new GrannyTextRenderer();
         gtr.setString(labelFont, getLabel());
         int labelSpacing = (int) gtr.getHeight() + labelFont.getSize() / 2;
@@ -3443,9 +3439,6 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
         //Add room for the axis label
         Font labelFont = getLabelFont();
-        if ( labelFont==null ) {
-            return new Rectangle();
-        }
 
         GrannyTextRenderer gtr = new GrannyTextRenderer();
         gtr.setString(labelFont, getLabel());

@@ -186,7 +186,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         return new FileFilter() {
 
             public boolean accept(File f) {
-                if ( f.toString()==null ) return false;
+                if ( f.toString()==null ) return false; //findbugs RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE: This strange case occurred on Windows, around 2012.
                 return f.isDirectory() || f.toString().endsWith(ext);
             }
 
@@ -1237,7 +1237,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
             boolean dirty1 = cc1.isDirty();
             if (dirty1) {
                 logger.log(Level.FINE, "component is marked as dirty: {0}", cc[1]);
-                cc1.isDirty();
+                //cc1.isDirty();
             }
             result = result | dirty1 ;
         }
