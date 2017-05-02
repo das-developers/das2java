@@ -1571,6 +1571,9 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
      * @see #addDataPoint(org.virbo.dataset.QDataSet) 
      */
     public void addDataPoints( QDataSet ds ) {
+        
+        boolean active0= this.active;
+        
         Map planesMap = new LinkedHashMap();
 
         if ( ds.rank()!=2 ) throw new IllegalArgumentException("dataset should be rank 2");
@@ -1595,6 +1598,8 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             addDataPoint( DataSetUtil.asDatum( ds.slice(i).slice(0) ), DataSetUtil.asDatum( ds.slice(i).slice(1) ), planesMap );
         }
 
+        active= active0;
+        
         updateClients();
                 
     }
