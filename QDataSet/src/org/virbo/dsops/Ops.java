@@ -4872,6 +4872,7 @@ public class Ops {
      * @param bounds a rank 1 bounding box, DatumRange, or two-element array.  
      * @return rank N dataset containing non-zero where the condition is true.
      * @see #without(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     * @see #where(java.lang.Object) which is often used with this.
      * @see #binsWithin(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
      */
     public static QDataSet within( Object ds, Object bounds ) {
