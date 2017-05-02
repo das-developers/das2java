@@ -26,7 +26,6 @@ import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
 import org.das2.datum.DatumRangeUtil;
 import org.das2.datum.DatumUtil;
-import static org.das2.datum.DatumUtil.bestFormatter;
 import org.das2.datum.DatumVector;
 import org.das2.datum.EnumerationUnits;
 import org.das2.datum.LocationUnits;
@@ -1271,7 +1270,7 @@ public class DataSetUtil {
                         return DRank0DataSet.create(q.value(),qu);
                     }
                 
-                } else if ( o instanceof QDataSet ) {
+                } else {
                     while ( q.rank()>0 ) {
                         logger.log( Level.SEVERE, "averaging CADENCE rank 0: {0}", q);
                         q= Ops.reduceMax( q, 0 );
