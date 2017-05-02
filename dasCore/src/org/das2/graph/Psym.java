@@ -57,7 +57,7 @@ public class Psym implements Enumeration, Displayable {
     
     public static final Psym CROSS = new Psym(4);
     
-    private int nameIndex;
+    private final int nameIndex;
     
     private Line2D line = new Line2D.Double();
     private final Ellipse2D ellipse = new Ellipse2D.Double();
@@ -140,19 +140,9 @@ public class Psym implements Enumeration, Displayable {
                 
                 Color backgroundColor= Color.white;
                 g.setColor(backgroundColor);
-                if (g instanceof Graphics2D) {
-                    g2.fill(ellipse);
-                }
-                else {
-                    g.fillOval((int)(x-size), (int)(y-size), (int)(size*2), (int)(size*2));
-                }
+                g2.fill(ellipse);
                 g.setColor(color0);
-                if (g instanceof Graphics2D) {
-                    g2.draw(ellipse);
-                }
-                else {
-                    g.drawOval((int)(x-size), (int)(y-size), (int)(size*2), (int)(size*2));
-                }
+                g2.draw(ellipse);
                 break;
             case 3: //TRIANGLES
                 drawTriangle(g, x, y, size);
@@ -196,23 +186,19 @@ public class Psym implements Enumeration, Displayable {
      * @return Psym.NONE, Psym.DOTS, etc.
      */
     public static Psym parsePsym(String str) {
-        if (str.equals("none")) {
-            return NONE;
-        }
-        else if (str.equals("dots")) {
-            return DOTS;
-        }
-        else if (str.equals("circles")) {
-            return CIRCLES;
-        }
-        else if (str.equals("triangles")) {
-            return TRIANGLES;
-        }
-        else if (str.equals("cross")) {
-            return CROSS;
-        }
-        else {
-            throw new IllegalArgumentException(str);
+        switch (str) {
+            case "none":
+                return NONE;
+            case "dots":
+                return DOTS;
+            case "circles":
+                return CIRCLES;
+            case "triangles":
+                return TRIANGLES;
+            case "cross":
+                return CROSS;
+            default:
+                throw new IllegalArgumentException(str);
         }
     }
     
