@@ -394,14 +394,16 @@ public class Schemes {
     
     /**
      * return an example bundle dataset that bundles timetags, a rank 1 dataset
-     * and a rank 2 dataset.
+     * and a rank 1 dataset.  
+     * 
      * @return an example bundle dataset 
+     * @see #complexBundleDataSet()  which has differing rank.
      */
     public static QDataSet bundleDataSet() {
         try {
             QDataSet tt= Ops.timegen( "2015-01-01", "60s", 1440 );
             QDataSet r1= Ops.ripplesTimeSeries(1440);
-            QDataSet r2= Ops.ripplesVectorTimeSeries(1440);
+            QDataSet r2= Ops.unbundle( Ops.ripplesVectorTimeSeries(1440),0 );
             return Ops.bundle( tt, r1, r2 );
         } catch (ParseException ex) {
             throw new RuntimeException(ex);
@@ -440,7 +442,8 @@ public class Schemes {
      * @return data that describes the columns of another dataset.
      */
     public static QDataSet bundleDescriptor() {
-        return (QDataSet)bundleDataSet().property(QDataSet.BUNDLE_1);
+        QDataSet bundle= bundleDataSet();
+        return (QDataSet)bundle.property(QDataSet.BUNDLE_1);
     }
     
     /**
