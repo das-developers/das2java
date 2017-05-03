@@ -32,6 +32,7 @@ import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.TimeParser;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
+import org.virbo.dataset.SparseDataSetBuilder;
 import org.virbo.dataset.WritableDataSet;
 import org.virbo.dsops.Ops;
 
@@ -79,8 +80,9 @@ public class AsciiParser {
     /**
      * rich headers are put here.
      */
-    AsciiHeadersParser.BundleDescriptor bundleDescriptor;
-
+    //AsciiHeadersParser.BundleDescriptor bundleDescriptor;
+    QDataSet bundleDescriptor;
+    
     /**
      * units for each column.
      */
@@ -432,7 +434,7 @@ public class AsciiParser {
             } catch (ParseException ex) {
                 logger.log(Level.SEVERE, ex.getMessage(), ex);
             }
-            result.header= header;
+            if ( result!=null ) result.header= header;
         }
 
         
@@ -916,6 +918,9 @@ public class AsciiParser {
         mon.finished();
 
         builder.putProperty(QDataSet.USER_PROPERTIES, new HashMap(builder.properties)); // put discovered properties into
+        if ( bundleDescriptor!=null ) { // it shouldn't be null.
+            builder.putProperty( QDataSet.BUNDLE_1, bundleDescriptor );
+        }
 
         WritableDataSet result= builder.getDataSet();
         
@@ -1021,6 +1026,15 @@ public class AsciiParser {
                 }
                 builder.putProperty( QDataSet.USER_PROPERTIES, userProps );
             }
+            
+            SparseDataSetBuilder sdsb= new SparseDataSetBuilder(2);
+            sdsb.setQube( new int[] { units.length, 0 } );
+            for ( int i=0; i<units.length; i++ ) {
+                sdsb.putProperty( QDataSet.UNITS, i, units[i] );
+                sdsb.putProperty( QDataSet.LABEL, i, this.fieldLabels[i] );
+                sdsb.putProperty( QDataSet.NAME, i, this.fieldNames[i] );
+            }
+            bundleDescriptor= sdsb.getDataSet();
         }
 
     }
@@ -1498,8 +1512,8 @@ public class AsciiParser {
                 }
             }
             if ( firstException!=null && failCount>0 && failCount<fieldCount ) {
-                if ( showException ) {
-                    firstException.printStackTrace();
+                if ( showException ) {                    
+                    logger.log( Level.WARNING, "The following exception occurred while parsing:", firstException );
                     showException= false;
                 }
             }
