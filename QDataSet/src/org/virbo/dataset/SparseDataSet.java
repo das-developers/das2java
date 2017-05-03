@@ -90,6 +90,9 @@ public class SparseDataSet extends AbstractDataSet implements WritableDataSet {
      * @param qube 
      */
     public void setQube( int[] qube ) {
+        if ( qube.length!=this.rank ) {
+            throw new IllegalArgumentException("qube length must match rank: "+this.rank );
+        }
         this.qube= Arrays.copyOf( qube,qube.length );
         this.length0= qube[0];
     }
