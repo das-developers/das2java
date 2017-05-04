@@ -309,14 +309,15 @@ public class Schemes {
     public static boolean isEventsList( QDataSet ds ) {
         QDataSet bundle1= (QDataSet) ds.property(QDataSet.BUNDLE_1);
         if ( bundle1!=null ) {
-            if ( bundle1.length()==3 || bundle1.length()==4 ) {
+            if ( bundle1.length()==3 || bundle1.length()==4 || bundle1.length()==5 ) {
                 Units u0= (Units) bundle1.property(QDataSet.UNITS,0);
                 if ( u0==null ) u0= Units.dimensionless;
                 Units u1= (Units) bundle1.property(QDataSet.UNITS,1);
                 if ( u1==null ) u1= Units.dimensionless;
                 Units u3= (Units) bundle1.property(QDataSet.UNITS,bundle1.length()-1);
                 if ( u3!=null && UnitsUtil.isOrdinalMeasurement(u3) && u0.getOffsetUnits().isConvertibleTo(u1) ) {
-                    return true;
+                    QDataSet isge= Ops.ge( Ops.slice1( ds, 0 ), Ops.slice1( ds, 1 ) );
+                    return Ops.total(isge) == Ops.total( Ops.valid( Ops.slice1(ds,0) ) );
                 }
             } else {
                 Units u3= (Units) bundle1.property(QDataSet.UNITS,bundle1.length()-1);
