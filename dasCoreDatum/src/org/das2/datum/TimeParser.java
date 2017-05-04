@@ -244,8 +244,10 @@ public class TimeParser {
             }
 
             String timePart = exampleTime.substring(i + 1);
+            boolean addZ= false;
             if (timePart.endsWith("Z")) {
                 timePart = timePart.substring(0, timePart.length() - 1); // see below
+                addZ= true;
             }
             hasDelim = !timePart.matches("\\d+");
             delim = 0;
@@ -274,7 +276,7 @@ public class TimeParser {
                 default:
                     throw new IllegalArgumentException("unable to identify time format for " + exampleTime);
             }
-            if (timePart.endsWith("Z")) {
+            if ( addZ ) {
                 time += "Z";
             }
             return date + dateTimeDelim + time;
