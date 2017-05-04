@@ -107,6 +107,8 @@ public class AsciiParser {
     int recordCountLimit = Integer.MAX_VALUE;
     int fieldCount;
     
+    private Boolean isRichAscii= null;
+    
     /**
      * pattern for name:value.  
      */
@@ -855,7 +857,8 @@ public class AsciiParser {
                 if ( parsedMeta==false ) { // this will attempt to parse the header to get units for parsing data.
                     String header = headerBuffer.toString();
                     parseMeta( header, builder );
-                    if ( !isRichHeader( header ) ) {
+                    this.isRichAscii= isRichHeader( header );
+                    if ( !isRichAscii ) {
                         builder.putProperty(PROPERTY_FILE_HEADER, header);
                     }
                     parsedMeta= true;
@@ -961,6 +964,19 @@ public class AsciiParser {
         return false;
     }
 
+    /**
+     * return true if the parsed file provided a rich ascii header.  Presently
+     * this is the header defined in http://autoplot.org/richAscii.  This must
+     * be called after the file is parsed.
+     * @return true if the parsed file provided a rich ascii header.
+     */
+    public boolean isRichHeader() {
+        if ( this.isRichAscii==null ) {
+            throw new IllegalArgumentException("file must be parsed before calling isRichHeader");
+        }
+        return this.isRichAscii;
+    }
+    
     /**
      * attempt to parse the metadata in the headers.  If the header contains
      * a pair of braces {}, then we assume it's a special JSON-formatted header
