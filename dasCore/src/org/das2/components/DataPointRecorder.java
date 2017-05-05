@@ -456,7 +456,16 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             builder.putValue( -1, 0, dp.get(0) );
             builder.putValue( -1, 1, dp.get(1) );
             for ( int i=2; i<planesArray.length; i++ ) {
-                builder.putValue( -1, i, (Datum)dp.getPlane(planesArray[i] ) );
+                if ( unitsArray[i] instanceof EnumerationUnits ) {
+                    EnumerationUnits eu= (EnumerationUnits)unitsArray[i];
+                    if ( eu==unitsArray[i] ) {
+                        builder.putValue( -1, i, eu.createDatum(((Datum)dp.getPlane(planesArray[i])).toString()) );
+                    } else {
+                        builder.putValue( -1, i, (Datum)dp.getPlane(planesArray[i]) );
+                    }
+                } else {
+                    builder.putValue( -1, i, (Datum)dp.getPlane(planesArray[i] ) );
+                }
             }
             builder.nextRecord();
         }
@@ -741,7 +750,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                     for ( int i=0; i<s.length; i++ ) {
                         s[i]= s[i].trim();
                     }                    
-                    Pattern p = Pattern.compile("(.+)\\((.*)\\)");
+                    Pattern p = Pattern.compile("([^\\(]+)\\((.*)\\)");
                     planesArray1 = new String[s.length];
                     unitsArray1 = new Units[s.length];
                     for (int i = 0; i < s.length; i++) {
@@ -754,6 +763,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                                     unitsArray1[i] = Units.cdfTT2000;
                                     break;
                                 case "ordinal":
+                                case "class java.lang.StringUnit(ordinal)":
                                     unitsArray1[i] = EnumerationUnits.create("ordinal");
                                     break;
                                 default:
@@ -1346,7 +1356,11 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                 } else if ( o instanceof Datum ) {
                     Datum d= (Datum)o;
                     if ( !d.getUnits().isConvertibleTo( unitsArray[ikey]) ) {
-                        throw new IllegalArgumentException("Units are not convertible: "+key+"="+d+ ", expected "+unitsArray[ikey]);
+                        if ( unitsArray[ikey] instanceof EnumerationUnits ) {
+                            ((EnumerationUnits)unitsArray[ikey]).createDatum( d.toString() );
+                        } else {
+                            throw new IllegalArgumentException("Units are not convertible: "+key+"="+d+ ", expected "+unitsArray[ikey]);
+                        }
                     }
                     // do nothing
                 } else if ( o instanceof String ) {
