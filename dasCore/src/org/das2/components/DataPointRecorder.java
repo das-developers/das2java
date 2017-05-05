@@ -764,7 +764,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                                     break;
                                 case "ordinal":
                                 case "class java.lang.StringUnit(ordinal)":
-                                    unitsArray1[i] = EnumerationUnits.create("ordinal");
+                                    unitsArray1[i] = EnumerationUnits.create("default");
                                     break;
                                 default:
                                     unitsArray1[i] = Units.lookupUnits(m.group(2).trim());
