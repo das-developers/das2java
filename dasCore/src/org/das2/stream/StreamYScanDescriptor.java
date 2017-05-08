@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.beans.binding.Bindings;
 import org.das2.datum.LoggerManager;
 
 import org.w3c.dom.Document;
@@ -39,7 +40,7 @@ public class StreamYScanDescriptor implements SkeletonDescriptor, Cloneable {
 
 	private static final Logger logger = LoggerManager.getLogger("das2.d2s.yscan");
 	private static final String g_sCkAry[] = {
-		"name","type","nitems","yTags","yUnits","zUnits"
+		"name","type","nitems","yTags","yTagInterval","yTagMin","yTagMax","yUnits","zUnits"
 	};
 	
     private Units yUnits = Units.dimensionless;
@@ -58,32 +59,72 @@ public class StreamYScanDescriptor implements SkeletonDescriptor, Cloneable {
             processLegacyElement(element);
         }
     }
-    
-    private void processElement(Element element) throws StreamException
-	 {
-		
-             boolean doCheck= false;
-             if ( doCheck ) {
+   
+	// make y tags using interval specification.  This version can walk down 1 of there
+	// paths: Calc tags from 0, calc tags form a minimum value, calc tags from a 
+	// maximum value
+	private double[] makeYtagsUsingInterval(Element element, int nItems, double rInterval) 
+		throws StreamException
+	{
+		String sMin = element.getAttribute("yTagMin");
+		String sMax = element.getAttribute("yTagMax");
+		int i;
+		double[] lYtags = new double[nItems];
+		if( sMin.isEmpty() && sMax.isEmpty()){
+			for(i = 0; i<nItems;i++) lYtags[i] = rInterval*i;
+		}
+		else{
+			if(sMax.isEmpty()){
+				double rMin = Double.parseDouble(sMin);
+				for(i = 0; i<nItems;i++) lYtags[i] = rInterval*i + rMin;
+			}
+			else{
+				double rMax = Double.parseDouble(sMin);
+				for(i = 0; i<nItems;i++) lYtags[(nItems - 1) - i] = rMax - rInterval*i;
+			}
+		}
+		return lYtags;
+	}
+	 
+	private void processElement(Element element) throws StreamException{
+
+		boolean doCheck = false;
+		if(doCheck){
 		 //name, units, nitems, yUnits, yTags, zUnits are required, though they can be null
-		 //name, units, and type are required, though they can be null
-		 for(String s: g_sCkAry){
-			 if(! element.hasAttribute(s) )
-			 throw new StreamException("Das2 Stream Format error: Required Attribute '"+s+
-				                        "' missing in <" + element.getTagName()+"> plane.");
-		 }
-             }
-		 
-        nitems = Integer.parseInt(element.getAttribute("nitems"));
-        String yTagsText = element.getAttribute("yTags");
-        if (yTagsText.length()>0) { // 
-            yTags = new double[nitems];
-            String[] tokens = yTagsText.split("\\s*,\\s*");
-            for (int i = 0; i < nitems; i++) {
-                yTags[i] = Double.parseDouble(tokens[i]);
-            }
-        } else {
-            throw new StreamException("yTags not defined");
-        }
+			//name, units, and type are required, though they can be null
+			for(String s : g_sCkAry){
+				if(!element.hasAttribute(s)){
+					throw new StreamException("Das2 Stream Format error: Required Attribute '" + s
+						+ "' missing in <" + element.getTagName() + "> plane.");
+				}
+			}
+		}
+
+		nitems = Integer.parseInt(element.getAttribute("nitems"));
+		if(nitems < 1){
+			throw new StreamException("yscan 'nitems' value is less than 1");
+		}
+		String yTagsText = element.getAttribute("yTags");
+		if(yTagsText.length() > 0){ // 
+			yTags = new double[nitems];
+			String[] tokens = yTagsText.split("\\s*,\\s*");
+			for(int i = 0; i < nitems; i++){
+				yTags[i] = Double.parseDouble(tokens[i]);
+			}
+		}
+		else{
+			// See if yTagInterval is in use instead
+			String sInterval = element.getAttribute("yTagInterval");
+			if(sInterval.length() > 0){
+				double rInterval = Double.parseDouble(sInterval);
+				yTags = makeYtagsUsingInterval(element, nitems, rInterval);
+			}
+			else{
+				// Just default to index entries
+				yTags = new double[nitems];
+				for(int i = 0; i < nitems; i++) 	yTags[i] = i;
+			}
+		}
 		  
         String typeStr = element.getAttribute("type");
         DataTransferType type = DataTransferType.getByName(typeStr);
