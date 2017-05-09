@@ -327,7 +327,6 @@ public class StreamTool {
             if (contentLength == 0) {
                 throw new StreamException("streamDescriptor content length is 0.");
             }
-            struct.byteOffset += struct.bigBuffer.position();
             struct.bigBuffer.clear().limit(contentLength);
             while (struct.bigBuffer.hasRemaining() && struct.stream.read(struct.bigBuffer) != -1) {
                 // do nothing
@@ -428,6 +427,18 @@ public class StreamTool {
         }
         return msg;
     }
+	
+	// Copies over contents of current buffer and generates a new one that can hold
+	// a little more than the content length.  Old buffer should be discarded.
+	private static ByteBuffer biggerBuffer(ByteBuffer buf, int nContentLen)
+	{
+		ByteBuffer temp = ByteBuffer.allocate(8 + nContentLen + nContentLen / 10);
+		buf.reset();   // set read position to the mark
+		temp.put(buf); // read in data from the position to the limit
+		temp.flip();   // set limit to the current position and the read position back to zero
+		
+      return temp;   // this buffer should have all the old buffers data and be bigger
+	 }
 
     private static final StreamException exception(Element exception) {
         String type = exception.getAttribute("type");
@@ -467,16 +478,16 @@ public class StreamTool {
             if (contentLength == 0) {
                 throw new StreamException("packetDescriptor content length is 0.");
             }
+				
+				// Have to be able to hold the entire packet header in the buffer
             if (struct.bigBuffer.capacity() < contentLength) {
-                struct.bigBuffer.reset();
-                ByteBuffer temp = ByteBuffer.allocate(8 + contentLength + contentLength / 10);
-                temp.put(struct.bigBuffer);
-                temp.flip();
-                struct.bigBuffer = temp;
-                return false;
-            } else if (struct.bigBuffer.remaining() < contentLength) {
-                struct.bigBuffer.reset();
-                return false;
+					struct.bigBuffer = biggerBuffer(struct.bigBuffer, contentLength);
+               return false;
+            } 
+				
+				if (struct.bigBuffer.remaining() < contentLength) {
+               struct.bigBuffer.reset();
+               return false;
             }
 
             logger.log(Level.FINE, "packetDescriptor len={0}", contentLength);
@@ -503,9 +514,16 @@ public class StreamTool {
             String key = asciiBytesToString(struct.four, 1, 2);
             PacketDescriptor pd = (PacketDescriptor) struct.descriptors.get(key);
             int contentLength = pd.getSizeBytes();
+				
+				// Have to be able to hold at least one packet in the buffer
+				if (struct.bigBuffer.capacity() < contentLength) {
+					struct.bigBuffer = biggerBuffer(struct.bigBuffer, contentLength);
+               return false;
+            } 
+				
             if (struct.bigBuffer.remaining() < contentLength) {
-                struct.bigBuffer.reset();
-                return false;
+					struct.bigBuffer.reset();
+               return false;
             }
             logger.log(Level.FINE, "packetHeader len={0}", contentLength);
             int yCount = pd.getYCount();
