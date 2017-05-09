@@ -34,10 +34,7 @@ public class ImageUtil {
         
         Logger logger= LoggerManager.getLogger("das2.util");
         
-        ImageInputStream iis=null;
-        
-        try {
-            iis= ImageIO.createImageInputStream(file);
+        try (ImageInputStream iis = ImageIO.createImageInputStream(file)) {
             Iterator<ImageReader> readers = ImageIO.getImageReaders(iis);
 
             if (readers.hasNext()) {
@@ -65,8 +62,9 @@ public class ImageUtil {
                     return null;
                 }
             }
-        } finally {
-            if ( iis!=null ) iis.close();
+        } catch ( IllegalArgumentException ex ) {
+            // return null below
+            
         } 
         
         return null;
