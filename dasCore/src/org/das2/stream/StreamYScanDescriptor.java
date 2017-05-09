@@ -29,7 +29,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javafx.beans.binding.Bindings;
 import org.das2.datum.LoggerManager;
 
 import org.w3c.dom.Document;
