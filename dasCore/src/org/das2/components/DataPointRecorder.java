@@ -286,7 +286,11 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                     return timeFormatter.format(d);
                 } else {
                     DatumFormatter format = d.getFormatter();
-                    return format.format(d, unitsArray[j]);
+                    if ( d.isFill() ) {
+                        return "fill";
+                    } else {
+                        return format.format(d, unitsArray[j]);
+                    }
                 }
             } else {
                 Object o = x.getPlane(planesArray[j]);
@@ -446,6 +450,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         DataSetBuilder builder= new DataSetBuilder( 2, dataPoints.size(), planesArray.length );
         builder.setName( 0, "x" );
         builder.setName( 1, "y" );
+        builder.setFillValue( -1e31 );
         for ( int i=2; i<planesArray.length; i++ ) {
             builder.setName( i, planesArray[i] );
         }
@@ -482,6 +487,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         DataSetBuilder builder= new DataSetBuilder( 2, dataPoints.size(), planesArray.length );
         builder.setName( 0, "x" );
         builder.setName( 1, "y" );
+        builder.setFillValue( -1e31 );
         for ( int i=2; i<planesArray.length; i++ ) {
             builder.setName( i, planesArray[i] );
         }
