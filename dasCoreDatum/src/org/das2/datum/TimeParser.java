@@ -2026,6 +2026,7 @@ public class TimeParser {
                 if ( span>1 ) {
                     if ( handlers[idigit]>0 && handlers[idigit]<5 ) {
                         logger.fine("uh-oh, span used on ordinal like month, day.  Just leave it alone.");
+                        digit= ( digit / span ) * span; // test to see if this is what is breaking test030.
                     } else {
                         digit= ( digit / span ) * span;
                     }
