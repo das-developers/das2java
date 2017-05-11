@@ -150,6 +150,11 @@ public final class BDataSet extends ArrayDataSet {
         checkImmutable();
         return this.back;
     }
+     
+    @Override
+    protected Object getBackReadOnly() {
+        return this.back;
+    }
     
     @Override
     protected int getBackJvmMemory() {

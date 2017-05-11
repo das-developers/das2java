@@ -152,6 +152,11 @@ public final class LDataSet extends ArrayDataSet {
     }
 
     @Override
+    protected Object getBackReadOnly() {
+        return this.back;
+    }
+    
+    @Override
     protected int getBackJvmMemory() {
         return this.back.length * 8;
     }

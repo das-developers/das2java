@@ -426,7 +426,7 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
         if ( ds.len1!=this.len1 ) throw new IllegalArgumentException("len1 mismatch");
         if ( ds.len2!=this.len2 ) throw new IllegalArgumentException("len2 mismatch");
         if ( ds.len3!=this.len3 ) throw new IllegalArgumentException("len3 mismatch");
-        if ( this.getBack().getClass()!=ds.getBack().getClass() ) throw new IllegalArgumentException("backing type mismatch");
+        if ( this.getBackReadOnly().getClass()!=ds.getBackReadOnly().getClass() ) throw new IllegalArgumentException("backing type mismatch");
 
         int myLength= this.len0 * this.len1 * this.len2 * this.len3;
         int dsLength= ds.len0 * ds.len1 * ds.len2 * ds.len3;
@@ -435,7 +435,7 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
             throw new IllegalArgumentException("unable to append dataset, not enough room");
         }
 
-        System.arraycopy( ds.getBack(), 0, this.getBack(), myLength, dsLength );
+        System.arraycopy( ds.getBackReadOnly(), 0, this.getBack(), myLength, dsLength );
 
         Units u1= SemanticOps.getUnits(this);
         Units u2= SemanticOps.getUnits(ds);
@@ -546,6 +546,13 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
      * @return a copy of the array for the data.
      */
     protected abstract Object getBackCopy();
+    
+    /**
+     * return the backing array to the client, who promises not to modify the
+     * memory.
+     * @return the backing array for the data, which must not be modified.
+     */
+    protected abstract Object getBackReadOnly();
     
     /**
      * reset the back to this new backing array.

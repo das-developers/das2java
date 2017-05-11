@@ -157,6 +157,11 @@ public final class IDataSet extends ArrayDataSet {
     }
         
     @Override
+    protected Object getBackReadOnly() {
+        return this.back;
+    }
+    
+    @Override
     protected Object getBackCopy() {
         Object newback = Array.newInstance( back.getClass().getComponentType(), this.back.length  );
         System.arraycopy( this.back, 0, newback, 0, this.back.length );
