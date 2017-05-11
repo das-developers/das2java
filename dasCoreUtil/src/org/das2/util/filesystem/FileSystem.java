@@ -300,13 +300,11 @@ public abstract class FileSystem  {
         if ( ishouldwait ) { // wait until the other thread is done.  If the other thread doesn't put the result in instances, then there's a problem...
             try {
                 synchronized ( waitObject ) {
-                    if ( blocks.get(root)!=null ) {                        
+                    while ( blocks.get(root)!=null ) {                        
                         logger.log(Level.FINE, "waiting for {0} {1}", new Object[]{waitObject, root});
-                        waitObject.wait();  //TODO: I witnessed a bug where this was stuck and there were no objects in blocks.
-                        logger.log(Level.FINE, "done waiting for {0}", root);
-                    } else {
-                        logger.log(Level.FINE, "process completed before this thread entered wait: {0}", root);
+                        waitObject.wait(WAIT_TIMEOUT_MS);  
                     }
+                    logger.log(Level.FINE, "done waiting for {0}", root);
                 }
             } catch (InterruptedException ex) {
                 logger.log(Level.SEVERE, ex.getMessage(), ex);
@@ -397,6 +395,11 @@ public abstract class FileSystem  {
 
        return result;
     }
+    
+    /**
+     * timeouts for waits.
+     */
+    private static final int WAIT_TIMEOUT_MS = 100;
 
     /**
      * access the file system settings.
