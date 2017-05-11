@@ -322,6 +322,10 @@ public abstract class FileSystem  {
 
         } 
 
+        // Ed suggests using a synchronized block instead of the ishouldwait business.  Just have a synchronized 
+        // block on the wait object: synchronized(waitObject) {}, and have a double-check within the block
+        // for the guys that enter subsequently...
+        
         FileSystemFactory factory;
         if ( root.getPath()!=null && ( root.getPath().contains(".zip") ||   root.getPath().contains(".ZIP") ) && registry.containsKey("zip") ) {
             try {
