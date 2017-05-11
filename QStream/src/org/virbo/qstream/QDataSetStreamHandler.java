@@ -829,6 +829,7 @@ public class QDataSetStreamHandler implements StreamHandler {
             len += ds.length(i);
         }
         ArrayDataSet result = ArrayDataSet.maybeCopy(ds.slice(0));
+        if ( result.isImmutable() ) result= ArrayDataSet.copy(result);
         result.grow(len);
         for (int i = 1; i < ds.length(); i++) {
             result.append(ArrayDataSet.maybeCopy(ds.slice(i)));
