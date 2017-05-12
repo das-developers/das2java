@@ -58,6 +58,10 @@ public abstract class FileSystem  {
      */
     protected static final Logger loggerUrl= org.das2.util.LoggerManager.getLogger( "das2.url" );
     
+    /**
+     * Exception indicating the file system is off-line.  For example, if the network is not
+     * available, fresh listings of an http site cannot be accessed.
+     */
     public static class FileSystemOfflineException extends IOException {
         public FileSystemOfflineException() {
             super();
@@ -630,6 +634,11 @@ public abstract class FileSystem  {
     
     protected HashMap properties= new HashMap(5);
     
+    /**
+     * return a filesystem property, such as PROP_CASE_INSENSITIVE.
+     * @param name property name, e.g. PROP_CASE_INSENSITIVE
+     * @return the property value, e.g. Boolean.TRUE
+     */
     public Object getProperty( String name ) {
         return properties.get(name);
     }
@@ -659,20 +668,26 @@ public abstract class FileSystem  {
     }
     
     /**
-     * returns a String[5]:<code>
+     * returns a String[5]:<code><pre>
      *   [0] is proto "http://"
      *   [1] will be the host
      *   [2] is proto + path
      *   [3] is proto + path + file
      *   [4] is file ext
      *   [5] is params, not including ?.
-     * </code>
+     * </pre></code>
+     * The URL must start with one of file:, ftp://, http://, https://, sftp://
+     * and "c:" is interpretted as "file:///c:..."
      * @param surl a URL string to parse.
      * @return the parsed URL.
      */
     public static String[] splitUrl( String surl ) {
         
-        if ( !( surl.startsWith("file:/") || surl.startsWith("ftp://") || surl.startsWith("http://") || surl.startsWith("https://") ) ) {
+        if ( !( surl.startsWith("file:/") 
+                || surl.startsWith("ftp://") 
+                || surl.startsWith("http://") 
+                || surl.startsWith("https://") 
+                || surl.startsWith("sftp://")) ) {
             surl= "file://"+ ( ( surl.charAt(0)=='/' ) ? surl : ( '/' + surl ) ); // Windows c:
         }
         
