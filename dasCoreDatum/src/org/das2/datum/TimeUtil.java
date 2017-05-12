@@ -663,7 +663,10 @@ public final class TimeUtil {
             result.hour-=24;
             result.day++;
         }
-        
+        if (result.month>12) {
+            result.month-=12;
+            result.year++;
+        }
         int daysThisMonth= daysInMonth(result.month,result.year);
         if (result.day>daysThisMonth) {
             result.day-=daysThisMonth;
