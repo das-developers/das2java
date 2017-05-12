@@ -684,8 +684,9 @@ public abstract class FileSystem  {
     public static String[] splitUrl( String surl ) {
         
         int icolon= surl.indexOf(":");
-        if ( icolon==-1 ) {
-            throw new IllegalArgumentException("URL should contain a :");
+        if ( surl.charAt(0)=='/' ) {
+            surl= "file://"+surl;
+            icolon= 4;
         }
         if ( !registry.keySet().contains( surl.substring(0,icolon).toLowerCase() ) ) {
             if ( icolon==1 ) {
