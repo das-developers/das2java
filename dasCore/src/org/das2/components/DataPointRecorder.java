@@ -144,7 +144,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     /**
      * Note this is all pre-QDataSet.  QDataSet would be a much better way of implementing this.
      */
-    private static class DataPoint implements Comparable {
+    public static class DataPoint implements Comparable {
 
         Datum[] data;
         Map planes;
@@ -194,8 +194,17 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                 } else {
                     return 0;
                 }
+            } else {
+                Units u= myt.getUnits().getOffsetUnits();
+                double delta= diff.doubleValue(u);
+                if ( delta < 0 ) {
+                    return -1;
+                } else if ( delta > 0 ) {
+                    return 1;
+                } else {
+                    return 0;
+                }
             }
-            return diff.lt(xt) ? -1 : myt.gt(xt) ? 1 : 0;
         }
 
         @Override
@@ -365,6 +374,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                 }
                 dataPoints.remove(j);
             }
+            logger.log(Level.FINER, "dataPoints.size()={0}", dataPoints.size());            
             modified = true;
         }
         updateClients();
@@ -1423,7 +1433,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                     dataPoints.set(index, newPoint);
                     newSelect = index;
                 }
-
+                logger.log(Level.FINER, "dataPoints.size()={0}", dataPoints.size());
             } else {
                 boolean insertCheck = false; //TODO: consider how this can be done safely.
                 if ( table.getSelectedRows().length==1 && insertCheck ) {
@@ -1438,6 +1448,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                     dataPoints.add(newPoint);
                     newSelect = dataPoints.size() - 1;
                 }
+                logger.log(Level.FINER, "dataPoints.size()={0}", dataPoints.size());
             }
 
             selectRow = newSelect;
