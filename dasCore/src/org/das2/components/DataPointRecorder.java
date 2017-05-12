@@ -722,9 +722,11 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         BufferedReader r=null;
 
         boolean active0= active;
+        boolean sorted0= sorted;
         
         try {
             active = false;
+            sorted = false;
 
             int lineCount= lineCount( file );
 
@@ -877,6 +879,8 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
 
             //active = true;
             active= active0;
+            sorted= sorted0;
+            
             modified = false;
 
             Runnable run= new Runnable() {
