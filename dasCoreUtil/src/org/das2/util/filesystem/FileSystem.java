@@ -677,7 +677,7 @@ public abstract class FileSystem  {
      *   [5] is params, not including ?.
      * </pre></code>
      * The URL must start with one of file:, ftp://, http://, https://, sftp://
-     * and "c:" is interpretted as "file:///c:..."
+     * and "c:" is interpreted as "file:///c:..."
      * @param surl a URL string to parse.
      * @return the parsed URL.
      */
