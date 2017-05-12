@@ -9434,9 +9434,9 @@ public class Ops {
 
     /**
      * convert the datumRange to the given units, which must be convertible.
-     * @param dr
-     * @param u
-     * @return Datum in the new units
+     * @param dr the datum range, e.g. '5 to 50 MHz'
+     * @param u the new units. e.g. 'Hz'
+     * @return DatumRange in the new units, e.g. '5000000 to 50000000 Hz'
      * @throws InconvertibleUnitsException
      */
     public static DatumRange convertUnitsTo( DatumRange dr, Units u ) {
@@ -9445,9 +9445,9 @@ public class Ops {
     
     /**
      * convert the datum to the given units, which must be convertible.
-     * @param d
-     * @param u
-     * @return Datum in the new units
+     * @param d the datum, e.g. '5 MHz'
+     * @param u the new units, e.g. 'Hz'
+     * @return Datum in the new units, e.g. '5000000 Hz'
      * @throws InconvertibleUnitsException
      */
     public static Datum convertUnitsTo( Datum d, Units u ) {
@@ -9529,7 +9529,7 @@ public class Ops {
      *
      * Example:
      * <tt>dep1= labels( ["X","Y","Z"], "GSM" )</tt>
-     * @param labels
+     * @param labels array of string labels
      * @param context the namespace for the labels, to provide control over String&rarr;int mapping.
      * @return rank 1 QDataSet
      * @deprecated use labelsDataSet
@@ -9560,7 +9560,7 @@ public class Ops {
      * create a labels dataset for tagging rows of a dataset.
      * Example:
      * <tt>dep1= labels( ["red","greed","blue"] )</tt>
-     * @param labels
+     * @param labels array of string labels
      * @return rank 1 QDataSet
      * @deprecated use labelsDataSet
      * @see #labelsDataset(java.lang.String[]) 
@@ -9577,7 +9577,7 @@ public class Ops {
      *
      * Example:
      * <tt>dep1= labels( ["X","Y","Z"], "GSM" )</tt>
-     * @param labels
+     * @param labels array of string labels
      * @param context the namespace for the labels, to provide control over String&rarr;int mapping.
      * @return rank 1 QDataSet
      */
@@ -9604,7 +9604,7 @@ public class Ops {
     
     /**
      * create a labels dataset for tagging rows of a dataset.
-     * Example:
+     * Example: array of string labels
      * <tt>dep1= labels( ["red","greed","blue"] )</tt>
      * @param labels
      * @return rank 1 QDataSet
@@ -9651,9 +9651,10 @@ public class Ops {
      * ds= zeros(3,4)
      * print size(ds) # returns "3,4"
      * </pre></blockquote>
-     * 
+     * Note datasets need not have the same number of elements in each record.
+     * This is often the case however, and a "qube" dataset has this property.
      * @param ds a qube dataset.
-     * @return the number of elements in each index.
+     * @return the array containing number of elements in each index.
      * @throws IllegalArgumentException if the dataset is not a qube.
      */
     public static int[] size( QDataSet ds ) {
@@ -10008,7 +10009,7 @@ public class Ops {
      * @see #unbundle(org.virbo.dataset.QDataSet, int) 
      * @see DataSetOps#bundleNames(org.virbo.dataset.QDataSet) 
      * @throws IllegalArgumentException if no named dataset is found.
-     * @return
+     * @return the named dataset
      */
     public static QDataSet unbundle( QDataSet ds, String name ) {
         return DataSetOps.unbundle(ds, name);
@@ -10420,16 +10421,38 @@ public class Ops {
 
     }
 
+    /**
+     * @see #link(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     * @param x object which can be converted to a QDataSet
+     * @param y object which can be converted to a QDataSet
+     * @return the dataset
+     * @see #link(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     */
     public static QDataSet link( Object x, Object y ) {
         return link( dataset(x), dataset(y) );
     }
 
-
+    /**
+     * @see #link(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     * @param x object which can be converted to a QDataSet
+     * @param y object which can be converted to a QDataSet
+     * @param z object which can be converted to a QDataSet
+     * @return  the dataset
+     * @see #link(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     */
     public static QDataSet link( Object x, Object y, Object z ) {
         return link( dataset(x), dataset(y), dataset(z) );
     }
 
-
+    /**
+     * @see #link(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     * @param d0 object which can be converted to a QDataSet
+     * @param d1 object which can be converted to a QDataSet
+     * @param d2 object which can be converted to a QDataSet
+     * @param z object which can be converted to a QDataSet
+     * @return  the dataset
+     * @see #link(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     */    
     public static QDataSet link( Object d0, Object d1, Object d2, Object z ) {
         return link( dataset(d0), dataset(d1), dataset(d2), dataset(z) );
     }
