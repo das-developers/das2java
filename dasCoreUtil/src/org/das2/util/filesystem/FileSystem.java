@@ -683,12 +683,14 @@ public abstract class FileSystem  {
      */
     public static String[] splitUrl( String surl ) {
         
-        if ( !( surl.startsWith("file:/") 
-                || surl.startsWith("ftp://") 
-                || surl.startsWith("http://") 
-                || surl.startsWith("https://") 
-                || surl.startsWith("sftp://")) ) {
-            surl= "file://"+ ( ( surl.charAt(0)=='/' ) ? surl : ( '/' + surl ) ); // Windows c:
+        int icolon= surl.indexOf(":");
+        if ( icolon==-1 ) {
+            throw new IllegalArgumentException("URL should contain a :");
+        }
+        if ( !registry.keySet().contains( surl.substring(0,icolon).toLowerCase() ) ) {
+            if ( icolon==1 ) {
+                surl= "file://"+ ( ( surl.charAt(0)=='/' ) ? surl : ( '/' + surl ) ); // Windows c:
+            }
         }
         
         int i;
