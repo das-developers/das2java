@@ -55,6 +55,7 @@ public class DisplayDataMouseModule extends MouseModule {
     private JComboBox comboBox;
     private JLabel messageLabel;
     private Renderer[] rends;
+    private Renderer currentRenderer;
     private DatumRange xrange;
     private DatumRange yrange;
 
@@ -157,14 +158,32 @@ public class DisplayDataMouseModule extends MouseModule {
             rlabels[i]= label;
         }
         if ( firstActive==-1 ) firstActive=0;
+        
+        if ( currentRenderer==null ) {
+            currentRenderer= rends1[firstActive];
+        }
+        
+        int icurrent=-1;
+        for ( int i=0; i<rends1.length; i++ ) {
+            Renderer r= rends1[i];
+            if ( currentRenderer==r ) {
+                icurrent= i;
+            }
+        }
+        
+        if ( icurrent==-1 ) {
+            currentRenderer= rends1[firstActive];
+            icurrent= firstActive;
+        }
 
         this.rends= rends1;
         this.xrange= xrng;
         this.yrange= yrng;
 
         comboBox.setModel( new DefaultComboBoxModel( rlabels ) );
-        comboBox.setSelectedIndex(firstActive);
-        setDataSet(rends1[firstActive].getDataSet(),xrange,yrange);
+        comboBox.setSelectedIndex(icurrent);
+        
+        setDataSet(currentRenderer.getDataSet(),xrange,yrange);
 
     }
 
@@ -173,6 +192,7 @@ public class DisplayDataMouseModule extends MouseModule {
             if ( rends==null ) return;
             int i= comboBox.getSelectedIndex();
             if ( i<rends.length ) setDataSet( rends[i].getDataSet(), xrange, yrange ); // thread safety
+            currentRenderer= rends[i];
         }
     };
 
