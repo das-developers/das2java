@@ -41,6 +41,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import org.das2.util.Base64;
+import org.das2.util.CredentialsManager;
 
 /**
  * class that contains the credentials for websites.  This is first
@@ -66,6 +67,29 @@ public class KeyChain {
             instance.loadInitial();
         }
         return instance;
+    }
+    
+    private static Map<String,KeyChain> instances= new HashMap<>();
+    
+    /**
+     * get the instance for this name.  This is added to support future applications, such as servlets, where
+     * multiple users are using the same process.
+     * 
+     * @param name
+     * @return 
+     */
+    public static synchronized KeyChain getInstance( String name ) {
+        if ( name==null || name.length()==0 ) {
+            return getDefault();
+        } 
+        KeyChain t= instances.get(name);
+        if ( t!=null ) {
+            return t;
+        } else {
+            t= new KeyChain();
+            instances.put( name, t );
+            return t;
+		}
     }
 
     /**
@@ -338,6 +362,57 @@ public class KeyChain {
     }
     
     /**
+     * look up the stored user info, looking at http://autoplot.org/data/path/a/, 
+     * then http://autoplot.org/data/path/, then http://autoplot.org/data/, etc.
+     * @param path the path to lookup, with folders ending in /.
+     * @return null or the user info.
+     */
+    private String lookupStoredUserInfo( String path ) {
+        int stop= path.indexOf("://");
+        int i=path.lastIndexOf('/');
+        while( i>stop ) {
+            String hash= path.substring(0,i);
+            String storedUserInfo= keys.get(hash);
+            if ( storedUserInfo!=null ) {
+                return storedUserInfo;
+            } else {
+                i= path.lastIndexOf('/',i-1);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * store the user info, presuming that the site uses the same keys for each
+     * level, until another key is found.
+     * @param path
+     * @param storedUserInfo 
+     */
+    private void storeUserInfo(String path, String storedUserInfo) {
+        int stop= path.indexOf("://")+3;
+        int i=path.lastIndexOf('/');
+        while( i>stop ) {
+            String hash= path.substring(0,i);
+            if ( keys.get(hash)==null ) {
+                keys.put( hash, storedUserInfo );
+            }
+            i= path.lastIndexOf('/',i-1);
+        }
+    }
+    
+    private void clearUserInfo( String path ) {
+        int stop= path.indexOf("://")+3;
+        int i=path.lastIndexOf('/');
+        while( i>stop ) {
+            String hash= path.substring(0,i);
+            if ( keys.get(hash)!=null ) {
+                keys.remove(hash);
+            }
+            i= path.lastIndexOf('/',i-1);
+        }        
+    }
+    
+    /**
      * get the user credentials, maybe throwing CancelledOperationException if the
      * user hits cancel.  If the password is "pass" or "password" then don't use
      * it, prompt for it instead.
@@ -376,9 +451,10 @@ public class KeyChain {
             }
         }
         
-        String hash= url.getProtocol() + "://" + ( userName!=null ? userName+"@" : "" ) + url.getHost(); //TODO: whah?  This still doesn't use the path!
+        String path= url.getProtocol() + "://" + ( userName!=null ? userName+"@" : "" ) + url.getHost() + url.getPath();
 
-        String storedUserInfo= keys.get(hash);
+        String storedUserInfo= lookupStoredUserInfo(path);
+        
         //TODO: shouldn't "http://ectsoc@www.rbsp-ect.lanl.gov" match "http://www.rbsp-ect.lanl.gov    ectsoc:"
         if ( storedUserInfo!=null ) return storedUserInfo;
         
@@ -422,10 +498,10 @@ public class KeyChain {
                 if ( JOptionPane.OK_OPTION==r ) {
                     char[] pass= passTf.getPassword();
                     storedUserInfo= userTf.getText() + ":" + new String(pass);
-                    keys.put( hash, storedUserInfo );
+                    storeUserInfo( path, storedUserInfo );
                     if ( storeKeychain.isSelected() ) {
                         try {
-                            appendKeysFile( hash, storedUserInfo );
+                            appendKeysFile( path, storedUserInfo );
                         } catch (IOException ex) {
                             logger.log( Level.WARNING, null, ex );
                         }
@@ -500,12 +576,10 @@ public class KeyChain {
             }
         }
         
-        String hash= url.getProtocol() + "://" + ( userName!=null ? userName+"@" : "" ) + url.getHost();
+        String hash= url.getProtocol() + "://" + ( userName!=null ? userName+"@" : "" ) + url.getHost() + url.getPath();
 
-        String storedUserInfo= keys.get(hash);
-        if ( storedUserInfo!=null ) {
-            keys.remove(hash);
-        }
+        clearUserInfo( hash );
+
     }
 
     /**
@@ -611,9 +685,9 @@ public class KeyChain {
                     os.close();
                     cookie= cookie1;
                 } catch (MalformedURLException ex) {
-                    Logger.getLogger(KeyChain.class.getName()).log(Level.SEVERE, null, ex);
+                    logger.log(Level.SEVERE, null, ex);
                 } catch (CancelledOperationException | IOException ex) {
-                    Logger.getLogger(KeyChain.class.getName()).log(Level.SEVERE, null, ex);
+                    logger.log(Level.SEVERE, null, ex);
                 }
             }
             //cookie= ""; // see email to jeremy-faden@uiowa.edu at 2015-09-01T12:50 CDT for cookie
