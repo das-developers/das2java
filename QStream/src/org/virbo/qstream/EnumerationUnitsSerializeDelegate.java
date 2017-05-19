@@ -50,7 +50,7 @@ public class EnumerationUnitsSerializeDelegate implements SerializeDelegate {
 
     @Override
     public Object parse( String typeId, String s ) {
-        Pattern p= Pattern.compile("(.+?)\\[(.*)\\]");
+        Pattern p= Pattern.compile("(.+?)(\\[(.*)\\])?");
         Matcher m= p.matcher(s);
         if ( !m.matches() ) {
             throw new IllegalArgumentException("bad format!");
@@ -63,8 +63,13 @@ public class EnumerationUnitsSerializeDelegate implements SerializeDelegate {
                 u= new EnumerationUnits(id);   // getByName always fails, and then this is invoked, creating multiple units with the same name.  This happens to work, but it's not clean...
                 // http://www-pw.physics.uiowa.edu/~jbf/autoplot/data/qds/agg/demoEventsInlineEnumeration.vap  shows why this needs to be cleaned up.
             }
-            String values= m.group(2);
-            String[] ss= values.split("::",-2);
+            String values= m.group(3);
+            String[] ss;
+            if ( values==null ) {
+                ss= new String[0];
+            } else {
+                ss= values.split("::",-2);
+            }
             if ( ss.length==1 ) {
                 ss= values.split("; ",-2);
             }
