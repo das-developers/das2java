@@ -1,13 +1,18 @@
 
 package org.virbo.qstream;
 
+import java.awt.Color;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.das2.datum.Datum;
+import org.das2.datum.EnumerationUnits;
 import org.das2.datum.LoggerManager;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
@@ -48,7 +53,11 @@ public class BundleStreamFormatter {
         }
         u= (Units) bds.property(QDataSet.UNITS,i);
         if ( u!=null ) {
-            build.append( String.format( "        <property name=\"UNITS\" type=\"units\" value=\"%s\"/>\n", u.getId() ) );
+            if ( u instanceof EnumerationUnits ) {
+                build.append( String.format( "        <property name=\"UNITS\" type=\"enumerationUnit\" value=\"%s\"/>\n", u.getId() ) );
+            } else {
+                build.append( String.format( "        <property name=\"UNITS\" type=\"units\" value=\"%s\"/>\n", u.getId() ) );
+            }
         }
         n= (Number) bds.property(QDataSet.FILL_VALUE,i);
         if ( n!=null ) {
@@ -137,6 +146,9 @@ public class BundleStreamFormatter {
                     case 'd':
                         result= new AsciiIntegerTransferType(len);
                         break;
+                    case 'x':
+                        result= new AsciiIntegerTransferType(len);
+                        break;
                     default:
                         result= new AsciiTransferType( 10,true );
                 }
@@ -160,7 +172,7 @@ public class BundleStreamFormatter {
         }
         
     }
-    public static final String FORMAT_PATTERN = "(\\%)?(\\d*)(\\.\\d*)?([f|e|d])";
+    public static final String FORMAT_PATTERN = "(\\%)?(\\d*)(\\.\\d*)?([f|e|d|x])";
     
     /**
      * format the rank 2 bundle.
@@ -209,12 +221,15 @@ public class BundleStreamFormatter {
 
         }
         
+        Units[] units= new Units[bds.length()];
+        
         // calculate the transfer types and total record length.
         for ( int j=0; j<bds.length(); j++ ) {
             if ( asciiTypes ) {
                 String format=  (String)bds.property( QDataSet.FORMAT, j );
                 Units u= (Units) bds.property( QDataSet.UNITS, j );
                 if ( u==null ) u= Units.dimensionless;
+                units[j]= u;
                 boolean useGuess= false;
                 if ( useGuess && format!=null && !UnitsUtil.isTimeLocation(u) ) {
                     tt[j]= guessAsciiTransferType( Ops.slice1(ds,j) );
@@ -231,9 +246,11 @@ public class BundleStreamFormatter {
                 }
             } else {
                 Units u= (Units) bds.property( QDataSet.UNITS, j );
-                if ( u!=null && UnitsUtil.isTimeLocation(u) ) {
+                if ( u==null ) u= Units.dimensionless;
+                units[j]= u;
+                if ( UnitsUtil.isTimeLocation(u) ) {
                     tt[j]= new DoubleTransferType();
-                } else if ( u!=null && UnitsUtil.isNominalMeasurement(u) ) {
+                } else if ( UnitsUtil.isNominalMeasurement(u) ) {
                     tt[j]= new IntegerTransferType( );
                 } else {
                     tt[j]= new FloatTransferType();
@@ -292,10 +309,31 @@ public class BundleStreamFormatter {
         osout.write( String.format( "[02]%06d", bytes.length ).getBytes( "UTF-8" ) );
         osout.write( bytes );
         
+        Map<Integer,String> enumerations= new HashMap<>();
+            
         // format the packets.
         byte[] packet= String.format( ":01:" ).getBytes( "UTF-8" );
         ByteBuffer buf= ByteBuffer.allocate(recordLength);
         for ( int i=0; i<ds.length(); i++ ) {
+            
+            for ( int j=0; j<ds.length(0); j++ ) {
+                if ( units[j] instanceof EnumerationUnits ) {
+                    int iv= (int)ds.value(i,j);
+                    if ( !enumerations.keySet().contains( iv ) ) {
+                        EnumerationUnits eu= (EnumerationUnits)units[j];
+                        Datum d= eu.createDatum(iv);
+                        int c= eu.getColor( d );
+                        String label= d.toString();
+                        String ss= String.format( "<enumerationUnit name=\"%s\"  value=\"%d\" color=\"0x%06x\" label=\"%s\" />\n",
+                            eu.getId(), iv, c, label );
+                        bytes= ss.getBytes( "UTF-8" );
+                        osout.write( String.format( "[xx]%06d", bytes.length ).getBytes("UTF-8") );
+                        osout.write(bytes);
+                        enumerations.put( iv, label);
+                    }
+                }
+            }
+            
             osout.write( packet );
             for ( int j=0; j<nf; j++ ) {
                 tt[j].write( ds.value(i,j), buf );
