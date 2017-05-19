@@ -223,6 +223,8 @@ public class BundleStreamFormatter {
                         tt[j]= new AsciiTimeTransferType( 24, u );
                     } else if ( UnitsUtil.isNominalMeasurement(u) ) {
                         tt[j]= new AsciiIntegerTransferType( 10 );
+                    } else if ( format!=null ) {
+                        tt[j]= new AsciiTransferType(10,true); //TODO: it would be nice to use the formatter.
                     } else {
                         tt[j]= new AsciiTransferType(10,true);
                     }
