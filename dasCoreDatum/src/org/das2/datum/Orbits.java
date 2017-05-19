@@ -104,7 +104,7 @@ public class Orbits {
                 }
             }
         } catch ( MalformedURLException ex ) {
-            throw new RuntimeException(ex);
+            throw new IllegalArgumentException(ex);
         }
 
         InputStream in=null;
