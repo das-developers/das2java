@@ -3716,7 +3716,8 @@ public class Ops {
                         
                     } else {
                         throw new IllegalArgumentException( "rank 2 dataset must have dep0 of rank 1 or rank 2 bins" );
-                    }       msgs= DataSetOps.unbundle( vds, vds.length(0)-1 );
+                    }       
+                    msgs= DataSetOps.unbundle( vds, vds.length(0)-1 );
                     break;
                 }
             case 1:
@@ -3752,7 +3753,8 @@ public class Ops {
                         msgs= vds;
                     } else {
                         throw new IllegalArgumentException("dataset is not correct form");
-                    }       Color c0= new Color( defaultColor );
+                    }       
+                    Color c0= new Color( defaultColor );
                     Color c1= new Color( c0.getRed(), c0.getGreen(), c0.getBlue(), c0.getAlpha()==255 ? 128 : c0.getAlpha() );
                     int irgb= c1.getRGB();
                     colors= Ops.replicate( irgb, xmins.length() );
@@ -3778,11 +3780,12 @@ public class Ops {
 
         if ( u1.isConvertibleTo( u0.getOffsetUnits() ) && !u1.isConvertibleTo(u0) ) { // maxes are dt instead of stopt.
             xmaxs= Ops.add( xmins, xmaxs );
+            xmaxs= putProperty( xmaxs, QDataSet.NAME, "StopTime" );
+            xmaxs= putProperty( xmaxs, QDataSet.DEPEND_0, null );
+            xmaxs= putProperty( xmaxs, QDataSet.LABEL, null );
         }
 
-        if ( colors instanceof MutablePropertyDataSet && !((MutablePropertyDataSet)colors).isImmutable() ) {
-            ((MutablePropertyDataSet)colors).putProperty( QDataSet.FORMAT, "0x%08x" );
-        }
+        colors= Ops.putProperty( colors, QDataSet.FORMAT, "0x%08x" );
         
         QDataSet lds= Ops.bundle( xmins, xmaxs, colors, msgs );
         
