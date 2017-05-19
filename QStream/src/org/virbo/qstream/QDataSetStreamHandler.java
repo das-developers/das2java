@@ -206,6 +206,9 @@ public class QDataSetStreamHandler implements StreamHandler {
     private DDataSet doInLine(Element vn) throws XPathExpressionException {
 
         String svals = xpath.evaluate("@values", vn).trim();
+        if ( svals==null ) {
+            svals= xpath.evaluate("@inline", vn).trim();
+        }
         String sdims = xpath.evaluate("@length", vn);
         int[] dims;
         String[] ss = svals.split(",");
@@ -297,7 +300,20 @@ public class QDataSetStreamHandler implements StreamHandler {
                             if ( vn.hasAttribute("index") ) {
                                 index= Integer.parseInt( vn.getAttribute("index") );
                             }
+                        } else if ( vn.hasAttribute("inline")) {  // TODO: consider "inline"
+                            inlineDs = doInLine(vn);
+                            isInline = true;
+                            if ( vn.hasAttribute("index") ) {
+                                index= Integer.parseInt( vn.getAttribute("index") );
+                            }
+                        } else if ( vn.hasAttribute("bundle") ) {
+                            builder = new DataSetBuilder(1, 0);
+                            builders.put(name, builder); // this is to hold properties.
+
+                            String[] ss = planes.get(i).getBundles();
+                            bundleDataSets.put(name, ss);
                         }
+                        
                         //index stuff--Ed W. thinks index should be implicit.
                         sdims = xpath.evaluate("@length", vn);
                         joinChildren = xpath.evaluate("@join", vn);
@@ -362,12 +378,14 @@ public class QDataSetStreamHandler implements StreamHandler {
                                     join = new JoinDataSet(rank + 1);
                                     joinDataSets.put(name, join);
                                 }
-                                builder.setDataSetResolver( getResolver() );
-                                MutablePropertyDataSet mds = resolveProps(name, builder.getDataSet());
-                                join.join(mds);
+                                if ( !bundleDataSets.containsKey(name) ) {
+                                    builder.setDataSetResolver( getResolver() );
+                                    MutablePropertyDataSet mds = resolveProps(name, builder.getDataSet());
+                                    join.join(mds);
 
-                                builder = createBuilder(rank, dims);
-                                builders.put(name, builder);
+                                    builder = createBuilder(rank, dims);
+                                    builders.put(name, builder);
+                                }
                             }
                         }
                     }
@@ -592,7 +610,7 @@ public class QDataSetStreamHandler implements StreamHandler {
         MutablePropertyDataSet result;
         MutablePropertyDataSet sliceDs = null;
 
-        if (join != null) {
+        if (join != null && sbds==null ) {
             String joinChild = (String) join.property(BUILDER_JOIN_CHILDREN);
             join = JoinDataSet.copy(join);
             if (builder != null && builder.rank() > 0) {
