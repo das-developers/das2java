@@ -483,14 +483,20 @@ public class StreamTool {
                 String joinChildren= null; //  join will be specified.
                 //String joinParent= null;
                 boolean isInline= false;
+                boolean isBundle= false;
                 //joinParent= n.getAttribute("joinId");
 
                 NodeList values= (NodeList) xpath.evaluate("values", n, XPathConstants.NODESET );
                 NodeList bundles= null;
+                String[] sbundles= null;
                 if ( values.getLength()==0 ) {
                     bundles= (NodeList) xpath.evaluate("bundle", n, XPathConstants.NODESET );
                     if ( bundles.getLength()==0 ) {
                         throw new IllegalArgumentException("no values node in "+n.getNodeName() + " " +n.getAttribute("id") );
+                    }
+                    sbundles= new String[bundles.getLength()];
+                    for ( int j=0; j<bundles.getLength(); j++ ) {
+                        sbundles[j]= ((Element)bundles.item(j)).getAttribute("id");
                     }
                 }
 
@@ -507,6 +513,14 @@ public class StreamTool {
                         if ( vn.hasAttribute("values") ) {  // TODO: consider "inline"
                             isInline= true;
                             pd.valuesInDescriptor= true;
+                        } else if ( vn.hasAttribute("inline") ) {  // "inline"  is preferred to "values"
+                            isInline= true;
+                            pd.valuesInDescriptor= true;
+                        } else if ( vn.hasAttribute("bundle") ) {
+                            isInline= true;
+                            pd.valuesInDescriptor= true;
+                            isBundle= true;
+                            sbundles= vn.getAttribute("bundle").split(",");
                         }
 
                         String sdims;
@@ -560,11 +574,7 @@ public class StreamTool {
                     }
                 }
                 
-                if ( bundles!=null ) {
-                    String[] sbundles= new String[ bundles.getLength() ];
-                    for ( int j=0; j<bundles.getLength(); j++ ) {
-                        sbundles[j]= ((Element)bundles.item(j)).getAttribute("id");
-                    }
+                if ( sbundles!=null ) {
                     planeDescriptor.setBundles(sbundles);
                     planeDescriptor.setType(new AsciiTransferType( 10, true )); // kludge because we need something
                 } else {
