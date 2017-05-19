@@ -246,7 +246,8 @@ public class BundleStreamFormatter {
         int defaultColumn= bds.length()<3 ? bds.length()-1 : 1;
         Units u= (Units) bds.property( QDataSet.UNITS, defaultColumn );
         if ( u!=null && UnitsUtil.isTimeLocation(u) && bds.length()>2 ) defaultColumn++;  // startTime, stopTime bins.
-        String defaultName= nameFor( bds, defaultColumn );
+        String defaultName= (String) bds.property(QDataSet.NAME);
+        if (defaultName==null ) defaultName= "Bundle1";
         
         String rec;
         byte[] bytes;
@@ -260,8 +261,11 @@ public class BundleStreamFormatter {
         // packet descriptor
         StringBuilder build= new StringBuilder();
         build.append("<packet>\n");
+        StringBuilder bdsNames= new StringBuilder();
         for ( int j=0; j<bds.length(); j++ ) {
             String name= nameFor( bds, j ); 
+            if ( j>0 ) bdsNames.append(",");
+            bdsNames.append(name);
             build.append( String.format( "  <qdataset id=\"%s\" rank=\"1\">\n", name ) );  // TODO: support rank 2 bundled datasets.
             build.append( String.format( "     <properties>\n") );
             formatProperties( build, bds, j );
@@ -274,6 +278,20 @@ public class BundleStreamFormatter {
         osout.write( String.format( "[01]%06d", bytes.length ).getBytes( "UTF-8" ) );
         osout.write( bytes );
 
+        build= new StringBuilder();
+        build.append("<packet>\n");
+        build.append(String.format("<qdataset id=\"%s\" rank=\"2\">\n",defaultName));
+        build.append("<properties>\n");
+        build.append("   <property name=\"BUNDLE_1\" type=\"qdataset\" value=\"ds_1\"/>\n");
+        build.append("   <property name=\"QUBE\" type=\"Boolean\" value=\"true\"/>\n");
+        build.append("</properties>\n");
+        build.append(String.format("<values bundle=\"%s\"/>\n",bdsNames));
+        build.append("</qdataset>\n");
+        build.append("</packet>\n");
+        bytes= build.toString().getBytes( "UTF-8" );
+        osout.write( String.format( "[02]%06d", bytes.length ).getBytes( "UTF-8" ) );
+        osout.write( bytes );
+        
         // format the packets.
         byte[] packet= String.format( ":01:" ).getBytes( "UTF-8" );
         ByteBuffer buf= ByteBuffer.allocate(recordLength);
