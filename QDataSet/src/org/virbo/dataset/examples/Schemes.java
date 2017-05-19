@@ -317,12 +317,15 @@ public class Schemes {
                 Units u3= (Units) bundle1.property(QDataSet.UNITS,bundle1.length()-1);
                 if ( u3!=null && UnitsUtil.isOrdinalMeasurement(u3) && u0.getOffsetUnits().isConvertibleTo(u1) ) {
                     if ( u0.isConvertibleTo(u1) ) {
-                        QDataSet isge= Ops.ge( Ops.slice1( ds, 0 ), Ops.slice1( ds, 1 ) );
+                        QDataSet isge= Ops.ge( Ops.slice1( ds, 1 ), Ops.slice1( ds, 0 ) );
                         return Ops.total(isge) == Ops.total( Ops.valid( Ops.slice1(ds,0) ) );
                     } else {
                         QDataSet isge= Ops.ge( Ops.abs( Ops.slice1( ds, 1 ) ), 0. );
                         return Ops.total(isge) == Ops.total( Ops.valid( Ops.slice1(ds,0) ) );
                     }
+                } else if ( u3!=null  && UnitsUtil.isOrdinalMeasurement(u3) && u0.isConvertibleTo(u1) ) {
+                    QDataSet isge= Ops.ge( Ops.slice1( ds, 1 ), Ops.slice1( ds, 0 ) );
+                    return Ops.total(isge) == Ops.total( Ops.valid( Ops.slice1(ds,0) ) );
                 }
             } else {
                 Units u3= (Units) bundle1.property(QDataSet.UNITS,bundle1.length()-1);
