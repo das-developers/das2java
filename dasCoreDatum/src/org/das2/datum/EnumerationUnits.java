@@ -27,9 +27,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import javafx.scene.paint.Color;
 import org.das2.datum.format.DatumFormatterFactory;
 import org.das2.datum.format.EnumerationDatumFormatterFactory;
 
