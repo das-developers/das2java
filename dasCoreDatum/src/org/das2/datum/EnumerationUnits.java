@@ -128,8 +128,9 @@ public class EnumerationUnits extends Units {
         if ( colors==null ) {
             return 0x808080;
         } else {
-            System.err.println(d); // test030 shows NullPointerException
-            System.err.println(d.doubleValue(this));
+            System.err.println("d="+d); // test030 shows NullPointerException
+            System.err.println("d.doubleValue(this)="+d.doubleValue(this));
+            System.err.println("colors="+colors);
             return colors.get( (int)d.doubleValue(this) );
         }
     }
