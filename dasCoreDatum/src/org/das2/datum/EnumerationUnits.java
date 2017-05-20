@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.scene.paint.Color;
 import org.das2.datum.format.DatumFormatterFactory;
 import org.das2.datum.format.EnumerationDatumFormatterFactory;
 
@@ -120,8 +121,17 @@ public class EnumerationUnits extends Units {
         }
     }
     
+    /**
+     * return color suggestion for this value.  Note this color is not always used.
+     * @param d the datum
+     * @return the color suggestions
+     */
     public int getColor( Datum d ) {
-        return colors.get( (int)d.doubleValue(this) );
+        if ( colors==null ) {
+            return 0x808080;
+        } else {
+            return colors.get( (int)d.doubleValue(this) );
+        }
     }
     
     /**
