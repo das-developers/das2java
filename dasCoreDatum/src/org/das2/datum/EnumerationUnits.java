@@ -126,12 +126,14 @@ public class EnumerationUnits extends Units {
      */
     public int getColor( Datum d ) {
         if ( colors==null ) {
-            return 0x808080;
+            return 0xA0A0A0;
         } else {
-            System.err.println("d="+d); // test030 shows NullPointerException
-            System.err.println("d.doubleValue(this)="+d.doubleValue(this));
-            System.err.println("colors="+colors);
-            return colors.get( (int)d.doubleValue(this) );
+            Integer c= colors.get( (int)d.doubleValue(this) );
+            if ( c==null ) {
+                return 0xA0A0A0;
+            } else {
+                return c;
+            }
         }
     }
     
