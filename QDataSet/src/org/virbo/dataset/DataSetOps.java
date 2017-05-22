@@ -1783,9 +1783,6 @@ public class DataSetOps {
                                 double v= db ? ds.value(ii,jj) - back.value(jj) : mult * Math.log10( ds.value(ii,jj) / back.value(jj) );
                                 wds.putValue( ii,jj, Math.max( 0,v ) );
                             } else {                            
-                                if ( ii>200 ) {
-                                   System.err.println("here man200");
-                                }
                                 wds.putValue( ii,jj, fill );
                                 hasFill= true;
                             }
