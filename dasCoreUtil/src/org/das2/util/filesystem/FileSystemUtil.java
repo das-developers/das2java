@@ -5,6 +5,7 @@
 
 package org.das2.util.filesystem;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -22,17 +23,11 @@ import java.nio.channels.Channel;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import org.das2.util.LoggerManager;
 import org.das2.util.monitor.NullProgressMonitor;
 import org.das2.util.monitor.ProgressMonitor;
@@ -97,6 +92,7 @@ public class FileSystemUtil {
     
     /**
      * un-gzip the file.  This is similar to the unix gunzip command.
+     * To unzip a file, see fileUnzip
      * @param fz zipped input file
      * @param file unzipped destination file
      * @throws java.io.IOException
@@ -145,6 +141,59 @@ public class FileSystemUtil {
         new ZipFiles().zipDirectory( dir, fz.getAbsolutePath() );
     }
     
+    /**
+     * Size of the buffer to read/write data
+     */
+    private static final int BUFFER_SIZE = 4096;
+    
+    /**
+     * Extracts a zip file specified by the zipFilePath to a directory specified by
+     * destDirectory (will be created if does not exists).
+     * From http://www.codejava.net/java-se/file-io/programmatically-extract-a-zip-file-using-java
+     * @param zipFilePath
+     * @param destDir
+     * @throws IOException
+     */
+    public static void unzipFile( File zipFilePath, File destDir) throws IOException {
+        
+        if (!destDir.exists()) {
+            destDir.mkdir();
+        }
+        try (ZipInputStream zipIn = new ZipInputStream(new FileInputStream(zipFilePath))) {
+            ZipEntry entry = zipIn.getNextEntry();
+            // iterates over entries in the zip file
+            while (entry != null) {
+                String filePath = destDir.getAbsolutePath() + File.separator + entry.getName();
+                if (!entry.isDirectory()) {
+                    // if the entry is a file, extracts it
+                    extractFile(zipIn, filePath);
+                } else {
+                    // if the entry is a directory, make the directory
+                    File dir = new File(filePath);
+                    dir.mkdir();
+                }
+                zipIn.closeEntry();
+                entry = zipIn.getNextEntry();
+            }
+        }
+    }
+    
+    /**
+     * Extracts a zip entry (file entry)
+     * @param zipIn
+     * @param filePath
+     * @throws IOException
+     */
+    private static void extractFile(ZipInputStream zipIn, String filePath) throws IOException {
+        try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(filePath))) {
+            byte[] bytesIn = new byte[BUFFER_SIZE];
+            int read;
+            while ((read = zipIn.read(bytesIn)) != -1) {
+                bos.write(bytesIn, 0, read);
+            }
+        }
+    }        
+
     /**
      * delete all files under the directory, with names matching the regex.
      * @param dir the directory
