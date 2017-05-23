@@ -176,6 +176,19 @@ public class CredentialsManager{
 		return loc.hasCredentials();
 	}
 	
+        public void setHttpBasicHashRaw( String sLocationId, String userInfo ) {
+		if(!hasCredentials(sLocationId)){
+                    m_dLocs.put(sLocationId, new Location(sLocationId, null, null));
+		}
+                Location loc= m_dLocs.get(sLocationId);
+		
+                String[] ss= userInfo.split(":",-2); //TODO: allow colons in passwords
+                
+                loc.sUser= ss[0];
+                loc.sPasswd= ss[1];
+                        
+        }
+        
 	/** Determine if a given location has been described
 	 * 
 	 * Gathering descriptive information about a remote location may trigger communication
