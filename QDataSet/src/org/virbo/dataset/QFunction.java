@@ -20,7 +20,7 @@ package org.virbo.dataset;
  * <li> non-linear function optimization.
  * </ul>
  * 
- * @see <a href="http://jfaden.net:8080/hudson/job/autoplot-test037/lastSuccessfulBuild/artifact/tcaQFunctionTest.jy"tcaQFunctionTest.jy</a>
+ * @see <a href="http://jfaden.net/hudson/job/autoplot-test037/lastSuccessfulBuild/artifact/tcaQFunctionTest.jy"tcaQFunctionTest.jy</a>
  * @author jbf
  */
 public interface QFunction {
