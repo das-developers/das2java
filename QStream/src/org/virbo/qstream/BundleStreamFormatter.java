@@ -173,6 +173,7 @@ public class BundleStreamFormatter {
         
     }
     public static final String FORMAT_PATTERN = "(\\%)?(\\d*)(\\.\\d*)?([f|e|d|x])";
+    public static final String HEX_FORMAT_PATTERN = "0x(\\%)?(\\d*)?(x)";
     
     /**
      * format the rank 2 bundle.
@@ -239,7 +240,40 @@ public class BundleStreamFormatter {
                     } else if ( UnitsUtil.isNominalMeasurement(u) ) {
                         tt[j]= new AsciiIntegerTransferType( 10 );
                     } else if ( format!=null ) {
-                        tt[j]= new AsciiTransferType(10,true); //TODO: it would be nice to use the formatter.
+                        int isize=10;
+                        String stype= "f";
+                        Pattern p;
+                        Matcher m;
+                        if ( (m=(p=Pattern.compile(FORMAT_PATTERN)).matcher(format)).matches() ) {
+                            String ssize= m.group(2);
+                            if ( ssize==null ) isize= 10; else isize= Integer.parseInt(ssize);
+                            stype= m.group(isize);
+                        } else if ( (m=(p=Pattern.compile(HEX_FORMAT_PATTERN)).matcher(format)).matches() ) {
+                            String ssize= m.group(2);
+                            if ( ssize==null ) isize= 11; else isize= 3+Integer.parseInt(ssize);
+                            stype= "x";
+                        } 
+                        if ( stype!=null && stype.length()>0 ) {
+                            char ch= stype.charAt(0);
+                            switch (ch) {
+                                case 'x':
+                                    tt[j]= new AsciiHexIntegerTransferType(isize);
+                                    break;
+                                case 'd':
+                                    tt[j]= new AsciiIntegerTransferType(isize);
+                                    break;
+                                case 'e':
+                                    tt[j]= new AsciiTransferType(isize,true);
+                                    break;
+                                case 'f':
+                                    tt[j]= new AsciiTransferType(isize,false);
+                                    break;
+                                default:
+                                    break;
+                            }
+                        } else {
+                            tt[j]= new AsciiTransferType(10,true); 
+                        }
                     } else {
                         tt[j]= new AsciiTransferType(10,true);
                     }
