@@ -52,6 +52,9 @@ public abstract class TransferType {
         tt= AsciiTimeTransferType.getByName(ttype, properties);
         if ( tt!=null ) return tt;
         
+        tt= AsciiHexIntegerTransferType.getByName(ttype, properties);
+        if ( tt!=null ) return tt;
+
         return null;
     }
     
