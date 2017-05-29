@@ -197,7 +197,12 @@ public class DasColorBar extends DasAxis {
             if (!isHorizontal()) {
                 y++;
             }
-            g.drawImage(image, x, y, this);
+            try {
+                g.drawImage(image, x, y, this);
+            } catch ( ClassCastException ex ) {
+                //bug rte_1917581137, where x2go/Mate don't get along.
+                System.err.println("rte_1917581137: "+ex.getMessage());
+            }
             g.translate(getX(), getY());
         }
         super.paintComponent(g);
