@@ -402,7 +402,12 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                     atinv.translate(x * 4, y * 4);
                     g2.drawImage(image300, atinv, getParent());
                 } else {
-                    g2.drawImage(plotImage, x, y, getParent());
+                    try {
+                        g2.drawImage(plotImage, x, y, getParent());
+                    } catch ( ClassCastException ex ) {
+                        //bug rte_1917581137, where x2go/Mate don't get along.
+                        System.err.println("rte_1917581137: "+ex.getMessage());
+                    }
                 }
                 if ( validCount==0 ) {
                     QDataSet bounds= bounds(ds);
