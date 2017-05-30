@@ -458,10 +458,56 @@ public class AsciiParser {
 
         String fieldSep;
 
-        int tabDelimFieldCount= line.split("\t",-2 ).length;
-        int semiColonDelimFieldCount= line.split(";",-2 ).length;
-        int commaDelimFieldCount= line.split( ",",-2 ).length;
-        int whitespaceDelimFieldCount= line.split("\\s+",-2 ).length;
+        int tabDelimFieldCount= 0;
+        int semiColonDelimFieldCount= 0;
+        int commaDelimFieldCount= 0;
+        int whitespaceDelimFieldCount= 0;
+        
+        boolean withinWhitespace=false;
+        boolean withinQuote=false;
+        boolean afterEscape= false;
+        for ( int ich=0; ich<line.length(); ich++ ) {
+            char ch= line.charAt(ich);
+            switch (ch) {
+                case '\t':
+                    tabDelimFieldCount+= withinQuote ? 0 : 1;
+                    withinWhitespace=true;
+                    afterEscape= false;
+                    break;
+                case ' ':
+                    if ( !withinWhitespace ) {
+                        withinWhitespace=true;
+                        whitespaceDelimFieldCount+= withinQuote ? 0 : 1;
+                    }
+                    afterEscape= false;
+                    break;
+                case ';':
+                    semiColonDelimFieldCount+= withinQuote ? 0 : 1;
+                    afterEscape= false;
+                    withinWhitespace=false;
+                    break;
+                case ',':
+                    commaDelimFieldCount+= withinQuote ? 0 : 1;
+                    afterEscape= false;
+                    withinWhitespace=false;
+                    break;
+                case '\\':
+                    afterEscape= true;
+                    withinWhitespace=false;
+                    break;
+                case '"':
+                    if ( !afterEscape ) {
+                        withinQuote= !withinQuote;
+                    }
+                    afterEscape= false;
+                    withinWhitespace=false;
+                    break;
+                default:
+                    afterEscape= false;
+                    withinWhitespace=false;
+                    break;
+            }
+        }
 
         if ( semiColonDelimFieldCount > 1 && semiColonDelimFieldCount>=whitespaceDelimFieldCount/2 ) {
             fieldSep = ";";
