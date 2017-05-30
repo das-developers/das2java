@@ -466,16 +466,22 @@ public class AsciiParser {
         boolean withinWhitespace=false;
         boolean withinQuote=false;
         boolean afterEscape= false;
+        boolean afterComma;
+        
         for ( int ich=0; ich<line.length(); ich++ ) {
             char ch= line.charAt(ich);
             switch (ch) {
                 case '\t':
-                    tabDelimFieldCount+= withinQuote ? 0 : 1;
+                    afterComma= ich>1 ? line.charAt(ich-1)==',' : false;
+                    if ( !afterComma ) {
+                        tabDelimFieldCount+= withinQuote ? 0 : 1;
+                    }
                     withinWhitespace=true;
                     afterEscape= false;
                     break;
                 case ' ':
-                    if ( !withinWhitespace ) {
+                    afterComma= ich>1 ? line.charAt(ich-1)==',' : false;
+                    if ( !( withinWhitespace || afterComma ) ) {
                         withinWhitespace=true;
                         whitespaceDelimFieldCount+= withinQuote ? 0 : 1;
                     }
