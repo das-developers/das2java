@@ -458,10 +458,10 @@ public class AsciiParser {
 
         String fieldSep;
 
-        int tabDelimFieldCount= 0;
-        int semiColonDelimFieldCount= 0;
-        int commaDelimFieldCount= 0;
-        int whitespaceDelimFieldCount= 0;
+        int tabDelimFieldCount= 1;
+        int semiColonDelimFieldCount= 1;
+        int commaDelimFieldCount= 1;
+        int whitespaceDelimFieldCount= 1;
         
         boolean withinWhitespace=false;
         boolean withinQuote=false;
