@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.logging.Logger;
+import org.das2.datum.CacheTag;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
 import org.das2.datum.DatumRangeUtil;
@@ -380,11 +381,64 @@ public class DataSetUtil {
     public static final String PROPERTY_TYPE_UNITS="Units";
     
     /**
+     * return the class for the property, to support Jython.
+     * @param name the property name, e.g. QDataSet.TITLE
+     * @return String.class
+     * @see #getPropertyType(java.lang.String) 
+     */
+    public static Class getPropertyClass( String name ) {
+        if ( name.equals(QDataSet.TITLE) 
+                || name.equals(QDataSet.LABEL) ) {
+            return String.class;
+        } else if (  name.equals(QDataSet.UNITS) ) {
+            return Units.class;
+        } else if (  name.equals(QDataSet.NAME) 
+                || name.equals(QDataSet.FORMAT) 
+                || name.equals(QDataSet.RENDER_TYPE) 
+                || name.equals(QDataSet.SCALE_TYPE) ) {
+            return String.class;
+        } else if ( name.equals(QDataSet.TYPICAL_MIN) 
+                || name.equals(QDataSet.TYPICAL_MAX) 
+                || name.startsWith(QDataSet.VALID_MIN) 
+                || name.startsWith(QDataSet.VALID_MAX) 
+                || name.equals(QDataSet.FILL_VALUE) ) {
+            return Number.class;
+        } else if ( name.equals(QDataSet.MONOTONIC) 
+                || name.equals(QDataSet.QUBE) ) {
+            return Boolean.class;
+        } else if ( name.equals(QDataSet.CACHE_TAG) ) {
+            return CacheTag.class;
+        } else if ( name.equals(QDataSet.USER_PROPERTIES) 
+                || name.equals(QDataSet.METADATA) ) {
+            return Map.class;
+        } else if ( name.startsWith("JOIN_") 
+                || name.startsWith("BINS_") ) {
+            return String.class;
+        } else if ( name.startsWith(QDataSet.SOURCE) 
+                || name.startsWith(QDataSet.VERSION) 
+                || name.equals(QDataSet.METADATA_MODEL) ) {
+            return String.class;
+        } else if ( name.equals(QDataSet.CADENCE) ) {
+            return QDataSet.class;
+        } else if ( name.startsWith("DEPEND_") 
+                || name.startsWith("BUNDLE_") 
+                || name.startsWith("DELTA_") 
+                || name.startsWith("BIN_") 
+                || name.startsWith("CONTEXT_")) {
+            return QDataSet.class;
+        } else if ( name.equals(QDataSet.START_INDEX) ) {
+            return Integer.class;
+        } else {
+            return null;
+        }
+    }
+    /**
      * return the type of the property, as a string to support use in Jython:
      * String,Number,Boolean,Map,QDataSet,CacheTag,Units
      * //TODO: review this for completeness!
      * @param name the property name
      * @return the property type or null if the name is not recognized
+     * @see #getPropertyClass(java.lang.String) 
      */
     public static String getPropertyType( String name ) {
         if ( name.equals(QDataSet.TITLE) || name.equals(QDataSet.LABEL) ) {
