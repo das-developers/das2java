@@ -442,9 +442,9 @@ public class DigitalRenderer extends Renderer {
             }
             //find conversion character
             Scanner s= new Scanner(form);
-            String sc= s.findInLine("[xXdocCf]");
+            String sc= s.findInLine("[xXdocCfeE]");
             if ( sc==null ) {
-                throw new IllegalArgumentException("expected to find one of [xXdocCf]");
+                throw new IllegalArgumentException("expected format ending in one of: x,X,d,o,c,C,f,e or E");
             } else {
                 return sc.charAt(0);
             }
