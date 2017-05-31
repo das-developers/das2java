@@ -43,6 +43,7 @@ import java.lang.reflect.Method;
 import java.util.*;
 import java.util.logging.Logger;
 import org.das2.components.propertyeditor.Editable;
+import org.das2.graph.DasColorBar;
 import org.das2.util.LoggerManager;
 
 /**
@@ -757,7 +758,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         MouseMode result = MouseMode.idle;
         Cursor cursor = new Cursor(Cursor.DEFAULT_CURSOR);
 
-        if (!(parent instanceof DasAxis)) {
+        if ( parent instanceof DasColorBar || !(parent instanceof DasAxis)) {
             if ((e.getModifiersEx() & MouseEvent.SHIFT_DOWN_MASK) == MouseEvent.SHIFT_DOWN_MASK) {
                 if (xLeftSide) {
                     if (yTopSide) {
