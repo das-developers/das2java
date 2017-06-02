@@ -543,6 +543,7 @@ public final class DDataSet extends ArrayDataSet {
             return this;
         }
         if ( RANGE_CHECK ) {
+            if ( start>0 && len0==0 ) throw new IndexOutOfBoundsException("start>0 on a length=0 dataset" );
             if ( start>len0 ) throw new IndexOutOfBoundsException("start="+start+" > "+len0 );
             if ( start<0 ) throw new IndexOutOfBoundsException("start="+start+" < 0");
             if ( end>len0 ) throw new IndexOutOfBoundsException("end="+end+" > "+len0 );
