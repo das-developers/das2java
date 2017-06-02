@@ -2883,48 +2883,14 @@ public class Ops {
      * @throws IllegalArgumentException if the two datasets don't have the same rank.
      * @see #merge(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) merge(ds1,ds2), which will interleave to preserve monotonic.
      * @see #append(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     * @deprecated use append instead.
      */
     public static QDataSet concatenate(QDataSet ds1, QDataSet ds2) {
-        if ( ds1==null && ds2!=null ) return ds2;
-        if ( ds1!=null && ds2==null ) throw new NullPointerException("ds2 is null while ds1 is not null");
-        if ( ds1==null && ds2==null ) {
-            throw new NullPointerException("both ds1 and ds2 are null");
-        }
-        if ( ds1 instanceof FDataSet && ds2 instanceof FDataSet ) {
-            FDataSet result = (FDataSet) ArrayDataSet.copy(ds1);
-            if ( ds2.rank()==0 && ds1.rank()==1 ) {
-                FDataSet t= FDataSet.createRank1(1);
-                t.putValue(0,ds2.value());
-                DataSetUtil.putProperties( DataSetUtil.getProperties(ds2), t );
-                ds2= t;
-            } else if ( ds1.rank()==0 && ds2.rank()==1 ) {
-                FDataSet t= FDataSet.createRank1(1);
-                t.putValue(0,ds1.value());
-                DataSetUtil.putProperties( DataSetUtil.getProperties(ds1), t );
-                result= t;
-            }
-            return ArrayDataSet.append(result,FDataSet.maybeCopy(ds2));
-        } else {
-            DDataSet result = (DDataSet)ArrayDataSet.copy(double.class,ds1);
-            assert ds2!=null && ds1!=null;
-            if ( ds2.rank()==0 && ds1.rank()==1 ) {
-                DDataSet t= DDataSet.createRank1(1); //TODO: better promote rank is found on add, etc.
-                t.putValue(0,ds2.value());
-                DataSetUtil.putProperties( DataSetUtil.getProperties(ds2), t );
-                ds2= t;
-            } else if ( ds1.rank()==0 && ds2.rank()==1 ) {
-                DDataSet t= DDataSet.createRank1(1);
-                t.putValue(0,ds1.value());
-                DataSetUtil.putProperties( DataSetUtil.getProperties(ds1), t );
-                result= t;
-            }
-            return ArrayDataSet.append(result,DDataSet.maybeCopy(ds2));
-        }
-        
+        return append( ds1, ds2 );
     }
     
     public static QDataSet concatenate( Object ds1, Object ds2 ) {
-        return concatenate( dataset(ds1), dataset(ds2) );
+        return append( dataset(ds1), dataset(ds2) );
     }  
     
     /**
