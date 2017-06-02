@@ -705,12 +705,23 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
      * only have convertible units, so for example two time arrays may be appended 
      * even if their units don't have the same base, and the times will be
      * converted.  Only properties of the two datasets that do not change are preserved.
+     * When two rank 0 datasets are appended, the result will be rank 1.
      * @param ds1 rank N dataset
      * @param ds2 rank N dataset of the same type and compatible geometry as ds1.
      * @return dataset with the data appended.
      */
     public static ArrayDataSet append( ArrayDataSet ds1, ArrayDataSet ds2 ) {
-        if ( ds1==null ) return ds2;
+        if ( ds1==null ) {
+            if ( ds2.rank>0 ) {
+                return ds2;
+            } else {
+                ArrayDataSet result= ArrayDataSet.createRank1(ArrayDataSet.guessBackingStore(ds2),1);
+                result.putValue( ds2.value() );
+                DataSetUtil.copyDimensionProperties( ds2, result );
+                //TODO: should CONTEXT_0 become DEPEND_0?
+                return result;
+            }
+        }
         if ( ds2==null ) throw new NullPointerException("ds is null");
         
         if ( ds1.rank()==ds2.rank()-1 ) {
@@ -780,7 +791,9 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
 
         int len0= ds1.len0 + ds2.len0;
         
-        ArrayDataSet result= create( ds1.rank, len0, ds1.len1, ds1.len2, ds1.len3, newback );
+        int rank= ( ds1.rank==0 ) ? 1 : ds1.rank;
+        
+        ArrayDataSet result= create( rank, len0, ds1.len1, ds1.len2, ds1.len3, newback );
 
         result.properties.putAll( joinProperties( ds1, ds2 ) );
         result.properties.put( QDataSet.UNITS, u1 ); // since we resolve units when they change (bug 3469219)
@@ -794,8 +807,8 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
      * support append, but may be useful in other contexts.  Note there is special
      * handling of properties, like CACHE_TAG and TYPICAL_MIN, TYPICAL_MAX.
      * Note MONOTONIC assumes the ds2 will be added after ds1.
-     * @param ds1 dataset, typically a time series
-     * @param ds2 dataset, typically a time serirs
+     * @param ds1 dataset, typically a time series.
+     * @param ds2 dataset, typically a time series.
      * @return the two sets combined.
      */
     protected static Map joinProperties( ArrayDataSet ds1, ArrayDataSet ds2 ) {
