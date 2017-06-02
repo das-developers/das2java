@@ -1406,16 +1406,6 @@ public class SeriesRenderer extends Renderer {
             return;
         }
 
-        //study 20130214.  Why does http://sarahandjeremy.net/~jbf/geothermal20130116.vap sometimes fail to repaint?
-        //if ( ds!=null ) {
-        //    QDataSet xds1= SemanticOps.xtagsDataSet(ds);
-        //    if ( xds1!=null ) {
-        //        QDataSet xrange= Ops.extent(xds1);
-        //        logger.log( Level.FINE, "{0} {1},  drawing de indeces {2} to {3}", new Object[]{ color, String.valueOf( xrange ), this.firstIndex, this.lastIndex});
-        //        //end study 20130214.
-        //    }
-        //}
-
         //renderCount++;
         //reportCount();
 
@@ -1536,7 +1526,9 @@ public class SeriesRenderer extends Renderer {
 
         if (lastIndex == firstIndex) {
             if ( firstValidIndex==lastValidIndex ) {
-                if ( messageCount++==0) lparent.postMessage(SeriesRenderer.this, "dataset contains no valid data", DasPlot.INFO, null, null);
+                if ( !dataSetReduced ) {
+                    if ( messageCount++==0) lparent.postMessage(SeriesRenderer.this, "dataset contains no valid data", DasPlot.INFO, null, null);
+                }
             }
         }
 
@@ -1606,20 +1598,26 @@ public class SeriesRenderer extends Renderer {
             lparent.postMessage(this, "dataset reduced because of size > " + ldataSetSizeLimit + " points", DasPlot.WARNING, null, null);
         }
 
-        if ( ( lastIndex_v - firstIndex_v < 2 ) && dataSet.length()>1 ) { //TODO: single point would be helpful for digitizing.
-            if ( messageCount++==0) {
-                if ( lastIndex_v<2 ) {
-                    if ( firstValidIndex==lastValidIndex ) {
-                        //sftp://papco.org/home/jbf/ct/autoplot/data.backup/examples/d2s/dataOutOfRange.das2Stream
-                        lparent.postMessage(this, "dataset contains no plottable data", DasPlot.INFO, null, null);
+        if ( !dataSetReduced ) {
+            if ( ( lastIndex_v - firstIndex_v < 2 ) && dataSet.length()>1 ) { //TODO: single point would be helpful for digitizing.
+                if ( messageCount++==0) {
+                    if ( lastIndex_v<2 ) {
+                        if ( firstValidIndex==lastValidIndex ) {
+                            //sftp://papco.org/home/jbf/ct/autoplot/data.backup/examples/d2s/dataOutOfRange.das2Stream
+                            lparent.postMessage(this, "dataset contains no plottable data", DasPlot.INFO, null, null);
+                        } else {
+                            lparent.postMessage(this, "data starts after range", DasPlot.INFO, null, null);
+                        }
+                    } else if ( this.dslen - this.firstIndex_v < 2 ) {
+                        lparent.postMessage(this, "data ends before range", DasPlot.INFO, null, null);
                     } else {
-                        lparent.postMessage(this, "data starts after range", DasPlot.INFO, null, null);
+                        lparent.postMessage(this, "fewer than two points visible", DasPlot.INFO, null, null);
                     }
-                } else if ( this.dslen - this.firstIndex_v < 2 ) {
-                    lparent.postMessage(this, "data ends before range", DasPlot.INFO, null, null);
-                } else {
-                    lparent.postMessage(this, "fewer than two points visible", DasPlot.INFO, null, null);
                 }
+            }
+        } else {
+            if ( ( lastIndex_v - firstIndex_v < 1 ) && dataSet.length()>1 ) { 
+                lparent.postMessage(this, "no data is visible", DasPlot.INFO, null, null);
             }
         }
 
