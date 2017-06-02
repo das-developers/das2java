@@ -103,10 +103,24 @@ public class SeriesRenderer extends Renderer {
     private Color color = Color.BLACK;
     private long lastUpdateMillis;
     private boolean antiAliased = "on".equals(DasProperties.getInstance().get("antiAlias"));
-    private int firstIndex=-1;/* the index of the first point drawn, nonzero when X is monotonic and we can clip. */
-    private int lastIndex=-1;/* the non-inclusive index of the last point drawn. */
-    private int firstIndex_v=-1;/* the index of the first point drawn that is visible, nonzero when X is monotonic and we can clip. */
-    private int lastIndex_v=-1;/* the non-inclusive index of the last point that is visible. */
+    
+    /**
+     * the index of the first point drawn, nonzero when X is monotonic and we can clip. 
+     */
+    private int firstIndex=-1;
+    /**
+     * the non-inclusive index of the last point drawn. 
+     */
+    private int lastIndex=-1;
+    
+    /**
+     * the index of the first point drawn that is visible, nonzero when X is monotonic and we can clip. 
+     */
+    private int firstIndex_v=-1;
+    /**
+     * the non-inclusive index of the last point that is visible. 
+     */
+    private int lastIndex_v=-1;
     private int dslen=-1; // length of dataset, compare to firstIndex_v.
 
     boolean unitsWarning= false; // true indicates we've warned the user that we're ignoring units.
@@ -1254,6 +1268,8 @@ public class SeriesRenderer extends Renderer {
         int ixmax;
         int ixmin;
                 
+        firstIndex= -1;
+        
         QDataSet yds= dataSet;
         
         if ( xds.length()!=yds.length() ) {
