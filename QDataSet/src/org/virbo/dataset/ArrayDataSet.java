@@ -859,11 +859,13 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
             String prop= iprop==-1 ? QDataSet.PLANE_0 : props[iprop];
             QDataSet w1= (QDataSet) ds2.property( prop );
             if ( w1!=null ) {
-                QDataSet dep0= (QDataSet) ds1.property( prop );
-                if ( dep0!=null ) {
-                    ArrayDataSet djoin=  copy( dep0 );
+                QDataSet propds= (QDataSet) ds1.property( prop );
+                if ( propds!=null ) {
+                    ArrayDataSet djoin=  copy( propds );
                     ArrayDataSet dd1=  maybeCopy(w1);
-                    djoin= append( djoin, dd1 );
+                    if ( djoin.rank>0 || ds1.rank==0 ) {
+                        djoin= append( djoin, dd1 );
+                    }
                     result.put( prop, djoin );
                 } else {
                     logger.log(Level.INFO, "dataset doesn''t have property \"{0}\" but other dataset does: {1}", new Object[]{prop, ds1});
