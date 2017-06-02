@@ -2379,9 +2379,11 @@ public class Ops {
     }    
     
     /**
-     * create a dataset filled with zeros.
-     * @param len0
-     * @return
+     * create a dataset filled with zeros, stored in 4-byte floats.
+     * @param len0 the zeroth dimension length
+     * @return rank 1 dataset filled with zeros.
+     * @see #zeros(int) 
+     * @see #dblarr(int) 
      */
     public static QDataSet fltarr(int len0) {
         return Ops.replicate(0.f, len0);
@@ -2396,24 +2398,43 @@ public class Ops {
     }
 
     /**
-     * create a dataset filled with zeros.
-     * @param len0
-     * @return
+     * create a rank 1 dataset filled with zeros, stored in 8-byte doubles.
+     * @param len0 the length of the zeroth dimension.
+     * @return rank 1 dataset filled with zeros.
+     * @see #zeros(int) 
+     * @see #fltarr(int) 
      */
     public static QDataSet dblarr(int len0) {
         return Ops.replicate(0., len0);
     }
 
-    public static QDataSet dblarr(int len0, int len1) {
+    /**
+     * create a rank 2 dataset filled with zeros, stored in 8-byte doubles.
+     * @param len0 the length of the zeroth dimension.
+     * @param len1 the length of the first dimension.
+     * @return rank 2 dataset filled with zeros.
+     * @see #zeros(int) 
+     * @see #fltarr(int) 
+     */   
+    public static QDataSet dblarr(int len0, int len1) {     
         return Ops.replicate(0., len0, len1);
     }
 
+    /**
+     * create a rank 3 dataset filled with zeros, stored in 8-byte doubles.
+     * @param len0 the length of the zeroth dimension.
+     * @param len1 the length of the first dimension.
+     * @param len2 the length of the second dimension.
+     * @return rank 3 dataset filled with zeros.
+     * @see #zeros(int) 
+     * @see #fltarr(int) 
+     */   
     public static QDataSet dblarr(int len0, int len1, int len2) {
         return Ops.replicate(0., len0, len1, len2);
     }
 
     /**
-     * returns rank 1 dataset with values [0,1,2,...]
+     * returns rank 1 dataset with values that are times.
      * @param baseTime e.g. "2003-02-04T00:00"
      * @param cadence e.g. "4.3 sec" "1 day"
      * @param len0 the number of elements.
@@ -2747,6 +2768,7 @@ public class Ops {
      * return new dataset filled with zeros.
      * @param len0
      * @return
+     * @see #fltarr(int) which stores the data in 4-byte floats.
      */
     public static WritableDataSet zeros(int len0) {
         return replicate(0.0, len0);
@@ -9241,7 +9263,15 @@ public class Ops {
      */
     public static QDataSet append( QDataSet ds1, QDataSet ds2 ) {
         if ( ds1==null ) {
-            return ds2;
+            if ( ds2.rank()>0 ) {
+                return ds2;
+            } else {
+                ArrayDataSet result= ArrayDataSet.createRank1(ArrayDataSet.guessBackingStore(ds2),1);
+                result.putValue( 0, ds2.value() );
+                DataSetUtil.copyDimensionProperties( ds2, result );
+                //TODO: should CONTEXT_0 become DEPEND_0?
+                return result;
+            }
         } if ( ds1 instanceof BufferDataSet && ds2 instanceof BufferDataSet ) {
             Object c1= ((BufferDataSet)ds1).getType();
             Object c2= ((BufferDataSet)ds2).getType();
