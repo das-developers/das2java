@@ -9235,7 +9235,10 @@ public class Ops {
                 ArrayDataSet result= ArrayDataSet.createRank1(ArrayDataSet.guessBackingStore(ds2),1);
                 result.putValue( 0, ds2.value() );
                 DataSetUtil.copyDimensionProperties( ds2, result );
-                //TODO: should CONTEXT_0 become DEPEND_0?
+                QDataSet c= (QDataSet)ds2.property(QDataSet.CONTEXT_0);
+                if ( c!=null && c.rank()==0 ) {
+                    result.putProperty( QDataSet.DEPEND_0, append( null, c ) );
+                }
                 return result;
             }
         } if ( ds1 instanceof BufferDataSet && ds2 instanceof BufferDataSet ) {

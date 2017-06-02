@@ -22,6 +22,7 @@ import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
 import org.das2.util.LoggerManager;
 import org.virbo.dsops.Ops;
+import static org.virbo.dsops.Ops.append;
 
 /**
  * A number of static methods were initially defined in DDataSet, then
@@ -718,7 +719,10 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
                 ArrayDataSet result= ArrayDataSet.createRank1(ArrayDataSet.guessBackingStore(ds2),1);
                 result.putValue( ds2.value() );
                 DataSetUtil.copyDimensionProperties( ds2, result );
-                //TODO: should CONTEXT_0 become DEPEND_0?
+                QDataSet c= (QDataSet)ds2.property(QDataSet.CONTEXT_0);
+                if ( c!=null && c.rank()==0 ) {
+                    result.putProperty( QDataSet.DEPEND_0, Ops.append( null, c ) );
+                }
                 return result;
             }
         }
@@ -731,8 +735,14 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
         }
         if ( ds1.rank()-1==ds2.rank() ) {
             Units u= SemanticOps.getUnits(ds2);
+            QDataSet c= (QDataSet)ds2.property(QDataSet.CONTEXT_0);
             ds2= ArrayDataSet.create( ds2.rank()+1, 1, ds2.len0, ds2.len1, ds2.len2, ds2.getBack() );
             ds2.putProperty( QDataSet.UNITS,u);
+            if ( ds2.rank==1 ) {
+                if ( c!=null && c.rank()==0 ) {
+                    ds2.putProperty( QDataSet.DEPEND_0, Ops.append( null, c ) );
+                }
+            }
         }
         if ( ds2.rank()!=ds1.rank ) throw new IllegalArgumentException("rank mismatch");
         if ( ds2.len1!=ds1.len1 ) throw new IllegalArgumentException("len1 mismatch");
