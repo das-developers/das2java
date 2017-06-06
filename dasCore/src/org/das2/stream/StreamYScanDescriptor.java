@@ -39,7 +39,7 @@ public class StreamYScanDescriptor implements SkeletonDescriptor, Cloneable {
 
 	private static final Logger logger = LoggerManager.getLogger("das2.d2s.yscan");
 	private static final String g_sCkAry[] = {
-		"name","type","nitems","yTags","yTagInterval","yTagMin","yTagMax","yUnits","zUnits"
+		"name","type","nitems","yTags","yTagInterval","yTagMin","yTagMax"
 	};
 	
     private Units yUnits = Units.dimensionless;
@@ -97,6 +97,12 @@ public class StreamYScanDescriptor implements SkeletonDescriptor, Cloneable {
 						+ "' missing in <" + element.getTagName() + "> plane.");
 				}
 			}
+            if ( !element.hasAttribute("yUnits") ) {
+                logger.warning("required attribute yUnits is missing, using dimensionless.");
+            }
+            if ( !element.hasAttribute("zUnits") ) {
+                logger.warning("required attribute zUnits is missing, using dimensionless.");
+            }
 		}
 
 		nitems = Integer.parseInt(element.getAttribute("nitems"));

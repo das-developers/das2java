@@ -44,7 +44,7 @@ public class StreamMultiYDescriptor implements SkeletonDescriptor, Cloneable {
     private static Logger logger = LoggerManager.getLogger("das2.d2s.multiy");
     
 	//private static final String g_sCkAry[] = {"name","type","units"};
-	private static final String g_sCkAry[] = {"type","units"}; //TODO: "name" needs to be required.  JBF turned this check off before a release to fix his hudson tests.
+	private static final String g_sCkAry[] = {"type"}; //TODO: "name" needs to be required.  JBF turned this check off before a release to fix his hudson tests.
     
 	 private String name = "";
     private Units units = Units.dimensionless;
@@ -68,6 +68,9 @@ public class StreamMultiYDescriptor implements SkeletonDescriptor, Cloneable {
 			 throw new StreamException("Das2 Stream Format error: Required Attribute '"+s+
 				                        "' missing in <" + element.getTagName()+"> plane.");
 		 }
+         if ( !element.hasAttribute("units") ) {
+             logger.warning("required attribute units is missing, using dimensionless.");
+         }
 		 
 		 //element.getAttribute returns empty string if attr is not specified
 		 //so safe to just use it directly
