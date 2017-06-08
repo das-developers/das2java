@@ -15,11 +15,13 @@ import org.das2.graph.DasPlot;
 import org.das2.graph.Renderer;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Point;
 import java.awt.Window;
 import java.awt.event.ItemListener;
 import java.util.logging.Level;
+import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -36,6 +38,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
@@ -88,14 +91,18 @@ public class DisplayDataMouseModule extends MouseModule {
             messageLabel= new JLabel("");
             myPanel.add( messageLabel, BorderLayout.SOUTH );
             
+            JPanel comboBoxArea= new JPanel();
+            comboBoxArea.setLayout( new BoxLayout(comboBoxArea,BoxLayout.X_AXIS ) );
             comboBox= new JComboBox();
             comboBox.addItemListener( itemListener );
-
-            myPanel.add( comboBox, BorderLayout.NORTH );
+            comboBoxArea.add( new JLabel("Plotted Data:") );
+            comboBoxArea.add(comboBox);
             
+            myPanel.add( comboBoxArea, BorderLayout.NORTH );
             
             myFrame.getContentPane().add(myPanel);
             myFrame.pack();
+            myFrame.setLocationRelativeTo(SwingUtilities.getWindowAncestor(plot));
         }
     }
 
@@ -273,7 +280,8 @@ public class DisplayDataMouseModule extends MouseModule {
         }
         myEdit.setModel(tm);
         myEdit.setColumnModel(tcm);
-
+        myEdit.setRowSorter( new TableRowSorter<>(tm) );
+        
         
         //myEdit.setColumnModel(new DefaultTableColumnModel() );
         //myEdit.setColumnModel(tcm); // error with rank 1.
