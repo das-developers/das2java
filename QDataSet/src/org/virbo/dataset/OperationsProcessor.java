@@ -676,7 +676,18 @@ public class OperationsProcessor {
                 } else if ( cmd.equals("|monotonicSubset") ) {
                     WritableDataSet ds= Ops.copy(fillDs);
                     fillDs= Ops.monotonicSubset(ds);
-                    
+                } else if ( cmd.equals("|decimate") ) {
+                    if ( s.hasNext() ) {
+                        String arg0= getStringArg( s.next() );
+                        if ( !s.hasNext() ) {
+                            fillDs= Ops.decimate(fillDs,Integer.parseInt(arg0) );
+                        } else {
+                            String arg1= getStringArg( s.next() );
+                            fillDs= Ops.decimate(fillDs,Integer.parseInt(arg0),Integer.parseInt(arg1) );
+                        }
+                    } else {
+                        fillDs= Ops.decimate(fillDs);
+                    }
                 } else if ( cmd.equals("|add") ) { 
                     String arg= getStringArg( s.next() );
                     Datum d= SemanticOps.getUnits(fillDs).parse(arg);

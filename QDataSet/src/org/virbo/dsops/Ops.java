@@ -80,6 +80,7 @@ import org.virbo.dataset.TrimStrideWrapper;
 import org.virbo.dataset.WeightsDataSet;
 import org.virbo.dataset.WritableDataSet;
 import org.virbo.dataset.WritableJoinDataSet;
+import org.virbo.dataset.examples.Schemes;
 import org.virbo.dsutil.AutoHistogram;
 import org.virbo.dsutil.BinAverage;
 import org.virbo.dsutil.BundleBuilder;
@@ -999,7 +1000,65 @@ public class Ops {
         }
     }
 
+    /**
+     * reduce the size of the data by keeping every 10th measurement.  
+     * @param ds a qube dataset.
+     * @return a decimated qube dataset.
+     * @see #decimate(org.virbo.dataset.QDataSet, int) 
+     */
+    public static QDataSet decimate( QDataSet ds ) {
+        return decimate( ds, 10 );
+    }
+     
+    /**
+     * reduce the size of the data by keeping every nth measurement (subsample). 
+     * @param ds rank 1 or more dataset.
+     * @param m the decimation factor, e.g. 2 is every other measurement.
+     * @return 
+     * 
+     */
+    public static QDataSet decimate( QDataSet ds, int m ) {
+        if ( Schemes.isIrregularJoin(ds) ) {
+            throw new IllegalArgumentException("not supported");
+        }
+        int newlen= ds.length()/m;
+        int imax= newlen*m - m;
+        return DataSetOps.applyIndex( ds, Ops.linspace( 0, imax, newlen) );
+    }
 
+    /**
+     * reduce the size of the data by keeping every nth measurement (subsample). 
+     * @param ds rank 1 or more dataset.
+     * @param m the decimation factor for the zeroth index, e.g. 2 is every other measurement.
+     * @param n the decimation factor for the first index, e.g. 2 is every other measurement.
+     * @return new dataset which is ds.length()/m by ds.length(0)/n.
+     * 
+     */
+    public static QDataSet decimate( QDataSet ds, int m, int n ) {
+        if ( Schemes.isIrregularJoin(ds) ) {
+            throw new IllegalArgumentException("not supported");
+        }
+        int newlen0= ds.length()/m;
+        int max0= newlen0*m;
+        int newlen1= ds.length(0)/n;
+        int max1= newlen1*n;
+        QubeDataSetIterator iter= new QubeDataSetIterator(ds);
+        iter.setIndexIteratorFactory( 0, 
+            new QubeDataSetIterator.StartStopStepIteratorFactory( 0, max0, m ) );
+        iter.setIndexIteratorFactory( 1, 
+            new QubeDataSetIterator.StartStopStepIteratorFactory( 0, max1, n ) );
+        DDataSet result= iter.createEmptyDs();
+        QubeDataSetIterator iterout=  new QubeDataSetIterator(result);
+        while ( iter.hasNext() ) {
+            iter.next();
+            iterout.next();
+            iterout.putValue( result, iter.getValue(ds) );
+        }
+        result.putProperty(QDataSet.RENDER_TYPE,ds.property(QDataSet.RENDER_TYPE));
+        
+        return result;
+    }    
+    
     /**
      * this is introduced to mimic the in-line function which reduces the dimensionality by averaging over the zeroth dimension.
      *   collapse0( ds[30,20] ) &rarr; ds[20]
@@ -3435,9 +3494,10 @@ public class Ops {
 
     /**
      * return fake position data for testing
-     * result is rank 2 bundle [len,27]
-     * @param len the number of records.
+     * result is rank 3 bundle [3,len/3,27*]
+     * @param len the total number of records.
      * @return an example join spectrogram time series.
+     * @see Schemes#irregularJoin() 
      */
     public static QDataSet ripplesJoinSpectrogramTimeSeries( int len ) {
 
