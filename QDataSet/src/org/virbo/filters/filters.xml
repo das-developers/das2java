@@ -89,6 +89,11 @@
                         <description>Reduces data to selected time/data intervals</description>
                     </bookmark> 
                     <bookmark>
+                        <title>Decimate</title>
+                        <filter>|decimate(4)</filter>
+                        <description>Keep every 4th measurement.</description>
+                    </bookmark> 
+                    <bookmark>
                         <title>Slice0</title>
                         <filter>|slice0(0)</filter>
                         <description>Slice the zeroth dimension at selected index</description>
