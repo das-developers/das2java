@@ -569,6 +569,7 @@ public class DataSetOps {
      * @param deps do dependencies as well. Note this does not rearrange planes!
      * @return new dataset that is a copy of the first, resorted.
      * @see  org.virbo.dataset.SortDataSet for similar functionality
+     * @see Ops#decimate(org.virbo.dataset.QDataSet, int, int) 
      */
     public static WritableDataSet applyIndex( QDataSet ds, int idim, QDataSet sort, boolean deps ) {
 
