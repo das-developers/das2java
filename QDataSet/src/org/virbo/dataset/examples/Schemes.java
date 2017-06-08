@@ -669,4 +669,24 @@ public class Schemes {
         QDataSet result= Ops.bundle( xx,yy,zz );
         return result;
     }
+
+    /**
+     * return true if the data is a join of datasets of different cadences or lengths.
+     * @param ds
+     * @return return true if the data is a join of datasets of different cadences or lengths.
+     */
+    public static boolean isIrregularJoin(QDataSet ds) {
+        return !DataSetUtil.isQube(ds);
+    }
+    
+    /**
+     * return a rank 3 irregular join of three datasets, 
+     * the first is 13 records of 27 energies, 
+     * the second is 13 records of 20 energies, and
+     * the third is 14 records of 24 energies.
+     * @return a rank 3 irregular join.
+     */
+    public static QDataSet irregularJoin() {
+        return Ops.ripplesJoinSpectrogramTimeSeries(40);
+    }
 }
