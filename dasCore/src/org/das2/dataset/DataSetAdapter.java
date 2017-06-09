@@ -43,7 +43,7 @@ public class DataSetAdapter {
     // Helper for conversion such as %{xCacheRange} -> %{USER_PROPERTIES.xCacheRange}
     protected static Map<String, Object> adaptSubstitutions(Map<String, Object> das2props) {
         // Defines a pattern with three subgroups
-        Pattern ptrn = Pattern.compile("(%\\{)(\\S.*)(\\})");
+        Pattern ptrn = Pattern.compile("(%\\{)(.+?)(\\})");
 
         for (Map.Entry<String, Object> e : das2props.entrySet()) {
             Object o = e.getValue();
