@@ -18,9 +18,19 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Point;
+import java.awt.Toolkit;
 import java.awt.Window;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.event.ActionEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.IOException;
 import java.util.logging.Level;
+import javax.swing.AbstractAction;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.Icon;
@@ -30,6 +40,7 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
@@ -68,6 +79,58 @@ public class DisplayDataMouseModule extends MouseModule {
         this.plot = parent;
     }
 
+      public static class CellTransferable implements Transferable {
+
+        public static final DataFlavor CELL_DATA_FLAVOR = new DataFlavor(Object.class, "application/x-cell-value");
+
+        private Object cellValue;
+
+        public CellTransferable(Object cellValue) {
+            this.cellValue = cellValue;
+        }
+
+        @Override
+        public DataFlavor[] getTransferDataFlavors() {
+            return new DataFlavor[]{CELL_DATA_FLAVOR};
+        }
+
+        @Override
+        public boolean isDataFlavorSupported(DataFlavor flavor) {
+            return CELL_DATA_FLAVOR.equals(flavor);
+        }
+
+        @Override
+        public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
+            if (!isDataFlavorSupported(flavor)) {
+                throw new UnsupportedFlavorException(flavor);
+            }
+            return cellValue;
+        }
+
+    }
+      
+    private class CopyAction extends AbstractAction {
+
+        private JTable table;
+
+        public CopyAction(JTable table) {
+            this.table = table;
+            putValue(NAME, "Copy");
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            int row = table.getSelectedRow();
+            int col = table.getSelectedColumn();
+
+            Clipboard cb = Toolkit.getDefaultToolkit().getSystemClipboard();
+            cb.setContents(new CellTransferable(table.getValueAt(row, col)), null);
+
+        }
+
+    }
+    
+
     private void maybeCreateFrame(Object source) {
         if (myFrame == null) {
             myFrame = new JFrame(LABEL);
@@ -84,7 +147,53 @@ public class DisplayDataMouseModule extends MouseModule {
             myEdit.setFont(Font.decode("fixed-10"));
             myEdit.setAutoResizeMode( JTable.AUTO_RESIZE_OFF );
             myEdit.getTableHeader().setReorderingAllowed(false);
-            
+            myEdit.setCellSelectionEnabled(true);
+            //myEdit.setRowSelectionAllowed(false);
+            final JPopupMenu pm = new JPopupMenu();
+            pm.add(new CopyAction(myEdit));
+// See https://stackoverflow.com/questions/22622973/jtable-copy-and-paste-using-clipboard-and-abstractaction
+            myEdit.addMouseListener(new MouseAdapter() {
+
+                    @Override
+                    public void mouseClicked(MouseEvent e) {
+                        if (e.isPopupTrigger()) {
+                            highlightRow(e);
+                            doPopup(e);
+                        }
+                    }
+
+                    @Override
+                    public void mouseReleased(MouseEvent e) {
+                        if (e.isPopupTrigger()) {
+                            highlightRow(e);
+                            doPopup(e);
+                        }
+                    }
+
+                    @Override
+                    public void mousePressed(MouseEvent e) {
+                        if (e.isPopupTrigger()) {
+                            highlightRow(e);
+                            doPopup(e);
+                        }
+                    }       
+                    
+                    protected void doPopup(MouseEvent e) {
+                        pm.show(e.getComponent(), e.getX(), e.getY());
+                    }
+
+                    protected void highlightRow(MouseEvent e) {
+                        JTable table = (JTable) e.getSource();
+                        Point point = e.getPoint();
+                        int row = table.rowAtPoint(point);
+                        int col = table.columnAtPoint(point);
+
+                        table.setRowSelectionInterval(row, row);
+                        table.setColumnSelectionInterval(col, col);
+                    }
+
+                });
+             
             JScrollPane scrollPane = new JScrollPane( myEdit, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED );
             myPanel.add(scrollPane, BorderLayout.CENTER);
             
