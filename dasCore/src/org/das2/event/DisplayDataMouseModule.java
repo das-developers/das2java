@@ -120,11 +120,23 @@ public class DisplayDataMouseModule extends MouseModule {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            int row = table.getSelectedRow();
-            int col = table.getSelectedColumn();
 
+            StringBuilder build= new StringBuilder();
+            
+            int[] rows= table.getSelectedRows();
+            int[] cols= table.getSelectedColumns();
+            if ( rows.length>1 ) {
+                for ( int j=0; j<rows.length; j++ ) {
+                    if ( j>0 ) build.append("\n");
+                    for ( int i=0; i<cols.length; i++ ) {
+                        if ( i>0 ) build.append(",");
+                        build.append(table.getValueAt(rows[j], cols[i]));
+                    }
+                }
+            }
+            
             Clipboard cb = Toolkit.getDefaultToolkit().getSystemClipboard();
-            cb.setContents(new CellTransferable(table.getValueAt(row, col)), null);
+            cb.setContents(new CellTransferable( build.toString() ), null);
 
         }
 
@@ -154,45 +166,45 @@ public class DisplayDataMouseModule extends MouseModule {
 // See https://stackoverflow.com/questions/22622973/jtable-copy-and-paste-using-clipboard-and-abstractaction
             myEdit.addMouseListener(new MouseAdapter() {
 
-                    @Override
-                    public void mouseClicked(MouseEvent e) {
-                        if (e.isPopupTrigger()) {
-                            highlightRow(e);
-                            doPopup(e);
-                        }
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    if (e.isPopupTrigger()) {
+                       // highlightRow(e);
+                        doPopup(e);
                     }
+                }
 
-                    @Override
-                    public void mouseReleased(MouseEvent e) {
-                        if (e.isPopupTrigger()) {
-                            highlightRow(e);
-                            doPopup(e);
-                        }
+                @Override
+                public void mouseReleased(MouseEvent e) {
+                    if (e.isPopupTrigger()) {
+                       // highlightRow(e);
+                        doPopup(e);
                     }
+                }
 
-                    @Override
-                    public void mousePressed(MouseEvent e) {
-                        if (e.isPopupTrigger()) {
-                            highlightRow(e);
-                            doPopup(e);
-                        }
-                    }       
-                    
-                    protected void doPopup(MouseEvent e) {
-                        pm.show(e.getComponent(), e.getX(), e.getY());
+                @Override
+                public void mousePressed(MouseEvent e) {
+                    if (e.isPopupTrigger()) {
+                       // highlightRow(e);
+                        doPopup(e);
                     }
+                }       
 
-                    protected void highlightRow(MouseEvent e) {
-                        JTable table = (JTable) e.getSource();
-                        Point point = e.getPoint();
-                        int row = table.rowAtPoint(point);
-                        int col = table.columnAtPoint(point);
+                protected void doPopup(MouseEvent e) {
+                    pm.show(e.getComponent(), e.getX(), e.getY());
+                }
 
-                        table.setRowSelectionInterval(row, row);
-                        table.setColumnSelectionInterval(col, col);
-                    }
+                protected void highlightRow(MouseEvent e) {
+                    JTable table = (JTable) e.getSource();
+                    Point point = e.getPoint();
+                    int row = table.rowAtPoint(point);
+                    int col = table.columnAtPoint(point);
 
-                });
+                    table.setRowSelectionInterval(row, row);
+                    table.setColumnSelectionInterval(col, col);
+                }
+
+            });
              
             JScrollPane scrollPane = new JScrollPane( myEdit, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED );
             myPanel.add(scrollPane, BorderLayout.CENTER);
