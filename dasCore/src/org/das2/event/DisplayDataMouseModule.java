@@ -79,9 +79,9 @@ public class DisplayDataMouseModule extends MouseModule {
         this.plot = parent;
     }
 
-      public static class CellTransferable implements Transferable {
+    public static class CellTransferable implements Transferable {
 
-        public static final DataFlavor CELL_DATA_FLAVOR = new DataFlavor(Object.class, "application/x-cell-value");
+        public static final DataFlavor CELL_DATA_FLAVOR = DataFlavor.stringFlavor;
 
         private Object cellValue;
 
