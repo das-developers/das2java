@@ -162,7 +162,7 @@ public abstract class AbstractDataSet implements QDataSet, MutablePropertyDataSe
      */
     protected final void checkImmutable() {
         if ( immutable ) {
-            logger.warning("dataset has been marked as immutable, this will soon throw an exception");
+            throw new IllegalArgumentException("dataset has been marked as immutable");
         }
     } 
         
