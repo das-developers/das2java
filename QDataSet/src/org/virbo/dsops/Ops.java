@@ -6041,11 +6041,11 @@ public class Ops {
      * I verified this is not done, see 
      * sftp://jbf@jfaden.net/home/jbf/ct/autoplot/script/bugs/1317/testWindowFunctionNormalization.jy
      *
-     * @param ds rank 2 dataset ds(N,M) with M&gt;len
+     * @param ds rank 2 dataset ds(N,M) with M&gt;len, rank 3 with the same cadence, or rank 1.
      * @param window window to apply to the data before performing FFT (Hann,Unity,etc.)
      * @param stepFraction size, expressed as a fraction of the length (1 for no slide, 2 for half steps, 4 for quarters)
      * @param mon a ProgressMonitor for the process
-     * @return rank 2 fft spectrum
+     * @return rank 2 FFT spectrum, or rank 3 if the rank 3 input has differing cadences.
      */
     public static QDataSet fftPower( QDataSet ds, QDataSet window, int stepFraction, ProgressMonitor mon ) {
         if ( mon==null ) {
@@ -6080,10 +6080,37 @@ public class Ops {
                 JoinDataSet result= new JoinDataSet(3);
                 mon.setTaskSize( ds.length()*10  );
                 mon.started();
+                Datum lastCadence=null;
+                boolean sameCadence= true;
+                int recCount= 0;
                 for ( int i=0; i<ds.length(); i++ ) {
                     mon.setTaskProgress(i*10);
                     QDataSet pow1= fftPower( ds.slice(i), window, stepFraction, SubTaskMonitor.create( mon, i*10, (i+1)*10 ) );
+                    recCount+= pow1.length();
+                    if ( lastCadence==null ) {
+                        lastCadence= DataSetUtil.asDatum( ((QDataSet)pow1.property(QDataSet.DEPEND_1)).slice(0) );
+                    } else {
+                        if ( ! DataSetUtil.asDatum( ((QDataSet)pow1.property(QDataSet.DEPEND_1)).slice(0) ).equals(lastCadence) ) {
+                            sameCadence= false;
+                        }
+                    }
                     result.join(pow1);
+                }
+                if ( sameCadence ) {
+                    QDataSet dep1= (QDataSet)result.slice(0).property(QDataSet.DEPEND_1);
+                    JoinDataSet newResult= new JoinDataSet(2);
+                    DataSetBuilder xdsb= new DataSetBuilder(1,recCount);
+                    for ( int i=0; i<result.length(); i++ ) {
+                        QDataSet result1= result.slice(i);
+                        QDataSet dep0= (QDataSet)result1.property(QDataSet.DEPEND_0);
+                        for ( int j=0; j<result1.length(); j++ ) {
+                            newResult.join(result1.slice(j));
+                            xdsb.nextRecord(dep0.slice(j));
+                        }
+                    }
+                    result= newResult;
+                    result.putProperty( QDataSet.DEPEND_0, xdsb.getDataSet() );
+                    result.putProperty( QDataSet.DEPEND_1, dep1 );
                 }
                 mon.finished();
                 
