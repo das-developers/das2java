@@ -12,6 +12,7 @@ import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.IDataSet;
+import org.virbo.dataset.JoinDataSet;
 import org.virbo.dataset.MutablePropertyDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
@@ -176,8 +177,16 @@ public class Reduction {
                 ymaxbuilder= new DataSetBuilder( 2, 1000, ds.length(0) );
                 wbuilder= new DataSetBuilder( 2, 1000, ds.length(0) );
             }
+        } else if ( ds.rank()==3 && SemanticOps.isJoin(ds) ) {
+            JoinDataSet result= new JoinDataSet(3);
+            for ( int i=0; i<ds.length(); i++ ) {
+                QDataSet ds1= ds.slice(i);
+                result.join( reducex(ds1,xLimit) );
+            }
+            return result;
+            
         } else {
-            throw new IllegalArgumentException("only rank 1 and rank 2 datasets");
+            throw new IllegalArgumentException("only rank 1, rank 2, and rank 3 join datasets");
         }
 
         QDataSet x= (QDataSet) ds.property( QDataSet.DEPEND_0 );
