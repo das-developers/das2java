@@ -105,6 +105,10 @@ public class TimeParser {
     private String[] qualifiers;
     private final String regex;
     //private String formatString;
+    
+    /**
+     * position in the template where we switch over to stop time digits.
+     */
     private int stopTimeDigit=AFTERSTOP_INIT;  // if after stop, then timeWidth is being set.
     
     /**
@@ -112,6 +116,11 @@ public class TimeParser {
      *0=year, 1=month, 2=day, 3=hour, 4=min, 5=sec, 6=milli, 7=micro
      */
     private int lsd;
+    
+    /**
+     * keep track of the least significant digit in the start time of the format, for when "end" modifier is used.
+     */
+    private int startLsd;
 
     /**
      * Interface to add custom handlers for strings with unique formats.  For example, the RPWS group had files with
@@ -952,6 +961,7 @@ public class TimeParser {
                         else if ( name.equals(""));
                         else if ( name.equals("end") ) {
                             if ( stopTimeDigit==AFTERSTOP_INIT ) {
+                                startLsd= lsd;
                                 stopTimeDigit= i;
                             }
                         }
@@ -965,6 +975,7 @@ public class TimeParser {
                         String name= qual.trim();
                         if ( name.equals("end") ) {
                             if ( stopTimeDigit==AFTERSTOP_INIT ) {
+                                startLsd= lsd;
                                 stopTimeDigit= i;
                             }
                             okay= true;
@@ -1848,10 +1859,42 @@ public class TimeParser {
             return orbitDatumRange;
         } else {
             if ( stopTimeDigit<AFTERSTOP_INIT ) {
-                double t1 = toUs2000(startTime);
-                double t2 = toUs2000(stopTime);
-                return new DatumRange(t1, t2, Units.us2000);
-                
+                if ( this.lsd<=this.startLsd ) {
+                    double t1 = toUs2000(startTime);
+                    double t2 = toUs2000(stopTime);
+                    return new DatumRange(t1, t2, Units.us2000);
+                } else {
+                    TimeStruct lstartTime = stopTime.copy();
+                    lstartTime = TimeUtil.normalize(stopTime); // begin misguided attempt to subtract time...  Note this does not consider leap seconds...
+                    int julianDay= TimeUtil.julianDay( lstartTime.year, lstartTime.month, lstartTime.day );
+                    long micros= timeWidth.micros + timeWidth.millis*1000 + (int)timeWidth.seconds * 1000000L + timeWidth.minute * 60000000L + timeWidth.hour * 3600000000L;
+                    long lstartTimeMicros= lstartTime.micros + lstartTime.millis*1000 + (int)lstartTime.seconds * 1000000L + lstartTime.minute * 60000000L + lstartTime.hour * 3600000000L;
+                    lstartTimeMicros -= micros;
+                    julianDay-= timeWidth.day;
+                    while ( lstartTimeMicros<0 ) {
+                        julianDay-=1;
+                        lstartTimeMicros+= 86400000000L;
+                    }
+                    lstartTime= TimeUtil.julianToGregorian(julianDay);
+                    lstartTime.hour= (int)( lstartTimeMicros/3600000000L );
+                    lstartTimeMicros-= lstartTime.hour*3600000000L;
+                    lstartTime.minute= (int)( lstartTimeMicros/60000000L );
+                    lstartTimeMicros-= lstartTime.minute*60000000L;
+                    lstartTime.seconds= (int)( lstartTimeMicros/1000000L );
+                    lstartTimeMicros-= lstartTime.seconds*1000000L;
+                    lstartTime.millis= (int)( lstartTimeMicros/1000L );
+                    lstartTimeMicros-= lstartTime.millis*1000L;
+                    lstartTime.micros= (int)( lstartTimeMicros );
+                    lstartTime.month-= timeWidth.month;
+                    while ( lstartTime.month<1 ) {
+                        lstartTime.year-= 1;
+                        lstartTime.month+=12;
+                    }
+                    lstartTime.year-= timeWidth.year;
+                    double t1 = toUs2000(lstartTime);
+                    double t2 = toUs2000(stopTime);
+                    return new DatumRange(t1, t2, Units.us2000);
+                }
             } else {
                 TimeStruct lstopTime = startTime.add(timeWidth);
                 double t1 = toUs2000(startTime);
