@@ -44,6 +44,7 @@ import java.util.*;
 import java.util.logging.Logger;
 import org.das2.components.propertyeditor.Editable;
 import org.das2.graph.DasColorBar;
+import org.das2.graph.DasDevicePosition;
 import org.das2.graph.DasPlot;
 import org.das2.util.LoggerManager;
 
@@ -967,7 +968,8 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
                     mouseMode = MouseMode.moduleDrag;
 
                     if ( parent instanceof DasPlot ) { // we noticed when a legend label is drawn outside the plot axes, this makes a strange active area.
-                        if ( e.getX()+xOffset > parent.getColumn().getDMaximum() ) {
+                        if ( !DasDevicePosition.toRectangle( parent.getRow(), parent.getColumn() ).contains( dSelectionStart ) ) {
+                            active=null;
                             return;
                         }
                     }
@@ -1019,13 +1021,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         } else {
             if (active != null) {
                 dSelectionEnd = SwingUtilities.convertPoint(e.getComponent(), e.getPoint(), parent.getCanvas());
-                    
-                if ( parent instanceof DasPlot ) { // we noticed when a legend label is drawn outside the plot axes, this makes a strange active area.
-                    if ( e.getX()+xOffset > parent.getColumn().getDMaximum() ) {
-                        return;
-                    }
-                }
-                    
+                                        
                 mousePointSelection.set((int) dSelectionEnd.getX(), (int) dSelectionEnd.getY());
                 for (Object active1 : active) {
                     try {
