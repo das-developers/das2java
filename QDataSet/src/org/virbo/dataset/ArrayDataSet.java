@@ -656,7 +656,7 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
         } else if ( ds instanceof JoinDataSet && ds.length()>0 ) {
             QDataSet ds1= ds.slice(0);
             if ( ds1 instanceof ArrayDataSet ) { // Juno/Waves needed to save memory and avoid converting everything to doubles
-                Class c= ((ArrayDataSet)ds1).getBack().getClass().getComponentType();
+                Class c= ((ArrayDataSet)ds1).getBackReadOnly().getClass().getComponentType();
                 return copy( c, ds );
             } else {
                 return copy( guessBackingStore(ds), ds );
