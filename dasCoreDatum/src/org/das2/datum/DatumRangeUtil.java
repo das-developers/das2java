@@ -1329,7 +1329,9 @@ public class DatumRangeUtil {
             if ( result==null ) throw new ParseException(string,0);
             return result;
         } else {
-            if ( string.contains("now") ) {
+            if ( string.contains("now") || 
+                    ( string.contains("last") && 
+                    ( string.contains("lastday" ) || string.contains("lasthour") || string.contains("lastmonth") ) ) ) {
                 String[] ss= string.split("/");
                 String delim="/";
                 if ( ss.length!=2 ) {
@@ -1358,6 +1360,63 @@ public class DatumRangeUtil {
                     } else if ( s.contains("now") ){
                         String nowString= TimeParser.create(TimeParser.TIMEFORMAT_Z).format(now, null);
                         snew.append( s.replace("now",nowString) );
+                    } else if ( s.contains("lastmonth-") ) {
+                        int[] tt= TimeUtil.fromDatum(now);
+                        tt[2]=1;
+                        tt[3]=0;
+                        tt[4]=0;
+                        tt[5]=0;
+                        tt[6]=0;
+                        int[] dt= parseISO8601Duration(s.substring(8));
+                        for ( int i=0; i<tt.length; i++ ) tt[i]= tt[i] - dt[i];
+                        time= TimeUtil.toDatum(tt);
+                        snew.append( TimeParser.create(TimeParser.TIMEFORMAT_Z).format(time,null) );
+                    } else if ( s.contains("lastmonth") ) {
+                        int[] d= TimeUtil.fromDatum(now);
+                        d[2]=1;
+                        d[3]=0;
+                        d[4]=0;
+                        d[5]=0;
+                        d[6]=0;
+                        Datum lastDay= TimeUtil.toDatum(d);
+                        String lastDayString= TimeParser.create(TimeParser.TIMEFORMAT_Z).format(lastDay, null);
+                        snew.append( s.replace("lastmonth",lastDayString) );
+                    } else if ( s.contains("lastday-") ) {
+                        int[] tt= TimeUtil.fromDatum(now);
+                        tt[3]=0;
+                        tt[4]=0;
+                        tt[5]=0;
+                        tt[6]=0;
+                        int[] dt= parseISO8601Duration(s.substring(8));
+                        for ( int i=0; i<tt.length; i++ ) tt[i]= tt[i] - dt[i];
+                        time= TimeUtil.toDatum(tt);
+                        snew.append( TimeParser.create(TimeParser.TIMEFORMAT_Z).format(time,null) );
+                    } else if ( s.contains("lastday") ) {
+                        int[] d= TimeUtil.fromDatum(now);
+                        d[3]=0;
+                        d[4]=0;
+                        d[5]=0;
+                        d[6]=0;
+                        Datum lastDay= TimeUtil.toDatum(d);
+                        String lastDayString= TimeParser.create(TimeParser.TIMEFORMAT_Z).format(lastDay, null);
+                        snew.append( s.replace("lastday",lastDayString) );
+                    } else if ( s.contains("lasthour-") ) {
+                        int[] tt= TimeUtil.fromDatum(now);
+                        tt[4]=0;
+                        tt[5]=0;
+                        tt[6]=0;
+                        int[] dt= parseISO8601Duration(s.substring(8));
+                        for ( int i=0; i<tt.length; i++ ) tt[i]= tt[i] - dt[i];
+                        time= TimeUtil.toDatum(tt);
+                        snew.append( TimeParser.create(TimeParser.TIMEFORMAT_Z).format(time,null) );
+                    } else if ( s.contains("lasthour") ) {
+                        int[] d= TimeUtil.fromDatum(now);
+                        d[4]=0;
+                        d[5]=0;
+                        d[6]=0;
+                        Datum lastDay= TimeUtil.toDatum(d);
+                        String lastDayString= TimeParser.create(TimeParser.TIMEFORMAT_Z).format(lastDay, null);
+                        snew.append( s.replace("lasthour",lastDayString) );
                     } else {
                         snew.append(s);
                     }
