@@ -25,9 +25,9 @@ import java.nio.channels.*;
 import java.text.*;
 import java.util.*;
 import java.util.Map.Entry;
-import org.virbo.dataset.QDataSet;
-import org.virbo.dataset.SemanticOps;
-import org.virbo.dsops.Ops;
+import org.das2.qds.QDataSet;
+import org.das2.qds.SemanticOps;
+import org.das2.qds.ops.Ops;
 
 /**
  *
@@ -331,14 +331,14 @@ public class TableUtil {
                 StreamYScanDescriptor yDescriptor = new StreamYScanDescriptor();
                 yDescriptor.setDataTransferType(zTransferType);
                 yDescriptor.setZUnits(zunits);
-                yDescriptor.setYCoordinates( org.virbo.dataset.DataSetUtil.asDatumVector(yds1) );
+                yDescriptor.setYCoordinates(org.das2.qds.DataSetUtil.asDatumVector(yds1) );
                 PacketDescriptor pd = new PacketDescriptor();
                 pd.setXDescriptor(xDescriptor);
                 pd.addYDescriptor(yDescriptor);
                 producer.packetDescriptor(pd);
                 for (int i = 0; i<tds1.length(); i++ ) {
                     Datum xTag = xunits.createDatum( xds1.value(i) );
-                    zValues[0] = org.virbo.dataset.DataSetUtil.asDatumVector( tds1.slice(i) );
+                    zValues[0] = org.das2.qds.DataSetUtil.asDatumVector( tds1.slice(i) );
                     producer.packet(pd, xTag, zValues);
                 }
             }

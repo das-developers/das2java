@@ -86,12 +86,12 @@ import org.das2.datum.EnumerationUnits;
 import org.das2.datum.TimeLocationUnits;
 import org.das2.datum.TimeParser;
 import org.das2.datum.UnitsUtil;
-import org.virbo.dataset.DataSetOps;
-import org.virbo.dataset.DataSetUtil;
-import org.virbo.dataset.QDataSet;
-import org.virbo.dataset.SemanticOps;
-import org.virbo.dsops.Ops;
-import org.virbo.dsutil.DataSetBuilder;
+import org.das2.qds.DataSetOps;
+import org.das2.qds.DataSetUtil;
+import org.das2.qds.QDataSet;
+import org.das2.qds.SemanticOps;
+import org.das2.qds.ops.Ops;
+import org.das2.qds.util.DataSetBuilder;
 
 /**
  * DataPointRecorder is a GUI for storing data points selected by the user.  

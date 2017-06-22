@@ -16,15 +16,15 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
-import org.virbo.dataset.ArrayDataSet;
-import org.virbo.dataset.DDataSet;
-import org.virbo.dataset.DataSetOps;
-import org.virbo.dataset.DataSetUtil;
-import org.virbo.dataset.IndexGenDataSet;
-import org.virbo.dataset.MutablePropertyDataSet;
-import org.virbo.dataset.QDataSet;
-import org.virbo.dataset.RankZeroDataSet;
-import org.virbo.dataset.SemanticOps;
+import org.das2.qds.ArrayDataSet;
+import org.das2.qds.DDataSet;
+import org.das2.qds.DataSetOps;
+import org.das2.qds.DataSetUtil;
+import org.das2.qds.IndexGenDataSet;
+import org.das2.qds.MutablePropertyDataSet;
+import org.das2.qds.QDataSet;
+import org.das2.qds.RankZeroDataSet;
+import org.das2.qds.SemanticOps;
 
 /**
  *

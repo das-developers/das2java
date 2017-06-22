@@ -15,9 +15,9 @@ import org.das2.datum.Units;
 import org.das2.graph.DasColorBar;
 import org.das2.graph.SpectrogramRenderer;
 import org.das2.graph.SpectrogramRenderer.RebinnerEnum;
-import org.virbo.dataset.QDataSet;
-import org.virbo.dataset.WritableDataSet;
-import org.virbo.dsops.Ops;
+import org.das2.qds.QDataSet;
+import org.das2.qds.WritableDataSet;
+import org.das2.qds.ops.Ops;
 
 /**
  *

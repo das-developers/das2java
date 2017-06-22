@@ -28,11 +28,11 @@ import org.das2.datum.Units;
 import org.das2.datum.Datum;
 import java.util.HashMap;
 import java.util.Map;
-import org.virbo.dataset.DDataSet;
-import org.virbo.dataset.JoinDataSet;
-import org.virbo.dataset.QDataSet;
-import org.virbo.dataset.SemanticOps;
-import org.virbo.dsops.Ops;
+import org.das2.qds.DDataSet;
+import org.das2.qds.JoinDataSet;
+import org.das2.qds.QDataSet;
+import org.das2.qds.SemanticOps;
+import org.das2.qds.ops.Ops;
 
 /**
  *
@@ -63,7 +63,7 @@ public class AveragePeakTableRebinner implements DataSetRebinner {
         }
         
                 
-        QDataSet weights = org.virbo.dataset.DataSetUtil.weightsDataSet(ds);
+        QDataSet weights = org.das2.qds.DataSetUtil.weightsDataSet(ds);
         QDataSet peaks = (QDataSet) ds.property( QDataSet.BIN_MAX );
         if ( peaks==null ) {
             QDataSet binPlus= (QDataSet) ds.property( QDataSet.BIN_PLUS );
@@ -120,7 +120,7 @@ public class AveragePeakTableRebinner implements DataSetRebinner {
 //            }
 //        }
         
-        QDataSet xTagWidth= org.virbo.dataset.DataSetUtil.guessCadenceNew(xtds,null);
+        QDataSet xTagWidth= org.das2.qds.DataSetUtil.guessCadenceNew(xtds,null);
         
         double xTagWidthDouble;
         if ( xTagWidth==null ) {
@@ -142,11 +142,11 @@ public class AveragePeakTableRebinner implements DataSetRebinner {
         AverageTableRebinner.fillInterpolateX(averageData, averageWeights, xTags, xTagMin, xTagMax, xTagWidthDouble, AverageTableRebinner.Interpolate.NearestNeighbor );
         
         if ( ddY!=null ) {
-            QDataSet yTagWidth= org.virbo.dataset.DataSetUtil.guessCadenceNew(ytds,null);
+            QDataSet yTagWidth= org.das2.qds.DataSetUtil.guessCadenceNew(ytds,null);
             if ( yTagWidth==null ) {
                 AverageTableRebinner.fillInterpolateY(averageData, averageWeights, ddY, null, AverageTableRebinner.Interpolate.NearestNeighbor );
             } else {
-                AverageTableRebinner.fillInterpolateY(averageData, averageWeights, ddY, org.virbo.dataset.DataSetUtil.asDatum(yTagWidth), AverageTableRebinner.Interpolate.NearestNeighbor );
+                AverageTableRebinner.fillInterpolateY(averageData, averageWeights, ddY, org.das2.qds.DataSetUtil.asDatum(yTagWidth), AverageTableRebinner.Interpolate.NearestNeighbor );
             }            
         }
         
@@ -162,7 +162,7 @@ public class AveragePeakTableRebinner implements DataSetRebinner {
         double[] dd= new double[nx*ny];
         flatten( averageData, dd, 0, nx, ny );
         DDataSet result= DDataSet.wrap( dd, nx, ny );
-        org.virbo.dataset.DataSetUtil.copyDimensionProperties( tds, result );
+        org.das2.qds.DataSetUtil.copyDimensionProperties( tds, result );
 
         double[] ww= new double[nx*ny];
         flatten( averageWeights, ww, 0, nx, ny );

@@ -27,11 +27,11 @@ import org.das2.datum.DatumVector;
 import org.das2.datum.UnitsConverter;
 import org.das2.datum.Datum;
 import org.das2.datum.Units;
-import org.virbo.dataset.DDataSet;
-import org.virbo.dataset.DataSetOps;
-import org.virbo.dataset.MutablePropertyDataSet;
-import org.virbo.dataset.QDataSet;
-import org.virbo.dataset.SemanticOps;
+import org.das2.qds.DDataSet;
+import org.das2.qds.DataSetOps;
+import org.das2.qds.MutablePropertyDataSet;
+import org.das2.qds.QDataSet;
+import org.das2.qds.SemanticOps;
 
 /**
  * The RebinDescriptor will quickly look up which 1-D bin a Datum is
@@ -308,15 +308,15 @@ public class RebinDescriptor {
             if ( xds!=null && xds.property(s)!=null ) xx.putProperty(s,xds.property(s));
             if ( yds!=null && yds.property(s)!=null ) yy.putProperty(s,yds.property(s));
         }
-        for ( String s: org.virbo.dataset.DataSetUtil.dimensionProperties() ) {
+        for ( String s: org.das2.qds.DataSetUtil.dimensionProperties() ) {
             if ( ds.property(s)!=null ) result.putProperty(s,ds.property(s));
         }
         
         if (ddX != null) {
-            xx.putProperty(QDataSet.CADENCE, org.virbo.dataset.DataSetUtil.asDataSet(ddX.binWidthDatum()) );
+            xx.putProperty(QDataSet.CADENCE, org.das2.qds.DataSetUtil.asDataSet(ddX.binWidthDatum()) );
         }
         if (ddY != null) {
-            yy.putProperty(QDataSet.CADENCE, org.virbo.dataset.DataSetUtil.asDataSet(ddY.binWidthDatum()) );
+            yy.putProperty(QDataSet.CADENCE, org.das2.qds.DataSetUtil.asDataSet(ddY.binWidthDatum()) );
         }
 
         result.putProperty( QDataSet.DEPEND_0, xx );

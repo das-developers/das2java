@@ -14,8 +14,8 @@ import org.das2.graph.DasCanvas;
 import org.das2.graph.DasPlot;
 import org.das2.graph.GraphUtil;
 import org.das2.graph.Renderer;
-import org.virbo.dataset.QDataSet;
-import org.virbo.dsutil.DataSetBuilder;
+import org.das2.qds.QDataSet;
+import org.das2.qds.util.DataSetBuilder;
 
 /**
  *

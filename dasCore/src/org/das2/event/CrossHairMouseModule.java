@@ -31,7 +31,7 @@ import java.awt.event.KeyEvent;
 import org.das2.graph.DasAxis;
 import org.das2.graph.DasPlot;
 import org.das2.graph.Renderer;
-import org.virbo.dataset.QDataSet;
+import org.das2.qds.QDataSet;
 
 /**
  *

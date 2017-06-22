@@ -68,11 +68,11 @@ import org.das2.datum.Datum;
 import org.das2.datum.UnitsUtil;
 import static org.das2.graph.Renderer.formatControl;
 import org.das2.util.LoggerManager;
-import org.virbo.dataset.DataSetOps;
-import org.virbo.dataset.QDataSet;
-import org.virbo.dataset.SemanticOps;
-import org.virbo.dataset.examples.Schemes;
-import org.virbo.dsops.Ops;
+import org.das2.qds.DataSetOps;
+import org.das2.qds.QDataSet;
+import org.das2.qds.SemanticOps;
+import org.das2.qds.examples.Schemes;
+import org.das2.qds.ops.Ops;
 
 /**
  * Renderer for spectrograms.  A setting for rebinning data controls how data is binned into pixel space,
@@ -411,8 +411,8 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                 }
                 if ( validCount==0 ) {
                     QDataSet bounds= bounds(ds);
-                    DatumRange xdr= org.virbo.dataset.DataSetUtil.asDatumRange( bounds.slice(0), true ); 
-                    DatumRange ydr= org.virbo.dataset.DataSetUtil.asDatumRange( bounds.slice(1), true );
+                    DatumRange xdr= org.das2.qds.DataSetUtil.asDatumRange( bounds.slice(0), true ); 
+                    DatumRange ydr= org.das2.qds.DataSetUtil.asDatumRange( bounds.slice(1), true );
                     if ( xAxis.getDatumRange().intersects(xdr) && yAxis.getDatumRange().intersects(ydr) ) {
                         parent.postMessage(this, "dataset contains no valid data", DasPlot.INFO, null, null ); // bug 1188: gap in data is misreported.
                     } else {
@@ -829,8 +829,8 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         if ( Double.isInfinite( bounds.value(1,0) ) )  {
                             selectionArea= rr;
                         } else {
-                            DatumRange xdr= org.virbo.dataset.DataSetUtil.asDatumRange( bounds.slice(0), true );
-                            DatumRange ydr= org.virbo.dataset.DataSetUtil.asDatumRange( bounds.slice(1), true );
+                            DatumRange xdr= org.das2.qds.DataSetUtil.asDatumRange( bounds.slice(0), true );
+                            DatumRange ydr= org.das2.qds.DataSetUtil.asDatumRange( bounds.slice(1), true );
                             if ( xunits!=null && !xunits.isConvertibleTo(xAxis.getUnits()) ) {
                                 xdr= new DatumRange( xdr.min().doubleValue(xdr.getUnits()), xdr.max().doubleValue(xdr.getUnits()),xAxis.getUnits() );
                             }

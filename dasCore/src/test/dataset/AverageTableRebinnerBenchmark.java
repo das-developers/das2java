@@ -9,8 +9,8 @@ import org.das2.DasException;
 import org.das2.dataset.AverageTableRebinner;
 import org.das2.dataset.RebinDescriptor;
 import org.das2.datum.Units;
-import org.virbo.dataset.QDataSet;
-import org.virbo.demos.RipplesDataSet;
+import org.das2.qds.QDataSet;
+import org.das2.qds.demos.RipplesDataSet;
 
 /**
  *

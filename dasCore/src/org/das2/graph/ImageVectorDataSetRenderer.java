@@ -16,7 +16,7 @@ import java.awt.geom.Point2D;
 import javax.swing.Icon;
 import org.das2.dataset.DataSetDescriptor;
 import org.das2.dataset.RebinDescriptor;
-import org.virbo.dataset.DataSetUtil;
+import org.das2.qds.DataSetUtil;
 import org.das2.datum.DatumRange;
 import org.das2.datum.Units;
 import org.das2.datum.Datum;
@@ -33,17 +33,17 @@ import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
 import org.das2.util.LoggerManager;
-import org.virbo.dataset.ArrayDataSet;
-import org.virbo.dataset.DDataSet;
-import org.virbo.dataset.DataSetOps;
-import org.virbo.dataset.FDataSet;
-import org.virbo.dataset.JoinDataSet;
-import org.virbo.dataset.QDataSet;
-import org.virbo.dataset.RankZeroDataSet;
-import org.virbo.dataset.SemanticOps;
-import org.virbo.dataset.WeightsDataSet;
-import org.virbo.dataset.WritableDataSet;
-import org.virbo.dsops.Ops;
+import org.das2.qds.ArrayDataSet;
+import org.das2.qds.DDataSet;
+import org.das2.qds.DataSetOps;
+import org.das2.qds.FDataSet;
+import org.das2.qds.JoinDataSet;
+import org.das2.qds.QDataSet;
+import org.das2.qds.RankZeroDataSet;
+import org.das2.qds.SemanticOps;
+import org.das2.qds.WeightsDataSet;
+import org.das2.qds.WritableDataSet;
+import org.das2.qds.ops.Ops;
 
 /**
  * ImageVectorDataSetRenderer

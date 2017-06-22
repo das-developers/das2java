@@ -3,11 +3,11 @@ package org.das2.graph;
 import java.awt.BasicStroke;
 import javax.swing.ImageIcon;
 import javax.swing.Icon;
-import org.virbo.dataset.DDataSet;
-import org.virbo.dataset.JoinDataSet;
-import org.virbo.dsops.Ops;
-import org.virbo.dataset.SemanticOps;
-import org.virbo.dataset.QDataSet;
+import org.das2.qds.DDataSet;
+import org.das2.qds.JoinDataSet;
+import org.das2.qds.ops.Ops;
+import org.das2.qds.SemanticOps;
+import org.das2.qds.QDataSet;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -27,7 +27,7 @@ import java.util.Map;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumVector;
 import org.das2.datum.format.DatumFormatter;
-import org.virbo.dataset.ArrayDataSet;
+import org.das2.qds.ArrayDataSet;
 
 /**
  * Draws a pitch angle distribution, which is a spectrogram wrapped around an origin.  Datasets must

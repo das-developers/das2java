@@ -59,10 +59,10 @@ import org.das2.dataset.AveragePeakTableRebinner;
 import org.das2.dataset.AverageTableRebinner;
 import org.das2.datum.Datum;
 import org.das2.datum.LocationUnits;
-import org.virbo.dataset.DataSetUtil;
-import org.virbo.dataset.QDataSet;
-import org.virbo.dataset.SemanticOps;
-import org.virbo.dsops.Ops;
+import org.das2.qds.DataSetUtil;
+import org.das2.qds.QDataSet;
+import org.das2.qds.SemanticOps;
+import org.das2.qds.ops.Ops;
 
 /**
  *

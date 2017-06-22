@@ -8,15 +8,15 @@ package org.das2.dataset;
 
 import org.das2.datum.DatumRange;
 import org.das2.datum.Datum;
-import org.virbo.dataset.QDataSet;
-import org.virbo.dataset.DataSetUtil;
-import org.virbo.dataset.SemanticOps;
+import org.das2.qds.QDataSet;
+import org.das2.qds.DataSetUtil;
+import org.das2.qds.SemanticOps;
 
 /**
  *
  * @author  Jeremy
  */
-public class ClippedTableDataSet extends org.virbo.dataset.AbstractDataSet {
+public class ClippedTableDataSet extends org.das2.qds.AbstractDataSet {
     
     /*
      * clippedTableDataSet

@@ -14,7 +14,7 @@ import org.das2.datum.Units;
 import org.das2.graph.DasAxis;
 import org.das2.graph.Renderer;
 import org.das2.util.monitor.ProgressMonitor;
-import org.virbo.dataset.QDataSet;
+import org.das2.qds.QDataSet;
 
 /**
  * Demonstration of defining a new Renderer.  This can be compiled into the

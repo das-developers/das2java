@@ -67,13 +67,13 @@ import org.das2.event.PointSlopeDragRenderer;
 import org.das2.graph.Renderer;
 import org.das2.graph.SpectrogramRenderer;
 import org.das2.util.monitor.ProgressMonitor;
-import org.virbo.dataset.ArrayDataSet;
-import org.virbo.dataset.DataSetOps;
-import org.virbo.dataset.DataSetUtil;
-import org.virbo.dataset.IDataSet;
-import org.virbo.dataset.QDataSet;
-import org.virbo.dataset.SemanticOps;
-import org.virbo.dsutil.DataSetBuilder;
+import org.das2.qds.ArrayDataSet;
+import org.das2.qds.DataSetOps;
+import org.das2.qds.DataSetUtil;
+import org.das2.qds.IDataSet;
+import org.das2.qds.QDataSet;
+import org.das2.qds.SemanticOps;
+import org.das2.qds.util.DataSetBuilder;
 
 
 public class HorizontalSpectrogramSlicer implements DataPointSelectionListener {
@@ -379,9 +379,9 @@ public class HorizontalSpectrogramSlicer implements DataPointSelectionListener {
         
         if ( yds.rank()==2 ) {
             QDataSet xds= SemanticOps.xtagsDataSet(tds1);
-            int ix= org.virbo.dataset.DataSetUtil.closestIndex( xds, xValue );
+            int ix= org.das2.qds.DataSetUtil.closestIndex( xds, xValue );
             QDataSet yds1= yds.slice(ix);
-            iy= org.virbo.dataset.DataSetUtil.closestIndex( yds1, yValue );
+            iy= org.das2.qds.DataSetUtil.closestIndex( yds1, yValue );
             yy= DataSetUtil.asDatum(yds.slice(ix).slice(iy));
             IDataSet eqdep1= IDataSet.createRank1(yds.length());
             eqdep1.putValue(ix,1);
@@ -424,7 +424,7 @@ public class HorizontalSpectrogramSlicer implements DataPointSelectionListener {
             sliceDataSet= s1;
             
         } else {
-            iy= org.virbo.dataset.DataSetUtil.closestIndex( yds, yValue );
+            iy= org.das2.qds.DataSetUtil.closestIndex( yds, yValue );
             yy= DataSetUtil.asDatum(yds.slice(iy));  //TODO: https://bugs-pw.physics.uiowa.edu/mantis/view.php?id=455
             sliceDataSet= DataSetOps.slice1( tds1, iy );
             

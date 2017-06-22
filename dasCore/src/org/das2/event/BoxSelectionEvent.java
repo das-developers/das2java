@@ -27,7 +27,7 @@ package org.das2.event;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
 import java.util.HashMap;
-import org.virbo.dataset.QDataSet;
+import org.das2.qds.QDataSet;
 
 /**
  * This is the range analog to the DataPointSelectionEvent.  The 

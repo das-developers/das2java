@@ -19,11 +19,11 @@ import org.das2.event.CrossHairMouseModule;
 import org.das2.event.DasMouseInputAdapter;
 import org.das2.event.MouseModule;
 import org.das2.util.monitor.ProgressMonitor;
-import org.virbo.dataset.DDataSet;
-import org.virbo.dataset.JoinDataSet;
-import org.virbo.dataset.QDataSet;
-import org.virbo.dataset.SemanticOps;
-import org.virbo.dsops.Ops;
+import org.das2.qds.DDataSet;
+import org.das2.qds.JoinDataSet;
+import org.das2.qds.QDataSet;
+import org.das2.qds.SemanticOps;
+import org.das2.qds.ops.Ops;
 
 /**
  * Renders RBG images stored in a QDataSet[m,n,3], etc.
@@ -247,9 +247,9 @@ public class RGBImageRenderer extends Renderer {
                     QDataSet dep2 = (QDataSet) ds.property(QDataSet.DEPEND_2);
                     imageType = BufferedImage.TYPE_INT_RGB; // default
                     if (dep2 != null) {
-                        String s0 = org.virbo.dataset.DataSetUtil.asDatum(dep2.slice(0)).toString().toLowerCase();
-                        String s1 = org.virbo.dataset.DataSetUtil.asDatum(dep2.slice(1)).toString().toLowerCase();
-                        String s2 = org.virbo.dataset.DataSetUtil.asDatum(dep2.slice(2)).toString().toLowerCase();
+                        String s0 = org.das2.qds.DataSetUtil.asDatum(dep2.slice(0)).toString().toLowerCase();
+                        String s1 = org.das2.qds.DataSetUtil.asDatum(dep2.slice(1)).toString().toLowerCase();
+                        String s2 = org.das2.qds.DataSetUtil.asDatum(dep2.slice(2)).toString().toLowerCase();
                         if (s0.startsWith("r") && s1.startsWith("g") && s2.startsWith("b")) {
                             imageType = BufferedImage.TYPE_INT_RGB;
                         } else if (s0.startsWith("b") && s1.startsWith("g") && s2.startsWith("r")) {
@@ -260,10 +260,10 @@ public class RGBImageRenderer extends Renderer {
                     QDataSet dep2 = (QDataSet) ds.property(QDataSet.DEPEND_2);
                     imageType = BufferedImage.TYPE_INT_ARGB;
                     if (dep2 != null) {
-                        String s0 = org.virbo.dataset.DataSetUtil.asDatum(dep2.slice(0)).toString().toLowerCase();
-                        String s1 = org.virbo.dataset.DataSetUtil.asDatum(dep2.slice(1)).toString().toLowerCase();
-                        String s2 = org.virbo.dataset.DataSetUtil.asDatum(dep2.slice(2)).toString().toLowerCase();
-                        String s3 = org.virbo.dataset.DataSetUtil.asDatum(dep2.slice(3)).toString().toLowerCase();
+                        String s0 = org.das2.qds.DataSetUtil.asDatum(dep2.slice(0)).toString().toLowerCase();
+                        String s1 = org.das2.qds.DataSetUtil.asDatum(dep2.slice(1)).toString().toLowerCase();
+                        String s2 = org.das2.qds.DataSetUtil.asDatum(dep2.slice(2)).toString().toLowerCase();
+                        String s3 = org.das2.qds.DataSetUtil.asDatum(dep2.slice(3)).toString().toLowerCase();
                         if (s0.startsWith("a") && s1.startsWith("r") && s2.startsWith("g") && s3.startsWith("b")) {
                             imageType = BufferedImage.TYPE_INT_ARGB;
                         } else if ( s0.startsWith("a") && s1.startsWith("b") && s2.startsWith("g") && s3.startsWith("r") ) {

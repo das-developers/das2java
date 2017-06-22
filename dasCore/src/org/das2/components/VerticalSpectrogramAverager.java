@@ -58,8 +58,8 @@ import javax.swing.SwingUtilities;
 import org.das2.graph.Renderer;
 import org.das2.graph.SeriesRenderer;
 import org.das2.util.monitor.ProgressMonitor;
-import org.virbo.dataset.QDataSet;
-import org.virbo.dataset.SemanticOps;
+import org.das2.qds.QDataSet;
+import org.das2.qds.SemanticOps;
 
 /**
  * show the average of the data over an interval
@@ -260,7 +260,7 @@ public class VerticalSpectrogramAverager implements DataRangeSelectionListener {
                 for ( int i=0; i<xtys.length(); i++ ) {
                     QDataSet rebinned = (QDataSet)rebinner.rebin(xtys.slice(i), ddX, null);
                     QDataSet ds1 = rebinned.slice(0);
-                    jds= org.virbo.dsops.Ops.concatenate( jds, ds1 );
+                    jds= org.das2.qds.ops.Ops.concatenate( jds, ds1 );
                 }
                 renderer.setDataSet(jds);                
             } else {

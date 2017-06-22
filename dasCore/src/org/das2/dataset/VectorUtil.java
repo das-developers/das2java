@@ -20,11 +20,11 @@ import java.text.*;
 import java.util.*;
 import java.util.Map.Entry;
 import org.das2.datum.UnitsConverter;
-import org.virbo.dataset.DDataSet;
-import org.virbo.dataset.QDataSet;
-import org.virbo.dataset.SemanticOps;
-import org.virbo.dsops.Ops;
-import org.virbo.dsutil.DataSetBuilder;
+import org.das2.qds.DDataSet;
+import org.das2.qds.QDataSet;
+import org.das2.qds.SemanticOps;
+import org.das2.qds.ops.Ops;
+import org.das2.qds.util.DataSetBuilder;
 
 /**
  *
@@ -427,11 +427,11 @@ public class VectorUtil {
         }
 
         DDataSet xdsr= xbuilder.getDataSet();
-        org.virbo.dataset.DataSetUtil.putProperties( org.virbo.dataset.DataSetUtil.getDimensionProperties(xds,null), xdsr );
+        org.das2.qds.DataSetUtil.putProperties(org.das2.qds.DataSetUtil.getDimensionProperties(xds,null), xdsr );
         xdsr.putProperty( QDataSet.CADENCE, null );
 
         DDataSet ydsr= builder.getDataSet();
-        org.virbo.dataset.DataSetUtil.putProperties( org.virbo.dataset.DataSetUtil.getDimensionProperties(ds,null), ydsr );
+        org.das2.qds.DataSetUtil.putProperties(org.das2.qds.DataSetUtil.getDimensionProperties(ds,null), ydsr );
         ydsr.putProperty( QDataSet.CADENCE, null );
 
         ydsr.putProperty( QDataSet.DEPEND_0, xdsr );

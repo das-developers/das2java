@@ -25,7 +25,7 @@ package org.das2.event;
 
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
-import org.virbo.dataset.QDataSet;
+import org.das2.qds.QDataSet;
 
 /**
  *

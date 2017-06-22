@@ -41,13 +41,13 @@ import org.das2.datum.DatumVector;
 import org.das2.datum.DomainDivider;
 import org.das2.datum.DomainDividerUtil;
 import static org.das2.graph.ContoursRenderer.PROP_LINETHICK;
-import org.virbo.dataset.DDataSet;
-import org.virbo.dataset.DataSetOps;
-import org.virbo.dataset.DataSetUtil;
-import org.virbo.dataset.JoinDataSet;
-import org.virbo.dataset.QDataSet;
-import org.virbo.dataset.SemanticOps;
-import org.virbo.dsops.Ops;
+import org.das2.qds.DDataSet;
+import org.das2.qds.DataSetOps;
+import org.das2.qds.DataSetUtil;
+import org.das2.qds.JoinDataSet;
+import org.das2.qds.QDataSet;
+import org.das2.qds.SemanticOps;
+import org.das2.qds.ops.Ops;
 
 /**
  * Renderer showing ticks along a curve, useful for orbits.  Note this renderer

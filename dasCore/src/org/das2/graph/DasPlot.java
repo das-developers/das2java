@@ -75,7 +75,7 @@ import org.das2.dataset.DataSetAdapter;
 import org.das2.datum.DatumRangeUtil;
 import org.das2.event.DasMouseInputAdapter;
 import org.das2.graph.DasAxis.Memento;
-import org.virbo.dataset.DataSetUtil;
+import org.das2.qds.DataSetUtil;
 
 /**
  * DasPlot is the 2D plot containing a horizontal X axis and vertical Y

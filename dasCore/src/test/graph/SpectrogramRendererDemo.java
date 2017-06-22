@@ -11,7 +11,7 @@ import org.das2.datum.DatumRange;
 import org.das2.datum.Units;
 import org.das2.graph.DasColorBar;
 import org.das2.graph.SpectrogramRenderer;
-import org.virbo.dsops.Ops;
+import org.das2.qds.ops.Ops;
 
 /**
  *

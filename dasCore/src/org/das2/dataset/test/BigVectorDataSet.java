@@ -10,8 +10,8 @@ import org.das2.dataset.VectorDataSetBuilder;
 import org.das2.datum.Units;
 import org.das2.util.monitor.ProgressMonitor;
 import java.util.Random;
-import org.virbo.dataset.QDataSet;
-import org.virbo.dsutil.DataSetBuilder;
+import org.das2.qds.QDataSet;
+import org.das2.qds.util.DataSetBuilder;
 
 /**
  *

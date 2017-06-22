@@ -79,16 +79,16 @@ import org.das2.datum.EnumerationUnits;
 import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.UnitsUtil;
 import org.das2.event.DataPointSelectionEvent;
-import org.virbo.dataset.AbstractDataSet;
-import org.virbo.dataset.ArrayDataSet;
-import org.virbo.dataset.DDataSet;
-import org.virbo.dataset.DataSetOps;
-import org.virbo.dataset.DataSetUtil;
-import org.virbo.dataset.QDataSet;
-import org.virbo.dataset.SemanticOps;
-import org.virbo.dataset.SparseDataSetBuilder;
-import org.virbo.dsops.Ops;
-import org.virbo.dsutil.DataSetBuilder;
+import org.das2.qds.AbstractDataSet;
+import org.das2.qds.ArrayDataSet;
+import org.das2.qds.DDataSet;
+import org.das2.qds.DataSetOps;
+import org.das2.qds.DataSetUtil;
+import org.das2.qds.QDataSet;
+import org.das2.qds.SemanticOps;
+import org.das2.qds.SparseDataSetBuilder;
+import org.das2.qds.ops.Ops;
+import org.das2.qds.util.DataSetBuilder;
 
 /**
  * DataPointRecorderNew is a GUI for storing data points selected by the user.  

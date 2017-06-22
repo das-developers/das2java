@@ -8,7 +8,7 @@ package org.das2.dataset;
 
 import org.das2.event.DasEvent;
 import org.das2.util.monitor.ProgressMonitor;
-import org.virbo.dataset.QDataSet;
+import org.das2.qds.QDataSet;
 
 /**
  *

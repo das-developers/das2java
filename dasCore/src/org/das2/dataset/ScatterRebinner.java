@@ -12,14 +12,14 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.datum.Units;
-import org.virbo.dataset.QDataSet;
-import org.virbo.dataset.WritableDataSet;
-import org.virbo.dsops.Ops;
+import org.das2.qds.QDataSet;
+import org.das2.qds.WritableDataSet;
+import org.das2.qds.ops.Ops;
 import org.das2.datum.Datum;
 import org.das2.datum.LoggerManager;
-import org.virbo.dataset.DataSetOps;
-import org.virbo.dataset.SemanticOps;
-import org.virbo.dataset.examples.Schemes;
+import org.das2.qds.DataSetOps;
+import org.das2.qds.SemanticOps;
+import org.das2.qds.examples.Schemes;
 
 /** 
  *

@@ -29,7 +29,7 @@ import org.das2.dataset.DataSetConsumer;
 import org.das2.graph.DasAxis;
 import org.das2.graph.DasPlot;
 import org.das2.graph.Renderer;
-import org.virbo.dataset.QDataSet;
+import org.das2.qds.QDataSet;
 /**
  * Slices spectrogram horizontally, e.g. showing one channel vs time.
  * @author  jbf

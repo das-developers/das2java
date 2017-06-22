@@ -24,7 +24,7 @@
 package org.das2.event;
 import org.das2.datum.Datum;
 import java.util.Map;
-import org.virbo.dataset.QDataSet;
+import org.das2.qds.QDataSet;
 
 /**
  * This is the general-purpose "a data point was selected" event.  Note that

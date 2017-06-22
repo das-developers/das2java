@@ -62,9 +62,9 @@ import org.das2.components.propertyeditor.Displayable;
 import org.das2.dataset.DataSetAdapter;
 import org.das2.datum.Datum;
 import org.das2.util.LoggerManager;
-import org.virbo.dataset.DataSetUtil;
-import org.virbo.dataset.QDataSet;
-import org.virbo.dataset.SemanticOps;
+import org.das2.qds.DataSetUtil;
+import org.das2.qds.QDataSet;
+import org.das2.qds.SemanticOps;
 
 public abstract class Renderer implements DataSetConsumer, Editable, Displayable {
 

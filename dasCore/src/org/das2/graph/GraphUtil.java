@@ -20,10 +20,10 @@ import java.util.logging.Logger;
 import javax.swing.*;
 import org.das2.datum.DatumRangeUtil;
 import org.das2.datum.LoggerManager;
-import org.virbo.dataset.DataSetOps;
-import org.virbo.dataset.QDataSet;
-import org.virbo.dataset.SemanticOps;
-import org.virbo.dsops.Ops;
+import org.das2.qds.DataSetOps;
+import org.das2.qds.QDataSet;
+import org.das2.qds.SemanticOps;
+import org.das2.qds.ops.Ops;
 //import org.apache.xml.serialize.*;
 
 /**
@@ -243,9 +243,9 @@ public class GraphUtil {
             QDataSet ds = (QDataSet) dsz;
             QDataSet yds= SemanticOps.ytagsDataSet(ds);
 
-            DatumRange yrange = org.virbo.dataset.DataSetUtil.asDatumRange( Ops.extent(yds), true );
+            DatumRange yrange = org.das2.qds.DataSetUtil.asDatumRange( Ops.extent(yds), true );
             yrange= DatumRangeUtil.rescale( yrange, -0.1, 1.1 );
-            Datum dy = org.virbo.dataset.DataSetUtil.asDatum( org.virbo.dataset.DataSetUtil.guessCadenceNew( yds, null ) );
+            Datum dy = org.das2.qds.DataSetUtil.asDatum(org.das2.qds.DataSetUtil.guessCadenceNew( yds, null ) );
 
             if (UnitsUtil.isRatiometric(dy.getUnits())) {
                 log = true;
@@ -259,7 +259,7 @@ public class GraphUtil {
                 dsz= yds;
             }
 
-            DatumRange yrange = org.virbo.dataset.DataSetUtil.asDatumRange( Ops.extent(yds), true );
+            DatumRange yrange = org.das2.qds.DataSetUtil.asDatumRange( Ops.extent(yds), true );
             yrange= DatumRangeUtil.rescale( yrange, -0.1, 1.1 );
             result = new DasAxis(yrange.min(), yrange.max(), DasAxis.LEFT, log);
 
@@ -275,7 +275,7 @@ public class GraphUtil {
 
     public static DasAxis guessXAxis(QDataSet ds) {
         QDataSet xds= SemanticOps.xtagsDataSet(ds);
-        DatumRange range= org.virbo.dataset.DataSetUtil.asDatumRange( Ops.extent(xds), true );
+        DatumRange range= org.das2.qds.DataSetUtil.asDatumRange( Ops.extent(xds), true );
         range= DatumRangeUtil.rescale( range, -0.1, 1.1 );
         return new DasAxis( range.min(), range.max(), DasAxis.BOTTOM);
     }
@@ -286,7 +286,7 @@ public class GraphUtil {
         }
         QDataSet ds = (QDataSet) dsz;
 
-        DatumRange range = org.virbo.dataset.DataSetUtil.asDatumRange( Ops.extent(ds), true );
+        DatumRange range = org.das2.qds.DataSetUtil.asDatumRange( Ops.extent(ds), true );
 
         boolean log = false;
         if ( "log".equals( dsz.property( QDataSet.SCALE_TYPE ) ) ) {

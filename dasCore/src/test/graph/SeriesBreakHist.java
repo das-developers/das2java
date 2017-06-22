@@ -9,10 +9,10 @@ import org.das2.datum.Datum;
 import org.das2.graph.DasPlot;
 import org.das2.graph.GraphUtil;
 import org.das2.graph.SeriesRenderer;
-import org.virbo.dataset.ArrayDataSet;
-import org.virbo.dataset.DataSetUtil;
-import org.virbo.dataset.QDataSet;
-import org.virbo.dsops.Ops;
+import org.das2.qds.ArrayDataSet;
+import org.das2.qds.DataSetUtil;
+import org.das2.qds.QDataSet;
+import org.das2.qds.ops.Ops;
 
 /**
  *

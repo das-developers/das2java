@@ -21,12 +21,12 @@ import org.das2.datum.DatumRange;
 import org.das2.datum.DatumRangeUtil;
 import org.das2.datum.Units;
 import org.das2.system.DasLogger;
-import org.virbo.dataset.AbstractDataSet;
-import org.virbo.dataset.DDataSet;
-import org.virbo.dataset.DRank0DataSet;
-import org.virbo.dataset.QDataSet;
-import org.virbo.dataset.SemanticOps;
-import org.virbo.dsops.Ops;
+import org.das2.qds.AbstractDataSet;
+import org.das2.qds.DDataSet;
+import org.das2.qds.DRank0DataSet;
+import org.das2.qds.QDataSet;
+import org.das2.qds.SemanticOps;
+import org.das2.qds.ops.Ops;
 
 /**
  * Presents legacy das2 datasets as QDataSets. See also TableDataSetAdapter,VectorDataSetAdapter
@@ -175,7 +175,7 @@ public class DataSetAdapter {
      * @param ds A QDataSet
      * @return A new Das2 DataSet
      */
-    public static DataSet createLegacyDataSet(org.virbo.dataset.QDataSet ds) {
+    public static DataSet createLegacyDataSet(org.das2.qds.QDataSet ds) {
         if (ds.rank() == 1) {
             return VectorDataSetAdapter.create(ds);
         } else if (SemanticOps.isBundle(ds)) {
@@ -209,7 +209,7 @@ public class DataSetAdapter {
             }
             Datum xTagWidth = (Datum) source.getProperty(DataSet.PROPERTY_X_TAG_WIDTH);
             if (xTagWidth != null) {
-                properties.put(QDataSet.CADENCE, org.virbo.dataset.DataSetUtil.asDataSet(xTagWidth));
+                properties.put(QDataSet.CADENCE, org.das2.qds.DataSetUtil.asDataSet(xTagWidth));
             }
         }
 

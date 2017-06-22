@@ -27,9 +27,9 @@ import org.das2.DasException;
 import org.das2.util.monitor.ProgressMonitor;
 import java.awt.*;
 import java.awt.geom.*;
-import org.virbo.dataset.DataSetOps;
-import org.virbo.dataset.QDataSet;
-import org.virbo.dataset.SemanticOps;
+import org.das2.qds.DataSetOps;
+import org.das2.qds.QDataSet;
+import org.das2.qds.SemanticOps;
 
 /**
  * Old renderer that really doesn't do anything that the SeriesRenderer can do.

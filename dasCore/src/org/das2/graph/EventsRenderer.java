@@ -35,17 +35,17 @@ import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
 import static org.das2.graph.Renderer.encodeBooleanControl;
 import org.das2.util.GrannyTextRenderer;
-import org.virbo.dataset.DDataSet;
-import org.virbo.dataset.DataSetOps;
-import org.virbo.dataset.DataSetUtil;
-import org.virbo.dataset.IDataSet;
-import org.virbo.dataset.JoinDataSet;
-import org.virbo.dataset.QDataSet;
-import org.virbo.dataset.RankZeroDataSet;
-import org.virbo.dataset.SemanticOps;
-import org.virbo.dataset.WritableDataSet;
-import org.virbo.dsops.Ops;
-import org.virbo.dsutil.DataSetBuilder;
+import org.das2.qds.DDataSet;
+import org.das2.qds.DataSetOps;
+import org.das2.qds.DataSetUtil;
+import org.das2.qds.IDataSet;
+import org.das2.qds.JoinDataSet;
+import org.das2.qds.QDataSet;
+import org.das2.qds.RankZeroDataSet;
+import org.das2.qds.SemanticOps;
+import org.das2.qds.WritableDataSet;
+import org.das2.qds.ops.Ops;
+import org.das2.qds.util.DataSetBuilder;
 
 
 /**
@@ -370,7 +370,7 @@ public class EventsRenderer extends Renderer {
         QDataSet dep0= DataSetOps.unbundle( vds,0 );
 
         double tlim= 1e-31;
-        RankZeroDataSet cad= org.virbo.dataset.DataSetUtil.guessCadenceNew( dep0, null );
+        RankZeroDataSet cad= org.das2.qds.DataSetUtil.guessCadenceNew( dep0, null );
         if ( cad!=null ) {
             tlim= cad.value()/100;
         }
@@ -457,8 +457,8 @@ public class EventsRenderer extends Renderer {
                 
             } else  if ( dep0.rank() == 1 ) {
                 Datum width= SemanticOps.guessXTagWidth( dep0, null ).divide(2);
-                xmins= Ops.subtract( dep0, org.virbo.dataset.DataSetUtil.asDataSet(width) );
-                xmaxs= Ops.add( dep0, org.virbo.dataset.DataSetUtil.asDataSet(width) );
+                xmins= Ops.subtract(dep0, org.das2.qds.DataSetUtil.asDataSet(width) );
+                xmaxs= Ops.add(dep0, org.das2.qds.DataSetUtil.asDataSet(width) );
                 colors= Ops.replicate( getColor().getRGB(), xmins.length() );
 
             } else {
@@ -498,8 +498,8 @@ public class EventsRenderer extends Renderer {
                     QDataSet w= Ops.reduceMin( diffs,0 );
                     width= DataSetUtil.asDatum(w);                    
                 }
-                xmins= Ops.subtract( dep0, org.virbo.dataset.DataSetUtil.asDataSet(width) );
-                xmaxs= Ops.add( dep0, org.virbo.dataset.DataSetUtil.asDataSet(width) );                
+                xmins= Ops.subtract(dep0, org.das2.qds.DataSetUtil.asDataSet(width) );
+                xmaxs= Ops.add(dep0, org.das2.qds.DataSetUtil.asDataSet(width) );                
                 msgs= vds;
             } else {
                 parent.postMessage( this, "dataset is not correct form", DasPlot.WARNING, null, null );

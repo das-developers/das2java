@@ -20,9 +20,9 @@ import java.util.logging.Logger;
 import org.das2.dataset.DataSetDescriptor;
 import org.das2.dataset.RebinDescriptor;
 import org.das2.dataset.WritableTableDataSet;
-import org.virbo.dataset.DDataSet;
-import org.virbo.dataset.QDataSet;
-import org.virbo.dsops.Ops;
+import org.das2.qds.DDataSet;
+import org.das2.qds.QDataSet;
+import org.das2.qds.ops.Ops;
 
 
 /**

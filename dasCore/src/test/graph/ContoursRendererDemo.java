@@ -15,8 +15,8 @@ import org.das2.graph.GraphUtil;
 import org.das2.graph.Renderer;
 import org.das2.graph.ContoursRenderer;
 import org.das2.graph.DasPlot;
-import org.virbo.dataset.QDataSet;
-import org.virbo.demos.RipplesDataSet;
+import org.das2.qds.QDataSet;
+import org.das2.qds.demos.RipplesDataSet;
 
 /**
  *

@@ -18,10 +18,10 @@ import org.das2.system.DasLogger;
 import javax.sound.sampled.*;
 import org.das2.datum.LoggerManager;
 import org.das2.datum.UnitsConverter;
-import org.virbo.dataset.FlattenWaveformDataSet;
-import org.virbo.dataset.QDataSet;
-import org.virbo.dataset.SemanticOps;
-import org.virbo.dsops.Ops;
+import org.das2.qds.FlattenWaveformDataSet;
+import org.das2.qds.QDataSet;
+import org.das2.qds.SemanticOps;
+import org.das2.qds.ops.Ops;
 
 /**
  * Stream QDataSet to the sound system, using DEPEND_0 to control

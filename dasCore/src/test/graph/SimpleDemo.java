@@ -18,14 +18,14 @@ import org.das2.graph.DasRow;
 import org.das2.graph.GraphUtil;
 import org.das2.graph.Renderer;
 import org.das2.graph.SeriesRenderer;
-import org.virbo.dataset.AbstractQFunction;
-import org.virbo.dataset.BundleDataSet;
-import org.virbo.dataset.DDataSet;
-import org.virbo.dataset.DRank0DataSet;
-import org.virbo.dataset.DataSetUtil;
-import org.virbo.dataset.JoinDataSet;
-import org.virbo.dataset.QDataSet;
-import org.virbo.dsops.Ops;
+import org.das2.qds.AbstractQFunction;
+import org.das2.qds.BundleDataSet;
+import org.das2.qds.DDataSet;
+import org.das2.qds.DRank0DataSet;
+import org.das2.qds.DataSetUtil;
+import org.das2.qds.JoinDataSet;
+import org.das2.qds.QDataSet;
+import org.das2.qds.ops.Ops;
 
 /**
  * relatively simple demo for Larry at APL.

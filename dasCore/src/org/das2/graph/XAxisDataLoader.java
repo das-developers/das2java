@@ -33,8 +33,8 @@ import java.util.List;
 import java.util.logging.Logger;
 import org.das2.DasApplication;
 import org.das2.dataset.DataSetAdapter;
-import org.virbo.dataset.QDataSet;
-import org.virbo.dsops.Ops;
+import org.das2.qds.QDataSet;
+import org.das2.qds.ops.Ops;
 
 /**
  *

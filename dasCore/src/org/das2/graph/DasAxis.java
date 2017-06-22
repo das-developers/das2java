@@ -73,13 +73,13 @@ import org.das2.datum.UnitsUtil;
 import org.das2.system.RequestProcessor;
 import org.das2.util.LoggerManager;
 import org.das2.util.TickleTimer;
-import org.virbo.dataset.ArrayDataSet;
-import org.virbo.dataset.DDataSet;
-import org.virbo.dataset.JoinDataSet;
-import org.virbo.dataset.QDataSet;
-import org.virbo.dataset.QFunction;
-import org.virbo.dataset.SemanticOps;
-import org.virbo.dsops.Ops;
+import org.das2.qds.ArrayDataSet;
+import org.das2.qds.DDataSet;
+import org.das2.qds.JoinDataSet;
+import org.das2.qds.QDataSet;
+import org.das2.qds.QFunction;
+import org.das2.qds.SemanticOps;
+import org.das2.qds.ops.Ops;
 
 /** 
  * One dimensional axis component that transforms data to device space and back, 
@@ -1317,8 +1317,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             DatumRange context= getDatumRange(); // this may not contain all the ticks.
             context= DatumRangeUtil.union( context, u.createDatum( uc.convert(ltickV[0]) ) );
             context= DatumRangeUtil.union( context, u.createDatum( uc.convert(ltickV[ltickV.length-1]) ) );
-            ex.putProperty( QDataSet.CONTEXT_0, 0, org.virbo.dataset.DataSetUtil.asDataSet( context ) );
-            QDataSet dx= org.virbo.dataset.DataSetUtil.asDataSet( getDatumRange().width().divide( getColumn().getWidth() ) );
+            ex.putProperty(QDataSet.CONTEXT_0, 0, org.das2.qds.DataSetUtil.asDataSet( context ) );
+            QDataSet dx= org.das2.qds.DataSetUtil.asDataSet( getDatumRange().width().divide( getColumn().getWidth() ) );
             ex.putProperty( QDataSet.DELTA_PLUS, 0, dx );
             ex.putProperty( QDataSet.DELTA_MINUS, 0, dx );
 
@@ -2704,7 +2704,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             return;
         }
             
-        index = org.virbo.dataset.DataSetUtil.closestIndex( dep0, value);
+        index = org.das2.qds.DataSetUtil.closestIndex( dep0, value);
         if ( index < 0 || index >= ltcaData.length() ) {
             return;
         }
@@ -2720,7 +2720,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
         //Added in to say take nearest nieghbor as long as the distance to the nieghbor is
         //not more than the xtagwidth.
-        QDataSet xTagWidth = org.virbo.dataset.DataSetUtil.guessCadenceNew( dep0, null );
+        QDataSet xTagWidth = org.das2.qds.DataSetUtil.guessCadenceNew( dep0, null );
         
         double limit;
         try {
@@ -2747,7 +2747,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 QDataSet test1= ltcaData.slice(index);
                 QDataSet v1= ArrayDataSet.copy( test1.slice(i) );
                 String item;
-                item= org.virbo.dataset.DataSetUtil.getStringValue( v1, v1.value() );
+                item= org.das2.qds.DataSetUtil.getStringValue( v1, v1.value() );
                 width = fm.stringWidth(item);
                 leftEdge = rightEdge - width;
                 g.drawString(item, leftEdge, baseLine);

@@ -35,8 +35,8 @@ import org.das2.datum.format.DatumFormatter;
 import org.das2.graph.event.DasUpdateEvent;
 import org.das2.graph.event.DasUpdateListener;
 import org.das2.util.GrannyTextRenderer;
-import org.virbo.dataset.DataSetUtil;
-import org.virbo.dataset.QDataSet;
+import org.das2.qds.DataSetUtil;
+import org.das2.qds.QDataSet;
 
 public class DasLabelAxis extends DasAxis implements DasUpdateListener {
 

@@ -36,10 +36,10 @@ import java.util.Map.Entry;
 import java.util.logging.Logger;
 import static org.das2.dataset.DataSetAdapter.adaptSubstitutions;
 import org.das2.datum.DatumRange;
-import org.virbo.dataset.DDataSet;
-import org.virbo.dataset.DRank0DataSet;
-import org.virbo.dataset.JoinDataSet;
-import org.virbo.dataset.QDataSet;
+import org.das2.qds.DDataSet;
+import org.das2.qds.DRank0DataSet;
+import org.das2.qds.JoinDataSet;
+import org.das2.qds.QDataSet;
 
 /**
  *
@@ -335,7 +335,7 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
      * optimal QDataSet, it's better.
      * @return a QDataSet version of the data
      */
-    public org.virbo.dataset.AbstractDataSet toQDataSet( ) {
+    public org.das2.qds.AbstractDataSet toQDataSet( ) {
   
         JoinDataSet result= new JoinDataSet(3);
         

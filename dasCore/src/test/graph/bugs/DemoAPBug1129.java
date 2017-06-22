@@ -28,9 +28,9 @@ import org.das2.graph.SpectrogramRenderer;
 import org.das2.graph.util.GraphicalLogHandler;
 import org.das2.util.FileUtil;
 import org.das2.util.LoggerManager;
-import org.virbo.dataset.ArrayDataSet;
-import org.virbo.dataset.QDataSet;
-import org.virbo.dsops.Ops;
+import org.das2.qds.ArrayDataSet;
+import org.das2.qds.QDataSet;
+import org.das2.qds.ops.Ops;
 import test.graph.PlotDemo;
 
 /**

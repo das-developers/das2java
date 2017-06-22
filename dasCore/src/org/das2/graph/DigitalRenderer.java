@@ -17,7 +17,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Scanner;
 import org.das2.DasException;
-import org.virbo.dataset.DataSetUtil;
+import org.das2.qds.DataSetUtil;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
 import org.das2.datum.DatumRangeUtil;
@@ -31,12 +31,12 @@ import static org.das2.graph.Renderer.CONTROL_KEY_COLOR;
 import static org.das2.graph.Renderer.encodeColorControl;
 import org.das2.util.GrannyTextRenderer;
 import org.das2.util.monitor.ProgressMonitor;
-import org.virbo.dataset.DDataSet;
-import org.virbo.dataset.DataSetOps;
-import org.virbo.dataset.JoinDataSet;
-import org.virbo.dataset.QDataSet;
-import org.virbo.dataset.SemanticOps;
-import org.virbo.dsops.Ops;
+import org.das2.qds.DDataSet;
+import org.das2.qds.DataSetOps;
+import org.das2.qds.JoinDataSet;
+import org.das2.qds.QDataSet;
+import org.das2.qds.SemanticOps;
+import org.das2.qds.ops.Ops;
 
 /**
  *

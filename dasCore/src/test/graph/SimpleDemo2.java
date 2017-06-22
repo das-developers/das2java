@@ -17,8 +17,8 @@ import org.das2.graph.DasRow;
 import org.das2.graph.GraphUtil;
 import org.das2.graph.Renderer;
 import org.das2.graph.SeriesRenderer;
-import org.virbo.dataset.QDataSet;
-import org.virbo.dsops.Ops;
+import org.das2.qds.QDataSet;
+import org.das2.qds.ops.Ops;
 
 /**
  * relatively simple demo for Larry at APL.

@@ -68,10 +68,10 @@ import org.das2.graph.SpectrogramRenderer;
 import org.das2.graph.SymbolLineRenderer;
 import org.das2.system.DasLogger;
 import org.das2.util.monitor.ProgressMonitor;
-import org.virbo.dataset.DataSetOps;
-import org.virbo.dataset.DataSetUtil;
-import org.virbo.dataset.QDataSet;
-import org.virbo.dataset.SemanticOps;
+import org.das2.qds.DataSetOps;
+import org.das2.qds.DataSetUtil;
+import org.das2.qds.QDataSet;
+import org.das2.qds.SemanticOps;
 
 
 public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
@@ -374,7 +374,7 @@ public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
             for (QDataSet tds2 : tdss) {
                 tds1 = tds2;
                 QDataSet xds = SemanticOps.xtagsDataSet(tds1);
-                ix = org.virbo.dataset.DataSetUtil.closestIndex(xds, xValue);
+                ix = org.das2.qds.DataSetUtil.closestIndex(xds, xValue);
                 QDataSet s1 = tds1.slice(ix);
                 if ( xx!=null ) {
                     Datum xx1= DataSetUtil.asDatum(xds.slice(ix));
@@ -383,14 +383,14 @@ public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
                     }
                 }
                 xx= DataSetUtil.asDatum(xds.slice(ix));
-                jds= org.virbo.dsops.Ops.concatenate( jds, s1 );
+                jds= org.das2.qds.ops.Ops.concatenate( jds, s1 );
             }
             sliceDataSet= jds;
             
         } else {
         
             QDataSet xds = SemanticOps.xtagsDataSet(tds1);
-            ix = org.virbo.dataset.DataSetUtil.closestIndex(xds, xValue);
+            ix = org.das2.qds.DataSetUtil.closestIndex(xds, xValue);
             xx= DataSetUtil.asDatum(xds.slice(ix));
             sliceDataSet = tds1.slice(ix);
         }

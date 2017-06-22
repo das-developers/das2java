@@ -10,9 +10,9 @@ import org.das2.datum.DatumRange;
 import org.das2.datum.Units;
 import org.das2.graph.RGBImageRenderer;
 import org.das2.graph.Renderer;
-import org.virbo.dataset.QDataSet;
-import org.virbo.dataset.SDataSet;
-import org.virbo.dsops.Ops;
+import org.das2.qds.QDataSet;
+import org.das2.qds.SDataSet;
+import org.das2.qds.ops.Ops;
 
 /**
  *

@@ -23,7 +23,7 @@
 
 package org.das2.dataset;
 
-import org.virbo.dataset.QDataSet;
+import org.das2.qds.QDataSet;
 
 /**
  *

@@ -11,7 +11,7 @@ package org.das2.graph;
 import org.das2.DasException;
 import org.das2.datum.DatumVector;
 import org.das2.datum.Units;
-import org.virbo.math.Contour;
+import org.das2.qds.math.Contour;
 import java.awt.BasicStroke;
 import org.das2.util.monitor.ProgressMonitor;
 import java.awt.Color;
@@ -34,12 +34,12 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import org.virbo.dataset.DDataSet;
-import org.virbo.dataset.DataSetOps;
-import org.virbo.dataset.QDataSet;
-import org.virbo.dataset.SemanticOps;
-import org.virbo.dataset.JoinDataSet;
-import org.virbo.dsops.Ops;
+import org.das2.qds.DDataSet;
+import org.das2.qds.DataSetOps;
+import org.das2.qds.QDataSet;
+import org.das2.qds.SemanticOps;
+import org.das2.qds.JoinDataSet;
+import org.das2.qds.ops.Ops;
 
 /**
  * Renderer for making contour plots.  

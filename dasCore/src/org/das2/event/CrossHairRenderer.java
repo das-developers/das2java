@@ -25,7 +25,7 @@ package org.das2.event;
 import org.das2.components.propertyeditor.Editable;
 import org.das2.dataset.DataSetConsumer;
 import org.das2.dataset.TableDataSetConsumer;
-import org.virbo.dataset.DataSetUtil;
+import org.das2.qds.DataSetUtil;
 import org.das2.datum.format.DefaultDatumFormatterFactory;
 import org.das2.datum.format.DatumFormatter;
 import org.das2.graph.DasAxis;
@@ -41,10 +41,10 @@ import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
 import org.das2.datum.format.EnumerationDatumFormatter;
-import org.virbo.dataset.QDataSet;
-import org.virbo.dataset.SemanticOps;
-import org.virbo.dataset.examples.Schemes;
-import org.virbo.dsops.Ops;
+import org.das2.qds.QDataSet;
+import org.das2.qds.SemanticOps;
+import org.das2.qds.examples.Schemes;
+import org.das2.qds.ops.Ops;
 
 /**
  *

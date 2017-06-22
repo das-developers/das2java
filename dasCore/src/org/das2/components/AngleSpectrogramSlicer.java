@@ -40,10 +40,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.*;
 import org.das2.graph.SeriesRenderer;
-import org.virbo.dataset.DataSetUtil;
-import org.virbo.dataset.QDataSet;
-import org.virbo.dataset.SemanticOps;
-import org.virbo.dsutil.DataSetBuilder;
+import org.das2.qds.DataSetUtil;
+import org.das2.qds.QDataSet;
+import org.das2.qds.SemanticOps;
+import org.das2.qds.util.DataSetBuilder;
 
 
 public class AngleSpectrogramSlicer extends DasPlot implements BoxSelectionListener {

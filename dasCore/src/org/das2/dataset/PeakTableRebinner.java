@@ -24,9 +24,9 @@
 package org.das2.dataset;
 
 import org.das2.datum.Units;
-import org.virbo.dataset.DDataSet;
-import org.virbo.dataset.QDataSet;
-import org.virbo.dataset.SemanticOps;
+import org.das2.qds.DDataSet;
+import org.das2.qds.QDataSet;
+import org.das2.qds.SemanticOps;
 
 /**
  *
@@ -54,7 +54,7 @@ public class PeakTableRebinner implements DataSetRebinner {
         double[] dd= new double[nx*ny];
         AveragePeakTableRebinner.flatten( rebinData, dd, 0, nx, ny );
         DDataSet result= DDataSet.wrap( dd, nx, ny );
-        org.virbo.dataset.DataSetUtil.copyDimensionProperties( tds, result );
+        org.das2.qds.DataSetUtil.copyDimensionProperties( tds, result );
         
         return result;
         

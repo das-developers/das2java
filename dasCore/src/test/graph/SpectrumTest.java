@@ -17,9 +17,9 @@ import org.das2.graph.DasRow;
 import org.das2.graph.GraphUtil;
 import org.das2.graph.SpectrogramRenderer;
 import org.das2.graph.SpectrogramRenderer.RebinnerEnum;
-import org.virbo.dataset.AbstractDataSet;
-import org.virbo.dataset.DDataSet;
-import org.virbo.dataset.QDataSet;
+import org.das2.qds.AbstractDataSet;
+import org.das2.qds.DDataSet;
+import org.das2.qds.QDataSet;
 
 
 public class SpectrumTest {

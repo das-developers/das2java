@@ -31,13 +31,13 @@ import org.das2.DasException;
 import org.das2.system.DasLogger;
 import java.util.logging.*;
 import org.das2.datum.UnitsConverter;
-import org.virbo.dataset.DataSetUtil;
-import org.virbo.dataset.DDataSet;
-import org.virbo.dataset.JoinDataSet;
-import org.virbo.dataset.QDataSet;
-import org.virbo.dataset.RankZeroDataSet;
-import org.virbo.dataset.SemanticOps;
-import org.virbo.dsops.Ops;
+import org.das2.qds.DataSetUtil;
+import org.das2.qds.DDataSet;
+import org.das2.qds.JoinDataSet;
+import org.das2.qds.QDataSet;
+import org.das2.qds.RankZeroDataSet;
+import org.das2.qds.SemanticOps;
+import org.das2.qds.ops.Ops;
 
 /**
  * DataSetRebinner implementing either bi-linear interpolation in blocks of 4 points, or nearest neighbor interpolation by
@@ -300,7 +300,7 @@ public class AverageTableRebinner implements DataSetRebinner {
         } else {
             QDataSet xTagWidthDs= (RankZeroDataSet) xds.property( QDataSet.CADENCE ); // note these were once doubles, but this is not supported here.
             if (xTagWidthDs!=null) {
-                xTagWidth= org.virbo.dataset.DataSetUtil.asDatum(xTagWidthDs);
+                xTagWidth= org.das2.qds.DataSetUtil.asDatum(xTagWidthDs);
             } else {
                 Units xunits= SemanticOps.getUnits(xds).getOffsetUnits();
                 xTagWidth= xunits.createDatum(Double.MAX_VALUE);
@@ -322,9 +322,9 @@ public class AverageTableRebinner implements DataSetRebinner {
     private static int getNextPrevIndex( QDataSet xds, Datum xx, int sign ) {
         if ( SemanticOps.isMonotonic(xds) ) {
             if ( sign<0 ) {
-                return org.virbo.dataset.DataSetUtil.getPreviousIndex(xds, xx);
+                return org.das2.qds.DataSetUtil.getPreviousIndex(xds, xx);
             } else {
-                return org.virbo.dataset.DataSetUtil.getNextIndex(xds, xx);
+                return org.das2.qds.DataSetUtil.getNextIndex(xds, xx);
             }
         } else {
             double best= Double.MAX_VALUE;
@@ -468,13 +468,13 @@ public class AverageTableRebinner implements DataSetRebinner {
 
                 int j0,j1;
                 if ( SemanticOps.isMonotonic(yds) ) {
-                    j0 = org.virbo.dataset.DataSetUtil.getPreviousIndex( yds, yy );
-                    j1 = org.virbo.dataset.DataSetUtil.getNextIndex( yds, yy);
+                    j0 = org.das2.qds.DataSetUtil.getPreviousIndex( yds, yy );
+                    j1 = org.das2.qds.DataSetUtil.getNextIndex( yds, yy);
                 } else {
                     QDataSet myds= Ops.multiply( yds, DataSetUtil.asDataSet(-1) );
                     if ( SemanticOps.isMonotonic(myds) ) {
-                        j0 = org.virbo.dataset.DataSetUtil.getPreviousIndex( myds, yy );
-                        j1 = org.virbo.dataset.DataSetUtil.getNextIndex( myds, yy);
+                        j0 = org.das2.qds.DataSetUtil.getPreviousIndex( myds, yy );
+                        j1 = org.das2.qds.DataSetUtil.getNextIndex( myds, yy);
                     } else {
                         //fo_k0_ees_1998011_v01.cdf
                         if ( Ops.total( SemanticOps.weightsDataSet(yds) )==0 ) return;
