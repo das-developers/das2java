@@ -7,7 +7,7 @@
 package test;
 
 import java.nio.ByteBuffer;
-import org.virbo.qstream.AsciiTransferType;
+import org.das2.qstream.AsciiTransferType;
 
 /**
  *

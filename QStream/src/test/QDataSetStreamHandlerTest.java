@@ -16,9 +16,9 @@ import java.util.ArrayList;
 import java.util.List;
 import org.das2.qds.DataSetUtil;
 import org.das2.qds.QDataSet;
-import org.virbo.qstream.QDataSetStreamHandler;
-import org.virbo.qstream.StreamException;
-import org.virbo.qstream.StreamTool;
+import org.das2.qstream.QDataSetStreamHandler;
+import org.das2.qstream.StreamException;
+import org.das2.qstream.StreamTool;
 
 /**
  *

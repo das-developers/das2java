@@ -13,10 +13,10 @@ import java.nio.channels.Channels;
 import javax.xml.parsers.ParserConfigurationException;
 import org.das2.qds.QDataSet;
 import org.das2.qds.QubeDataSetIterator;
-import org.virbo.qstream.QDataSetStreamHandler;
-import org.virbo.qstream.SimpleStreamFormatter;
-import org.virbo.qstream.StreamException;
-import org.virbo.qstream.StreamTool;
+import org.das2.qstream.QDataSetStreamHandler;
+import org.das2.qstream.SimpleStreamFormatter;
+import org.das2.qstream.StreamException;
+import org.das2.qstream.StreamTool;
 
 /**
  *

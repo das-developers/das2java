@@ -19,8 +19,8 @@ import org.das2.qds.QDataSet;
 import org.das2.qds.QubeDataSetIterator;
 import org.das2.qds.WritableDataSet;
 import org.das2.qds.ops.Ops;
-import org.virbo.qstream.SimpleStreamFormatter;
-import org.virbo.qstream.StreamException;
+import org.das2.qstream.SimpleStreamFormatter;
+import org.das2.qstream.StreamException;
 
 /**
  *

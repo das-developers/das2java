@@ -5,6 +5,8 @@
 
 package org.virbo.qstream;
 
+import org.das2.qstream.AsciiTimeTransferType;
+import org.das2.qstream.TransferType;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.util.Collections;

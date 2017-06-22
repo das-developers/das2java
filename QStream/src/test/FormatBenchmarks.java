@@ -15,7 +15,7 @@ import org.das2.qds.MutablePropertyDataSet;
 import org.das2.qds.QDataSet;
 import org.das2.dataset.TableDataSetAdapter;
 import org.das2.qds.ops.Ops;
-import org.virbo.qstream.SimpleStreamFormatter;
+import org.das2.qstream.SimpleStreamFormatter;
 
 /**
  *
@@ -23,7 +23,7 @@ import org.virbo.qstream.SimpleStreamFormatter;
  */
 public class FormatBenchmarks {
 
-    public static void main(String[] args) throws ParseException, org.virbo.qstream.StreamException, ParserConfigurationException, IOException {
+    public static void main(String[] args) throws ParseException, org.das2.qstream.StreamException, ParserConfigurationException, IOException {
         int nrec = 200000;
         MutablePropertyDataSet tags = (MutablePropertyDataSet) Ops.timegen("2003-09-09", "1 " + Units.days, nrec);
         tags.putProperty(QDataSet.NAME, "time");
