@@ -13,7 +13,7 @@ import java.util.HashMap;
 import org.das2.client.DataSetStreamHandler;
 import org.das2.dataset.DataSet;
 import org.das2.util.monitor.NullProgressMonitor;
-import org.virbo.dataset.QDataSet;
+import org.das2.qds.QDataSet;
 import org.virbo.qstream.QDataSetStreamHandler;
 import org.virbo.qstream.StreamException;
 import org.virbo.qstream.StreamTool;

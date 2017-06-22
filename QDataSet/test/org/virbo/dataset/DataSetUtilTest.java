@@ -5,6 +5,13 @@
 
 package org.virbo.dataset;
 
+import org.das2.qds.DDataSet;
+import org.das2.qds.DRank0DataSet;
+import org.das2.qds.QDataSet;
+import org.das2.qds.DataSetUtil;
+import org.das2.qds.WritableDataSet;
+import org.das2.qds.RankZeroDataSet;
+import org.das2.qds.MutablePropertyDataSet;
 import java.text.ParseException;
 import java.util.List;
 import java.util.Map;

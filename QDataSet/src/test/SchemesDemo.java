@@ -1,7 +1,7 @@
 
 package test;
 
-import org.virbo.dataset.examples.Schemes;
+import org.das2.qds.examples.Schemes;
 
 /**
  *

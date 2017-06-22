@@ -13,10 +13,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.das2.datum.Datum;
 import org.das2.datum.Units;
-import org.virbo.dataset.DRank0DataSet;
-import org.virbo.dataset.DataSetUtil;
-import org.virbo.dataset.QDataSet;
-import org.virbo.dataset.RankZeroDataSet;
+import org.das2.qds.DRank0DataSet;
+import org.das2.qds.DataSetUtil;
+import org.das2.qds.QDataSet;
+import org.das2.qds.RankZeroDataSet;
 
 /**
  *

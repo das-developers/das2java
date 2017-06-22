@@ -17,10 +17,10 @@ import org.das2.datum.TimeParser;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
-import org.virbo.dataset.DataSetOps;
-import org.virbo.dataset.QDataSet;
-import org.virbo.dataset.WritableDataSet;
-import org.virbo.dsutil.AsciiParser;
+import org.das2.qds.DataSetOps;
+import org.das2.qds.QDataSet;
+import org.das2.qds.WritableDataSet;
+import org.das2.qds.util.AsciiParser;
 
 /**
  * Demonstration of the ascii parser.

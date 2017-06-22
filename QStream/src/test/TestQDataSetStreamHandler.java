@@ -11,8 +11,8 @@ import java.net.URL;
 
 import java.nio.channels.Channels;
 import javax.xml.parsers.ParserConfigurationException;
-import org.virbo.dataset.QDataSet;
-import org.virbo.dataset.QubeDataSetIterator;
+import org.das2.qds.QDataSet;
+import org.das2.qds.QubeDataSetIterator;
 import org.virbo.qstream.QDataSetStreamHandler;
 import org.virbo.qstream.SimpleStreamFormatter;
 import org.virbo.qstream.StreamException;

@@ -7,11 +7,11 @@ package test;
 
 import java.util.Random;
 import org.das2.datum.Units;
-import org.virbo.dataset.AbstractDataSet;
-import org.virbo.dataset.DDataSet;
-import org.virbo.dataset.DataSetOps;
-import org.virbo.dataset.QDataSet;
-import org.virbo.dsops.Ops;
+import org.das2.qds.AbstractDataSet;
+import org.das2.qds.DDataSet;
+import org.das2.qds.DataSetOps;
+import org.das2.qds.QDataSet;
+import org.das2.qds.ops.Ops;
 
 /**
  * Demonstrations of the somewhat nasty BundleDataSet, which allows many data types to be encoded into a rank 2 table.

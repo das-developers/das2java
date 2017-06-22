@@ -9,11 +9,11 @@ import java.util.HashMap;
 import javax.swing.JFrame;
 import javax.swing.JTree;
 import javax.swing.tree.TreeModel;
-import org.virbo.dataset.DDataSet;
-import org.virbo.dataset.DataSetUtil;
-import org.virbo.dataset.QDataSet;
-import org.virbo.dsops.Ops;
-import org.virbo.dsutil.PropertiesTreeModel;
+import org.das2.qds.DDataSet;
+import org.das2.qds.DataSetUtil;
+import org.das2.qds.QDataSet;
+import org.das2.qds.ops.Ops;
+import org.das2.qds.util.PropertiesTreeModel;
 
 /**
  *

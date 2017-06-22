@@ -13,7 +13,7 @@ import org.das2.datum.DatumRange;
 import org.das2.datum.EnumerationUnits;
 import org.das2.datum.Units;
 import org.das2.util.ClassMap;
-import org.virbo.dataset.RankZeroDataSet;
+import org.das2.qds.RankZeroDataSet;
 
 /**
  *

@@ -6,7 +6,7 @@
 package org.virbo.qstream;
 
 import org.das2.datum.Units;
-import org.virbo.dataset.SemanticOps;
+import org.das2.qds.SemanticOps;
 
 /**
  *

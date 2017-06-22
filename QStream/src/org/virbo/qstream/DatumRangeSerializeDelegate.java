@@ -13,7 +13,7 @@ import org.das2.datum.DatumRangeUtil;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
 import org.das2.util.LoggerManager;
-import org.virbo.dataset.SemanticOps;
+import org.das2.qds.SemanticOps;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 

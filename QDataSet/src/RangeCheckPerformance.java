@@ -6,8 +6,8 @@
  * 2. a Java loop is about 1700 times faster than Jython (12.340 / 0.007) see /home/jbf/ct/autoplot/users/2016/ivar/20160902/rangeCheckPerformance.jy
  * @author jbf
  */
-import org.virbo.dataset.DDataSet;
-import static org.virbo.dsops.Ops.*;
+import org.das2.qds.DDataSet;
+import static org.das2.qds.ops.Ops.*;
 
 public class RangeCheckPerformance {
     

@@ -5,11 +5,11 @@
 
 package test;
 
-import org.virbo.dataset.DDataSet;
-import org.virbo.dataset.JoinDataSet;
-import org.virbo.dataset.OldDataSetIterator;
-import org.virbo.dataset.QDataSet;
-import org.virbo.dataset.QubeDataSetIterator;
+import org.das2.qds.DDataSet;
+import org.das2.qds.JoinDataSet;
+import org.das2.qds.OldDataSetIterator;
+import org.das2.qds.QDataSet;
+import org.das2.qds.QubeDataSetIterator;
 
 /**
  *

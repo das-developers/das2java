@@ -18,7 +18,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.datum.Units;
 import org.das2.util.Base64;
-import org.virbo.dataset.DataSetUtil;
+import org.das2.qds.DataSetUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;

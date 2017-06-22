@@ -28,10 +28,10 @@ package org.das2.math.filter;
 import java.util.Arrays;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
-import org.virbo.dataset.ArrayDataSet;
-import org.virbo.dataset.FlattenWaveformDataSet;
-import org.virbo.dataset.QDataSet;
-import org.virbo.dataset.SemanticOps;
+import org.das2.qds.ArrayDataSet;
+import org.das2.qds.FlattenWaveformDataSet;
+import org.das2.qds.QDataSet;
+import org.das2.qds.SemanticOps;
 
 /**
  * Java Speech Toolkit code modified to use QDataSets.

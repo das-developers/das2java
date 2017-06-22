@@ -15,7 +15,7 @@ import org.das2.datum.Units;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.virbo.dataset.QDataSet;
+import org.das2.qds.QDataSet;
 import static org.junit.Assert.*;
 
 /**

@@ -12,15 +12,15 @@ package test;
 import java.util.HashMap;
 import java.util.Map;
 import org.das2.datum.Units;
-import org.virbo.dataset.AbstractRank1DataSet;
-import org.virbo.dataset.DDataSet;
-import org.virbo.dataset.QDataSet;
-import org.virbo.dataset.DataSetOps;
-import org.virbo.dataset.DataSetUtil;
-import org.virbo.dataset.IndexGenDataSet;
-import org.virbo.dataset.SortDataSet;
-import org.virbo.dataset.WritableDataSet;
-import org.virbo.dsops.Ops;
+import org.das2.qds.AbstractRank1DataSet;
+import org.das2.qds.DDataSet;
+import org.das2.qds.QDataSet;
+import org.das2.qds.DataSetOps;
+import org.das2.qds.DataSetUtil;
+import org.das2.qds.IndexGenDataSet;
+import org.das2.qds.SortDataSet;
+import org.das2.qds.WritableDataSet;
+import org.das2.qds.ops.Ops;
 
 /**
  *

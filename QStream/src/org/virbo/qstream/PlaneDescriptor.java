@@ -5,8 +5,8 @@
 package org.virbo.qstream;
 
 import java.util.Arrays;
-import org.virbo.dataset.QDataSet;
-import org.virbo.dsutil.DataSetBuilder;
+import org.das2.qds.QDataSet;
+import org.das2.qds.util.DataSetBuilder;
 import org.w3c.dom.Element;
 
 /**

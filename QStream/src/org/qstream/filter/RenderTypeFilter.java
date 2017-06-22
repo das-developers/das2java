@@ -14,7 +14,7 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
-import org.virbo.dataset.QDataSet;
+import org.das2.qds.QDataSet;
 import org.virbo.qstream.PacketDescriptor;
 import org.virbo.qstream.StreamComment;
 import org.virbo.qstream.StreamDescriptor;

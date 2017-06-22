@@ -32,7 +32,7 @@ package org.das2.math.filter;
 
 import org.das2.datum.Datum;
 import org.das2.datum.Units;
-import org.virbo.dataset.QDataSet;
+import org.das2.qds.QDataSet;
 
 
 /**

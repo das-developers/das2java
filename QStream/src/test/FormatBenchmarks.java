@@ -11,10 +11,10 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.das2.dataset.TableDataSet;
 import org.das2.dataset.TableUtil;
 import org.das2.datum.Units;
-import org.virbo.dataset.MutablePropertyDataSet;
-import org.virbo.dataset.QDataSet;
+import org.das2.qds.MutablePropertyDataSet;
+import org.das2.qds.QDataSet;
 import org.das2.dataset.TableDataSetAdapter;
-import org.virbo.dsops.Ops;
+import org.das2.qds.ops.Ops;
 import org.virbo.qstream.SimpleStreamFormatter;
 
 /**
