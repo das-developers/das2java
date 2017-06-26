@@ -15,7 +15,6 @@ import java.util.logging.Logger;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumUtil;
 import org.das2.datum.Units;
-import static org.das2.datum.Units.getAllUnits;
 import org.das2.qds.QDataSet;
 import org.das2.qds.SemanticOps;
 
@@ -31,6 +30,9 @@ public class ReducexFilterEditorPanel extends AbstractFilterEditorPanel {
      */
     public ReducexFilterEditorPanel() {
         initComponents();
+        Units tu= Units.seconds;
+        Units[] array= tu.getOffsetUnits().getConvertibleUnits();
+        unitsCB.setModel(new javax.swing.DefaultComboBoxModel(array));  
     }
 
     /**
@@ -52,9 +54,6 @@ public class ReducexFilterEditorPanel extends AbstractFilterEditorPanel {
         scalarTF.setPreferredSize(new java.awt.Dimension(30, 27));
 
         unitsCB.setEditable(true);
-        List<Units> units = getAllUnits();
-        String[] array = units.toArray(new String[units.size()]);
-        unitsCB.setModel(new javax.swing.DefaultComboBoxModel(array));
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -128,7 +127,7 @@ public class ReducexFilterEditorPanel extends AbstractFilterEditorPanel {
     public void setInput(QDataSet ds) {
         QDataSet dep0= SemanticOps.xtagsDataSet(ds);
         Units tu= SemanticOps.getUnits(dep0);
-        Units[] array= tu.getOffsetUnits().getConvertableUnits();
+        Units[] array= tu.getOffsetUnits().getConvertibleUnits();
         Object u= unitsCB.getSelectedItem();
         unitsCB.setModel(new javax.swing.DefaultComboBoxModel(array));  
         unitsCB.setSelectedItem(u);

@@ -58,9 +58,6 @@
     <Component class="javax.swing.JComboBox" name="unitsCB">
       <Properties>
         <Property name="editable" type="boolean" value="true" postCode="List&lt;Units&gt; units = getAllUnits();&#xa;String[] array = units.toArray(new String[units.size()]);"/>
-        <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-          <Connection code="new javax.swing.DefaultComboBoxModel(array)" type="code"/>
-        </Property>
       </Properties>
     </Component>
   </SubComponents>
