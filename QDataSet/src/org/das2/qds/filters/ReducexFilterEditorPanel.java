@@ -29,9 +29,12 @@ public class ReducexFilterEditorPanel extends AbstractFilterEditorPanel {
      * Creates new form ReducexFilterEditorPanel
      */
     public ReducexFilterEditorPanel() {
+        System.err.println("ReducexFilterEditorPanel line 32");
         initComponents();
+        System.err.println("ReducexFilterEditorPanel line 34");
         Units tu= Units.seconds;
         Units[] array= tu.getOffsetUnits().getConvertibleUnits();
+        System.err.println("ReducexFilterEditorPanel line 37");
         unitsCB.setModel(new javax.swing.DefaultComboBoxModel(array));  
     }
 
