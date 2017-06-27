@@ -1591,7 +1591,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
 
     /**
      * @deprecated see #addDataPoints, which does not use DEPEND_0.
-     * @see #addDataPoints(org.virbo.dataset.QDataSet) 
+     * @see #addDataPoints(org.das2.qds.QDataSet) 
      * @param ds 
      */
     public void appendDataSet( QDataSet ds ) {
@@ -1603,7 +1603,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
      * Note earlier versions of this code assumed there would be a DEPEND_0.
      * 
      * @param ds rank 2 bundle dataset.
-     * @see #addDataPoint(org.virbo.dataset.QDataSet) 
+     * @see #addDataPoint(org.das2.qds.QDataSet) 
      */
     public void addDataPoints( QDataSet ds ) {
         

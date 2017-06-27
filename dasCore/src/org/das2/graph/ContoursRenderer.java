@@ -58,7 +58,7 @@ public class ContoursRenderer extends Renderer {
      *
      * @param ds the dataset.
      * @return a bounding box
-     * @see org.virbo.dataset.examples.Schemes#boundingBox() 
+     * @see org.das2.qds.examples.Schemes#boundingBox() 
      */
     public static QDataSet doAutorange( QDataSet ds ) {
 

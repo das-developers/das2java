@@ -61,7 +61,7 @@ import org.das2.qds.util.DataSetBuilder;
  * Note this also contains systems for coloring data in old schemes, such as the colorSpecifier interface and textSpecifier.
  * These should not be used when a dataset will be sufficient.
  *
- * @see org.virbo.dataset.examples.Schemes#eventsList() 
+ * @see org.das2.qds.examples.Schemes#eventsList() 
  * @author Jeremy
  */
 public class EventsRenderer extends Renderer {

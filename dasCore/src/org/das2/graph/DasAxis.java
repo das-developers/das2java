@@ -1101,7 +1101,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     /**
      * true if additional tick labels are drawn using the TCA function.
      * @return true if additional ticks will be drawn.
-     * @see #setTcaFunction(org.virbo.dataset.QFunction) 
+     * @see #setTcaFunction(org.das2.qds.QFunction) 
      */    
     public boolean isDrawTca() {
         return drawTca;
@@ -1111,7 +1111,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     /**
      * if true then turn on additional tick labels using the TCA function.
      * @param b if true then additional ticks will be drawn.
-     * @see #setTcaFunction(org.virbo.dataset.QFunction) 
+     * @see #setTcaFunction(org.das2.qds.QFunction) 
      */
     public void setDrawTca(boolean b) {
         boolean oldValue = drawTca;
