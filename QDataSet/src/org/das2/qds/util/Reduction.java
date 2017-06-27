@@ -530,7 +530,7 @@ public class Reduction {
      * @param xxx rank1 dataset describes the bins, which must be uniformly linearly spaced, or log spaced.  Uses SCALE_TYPE property.
      * @param yyy rank1 dataset describes the bins, which must be uniformly linearly spaced, or log spaced.
      * @return rank 2 ds containing frequency of occurrence for each bin, with DEPEND_0=xxx and DEPEND_1=yyy.
-     * @see org.virbo.dsops.Ops#histogram2d(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet, int[], org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     * @see org.das2.qds.ops.Ops#histogram2d(org.das2.qds.QDataSet, org.das2.qds.QDataSet, int[], org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      * @throws IllegalArgumentException when the units cannot be converted
      */
     public static QDataSet histogram2D( QDataSet ds, QDataSet xxx, QDataSet yyy ) {

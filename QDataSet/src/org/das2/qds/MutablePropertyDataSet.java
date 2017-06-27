@@ -23,8 +23,8 @@ public interface MutablePropertyDataSet extends QDataSet {
      * assign the name value to the property.  
      * @param name property name like "UNITS" (Use QDataSet.UNITS)
      * @param value the property value.
-     * @see org.virbo.dsops.Ops#putProperty(org.virbo.dataset.QDataSet, java.lang.String, java.lang.Object) putProperty which properly checks mutability of the dataset
-     * @see org.virbo.dataset.QDataSet#UNITS
+     * @see org.das2.qds.ops.Ops#putProperty(org.das2.qds.QDataSet, java.lang.String, java.lang.Object) putProperty which properly checks mutability of the dataset
+     * @see org.das2.qds.QDataSet#UNITS
      */
     void putProperty( String name, Object value );
     
@@ -33,9 +33,9 @@ public interface MutablePropertyDataSet extends QDataSet {
      * @param name property name like "UNITS" (Use QDataSet.UNITS)
      * @param index the index of the slice.
      * @param value the property value.
-     * @see org.virbo.dsops.Ops#putProperty(org.virbo.dataset.QDataSet, java.lang.String, java.lang.Object) 
-     * @see org.virbo.dataset.QDataSet#UNITS
-     * @see org.virbo.dataset.QDataSet#property(java.lang.String, int) 
+     * @see org.das2.qds.ops.Ops#putProperty(org.das2.qds.QDataSet, java.lang.String, java.lang.Object) 
+     * @see org.das2.qds.QDataSet#UNITS
+     * @see org.das2.qds.QDataSet#property(java.lang.String, int) 
      */
     void putProperty( String name, int index, Object value );
     

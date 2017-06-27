@@ -347,7 +347,7 @@ public class DataSetOps {
      * @return indeces that sort the data.
      */
     public static QDataSet sort(final QDataSet ds) {
-        logger.entering( "org.virbo.dataset.DataSetOps","sort",ds);
+        logger.entering( "org.das2.qds.DataSetOps","sort",ds);
         if (ds.rank() != 1) {
             throw new IllegalArgumentException( "dataset must be rank 1");
         }
@@ -387,7 +387,7 @@ public class DataSetOps {
         MutablePropertyDataSet result = IDataSet.wrap(data);
         result.putProperty(QDataSet.NAME, "sort" + ds.length());
         if ( monotonic ) result.putProperty( QDataSet.MONOTONIC, Boolean.TRUE );
-        logger.exiting( "org.virbo.dataset.DataSetOps","sort",ds);
+        logger.exiting( "org.das2.qds.DataSetOps","sort",ds);
         return result;
     }
 
@@ -551,7 +551,7 @@ public class DataSetOps {
      * @param ds rank N dataset, where N>0
      * @param indices rank 1 dataset, length m.
      * @return length m rank N dataset.
-     * @see #applyIndex(org.virbo.dataset.QDataSet, int, org.virbo.dataset.QDataSet, boolean) 
+     * @see #applyIndex(org.das2.qds.QDataSet, int, org.das2.qds.QDataSet, boolean) 
      */
     public static QDataSet applyIndex( QDataSet ds, QDataSet indices ) {
         return DataSetOps.applyIndex( ds, 0, indices, true );
@@ -569,7 +569,7 @@ public class DataSetOps {
      * @param deps do dependencies as well. Note this does not rearrange planes!
      * @return new dataset that is a copy of the first, resorted.
      * @see  org.das2.qds.SortDataSet for similar functionality
-     * @see Ops#decimate(org.virbo.dataset.QDataSet, int, int) 
+     * @see Ops#decimate(org.das2.qds.QDataSet, int, int) 
      */
     public static WritableDataSet applyIndex( QDataSet ds, int idim, QDataSet sort, boolean deps ) {
 
@@ -1094,7 +1094,7 @@ public class DataSetOps {
      * @param bundleDs
      * @return and array of the bundle names.
      * @throws IllegalArgumentException when bundleDs is not a bundle.
-     * @see DataSetOps#unbundle(org.virbo.dataset.QDataSet, java.lang.String) 
+     * @see DataSetOps#unbundle(org.das2.qds.QDataSet, java.lang.String) 
      */
     public static String[] bundleNames( QDataSet bundleDs ) {
         
@@ -1268,7 +1268,7 @@ public class DataSetOps {
      * Extract the named bundled dataset.  For example, extract B_x from bundle of components.
      * @param bundleDs a bundle of datasets
      * @param name the name of the bundled dataset, or "ch_&lt;i&gt;" where i is the dataset number
-     * @see #unbundle(org.virbo.dataset.QDataSet, int) 
+     * @see #unbundle(org.das2.qds.QDataSet, int) 
      * @throws IllegalArgumentException if no named dataset is found.
      * @return the named dataset
      */
@@ -2131,7 +2131,7 @@ public class DataSetOps {
      * @return a bounding qube of the independent dimensions 
      */
     public static QDataSet dependBoundsSimple( QDataSet ds ) {
-        logger.entering( "org.virbo.dataset.DataSetOps", "dependBoundsSimple" );
+        logger.entering( "org.das2.qds.DataSetOps", "dependBoundsSimple" );
         QDataSet xrange;
         QDataSet yrange;
 
@@ -2168,7 +2168,7 @@ public class DataSetOps {
         QDataSet result= makePropertiesMutable( Ops.join( xrange, yrange ) );
         ((MutablePropertyDataSet)result).putProperty( QDataSet.BINS_1, QDataSet.VALUE_BINS_MIN_MAX );
 
-        logger.exiting( "org.virbo.dataset.DataSetOps", "dependBoundsSimple" );
+        logger.exiting( "org.das2.qds.DataSetOps", "dependBoundsSimple" );
         return result;
         
     }
@@ -2185,7 +2185,7 @@ public class DataSetOps {
      * @return a bounding qube of the independent dimensions 
      */
     public static QDataSet dependBounds( QDataSet ds ) {
-        logger.entering( "org.virbo.dataset.DataSetOps", "dependBounds" );
+        logger.entering( "org.das2.qds.DataSetOps", "dependBounds" );
         QDataSet xrange;
         QDataSet yrange;
 
@@ -2221,7 +2221,7 @@ public class DataSetOps {
 
         QDataSet result= makePropertiesMutable( Ops.join( xrange, yrange ) );
         ((MutablePropertyDataSet)result).putProperty( QDataSet.BINS_1, QDataSet.VALUE_BINS_MIN_MAX );
-        logger.exiting( "org.virbo.dataset.DataSetOps", "dependBounds" );
+        logger.exiting( "org.das2.qds.DataSetOps", "dependBounds" );
         return result;
     }
 

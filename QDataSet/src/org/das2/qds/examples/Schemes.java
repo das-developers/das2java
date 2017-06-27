@@ -44,13 +44,13 @@ public class Schemes {
      * 
      * Note,
      *<blockquote><pre>
-     *from org.virbo.dataset.examples import Schemes
+     *from org.das2.qds.examples import Schemes
      *ds= Schemes.boundingBox()
      *print asDatumRange(ds.slice(0))
      *</pre></blockquote>
      * 
      * @return a bounding box for the data.
-     * @see org.virbo.dataset.DataSetUtil#asDatumRange(org.virbo.dataset.QDataSet) 
+     * @see org.das2.qds.DataSetUtil#asDatumRange(org.das2.qds.QDataSet) 
      */
     public static QDataSet boundingBox( ) {
         try {
@@ -81,7 +81,7 @@ public class Schemes {
      * time for each measurement to the packet time.  Note the additional requirement
      * that the offsets be uniform, e.g.:
      *<blockquote><pre>
-     *from org.virbo.dataset.examples import Schemes
+     *from org.das2.qds.examples import Schemes
      *ds= Schemes.rank2Waveform()
      *deltaT= ds.property( QDataSet.DEPEND_1 )
      *ddeltaT= diffs(dep1)
@@ -113,7 +113,7 @@ public class Schemes {
      * of m rank 1 measurements.  This tacitly asserts orthogonality,
      * but the bundled data should at least all be rank 1 and in the same units.
      *<blockquote><pre>
-     *from org.virbo.dataset.examples import Schemes
+     *from org.das2.qds.examples import Schemes
      *ds= Schemes.vectorTimeSeries()
      *plot( magnitude( ds ) )
      *plot( unbundle( ds, 0 ) )
@@ -199,7 +199,7 @@ public class Schemes {
      * other datasets that are time series.
      * @param ds a dataset
      * @return true if the dataset is a time series.
-     * @see SemanticOps#isTimeSeries(org.virbo.dataset.QDataSet) 
+     * @see SemanticOps#isTimeSeries(org.das2.qds.QDataSet) 
      */
     public static boolean isTimeSeries( QDataSet ds ) {
         return SemanticOps.isTimeSeries(ds);

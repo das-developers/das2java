@@ -208,7 +208,7 @@ public abstract class AbstractDataSet implements QDataSet, MutablePropertyDataSe
     /**
      * return a human-readable string representation of this QDataSet.
      * @return a human-readable string representation of this QDataSet.
-     * @see org.virbo.dataset.DataSetUtil#toString(org.virbo.dataset.QDataSet) 
+     * @see org.das2.qds.DataSetUtil#toString(org.das2.qds.QDataSet) 
      */
     @Override
     public String toString( ) {

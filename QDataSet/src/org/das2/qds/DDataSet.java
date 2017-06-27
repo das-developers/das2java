@@ -456,8 +456,10 @@ public final class DDataSet extends ArrayDataSet {
      * creates a DDataSet by wrapping an existing array, and aliasing it to rank2.
      * Note the last index is packed closest in memory.  The first index length
      * is calculated from the size of the array.
+     * @param back
      * @param n1 the size of the second index.
      * @param n2 the size of the third index.
+     * @return 
      */
     public static DDataSet wrapRank3(double[] back, int n1, int n2) {
         return new DDataSet(3, back.length / (n1 * n2), n1, n2, 1, back);
@@ -474,7 +476,7 @@ public final class DDataSet extends ArrayDataSet {
      * @param destpos destination dataset first dimension index.
      * @throws IllegalArgumentException if the higher rank geometry doesn't match
      * @throws IndexOutOfBoundsException
-     * @see #copyElements(org.virbo.dataset.DDataSet, int, org.virbo.dataset.DDataSet, int, int, boolean) 
+     * @see #copyElements(org.das2.qds.DDataSet, int, org.das2.qds.DDataSet, int, int, boolean) 
      */
     public static void copyElements(DDataSet src, int srcpos, DDataSet dest, int destpos, int nrec ) {
         if ( src.len1 != dest.len1 || src.len2 != dest.len2 ) {

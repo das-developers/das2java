@@ -101,7 +101,7 @@ public class BinAverage {
      * @param dep1 the rank 1 depend1 for the result, which must be uniformly spaced.
      * @param dep2 the rank 1 depend2 for the result, which must be uniformly spaced.
      * @return rank 3 dataset of z averages with depend_0, depend_1, and depend_2.  WEIGHTS contains the total weight for each bin.
-     * @see #rebinBundle(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     * @see #rebinBundle(org.das2.qds.QDataSet, org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      */
     public static DDataSet rebinBundle( QDataSet ds, QDataSet dep0, QDataSet dep1, QDataSet dep2 ) {
         DDataSet sresult= DDataSet.createRank3( dep0.length(), dep1.length(), dep2.length() );
@@ -188,8 +188,8 @@ public class BinAverage {
      * @param dep0 the rank 1 depend0 for the result, which must be uniformly spaced.
      * @param dep1 the rank 1 depend1 for the result, which must be uniformly spaced.
      * @return rank 2 dataset of z averages with depend_0 and depend_1.  WEIGHTS contains the total weight for each bin.
-     * @see #rebin(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
-     * @see #rebinBundle(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     * @see #rebin(org.das2.qds.QDataSet, org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
+     * @see #rebinBundle(org.das2.qds.QDataSet, org.das2.qds.QDataSet, org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      */
     public static DDataSet rebinBundle( QDataSet ds, QDataSet dep0, QDataSet dep1 ) {
         DDataSet sresult= DDataSet.createRank2( dep0.length(), dep1.length() );
@@ -263,8 +263,8 @@ public class BinAverage {
      * @param newTags0 rank 1 monotonic dataset
      * @param newTags1 rank 1 monotonic dataset
      * @return rank 2 dataset with newTags0 for the DEPEND_0 tags, newTags1 for the DEPEND_1 tags.  WEIGHTS property contains the weights.
-     * @see #rebin(org.virbo.dataset.QDataSet, int, int) 
-     * @see #rebinBundle(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     * @see #rebin(org.das2.qds.QDataSet, int, int) 
+     * @see #rebinBundle(org.das2.qds.QDataSet, org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      */
     public static DDataSet rebin(QDataSet ds, QDataSet newTags0, QDataSet newTags1) {
 
@@ -510,7 +510,7 @@ public class BinAverage {
      * @param n0 the number of bins in the result. Note this changed in v2013a_6 from earlier versions of this routine.
      * @param n1 the number of bins in the result.
      * @return rank 2 dataset with n0 by n1 points, with a weights plane.
-     * @see #rebin(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     * @see #rebin(org.das2.qds.QDataSet, org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      */
     public static QDataSet rebin(QDataSet ds, int n0, int n1) {
         DDataSet result = DDataSet.createRank2( n0, n1);

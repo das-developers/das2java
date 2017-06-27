@@ -59,7 +59,7 @@ public class DataSetUtil {
 
     private static final Logger logger= LoggerManager.getLogger("qdataset.ops");
 
-    private static final String LOGGING_SOURCE_CLASS= "org.virbo.dataset.DataSetUtil";
+    private static final String LOGGING_SOURCE_CLASS= "org.das2.qds.DataSetUtil";
     
     /**
      * creates a dataset of integers 0,1,2,...,n-1.
@@ -117,8 +117,8 @@ public class DataSetUtil {
      * The dataset may contain fill data, only the non-fill portions are considered.
      * @param ds the rank 1 dataset with physical units.
      * @return true when the dataset is monotonically increasing.
-     * @see org.virbo.dataset.QDataSet#MONOTONIC
-     * @see org.virbo.dataset.ArrayDataSet#monotonicSubset(org.virbo.dataset.ArrayDataSet) 
+     * @see org.das2.qds.QDataSet#MONOTONIC
+     * @see org.das2.qds.ArrayDataSet#monotonicSubset(org.das2.qds.ArrayDataSet) 
      */
     public static boolean isMonotonic(QDataSet ds) {
         if (ds.rank() != 1) { // TODO: support bins dataset rank 2 with BINS_1="min,max"
@@ -166,8 +166,8 @@ public class DataSetUtil {
      * The dataset may contain fill data, only the non-fill portions are considered.
      * @param ds the rank 1 dataset with physical units.
      * @return true when the dataset is monotonically increasing.
-     * @see org.virbo.dataset.QDataSet#MONOTONIC
-     * @see org.virbo.dataset.ArrayDataSet#monotonicSubset(org.virbo.dataset.ArrayDataSet) 
+     * @see org.das2.qds.QDataSet#MONOTONIC
+     * @see org.das2.qds.ArrayDataSet#monotonicSubset(org.das2.qds.ArrayDataSet) 
      */
     public static boolean isMonotonicAndIncreasing(QDataSet ds) {
         if (ds.rank() != 1) { // TODO: support bins dataset rank 2 with BINS_1="min,max"
@@ -3088,8 +3088,8 @@ public class DataSetUtil {
      * not set.
      * @param ds monotonic, rank 1 dataset.
      * @return the indeces [min,max] note max is inclusive.
-     * @see org.virbo.dsops.Ops#extent which returns the range containing any data.
-     * @see #isMonotonic(org.virbo.dataset.QDataSet) which must be true
+     * @see org.das2.qds.ops.Ops#extent which returns the range containing any data.
+     * @see #isMonotonic(org.das2.qds.QDataSet) which must be true
      * @throws IllegalArgumentException when isMonotonic(ds) is false.
      */
     public static int[] rangeOfMonotonic( QDataSet ds ) {

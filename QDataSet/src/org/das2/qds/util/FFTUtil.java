@@ -324,7 +324,7 @@ public class FFTUtil {
      * @param fft the FFT engine
      * @param vds rank 1 ds[n] or rank 2 ds[n,2]
      * @return 
-     * @see Ops#fft(org.virbo.dataset.QDataSet) 
+     * @see Ops#fft(org.das2.qds.QDataSet) 
      */
     public static ComplexArray.Double fft( GeneralFFT fft, QDataSet vds ) {
         ComplexArray.Double ca;
@@ -350,7 +350,7 @@ public class FFTUtil {
      * @param fft the FFT engine
      * @param vds rank 2 dataset[n;real,complex]
      * @return rank 2 dataset[n;real,complex]
-     * @see Ops#ifft(org.virbo.dataset.QDataSet) 
+     * @see Ops#ifft(org.das2.qds.QDataSet) 
      */
     public static ComplexArray.Double ifft( GeneralFFT fft, QDataSet vds ) {
         if ( vds.rank()!=2 ) throw new IllegalArgumentException("input must be rank 2: dataset[n;real,complex]");

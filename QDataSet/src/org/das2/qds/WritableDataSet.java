@@ -22,7 +22,7 @@ package org.das2.qds;
  * seriously degrade performance.  
  *
  * @author jbf
- * @see org.virbo.dsops.Ops#maybeCopy(org.virbo.dataset.QDataSet) 
+ * @see org.das2.qds.ops.Ops#maybeCopy(org.das2.qds.QDataSet) 
  * @see MutablePropertyDataSet#isImmutable() 
  */
 public interface WritableDataSet extends MutablePropertyDataSet {

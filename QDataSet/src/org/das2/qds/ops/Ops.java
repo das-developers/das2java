@@ -363,7 +363,7 @@ public class Ops {
      * @param ds1 a rank N dataset
      * @param ds2 a rank M dataset with compatible geometry
      * @return the element-wise sum of the two datasets.
-     * @see #addGen(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet, java.util.Map) which shows how units are resolved.
+     * @see #addGen(org.das2.qds.QDataSet, org.das2.qds.QDataSet, java.util.Map) which shows how units are resolved.
      */
     public static QDataSet add(QDataSet ds1, QDataSet ds2) {
         Map<String,Object> props= new HashMap();
@@ -563,7 +563,7 @@ public class Ops {
      * 
      * @param ds dataset of Rank N.
      * @return dataset of Rank N-1.
-     * @see #abs(org.virbo.dataset.QDataSet) 
+     * @see #abs(org.das2.qds.QDataSet) 
      */
     public static QDataSet magnitude(QDataSet ds) {
         
@@ -611,7 +611,7 @@ public class Ops {
      *
      * @param ds
      * @return the unweighted total of the dataset, or -1e31 if fill was encountered.
-     * @see #total(org.virbo.dataset.QDataSet, int) which should be used instead.
+     * @see #total(org.das2.qds.QDataSet, int) which should be used instead.
      */
     public static double total(QDataSet ds) {
         return total(ds,new NullProgressMonitor());
@@ -625,7 +625,7 @@ public class Ops {
      * @param ds
      * @param mon progress monitor
      * @return the unweighted total of the dataset, or -1e31 if fill was encountered.
-     * @see #total(org.virbo.dataset.QDataSet, int, org.das2.util.monitor.ProgressMonitor) which should be used instead.
+     * @see #total(org.das2.qds.QDataSet, int, org.das2.util.monitor.ProgressMonitor) which should be used instead.
      */
     public static double total(QDataSet ds,ProgressMonitor mon) {
         double s = 0;
@@ -652,7 +652,7 @@ public class Ops {
      *
      * @param ds1 the object which can be converted to a dataset.
      * @return 
-     * @see #total(org.virbo.dataset.QDataSet) 
+     * @see #total(org.das2.qds.QDataSet) 
      */
     public static double total( Object ds1 ) {
         return total( dataset(ds1) );
@@ -775,7 +775,7 @@ public class Ops {
      * @param ds rank N qube dataset.  N=1,2,3,4
      * @param dim zero-based index number.
      * @return rank N-1 dataset.
-     * @see #total(org.virbo.dataset.QDataSet) total(ds) which is an earlier deprecated routine.
+     * @see #total(org.das2.qds.QDataSet) total(ds) which is an earlier deprecated routine.
      */
     public static QDataSet total(QDataSet ds, int dim) {
         try {
@@ -1004,7 +1004,7 @@ public class Ops {
      * reduce the size of the data by keeping every 10th measurement.  
      * @param ds a qube dataset.
      * @return a decimated qube dataset.
-     * @see #decimate(org.virbo.dataset.QDataSet, int) 
+     * @see #decimate(org.das2.qds.QDataSet, int) 
      */
     public static QDataSet decimate( QDataSet ds ) {
         return decimate( ds, 10 );
@@ -1135,7 +1135,7 @@ public class Ops {
      * @param ds a rank 1 or greater dataset
      * @param dr a range in the same units as ds
      * @return the subset of the data.
-     * @see #trim(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     * @see #trim(org.das2.qds.QDataSet, org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      */
     public static QDataSet trim( QDataSet ds, DatumRange dr ) {
         return trim( ds, dataset( dr.min() ), dataset( dr.max() ) );
@@ -1147,7 +1147,7 @@ public class Ops {
      * @param ds a rank 1 or greater dataset
      * @param odr an object which can be interpretted as a range.
      * @return the subset of the data.
-     * @see #trim(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     * @see #trim(org.das2.qds.QDataSet, org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      */
     public static QDataSet trim( QDataSet ds, Object odr ) {
         DatumRange dr= datumRange(odr);
@@ -1164,7 +1164,7 @@ public class Ops {
      * @param st rank 0 min value
      * @param en rank 0 max value
      * @return the subset of the data.
-     * @see #slice0(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     * @see #slice0(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      */
     public static QDataSet trim( QDataSet ds, QDataSet st, QDataSet en ) {
         if ( st.rank()!=0 || en.rank()!=0 ) {
@@ -1276,7 +1276,7 @@ public class Ops {
      * @param st rank 0 min value
      * @param en rank 0 max value
      * @return the subset of the data.
-     * @see #slice1(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     * @see #slice1(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      */
     public static QDataSet trim1( QDataSet ds, QDataSet st, QDataSet en ) {
         if ( st.rank()!=0 || en.rank()!=0 ) {
@@ -1331,7 +1331,7 @@ public class Ops {
      * element-wise sqrt.  See Ops.pow to square a number.
      * @param ds the dataset
      * @return the square root of the dataset, which will contain NaN where the data is negative.
-     * @see #pow(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     * @see #pow(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      */
     public static QDataSet sqrt(QDataSet ds) {
         //MutablePropertyDataSet result= (MutablePropertyDataSet) pow(ds, 0.5);
@@ -1508,7 +1508,7 @@ public class Ops {
      * operator.
      * @param ds1 the dataset
      * @return dataset with the same geometry
-     * @see Ops#magnitude(org.virbo.dataset.QDataSet) magnitude(ds) which preserves the sign.
+     * @see Ops#magnitude(org.das2.qds.QDataSet) magnitude(ds) which preserves the sign.
      */
     public static QDataSet abs(QDataSet ds1) {
         MutablePropertyDataSet result= applyUnaryOp(ds1, new UnaryOp() {
@@ -2149,7 +2149,7 @@ public class Ops {
      * @param ds1
      * @param ds2
      * @return
-     * @see #bitwiseOr(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     * @see #bitwiseOr(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      */
     public static QDataSet or(QDataSet ds1, QDataSet ds2) {
         return applyBinaryOp(ds1, ds2, new BinaryOp() {
@@ -2170,7 +2170,7 @@ public class Ops {
      * @param ds1
      * @param ds2
      * @return
-     * @see #bitwiseAnd(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     * @see #bitwiseAnd(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      */
     public static QDataSet and(QDataSet ds1, QDataSet ds2) {
         return applyBinaryOp(ds1, ds2, new BinaryOp() {
@@ -2252,7 +2252,7 @@ public class Ops {
      * element-wise logical not function.  non-zero is true, zero is false.
      * @param ds1
      * @return
-     * @see #bitwiseXor(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     * @see #bitwiseXor(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      */
     public static QDataSet not(QDataSet ds1) {
         return applyUnaryOp(ds1, new UnaryOp() {
@@ -2940,8 +2940,8 @@ public class Ops {
      * @param ds2 dataset of length n to be concatenated.
      * @return a dataset length m+n.
      * @throws IllegalArgumentException if the two datasets don't have the same rank.
-     * @see #merge(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) merge(ds1,ds2), which will interleave to preserve monotonic.
-     * @see #append(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     * @see #merge(org.das2.qds.QDataSet, org.das2.qds.QDataSet) merge(ds1,ds2), which will interleave to preserve monotonic.
+     * @see #append(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      * @deprecated use append instead.
      */
     public static QDataSet concatenate(QDataSet ds1, QDataSet ds2) {
@@ -4813,7 +4813,7 @@ public class Ops {
      * @param ds of any rank M, M&gt;0.
      * @return a rank 1 or rank 2 dataset with N by M elements, where N is the number
      * of non-zero elements found.
-     * @see #putValues(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     * @see #putValues(org.das2.qds.QDataSet, org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      */
     public static QDataSet where(QDataSet ds) {
         
@@ -4904,8 +4904,8 @@ public class Ops {
      * @param ds rank N dataset where N &gt; 0
      * @param bounds a rank 1 bounding box.  
      * @return rank N dataset containing non-zero where the condition is true.
-     * @see #without(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
-     * @see #binsWithin(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     * @see #without(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
+     * @see #binsWithin(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      */
     public static QDataSet within( QDataSet ds, QDataSet bounds ) {
         return and( ge( ds, bounds.slice(0) ), lt( ds, bounds.slice(1) ) );
@@ -4922,9 +4922,9 @@ public class Ops {
      * @param ds object which can be converted to rank N dataset where N &gt; 0
      * @param bounds a rank 1 bounding box, DatumRange, or two-element array.  
      * @return rank N dataset containing non-zero where the condition is true.
-     * @see #without(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     * @see #without(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      * @see #where(java.lang.Object) which is often used with this.
-     * @see #binsWithin(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     * @see #binsWithin(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      */
     public static QDataSet within( Object ds, Object bounds ) {
         QDataSet boundsDs= dataset( datumRange( bounds ) );
@@ -4937,7 +4937,7 @@ public class Ops {
      * @param ds rank 2 bins dataset 
      * @param bounds a rank 1 bounding box.  
      * @return rank 1 dataset containing non-zero where the condition is true.
-     * @see #within(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     * @see #within(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      */
     public static QDataSet binsWithin( QDataSet ds, QDataSet bounds ) {
         return and( ge( slice1(ds,1), bounds.slice(0) ), lt( slice1(ds,0), bounds.slice(1) ) );
@@ -4953,7 +4953,7 @@ public class Ops {
      * @param ds rank N dataset where N &gt; 0
      * @param bounds a rank 1 bounding box.  
      * @return rank N dataset containing non-zero where the condition is true.
-     * @see #within(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     * @see #within(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      */
     public static QDataSet without( QDataSet ds, QDataSet bounds ) {
         return or( lt( ds, bounds.slice(0) ), ge( ds, bounds.slice(1) ) );
@@ -4969,7 +4969,7 @@ public class Ops {
      * @param ds rank N dataset where N &gt; 0
      * @param bounds a rank 1 bounding box.  
      * @return rank N dataset containing non-zero where the condition is true.
-     * @see #within(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     * @see #within(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      */
     public static QDataSet without( Object ds, Object bounds ) {
         QDataSet boundsDs= dataset( datumRange( bounds ) );
@@ -4981,7 +4981,7 @@ public class Ops {
      * @param ds rank 2 bins dataset
      * @param bounds a rank 1 bounding box.  
      * @return rank 1 dataset containing non-zero where the condition is true.
-     * @see #binsWithin(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     * @see #binsWithin(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      */
     public static QDataSet binsWithout( QDataSet ds, QDataSet bounds ) {
         return or( lt( slice1(ds,0), bounds.slice(0) ), ge( slice1(ds,1), bounds.slice(1) ) );            
@@ -4999,7 +4999,7 @@ public class Ops {
      * the data was sorted already.
      * @param ds rank 1 dataset
      * @return rank 1 dataset of indeces that sort the input dataset.
-     * @see #shuffle(org.virbo.dataset.QDataSet)  
+     * @see #shuffle(org.das2.qds.QDataSet)  
      */
     public static QDataSet sort(QDataSet ds) {
         return DataSetOps.sort(ds);
@@ -5017,8 +5017,8 @@ public class Ops {
      * @param ds rank 1 dataset, sorted, or mostly sorted.
      * @return the element indeces.
      * @see #sort(java.lang.Object) 
-     * @see #uniq(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
-     * @see #uniqValues(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     * @see #uniq(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
+     * @see #uniqValues(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      */
     public static QDataSet uniq( QDataSet ds ) {
         return uniq( ds, null );
@@ -5134,7 +5134,7 @@ public class Ops {
      * @param ds rank 1 dataset, sorted, or mostly sorted.
      * @param sort null, or the rank 1 dataset of indeces
      * @return the subset of the data which is uniq.
-     * @see #uniq(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     * @see #uniq(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      */
     public static QDataSet uniqValues( QDataSet ds, QDataSet sort  ) {
         QDataSet idx= uniq( ds, sort );
@@ -5468,8 +5468,8 @@ public class Ops {
      * @param indeces rank 1 indeces when ds is rank 1, or rank 2 [:,m] indeces for a rank m dataset.
      * @param value null for fill, or the rank 0 value or rank 1 values to assign.
      * @return the dataset with the indeces assigned new values.
-     * @see #where(org.virbo.dataset.QDataSet) 
-     * @see #removeValues(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     * @see #where(org.das2.qds.QDataSet) 
+     * @see #removeValues(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      */
     public static WritableDataSet putValues( QDataSet ds, QDataSet indeces, QDataSet value ) {
         DataSetUtil.checkListOfIndeces(ds,indeces);
@@ -5520,8 +5520,8 @@ public class Ops {
      * @param ds the rank 1 or greater dataset
      * @param indeces rank 1 indeces when ds is rank 1, or rank 2 [:,m] indeces for a rank m dataset.
      * @return the dataset with the data at the indeces made invalid.
-     * @see #putValues(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
-     * @see #where(org.virbo.dataset.QDataSet) 
+     * @see #putValues(org.das2.qds.QDataSet, org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
+     * @see #where(org.das2.qds.QDataSet) 
      */
     public static WritableDataSet removeValues( QDataSet ds, QDataSet indeces ) {
         DataSetUtil.checkListOfIndeces(ds,indeces);
@@ -5590,7 +5590,7 @@ public class Ops {
      *</pre></blockquote>
      * @param ds rank 1 dataset
      * @return rank 1 dataset of integer indeces.
-     * @see #sort(org.virbo.dataset.QDataSet) 
+     * @see #sort(org.das2.qds.QDataSet) 
      */
     public static QDataSet shuffle(QDataSet ds) {
         int size = ds.length();
@@ -5618,7 +5618,7 @@ public class Ops {
 
     
     /**
-     * @see org.virbo.dataset.QDataSet#slice(int) 
+     * @see org.das2.qds.QDataSet#slice(int) 
      * @param ds the rank N (N&gt;0) or more dataset
      * @param idx the index 
      * @return rank N-1 dataset
@@ -5633,7 +5633,7 @@ public class Ops {
      * @param ds ripples(20,20).  Presently this must be a simple table.
      * @param sliceds dataset("10.3")
      * @return the slice at the given location
-     * @see #trim(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     * @see #trim(org.das2.qds.QDataSet, org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      */
     public static QDataSet slice0( QDataSet ds, QDataSet sliceds ) {
         if ( sliceds.rank()!=0 ) {
@@ -5657,7 +5657,7 @@ public class Ops {
     
     
     /**
-     * @see org.virbo.dataset.DataSetOps#slice1(org.virbo.dataset.QDataSet, int) 
+     * @see org.das2.qds.DataSetOps#slice1(org.das2.qds.QDataSet, int) 
      * @param ds
      * @param idx
      * @return
@@ -5692,7 +5692,7 @@ public class Ops {
     }        
 
     /**
-     * @see org.virbo.dataset.DataSetOps#slice2(org.virbo.dataset.QDataSet, int) 
+     * @see org.das2.qds.DataSetOps#slice2(org.das2.qds.QDataSet, int) 
      * @param ds
      * @param idx
      * @return
@@ -5727,7 +5727,7 @@ public class Ops {
     }    
     
     /**
-     * @see org.virbo.dataset.DataSetOps#slice3(org.virbo.dataset.QDataSet, int) 
+     * @see org.das2.qds.DataSetOps#slice3(org.das2.qds.QDataSet, int) 
      * @param ds
      * @param idx
      * @return
@@ -5764,7 +5764,7 @@ public class Ops {
     /**
      * Enumeration identifying windows applied to data before doing FFTs.
      * @see #fftFilter
-     * @see #windowFunction(org.virbo.dsops.Ops.FFTFilterType, int) 
+     * @see #windowFunction(org.das2.qds.ops.Ops.FFTFilterType, int) 
      */
     public static enum FFTFilterType{ 
         /**
@@ -5948,7 +5948,7 @@ public class Ops {
      * @param ds, rank 1, 2, or 3 data
      * @param len
      * @return data[N,len] with the hanning window applied.
-     * @see #windowFunction(org.virbo.dsops.Ops.FFTFilterType, int) 
+     * @see #windowFunction(org.das2.qds.ops.Ops.FFTFilterType, int) 
      */
     public static QDataSet hanning( QDataSet ds, int len ) {
         return fftFilter(  ds, len, FFTFilterType.Hanning );
@@ -6004,8 +6004,8 @@ public class Ops {
      * @param window the window
      * @param mon a ProgressMonitor for the process
      * @return rank 2 fft spectrum
-     * @see #fftPower(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet, int, org.das2.util.monitor.ProgressMonitor)      
-     * @see #windowFunction(org.virbo.dsops.Ops.FFTFilterType, int) 
+     * @see #fftPower(org.das2.qds.QDataSet, org.das2.qds.QDataSet, int, org.das2.util.monitor.ProgressMonitor)      
+     * @see #windowFunction(org.das2.qds.ops.Ops.FFTFilterType, int) 
      */
     public static QDataSet fftPower( QDataSet ds, QDataSet window, ProgressMonitor mon ) {
         return fftPower( ds, window, 1, mon );
@@ -6019,7 +6019,7 @@ public class Ops {
      * @param windowName name for the window, including "Hanning" "Hann" "TenPercentEdgeCosine", "Unity", "Boxcar"
      * @param mon a ProgressMonitor for the process
      * @return rank 2 fft spectrum
-     * @see #fftPower(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet, int, org.das2.util.monitor.ProgressMonitor)
+     * @see #fftPower(org.das2.qds.QDataSet, org.das2.qds.QDataSet, int, org.das2.util.monitor.ProgressMonitor)
      */
     public static QDataSet fftPower( QDataSet ds, int windowLen, int stepFraction, String windowName, ProgressMonitor mon ) {
         QDataSet window= windowFunction( FFTFilterType.valueOf(windowName), windowLen );
@@ -6526,7 +6526,7 @@ public class Ops {
      *
      * @param ds rank 1 dataset of length n.
      * @return ds[n,2], complex array
-     * @see #hilbert(org.virbo.dataset.QDataSet) 
+     * @see #hilbert(org.das2.qds.QDataSet) 
      */
     public static QDataSet hilbertSciPy( QDataSet ds ) {
         int N= ds.length();
@@ -6559,7 +6559,7 @@ public class Ops {
      *
      * @param ds rank 1 dataset of length n.
      * @return ds[n,2], complex array
-     * @see #hilbert(org.virbo.dataset.QDataSet) 
+     * @see #hilbert(org.das2.qds.QDataSet) 
      */
     public static QDataSet hilbert( QDataSet ds ) {
         QDataSet ff= fft( ds );
@@ -6803,7 +6803,7 @@ public class Ops {
      * The property QDataSet.SCALE_TYPE is set to lin or log.
      * The property count is set to the number of valid measurements.
      * TODO: this could use MONOTONIC, but it doesn't.  DELTA_PLUS, DELTA_MINUS make that more difficult.
-     * @see DataSetUtil#rangeOfMonotonic(org.virbo.dataset.QDataSet) 
+     * @see DataSetUtil#rangeOfMonotonic(org.das2.qds.QDataSet) 
      * @param ds
      * @return two element, rank 1 "bins" dataset.
      */
@@ -6837,7 +6837,7 @@ public class Ops {
      * @param wds a weights dataset, containing zero where the data is not valid, positive non-zero otherwise.  If null, then all finite data is treated as valid.
      * @param range if non-null, return the union of this range and the extent.  This must not contain fill!
      * @return two element, rank 1 "bins" dataset.
-     * @see #extent(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     * @see #extent(org.das2.qds.QDataSet, org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      */
     public static QDataSet extentSimple( QDataSet ds, QDataSet wds, QDataSet range  ) {
         
@@ -7122,7 +7122,7 @@ public class Ops {
      * @param ds the dataset
      * @param range null, or rank 1 bins dataset
      * @return rank 1, two-element range, or when all data is fill result[0] will be Double.POSITIVE_INFINITY.
-     * @see #extentSimple(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     * @see #extentSimple(org.das2.qds.QDataSet, org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      */
     public static QDataSet extentSimple( QDataSet ds, QDataSet range ) {
         
@@ -7296,7 +7296,7 @@ public class Ops {
      * @param min
      * @param max
      * @return two-element rank 1 QDataSet
-     * @see org.virbo.dataset.QDataSet#SCALE_TYPE
+     * @see org.das2.qds.QDataSet#SCALE_TYPE
      */
     public static QDataSet rescaleRangeLogLin( QDataSet dr, double min, double max ) {
         if ( dr.rank()!=1 ) {
@@ -7358,8 +7358,8 @@ public class Ops {
      * @param xrange a rank 1 2-element bounds dataset, so that Units can be specified.
      * @param yrange a rank 1 2-element bounds dataset, so that Units can be specified.
      * @return a rank 2 dataset
-     * @see #histogram(org.virbo.dataset.QDataSet, double, double, double) 
-     * @see org.virbo.dsutil.Reduction#histogram2D(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     * @see #histogram(org.das2.qds.QDataSet, double, double, double) 
+     * @see org.das2.qds.util.Reduction#histogram2D(org.das2.qds.QDataSet, org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      */
     public static QDataSet histogram2d( QDataSet x, QDataSet y, int[] bins, QDataSet xrange, QDataSet yrange ) {
 
@@ -8027,7 +8027,7 @@ public class Ops {
      * @param findex1 rank N dataset of fractional indeces for the first index.  This must be dimensionless, between -0.5 and L-0.5 and is typically calculated by the findex command.
      * @return rank N dataset 
      * @see #findex, the 1-D findex command
-     * @see #interpolateGrid(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet)  
+     * @see #interpolateGrid(org.das2.qds.QDataSet, org.das2.qds.QDataSet, org.das2.qds.QDataSet)  
      */
     public static QDataSet interpolate(QDataSet vv, QDataSet findex0, QDataSet findex1) {
 
@@ -9179,7 +9179,7 @@ public class Ops {
      * N-1 elements is returned.  DEPEND_0 will contain the average of the two points.
      * @param ds a rank 1 dataset with N elements.
      * @return a rank 1 dataset with N-1 elements.
-     * @see #accum(org.virbo.dataset.QDataSet) 
+     * @see #accum(org.das2.qds.QDataSet) 
      */
     public static QDataSet diff(QDataSet ds) {
         if (ds.rank() > 1) {
@@ -9232,7 +9232,7 @@ public class Ops {
      * @param accumDs the initial value of the running sum.  Last value of Rank 0 or Rank 1 dataset is used, or may be null.
      * @param ds each element is added to the running sum
      * @return the running of each element in the array.
-     * @see #diff(org.virbo.dataset.QDataSet) 
+     * @see #diff(org.das2.qds.QDataSet) 
      */
     public static QDataSet accum( QDataSet accumDs, QDataSet ds ) {
         if (ds.rank() > 1) {
@@ -9289,7 +9289,7 @@ public class Ops {
      * Result[i]= total( ds[0:i+1] )
      * @param ds each element is added to the running sum
      * @return the running of each element in the array.
-     * @see #diff(org.virbo.dataset.QDataSet) 
+     * @see #diff(org.das2.qds.QDataSet) 
      */
     public static QDataSet accum( QDataSet ds ) {
         return accum( null, ds );
@@ -9311,7 +9311,7 @@ public class Ops {
      * the result will have this type as well.  Otherwise DDataSet is returned.
      * @param ds1 null or rank N dataset
      * @param ds2 rank N dataset with compatible geometry.
-     * @see #concatenate(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) concatenate, which may do the same thing.
+     * @see #concatenate(org.das2.qds.QDataSet, org.das2.qds.QDataSet) concatenate, which may do the same thing.
      * @return 
      */
     public static QDataSet append( QDataSet ds1, QDataSet ds2 ) {
@@ -9363,7 +9363,7 @@ public class Ops {
      * @param ds1 the dataset providing timetags, or the timetags themselves.
      * @param ds the dataset to synch up.
      * @return the one dataset, synchronized.
-     * @see #synchronize(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet...) 
+     * @see #synchronize(org.das2.qds.QDataSet, org.das2.qds.QDataSet...) 
      */
     public static QDataSet synchronizeOne( QDataSet ds1, QDataSet ds ) {
         QDataSet tt= (QDataSet) ds1.property( QDataSet.DEPEND_0 );
@@ -9388,8 +9388,8 @@ public class Ops {
      * @param ds1 the dataset providing timetags, or the timetags themselves.
      * @param ds the single datasets to synch up.
      * @return the single dataset evaluated at the other dataset's timetags.
-     * @see #synchronizeNN(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
-     * @see #synchronize(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet...) 
+     * @see #synchronizeNN(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
+     * @see #synchronize(org.das2.qds.QDataSet, org.das2.qds.QDataSet...) 
      */
     public static QDataSet synchronize( QDataSet ds1, QDataSet ds ) {
         List<QDataSet> dss= synchronize( ds1, new QDataSet[] { ds } );
@@ -9406,8 +9406,8 @@ public class Ops {
      * @param ds1 the dataset providing timetags, or the timetags themselves.
      * @param dss the N datasets to synch up.
      * @return a list of N datasets, synchronized
-     * @see #synchronizeNN(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet...) 
-     * @see #synchronize(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     * @see #synchronizeNN(org.das2.qds.QDataSet, org.das2.qds.QDataSet...) 
+     * @see #synchronize(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      */
     public static List<QDataSet> synchronize( QDataSet ds1, QDataSet ... dss ) {
         QDataSet tt= (QDataSet) ds1.property( QDataSet.DEPEND_0 );
@@ -9450,8 +9450,8 @@ public class Ops {
      * @param ds1 the dataset providing timetags, or the timetags themselves.
      * @param ds the single datasets to synch up.
      * @return the single dataset evaluated at the other dataset's timetags.
-     * @see #synchronize(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
-     * @see #synchronizeNN(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet...) 
+     * @see #synchronize(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
+     * @see #synchronizeNN(org.das2.qds.QDataSet, org.das2.qds.QDataSet...) 
      */
     public static QDataSet synchronizeNN( QDataSet ds1, QDataSet ds ) {
         List<QDataSet> dss= synchronizeNN( ds1, new QDataSet[] { ds } );
@@ -9468,8 +9468,8 @@ public class Ops {
      * @param ds1 the dataset providing timetags, or the timetags themselves.
      * @param dss the N datasets
      * @return a list of N datasets, synchronized
-     * @see #synchronize(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet...)      
-     * @see #synchronizeNN(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     * @see #synchronize(org.das2.qds.QDataSet, org.das2.qds.QDataSet...)      
+     * @see #synchronizeNN(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      */
     public static List<QDataSet> synchronizeNN( QDataSet ds1, QDataSet ... dss ) {
         QDataSet tt= (QDataSet) ds1.property( QDataSet.DEPEND_0 );
@@ -9548,8 +9548,8 @@ public class Ops {
      * The result for rank 2 is an n,3 dataset of [x,y,z], or if there are no tags, just [z].
      * The last index will be the dependent variable, and the first indeces will
      * be the independent variables sorted by dimension.
-     * @see org.virbo.dataset.DataSetOps#flattenRank2(org.virbo.dataset.QDataSet) 
-     * @see #grid(org.virbo.dataset.QDataSet) 
+     * @see org.das2.qds.DataSetOps#flattenRank2(org.das2.qds.QDataSet) 
+     * @see #grid(org.das2.qds.QDataSet) 
      * @param ds the rank N dataset (note only Rank 2 is supported for now).
      * @return rank 2 dataset bundle
      */
@@ -9588,7 +9588,7 @@ public class Ops {
      * Y data contain repeating elements for the rows and columns of the grid.
      * @param ds rank 2 bundle of X,Y, and Z data.
      * @return rank 2 table.
-     * @see #flatten(org.virbo.dataset.QDataSet) 
+     * @see #flatten(org.das2.qds.QDataSet) 
      */
     public static QDataSet grid( QDataSet ds ) {
         return DataSetOps.grid(ds);
@@ -9964,7 +9964,7 @@ public class Ops {
      * @param ds1 null, rank N dataset with n records or rank N+1 bundle dataset
      * @param ds2 rank N dataset.
      * @return rank N+1 bundle dataset
-     * @see #join(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     * @see #join(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      */
     public static QDataSet bundle( QDataSet ds1, QDataSet ds2 ) {
         if ( ds1==null && ds2==null ) {
@@ -10069,7 +10069,7 @@ public class Ops {
      * @param ds2 rank 1 (for now) dataset with n records
      * @param ds3 rank 1 (for now) dataset with n records
      * @return rank 2 [n,3] bundle dataset
-     * @see #join(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     * @see #join(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      */
     public static QDataSet bundle( QDataSet ds1, QDataSet ds2, QDataSet ds3 ) {
         return bundle( bundle( ds1, ds2 ), ds3 );
@@ -10085,7 +10085,7 @@ public class Ops {
      * @param ds3 rank 1 (for now) dataset with n records
      * @param ds4 rank 1 (for now) dataset with n records
      * @return rank 2 [n,4] bundle dataset
-     * @see #join(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     * @see #join(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      */
     public static QDataSet bundle( QDataSet ds1, QDataSet ds2, QDataSet ds3, QDataSet ds4 ) {
         return bundle( bundle( bundle( ds1, ds2 ), ds3 ), ds4 );
@@ -10095,8 +10095,8 @@ public class Ops {
      * Extract the named bundled dataset.  For example, extract B_x from bundle of components.
      * @param ds the bundle of datasets, often rank 2 with BUNDLE_1 property
      * @param name the name of the bundled dataset, or "ch_&lt;i&gt;" where i is the dataset number
-     * @see #unbundle(org.virbo.dataset.QDataSet, int) 
-     * @see DataSetOps#bundleNames(org.virbo.dataset.QDataSet) 
+     * @see #unbundle(org.das2.qds.QDataSet, int) 
+     * @see DataSetOps#bundleNames(org.das2.qds.QDataSet) 
      * @throws IllegalArgumentException if no named dataset is found.
      * @return the named dataset
      */
@@ -10265,7 +10265,7 @@ public class Ops {
             return ds;
         }
 
-        logger.entering( "org.virbo.dataset.Ops","ensureMonotonic");
+        logger.entering( "org.das2.qds.Ops","ensureMonotonic");
         if ( DataSetUtil.isMonotonic(dep0) ) {
             return ds;
         }
@@ -10283,7 +10283,7 @@ public class Ops {
         
         dep0= (QDataSet)ds.property(QDataSet.DEPEND_0);
         ((WritableDataSet)dep0).putProperty( QDataSet.MONOTONIC, Boolean.TRUE );
-        logger.exiting( "org.virbo.dataset.Ops","ensureMonotonic" );        
+        logger.exiting( "org.das2.qds.Ops","ensureMonotonic" );        
         
         return ds;
         
@@ -10315,7 +10315,7 @@ public class Ops {
             return ds;
         }
 
-        logger.entering( "org.virbo.dataset.Ops","ensureMonotonicWithFill");
+        logger.entering( "org.das2.qds.Ops","ensureMonotonicWithFill");
         if ( DataSetUtil.isMonotonicAndIncreasing(dep0) ) {
             return ds;
         }
@@ -10346,7 +10346,7 @@ public class Ops {
             last = d;
         }
         
-        logger.exiting( "org.virbo.dataset.Ops","ensureMonotonicWithFill" );        
+        logger.exiting( "org.das2.qds.Ops","ensureMonotonicWithFill" );        
         
         MutablePropertyDataSet mpds= DataSetOps.makePropertiesMutable(ds);
         mpds.putProperty( QDataSet.DEPEND_0, mdep0 );
@@ -10511,36 +10511,36 @@ public class Ops {
     }
 
     /**
-     * @see #link(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     * @see #link(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      * @param x object which can be converted to a QDataSet
      * @param y object which can be converted to a QDataSet
      * @return the dataset
-     * @see #link(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     * @see #link(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      */
     public static QDataSet link( Object x, Object y ) {
         return link( dataset(x), dataset(y) );
     }
 
     /**
-     * @see #link(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     * @see #link(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      * @param x object which can be converted to a QDataSet
      * @param y object which can be converted to a QDataSet
      * @param z object which can be converted to a QDataSet
      * @return  the dataset
-     * @see #link(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     * @see #link(org.das2.qds.QDataSet, org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      */
     public static QDataSet link( Object x, Object y, Object z ) {
         return link( dataset(x), dataset(y), dataset(z) );
     }
 
     /**
-     * @see #link(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     * @see #link(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      * @param d0 object which can be converted to a QDataSet
      * @param d1 object which can be converted to a QDataSet
      * @param d2 object which can be converted to a QDataSet
      * @param z object which can be converted to a QDataSet
      * @return  the dataset
-     * @see #link(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     * @see #link(org.das2.qds.QDataSet, org.das2.qds.QDataSet, org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      */    
     public static QDataSet link( Object d0, Object d1, Object d2, Object z ) {
         return link( dataset(d0), dataset(d1), dataset(d2), dataset(z) );
@@ -10641,7 +10641,7 @@ public class Ops {
      * @param ds1 rank N dataset, or null.
      * @param ds2 rank N dataset
      * @return dataset of rank N with elements interleaved.
-     * @see #concatenate(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     * @see #concatenate(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      */
     public static QDataSet merge( QDataSet ds1, QDataSet ds2 ) {
         if ( ds1==null ) return ds2;
@@ -10743,7 +10743,7 @@ public class Ops {
 
     /**
      * made a Java-style identifier from the provided string
-     * See VirboAutoplot/src/scripts/safeName.jy which demonstrates this.
+     * See Autoplot/src/scripts/safeName.jy which demonstrates this.
      * @param suggest a name, possibly containing spaces and illegal characters
      * @return a Java-style identifier
      */

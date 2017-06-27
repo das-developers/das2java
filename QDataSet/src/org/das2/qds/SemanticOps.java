@@ -17,7 +17,7 @@ import org.das2.datum.Units;
 import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
 import org.das2.util.LoggerManager;
-//import static org.virbo.dataset.DataSetUtil.isConstant;
+//import static org.das2.qds.DataSetUtil.isConstant;
 import org.das2.qds.ops.Ops;
 
 /**
@@ -381,8 +381,8 @@ public class SemanticOps {
      * valid.  DataSets may also contain a weights table with relative weights,
      * but this is not uniformly supported.  
      * Note: this uses QDataSet.WEIGHTS_PLANE
-     * Note: calls org.virbo.dataset.DataSetUtil.weightsDataSet.
-     * @see org.virbo.dsops.Ops#valid which is equivalent
+     * Note: calls org.das2.qds.DataSetUtil.weightsDataSet.
+     * @see org.das2.qds.ops.Ops#valid which is equivalent
      * @see #cadenceCheck which detects for gaps in cadence.
      * @param ds
      * @return QDataSet with same geometry containing zeros and non-zeros.

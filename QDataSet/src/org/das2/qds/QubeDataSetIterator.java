@@ -387,7 +387,7 @@ public final class QubeDataSetIterator implements DataSetIterator {
      * @param ds the dataset.
      * @param sliceIndex the index of the slice.
      * @return an iterator for the slice.
-     * @see org.virbo.dataset.QDataSet#slice(int) 
+     * @see org.das2.qds.QDataSet#slice(int) 
      */
     public static QubeDataSetIterator sliceIterator( QDataSet ds, int sliceIndex ) {
         QubeDataSetIterator result;
@@ -520,7 +520,7 @@ public final class QubeDataSetIterator implements DataSetIterator {
     /**
      * advance to the next index.  getValue(ds) will return the value of the
      * dataset at this index.
-     * @see #getValue(org.virbo.dataset.QDataSet) 
+     * @see #getValue(org.das2.qds.QDataSet) 
      */
     @Override
     public void next() {
