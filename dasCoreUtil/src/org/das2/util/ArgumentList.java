@@ -65,13 +65,13 @@ public class ArgumentList {
     public ArgumentList(String programName) {
         this.programName= programName;
         positionKeys= new String[10];
-        values= new HashMap();
-        descriptions= new HashMap();
-        names= new LinkedHashMap();
-        reverseNames= new HashMap();
-        abbrevs= new HashMap();
-        formUsed= new HashMap();
-        requireOneOfList= new ArrayList();
+        values= new HashMap<>();
+        descriptions= new HashMap<>();
+        names= new LinkedHashMap<>();
+        reverseNames= new HashMap<>();
+        abbrevs= new HashMap<>();
+        formUsed= new HashMap<>();
+        requireOneOfList= new ArrayList<>();
     }
     
     /**
@@ -296,10 +296,10 @@ public class ArgumentList {
         
         System.err.println(s.toString());
         
-        Set set= names.keySet();
+        Set<String> set= names.keySet();
         Iterator<String> i= set.iterator();
 
-        Map<String,String> abbrevsCopy= new HashMap(abbrevs);
+        Map<String,String> abbrevsCopy= new HashMap<>(abbrevs);
 
         while ( i.hasNext() ) {
             String name= i.next();
@@ -369,7 +369,7 @@ public class ArgumentList {
      */
     private void checkArgs() {
         boolean error= false;
-        java.util.List errorList= new java.util.ArrayList(); // add strings to here
+        java.util.List<String> errorList= new java.util.ArrayList<>(); // add strings to here
         for ( int i=0; !error & i<nposition; i++ ) {
             if ( values.get( positionKeys[i] ) == this.UNSPECIFIED ) {
                 errorList.add( "Expected more positional arguments, only got "+i );
@@ -434,8 +434,8 @@ public class ArgumentList {
      * String keys, and the values are all Strings.
      * @return a Map of the specified values, including defaults.
      */
-    public Map getMap() {
-        return new HashMap( values );
+    public Map<String,String> getMap() {
+        return new HashMap<>( values );
     }
     
     /**
