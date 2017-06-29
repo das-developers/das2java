@@ -68,7 +68,7 @@ public class GrannyTextRenderer {
     public static final float RIGHT_ALIGNMENT = 1.0f;
     
     private Rectangle bounds=null;
-    private ArrayList lineBounds;
+    private ArrayList<Rectangle> lineBounds;
     private String str;
     private String[] tokens;
     private float alignment = LEFT_ALIGNMENT;
@@ -95,11 +95,11 @@ public class GrannyTextRenderer {
 
     private void maybeInitBounds() {
         if (bounds == null) {
-            ArrayList llineBounds= new ArrayList(this.lineBounds);
+            ArrayList<Rectangle> llineBounds= new ArrayList<>(this.lineBounds);
             if ( llineBounds.size()>0 ) {
                 bounds = new Rectangle((Rectangle)llineBounds.get(0));
                 for (int i = 1; i < llineBounds.size(); i++) {
-                    bounds.add((Rectangle)llineBounds.get(i));
+                    bounds.add(llineBounds.get(i));
                 }
             } else {
                 bounds = new Rectangle( 0,-12,12,12 );
