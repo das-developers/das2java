@@ -599,7 +599,36 @@ public final class TimeUtil {
     }
 
     /**
-     * get the datum from the 6 or 7 element timeArray.  The elements are:
+     * return approximate duration in Units.seconds or in Units.days.
+     * This is assuming a year is 365 days, a month is 30 days, and a day 
+     * is 86400 seconds.
+     * @param timeArray 6 or 7 element array [ yrs, months, days, hours, minutes, seconds, nanos ]
+     * @return 
+     * @see DatumRangeUtil#parseISO8601Duration(java.lang.String) 
+     */
+    public static Datum toDatumDuration( int[] timeArray ) {
+        int year = timeArray[0];
+        int month = timeArray[1];
+        int day = timeArray[2];
+        int days= day + month*30 + year*365;
+        if ( timeArray.length==7 ) {
+            if ( days==0 ) {
+                return Units.seconds.createDatum( timeArray[3]*3600 + timeArray[4]*60 + timeArray[5] + timeArray[6]/1e9 );
+            } else {
+                return Units.days.createDatum( days + timeArray[3]/24. + timeArray[4]/1440. + timeArray[5]/86400. + timeArray[6]/86400e9 );
+            }
+        } else {
+            if ( days==0 ) {
+                return Units.seconds.createDatum( timeArray[3]*3600 + timeArray[4]*60 + timeArray[5] );
+            } else {
+                return Units.days.createDatum( days + timeArray[3]/24. + timeArray[4]/1440. + timeArray[5]/86400. );
+            }            
+        }
+        
+    }
+    
+    /**
+     * get the time datum from the 6 or 7 element decomposed timeArray.  The elements are:
      * 0:year, 1:month, 2:day, 3:hour, 4:minute, 5:second, [ 6:nanoseconds ] 
      * 
      * @param timeArray, an int[6] or int[7].
