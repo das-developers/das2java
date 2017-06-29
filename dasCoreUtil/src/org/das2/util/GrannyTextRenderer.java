@@ -95,10 +95,11 @@ public class GrannyTextRenderer {
 
     private void maybeInitBounds() {
         if (bounds == null) {
-            if ( lineBounds.size()>0 ) {
-                bounds = new Rectangle((Rectangle)lineBounds.get(0));
-                for (int i = 1; i < lineBounds.size(); i++) {
-                    bounds.add((Rectangle)lineBounds.get(i));
+            ArrayList llineBounds= new ArrayList(this.lineBounds);
+            if ( llineBounds.size()>0 ) {
+                bounds = new Rectangle((Rectangle)llineBounds.get(0));
+                for (int i = 1; i < llineBounds.size(); i++) {
+                    bounds.add((Rectangle)llineBounds.get(i));
                 }
             } else {
                 bounds = new Rectangle( 0,-12,12,12 );
