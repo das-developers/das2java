@@ -12,7 +12,6 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.GeneralPath;
-import java.util.IllegalFormatConversionException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Scanner;
@@ -23,7 +22,6 @@ import org.das2.datum.DatumRange;
 import org.das2.datum.DatumRangeUtil;
 import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.Units;
-import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
 import org.das2.datum.format.DatumFormatter;
 import org.das2.datum.format.DefaultDatumFormatter;
@@ -125,6 +123,7 @@ public class DigitalRenderer extends Renderer {
      * @param align 
      */
     public void setAlign(Align align) {
+        if ( align==null ) align= Align.CENTER;
         Align oldAlign = this.align;
         this.align = align;
         updateCacheImage();
@@ -563,20 +562,30 @@ public class DigitalRenderer extends Renderer {
         
         int x,y;
         
-        if (align == Align.NE || align == Align.NW) {
-            y = parent.getRow().getDMinimum() + fm.getAscent() + offs;
-        } else if (align == Align.CENTER) {
-            y = parent.getRow().getDMinimum() + fm.getAscent() + offs;
-        } else {
-            y= parent.getRow().getDMaximum() - (int)gtr.getDescent() - offs;
+        switch (align) {
+            case NE:
+            case NW:
+                y = parent.getRow().getDMinimum() + fm.getAscent() + offs;
+                break;
+            case CENTER:
+                y = parent.getRow().getDMinimum() + fm.getAscent() + offs;
+                break;
+            default:
+                y= parent.getRow().getDMaximum() - (int)gtr.getDescent() - offs;
+                break;
         }
         
-        if (align == Align.NW || align == Align.SW ) {
-            x = parent.getColumn().getDMinimum() + offs;
-        } else if (align == Align.CENTER) {
-            x = parent.getColumn().getDMinimum() + offs;
-        } else {
-            x = parent.getColumn().getDMaximum() - offs - (int)gtr.getWidth();
+        switch (align) {
+            case NW:
+            case SW:
+                x = parent.getColumn().getDMinimum() + offs;
+                break;
+            case CENTER:
+                x = parent.getColumn().getDMinimum() + offs;
+                break;
+            default:
+                x = parent.getColumn().getDMaximum() - offs - (int)gtr.getWidth();
+                break;
         }
         
         gtr.draw(g, x, y );
@@ -609,24 +618,34 @@ public class DigitalRenderer extends Renderer {
         FontMetrics fm = g.getFontMetrics();
 
         int ha = 0;
-        if (align == Align.NE || align == Align.NW) {
-            ha = fm.getAscent();
-            if ( plotSymbol!=DefaultPlotSymbol.NONE ) ha+=3;
-        } else if (align == Align.CENTER) {
-            ha = fm.getAscent() / 2;
-        } else {
-            if ( plotSymbol!=DefaultPlotSymbol.NONE ) ha-=3;
+        switch (align) {
+            case NE:
+            case NW:
+                ha = fm.getAscent();
+                if ( plotSymbol!=DefaultPlotSymbol.NONE ) ha+=3;
+                break;
+            case CENTER:
+                ha = fm.getAscent() / 2;
+                break;
+            default:
+                if ( plotSymbol!=DefaultPlotSymbol.NONE ) ha-=3;
+                break;
         }
         float wa = 0.f; // amount to adjust the position.
         int widthSymbolOffset;
-        if (align == Align.NE || align == Align.SE) {
-            wa = 1.0f;
-            widthSymbolOffset= -3;
-        } else if (align == Align.CENTER) {
-            wa = 0.5f;
-            widthSymbolOffset= 0;
-        } else {
-            widthSymbolOffset= 3;
+        switch (align) {
+            case NE:
+            case SE:
+                wa = 1.0f;
+                widthSymbolOffset= -3;
+                break;
+            case CENTER:
+                wa = 0.5f;
+                widthSymbolOffset= 0;
+                break;
+            default:
+                widthSymbolOffset= 3;
+                break;
         }
 
         GeneralPath shape = new GeneralPath();
