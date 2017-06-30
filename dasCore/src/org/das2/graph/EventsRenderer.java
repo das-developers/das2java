@@ -751,7 +751,7 @@ public class EventsRenderer extends Renderer {
                         int iymin= row.getDMinimum() + row.getHeight() * (i-gymin) / ( gymax - gymin );
                         Color c0= g1.getColor();
                         g1.setColor( Color.white );
-                        gtr.draw( g1, column.getDMinimum() + textHeight/3 -1, iymin + textHeight -1 );
+                        gtr.draw( g1, column.getDMinimum() + textHeight/3 -1, iymin + textHeight -1 ); 
                         gtr.draw( g1, column.getDMinimum() + textHeight/3 -1, iymin + textHeight +1 );
                         gtr.draw( g1, column.getDMinimum() + textHeight/3 +1, iymin + textHeight +1 );
                         gtr.draw( g1, column.getDMinimum() + textHeight/3 +1, iymin + textHeight -1 );
