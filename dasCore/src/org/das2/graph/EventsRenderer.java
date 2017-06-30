@@ -732,12 +732,17 @@ public class EventsRenderer extends Renderer {
                             gtr.draw( g1, ixmin+2, row.getDMinimum()+(int)gtr.getAscent() );
                         }
                         if ( this.orbitMode ) {
-                            if ( ixmax+2>lastMessageTailX ) {
-                                String text= eu.createDatum( msgs.value(i) ).toString();
-                                gtr.setString(g1,text);
-                                gtr.draw( g1, ixmin+2, row.getDMaximum()-textHeight+(int)gtr.getAscent() );
-                                lastMessageTailX= ixmin+2 + (int)gtr.getWidth();
-                            }
+                            String text= eu.createDatum( msgs.value(i) ).toString();
+                            gtr.setString(g1,text);
+                            Color c0= g1.getColor();
+                            g1.setColor( getParent().getBackground() );
+                            gtr.draw( g1, ixmin+2 -1, row.getDMaximum()-textHeight+(int)gtr.getAscent() );
+                            gtr.draw( g1, ixmin+2, row.getDMaximum()-textHeight+(int)gtr.getAscent() +1 );
+                            gtr.draw( g1, ixmin+2 +1, row.getDMaximum()-textHeight+(int)gtr.getAscent() );
+                            gtr.draw( g1, ixmin+2, row.getDMaximum()-textHeight+(int)gtr.getAscent() -1 );
+                            g1.setColor( c0 );
+                            gtr.draw( g1, ixmin+2, row.getDMaximum()-textHeight+(int)gtr.getAscent() );
+                            lastMessageTailX= ixmin+2 + (int)gtr.getWidth();
                         }
                     }
                 }
@@ -751,10 +756,10 @@ public class EventsRenderer extends Renderer {
                         int iymin= row.getDMinimum() + row.getHeight() * (i-gymin) / ( gymax - gymin );
                         Color c0= g1.getColor();
                         g1.setColor( Color.white );
-                        gtr.draw( g1, column.getDMinimum() + textHeight/3 -1, iymin + textHeight -1 ); 
-                        gtr.draw( g1, column.getDMinimum() + textHeight/3 -1, iymin + textHeight +1 );
-                        gtr.draw( g1, column.getDMinimum() + textHeight/3 +1, iymin + textHeight +1 );
-                        gtr.draw( g1, column.getDMinimum() + textHeight/3 +1, iymin + textHeight -1 );
+                        gtr.draw( g1, column.getDMinimum() + textHeight/3 -1, iymin + textHeight ); 
+                        gtr.draw( g1, column.getDMinimum() + textHeight/3, iymin + textHeight +1 );
+                        gtr.draw( g1, column.getDMinimum() + textHeight/3 +1, iymin + textHeight );
+                        gtr.draw( g1, column.getDMinimum() + textHeight/3, iymin + textHeight -1 );
                         g1.setColor( c0 );
                         gtr.draw( g1, column.getDMinimum() + textHeight/3, iymin + textHeight );
                     }
