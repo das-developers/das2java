@@ -26,6 +26,7 @@ import java.awt.Rectangle;
 import java.awt.geom.GeneralPath;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -625,9 +626,19 @@ public class EventsRenderer extends Renderer {
                 GrannyTextRenderer gtr= new GrannyTextRenderer();
 
                 int gymax,gymin;
+                QDataSet u;
+                Map<Integer,Integer> map= new HashMap<>();
+                Map<Integer,Integer> pam= new HashMap<>();
                 try {
-                    gymax= ( (int) msgs.value( Ops.imax(msgs) ) );
-                    gymin= ( (int) msgs.value( Ops.imin(msgs) ) );
+                    QDataSet s= Ops.sort(msgs);
+                    u= Ops.uniq(msgs,s);
+                    gymax= u.length();
+                    gymin= 0;
+                    for ( int i=0; i<u.length(); i++ ) {
+                        map.put( (int)msgs.value((int)u.value(i)), i );
+                        pam.put( i, (int)msgs.value((int)u.value(i)) );
+                    }
+                    
                 } catch ( IndexOutOfBoundsException ex ) {
                     ex.printStackTrace();  // shouldn't happen, put breakpoint here
                     return;
@@ -683,8 +694,12 @@ public class EventsRenderer extends Renderer {
                             r1= new Rectangle( ixmin, row.getDMaximum()-textHeight, iwidth-1, textHeight );
                             g.fill( r1 );
                         } else if ( this.ganttMode ) {
-                            int iymin= row.getDMinimum() + row.getHeight() * ((int)msgs.value(i)-gymin) / ( gymax - gymin + 1 ) + 1;
-                            int iymax= row.getDMinimum() + row.getHeight() * (1+(int)msgs.value(i)-gymin) / ( gymax - gymin + 1 ) - 1;
+                            int ord=(int)msgs.value(i);
+                            int iy= map.get(ord);
+                            int iymin= row.getDMinimum() + row.getHeight() * (iy) / ( gymax - gymin ) + 1;
+                            int iymax= row.getDMinimum() + row.getHeight() * (1+iy) / ( gymax - gymin ) - 1;
+                            //int iymin= row.getDMinimum() + row.getHeight() * ((int)msgs.value(i)-gymin) / ( gymax - gymin + 1 ) + 1;
+                            //int iymax= row.getDMinimum() + row.getHeight() * (1+(int)msgs.value(i)-gymin) / ( gymax - gymin + 1 ) - 1;
                             r1= new Rectangle( ixmin, iymin, iwidth, Math.max( iymax-iymin, 2 ) );
                             g.fill( r1 );
                         } else {                
@@ -730,10 +745,17 @@ public class EventsRenderer extends Renderer {
 
                 if ( ganttMode ) {
                     g1.setColor(color);
-                    int di= Math.max( 1, ( gymax-gymin)  / ( row.getHeight() / textHeight ) );
-                    for ( int i=gymin; i<gymax+1; i=i+di ) {
-                        gtr.setString( g1, eu.createDatum(i).toString() );
-                        int iymin= row.getDMinimum() + row.getHeight() * (i-gymin) / ( gymax - gymin + 1 );
+                    int di= Math.max( 1, ( gymax-gymin-1)  / ( row.getHeight() / textHeight ) );
+                    for ( int i=gymin; i<gymax; i=i+di ) {
+                        gtr.setString( g1, eu.createDatum(pam.get(i)).toString() );
+                        int iymin= row.getDMinimum() + row.getHeight() * (i-gymin) / ( gymax - gymin );
+                        Color c0= g1.getColor();
+                        g1.setColor( Color.white );
+                        gtr.draw( g1, column.getDMinimum() + textHeight/3 -1, iymin + textHeight -1 );
+                        gtr.draw( g1, column.getDMinimum() + textHeight/3 -1, iymin + textHeight +1 );
+                        gtr.draw( g1, column.getDMinimum() + textHeight/3 +1, iymin + textHeight +1 );
+                        gtr.draw( g1, column.getDMinimum() + textHeight/3 +1, iymin + textHeight -1 );
+                        g1.setColor( c0 );
                         gtr.draw( g1, column.getDMinimum() + textHeight/3, iymin + textHeight );
                     }
                 }
