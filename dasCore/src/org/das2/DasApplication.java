@@ -163,6 +163,14 @@ public class DasApplication {
     }
     
     /**
+     * return true if the application appears to have been launched with Java WebStart.
+     * @return true if it appears that Java Webstart was used to launch the application.
+     */
+    public final boolean isJavaWebStart() {        
+        return System.getProperty("javawebstart.version", null) != null;
+    }
+    
+    /**
      * check the security manager to see if all permissions are allowed,
      * True indicates is not an applet running in a sandbox.
      * See FileSystemSettings, which has a copy of this code
