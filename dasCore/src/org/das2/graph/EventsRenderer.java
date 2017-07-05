@@ -457,7 +457,15 @@ public class EventsRenderer extends Renderer {
                 }
                 
             } else  if ( dep0.rank() == 1 ) {
-                Datum width= SemanticOps.guessXTagWidth( dep0, null ).divide(2);
+                Datum width= SemanticOps.guessXTagWidth( dep0, null );
+                if ( width!=null ) {
+                    width= width.divide(2);
+                } else {
+                    QDataSet sort= Ops.sort(dep0);
+                    QDataSet diffs= Ops.diff( DataSetOps.applyIndex(dep0,0,sort,false) );
+                    QDataSet w= Ops.reduceMin( diffs,0 );
+                    width= DataSetUtil.asDatum(w);
+                }
                 xmins= Ops.subtract(dep0, org.das2.qds.DataSetUtil.asDataSet(width) );
                 xmaxs= Ops.add(dep0, org.das2.qds.DataSetUtil.asDataSet(width) );
                 colors= Ops.replicate( getColor().getRGB(), xmins.length() );
