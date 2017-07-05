@@ -51,7 +51,7 @@ public class SetDepend0CadenceFilterEditorPanel extends AbstractFilterEditorPane
         scalarTF.setPreferredSize(new java.awt.Dimension(50, 27));
 
         List<Units> units = getAllUnits();
-        String[] array = units.toArray(new String[units.size()]);
+        Units[] array = units.toArray(new Units[units.size()]);
         unitsCB.setEditable(true);
         unitsCB.setModel(new javax.swing.DefaultComboBoxModel(array));
         unitsCB.setMinimumSize(new java.awt.Dimension(200, 27));
