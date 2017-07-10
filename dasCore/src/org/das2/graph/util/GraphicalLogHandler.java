@@ -525,7 +525,7 @@ public class GraphicalLogHandler extends Handler {
         result.setDragEvents( false );
         result.setReleaseEvents( true );
         result.addBoxSelectionListener( new BoxSelectionListener() {
-            public void BoxSelected( BoxSelectionEvent e ) {
+            public void boxSelected( BoxSelectionEvent e ) {
                 StringBuilder buf= new StringBuilder(1000);
                 
                 //Handler h= new ConsoleHandler();
