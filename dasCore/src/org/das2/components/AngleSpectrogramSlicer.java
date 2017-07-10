@@ -84,6 +84,7 @@ public class AngleSpectrogramSlicer extends DasPlot implements BoxSelectionListe
         }
         else {
             Runnable r = new Runnable() {
+                @Override
                 public void run() {
                     showPopupImpl();
                 }
@@ -117,6 +118,7 @@ public class AngleSpectrogramSlicer extends DasPlot implements BoxSelectionListe
         buttonPanel.add(Box.createHorizontalGlue());
 
         JButton printButton= new JButton( new AbstractAction("Print...") {
+            @Override
             public void actionPerformed( ActionEvent e ) {
                 canvas.makeCurrent();
                 canvas.PRINT_ACTION.actionPerformed(e);
@@ -126,6 +128,7 @@ public class AngleSpectrogramSlicer extends DasPlot implements BoxSelectionListe
 
         JButton close = new JButton("Hide Window");
         close.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 popupWindow.setVisible(false);
             }
@@ -248,6 +251,7 @@ public class AngleSpectrogramSlicer extends DasPlot implements BoxSelectionListe
         }
     }
 
+    @Override
     public void boxSelected(BoxSelectionEvent e) {
         Datum xbase= e.getStartX();
         Datum ybase= e.getStartY();
