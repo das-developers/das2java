@@ -28,5 +28,5 @@ package org.das2.event;
  * @author  jbf
  */
 public abstract interface BoxSelectionListener extends java.util.EventListener {
-    public void BoxSelected(BoxSelectionEvent e);    
+    public void boxSelected(BoxSelectionEvent e);    
 }

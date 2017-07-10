@@ -105,7 +105,7 @@ public class BoxRangeSelectorMouseModule extends MouseModule {
         Object[] listeners = listenerList.getListenerList();
         for (int i = listeners.length-2; i>=0; i-=2) {
             if (listeners[i] == BoxSelectionListener.class) {
-                ((BoxSelectionListener)listeners[i+1]).BoxSelected(event);
+                ((BoxSelectionListener)listeners[i+1]).boxSelected(event);
             }
         }
     }
