@@ -248,7 +248,7 @@ public class AngleSpectrogramSlicer extends DasPlot implements BoxSelectionListe
         }
     }
 
-    public void BoxSelected(BoxSelectionEvent e) {
+    public void boxSelected(BoxSelectionEvent e) {
         Datum xbase= e.getStartX();
         Datum ybase= e.getStartY();
 
