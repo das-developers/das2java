@@ -41,7 +41,7 @@ public class SetDepend0UnitsFilterEditorPanel extends AbstractFilterEditorPanel 
         jLabel1.setText("Depend0 Units:  ");
 
         List<Units> units = getAllUnits();
-        String[] array = units.toArray(new String[units.size()]);
+        Units[] array = units.toArray(new Units[units.size()]);
         unitsCB.setEditable(true);
         unitsCB.setModel(new javax.swing.DefaultComboBoxModel(array));
         unitsCB.setPreferredSize(new java.awt.Dimension(200, 27));
