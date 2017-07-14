@@ -169,7 +169,6 @@ public class DisplayDataMouseModule extends MouseModule {
                 @Override
                 public void mouseClicked(MouseEvent e) {
                     if (e.isPopupTrigger()) {
-                       // highlightRow(e);
                         doPopup(e);
                     }
                 }
@@ -177,7 +176,6 @@ public class DisplayDataMouseModule extends MouseModule {
                 @Override
                 public void mouseReleased(MouseEvent e) {
                     if (e.isPopupTrigger()) {
-                       // highlightRow(e);
                         doPopup(e);
                     }
                 }
@@ -185,23 +183,12 @@ public class DisplayDataMouseModule extends MouseModule {
                 @Override
                 public void mousePressed(MouseEvent e) {
                     if (e.isPopupTrigger()) {
-                       // highlightRow(e);
                         doPopup(e);
                     }
                 }       
 
                 protected void doPopup(MouseEvent e) {
                     pm.show(e.getComponent(), e.getX(), e.getY());
-                }
-
-                protected void highlightRow(MouseEvent e) {
-                    JTable table = (JTable) e.getSource();
-                    Point point = e.getPoint();
-                    int row = table.rowAtPoint(point);
-                    int col = table.columnAtPoint(point);
-
-                    table.setRowSelectionInterval(row, row);
-                    table.setColumnSelectionInterval(col, col);
                 }
 
             });
