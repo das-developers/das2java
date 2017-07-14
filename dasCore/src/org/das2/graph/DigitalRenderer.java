@@ -290,7 +290,7 @@ public class DigitalRenderer extends Renderer {
      */
     private void updateFirstLast(DasAxis xAxis, DasAxis yAxis, QDataSet dataSet) {
 
-        Units xUnits = xAxis.getUnits();
+        Units xUnits;
     
         int ixmax;
         int ixmin;
@@ -345,6 +345,8 @@ public class DigitalRenderer extends Renderer {
 
         int index;
 
+        xUnits= SemanticOps.getUnits(xds);
+        
         // find the first valid point, set x0, y0 //
         for (index = ixmin; index < ixmax; index++) {
             x = (double) xds.value(index);
@@ -471,9 +473,12 @@ public class DigitalRenderer extends Renderer {
             case 'd':
             case 'o':
                 isLongs= true;
+                break;
             case 'c':
             case 'C':
                 isInts= true;
+                break;
+            default:
         }
     
         DatumFormatter df= d.getFormatter();
