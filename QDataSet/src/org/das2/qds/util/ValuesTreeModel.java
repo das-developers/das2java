@@ -119,7 +119,12 @@ public class ValuesTreeModel extends DefaultTreeModel {
             if ( wds.value(i) > 0. ) {
                 QDataSet bds= (QDataSet)ds.property(QDataSet.BUNDLE_0);
                 if ( bds!=null ) {
-                    return DataSetUtil.getStringValue( ds, ds.value(i), i );
+                    String alt= ds.slice(i).toString();
+                    String result= DataSetUtil.getStringValue( ds, ds.value(i), i );
+                    if ( alt.endsWith("=fill") ) {
+                        result= result + "(fill)";
+                    }
+                    return result;
                 } else {
                     return DataSetUtil.getStringValue( ds, ds.value(i) );
                 }
