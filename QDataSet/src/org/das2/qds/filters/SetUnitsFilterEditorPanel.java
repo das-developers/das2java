@@ -44,7 +44,7 @@ public class SetUnitsFilterEditorPanel extends AbstractFilterEditorPanel {
         jLabel1.setText("Units:  ");
 
         List<Units> units = getAllUnits();
-        String[] array = units.toArray(new String[units.size()]);
+        Units[] array = units.toArray(new Units[units.size()]);
         unitsCB.setEditable(true);
         unitsCB.setModel(new javax.swing.DefaultComboBoxModel(array));
         unitsCB.setPreferredSize(new java.awt.Dimension(200, 27));
@@ -79,7 +79,7 @@ public class SetUnitsFilterEditorPanel extends AbstractFilterEditorPanel {
 
     @Override
     public void setFilter(String filter) {
-        Pattern p= Pattern.compile("\\|setUnits\\('(\\w+)'\\)");
+        Pattern p= Pattern.compile("\\|setUnits\\('?(\\w+)'?\\)");
         Matcher m= p.matcher(filter);
         if ( m.matches() ) {
             //System.out.println("M matches");
