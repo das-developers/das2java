@@ -1873,7 +1873,7 @@ public class SeriesRenderer extends Renderer {
                         if ( vds==null ) {
                             vds= vds1;
                         } else {
-                            vds= Ops.concatenate( vds,vds1 );
+                            vds= Ops.append( vds,vds1 );
                         }
                     }
                     if ( vds==null ) {
