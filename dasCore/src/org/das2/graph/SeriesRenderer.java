@@ -1832,7 +1832,10 @@ public class SeriesRenderer extends Renderer {
                     vds= dataSet.trim( this.firstIndex, this.lastIndex );
                     LoggerManager.markTime("trim");
 
-                    vds= Reduction.reducex( vds,res );  // waveform
+                    QDataSet dep1= (QDataSet) vds.property(QDataSet.DEPEND_1);
+                    if ( dep1.rank()==1 ) {
+                        vds= Reduction.reducex( vds,res );  // waveform
+                    }
                     LoggerManager.markTime("reducex");
                     if ( vds.rank()==2 ) {
                         vds= DataSetOps.flattenWaveform(vds);
