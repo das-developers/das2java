@@ -110,14 +110,21 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     @Override
     public void setControl(String s) {
         super.setControl(s);
-        this.getColorBar().setType( DasColorBar.Type.parse( getControl(CONTROL_KEY_COLOR_TABLE, getColorBar().getType().toString() ) ) );
+        DasColorBar cb= getColorBar();
+        if ( cb!=null ) {
+            String t= getControl(CONTROL_KEY_COLOR_TABLE, cb.getType().toString() );
+            this.getColorBar().setType( DasColorBar.Type.parse( t ) );
+        }
         update();
     }
 
     @Override
     public String getControl() {
         Map<String,String> controls= new LinkedHashMap();
-        controls.put( CONTROL_KEY_COLOR_TABLE, getColorBar().getType().toString() );
+        DasColorBar cb= getColorBar();
+        if ( cb!=null ) {
+            controls.put( CONTROL_KEY_COLOR_TABLE, getColorBar().getType().toString() );
+        }
         return formatControl(controls);
     }
     
