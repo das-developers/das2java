@@ -438,14 +438,8 @@ public class ImageVectorDataSetRenderer extends Renderer {
             }
 
             ArrayDataSet xoffsets= ArrayDataSet.copy( ( QDataSet) ds.property(QDataSet.DEPEND_1) );
-            if ( xoffsets.rank()>1 ) throw new IllegalArgumentException("rank 2 DEPEND_1 not supported");
-            final UnitsConverter uc= UnitsConverter.getConverter( SemanticOps.getUnits(xoffsets), SemanticOps.getUnits(xds).getOffsetUnits() );
 
-            if ( uc!=UnitsConverter.IDENTITY ) { // RPW Group has packets with 208896 elements, so this is non-trivial.
-                for ( int j=0; j<xoffsets.length(); j++ ) {
-                    xoffsets.putValue( j, uc.convert( xoffsets.value(j) ) );
-                }
-            }
+            xoffsets= resetUnits( xoffsets, SemanticOps.getUnits(xds).getOffsetUnits() );
             
             int xmin= xAxis.getColumn().getDMinimum()-xAxis.getColumn().getWidth();
             int xmax= xAxis.getColumn().getDMaximum()+xAxis.getColumn().getWidth();
@@ -460,7 +454,12 @@ public class ImageVectorDataSetRenderer extends Renderer {
                         state = STATE_MOVETO;
                     } else {
                         int iy = (int) yAxis.transform( ds.value(i,j), dsunits );
-                        int ix = (int) xAxis.transform( xds.value(i) + xoffsets.value(j), xunits );
+                        int ix;
+                        if ( xoffsets.rank()==1 ) {
+                            ix= (int) xAxis.transform( xds.value(i) + xoffsets.value(j), xunits );
+                        } else {
+                            ix= (int) xAxis.transform( xds.value(i) + xoffsets.value(i,j), xunits );
+                        }
                         if ( (ix-ix0)*(ix-ix0) > ixstepLimitSq ) state=STATE_MOVETO;
                         switch (state) {
                             case STATE_MOVETO:
@@ -557,21 +556,16 @@ public class ImageVectorDataSetRenderer extends Renderer {
             QDataSet vds;
             ArrayDataSet xoffsets= null;
 
-            boolean isWaveform= false;
-            if ( ds.rank()==2 && SemanticOps.isBundle(ds) ) {
+            boolean isWaveform= SemanticOps.isRank2Waveform(ds);
+            if ( ds.rank()==2 && SemanticOps.isBundle(ds) && !isWaveform ) {
                 vds = DataSetOps.unbundleDefaultDataSet( ds );
-            } else if ( SemanticOps.isRank2Waveform(ds) ) {
+            } else if ( isWaveform ) {
                 vds= ds;
                 xds = SemanticOps.xtagsDataSet(ds);
                 isWaveform= true;
                 xoffsets= ArrayDataSet.copy( ( QDataSet) ds.property(QDataSet.DEPEND_1) );
-                if ( xoffsets.rank()>1 ) throw new IllegalArgumentException("rank 2 DEPEND_1 not supported");
-                final UnitsConverter uc= UnitsConverter.getConverter( SemanticOps.getUnits(xoffsets), SemanticOps.getUnits(xds).getOffsetUnits() );
-                if ( !uc.equals( UnitsConverter.IDENTITY ) ) {
-                    for ( int j=0; j<xoffsets.length(); j++ ) {
-                        xoffsets.putValue( j, uc.convert( xoffsets.value(j) ) );
-                    }
-                }
+                xoffsets= resetUnits( xoffsets, SemanticOps.getUnits(xds).getOffsetUnits() );
+
             } else {
                 vds = (QDataSet) ds;
             }
@@ -629,18 +623,22 @@ public class ImageVectorDataSetRenderer extends Renderer {
         Units xunits= SemanticOps.getUnits( xds );
         QDataSet wds= SemanticOps.weightsDataSet( vds );
         ArrayDataSet xoffsets = ArrayDataSet.copy((QDataSet) vds.property(QDataSet.DEPEND_1));
-        if ( xoffsets.rank()>1 ) throw new IllegalArgumentException("rank 2 DEPEND_1 not supported");
+        //if ( xoffsets.rank()>1 ) throw new IllegalArgumentException("rank 2 DEPEND_1 not supported");
         final UnitsConverter uc= UnitsConverter.getConverter( SemanticOps.getUnits(xoffsets), SemanticOps.getUnits(xds).getOffsetUnits() );
         if ( !uc.equals( UnitsConverter.IDENTITY ) ) {
-            for ( int j=0; j<xoffsets.length(); j++ ) {
-                xoffsets.putValue( j, uc.convert( xoffsets.value(j) ) );
-            }
+            throw new IllegalArgumentException("units should have been converted by now");
         }
-        int ix0= ddx.whichBin(xds.value(first0) + xoffsets.value(0), xunits );
-        int ix1= ddx.whichBin(xds.value(first0) + xoffsets.value(xoffsets.length()-1), xunits );
+        int ix0;
+        double dx0;
+        dx0= xoffsets.rank()==1 ? xoffsets.value(0) : xoffsets.value(0,0);
+        ix0= ddx.whichBin(xds.value(first0) + dx0, xunits );
+        int ix1;
+        int lastRec= xoffsets.length()-1;
+        double dx1= xoffsets.rank()==1 ? xoffsets.value(lastRec) : xoffsets.value(lastRec,xoffsets.length(lastRec)-1);
+        ix1= ddx.whichBin(xds.value(first0) + dx1, xunits );
         if ( ix0==-1 && first0+1<last0 ) {
-            ix0= ddx.whichBin(xds.value(first0+1) + xoffsets.value(0), xunits );
-            ix1= ddx.whichBin(xds.value(first0+1) + xoffsets.value(xoffsets.length()-1), xunits );
+            ix0= ddx.whichBin(xds.value(first0+1) + dx0, xunits );
+            ix1= ddx.whichBin(xds.value(first0+1) + dx1, xunits );
         }
         boolean wowReduce= ix0!=-1 && ix0==ix1;
         if ( wowReduce ) {
@@ -664,12 +662,19 @@ public class ImageVectorDataSetRenderer extends Renderer {
             UnitsConverter xuc= xunits.getConverter(targetXUnits);
             Units targetYUnits= ddy.getUnits();
             UnitsConverter yuc= yunits.getConverter(targetYUnits);
+            final int xoffsetsRank= xoffsets.rank();
             for (; first0 <= last0; first0++) {
                 for ( int j=0; j<nj; j++ ) {
                     boolean isValid = wds.value(first0,j)>0;
                     if ( isValid ) {
-                        int ix = ddx.whichBin(xuc.convert(xds.value(first0) + xoffsets.value(j) ), targetXUnits );
-                        int iy = ddy.whichBin( yuc.convert( vds.value(first0,j) ), targetYUnits );
+                        int ix,iy;
+                        if ( xoffsetsRank==1 ) {
+                            ix= ddx.whichBin(xuc.convert(xds.value(first0) + xoffsets.value(j) ), targetXUnits );
+                            iy = ddy.whichBin( yuc.convert( vds.value(first0,j) ), targetYUnits );
+                        } else {
+                            ix= ddx.whichBin(xuc.convert(xds.value(first0) + xoffsets.value(first0,j) ), targetXUnits );
+                            iy = ddy.whichBin( yuc.convert( vds.value(first0,j) ), targetYUnits );
+                        }
                         if (ix != -1 && iy != -1) {
                             double d = tds.value(ix, iy);
                             tds.putValue( ix, iy, d+1 );
@@ -890,7 +895,12 @@ public class ImageVectorDataSetRenderer extends Renderer {
                     d= DataSetUtil.asDataSet(xcad);
                 } else {
                     if ( SemanticOps.isRank2Waveform(ds1) ) {
-                        d= DataSetUtil.guessCadenceNew( (QDataSet) ds1.property(QDataSet.DEPEND_1), null );
+                        QDataSet dep1= (QDataSet) ds1.property(QDataSet.DEPEND_1);
+                        if ( dep1.rank()==1 ) {
+                            d= DataSetUtil.guessCadenceNew( dep1, null );
+                        } else {
+                            d= DataSetUtil.guessCadenceNew( dep1.slice(0), null );
+                        }
                     } else if ( ds1.rank()==3 && SemanticOps.isRank2Waveform(ds1.slice(0)) ) {
                         d= DataSetUtil.guessCadenceNew( (QDataSet) ds1.slice(0).property(QDataSet.DEPEND_1), null );
                     } else {
@@ -1104,4 +1114,28 @@ public class ImageVectorDataSetRenderer extends Renderer {
         }
         return selectionArea==null ? SelectionUtil.NULL : selectionArea;
     }
+
+    private static ArrayDataSet resetUnits(ArrayDataSet xoffsets, Units offsetUnits) {
+        final UnitsConverter uc= UnitsConverter.getConverter( SemanticOps.getUnits(xoffsets), offsetUnits );
+        if ( !uc.equals( UnitsConverter.IDENTITY ) ) {
+            switch (xoffsets.rank()) {
+                case 2:
+                    for ( int j=0; j<xoffsets.length(); j++ ) {
+                        for ( int k=0; k<xoffsets.length(j); k++ ) {
+                            xoffsets.putValue( j, k, uc.convert( xoffsets.value(j,k) ) );
+                        }
+                    }   
+                    break;
+                case 1:
+                    for ( int j=0; j<xoffsets.length(); j++ ) {
+                        xoffsets.putValue( j, uc.convert( xoffsets.value(j) ) );
+                    }   
+                    break;
+                default:
+                    throw new IllegalArgumentException("DEPEND_1 must be rank 1 or rank 2");
+            }
+        }
+        return xoffsets;
+    }
+    
 }
