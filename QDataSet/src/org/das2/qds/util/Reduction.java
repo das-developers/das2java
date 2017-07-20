@@ -332,6 +332,18 @@ public class Reduction {
 
         Map<String,Object> yprops= DataSetUtil.getProperties(ds);
         yprops.put( QDataSet.DEPEND_0, xds );
+        for ( int j=1; j<ds.rank(); j++ ) {
+            String DEP= "DEPEND_"+j;
+            QDataSet dep1= (QDataSet)yprops.get(DEP);
+            if ( dep1!=null && dep1.rank()==2 ) {
+                if ( DataSetUtil.isConstant(dep1) ) {
+                    yprops.put( DEP, dep1.slice(0) );
+                } else {
+                    logger.log(Level.INFO, "dropping {0} which is time-varying", DEP);
+                    yprops.put( DEP, null );
+                }
+            }
+        }
         DataSetUtil.putProperties( yprops, result );
         yminbuilder.putProperty( QDataSet.UNITS, SemanticOps.getUnits(result) );
         ymaxbuilder.putProperty( QDataSet.UNITS, SemanticOps.getUnits(result) );
