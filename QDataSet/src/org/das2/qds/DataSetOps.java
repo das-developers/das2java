@@ -293,7 +293,20 @@ public class DataSetOps {
      * @return rank 1 waveform
      */
     public static QDataSet flattenWaveform( final QDataSet ds ) {
-        return new FlattenWaveformDataSet(ds);
+        QDataSet dep1= (QDataSet) ds.property( QDataSet.DEPEND_1 );
+        if ( dep1.rank()==1 ) {
+            return new FlattenWaveformDataSet(ds);
+        } else {
+            QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
+            QDataSet result= null;
+            for ( int i=0; i<ds.length(); i++ ) {
+                QDataSet ds1= ds.slice(i);
+                QDataSet xtags= (QDataSet)ds1.property(QDataSet.DEPEND_0);
+                xtags= Ops.add( dep0.slice(i), xtags );
+                result= Ops.append( result, Ops.link( xtags, ds1 ) );
+            }
+            return result;
+        }
     }
 
     /**
