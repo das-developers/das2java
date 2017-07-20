@@ -273,7 +273,14 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     }
 
     private static QDataSet bounds( QDataSet ds ) {
-        return DataSetOps.dependBoundsSimple(ds);
+        if ( SemanticOps.isRank2Waveform(ds) ) {
+            QDataSet xrange= Ops.extentSimple( SemanticOps.xtagsDataSet(ds), null );
+            QDataSet yrange= Ops.extentSimple( SemanticOps.ytagsDataSet(ds), null );
+            return Ops.join( xrange, yrange );
+        } else {
+            return DataSetOps.dependBoundsSimple(ds);
+        }
+        
     }
 
     @Override
