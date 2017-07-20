@@ -56,7 +56,7 @@ public class Reduction {
      * @param ds a rank1 or rank2 waveform dataset.
      * @param xLimit the target resolution, result will be finer than this, if possible.
      * @return either the original dataset when there is no reduction to be done, or a series data set with bins (deltas for now).
-     * @see org.qstream.filter.MinMaxReduceFilter.  This is basically a copy of that code.
+     * @see org.das2.qstream.filter.MinMaxReduceFilter.  This is basically a copy of that code.
      */
     private static QDataSet reducexWaveform( QDataSet ds, QDataSet xLimit ) {
         DataSetBuilder xbuilder;
@@ -75,6 +75,11 @@ public class Reduction {
         MutablePropertyDataSet offsets= DataSetOps.makePropertiesMutable(_offsets);
         offsets.putProperty( QDataSet.VALID_MIN, null ); //TODO:  EMFISIS HFR has incorrect VALID_MAX.
         offsets.putProperty( QDataSet.VALID_MAX, null );
+        
+        if ( offsets.rank()==2 ) {
+            offsets= (MutablePropertyDataSet)(QDataSet)offsets.slice(0);
+            logger.fine("slice(0) on rank 2 dataset because code doesn't support time-varying DEPEND_1");
+        }
         
         int icadence= 4;
         while ( icadence<offsets.length()/2 && cadence.gt( DataSetUtil.asDatum(offsets.slice(icadence)).subtract( DataSetUtil.asDatum( offsets.slice(0)) ) ) ) {
