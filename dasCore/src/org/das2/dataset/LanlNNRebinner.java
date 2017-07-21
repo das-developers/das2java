@@ -1,6 +1,8 @@
 
 package org.das2.dataset;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.WeakHashMap;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
@@ -19,6 +21,7 @@ import org.das2.qds.MutablePropertyDataSet;
 import org.das2.qds.QDataSet;
 import org.das2.qds.SemanticOps;
 import org.das2.qds.ops.Ops;
+import org.das2.qds.util.AsciiFormatter;
 
 /**
  * DataSetRebinner for explicitly doing NN rebinning.  The AverageTableRebinner had been used for the purpose, and
@@ -294,8 +297,8 @@ public class LanlNNRebinner implements DataSetRebinner {
                         for ( int k=sx0; k<=sx1; k++ ) {
                             for ( int l=sy0; l<=sy1; l++ ) {
                                 if ( w>N.value(k,l) ) {
-                                    S.putValue(k,l,z*w);
-                                    N.putValue(k,l,w);
+                                    S.putValue(k,l,z*w*1.1);
+                                    N.putValue(k,l,w*1.1);
                                 }
                             }
                         }
@@ -310,6 +313,13 @@ public class LanlNNRebinner implements DataSetRebinner {
         MutablePropertyDataSet mds= (MutablePropertyDataSet) Ops.divide( S, N );
         RebinDescriptor.putDepDataSet( ds, mds, ddX, ddY );
         
+//        try {
+//            //System.err.println( String.format( "%d,%d,%f", 40,48, mds.value(40,48) )  );
+//            new AsciiFormatter().formatToFile( new File( "/tmp/ap.txt"), N );
+//        } catch (IOException ex) {
+//            Logger.getLogger(LanlNNRebinner.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+//        
         logger.exiting("org.das2.dataset.LanlNNRebinner", "rebin");
         
         return mds;
