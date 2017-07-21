@@ -109,6 +109,29 @@ public class Schemes {
     }
     
     /**
+     * return a rank 2 waveform, but DEPEND_1 which contains the offsets is also  
+     * rank 2.  This was introduced to support study where short waveform-like
+     * structures were identified.
+     * @return a rank 2 waveform, but with rank 2 time-varying DEPEND_1 offsets.
+     */
+    public static QDataSet rank2WaveformRank2Offsets() {
+        QDataSet ds= Ops.ripplesWaveformTimeSeries(20);
+        QDataSet offs= (QDataSet) ds.property(QDataSet.DEPEND_1);
+        offs= Ops.append( Ops.replicate(offs,10), Ops.replicate(Ops.divide(offs,3.0),10) );
+        ds= Ops.putProperty( ds, QDataSet.DEPEND_1, offs );
+        return ds;
+    }
+    
+    /**
+     * return true if the data is a rank 2 waveform with rank 2 offsets.
+     * @param ds a dataset
+     * @return  true if the data is a rank 2 waveform.
+     */    
+    public static boolean isRank2WaveformRank2Offsets( QDataSet ds ) {
+        return isRank2Waveform(ds) && ((QDataSet)ds.property(QDataSet.DEPEND_1)).rank()==2;
+    }
+    
+    /**
      * return a rank 2 vectorTimeSeries, which is a bundle
      * of m rank 1 measurements.  This tacitly asserts orthogonality,
      * but the bundled data should at least all be rank 1 and in the same units.
