@@ -347,7 +347,11 @@ public class SliceFilterEditorPanel extends AbstractFilterEditorPanel implements
             if ( dim==0 ) {
                 return in.length()>index;
             } else {
-                return qube[dim]>index;
+                if ( dim>=qube.length ) {
+                    return false;
+                } else {
+                    return qube[dim]>index;
+                }
             }
         }
         return true;
