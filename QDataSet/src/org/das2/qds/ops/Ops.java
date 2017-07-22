@@ -1080,19 +1080,135 @@ public class Ops {
      * @return the averaged dataset
      */
     public static QDataSet collapse0( QDataSet fillDs ) {
-        fillDs= Ops.reduceMean(fillDs,0);
-        return fillDs;
+        if ( fillDs.rank()==4 ) {
+            return collapse0R4(fillDs,new NullProgressMonitor());
+        } else {
+            fillDs= Ops.reduceMean(fillDs,0);
+            return fillDs;
+        }
+    }
+    
+    public static QDataSet collapse0R4( QDataSet ds, ProgressMonitor mon ) {
+        if ( ds.rank()==4 ) {
+            int[] qube = DataSetUtil.qubeDims(ds);
+            if ( qube==null ) throw new IllegalArgumentException("dataset is not a qube");
+            int[] newQube = DataSetOps.removeElement(qube, 0);
+            //MutablePropertyDataSet mpds= DataSetOps.makePropertiesMutable(ds);
+            //mpds.putProperty(QDataSet.BUNDLE_1,null);
+            QDataSet mpds= ds;
+            QDataSet wds = DataSetUtil.weightsDataSet(mpds);
+            DDataSet result = DDataSet.create(newQube);
+            DDataSet wresult= DDataSet.create(newQube);
+            mon.setTaskSize(qube[1]);
+            mon.started();
+            for ( int i1= 0; i1<qube[1]; i1++ ) {
+                mon.setTaskProgress(i1);
+                for ( int i2= 0; i2<qube[2]; i2++ ) {
+                    for ( int i3= 0; i3<qube[3]; i3++ ) {
+                        for ( int i0=0; i0<qube[0]; i0++ ) {
+                            double w= wds.value(i0,i1,i2,i3);
+                            if ( w>0 ) {
+                                result.addValue(i1, i2, i3, w*ds.value(i0,i1,i2,i3));
+                                wresult.addValue(i1, i2, i3, w );
+                            }
+                        }
+                    }
+                }
+            }
+            double fill= Double.NaN;
+            for ( int i0= 0; i0<qube[1]; i0++ ) {
+                for ( int i1= 0; i1<qube[2]; i1++ ) {
+                    for ( int i2= 0; i2<qube[3]; i2++ ) {
+                        double w= wresult.value(i0, i1, i2 );
+                        if ( w>0 ) {
+                            double n= result.value(i0, i1, i2 );
+                            result.putValue(i0, i1, i2, n/w);
+                        } else {
+                            result.putValue(i0, i1, i2, fill );
+                        }
+                    }
+                }
+            }
+            mon.finished();
+            Map<String,Object> props= DataSetUtil.getProperties(ds);
+            props= DataSetOps.sliceProperties( props, 0 );
+            DataSetUtil.putProperties( props, result );
+            result.putProperty(QDataSet.WEIGHTS,wresult);
+            return result;
+            
+        } else {
+            throw new IllegalArgumentException("only rank 4");
+        }
+        
     }
 
+    public static QDataSet collapse1R4( QDataSet ds, ProgressMonitor mon ) {
+        if ( ds.rank()==4 ) {
+            int[] qube = DataSetUtil.qubeDims(ds);
+            if ( qube==null ) throw new IllegalArgumentException("dataset is not a qube");
+            int[] newQube = DataSetOps.removeElement(qube, 1);
+            //MutablePropertyDataSet mpds= DataSetOps.makePropertiesMutable(ds);
+            //mpds.putProperty(QDataSet.BUNDLE_1,null);
+            QDataSet mpds= ds;
+            QDataSet wds = DataSetUtil.weightsDataSet(mpds);
+            DDataSet result = DDataSet.create(newQube);
+            DDataSet wresult= DDataSet.create(newQube);
+            mon.setTaskSize(qube[0]);
+            mon.started();
+            for ( int i0= 0; i0<qube[0]; i0++ ) {
+                mon.setTaskProgress(i0);
+                for ( int i2= 0; i2<qube[2]; i2++ ) {
+                    for ( int i3= 0; i3<qube[3]; i3++ ) {
+                        for ( int i1=0; i1<qube[1]; i1++ ) {
+                            double w= wds.value(i0,i1,i2,i3);
+                            if ( w>0 ) {
+                                result.addValue(i0, i2, i3, w*ds.value(i0,i1,i2,i3));
+                                wresult.addValue(i0, i2, i3, w );
+                            }
+                        }
+                    }
+                }
+            }
+            double fill= Double.NaN;
+            for ( int i0= 0; i0<qube[0]; i0++ ) {
+                for ( int i2= 0; i2<qube[2]; i2++ ) {
+                    for ( int i3= 0; i3<qube[3]; i3++ ) {
+                        double w= wresult.value(i0, i2, i3 );
+                        if ( w>0 ) {
+                            double n= result.value(i0, i2, i3 );
+                            result.putValue(i0, i2, i3, n/w);
+                        } else {
+                            result.putValue(i0, i2, i3, fill );
+                        }
+                    }
+                }
+            }
+            mon.finished();
+            Map<String,Object> props= DataSetUtil.getProperties(ds);
+            props= DataSetOps.sliceProperties( props, 1 );
+            DataSetUtil.putProperties( props, result );
+            result.putProperty(QDataSet.WEIGHTS,wresult);
+            return result;
+            
+        } else {
+            throw new IllegalArgumentException("only rank 4");
+        }
+        
+    }
+    
     /**
      * this is introduced to mimic the in-line function which reduces the dimensionality by averaging over the first dimension
      *   collapse1( ds[30,20] ) &rarr; ds[30]
-     * @param fillDs
+     * @param ds
      * @return the averaged dataset
      */
-    public static QDataSet collapse1( QDataSet fillDs ) {
-        fillDs= Ops.reduceMean(fillDs,1);
-        return fillDs;
+    public static QDataSet collapse1( QDataSet ds ) {
+        if ( ds.rank()==4 ) {
+            return collapse1R4(ds,new NullProgressMonitor());
+        } else {
+            ds= Ops.reduceMean(ds,1);
+            return ds;
+        }
     }
 
     /**
@@ -1102,10 +1218,68 @@ public class Ops {
      * @return the averaged dataset
      */
     public static QDataSet collapse2( QDataSet fillDs ) {
-        fillDs= Ops.reduceMean(fillDs,2);
-        return fillDs;
+        if ( fillDs.rank()==4 ) {
+            return collapse2R4(fillDs,new NullProgressMonitor());
+        } else {
+            fillDs= Ops.reduceMean(fillDs,2);
+            return fillDs;
+        }
     }
 
+    public static QDataSet collapse2R4( QDataSet ds, ProgressMonitor mon ) {
+        if ( ds.rank()==4 ) {
+            int[] qube = DataSetUtil.qubeDims(ds);
+            if ( qube==null ) throw new IllegalArgumentException("dataset is not a qube");
+            int[] newQube = DataSetOps.removeElement(qube, 2);
+            //MutablePropertyDataSet mpds= DataSetOps.makePropertiesMutable(ds);
+            //mpds.putProperty(QDataSet.BUNDLE_1,null);
+            QDataSet mpds= ds;
+            QDataSet wds = DataSetUtil.weightsDataSet(mpds);
+            DDataSet result = DDataSet.create(newQube);
+            DDataSet wresult= DDataSet.create(newQube);
+            mon.setTaskSize(qube[0]);
+            mon.started();
+            for ( int i0= 0; i0<qube[0]; i0++ ) {
+                mon.setTaskProgress(i0);
+                for ( int i1= 0; i1<qube[1]; i1++ ) {
+                    for ( int i3= 0; i3<qube[3]; i3++ ) {
+                        for ( int i2=0; i2<qube[2]; i2++ ) {
+                            double w= wds.value(i0,i1,i2,i3);
+                            if ( w>0 ) {
+                                result.addValue(i0, i1, i3, w*ds.value(i0,i1,i2,i3));
+                                wresult.addValue(i0, i1, i3, w );
+                            }
+                        }
+                    }
+                }
+            }
+            double fill= Double.NaN;
+            for ( int i0= 0; i0<qube[0]; i0++ ) {
+                for ( int i1= 0; i1<qube[1]; i1++ ) {
+                    for ( int i2= 0; i2<qube[3]; i2++ ) {
+                        double w= wresult.value(i0, i1, i2 );
+                        if ( w>0 ) {
+                            double n= result.value(i0, i1, i2 );
+                            result.putValue(i0, i1, i2, n/w);
+                        } else {
+                            result.putValue(i0, i1, i2, fill );
+                        }
+                    }
+                }
+            }
+            mon.finished();
+            Map<String,Object> props= DataSetUtil.getProperties(ds);
+            props= DataSetOps.sliceProperties( props, 2 );
+            DataSetUtil.putProperties( props, result );
+            result.putProperty(QDataSet.WEIGHTS,wresult);
+            return result;
+            
+        } else {
+            throw new IllegalArgumentException("only rank 4");
+        }
+        
+    }    
+    
     /**
      * this is introduced to mimic the in-line function which reduces the dimensionality by averaging over the first dimension
      *   collapse3( ds[30,20,10,5] ) &rarr; ds[30,20,10]
@@ -1113,9 +1287,67 @@ public class Ops {
      * @return the averaged dataset
      */
     public static QDataSet collapse3( QDataSet fillDs ) {
-        fillDs= Ops.reduceMean(fillDs,3);
-        return fillDs;
+        if ( fillDs.rank()==4 ) {
+            return collapse3R4( fillDs, new NullProgressMonitor() );
+        } else {
+            fillDs= Ops.reduceMean(fillDs,3);
+            return fillDs;
+        }
     }
+    
+    public static QDataSet collapse3R4( QDataSet ds, ProgressMonitor mon ) {
+        if ( ds.rank()==4 ) {
+            int[] qube = DataSetUtil.qubeDims(ds);
+            if ( qube==null ) throw new IllegalArgumentException("dataset is not a qube");
+            int[] newQube = DataSetOps.removeElement(qube, 3);
+            //MutablePropertyDataSet mpds= DataSetOps.makePropertiesMutable(ds);
+            //mpds.putProperty(QDataSet.BUNDLE_1,null);
+            QDataSet mpds= ds;
+            QDataSet wds = DataSetUtil.weightsDataSet(mpds);
+            DDataSet result = DDataSet.create(newQube);
+            DDataSet wresult= DDataSet.create(newQube);
+            mon.setTaskSize(qube[1]);
+            mon.started();
+            for ( int i0= 0; i0<qube[0]; i0++ ) {
+                mon.setTaskProgress(i0);
+                for ( int i1= 0; i1<qube[1]; i1++ ) {
+                    for ( int i2= 0; i2<qube[2]; i2++ ) {
+                        for ( int i3=0; i3<qube[3]; i3++ ) {
+                            double w= wds.value(i0,i1,i2,i3);
+                            if ( w>0 ) {
+                                result.addValue(i0, i1, i2, w*ds.value(i0,i1,i2,i3));
+                                wresult.addValue(i0, i1, i2, w );
+                            }
+                        }
+                    }
+                }
+            }
+            double fill= Double.NaN;
+            for ( int i0= 0; i0<qube[0]; i0++ ) {
+                for ( int i1= 0; i1<qube[1]; i1++ ) {
+                    for ( int i2= 0; i2<qube[2]; i2++ ) {
+                        double w= wresult.value(i0, i1, i2 );
+                        if ( w>0 ) {
+                            double n= result.value(i0, i1, i2 );
+                            result.putValue(i0, i1, i2, n/w);
+                        } else {
+                            result.putValue(i0, i1, i2, fill );
+                        }
+                    }
+                }
+            }
+            mon.finished();
+            Map<String,Object> props= DataSetUtil.getProperties(ds);
+            props= DataSetOps.sliceProperties( props, 2 );
+            DataSetUtil.putProperties( props, result );
+            result.putProperty(QDataSet.WEIGHTS,wresult);
+            return result;
+            
+        } else {
+            throw new IllegalArgumentException("only rank 4");
+        }
+        
+    }        
 
     /**
      * trim the dataset to the indeces on the zeroth dimension.  Note
