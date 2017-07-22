@@ -2566,16 +2566,38 @@ public class DataSetUtil {
             }
         }
         if (result == null) {
+            Number validMin,validMax;
+            Units u;
             QDataSet bds= (QDataSet)ds.property(QDataSet.BUNDLE_1);
             if ( bds!=null && ds.length()>0 && ds.length(0)>0 ) {
-                return bundleWeightsDataSet(ds);
+                ofill= (Number) bds.property(QDataSet.FILL_VALUE,0);
+                Number min= (Number) bds.property(QDataSet.VALID_MIN,0);
+                Number max= (Number) bds.property(QDataSet.VALID_MAX,0);
+                u= (Units) bds.property(QDataSet.UNITS,0);
+                boolean different= false;
+                for ( int i=1; i<ds.length(0); i++ ) {
+                    Number d1= (Number) bds.property(QDataSet.FILL_VALUE,i);
+                    Number min1= (Number) bds.property(QDataSet.VALID_MIN,i);
+                    Number max1= (Number) bds.property(QDataSet.VALID_MAX,i);
+                    if ( ( ofill==null && d1!=null ) || ( ofill!=null && !ofill.equals(d1) ) ) different= true;
+                    if ( ( min==null && min1!=null ) || ( min!=null && !min.equals(min1) ) ) different= true;
+                    if ( ( max==null && max1!=null ) || ( max!=null && !max.equals(max1) ) ) different= true;
+                }
+                if ( different ) {
+                    return bundleWeightsDataSet(ds);
+                } else {
+                    validMin= min;
+                    validMax= max;
+                }
+            } else {
+                validMin = (Number) ds.property(QDataSet.VALID_MIN);
+                validMax = (Number) ds.property(QDataSet.VALID_MAX);
+                u = (Units) ds.property(QDataSet.UNITS);
+                ofill = (Number) ds.property(QDataSet.FILL_VALUE);
             }
-            Number validMin = (Number) ds.property(QDataSet.VALID_MIN);
             if (validMin == null) validMin = Double.NEGATIVE_INFINITY;
-            Number validMax = (Number) ds.property(QDataSet.VALID_MAX);
             if (validMax == null) validMax = Double.POSITIVE_INFINITY;
-            Units u = (Units) ds.property(QDataSet.UNITS);
-            ofill = (Number) ds.property(QDataSet.FILL_VALUE);
+            
             double fill = (ofill == null ? Double.NaN : ofill.doubleValue());
             boolean check = (validMin.doubleValue() > -1 * Double.MAX_VALUE || validMax.doubleValue() < Double.MAX_VALUE || !(Double.isNaN(fill)));
             if (check) {
