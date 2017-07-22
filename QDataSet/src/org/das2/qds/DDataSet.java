@@ -378,6 +378,18 @@ public final class DDataSet extends ArrayDataSet {
         checkImmutable();
         back[  i0 * len1 + i1 ]+= value;
     }
+
+    /**
+     * add this value to the current value. 
+     * @param i0 the index
+     * @param i1 the index
+     * @param i2 the index
+     * @param value the value, which is cast to this internal type.
+     */
+    public void addValue( int i0, int i1, int i2, double value ) {
+        checkImmutable();
+        back[  i0 * len1 * len2 + i1 * len2 + i2 ]+= value;
+    }
     
     /**
      * add the value to the position.  This is done all over the place with code like:
