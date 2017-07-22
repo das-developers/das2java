@@ -326,7 +326,26 @@ public class OperationsProcessor {
                             throw new IllegalArgumentException("trim is only allowed with collapse0");
                         }
                     }
-                    fillDs= Ops.reduceMean(fillDs,dim, mon.getSubtaskMonitor("performing collapse") );
+                    if ( fillDs.rank()==4 ) {
+                        switch (dim) {
+                            case 0:
+                                fillDs= Ops.collapse0R4(fillDs, mon.getSubtaskMonitor("performing collapse") );
+                                break;
+                            case 1:
+                                fillDs= Ops.collapse1R4(fillDs, mon.getSubtaskMonitor("performing collapse") );
+                                break;
+                            case 2:
+                                fillDs= Ops.collapse2R4(fillDs, mon.getSubtaskMonitor("performing collapse") );
+                                break;
+                            case 3:
+                                fillDs= Ops.collapse3R4(fillDs, mon.getSubtaskMonitor("performing collapse") );
+                                break;
+                            default:
+                                break;
+                        }
+                    } else {
+                        fillDs= Ops.reduceMean(fillDs,dim, mon.getSubtaskMonitor("performing collapse") );
+                    }
                     
                 } else if ( cmd.startsWith("|total") && cmd.length()>6 ) {
                     int dim= cmd.charAt(6)-'0';
