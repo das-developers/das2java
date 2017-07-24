@@ -22,6 +22,7 @@
  */
 package org.das2.dataset;
 
+import java.io.IOException;
 import org.das2.datum.DatumRange;
 import org.das2.datum.Units;
 import org.das2.datum.Datum;
@@ -38,6 +39,7 @@ import org.das2.qds.QDataSet;
 import org.das2.qds.RankZeroDataSet;
 import org.das2.qds.SemanticOps;
 import org.das2.qds.ops.Ops;
+import org.das2.qds.util.AsciiFormatter;
 
 /**
  * DataSetRebinner implementing either bi-linear interpolation in blocks of 4 points, or nearest neighbor interpolation by
@@ -204,12 +206,14 @@ public class AverageTableRebinner implements DataSetRebinner {
             Datum yTagWidth = yTagWidthQ==null ? null : DataSetUtil.asDatum( yTagWidthQ );
             if ( yTagWidth!=null && yTagWidth.value()<0 ) yTagWidth= yTagWidth.multiply(-1);
 
-            if (ddX != null) {
-                fillInterpolateXNew(rebinData, rebinWeights, ddX, xTagWidth, interpolateType);
-            }
             if (ddY != null) {
                 fillInterpolateY(rebinData, rebinWeights, ddY, yTagWidth, interpolateType);
             }
+            
+            if (ddX != null) {
+                fillInterpolateXNew(rebinData, rebinWeights, ddX, xTagWidth, interpolateType);
+            }
+
         } else if (enlargePixels) {
             enlargePixels(rebinData, rebinWeights);
         }
@@ -965,7 +969,13 @@ public class AverageTableRebinner implements DataSetRebinner {
 
         double pixelSize= ddX.binWidth();
         xSampleWidth= xSampleWidth+ pixelSize; // there's a bug where two close measurements can fall into bins where the centers are more than xSampleWidth apart, so add a pixel width fuzz here.
-
+        
+        try {
+            new AsciiFormatter().formatToFile( "/home/jbf/tmp/weights.txt", weights );
+        } catch (IOException ex) {
+            Logger.getLogger(AverageTableRebinner.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
         for (int j = 0; j < ny; j++) {
             int ii1 = -1;
             int ii2;
