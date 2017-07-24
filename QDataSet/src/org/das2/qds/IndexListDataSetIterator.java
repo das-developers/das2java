@@ -68,8 +68,10 @@ public class IndexListDataSetIterator implements DataSetIterator {
                 return ds.value( index(0), index(1) );
             case 3:
                 return ds.value( index(0), index(1), index(2) );
+            case 4:
+                return ds.value( index(0), index(1), index(2), index(3) );
             default:
-                throw new IllegalArgumentException("rank limit");
+                throw new IllegalArgumentException("rank limit: "+dsrank + " is not supported");
         }        
     }
     
@@ -90,8 +92,11 @@ public class IndexListDataSetIterator implements DataSetIterator {
             case 3:
                 ds.putValue( index(0), index(1), index(2), v );
                 return;
+            case 4:
+                ds.putValue( index(0), index(1), index(2), index(3), v );
+                return;                
             default:
-                throw new IllegalArgumentException("rank limit");
+                throw new IllegalArgumentException("rank limit: "+dsrank + " is not supported");
         }        
     }
     
