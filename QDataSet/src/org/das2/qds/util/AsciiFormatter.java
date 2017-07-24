@@ -4,7 +4,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import org.das2.datum.Datum;
+import org.das2.qds.DDataSet;
 import org.das2.qds.DataSetUtil;
+import org.das2.qds.JoinDataSet;
 import org.das2.qds.QDataSet;
 
 /**
@@ -50,6 +52,15 @@ public class AsciiFormatter {
     
     public void formatToFile( String f, QDataSet ds ) throws IOException {
         formatToFile( new File(f), new QDataSet[] { ds } );
+    }
+    
+    public void formatToFile( String f, double[][] dd ) throws IOException {
+        JoinDataSet jds= new JoinDataSet(2);
+        for (double[] dd1 : dd) {
+            QDataSet ds = DDataSet.wrap(dd1);
+            jds.join(ds);
+        }
+        formatToFile( new File(f), jds );
     }
 
 }
