@@ -489,8 +489,8 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
         if ( ds.len1!=this.len1 ) throw new IllegalArgumentException("len1 mismatch");
         if ( ds.len2!=this.len2 ) throw new IllegalArgumentException("len2 mismatch");
         if ( ds.len3!=this.len3 ) throw new IllegalArgumentException("len3 mismatch");
-        if ( this.getBack().getClass()!=ds.getBack().getClass() ) {
-            Class a1= ds.getBack().getClass();
+        if ( this.getBackReadOnly().getClass()!=ds.getBackReadOnly().getClass() ) {
+            Class a1= ds.getBackReadOnly().getClass();
             Class a2= this.getBack().getClass();
             String s1,s2;
             s1= "" + a1.getComponentType();
@@ -586,7 +586,7 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
      */
     public static ArrayDataSet copy( Class c, QDataSet ds ) {
 
-        if ( ds instanceof ArrayDataSet && ((ArrayDataSet)ds).getBack().getClass().getComponentType()==c ) return internalCopy( (ArrayDataSet)ds );
+        if ( ds instanceof ArrayDataSet && ((ArrayDataSet)ds).getBackReadOnly().getClass().getComponentType()==c ) return internalCopy( (ArrayDataSet)ds );
         
         int rank= ds.rank();
         ArrayDataSet result;
@@ -748,17 +748,17 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
         if ( ds2.len1!=ds1.len1 ) throw new IllegalArgumentException("len1 mismatch");
         if ( ds2.len2!=ds1.len2 ) throw new IllegalArgumentException("len2 mismatch");
         if ( ds2.len3!=ds1.len3 ) throw new IllegalArgumentException("len3 mismatch");
-        if ( ds1.getBack().getClass()!=ds2.getBack().getClass() ) {
+        if ( ds1.getBackReadOnly().getClass()!=ds2.getBackReadOnly().getClass() ) {
             throw new IllegalArgumentException("backing type mismatch");
         }
 
         int myLength= ds1.len0 * ds1.len1 * ds1.len2 * ds1.len3;
         int dsLength= ds2.len0 * ds2.len1 * ds2.len2 * ds2.len3;
 
-        Object newback= Array.newInstance( ds1.getBack().getClass().getComponentType(), myLength + dsLength );
+        Object newback= Array.newInstance( ds1.getBackReadOnly().getClass().getComponentType(), myLength + dsLength );
 
-        System.arraycopy( ds1.getBack(), 0, newback, 0, myLength );
-        System.arraycopy( ds2.getBack(), 0, newback, myLength, dsLength );
+        System.arraycopy( ds1.getBackReadOnly(), 0, newback, 0, myLength );
+        System.arraycopy( ds2.getBackReadOnly(), 0, newback, myLength, dsLength );
 
         if ( SemanticOps.isBundle(ds1) && SemanticOps.isBundle(ds2) ) {
             QDataSet bds1= (QDataSet) ds1.property(QDataSet.BUNDLE_1);
@@ -778,7 +778,7 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
         Units u2= SemanticOps.getUnits(ds2);
         if ( u1!=u2 ) {
             UnitsConverter uc= UnitsConverter.getConverter(u2,u1);
-            Class backClass= ds1.getBack().getClass().getComponentType();
+            Class backClass= ds1.getBackReadOnly().getClass().getComponentType();
             for ( int i=myLength; i<myLength+dsLength; i++ ) { //TODO: this is going to be sub-optimal that its much slower than it needs to be because if statements.
                 Number nv=  uc.convert(Array.getDouble( newback,i) ) ;
                 if ( backClass==double.class ) {
