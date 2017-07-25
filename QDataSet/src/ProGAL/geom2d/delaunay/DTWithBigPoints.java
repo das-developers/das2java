@@ -55,8 +55,20 @@ public class DTWithBigPoints {
             return walk(p,null);
         }	
         
-	public Triangle walk(Point p, List<Point> trace ){
-		Triangle t = triangles.get(triangles.size()-1);
+        public Triangle walk(Point p, List<Point> trace ){
+            Triangle t = triangles.get(triangles.size()-1);
+            return walk(p, trace, t);
+        }
+        
+        /**
+         * walk to find the triangle containing the point
+         * @param p the location to find.
+         * @param trace if non-null, then keep a list of triangles visited.
+         * @param t initial triangle
+         * @return the triangle containing point p
+         */
+	public Triangle walk(Point p, List<Point> trace, Triangle t ){
+		if ( t==null ) t = triangles.get(triangles.size()-1);
 		while(true){
 			double a1 = Point.area(t.corners[0], t.corners[1], p); orientPredCounter++;
 			double a2 = Point.area(t.corners[1], t.corners[2], p); orientPredCounter++;
