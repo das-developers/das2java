@@ -64,6 +64,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.das2.dataset.LanlNNRebinner;
 import org.das2.dataset.ScatterRebinner;
+import org.das2.dataset.TriScatRebinner;
 import org.das2.datum.Datum;
 import org.das2.datum.UnitsUtil;
 import static org.das2.graph.Renderer.formatControl;
@@ -153,6 +154,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
             this.rebinner = rebinner;
             this.label = label;
         }
+        
         public static final RebinnerEnum binAverage = new RebinnerEnum(new AverageTableRebinner(), "binAverage");
         public static final RebinnerEnum nearestNeighbor;
         public static final RebinnerEnum lanlNearestNeighbor;
@@ -160,6 +162,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         public static final RebinnerEnum binAverageNoInterpolateNoEnlarge;
         public static final RebinnerEnum binXinterpY;
         public static final RebinnerEnum scatter;
+        public static final RebinnerEnum triScat= new RebinnerEnum( new TriScatRebinner(), "triScat" );
 
         static {
             AverageTableRebinner rebinner = new AverageTableRebinner();
@@ -206,7 +209,8 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         public Icon getListIcon() {
             URL url = SpectrogramRenderer.class.getResource("/images/icons/rebin." + label + ".png");
             if ( url==null ) {
-                throw new IllegalArgumentException("icon not found at /images/icons/rebin." + label + ".png");
+                logger.info("icon not found at /images/icons/rebin." + label + ".png");
+                return new ImageIcon( SpectrogramRenderer.class.getResource("/images/icons/rebin.nearestNeighbor.png"));
             }
             return new ImageIcon(url);
         }
