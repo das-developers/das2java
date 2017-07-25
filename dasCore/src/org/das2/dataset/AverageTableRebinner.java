@@ -970,11 +970,11 @@ public class AverageTableRebinner implements DataSetRebinner {
         double pixelSize= ddX.binWidth();
         xSampleWidth= xSampleWidth+ pixelSize; // there's a bug where two close measurements can fall into bins where the centers are more than xSampleWidth apart, so add a pixel width fuzz here.
         
-        try {
-            new AsciiFormatter().formatToFile( "/home/jbf/tmp/weights.txt", weights );
-        } catch (IOException ex) {
-            Logger.getLogger(AverageTableRebinner.class.getName()).log(Level.SEVERE, null, ex);
-        }
+//        try {
+//            new AsciiFormatter().formatToFile( "/home/jbf/tmp/weights.txt", weights );
+//        } catch (IOException ex) {
+//            Logger.getLogger(AverageTableRebinner.class.getName()).log(Level.SEVERE, null, ex);
+//        }
         
         for (int j = 0; j < ny; j++) {
             int ii1 = -1;
