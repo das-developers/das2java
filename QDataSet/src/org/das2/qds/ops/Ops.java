@@ -5527,7 +5527,7 @@ public class Ops {
                             }
                             mds.putProperty( name, result );
                         } catch (JSONException ex) {
-                            logger.log(Level.SEVERE, null, ex);
+                            logger.log(Level.SEVERE, "type is not supported for PROPERTY TYPE MAP: "+value, ex);
                         }
                     } else {
                         mds.putProperty( name, value);
