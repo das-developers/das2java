@@ -157,7 +157,7 @@ public class FileSystemUtil {
     public static void unzipFile( File zipFilePath, File destDir) throws IOException {
         
         if (!destDir.exists()) {
-            destDir.mkdir();
+            destDir.mkdirs();
         }
         try (ZipInputStream zipIn = new ZipInputStream(new FileInputStream(zipFilePath))) {
             ZipEntry entry = zipIn.getNextEntry();
