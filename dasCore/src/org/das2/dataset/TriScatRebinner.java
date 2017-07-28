@@ -5,16 +5,16 @@
  */
 package org.das2.dataset;
 
+import ProGAL.geom2d.Point;
+import java.awt.Rectangle;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
-import org.das2.DasException;
+import org.das2.datum.Datum;
 import org.das2.datum.Units;
-import org.das2.qds.DDataSet;
-import org.das2.qds.DataSetIterator;
 import org.das2.qds.DataSetOps;
 import org.das2.qds.QDataSet;
-import org.das2.qds.QubeDataSetIterator;
 import org.das2.qds.WritableDataSet;
 import org.das2.qds.examples.Schemes;
 import org.das2.qds.ops.Ops;
@@ -56,6 +56,15 @@ public class TriScatRebinner implements DataSetRebinner {
             return String.valueOf(idx);
         }
     }    
+    
+    private java.awt.geom.Rectangle2D getBounds( ProGAL.geom2d.delaunay.Triangle t ) {
+        Rectangle2D.Double r= new Rectangle2D.Double( t.getCorner(0).x(), t.getCorner(0).y(), 0, 0 );
+        
+        r.add( new java.awt.geom.Point2D.Double( t.getCorner(1).x(), t.getCorner(1).y() ));
+        r.add( new java.awt.geom.Point2D.Double( t.getCorner(2).x(), t.getCorner(2).y() ));
+        
+        return r;
+    }
     
     @Override
     public QDataSet rebin(QDataSet zz, RebinDescriptor rebinDescX, RebinDescriptor rebinDescY) {
@@ -120,10 +129,29 @@ public class TriScatRebinner implements DataSetRebinner {
         LoggerManager.markTime("begin interp all pixels");
         
         ProGAL.geom2d.delaunay.Triangle t=null;
+        int dir=1;
+        boolean triUsable=true; // true if the current triangle can be used.
+        
+        Datum dxlimit= org.das2.qds.DataSetUtil.asDatum( org.das2.qds.DataSetUtil.guessCadence(xx,null) );
+        Datum dylimit= org.das2.qds.DataSetUtil.asDatum( org.das2.qds.DataSetUtil.guessCadence(yy,null) );
+
+        double ylimit= 20;
+        double xlimit= 20;
+        
         for ( int ix= 0; ix<rebinDescX.numberOfBins(); ix++ ) {
-            for ( int iy= 0; iy<rebinDescY.numberOfBins(); iy++ ) {
+            for ( int iy= dir==1 ? 0 : rebinDescY.numberOfBins()-1;
+                    dir==1 ? iy<rebinDescY.numberOfBins() : iy>=0; iy+=dir ) { // Boustrophedon back and forth
+                //if ( ix>300 && iy>300 ) {
+                //    System.err.println("here");
+                //}
                 ProGAL.geom2d.Point thePoint= new ProGAL.geom2d.Point( rebinDescX.binCenter(ix,xunits), rebinDescY.binCenter(iy,yunits) );
-                t= rt.walk( thePoint, null, t );
+                ProGAL.geom2d.delaunay.Triangle t1= rt.walk( thePoint, null, t );
+                if ( t1!=t ) {
+                    Rectangle2D r= getBounds(t1);
+                    System.err.println(r);
+                    triUsable= r.getWidth() < dxlimit.doubleValue(xunits) && r.getHeight()<dylimit.doubleValue(yunits);
+                    t= t1;
+                }
                 ProGAL.geom2d.Point[] abc= new ProGAL.geom2d.Point[] { t.getCorner(0), t.getCorner(1), t.getCorner(2) }; 
                 VertexInt[] abci= new VertexInt[3];
                 hasFill= false;
@@ -135,7 +163,7 @@ public class TriScatRebinner implements DataSetRebinner {
                         abci[k]= (VertexInt)abc[k];
                     }
                 }
-                if ( hasFill ) {
+                if ( hasFill || !triUsable ) {
                     result.putValue( ix, iy, dfill );
                 } else {
                     double[] w= new double[3];
@@ -175,6 +203,7 @@ public class TriScatRebinner implements DataSetRebinner {
                     }
                 }
             }
+            dir= -dir;
         }
         
         LoggerManager.markTime("done interp all pixels");
