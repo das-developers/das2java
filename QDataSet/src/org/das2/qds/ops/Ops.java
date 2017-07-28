@@ -9744,12 +9744,17 @@ public class Ops {
     public static QDataSet convertUnitsTo( QDataSet ds, Units u ) {
         UnitsConverter uc= Units.getConverter( SemanticOps.getUnits(ds), u );
         ArrayDataSet ds2= ArrayDataSet.copy(ds);
+        for ( int i=0; i<ds.rank(); i++ ) {
+            if ( ds2.property("BUNDLE_"+i) !=null ) {
+                ds2.putProperty("BUNDLE_"+i,null);
+            }
+        }
         DataSetIterator iter= new QubeDataSetIterator( ds2 );
         while ( iter.hasNext() ) {
             iter.next();
             iter.putValue( ds2, uc.convert( iter.getValue(ds) ) );
         }
-        ds2.putProperty( QDataSet.UNITS, u );
+        ds2.putProperty( QDataSet.UNITS, u );  
         return ds2;
     }
 
