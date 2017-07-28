@@ -2589,6 +2589,9 @@ public class DataSetUtil {
                     validMin= min;
                     validMax= max;
                 }
+                if ( validMin==null ) validMin= (Number)ds.property(QDataSet.VALID_MIN);
+                if ( validMax==null ) validMax= (Number)ds.property(QDataSet.VALID_MAX);
+                if ( ofill==null ) ofill= (Number) ds.property(QDataSet.FILL_VALUE);
             } else {
                 validMin = (Number) ds.property(QDataSet.VALID_MIN);
                 validMax = (Number) ds.property(QDataSet.VALID_MAX);
