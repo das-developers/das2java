@@ -8,8 +8,10 @@ package org.das2.dataset;
 import ProGAL.geom2d.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.datum.Datum;
 import org.das2.datum.Units;
@@ -18,6 +20,8 @@ import org.das2.qds.QDataSet;
 import org.das2.qds.WritableDataSet;
 import org.das2.qds.examples.Schemes;
 import org.das2.qds.ops.Ops;
+import org.das2.qds.util.AsciiFormatter;
+import org.das2.qds.util.DataSetBuilder;
 import org.das2.util.LoggerManager;
 
 /**
@@ -132,11 +136,35 @@ public class TriScatRebinner implements DataSetRebinner {
         int dir=1;
         boolean triUsable=true; // true if the current triangle can be used.
         
-        Datum dxlimit= org.das2.qds.DataSetUtil.asDatum( org.das2.qds.DataSetUtil.guessCadence(xx,null) );
-        Datum dylimit= org.das2.qds.DataSetUtil.asDatum( org.das2.qds.DataSetUtil.guessCadence(yy,null) );
+        DataSetBuilder xs= new DataSetBuilder(1,100);
+        DataSetBuilder ys= new DataSetBuilder(1,100);
+        
+        int i=0;
+        for ( ProGAL.geom2d.delaunay.Triangle t1: rt.getTriangles() ) {
+            if ( !( t1.getCorner(0) instanceof VertexInt && t1.getCorner(1) instanceof VertexInt && t1.getCorner(2) instanceof VertexInt ) ) {
+                
+            } else {
+                Rectangle2D r= getBounds(t1);
+                xs.nextRecord( r.getWidth() );
+                ys.nextRecord( r.getHeight() );
+            }
+        }
+        QDataSet xss= xs.getDataSet();
+        QDataSet yss= ys.getDataSet();
+//        try {
+//            new AsciiFormatter().formatToFile( "/home/jbf/tmp/dist.txt", xss, yss );
+//        } catch (IOException ex) {
+//            Logger.getLogger(TriScatRebinner.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+//        
+        Datum dxlimit= Ops.datum(Ops.mean(xss)).add( Ops.datum( Ops.stddev(xss) ).multiply(3) );
+        Datum dylimit= Ops.datum(Ops.mean(yss)).add( Ops.datum( Ops.stddev(yss) ).multiply(3) );
+        
+        //Datum dxlimit= org.das2.qds.DataSetUtil.asDatum( org.das2.qds.DataSetUtil.guessCadence(xx,null) );
+        //Datum dylimit= org.das2.qds.DataSetUtil.asDatum( org.das2.qds.DataSetUtil.guessCadence(yy,null) );
 
-        double ylimit= 20;
-        double xlimit= 20;
+        double xlimit= dxlimit.doubleValue(xunits);
+        double ylimit= dylimit.doubleValue(yunits);
         
         for ( int ix= 0; ix<rebinDescX.numberOfBins(); ix++ ) {
             for ( int iy= dir==1 ? 0 : rebinDescY.numberOfBins()-1;
@@ -148,8 +176,8 @@ public class TriScatRebinner implements DataSetRebinner {
                 ProGAL.geom2d.delaunay.Triangle t1= rt.walk( thePoint, null, t );
                 if ( t1!=t ) {
                     Rectangle2D r= getBounds(t1);
-                    System.err.println(r);
-                    triUsable= r.getWidth() < dxlimit.doubleValue(xunits) && r.getHeight()<dylimit.doubleValue(yunits);
+                    //System.err.println(r);
+                    triUsable= r.getWidth() < xlimit && r.getHeight()<ylimit;
                     t= t1;
                 }
                 ProGAL.geom2d.Point[] abc= new ProGAL.geom2d.Point[] { t.getCorner(0), t.getCorner(1), t.getCorner(2) }; 
