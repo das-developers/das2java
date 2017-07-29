@@ -329,7 +329,7 @@ public class DataSetUtil {
      * @param dest
      */
     public static void copyDimensionProperties( QDataSet source, MutablePropertyDataSet dest ) {
-        String[] names= _dimensionProperties;
+        String[] names= DIMENSION_PROPERTIES;
         for ( String n: names ) {
             Object p= source.property(n);
             if ( p!=null ) dest.putProperty( n, p );
@@ -351,7 +351,7 @@ public class DataSetUtil {
         }
     }
 
-    private static final String[] _dimensionProperties = new String[] {
+    private static final String[] DIMENSION_PROPERTIES = new String[] {
         QDataSet.UNITS, QDataSet.FORMAT, QDataSet.SCALE_TYPE,
         QDataSet.TYPICAL_MIN, QDataSet.TYPICAL_MAX,
         QDataSet.VALID_MIN, QDataSet.VALID_MAX, QDataSet.FILL_VALUE,
@@ -369,7 +369,7 @@ public class DataSetUtil {
      * @return
      */
     public static String[] dimensionProperties() {
-        return Arrays.copyOf( _dimensionProperties,_dimensionProperties.length );
+        return Arrays.copyOf( DIMENSION_PROPERTIES,DIMENSION_PROPERTIES.length );
     }
     
     public static final String PROPERTY_TYPE_STRING="String";
@@ -475,7 +475,7 @@ public class DataSetUtil {
      * @return true if the property is a dimension property.
      */
     public static boolean isDimensionProperty( String name ) {
-        for ( String n: _dimensionProperties ) {
+        for ( String n: DIMENSION_PROPERTIES ) {
             if ( n.equals(name) ) return true;
         }
         return false;
@@ -548,7 +548,7 @@ public class DataSetUtil {
             return result;
         }
         
-        String[] names = _dimensionProperties; // no need to copy when we call dimensionProperties()
+        String[] names = DIMENSION_PROPERTIES; // no need to copy when we call dimensionProperties()
         for (String name : names) {
             Object val = ds.property(name, index);
             if (val != null) {
@@ -631,7 +631,7 @@ public class DataSetUtil {
      * @return a map of all the properties.
      */
     public static Map<String,Object> getDimensionProperties( QDataSet ds, Map<String,Object> def ) {
-        return getProperties( ds, _dimensionProperties, def );
+        return getProperties( ds, DIMENSION_PROPERTIES, def );
     }
     
     /**
@@ -1297,10 +1297,11 @@ public class DataSetUtil {
      * @param yds the y values, which if non-null is only used for fill values.  This
      *   is only used if it is rank 1.
      * @return null or the cadence in a rank 0 dataset.  The following may be
-     *    properties of the result:
-     *    SCALE_TYPE  may be "log"
-     *    UNITS       will be ratiometric unit when the SCALE_TYPE is log, and
+     *    properties of the result:<ul>
+     *    <li>SCALE_TYPE  may be "log"
+     *    <li>UNITS       will be a ratiometric unit when the SCALE_TYPE is log, and
      *       will be the offset unit for interval units like Units.t2000.
+     *    </ul>
      */
     public static RankZeroDataSet guessCadenceNew( QDataSet xds, QDataSet yds) {
         
@@ -1779,7 +1780,7 @@ public class DataSetUtil {
         }
         IDataSet result= IDataSet.wrap(bs);
         result.putProperty( QDataSet.DEPEND_0, xds );
-        Map<String,Object> userProps= new HashMap<String, Object>();
+        Map<String,Object> userProps= new HashMap<>();
         userProps.put( "means", means );
         result.putProperty( QDataSet.USER_PROPERTIES, userProps );
         return result;
@@ -3382,7 +3383,7 @@ public class DataSetUtil {
         }
         
         Units units= SemanticOps.getUnits(datums);
-        if ( units==null && Schemes.isBundleDataSet(datums) && datums.length()>0 ) {
+        if ( Schemes.isBundleDataSet(datums) && datums.length()>0 ) {
             throw new IllegalArgumentException("dataset is a bundle");
         }
         
