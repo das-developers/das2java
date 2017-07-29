@@ -1289,9 +1289,10 @@ public class DataSetUtil {
     /**
      * returns a rank 0 dataset indicating the cadence of the dataset.  Using a
      * dataset as the result allows the result to indicate SCALE_TYPE and UNITS.
-     * History:
-     *    2011-02-21: keep track of repeat values, allowing zero to be considered either mono increasing or mono decreasing
-     *    2011-02-21: deal with interleaved fill values, keeping track of last valid value.
+     * History:<ul>
+     *    <li>2011-02-21: keep track of repeat values, allowing zero to be considered either mono increasing or mono decreasing
+     *    <li>2011-02-21: deal with interleaved fill values, keeping track of last valid value.
+     * </ul>
      * @param xds the x tags, which may not contain fill values for non-null result.
      * @param yds the y values, which if non-null is only used for fill values.  This
      *   is only used if it is rank 1.
