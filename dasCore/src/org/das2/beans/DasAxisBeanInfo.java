@@ -40,6 +40,7 @@ public class DasAxisBeanInfo extends AccessLevelBeanInfo {
         new Property("flipped", AccessLevel.DASML, "isFlipped", "setFlipped", null),
         new Property("label", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getLabel", "setLabel", null),
         new Property("log", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "isLog", "setLog", null),
+        new Property("foreground", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getForeground", "setForeground", null),
         new Property("units", AccessLevel.DASML, "getUnits", null, null),
         new Property("format", AccessLevel.DASML, "getFormat", "setFormat", null),
         new Property("tickLabelsVisible", AccessLevel.DASML, "isTickLabelsVisible", "setTickLabelsVisible", null),
