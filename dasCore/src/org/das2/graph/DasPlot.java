@@ -622,10 +622,10 @@ public class DasPlot extends DasCanvasComponent {
         if (drawMinorGrid && this.plotVisible ) {
             DatumVector xticks = null;
             DatumVector yticks = null;
-            if ( xtickv!=null ) {
+            if ( xtickv!=null && lxaxis.getOrientation()==DasAxis.BOTTOM ) {
                 xticks = xtickv.getMinorTicks();
             }
-            if ( ytickv!=null ) {
+            if ( ytickv!=null && lyaxis.getOrientation()==DasAxis.LEFT ) {
                 yticks = ytickv.getMinorTicks();
             }
             plotGraphics.setColor(minorGridColor);
@@ -635,10 +635,10 @@ public class DasPlot extends DasCanvasComponent {
         if (drawGrid && this.plotVisible ) {
             DatumVector xticks = null;
             DatumVector yticks = null;
-            if ( xtickv!=null ) {
+            if ( xtickv!=null && lxaxis.getOrientation()==DasAxis.BOTTOM ) {
                 xticks = xtickv.getMajorTicks();
             }
-            if ( ytickv!=null ) {
+            if ( ytickv!=null && lyaxis.getOrientation()==DasAxis.LEFT) {
                 yticks = ytickv.getMajorTicks();
             }
             plotGraphics.setColor(gridColor);
