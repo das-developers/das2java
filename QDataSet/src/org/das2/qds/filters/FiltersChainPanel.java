@@ -194,9 +194,19 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
         } else if ( f.matches("\\|setUnits\\('(\\S+)'\\)") ) { // TODO: FilterEditorPanel might choose to accept a filter.
             result= new SetUnitsFilterEditorPanel();
         } else if ( f.matches("\\|slice(\\d)\\((\\d+)\\)") ) { // TODO: FilterEditorPanel might choose to accept a filter.
-            result= new SliceFilterEditorPanel();
+            if ( false && recyclable instanceof SliceFilterEditorPanel ) {
+                recyclable.setFilter(f);
+                return recyclable;
+            } else {
+                result= new SliceFilterEditorPanel();
+            }
         } else if ( f.matches("\\|slice(\\d)\\(\\'(\\S+)\\'\\)") ) { // TODO: FilterEditorPanel might choose to accept a filter.
-            result= new SliceFilterEditorPanel();
+            if ( recyclable instanceof SliceFilterEditorPanel ) {
+                recyclable.setFilter(f);
+                return recyclable;
+            } else { 
+                result= new SliceFilterEditorPanel();
+            }
         } else if ( f.matches("\\|cos\\(\\)") ) { // TODO: FilterEditorPanel might choose to accept a filter.
             result= new NoArgFilterEditorPanel();
         } else if ( f.matches("\\|sin\\(\\)") ) { // TODO: FilterEditorPanel might choose to accept a filter.
@@ -777,19 +787,9 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
     }
     
     
-    /**
-     * the filter must be set before this is called.  This will set 
-     * droplist labels, etc. 
-     * @param ds the dataset, or null.
-     */
-    @Override
-    public void setInput( final QDataSet ds ) {
-        logger.entering( CLASS_NAME, "setInput", ds );
+    public void resetInput( final QDataSet ds ) {
         
-        if ( this.inputDs==ds ) {
-            logger.fine("already set input...");
-            return;
-        } 
+        logger.entering( CLASS_NAME, "resetInput", ds );
         
         this.inputDs= ds;
         
@@ -806,12 +806,32 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
         Runnable run= new Runnable() { 
             @Override
             public void run() {
+                logger.entering( CLASS_NAME, "resetInput", ds );
                 setInput( ds, filter, leditors );
+                logger.exiting( CLASS_NAME, "resetInput", ds );
             }
         };
         
-        new Thread( run, "setInput" ).start();
-      
+        new Thread( run, "resetInput" ).start();
+        logger.exiting( CLASS_NAME, "resetInput", ds );
+    }
+    
+    /**
+     * the filter must be set before this is called.  This will set 
+     * droplist labels, etc. 
+     * @param ds the dataset, or null.
+     */
+    @Override
+    public void setInput( final QDataSet ds ) {
+        logger.entering( CLASS_NAME, "setInput", ds );
+        
+        if ( this.inputDs==ds ) {
+            logger.fine("already set input...");
+            return;
+        } 
+        
+        resetInput(ds);
+        logger.exiting( CLASS_NAME, "setInput", ds );
     }
 
     /**
