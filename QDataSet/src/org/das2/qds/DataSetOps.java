@@ -188,16 +188,19 @@ public class DataSetOps {
     
     /**
      * flatten a rank 2 dataset.  The result is a n,3 dataset
-     * of [x,y,f], or if there are no tags just rank 1 f.
+     * of [x,y,f].
      * History:<ul>
      *   <li> modified for use in PW group.
+     *   <li> missing DEPEND_1 resulted in NullPointerException, so just use 0,1,2,..,n instead and always have rank 2 result.
      * </ul>
      * @param ds rank 2 table dataset
-     * @return rank 2 dataset that is that is array of (x,y,f) or rank 1 f.
+     * @return rank 2 dataset that is that is array of (x,y,f).
      */
     public static QDataSet flattenRank2( final QDataSet ds ) {
         QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
         QDataSet dep1= (QDataSet) ds.property(QDataSet.DEPEND_1);
+        if ( dep0==null ) dep0= Ops.findgen(ds.length(0));
+        if ( dep1==null ) dep1= Ops.findgen(ds.length(0));
         DataSetBuilder builder= new DataSetBuilder( 1, 100 );
         DataSetBuilder xbuilder= new DataSetBuilder( 1, 100 );
         DataSetBuilder ybuilder= new DataSetBuilder( 1, 100 );
