@@ -311,6 +311,20 @@ public class SliceFilterEditorPanel extends AbstractFilterEditorPanel implements
         logger.log(Level.FINE, "setInput {0}", ds.toString() );
         this.inputDs= new WeakReference(ds);
         String[] depNames1= FilterEditorPanelUtil.getDimensionNames(ds);
+        switch (depNames1.length) {
+            case 2:
+                logger.log(Level.FINE, "got depNames: {0},{1}", new Object[]{depNames1[0], depNames1[1]});
+                break;
+            case 3:
+                logger.log(Level.FINE, "got depNames: {0},{1},{2}", new Object[]{depNames1[0], depNames1[1], depNames1[2]});
+                break;
+            case 4:
+                logger.log(Level.FINE, "got depNames: {0},{1},{2},{3}", new Object[]{depNames1[0], depNames1[1], depNames1[2], depNames1[3]});
+                break;
+            default:
+                logger.log(Level.FINE, "got depNames in setInput " );
+                break;
+        }
         int idx= sliceDimensionCB.getSelectedIndex();
         sliceDimensionCB.setModel(new DefaultComboBoxModel(depNames1));
         qube= DataSetUtil.qubeDims(ds);
