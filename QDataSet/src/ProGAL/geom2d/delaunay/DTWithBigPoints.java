@@ -8,12 +8,19 @@ import ProGAL.geom2d.LineSegment;
 import ProGAL.geom2d.Point;
 import ProGAL.geom3d.predicates.ExactJavaPredicates;
 import ProGAL.math.Randomization;
+import java.util.HashSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.das2.util.LoggerManager;
 
 /** 
  * 
  * @author ras
  */
 public class DTWithBigPoints {
+    
+        private static final Logger logger= LoggerManager.getLogger("ProGAL.geom2d.delaunay");
+        
 	private final ExactJavaPredicates pred = new ExactJavaPredicates();
 	final List<Vertex> vertices;
 	final List<Triangle> triangles;
@@ -68,14 +75,23 @@ public class DTWithBigPoints {
          * @return the triangle containing point p
          */
 	public Triangle walk(Point p, List<Point> trace, Triangle t ){
+            HashSet<Triangle> visited= new HashSet<>();
+            
 		if ( t==null ) t = triangles.get(triangles.size()-1);
+                
+                visited.add(t);
+                
 		while(true){
+                    logger.log(Level.FINEST, "walk triangle: {0}", t);
+                    //printTriangle( t, p );
+                    
 			double a1 = Point.area(t.corners[0], t.corners[1], p); orientPredCounter++;
 			double a2 = Point.area(t.corners[1], t.corners[2], p); orientPredCounter++;
+                        double a3 = Point.area(t.corners[2], t.corners[0], p); orientPredCounter++;
+                        
 			if(a1<0 && a2<0) //No need to check the third side
 				if(a2<a1) t = t.neighbors[0]; else t = t.neighbors[2];
-			else{
-				double a3 = Point.area(t.corners[2], t.corners[0], p); orientPredCounter++;
+			else{	
 				if(Math.min(a1, Math.min(a2, a3))<0){ //Does t contain p yet?
 					if(a3<a1 && a3<a2) 	t = t.neighbors[1];
 					else if(a2<a1)		t = t.neighbors[0];
@@ -84,6 +100,12 @@ public class DTWithBigPoints {
 			}
 			
                         if ( t==null ) throw new IllegalArgumentException("Point is outside of the big triangulation");
+                        
+                        if ( visited.contains(t) ) { // uh-oh.  We got lost.
+                            throw new IllegalArgumentException("cycle in DTWithBigPoints needs to be fixed.");
+                        } else {
+                            visited.add(t);
+                        }
                         Point c= t.getCenter();
                         if ( trace!=null ) trace.add( c );
                         
@@ -95,6 +117,11 @@ public class DTWithBigPoints {
 		}
 		return t;
 	}
+        
+        private static void printTriangle( Triangle t, Point p ) {
+            if ( p==null ) p= new Point( new double[] {-9999,-9999} );
+            System.err.println( String.format( "%9d %9d %9d  %s  %s  %s  %s", t.corners[0].id, t.corners[1].id, t.corners[2].id, t.corners[0].toString(), t.corners[1].toString(), t.corners[2], p ) );
+        }        	
         
         /**
          * add the point to the tesselation.  If the point is already a vertex, 
@@ -110,14 +137,35 @@ public class DTWithBigPoints {
             }
 		vertices.add((Vertex)p);
 		Triangle t = walk(p);
-
+                printTriangle(t,p);
+                
 		Triangle[] ts = splitTriangle(p, t);
 		
+                boolean valid= true;
+                valid= valid && checkValid(ts[0]);
+                valid= valid && checkValid(ts[1]);
+                valid= valid && checkValid(ts[2]);
+                
+                if ( !valid ) {
+                    printTriangle(t,p);
+                }
+                
 		legalizeEdge(ts[0], 0);
 		legalizeEdge(ts[1], 0);
 		legalizeEdge(ts[2], 0);
 	}
 
+        private boolean checkValid( Triangle t ) {
+            try {
+                t.getCircumCircle();
+                return true;
+            } catch ( RuntimeException ex ) {
+                System.err.println("Invalid triangle: ");
+                printTriangle( t, null );
+                return false;
+            }
+        }
+        
 	private Triangle[] splitTriangle(Vertex p, Triangle t) {
 		triangles.remove(t);
 
