@@ -57,7 +57,7 @@ public class TriScatRebinner implements DataSetRebinner {
         }
         @Override
         public String toString() {
-            return String.valueOf(idx);
+            return String.format( "(%.1f,%.1f)", x(), y() );
         }
     }    
     
