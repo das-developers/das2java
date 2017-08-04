@@ -16,6 +16,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.ConsoleHandler;
@@ -68,6 +69,11 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
     private static final String CLASS_NAME = FiltersChainPanel.class.getName();
     
     private final Color backgroundColor;
+    
+    /**
+     * if non-empty, this is adjusting and external events should be ignored.
+     */
+    private HashSet<String> adjusting= new HashSet<>();
     
     /**
      * Creates new form FiltersChainPanel
@@ -708,11 +714,24 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
     
     /**
      * set the input dataset for each filter.
+     * @param label label for the update request
      */
-    private void updateSoon( final String filter) {
-        logger.entering( CLASS_NAME, "updateSoon", filter);
-        //this.inputDs= null;
-        timer.tickle(filter); 
+    private void updateSoon( final String label) {
+        logger.entering( CLASS_NAME, "updateSoon", label);
+        
+        if ( !adjusting.isEmpty() ) {
+            logger.fine("currently adjusting.");
+            return;
+        }
+        
+        String f= getFilter();
+        String oldCurrentFilter= currentFilter;
+        
+        if ( oldCurrentFilter.equals(f) ) {
+            logger.fine("does not change.");
+        } else {
+            timer.tickle(label); 
+        }
     }
     
     
@@ -731,6 +750,12 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
         String[] ss= filter.split("\\|");
         int i=0;
         int iss= 0;
+        
+        final String key= filter;
+        
+        adjusting.add(key);
+                
+        boolean eventWillBeFired= false;
         for (String s : ss) {
             s= s.trim();
             iss++;
@@ -739,6 +764,8 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
                 if ( ds!=null ) {
                     final int fi= i;
                     final QDataSet fds= ds;
+                    final boolean fireUpdateSoon= iss==ss.length;
+                    eventWillBeFired= fireUpdateSoon;
                     Runnable run= new Runnable() {
                         @Override
                         public void run() {
@@ -746,6 +773,10 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
                             if ( recalculating.size()>fi ) { // transitional state
                                 recalculating.set(fi,Boolean.FALSE);
                                 indicateRecalculating();
+                            }
+                            if ( fireUpdateSoon ) {
+                                adjusting.remove(key);
+                                updateSoon(key);
                             }
                         }
                     };
@@ -780,13 +811,30 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
                     });
                 }
                 i=i+1;
+            } else {
+
+            }
+            if ( !eventWillBeFired ) {
+                adjusting.remove(key);
+                updateSoon(key);
             }
         }
         this.repaint();
         
     }
     
+    /**
+     * get the current dataset used to show and configure each step.
+     * @return 
+     */
+    public QDataSet getInput() {
+        return this.inputDs;
+    }
     
+    /**
+     * reset the input, even if this dataset is already in use.
+     * @param ds the dataset, or null.
+     */
     public void resetInput( final QDataSet ds ) {
         
         logger.entering( CLASS_NAME, "resetInput", ds );
