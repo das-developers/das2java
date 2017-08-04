@@ -24,6 +24,6 @@ public class Vertex extends ProGAL.geom2d.Point{
 	}
 	
 	public String toString(){
-		return String.format("V[%d]",id);
+		return String.format("V(%.1f,%.1f)",x(),y());
 	}
 }
