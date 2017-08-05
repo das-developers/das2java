@@ -81,6 +81,10 @@ public class TriScatRebinner implements DataSetRebinner {
         rebinDescX.setOutOfBoundsAction(RebinDescriptor.MINUSONE);
         rebinDescY.setOutOfBoundsAction(RebinDescriptor.MINUSONE);
 
+        if ( Schemes.isSimpleSpectrogram(zz) ) {
+            zz= Ops.flatten(zz);
+        }
+        
         QDataSet xx;
         QDataSet yy;
         if (Schemes.isBundleDataSet(zz)) {
@@ -104,14 +108,22 @@ public class TriScatRebinner implements DataSetRebinner {
                     yy = Ops.findgen(zz.length());
                 }
             }
-
+            
         }
         
         LoggerManager.markTime("got X Y Z datasets");
         
+        // scale and fuzz the data so there are no collinear points
+        QDataSet extentX= Ops.extent(xx);
+        QDataSet extentY= Ops.extent(yy);
+        double[] dX= new double[] { extentX.value(0), extentX.value(1)-extentX.value(0) };
+        double[] dY= new double[] { extentY.value(0), extentY.value(1)-extentY.value(0) };
+    
         List<ProGAL.geom2d.Point> points= new ArrayList(xx.length());
+        double fuzz= 0.0001;
         for ( int i=0; i<xx.length(); i++ ) {
-            points.add( new VertexInt( xx.value(i), yy.value(i), i ) );
+            points.add( new VertexInt( (xx.value(i)-dX[0])/dX[1] + fuzz, (yy.value(i)-dY[0])/dY[1]+fuzz, i ) );
+            fuzz= -1 * fuzz;
         }
         
         LoggerManager.markTime("added points");
