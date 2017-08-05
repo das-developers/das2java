@@ -119,8 +119,8 @@ public class DTWithBigPoints {
 	}
         
         private static void printTriangle( Triangle t, Point p ) {
-            if ( p==null ) p= new Point( new double[] {-9999,-9999} );
-            System.err.println( String.format( "%9d %9d %9d  %s  %s  %s  %s", t.corners[0].id, t.corners[1].id, t.corners[2].id, t.corners[0].toString(), t.corners[1].toString(), t.corners[2], p ) );
+            //if ( p==null ) p= new Point( new double[] {-9999,-9999} );
+            //System.err.println( String.format( "%9d %9d %9d  %s  %s  %s  %s", t.corners[0].id, t.corners[1].id, t.corners[2].id, t.corners[0].toString(), t.corners[1].toString(), t.corners[2], p ) );
         }        	
         
         /**
@@ -160,8 +160,6 @@ public class DTWithBigPoints {
                 t.getCircumCircle();
                 return true;
             } catch ( RuntimeException ex ) {
-                System.err.println("Invalid triangle: ");
-                printTriangle( t, null );
                 return false;
             }
         }
