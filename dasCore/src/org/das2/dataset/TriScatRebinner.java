@@ -5,22 +5,19 @@
  */
 package org.das2.dataset;
 
-import ProGAL.geom2d.Point;
-import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
-import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.datum.Datum;
 import org.das2.datum.Units;
 import org.das2.qds.DataSetOps;
 import org.das2.qds.QDataSet;
+import org.das2.qds.SemanticOps;
 import org.das2.qds.WritableDataSet;
 import org.das2.qds.examples.Schemes;
 import org.das2.qds.ops.Ops;
-import org.das2.qds.util.AsciiFormatter;
 import org.das2.qds.util.DataSetBuilder;
 import org.das2.util.LoggerManager;
 
@@ -32,6 +29,9 @@ public class TriScatRebinner implements DataSetRebinner {
 
     private static final Logger logger = LoggerManager.getLogger("das2.data.rebinner");
 
+    ProGAL.geom2d.delaunay.DTWithBigPoints triangulation= null;
+    WeakReference<QDataSet> trids= null;
+            
     /**
      * return the volume of the 3-point triangle in 2 dimensions.
      * See http://www.mathopenref.com/coordtrianglearea.html
@@ -71,7 +71,7 @@ public class TriScatRebinner implements DataSetRebinner {
     }
     
     @Override
-    public QDataSet rebin(QDataSet zz, RebinDescriptor rebinDescX, RebinDescriptor rebinDescY) {
+    public QDataSet rebin(QDataSet ds, RebinDescriptor rebinDescX, RebinDescriptor rebinDescY) {
         // throws IllegalArgumentException, DasException {
 
         LoggerManager.resetTimer("triscat rebin");
@@ -81,8 +81,12 @@ public class TriScatRebinner implements DataSetRebinner {
         rebinDescX.setOutOfBoundsAction(RebinDescriptor.MINUSONE);
         rebinDescY.setOutOfBoundsAction(RebinDescriptor.MINUSONE);
 
-        if ( Schemes.isSimpleSpectrogram(zz) ) {
-            zz= Ops.flatten(zz);
+        QDataSet zz;
+        
+        if ( Schemes.isSimpleSpectrogram(ds) ) {
+            zz= Ops.flatten(ds);
+        } else {
+            zz= ds;
         }
         
         QDataSet xx;
@@ -119,18 +123,27 @@ public class TriScatRebinner implements DataSetRebinner {
         double[] dX= new double[] { extentX.value(0), extentX.value(1)-extentX.value(0) };
         double[] dY= new double[] { extentY.value(0), extentY.value(1)-extentY.value(0) };
     
-        List<ProGAL.geom2d.Point> points= new ArrayList(xx.length());
-        double fuzz= 0.0001;
-        for ( int i=0; i<xx.length(); i++ ) {
-            points.add( new VertexInt( (xx.value(i)-dX[0])/dX[1] + fuzz, (yy.value(i)-dY[0])/dY[1]+fuzz, i ) );
-            fuzz= -1 * fuzz;
+        ProGAL.geom2d.delaunay.DTWithBigPoints rt;
+        
+        QDataSet ds1= trids==null ? null : trids.get();
+        if ( ds1==null || ds1!=ds ) {
+            List<ProGAL.geom2d.Point> points= new ArrayList(xx.length());
+            double fuzz= 0.0001;
+            for ( int i=0; i<xx.length(); i++ ) {
+                points.add( new VertexInt( (xx.value(i)-dX[0])/dX[1] + fuzz, (yy.value(i)-dY[0])/dY[1]+fuzz, i ) );
+                fuzz= -1 * fuzz;
+            }
+        
+            LoggerManager.markTime("added points");
+        
+            rt= new ProGAL.geom2d.delaunay.DTWithBigPoints( points );
+            this.triangulation= rt;
+            trids= new WeakReference(ds);
+            LoggerManager.markTime("triangulation done");
+            
+        } else {
+            rt= this.triangulation;
         }
-        
-        LoggerManager.markTime("added points");
-        
-        ProGAL.geom2d.delaunay.DTWithBigPoints rt= new ProGAL.geom2d.delaunay.DTWithBigPoints( points );
-                
-        LoggerManager.markTime("triangulation done");
         
         QDataSet wds= org.das2.qds.DataSetUtil.weightsDataSet( zz );
         Number fill= (Number)wds.property(QDataSet.FILL_VALUE);
@@ -139,8 +152,8 @@ public class TriScatRebinner implements DataSetRebinner {
         result.putProperty( QDataSet.FILL_VALUE, dfill );
         boolean hasFill= false;
         
-        Units xunits= Units.dimensionless;
-        Units yunits= Units.dimensionless;
+        Units xunits= SemanticOps.getUnits(xx);
+        Units yunits= SemanticOps.getUnits(yy);
         
         LoggerManager.markTime("begin interp all pixels");
         
@@ -175,20 +188,16 @@ public class TriScatRebinner implements DataSetRebinner {
         //Datum dxlimit= org.das2.qds.DataSetUtil.asDatum( org.das2.qds.DataSetUtil.guessCadence(xx,null) );
         //Datum dylimit= org.das2.qds.DataSetUtil.asDatum( org.das2.qds.DataSetUtil.guessCadence(yy,null) );
 
-        double xlimit= dxlimit.doubleValue(xunits);
-        double ylimit= dylimit.doubleValue(yunits);
+        double xlimit= dxlimit.doubleValue(Units.dimensionless); // triangles have been normalized
+        double ylimit= dylimit.doubleValue(Units.dimensionless);
         
         for ( int ix= 0; ix<rebinDescX.numberOfBins(); ix++ ) {
             for ( int iy= dir==1 ? 0 : rebinDescY.numberOfBins()-1;
                     dir==1 ? iy<rebinDescY.numberOfBins() : iy>=0; iy+=dir ) { // Boustrophedon back and forth
-                //if ( ix>300 && iy>300 ) {
-                //    System.err.println("here");
-                //}
-                ProGAL.geom2d.Point thePoint= new ProGAL.geom2d.Point( rebinDescX.binCenter(ix,xunits), rebinDescY.binCenter(iy,yunits) );
+                ProGAL.geom2d.Point thePoint= new ProGAL.geom2d.Point( (rebinDescX.binCenter(ix,xunits)-dX[0])/dX[1], (rebinDescY.binCenter(iy,yunits)-dY[0])/dY[1] );
                 ProGAL.geom2d.delaunay.Triangle t1= rt.walk( thePoint, null, t );
                 if ( t1!=t ) {
                     Rectangle2D r= getBounds(t1);
-                    //System.err.println(r);
                     triUsable= r.getWidth() < xlimit && r.getHeight()<ylimit;
                     t= t1;
                 }
