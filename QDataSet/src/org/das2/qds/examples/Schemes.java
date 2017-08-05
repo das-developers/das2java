@@ -166,12 +166,17 @@ public class Schemes {
     }
         
     /**
-     * return true if the data is a simple spectrogram.
+     * return true if the data is a simple spectrogram, which is 
+     * rank 2, and not a small bundle.
      * @param ds a dataset
      * @return  true if the data is a simple spectrogram.
      */
     public static boolean isSimpleSpectrogram( QDataSet ds ) {
-        return ds.rank()==2;
+        if ( ds.rank()==2 ) {
+            return !(ds.length(0)<4 && ( Ops.isBundle(ds) || Ops.isLegacyBundle(ds) ));
+        } else {
+            return false;
+        }
     }
 
     /**
