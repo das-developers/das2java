@@ -219,6 +219,19 @@ public final class DefaultVectorDataSet extends AbstractVectorDataSet implements
             return result;
         }
         
+        @Override
+        public Map getProperties() {
+            Map superProps= super.getProperties();
+            String[] names= new String[] { PROPERTY_TITLE, PROPERTY_Y_LABEL, PROPERTY_Y_FORMAT, PROPERTY_Y_RANGE, PROPERTY_Y_SCALETYPE };
+            
+            Map result= new HashMap<>(superProps);
+            for ( String name: names ) {
+                Object v= superProps.get( planeIDs[index] + "." + name );
+                result.put( name, v );
+            }
+            return result;
+        }
+        
         // TODO: this appears to have different logic than in ViewDataSet.  This needs to be resolved.
         
        // public Map getProperties() {
