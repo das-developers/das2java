@@ -65,7 +65,6 @@ public class CurveRenderer extends Renderer {
     
     
     public void render(java.awt.Graphics g1, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
-        long timer0= System.currentTimeMillis();
         
         QDataSet dataSet= getDataSet();
         
@@ -73,8 +72,23 @@ public class CurveRenderer extends Renderer {
             return;
         }
 
-        QDataSet xds= DataSetOps.unbundle( dataSet, xplane );
-        QDataSet yds= DataSetOps.unbundle( dataSet, yplane );
+        QDataSet xds;
+        if ( xplane!=null && xplane.length()>1 ) {
+            xds= DataSetOps.unbundle( dataSet, xplane );
+        } else if ( dataSet.rank()==1 ) {
+            xds= SemanticOps.xtagsDataSet(dataSet);
+        } else {
+            throw new IllegalArgumentException("rank must be 1 or xplane identified");
+        }
+        
+        QDataSet yds;
+        if ( yplane!=null && yplane.length()>1 ) {
+            yds= DataSetOps.unbundle( dataSet, yplane );
+        } else if ( dataSet.rank()==1 ) {
+            yds= dataSet;
+        } else {
+            throw new IllegalArgumentException("rank must be 1 or xplane identified");
+        }
         QDataSet wds= SemanticOps.weightsDataSet(xds);
 
         Graphics2D graphics= (Graphics2D) g1.create();
@@ -115,7 +129,7 @@ public class CurveRenderer extends Renderer {
         
         
         for (int index = 0; index < xds.length(); index++) {
-            if ( wds.value()>0  ) {
+            if ( wds.value(index)>0  ) {
                 double i = xAxis.transform(xds.value(index),xUnits);
                 double j = yAxis.transform(yds.value(index),yUnits);
                 psym.draw( g1, i, j, (float)symSize );
@@ -134,8 +148,23 @@ public class CurveRenderer extends Renderer {
             return;
         }
         
-        QDataSet xds= DataSetOps.unbundle( dataSet, xplane );
-        QDataSet yds= DataSetOps.unbundle( dataSet, yplane );
+        QDataSet xds;
+        if ( xplane!=null && xplane.length()>1 ) {
+            xds= DataSetOps.unbundle( dataSet, xplane );
+        } else if ( dataSet.rank()==1 ) {
+            xds= SemanticOps.xtagsDataSet(dataSet);
+        } else {
+            throw new IllegalArgumentException("rank must be 1 or xplane identified");
+        }
+        
+        QDataSet yds;
+        if ( yplane!=null && yplane.length()>1 ) {
+            yds= DataSetOps.unbundle( dataSet, yplane );
+        } else if ( dataSet.rank()==1 ) {
+            yds= dataSet;
+        } else {
+            throw new IllegalArgumentException("rank must be 1 or xplane identified");
+        }
         
         path= GraphUtil.getPath( xAxis, yAxis, xds, yds, false, false );
     }
