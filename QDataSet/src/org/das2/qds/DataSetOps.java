@@ -199,6 +199,7 @@ public class DataSetOps {
     public static QDataSet flattenRank2( final QDataSet ds ) {
         QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
         QDataSet dep1= (QDataSet) ds.property(QDataSet.DEPEND_1);
+        QDataSet dep0offset=  (QDataSet) ds.property("OFFSETS_1"); //kludge to experiment with this.
         if ( dep0==null ) dep0= Ops.findgen(ds.length(0));
         if ( dep1==null ) dep1= Ops.findgen(ds.length(0));
         DataSetBuilder builder= new DataSetBuilder( 1, 100 );
@@ -211,7 +212,11 @@ public class DataSetOps {
         for ( int i=0; i<ds.length(); i++ ) {
             for ( int j=0; j<ds.length(i); j++ ) {
                 if (dep0!=null) {
-                    xbuilder.putValue(-1, dep0.value(i) );
+                    if ( dep0offset!=null ) {
+                        xbuilder.putValue(-1, Ops.add( dep0.slice(i), dep0offset.slice(j) ) );
+                    } else {
+                        xbuilder.putValue(-1, dep0.value(i) );
+                    }
                     xbuilder.nextRecord();
                 }
                 if (dep1!=null) {
