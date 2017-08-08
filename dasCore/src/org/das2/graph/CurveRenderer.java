@@ -185,6 +185,19 @@ public class CurveRenderer extends Renderer {
         this.lineWidth = (float)lineWidth;
         updateCacheImage();
     }
+
+    public double getSymSize() {
+        return symSize;
+    }
+
+    /**
+     * set the symbol size in pixels (ems)
+     * @param symSize 
+     */
+    public void setSymSize(double symSize) {
+        this.symSize = symSize;
+        updateCacheImage();
+    }
     
     protected org.w3c.dom.Element getDOMElement(org.w3c.dom.Document document) {
         throw new UnsupportedOperationException();
