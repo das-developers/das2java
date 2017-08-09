@@ -320,7 +320,12 @@ public class DasColorBar extends DasAxis {
          * Mimic the default Matlab colorbar for comparison with Matlab-generated spectrograms.
          */
         public static final Type MATLAB_JET = new Type("matlab_jet");
-      
+
+        /**
+         * Mimic the default Matlab colorbar for comparison with Matlab-generated spectrograms, but with black for the bottom most color.
+         */
+        public static final Type MATLAB_JET_BLACK0 = new Type("matlab_jet_black0");
+        
         public static final Type BLUE_TO_ORANGE = new Type("blue_to_orange");
 
         /**
@@ -557,7 +562,9 @@ public class DasColorBar extends DasAxis {
             } else if (this == GSFC_RP_SPECIAL ) {
                 initializeRPSpecial(size, bottom, top);
             } else if (this == MATLAB_JET ) {
-                initializeMatlabJet(size, bottom, top);
+                initializeMatlabJet(size, bottom, top, false);
+            } else if (this == MATLAB_JET_BLACK0 ) {
+                initializeMatlabJet(size, bottom, top, true);
             } else if (this == GRAYSCALE) {
                 initializeGrayScale(size, bottom, top);
             } else if (this == INVERSE_GRAYSCALE) {
@@ -684,11 +691,14 @@ public class DasColorBar extends DasAxis {
             colorTable = makeColorTable( index, red, green, blue, size, bottom, top );
         }
         
-        private void initializeMatlabJet( int size, int bottom, int top ) {
+        private void initializeMatlabJet( int size, int bottom, int top, boolean black0) {
             int [] index= { 0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60, 64, 68, 72, 76, 81, 85, 89, 93, 97, 101, 105, 109, 113, 117, 121, 125, 129, 133, 137, 141, 145, 149, 153, 157, 162, 166, 170, 174, 178, 182, 186, 190, 194, 198, 202, 206, 210, 214, 218, 222, 226, 230, 234, 238, 243, 247, 251, 255 };
             int [] red= { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 31, 47, 63, 79, 95, 111, 127, 143, 159, 175, 191, 207, 223, 239, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 239, 223, 207, 191, 175, 159, 143, 127 };
             int [] green= { 0, 0, 0, 0, 0, 0, 0, 0, 15, 31, 47, 63, 79, 95, 111, 127, 143, 159, 175, 191, 207, 223, 239, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 239, 223, 207, 191, 175, 159, 143, 127, 111, 95, 79, 63, 47, 31, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
             int [] blue= { 143, 159, 175, 191, 207, 223, 239, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 239, 223, 207, 191, 175, 159, 143, 127, 111, 95, 79, 63, 47, 31, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+            if ( black0 ) {
+                blue[0]= 0;
+            }
             colorTable = makeColorTable( index, red, green, blue, size, bottom, top );
         }   
    
