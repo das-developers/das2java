@@ -212,9 +212,11 @@ public final class DefaultVectorDataSet extends AbstractVectorDataSet implements
         }
         
         public Object getProperty(String name) {
-            Object result= DefaultVectorDataSet.this.getProperty(planeIDs[index] + "." + name);
-            if ( result==null ) {
+            Object result;
+            if ( index==0 ) {
                 result= DefaultVectorDataSet.this.getProperty(name);
+            } else {
+                result= DefaultVectorDataSet.this.getProperty(planeIDs[index] + "." + name);
             }
             return result;
         }
@@ -226,7 +228,12 @@ public final class DefaultVectorDataSet extends AbstractVectorDataSet implements
             
             Map result= new HashMap<>(superProps);
             for ( String name: names ) {
-                Object v= superProps.get( planeIDs[index] + "." + name );
+                Object v;
+                if ( index==0 ) {
+                    v= superProps.get( name );
+                } else {
+                    v= superProps.get( planeIDs[index] + "." + name );
+                }
                 result.put( name, v );
             }
             return result;
