@@ -11,16 +11,16 @@ import org.das2.qds.QDataSet;
 import org.das2.qds.SemanticOps;
 
 /**
- * Old renderer that really doesn't do anything that the SeriesRenderer can do.
+ * Old renderer that really doesn't do anything that the SeriesRenderer can't do,
+ * but is much easier to understand.
  * @author  jbf
  */
 public class CurveRenderer extends Renderer {
        
-    private String xplane;
-    private String yplane;
+    private final String xplane;
+    private final String yplane;
         
-    private boolean antiAliased= true;
-    private SymColor color= SymColor.black;
+    private Color color= Color.black;
     private PsymConnector psymConnector = PsymConnector.SOLID;
     private Psym psym = Psym.NONE;
     private double symSize = 1.0; // radius in pixels
@@ -49,7 +49,7 @@ public class CurveRenderer extends Renderer {
     
     @Override
     public void render(java.awt.Graphics g1, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
-        
+
         QDataSet dataSet= getDataSet();
         
         if (dataSet == null || dataSet.length() == 0) {
@@ -78,13 +78,10 @@ public class CurveRenderer extends Renderer {
         Graphics2D graphics= (Graphics2D) g1.create();
         
         RenderingHints hints0= graphics.getRenderingHints();
-        if ( antiAliased ) {
-            graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        } else {
-            graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
-        }
+
+        graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 
-        graphics.setColor(color.toColor());
+        graphics.setColor(color);
         
         if (path != null) {
             psymConnector.draw(graphics, path, (float)lineWidth);
@@ -143,13 +140,21 @@ public class CurveRenderer extends Renderer {
         return this.lineWidth;
     }
     
+    public static final String PROP_LINE_WIDTH = "lineWidth";
+    public static final String PROP_COLOR = "color";
+    public static final String PROP_SYM_SIZE = "symSize";
+    public static final String PROP_SYM_CONNECTOR = "symConnector";
+    public static final String PROP_PSYM = "psym";
+    
     /** Setter for property lineWidth.
      * @param lineWidth New value of property lineWidth.
      *
      */
     public final void setLineWidth(double lineWidth) {
+        double oldValue= this.lineWidth;
         this.lineWidth = (float)lineWidth;
         updateCacheImage();
+        propertyChangeSupport.firePropertyChange( PROP_LINE_WIDTH, oldValue, lineWidth );
     }
 
     public final double getSymSize() {
@@ -161,8 +166,10 @@ public class CurveRenderer extends Renderer {
      * @param symSize 
      */
     public final void setSymSize(double symSize) {
+        double old= this.symSize;
         this.symSize = symSize;
         updateCacheImage();
+        propertyChangeSupport.firePropertyChange( PROP_SYM_SIZE, old, symSize );
     }
     
     public PsymConnector getPsymConnector() {
@@ -174,9 +181,11 @@ public class CurveRenderer extends Renderer {
      * @param p 
      */
     public void setPsymConnector(PsymConnector p) {
+        PsymConnector old= this.psymConnector;
         if (p == null) throw new NullPointerException("psymConnector cannot be null");
         psymConnector = p;
         updateCacheImage();
+        propertyChangeSupport.firePropertyChange( PROP_SYM_CONNECTOR, old, p );
     }
 
     /** Getter for property psym.
@@ -192,8 +201,22 @@ public class CurveRenderer extends Renderer {
      */
     public final void setPsym(Psym psym) {
         if (psym == null) throw new NullPointerException("psym cannot be null");
+        Psym old= this.psym;
         this.psym = psym;
         updateCacheImage();
+        propertyChangeSupport.firePropertyChange( PROP_PSYM, old, psym );
+    }
+
+    public Color getColor() {
+        return color;
+    }
+
+    /**
+     * setter for the property color.
+     * @param color 
+     */
+    public void setColor(Color color) {
+        this.color = color;
     }
     
 }
