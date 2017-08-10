@@ -46,6 +46,13 @@ public class CurveRenderer extends Renderer {
         this.yplane= yplane;
     }
     
+    /**
+     * Constructor for renderer which takes a dataset which is Y(DEPEND_0=X)
+     */
+    public CurveRenderer( ) {
+        this( null, "", "" );
+    }
+    
     
     @Override
     public void render(java.awt.Graphics g1, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
