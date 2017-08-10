@@ -27,6 +27,7 @@ import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.HeadlessException;
 import java.awt.Toolkit;
 import java.awt.geom.AffineTransform;
 import java.util.logging.Level;
@@ -46,6 +47,7 @@ import org.das2.util.monitor.ProgressMonitor;
 import org.das2.components.propertyeditor.Editable;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.text.ParseException;
 import java.util.Collections;
@@ -151,7 +153,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
         return SemanticOps.isTableDataSet(ds);
     }
 
-    protected Set needWorkMarkers= Collections.synchronizedSet( new HashSet<String>() );
+    protected Set<String> needWorkMarkers= Collections.synchronizedSet( new HashSet<String>() );
     
     protected final String MARKER_DATASET= "dataset";
     protected final String MARKER_X_AXIS_RANGE= "xaxisRange";
@@ -203,6 +205,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
 
     /**
      * returns the current dataset being displayed.
+     * @return 
      */
     public QDataSet getDataSet() {
         return this.ds;
@@ -210,7 +213,9 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
 
     /**
      * return the data for DataSetConsumer, which might be rebinned.
+     * @return 
      */
+    @Override
     public QDataSet getConsumedDataSet() {
         return this.ds;
     }
@@ -252,7 +257,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
                     }
                     setDumpDataSet(false);
                 }
-            } catch (Exception e) {
+            } catch (HeadlessException | FileNotFoundException | DasException e) {
                 DasApplication.getDefaultApplication().getExceptionHandler().handle(e);
             }
             this.dumpDataSet = dumpDataSet;
@@ -336,6 +341,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
 
     /**
      * set the exception to be rendered instead of the dataset.
+     * @param e
      */
     public void setException(Exception e) {
         logger.log(Level.FINE, "Renderer.setException {0}: {1}", new Object[] { id, String.valueOf(e) });
@@ -659,30 +665,32 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
     
     /**
      * decode the string into a plot symbol.
-     * @param s the symbol name, such as none, cicles, triangles, cross, ex, star, diamond, box
+     * @param s the symbol name, such as none, circles, triangles, cross, ex, star, diamond, box
      * @param deflt the symbol to use when the value is not parsed.
      * @return the parsed value.
      */
     public static PlotSymbol decodePlotSymbolControl( String s, PlotSymbol deflt ) {
-        if ( s.equalsIgnoreCase("NONE") ) {
-            return DefaultPlotSymbol.NONE;
-        } else if ( s.equalsIgnoreCase("CIRCLES") ) {
-            return DefaultPlotSymbol.CIRCLES;
-        } else if ( s.equalsIgnoreCase("TRIANGLES") ) {
-            return DefaultPlotSymbol.TRIANGLES;
-        } else if ( s.equalsIgnoreCase("CROSS") ) {
-            return DefaultPlotSymbol.CROSS;
-        } else if ( s.equalsIgnoreCase("EX") ) {
-            return DefaultPlotSymbol.EX;
-        } else if ( s.equalsIgnoreCase("STAR") ) {
-            return DefaultPlotSymbol.STAR;
-        } else if ( s.equalsIgnoreCase("DIAMOND") ) {
-            return DefaultPlotSymbol.DIAMOND;
-        } else if ( s.equalsIgnoreCase("BOX") ) {
-            return DefaultPlotSymbol.BOX;
-        } else {
-            logger.log(Level.FINE, "unable to parse symbol: {0}", deflt);
-            return deflt;
+        s= s.toUpperCase();
+        switch (s) {
+            case "NONE":
+                return DefaultPlotSymbol.NONE;
+            case "CIRCLES":
+                return DefaultPlotSymbol.CIRCLES;
+            case "TRIANGLES":
+                return DefaultPlotSymbol.TRIANGLES;
+            case "CROSS":
+                return DefaultPlotSymbol.CROSS;
+            case "EX":
+                return DefaultPlotSymbol.EX;
+            case "STAR":
+                return DefaultPlotSymbol.STAR;
+            case "DIAMOND":
+                return DefaultPlotSymbol.DIAMOND;
+            case "BOX":
+                return DefaultPlotSymbol.BOX;
+            default:
+                logger.log(Level.FINE, "unable to parse symbol: {0}", deflt);
+                return deflt;
         }
     }
     
