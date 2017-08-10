@@ -27,6 +27,7 @@ import org.das2.components.propertyeditor.PropertyEditor;
 import org.das2.datum.format.DatumFormatter;
 import org.das2.system.DasLogger;
 import java.awt.BorderLayout;
+import java.awt.FlowLayout;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
@@ -56,11 +57,14 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javafx.scene.control.ComboBox;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -1167,6 +1171,52 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         };
     }
     
+    private Action getSetUnitsAction() {
+        return new AbstractAction("Reset Units") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                editUnits();
+            }            
+        };
+    }
+    
+    /**
+     * show a dialog that allows each column's units to be reset.
+     */
+    private void editUnits() {
+        JPanel p= new JPanel();
+        p.setLayout( new BoxLayout( p, BoxLayout.Y_AXIS ) );
+        
+        int i=0;
+        JComboBox[] cbs= new JComboBox[unitsArray.length];
+        for ( Units u: unitsArray ) {
+            JLabel l= new JLabel("column "+planesArray[i]+": "+u) ;
+            
+            p.add(l);
+            
+            JComboBox c= new JComboBox();
+            c.setEditable(false);
+            Units[] uu= u.getConvertibleUnits();
+            String[] ss= new String[uu.length];
+            for ( int j=0; j<uu.length; j++ ) {
+                ss[j]= uu[j].toString();
+            }
+            DefaultComboBoxModel model= new DefaultComboBoxModel(ss);
+            c.setModel(model);
+            c.setSelectedItem(u);
+            cbs[i]= c;
+            p.add(c);
+            i++;
+        }
+        
+        if ( JOptionPane.showConfirmDialog( this, p, "Reset Units", JOptionPane.OK_CANCEL_OPTION )==JOptionPane.OK_OPTION ) {
+            for ( i=0; i<unitsArray.length; i++ ) {
+                unitsArray[i]= Units.lookupUnits(cbs[i].getSelectedItem().toString());
+            }
+            myTableModel.fireTableDataChanged();
+            myTableModel.fireTableStructureChanged();
+        }
+    }
     /**
      * Notify listeners that the dataset has updated.  Pressing the "Update" 
      * button calls this.
@@ -1198,6 +1248,9 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
 
         JMenu editMenu = new JMenu("Edit");
         editMenu.add(new JMenuItem(getPropertiesAction()));
+        
+        editMenu.add(new JMenuItem(getSetUnitsAction()));
+        
         editMenu.add( new JMenuItem( new AbstractAction("Clear Table Sorting") {
             @Override
             public void actionPerformed(ActionEvent e) {
