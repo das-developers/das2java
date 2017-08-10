@@ -1,24 +1,3 @@
-/* File: TickCurveRenderer.java
- * Copyright (C) 2002-2003 The University of Iowa
- *
- * Created on November 3, 2003, 11:43 AM by __FULLNAME__ <__EMAIL__>
- *
- * This file is part of the das2 library.
- *
- * das2 is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- */
 
 package org.das2.graph;
 
@@ -53,6 +32,10 @@ public class CurveRenderer extends Renderer {
      * and a bundle descriptor for BUNDLE_1.  DataSetOps.unbundle is used
      * to extract the xplane and yplane components.
      *
+     * @param dsd null or the DataSetDescriptor which can load more data.
+     * @param xplane the name of the bundled dataset, or null, or ""
+     * @param yplane the name of the bundled dataset, or null, or ""
+     * @see org.das2.qds.DataSetOps#unbundle(org.das2.qds.QDataSet, java.lang.String) 
      */
     public CurveRenderer( DataSetDescriptor dsd, String xplane, String yplane ) {
         super(dsd);
@@ -64,6 +47,7 @@ public class CurveRenderer extends Renderer {
     }
     
     
+    @Override
     public void render(java.awt.Graphics g1, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
         
         QDataSet dataSet= getDataSet();
@@ -105,28 +89,9 @@ public class CurveRenderer extends Renderer {
         if (path != null) {
             psymConnector.draw(graphics, path, (float)lineWidth);
         }
-        
-        Dimension d;
-        
-        double xmin, xmax, ymin, ymax;
-        
+                
         org.das2.datum.Units xUnits= xAxis.getUnits();
         org.das2.datum.Units yUnits= yAxis.getUnits();
-        
-        Rectangle r= g1.getClipBounds();
-        
-        if ( r==null ) {
-            xmax= xAxis.getDataMaximum().doubleValue(xUnits);
-            xmin= xAxis.getDataMinimum().doubleValue(xUnits);
-            ymax= yAxis.getDataMaximum().doubleValue(yUnits);
-            ymin= yAxis.getDataMinimum().doubleValue(yUnits);
-        } else {
-            xmin= xAxis.invTransform((int)r.getX()).doubleValue(xUnits);
-            xmax= xAxis.invTransform((int)(r.getX()+r.getWidth())).doubleValue(xUnits);
-            ymin= yAxis.invTransform((int)r.getY()).doubleValue(yUnits);
-            ymax= yAxis.invTransform((int)(r.getY()+r.getHeight())).doubleValue(yUnits);
-        }                                
-        
         
         for (int index = 0; index < xds.length(); index++) {
             if ( wds.value(index)>0  ) {
@@ -139,6 +104,7 @@ public class CurveRenderer extends Renderer {
         graphics.setRenderingHints(hints0);
     }
     
+    @Override
     public void updatePlotImage(DasAxis xAxis, DasAxis yAxis, ProgressMonitor monitor) throws DasException {
         super.updatePlotImage( xAxis, yAxis, monitor );
         
@@ -173,7 +139,7 @@ public class CurveRenderer extends Renderer {
      * @return Value of property lineWidth.
      *
      */
-    public double getLineWidth() {
+    public final double getLineWidth() {
         return this.lineWidth;
     }
     
@@ -181,12 +147,12 @@ public class CurveRenderer extends Renderer {
      * @param lineWidth New value of property lineWidth.
      *
      */
-    public void setLineWidth(double lineWidth) {
+    public final void setLineWidth(double lineWidth) {
         this.lineWidth = (float)lineWidth;
         updateCacheImage();
     }
 
-    public double getSymSize() {
+    public final double getSymSize() {
         return symSize;
     }
 
@@ -194,20 +160,21 @@ public class CurveRenderer extends Renderer {
      * set the symbol size in pixels (ems)
      * @param symSize 
      */
-    public void setSymSize(double symSize) {
+    public final void setSymSize(double symSize) {
         this.symSize = symSize;
         updateCacheImage();
     }
     
-    protected org.w3c.dom.Element getDOMElement(org.w3c.dom.Document document) {
-        throw new UnsupportedOperationException();
-    }
-    
-        public PsymConnector getPsymConnector() {
+    public PsymConnector getPsymConnector() {
         return psymConnector;
     }
     
+    /**
+     * set the type of line connecting plot symbols (e.g. solid, none, dotted).
+     * @param p 
+     */
     public void setPsymConnector(PsymConnector p) {
+        if (p == null) throw new NullPointerException("psymConnector cannot be null");
         psymConnector = p;
         updateCacheImage();
     }
@@ -215,7 +182,7 @@ public class CurveRenderer extends Renderer {
     /** Getter for property psym.
      * @return Value of property psym.
      */
-    public Psym getPsym() {
+    public final Psym getPsym() {
         return this.psym;
     }
         
@@ -223,9 +190,8 @@ public class CurveRenderer extends Renderer {
     /** Setter for property psym.
      * @param psym New value of property psym.
      */
-    public void setPsym(Psym psym) {
+    public final void setPsym(Psym psym) {
         if (psym == null) throw new NullPointerException("psym cannot be null");
-        Object oldValue = this.psym;
         this.psym = psym;
         updateCacheImage();
     }
