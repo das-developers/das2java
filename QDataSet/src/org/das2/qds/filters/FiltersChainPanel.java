@@ -234,7 +234,7 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
         } else if ( f.matches( UnbundleFilterEditorPanel.PROP_REGEX ) ) { // TODO: FilterEditorPanel might choose to accept a filter.
             result= new UnbundleFilterEditorPanel();
         } else if ( f.matches("\\|dbAboveBackgroundDim1\\((\\S+)\\)") ) { // TODO: FilterEditorPanel might choose to accept a filter.
-            result= new dbAboveBackgroundDim1FilterEditorPanel();
+            result= new DbAboveBackgroundDim1FilterEditorPanel();
         } else if ( f.matches("\\|transpose\\(\\)") ) {
             result= new NoArgFilterEditorPanel();
         } else if ( f.matches("\\|toDegrees\\(\\)") ) {

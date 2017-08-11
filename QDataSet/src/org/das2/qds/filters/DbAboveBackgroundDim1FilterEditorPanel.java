@@ -13,12 +13,12 @@ import java.util.regex.Pattern;
  * Controller for dbAboveBackgroundFilter.
  * @author mmclouth
  */
-public class dbAboveBackgroundDim1FilterEditorPanel extends AbstractFilterEditorPanel {
+public class DbAboveBackgroundDim1FilterEditorPanel extends AbstractFilterEditorPanel {
 
     /**
      * Creates new form dbAboveBackgroundDim1FilterEditorPanel
      */
-    public dbAboveBackgroundDim1FilterEditorPanel() {
+    public DbAboveBackgroundDim1FilterEditorPanel() {
         initComponents();
     }
 
@@ -95,10 +95,10 @@ public class dbAboveBackgroundDim1FilterEditorPanel extends AbstractFilterEditor
         FormListener() {}
         public void actionPerformed(java.awt.event.ActionEvent evt) {
             if (evt.getSource() == voltageButton) {
-                dbAboveBackgroundDim1FilterEditorPanel.this.voltageButtonActionPerformed(evt);
+                DbAboveBackgroundDim1FilterEditorPanel.this.voltageButtonActionPerformed(evt);
             }
             else if (evt.getSource() == powerRadioButton) {
-                dbAboveBackgroundDim1FilterEditorPanel.this.powerRadioButtonActionPerformed(evt);
+                DbAboveBackgroundDim1FilterEditorPanel.this.powerRadioButtonActionPerformed(evt);
             }
         }
     }// </editor-fold>//GEN-END:initComponents
