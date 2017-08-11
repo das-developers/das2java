@@ -247,7 +247,7 @@ public class AsciiHeadersParser {
 
         BundleDescriptor bd= new BundleDescriptor();
 
-        Map<Integer,String> dsNames= new LinkedHashMap();  // enumeration of all the names that are not in line.
+        //Map<Integer,String> dsNames= new LinkedHashMap();  // enumeration of all the names that are not in line.
         Map<String,Integer> dsToPosition= new LinkedHashMap(); // name to the index of first column
 
         int ids= 0; // index of the dataset in the bundleDescriptor.
@@ -410,7 +410,7 @@ public class AsciiHeadersParser {
                         }
                         
                         if ( icol>-1 ) {
-                            dsNames.put( ids, name );
+                            //dsNames.put( ids, name );
                             dsToPosition.put( name, icol );
                             ids+= DataSetUtil.product(idims);
                         }
@@ -468,7 +468,7 @@ public class AsciiHeadersParser {
                     }
 
                     if ( icol>-1 ) {
-                       dsNames.put( ids, name );
+                       //dsNames.put( ids, name );
                        dsToPosition.put( name, icol );
                        ids+= DataSetUtil.product(idims);
                     }
@@ -899,8 +899,8 @@ public class AsciiHeadersParser {
                 }
                 column++;
             }
-            for ( String s: inlineDataSets.keySet() ) {
-                newb.addDataSet( s, inlineDataSets.get(s) );
+            for ( Entry<String,QDataSet> e: inlineDataSets.entrySet() ) {
+                newb.addDataSet( e.getKey(), e.getValue() );
             }
             return newb;
         }
