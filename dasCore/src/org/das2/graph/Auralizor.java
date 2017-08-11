@@ -6,15 +6,11 @@
 
 package org.das2.graph;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.channels.WritableByteChannel;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.datum.Units;
-import org.das2.system.DasLogger;
 import javax.sound.sampled.*;
 import org.das2.datum.LoggerManager;
 import org.das2.datum.UnitsConverter;
@@ -38,7 +34,6 @@ public class Auralizor {
     ByteBuffer buffer;
     byte[] buf;
     SourceDataLine line = null;
-    int bufferInputIndex;
     double min;
     double max;
     
@@ -90,7 +85,7 @@ public class Auralizor {
             line.open(audioFormat);
             line.addLineListener(getLineListener());
         }
-        catch (Exception e) {
+        catch (LineUnavailableException e) {
             throw new RuntimeException(e);            
         }
         
@@ -123,6 +118,7 @@ public class Auralizor {
     
     LineListener getLineListener( ) {
         return new LineListener() {
+            @Override
             public void update( LineEvent e ) {
                 if ( e.getType().equals( LineEvent.Type.CLOSE ) ) {
                     
