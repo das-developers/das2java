@@ -2299,7 +2299,7 @@ public class DataSetUtil {
      */
     public static boolean validate(QDataSet xds, QDataSet yds, QDataSet zds, List<String> problems ) {
         if ( xds.length()!=zds.length() ) {
-            if (problems != null) problems.add(String.format("DEPEND_%d length is %d, should be %d.", 0, xds.length(), yds.length()));
+            if (problems != null) problems.add(String.format("DEPEND_%d length is %d, should be %d.", 0, xds.length(), zds.length()));
             return false;
         } else {
             return validate( Ops.link(xds, yds, zds ), problems, 0 );
