@@ -168,11 +168,13 @@ public class CdfSparseDataSet extends AbstractDataSet {
         int ii0= indexInternal(i0);
         int ii1= indexInternal(i1);
         CdfSparseDataSet result= new CdfSparseDataSet(rank,i1-i0);
-        if ( indexes[ii0]!=i0 ) {
-            result.putValues(0,dss[ii0]);
-        }
-        for ( int ii=ii0+1; ii<=ii1; ii++ ) {
-            result.putValues(indexes[ii]-i0,dss[ii]);
+        synchronized ( this ) {
+            if ( indexes[ii0]!=i0 ) {
+                result.putValues(0,dss[ii0]);
+            }
+            for ( int ii=ii0+1; ii<=ii1; ii++ ) {
+                result.putValues(indexes[ii]-i0,dss[ii]);
+            }
         }
         return result;
     }
