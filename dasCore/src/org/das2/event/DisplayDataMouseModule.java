@@ -15,7 +15,6 @@ import org.das2.graph.DasPlot;
 import org.das2.graph.Renderer;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Point;
 import java.awt.Toolkit;
@@ -73,7 +72,10 @@ public class DisplayDataMouseModule extends MouseModule {
     private DatumRange xrange;
     private DatumRange yrange;
 
-    /** Creates a new instance of DisplayDataMouseModule */
+    /** 
+     * Creates a new instance of DisplayDataMouseModule
+     * @param parent 
+     */
     public DisplayDataMouseModule(DasPlot parent) {
         super(parent, new BoxRenderer(parent), LABEL);
         this.plot = parent;
@@ -83,7 +85,7 @@ public class DisplayDataMouseModule extends MouseModule {
 
         public static final DataFlavor CELL_DATA_FLAVOR = DataFlavor.stringFlavor;
 
-        private Object cellValue;
+        private final Object cellValue;
 
         public CellTransferable(Object cellValue) {
             this.cellValue = cellValue;
@@ -109,9 +111,9 @@ public class DisplayDataMouseModule extends MouseModule {
 
     }
       
-    private class CopyAction extends AbstractAction {
+    private static final class CopyAction extends AbstractAction {
 
-        private JTable table;
+        private final JTable table;
 
         public CopyAction(JTable table) {
             this.table = table;
@@ -303,6 +305,7 @@ public class DisplayDataMouseModule extends MouseModule {
     }
 
     private final ItemListener itemListener= new ItemListener() {
+        @Override
         public void itemStateChanged(ItemEvent e) {
             if ( rends==null ) return;
             int i= comboBox.getSelectedIndex();
