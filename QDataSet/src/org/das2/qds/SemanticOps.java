@@ -264,7 +264,9 @@ public class SemanticOps {
         if ( fillDs.rank()==2 ) {
             QDataSet dep0= (QDataSet) fillDs.property(QDataSet.DEPEND_0);
             QDataSet dep1= (QDataSet) fillDs.property(QDataSet.DEPEND_1);
-            if ( dep0!=null && dep1!=null && dep1.length()>=QDataSet.MIN_WAVEFORM_LENGTH ) {
+            if ( dep0!=null && dep1!=null &&
+                ( ( dep1.rank()==1 && dep1.length()>=QDataSet.MIN_WAVEFORM_LENGTH )
+                || ( dep1.rank()==2 && dep1.length(0)>=QDataSet.MIN_WAVEFORM_LENGTH ) ) ) {
                 Units dep0units= SemanticOps.getUnits( dep0 );
                 Units dep1units= SemanticOps.getUnits( dep1 );
                 if ( dep0units!=Units.dimensionless && dep1units.isConvertibleTo( dep0units.getOffsetUnits() ) ) {
