@@ -626,7 +626,8 @@ public class ImageVectorDataSetRenderer extends Renderer {
         //if ( xoffsets.rank()>1 ) throw new IllegalArgumentException("rank 2 DEPEND_1 not supported");
         final UnitsConverter uc= UnitsConverter.getConverter( SemanticOps.getUnits(xoffsets), SemanticOps.getUnits(xds).getOffsetUnits() );
         if ( !uc.equals( UnitsConverter.IDENTITY ) ) {
-            throw new IllegalArgumentException("units should have been converted by now");
+            logger.fine( "units should have been converted by now" );
+            xoffsets= ArrayDataSet.maybeCopy( Ops.convertUnitsTo( xoffsets,  SemanticOps.getUnits(xds).getOffsetUnits() ) );
         }
         int ix0;
         double dx0;
