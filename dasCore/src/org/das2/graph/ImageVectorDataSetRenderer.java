@@ -563,8 +563,6 @@ public class ImageVectorDataSetRenderer extends Renderer {
                 vds= ds;
                 xds = SemanticOps.xtagsDataSet(ds);
                 isWaveform= true;
-                xoffsets= ArrayDataSet.copy( ( QDataSet) ds.property(QDataSet.DEPEND_1) );
-                xoffsets= resetUnits( xoffsets, SemanticOps.getUnits(xds).getOffsetUnits() );
 
             } else {
                 vds = (QDataSet) ds;
@@ -1135,6 +1133,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
                 default:
                     throw new IllegalArgumentException("DEPEND_1 must be rank 1 or rank 2");
             }
+            xoffsets.putProperty( QDataSet.UNITS, offsetUnits );
         }
         return xoffsets;
     }
