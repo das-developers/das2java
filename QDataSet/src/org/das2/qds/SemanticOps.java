@@ -250,7 +250,7 @@ public class SemanticOps {
      * @return true if the dataset is a bundle
      */
     public static boolean isBundle(QDataSet ds) {
-        return ds.rank()==2 && ds.property(QDataSet.BUNDLE_1)!=null;
+        return ds.rank()==2 && ds.property(QDataSet.BUNDLE_1)!=null && !isRank2Waveform(ds);
     }
 
     /**
