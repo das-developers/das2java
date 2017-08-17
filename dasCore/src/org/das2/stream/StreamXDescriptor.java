@@ -59,12 +59,7 @@ public class StreamXDescriptor implements SkeletonDescriptor, Cloneable {
     private void processElement( Element element ) {
         String typeStr = element.getAttribute("type");
         DataTransferType type = DataTransferType.getByName(typeStr);
-        if ( type != null ) {
-            transferType = type;
-        }
-        else {
-            throw new RuntimeException("Illegal transfer type: " + typeStr);
-        }
+        transferType = type;
         if ( type instanceof DataTransferType.Time ) {
             String unitsString = element.getAttribute("units");
             try {
@@ -90,12 +85,7 @@ public class StreamXDescriptor implements SkeletonDescriptor, Cloneable {
     private void processLegacyElement( Element element ) {
         String typeStr = element.getAttribute("type");
         DataTransferType type = DataTransferType.getByName(typeStr);
-        if (type != null) {
-            transferType = type;
-        }
-        else {
-            throw new RuntimeException("Illegal transfer type: " + typeStr);
-        }
+        transferType = type;
     }
     
     public Datum getBase() {

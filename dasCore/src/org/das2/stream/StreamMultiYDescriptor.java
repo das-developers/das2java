@@ -118,28 +118,16 @@ public class StreamMultiYDescriptor implements SkeletonDescriptor, Cloneable {
 				properties.putAll(m);
         }
 
-        if (type != null) {
-            transferType = type;
-        } else {
-            throw new RuntimeException("Illegal transfer type: " + typeStr);
-        }
+        transferType = type;
 
     }
 
     private void processLegacyElement(Element element) {
         logger.log(Level.FINE, "processLegacyElement {0} name={1}", new Object[]{element, element.getAttribute("name")});
-        if (element.getAttribute("name") != null) {
-            name = element.getAttribute("name");
-        } else {
-            name = "";
-        }
+        name = element.getAttribute("name");
         String typeStr = element.getAttribute("type");
         DataTransferType type = DataTransferType.getByName(typeStr);
-        if (type != null) {
-            transferType = type;
-        } else {
-            throw new RuntimeException("Illegal transfer type: " + typeStr);
-        }
+        transferType = type;
     }
 
     public StreamMultiYDescriptor() {
@@ -161,6 +149,7 @@ public class StreamMultiYDescriptor implements SkeletonDescriptor, Cloneable {
         return this.name;
     }
 
+    @Override
     public int getSizeBytes() {
         return transferType.getSizeBytes();
     }

@@ -133,12 +133,7 @@ public class StreamYScanDescriptor implements SkeletonDescriptor, Cloneable {
 		  
         String typeStr = element.getAttribute("type");
         DataTransferType type = DataTransferType.getByName(typeStr);
-        if (type != null) {
-            transferType = type;
-        }
-        else {
-            throw new RuntimeException("Illegal transfer type: " + typeStr);
-        }
+        transferType = type;
 		  
 	String yUnitsString = element.getAttribute("yUnits");
 	if (yUnitsString != null) {
@@ -193,20 +188,11 @@ public class StreamYScanDescriptor implements SkeletonDescriptor, Cloneable {
             } 
             String typeStr = element.getAttribute("type");
             DataTransferType type = DataTransferType.getByName(typeStr);
-            if (type != null) {
-                transferType = type;
-            }
-            else {
-                throw new RuntimeException("Illegal transfer type: " + typeStr);
-            }
+            transferType = type;
         } catch ( NumberFormatException ex ) {
             throw new IllegalArgumentException("Error in das2stream at yCoordinate");
         }
-        if ( element.getAttribute("name") != null ) {
-            name= element.getAttribute("name");
-        } else {
-            name="";
-        }
+        name= element.getAttribute("name");
     }
     
     public StreamYScanDescriptor() {
