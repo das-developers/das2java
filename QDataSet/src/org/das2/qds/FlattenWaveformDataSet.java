@@ -43,7 +43,6 @@ public class FlattenWaveformDataSet extends AbstractDataSet {
     @Override
     public Object property(String name) {
         Object v= super.property(name);
-        if ( v==null ) v= ds.property(name);
         if ( v==null ) {
             if ( DataSetUtil.isInheritedProperty(name)) {
                 return ds.property(name);
