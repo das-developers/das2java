@@ -155,6 +155,11 @@ public class DataTransferType {
         return sizeBytes;
     }
     
+    /**
+     * returns the type or throws RuntimeException("Unsupported type")
+     * @param name
+     * @return 
+     */
     public static DataTransferType getByName(String name) {
         DataTransferType type = (DataTransferType)map.get(name);
         if (type == null ) {
