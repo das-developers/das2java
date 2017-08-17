@@ -2569,7 +2569,7 @@ public class DataSetUtil {
             Number validMin,validMax;
             Units u;
             QDataSet bds= (QDataSet)ds.property(QDataSet.BUNDLE_1);
-            if ( bds!=null && ds.length()>0 && ds.length(0)>0 ) {
+            if ( bds!=null && ds.rank()>1 && ds.length()>0 && ds.length(0)>0 ) {   // HERE its going to crash
                 ofill= (Number) bds.property(QDataSet.FILL_VALUE,0);
                 Number min= (Number) bds.property(QDataSet.VALID_MIN,0);
                 Number max= (Number) bds.property(QDataSet.VALID_MAX,0);
