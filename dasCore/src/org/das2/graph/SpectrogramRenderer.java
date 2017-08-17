@@ -362,7 +362,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         }
                     }
                 }
-            } else if (plotImage != null) {
+            } else {
                 if ( unitsWarning ) {
                     QDataSet zds= getDataSet();
                     QDataSet xds=null, yds=null;

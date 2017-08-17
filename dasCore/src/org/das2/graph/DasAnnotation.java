@@ -295,7 +295,7 @@ public class DasAnnotation extends DasCanvasComponent {
         if ( f!=null ) {
             super.resize();
             Font thefont= f;
-            if ( fontSize>0 && f!=null ) thefont= f.deriveFont(fontSize);
+            if ( fontSize>0 ) thefont= f.deriveFont(fontSize);
             if ( this.gtr!=null ) {
                 this.gtr.setString( thefont, getString() );
             }

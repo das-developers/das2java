@@ -130,12 +130,12 @@ public class PropertyTreeNode implements PropertyTreeNodeInterface {
                 try {
                     PropertyDescriptor[] properties= BeansUtil.getPropertyDescriptors(value.getClass());
                     String[] propertyNameList= BeansUtil.getPropertyNames( properties );
-                    if ( propertyNameList==null ) {
-                        propertyNameList= new String[ properties.length ];
-                        for ( int i=0; i<properties.length; i++ ) {
-                            propertyNameList[i]= properties[i].getName();
-                        }
-                    }
+//                    if ( propertyNameList==null ) {
+//                        propertyNameList= new String[ properties.length ];
+//                        for ( int i=0; i<properties.length; i++ ) {
+//                            propertyNameList[i]= properties[i].getName();
+//                        }
+//                    }
                     
                     HashMap nameMap= new HashMap();
                     for ( int i=0; i<properties.length; i++ ) {

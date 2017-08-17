@@ -269,7 +269,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
                     parent.postMessage(this, "empty data set", DasPlot.INFO, null, null);
                 }
             }
-        } else if (plotImage != null) {
+        } else {
             Point2D p;
             p = new Point2D.Float(plotImageBounds.x, plotImageBounds.y);
             int x = (int) (p.getX());  
@@ -863,12 +863,6 @@ public class ImageVectorDataSetRenderer extends Renderer {
         }
 
         plotImageBounds= parent.getUpdateImageBounds();
-        //plotImageBounds = parent.getCacheImageBounds();
-        if ( plotImageBounds==null ) {
-            //transient state in parent component.  TODO: fix these
-            logger.exiting( "org.das2.graph.ImageVectorDataSetRenderer", "updatePlotImage" );
-            return;
-        }
 
         DatumRange visibleRange = xAxis.getDatumRange(); 
 

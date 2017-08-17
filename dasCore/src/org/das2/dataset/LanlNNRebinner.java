@@ -1,8 +1,8 @@
 
 package org.das2.dataset;
 
-import java.io.File;
-import java.io.IOException;
+//import java.io.File;
+//import java.io.IOException;
 import java.util.WeakHashMap;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
@@ -21,7 +21,7 @@ import org.das2.qds.MutablePropertyDataSet;
 import org.das2.qds.QDataSet;
 import org.das2.qds.SemanticOps;
 import org.das2.qds.ops.Ops;
-import org.das2.qds.util.AsciiFormatter;
+//import org.das2.qds.util.AsciiFormatter;
 
 /**
  * DataSetRebinner for explicitly doing NN rebinning.  The AverageTableRebinner had been used for the purpose, and
@@ -49,16 +49,13 @@ public class LanlNNRebinner implements DataSetRebinner {
         QDataSet dds= cadence.get(ds);
         if ( dds==null ) { //&& !cadence.containsKey(ds) ) {
             dds= DataSetUtil.guessCadenceNew( ds, null );
+            if ( dds==null ) dds= DataSetUtil.asDataSet(res);
             if ( UnitsUtil.isRatiometric( SemanticOps.getUnits(dds) ) ) {
                 dds= Ops.convertUnitsTo( dds, Units.log10Ratio );
             }
             cadence.put( ds,dds );
         }
-        if ( dds==null ) {
-            return DataSetUtil.asDataSet(res);
-        } else {
-            return dds;
-        }
+        return dds;
     }
     
     /**
