@@ -206,7 +206,7 @@ public class QDataSetStreamHandler implements StreamHandler {
     private DDataSet doInLine(Element vn) throws XPathExpressionException {
 
         String svals = xpath.evaluate("@values", vn).trim();
-        if ( svals==null ) {
+        if ( svals.equals("") ) {
             svals= xpath.evaluate("@inline", vn).trim();
         }
         String sdims = xpath.evaluate("@length", vn);
@@ -617,7 +617,7 @@ public class QDataSetStreamHandler implements StreamHandler {
                 builder.setDataSetResolver( getResolver() );
                 sliceDs = builder.getDataSet();
                 List<QDataSet> childDataSets = null;
-                if (sliceDs != null && sliceDs.property(BUILDER_JOIN_CHILDREN) != null) {
+                if ( sliceDs.property(BUILDER_JOIN_CHILDREN) != null) {
                     if (joinChild == null) {
                         joinChild = (String) sliceDs.property(BUILDER_JOIN_CHILDREN);
                     }
@@ -643,8 +643,7 @@ public class QDataSetStreamHandler implements StreamHandler {
                     }
                 }
                 DataSetUtil.putProperties(builder.getProperties(), join);
-                //if ( sliceDs!=null ) join.join(sliceDs);
-                if (sliceDs != null && sliceDs.length() > 0) {
+                if ( sliceDs.length() > 0) {
                     resolveProps(null, sliceDs);
                     logger.fine("aggregation has one last dataset to append");
                     join.join(sliceDs);
