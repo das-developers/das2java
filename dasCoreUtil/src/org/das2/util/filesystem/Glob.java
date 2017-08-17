@@ -155,9 +155,11 @@ public class Glob {
         for (FileObject file1 : files) {
             FileObject[] files1 = ((FileObject) file1).getChildren();
             for (FileObject file : files1) {
-                String s= file.getNameExt();
-                if ( absPattern.matcher(s).matches() && ( !directoriesOnly || file.isFolder() ) ) {
-                    list.add( file );
+                if ( file!=null ) { // TODO: there are nulls when you list /tmp, why?
+                    String s= file.getNameExt();
+                    if ( absPattern.matcher(s).matches() && ( !directoriesOnly || file.isFolder() ) ) {
+                        list.add( file );
+                    }
                 }
             }
         }
