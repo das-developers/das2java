@@ -7,7 +7,8 @@ import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
 
 /**
- * convert rank 2 waveform dataset into an equivalent rank 1 dataset.
+ * convert rank 2 waveform dataset into an equivalent rank 1 dataset.  Note that
+ * data valid properties for the data's DEPEND_0 are ignored.
  * @author jbf
  */
 public class FlattenWaveformDataSet extends AbstractDataSet {
@@ -56,6 +57,7 @@ public class FlattenWaveformDataSet extends AbstractDataSet {
     
     /**
      * create new depend0 so that the resolution is preserved (to within nanoseconds)
+     * Note VALID_MIN, VALID_MAX, FILL_VALUE, TYPICAL_MIN, TYPICAL_MAX are all dropped.
      */
     private void setupDep0() {
         final QDataSet dsdep0 = (QDataSet) ds.property(QDataSet.DEPEND_0);
@@ -92,16 +94,27 @@ public class FlattenWaveformDataSet extends AbstractDataSet {
 
             @Override
             public Object property(String name) {
-                if ( name.equals(QDataSet.CADENCE) ) {
-                    return dsdep1.property(QDataSet.CADENCE);
-                } else if ( name.equals(QDataSet.UNITS) ) {
-                    return fnewDep0Units;
-                } else {
-                    if ( DataSetUtil.isInheritedProperty(name) ) {
-                        return dsdep0.property(name);
-                    } else {
+                switch (name) {
+                    case QDataSet.CADENCE:
+                        return dsdep1.property(QDataSet.CADENCE);
+                    case QDataSet.UNITS:
+                        return fnewDep0Units;
+                    case QDataSet.VALID_MIN:
                         return null;
-                    }
+                    case QDataSet.VALID_MAX:
+                        return null;
+                    case QDataSet.TYPICAL_MIN:
+                        return null;
+                    case QDataSet.TYPICAL_MAX:
+                        return null;
+                    case QDataSet.FILL_VALUE:
+                        return null;
+                    default:
+                        if ( DataSetUtil.isInheritedProperty(name) ) {
+                            return dsdep0.property(name);
+                        } else {
+                            return null;
+                        }
                 }
             }
 
