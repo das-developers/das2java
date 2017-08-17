@@ -422,6 +422,10 @@ public class SeriesRenderer extends Renderer {
                 xds= Ops.reduceMean(xds,1);
             }
             
+            if ( dataSet.rank()==2 && xds.length()!=vds.length() ) {
+                return;
+            }
+                
             Units xUnits= SemanticOps.getUnits(xds);
             Units yUnits = SemanticOps.getUnits(vds);
             if ( unitsWarning ) yUnits= yAxis.getUnits();
@@ -786,6 +790,9 @@ public class SeriesRenderer extends Renderer {
             x = (double) xds.value(index);
             y = (double) vds.value(index);
 
+            //System.err.println("vds length "+vds.length());
+            //System.err.println("xds range " + Ops.extent(xds) );
+            //System.err.println("first,last index " +firstIndex + " " + lastIndex );
             try {
                 fx = xAxis.transform(x, xUnits);
             } catch ( InconvertibleUnitsException ex ) {
