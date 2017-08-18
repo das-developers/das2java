@@ -378,9 +378,10 @@ public class ArgumentList {
         }
         //TODO: check for too many arguments provided by enduser!
         if ( !error ) {
-            Iterator<String> i= values.keySet().iterator();
-            while ( i.hasNext() ) {
-                String key= i.next();
+            Iterator<Entry<String,String>> ientries= values.entrySet().iterator();
+            while ( ientries.hasNext() ) {
+                Entry<String,String> e= ientries.next();
+                String key= e.getKey();
                 if ( key==null ) {
                     System.err.println("TODO: handle this case whereever it's coming from: key==null");
                     continue;
@@ -389,13 +390,13 @@ public class ArgumentList {
                     printUsage();
                     System.exit(-1); //Findbugs correctly points out that this is a bad idea.  For example, a typo on a web server could bring the whole thing down.
                 }
-                if ( values.get( key ) == this.UNSPECIFIED ) {
+                if ( e.getValue() == this.UNSPECIFIED ) {
                     errorList.add( "Argument needed: --" + reverseNames.get( key ) );
                 }
-                if ( values.get( key ) == this.REFERENCEWITHOUTVALUE ) {
+                if ( e.getValue() == this.REFERENCEWITHOUTVALUE ) {
                     errorList.add( "Switch requires argument: "+formUsed.get(key));
                 }
-                if ( values.get( key ) == this.UNDEFINED_SWITCH && !allowUndefinedSwitch ) {
+                if ( e.getValue() == this.UNDEFINED_SWITCH && !allowUndefinedSwitch ) {
                     errorList.add( "Not a valid switch: "+formUsed.get(key) );
                 }
             }
@@ -444,11 +445,12 @@ public class ArgumentList {
      * @return a Map of the specified values, without defaults.
      */
     public Map<String,String> getOptions() {
-        HashMap<String,String> result= new HashMap<String,String>();
+        HashMap<String,String> result= new HashMap<>();
         List exclude= Arrays.asList( positionKeys );
-        for (String key : values.keySet()) {
+        for (Entry<String,String> e : values.entrySet()) {
+            String key= e.getKey();
             if( !exclude.contains(key) && formUsed.containsKey(key) ) {
-                result.put( key, values.get(key) );
+                result.put( key, e.getValue() );
             }
         }
         return result;
@@ -578,12 +580,13 @@ public class ArgumentList {
             }
         }
 
-        Set<String> set= names.keySet();
-        Iterator<String> i= set.iterator();
+        Set<Entry<String, String>> entries= names.entrySet();
+        Iterator<Entry<String, String>> i= entries.iterator();
 
         while ( i.hasNext() ) {
-            String name= i.next();
-            String key= names.get(name);
+            Entry<String, String> entry= i.next();
+            String name= entry.getKey();
+            String key= entry.getValue();
             String value= (String)formUsed.get(key);
             if ( value !=null ) {
                 if ( value.equals(this.TRUE) ) {
