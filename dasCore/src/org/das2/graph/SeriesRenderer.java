@@ -230,8 +230,9 @@ public class SeriesRenderer extends Renderer {
 
         int[] colors; // store the color index  of each psym
 
-        double[] dpsymsPath; // store the location of the psyms here.
-
+        double[] dpsymsPathX; // store the location of the psyms here.
+        double[] dpsymsPathY; // store the location of the psyms here.
+        
         int count; // the number of points to plot
 
 
@@ -259,13 +260,13 @@ public class SeriesRenderer extends Renderer {
                 for (int i = 0; i < count; i++) {
                     int icolor = colors[i];
                     if ( icolor>=0 ) {
-                        g.drawImage(coloredPsyms[icolor], (int)dpsymsPath[i * 2] - cmx, (int)dpsymsPath[i * 2 + 1] - cmy, lparent);
+                        g.drawImage(coloredPsyms[icolor], (int)dpsymsPathX[i] - cmx, (int)dpsymsPathY[i] - cmy, lparent);
                     }
                 }
             } else {
                 try {
                     for (int i = 0; i < count; i++) {
-                        g.drawImage(psymImage, (int)dpsymsPath[i * 2] - cmx, (int)dpsymsPath[i * 2 + 1] - cmy, lparent);
+                        g.drawImage(psymImage, (int)dpsymsPathX[i] - cmx, (int)dpsymsPathY[i] - cmy, lparent);
                     }
                 } catch ( ArrayIndexOutOfBoundsException ex ) {
                     logger.log( Level.WARNING, ex.getMessage(), ex );
@@ -321,7 +322,7 @@ public class SeriesRenderer extends Renderer {
                     for (int i = 0; i < count; i++) {
                         if ( colors[i]>=0 ) {
                             graphics.setColor( new Color(colors[i]) );
-                            psym.draw(graphics, dpsymsPath[i * 2], dpsymsPath[i * 2 + 1], fsymSize, fillStyle);
+                            psym.draw(graphics, dpsymsPathX[i], dpsymsPathY[i], fsymSize, fillStyle);
                         }
                     }
                     
@@ -329,7 +330,7 @@ public class SeriesRenderer extends Renderer {
                     for (int i = 0; i < count; i++) {
                         if ( colors[i]>=0 ) {
                             graphics.setColor(ccolors[colors[i]]);
-                            psym.draw(graphics, dpsymsPath[i * 2], dpsymsPath[i * 2 + 1], fsymSize, fillStyle);
+                            psym.draw(graphics, dpsymsPathX[i], dpsymsPathY[i], fsymSize, fillStyle);
                         }
                     }
                 }
@@ -338,7 +339,7 @@ public class SeriesRenderer extends Renderer {
                 for (int i = 0; i < count; i++) {
 //                    psym.draw(graphics, ipsymsPath[i * 2], ipsymsPath[i * 2 + 1], fsymSize, fillStyle);
                     try {
-                        psym.draw(graphics, dpsymsPath[i * 2], dpsymsPath[i * 2 + 1], fsymSize, fillStyle);
+                        psym.draw(graphics, dpsymsPathX[i], dpsymsPathY[i], fsymSize, fillStyle);
                     } catch ( ArrayIndexOutOfBoundsException ex ) {
                         logger.log( Level.WARNING, ex.getMessage(), ex );
                     }
@@ -399,7 +400,8 @@ public class SeriesRenderer extends Renderer {
             double dx,dy;
 
             count= 0; // intermediate state
-            dpsymsPath = new double[(lastIndex - firstIndex ) * 2];
+            dpsymsPathX = new double[(lastIndex - firstIndex ) ];
+            dpsymsPathY = new double[(lastIndex - firstIndex ) ];
             colors = new int[lastIndex - firstIndex + 2];
 
             int index = firstIndex;
@@ -453,8 +455,8 @@ public class SeriesRenderer extends Renderer {
                     if ( simplifyPaths ) {
                         if ( dx==dx0 && dy==dy0 ) continue;
                     }
-                    dpsymsPath[i * 2] = dx;
-                    dpsymsPath[i * 2 + 1] = dy;
+                    dpsymsPathX[i] = dx;
+                    dpsymsPathY[i] = dy;
                     if ( wdsz!=null && colorByDataSet1 != null && fcolorBar!=null ) {
                         try {
                             if ( wdsz.value(index)>0 ) {
@@ -494,22 +496,24 @@ public class SeriesRenderer extends Renderer {
         @Override
         public boolean acceptContext(Point2D.Double dp) {
             
-            double[] p;
+            double[] px;
+            double[] py;
             
             //local copy for thread safety
             synchronized (this) {
-                p= dpsymsPath;
+                px= dpsymsPathX;
+                py= dpsymsPathY;
             }
             
-            if ( p == null ) {
+            if ( px == null ) {
                 return false;
             }
             double rad = Math.max(symSize, 5);
 
-            int np= p.length/2;
+            int np= px.length;
             for (int index = 0; index < np; index++) {
                 int i = index;
-                if (dp.distance(p[i * 2], p[i * 2 + 1]) < rad) {
+                if (dp.distance(px[i], py[i]) < rad) {
                     return true;
                 }
             }
