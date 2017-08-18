@@ -184,6 +184,8 @@ public final class LoggerManager {
     
     private static boolean disableTimers = true;
     
+    private static int timerCycleCount=0;
+    
     private static PrintStream timerLogger= System.err;
 
     /**
@@ -202,6 +204,7 @@ public final class LoggerManager {
      */
     public static void setEnableTimers(boolean enableTimers) {
         disableTimers = !enableTimers;
+        timerCycleCount= 0;
         if ( !enableTimers ) {
             if ( timerLogger!=System.err ) {
                 timerLogger.close();
@@ -268,7 +271,8 @@ public final class LoggerManager {
         }
         timerLogger.println( String.format( "== %s ==", task ) );
         timers.put( Thread.currentThread(), new TimerInfo( System.nanoTime() ) );
-        timerLogger.println( String.format( "Count Time(ms) TimeSinceLast(ms) Message" ) );
+        timerLogger.println( String.format( "Cycle Count Time(ms) TimeSinceLast(ms) Message" ) );
+        timerCycleCount++;
     }
     
     /**
@@ -291,7 +295,7 @@ public final class LoggerManager {
         if ( timerInfo!=null ) {
             if ( message==null ) message= Thread.currentThread().getName();
             long t= System.nanoTime();
-            timerLogger.println( String.format( "%d %.6f %.6f %s", timerInfo.count, (t-timerInfo.birthNs)/1e6, (t-timerInfo.lastNs)/1e6, message ) );
+            timerLogger.println( String.format( "%d %d %.6f %.6f %s", timerCycleCount, timerInfo.count, (t-timerInfo.birthNs)/1e6, (t-timerInfo.lastNs)/1e6, message ) );
             timerInfo.lastNs= t;
             timerInfo.count++;
         }
