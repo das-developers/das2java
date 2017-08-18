@@ -1379,15 +1379,15 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
 //            }
 //        }
         
-        if ( isDirty() ) {
-            logger.fine("something is still dirty, not waiting.");
-            isDirty();
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException ex) {
-                throw new RuntimeException(ex);
-            }
-        }
+//        if ( isDirty() ) {
+//            logger.fine("something is still dirty, not waiting.");
+//            isDirty();
+//            try {
+//                Thread.sleep(1000);
+//            } catch (InterruptedException ex) {
+//                throw new RuntimeException(ex);
+//            }
+//        }
                 
         logger.fine("canvas is idle");
         /* should be in static state */
