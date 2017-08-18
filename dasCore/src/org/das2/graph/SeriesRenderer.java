@@ -351,19 +351,10 @@ public class SeriesRenderer extends Renderer {
 
         }
 
-        /**
-         *
-         * @param graphics
-         * @param xAxis
-         * @param yAxis
-         * @param vds
-         * @param mon
-         * @return the number of points drawn, though possibly off screen.
-         */
         @Override
         public synchronized int render(Graphics2D graphics, DasAxis xAxis, DasAxis yAxis, QDataSet vds, ProgressMonitor mon) {
             int i;
-            if ( vds.rank()!=1 && !SemanticOps.isBundle(vds) ) {
+            if ( vds.rank()!=1 && !SemanticOps.isBundle(vds) && !SemanticOps.isRank2Waveform(vds) ) {
                 renderException( graphics, xAxis, yAxis, new IllegalArgumentException("dataset is not rank 1"));
             }
             DasPlot lparent= getParent();
@@ -639,47 +630,7 @@ public class SeriesRenderer extends Renderer {
                 throw new InconvertibleUnitsException(d.getUnits(),u);
             }
         }
-    }
-
-//        private static void dumpPath( int width, int height, GeneralPath path1 ) {
-//            if ( path1!=null ) {
-//                try {
-//                    java.io.BufferedWriter w= new java.io.BufferedWriter( new java.io.FileWriter("/tmp/foo.jy") );
-//                    w.write( "from java.awt.geom import GeneralPath\nlp= GeneralPath()\n");
-//                    w.write( "h= " + height + "\n" );
-//                    w.write( "w= " + width + "\n" );
-//                    PathIterator it= path1.getPathIterator(null);
-//                    float [] seg= new float[6];
-//                    while ( !it.isDone() ) {
-//                        int r= it.currentSegment(seg);
-//                        if ( r==PathIterator.SEG_MOVETO ) {
-//                            w.write( String.format( "lp.moveTo( %9.2f, %9.4f )\n", seg[0], seg[1] ) );
-//                        } else {
-//                            w.write( String.format( "lp.lineTo( %9.2f, %9.4f )\n", seg[0], seg[1] ) );
-//                        }
-//                        it.next();
-//                    }
-//                    w.write( "from javax.swing import JPanel, JOptionPane\n" +
-//                            "from java.awt import Dimension, RenderingHints, Color\n" +
-//                            "\n" +
-//                            "class MyPanel( JPanel ):\n" +
-//                            "   def paintComponent( self, g ):\n" +
-//                            "       g.setColor(Color.WHITE)\n" +
-//                            "       g.fillRect(0,0,w,h)\n" + 
-//                            "       g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON )\n" +
-//                            "       g.setColor(Color.BLACK)\n" +
-//                            "       g.draw( lp )\n" +
-//                            "\n" +
-//                            "p= MyPanel()\n" +
-//                            "p.setMinimumSize( Dimension( w,h ) )\n" +
-//                            "p.setPreferredSize( Dimension( w,h ) )\n" +
-//                            "JOptionPane.showMessageDialog( None, p )" );
-//                    w.close();
-//                } catch ( java.io.IOException ex ) {
-//                    ex.printStackTrace();
-//                }
-//            }
-//        }     
+    } 
     
     private class PsymConnectorRenderElement implements RenderElement {
 
@@ -981,6 +932,47 @@ public class SeriesRenderer extends Renderer {
         return fx1;
     }
 
+//        /* dumps a jython script which draws the path See https://sourceforge.net/p/autoplot/bugs/1215/ */
+//        private static void dumpPath( int width, int height, GeneralPath path1 ) {
+//            if ( path1!=null ) {
+//                try {
+//                    java.io.BufferedWriter w= new java.io.BufferedWriter( new java.io.FileWriter("/tmp/foo.jy") );
+//                    w.write( "from java.awt.geom import GeneralPath\nlp= GeneralPath()\n");
+//                    w.write( "h= " + height + "\n" );
+//                    w.write( "w= " + width + "\n" );
+//                    PathIterator it= path1.getPathIterator(null);
+//                    float [] seg= new float[6];
+//                    while ( !it.isDone() ) {
+//                        int r= it.currentSegment(seg);
+//                        if ( r==PathIterator.SEG_MOVETO ) {
+//                            w.write( String.format( "lp.moveTo( %9.2f, %9.4f )\n", seg[0], seg[1] ) );
+//                        } else {
+//                            w.write( String.format( "lp.lineTo( %9.2f, %9.4f )\n", seg[0], seg[1] ) );
+//                        }
+//                        it.next();
+//                    }
+//                    w.write( "from javax.swing import JPanel, JOptionPane\n" +
+//                            "from java.awt import Dimension, RenderingHints, Color\n" +
+//                            "\n" +
+//                            "class MyPanel( JPanel ):\n" +
+//                            "   def paintComponent( self, g ):\n" +
+//                            "       g.setColor(Color.WHITE)\n" +
+//                            "       g.fillRect(0,0,w,h)\n" + 
+//                            "       g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON )\n" +
+//                            "       g.setColor(Color.BLACK)\n" +
+//                            "       g.draw( lp )\n" +
+//                            "\n" +
+//                            "p= MyPanel()\n" +
+//                            "p.setMinimumSize( Dimension( w,h ) )\n" +
+//                            "p.setPreferredSize( Dimension( w,h ) )\n" +
+//                            "JOptionPane.showMessageDialog( None, p )" );
+//                    w.close();
+//                } catch ( java.io.IOException ex ) {
+//                    ex.printStackTrace();
+//                }
+//            }
+//        }    
+    
 //    /**
 //     * for debugging, dumps the path iterator out to a file.
 //     * @param it 
@@ -1548,7 +1540,24 @@ public class SeriesRenderer extends Renderer {
         }
         
         mon.started();
-        if (tds != null) {
+        
+        if ( SemanticOps.isRank2Waveform(dataSet) ) {
+            
+            graphics.setColor(color);
+            logger.log(Level.FINEST, "drawing psymConnector in {0}", color);
+
+            int connectCount= psymConnectorElement.render(graphics, xAxis, yAxis, dataSet, mon.getSubtaskMonitor("psymConnectorElement.render")); // vds is only to check units
+            logger.log(Level.FINEST, "connectCount: {0}", connectCount);
+
+            int symCount;
+            if (psym != DefaultPlotSymbol.NONE) {
+
+                symCount= psymsElement.render(graphics, xAxis, yAxis, dataSet, mon.getSubtaskMonitor("psymsElement.render"));
+                logger.log(Level.FINEST, "symCount: {0}", symCount);
+                
+            }
+            
+        } else if (tds != null ) {
             graphics.setColor(color);
             logger.log(Level.FINEST, "drawing psymConnector in {0}", color);
 
