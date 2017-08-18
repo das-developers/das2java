@@ -476,6 +476,7 @@ public class SeriesRenderer extends Renderer {
                     } else if ( wdsz!=null && rgbColor ) {
                         if ( wdsz.value(index)>0 ) {
                             haveValidColor= true;
+                            assert colorByDataSet1!=null;
                             colors[i] = (int)colorByDataSet1.value(index);
                         } else {
                             colors[i] = -1;
