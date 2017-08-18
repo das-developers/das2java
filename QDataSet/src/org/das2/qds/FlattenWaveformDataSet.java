@@ -1,6 +1,8 @@
 package org.das2.qds;
 
+import java.util.logging.Logger;
 import org.das2.datum.Datum;
+import org.das2.datum.LoggerManager;
 import org.das2.datum.TimeUtil;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsConverter;
@@ -14,6 +16,8 @@ import org.das2.datum.UnitsUtil;
 public class FlattenWaveformDataSet extends AbstractDataSet {
     QDataSet ds;
     final int n;
+   
+    private static final Logger logger= LoggerManager.getLogger("qdataset.ops");
     
     public FlattenWaveformDataSet( QDataSet ds ) {
         this.ds= ds;
@@ -77,6 +81,17 @@ public class FlattenWaveformDataSet extends AbstractDataSet {
         final UnitsConverter ucbase= UnitsConverter.getConverter( dep0units, newDep0Units );
         final Units fnewDep0Units= newDep0Units;
         final UnitsConverter uc= UnitsConverter.getConverter( SemanticOps.getUnits(dsdep1), fnewDep0Units.getOffsetUnits() );
+        double waveformLength= uc.convert( dsdep1.value(dsdep1.length()-1) );
+        boolean monotonic= true;
+        for ( int k=1; k<dsdep0.length(); k++ ) {
+            if ( ucbase.convert(dsdep0.value(k)) < ucbase.convert(dsdep0.value(k-1))+waveformLength ) {
+                monotonic= false;
+            }
+        }
+        if ( !DataSetUtil.isMonotonicAndIncreasing(dsdep1) ) {
+            logger.warning("waveform data dep1 should be monotonic");
+        }
+        final Boolean fmonotonic= monotonic;
         MutablePropertyDataSet dep0= new AbstractDataSet() {
             @Override
             public int rank() {
@@ -96,6 +111,8 @@ public class FlattenWaveformDataSet extends AbstractDataSet {
                 switch (name) {
                     case QDataSet.CADENCE:
                         return dsdep1.property(QDataSet.CADENCE);
+                    case QDataSet.MONOTONIC:
+                        return fmonotonic;
                     case QDataSet.UNITS:
                         return fnewDep0Units;
                     case QDataSet.VALID_MIN:
@@ -116,7 +133,6 @@ public class FlattenWaveformDataSet extends AbstractDataSet {
                         }
                 }
             }
-
 
         };
         this.putProperty( QDataSet.DEPEND_0, dep0 );
