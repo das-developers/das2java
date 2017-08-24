@@ -1,13 +1,26 @@
 
 package org.das2.qds.util;
 
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.UnknownFormatConversionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
+import javax.swing.JPopupMenu;
 import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.border.MatteBorder;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableColumnModel;
+import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import org.das2.datum.Datum;
@@ -141,6 +154,62 @@ public class QDataSetTableModel extends AbstractTableModel {
         }
     }
     
+    JTableHeader header;
+    TableColumn column;
+    JTextField text;
+    JPopupMenu renamePopup;
+    
+    private void editColumnAt( Point p) {
+    int columnIndex = header.columnAtPoint(p);
+
+    if (columnIndex != -1) {
+      column = header.getColumnModel().getColumn(columnIndex);
+      Rectangle columnRectangle = header.getHeaderRect(columnIndex);
+
+      text.setText(column.getHeaderValue().toString());
+      renamePopup.setPreferredSize(
+          new Dimension(columnRectangle.width, columnRectangle.height - 1));
+      renamePopup.show(header, columnRectangle.x, 0);
+
+      text.requestFocusInWindow();
+      text.selectAll();
+    }
+  }
+
+  private void renameColumn() {
+    column.setHeaderValue(text.getText());
+    renamePopup.setVisible(false);
+    header.repaint();
+  }
+    
+  public MouseListener getTableHeaderMouseListener( JTable jTable1 ) {
+
+            header= jTable1.getTableHeader();
+            MouseListener result= new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent event)  {
+                    if (event.getClickCount() == 1) {
+                        editColumnAt(event.getPoint());
+                    }
+                }
+            };
+      
+    text = new JTextField();
+    text.setBorder(null);
+    text.addActionListener(new ActionListener(){
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        renameColumn();
+      }
+    });
+
+    renamePopup = new JPopupMenu();
+    renamePopup.setBorder(new MatteBorder(0, 1, 1, 1, Color.DARK_GRAY));
+    renamePopup.add(text);    
+    
+    return result;
+  }
+  
     /**
      * copied from AsciiTableDataSourceFormat.  See String.format.
      * @param df the string, such as "%f9.2"
