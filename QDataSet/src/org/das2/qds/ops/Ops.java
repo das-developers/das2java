@@ -8149,8 +8149,20 @@ public class Ops {
      * @see #interpolateMod interpolateMod for data like longitude where 259 deg is 2 degrees away from 1 deg
      */
     public static QDataSet interpolate( QDataSet vv, QDataSet findex ) {
+        if ( vv.rank()==2 ) {
+            QDataSet result= null;
+            for ( int j=0; j<vv.length(0); j++ ) {
+                QDataSet vvj= interpolate( Ops.slice1(vv,j),findex );
+                result= Ops.bundle(result,vvj);
+            }
+            QDataSet dep1= (QDataSet)vv.property(QDataSet.DEPEND_1);
+            if ( dep1!=null ) result= putProperty( result, QDataSet.DEPEND_1, dep1 );
+            QDataSet bds= (QDataSet)vv.property(QDataSet.BUNDLE_1);
+            if ( bds!=null ) result= putProperty( result, QDataSet.BUNDLE_1, bds );
+            return result;
+        }
         if ( vv.rank()!=1 ) {
-            throw new IllegalArgumentException("vv is not rank1");
+            throw new IllegalArgumentException("dataset to be interpolated is not rank1");
         }
         if ( !isDimensionless(findex) ) throw new IllegalArgumentException("findex argument should be dimensionless, expected output from findex command.");
         QDataSet fex0= extent(findex);
@@ -9698,7 +9710,7 @@ public class Ops {
      * monotonic subset of its points will be used.
     
      * @param ds1 the dataset providing timetags, or the timetags themselves.
-     * @param dss the N datasets
+     * @param dss the N datasets, each either rank 1 or rank 2.
      * @return a list of N datasets, synchronized
      * @see #synchronize(org.das2.qds.QDataSet, org.das2.qds.QDataSet...)      
      * @see #synchronizeNN(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
