@@ -329,7 +329,7 @@ public class FileSystemUtil {
      * @param surl 
      * @return
      */
-    private static String uriEncode(String surl) {
+    public static String uriEncode(String surl) {
 
         //surl = surl.replaceAll("#", "%23" );
         surl = surl.replaceAll("%", "%25" ); // see above
@@ -353,7 +353,7 @@ public class FileSystemUtil {
      * @param s
      * @return
      */
-    private static String uriDecode(String s) {
+    public static String uriDecode(String s) {
         String surl= s;
 //        if ( surl.contains("+") && !surl.contains("%20") ) { // legacy
 //            surl = surl.replaceAll("+", " " );

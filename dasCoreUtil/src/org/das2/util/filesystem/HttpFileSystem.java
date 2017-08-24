@@ -758,7 +758,7 @@ public class HttpFileSystem extends WebFileSystem {
                 list= (URL[]) newlist.toArray( new URL[newlist.size()] );
 
                 result = new LinkedHashMap();
-                int n = directory.length();
+                int n = FileSystemUtil.uriEncode(directory).length(); // note 20 lines above with getURL uriEncode is used in getURL
                 for (URL url : list) {
                     DirectoryEntry de1= new DirectoryEntry();
                     de1.modified= Long.MAX_VALUE;

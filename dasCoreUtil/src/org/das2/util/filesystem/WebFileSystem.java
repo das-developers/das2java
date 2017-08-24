@@ -704,12 +704,12 @@ public abstract class WebFileSystem extends FileSystem {
         }
         return (String[]) result.toArray(new String[result.size()]);
     }
-
+    
     public URL getURL(String filename) {
         filename = FileSystem.toCanonicalFilename(filename);
         try {
-            return new URL( root.toURL(), URLEncoder.encode(filename.substring(1),"UTF-8").replaceAll("\\+","%20").replaceAll("%2F","/") );
-        } catch (MalformedURLException | UnsupportedEncodingException ex) {
+            return new URL( root.toURL(), FileSystemUtil.uriEncode(filename.substring(1)) );
+        } catch (MalformedURLException ex) {
             throw new RuntimeException(ex);
         }
     }
@@ -717,7 +717,7 @@ public abstract class WebFileSystem extends FileSystem {
     public URI getURI( String filename ) {
         try {
             filename = FileSystem.toCanonicalFilename(filename);
-            return new URI(root + filename.substring(1));
+            return new URI(root + FileSystemUtil.uriEncode(filename.substring(1)));
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }

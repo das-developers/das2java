@@ -132,7 +132,7 @@ public abstract class FileSystem  {
             throw new IllegalArgumentException( "name must start with scheme like 'file:', no colon found");
         }
         try {
-            return create( new URI( parts[0], parts[1], null ), mon );  
+            return create( new URI( FileSystemUtil.uriEncode(s) ), mon );  
         } catch (URISyntaxException ex) {
             throw new IllegalArgumentException( ex );
         }
@@ -625,6 +625,7 @@ public abstract class FileSystem  {
                     }
                 }   break;
         }
+        logger.fine( String.format( "listDirectoryDeep(%s,%s)->%d items\n",directory,regex,result.size()) );
         return result.toArray( new String[result.size()] );
     }
     /**
