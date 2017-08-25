@@ -112,8 +112,7 @@ public class PropertiesTreeModel extends DefaultTreeModel {
                 for ( int i=0; i<ds.length(); i++ ) {
                     if ( i<lin || i>=ds.length()-3 ) { 
                         QDataSet ds1= ds.slice(i);
-                        MutableTreeNode values= new DefaultMutableTreeNode( String.format( "slice(%d): %s",i, ds1 ) );
-                        ValuesTreeModel.valuesTreeNode( "value(", values, ds1, valuesSizeLimit );
+                        MutableTreeNode values= (MutableTreeNode) new PropertiesTreeModel(String.format("slice(%d)= ",i), ds1,valuesSizeLimit).getRoot();
                         mroot.insert( values, mroot.getChildCount() );        
                     } else if ( i==lin ) {
                         mroot.insert( new DefaultMutableTreeNode("..."), mroot.getChildCount() );  
