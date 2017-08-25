@@ -57,6 +57,7 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 import javax.swing.SwingUtilities;
+import org.das2.util.FileUtil;
 import org.das2.util.OsUtil;
 import static org.das2.util.filesystem.FileSystem.toCanonicalFilename;
 import org.das2.util.monitor.NullProgressMonitor;
@@ -455,20 +456,27 @@ public class HttpFileSystem extends WebFileSystem {
                     }
 
                     if ( f.exists() ) {
-                        if ( f.length()==partFile.length() ) {
-                            if ( OsUtil.contentEquals(f, partFile ) ) {
-                                logger.finer("another thread must have downloaded file.");
-                                if ( !partFile.delete() ) {
-                                    throw new IllegalArgumentException("unable to delete "+partFile );
-                                }
-                                return;
-                            } else {
-                                logger.finer("another thread must have downloaded different file.");
+                        if ( f.isDirectory() ) {
+                            logger.finer("file was once a directory.");
+                            if ( !FileUtil.deleteFileTree(f) ) {
+                                throw new IllegalArgumentException("unable to folder to make way for file: "+f );
                             }
-                        }
-                        logger.log(Level.FINER, "deleting old file {0}", f);
-                        if ( ! f.delete() ) {
-                            throw new IllegalArgumentException("unable to delete "+f );
+                        } else {
+                            if ( f.length()==partFile.length() ) {
+                                if ( OsUtil.contentEquals(f, partFile ) ) {
+                                    logger.finer("another thread must have downloaded file.");
+                                    if ( !partFile.delete() ) {
+                                        throw new IllegalArgumentException("unable to delete "+partFile );
+                                    }
+                                    return;
+                                } else {
+                                    logger.finer("another thread must have downloaded different file.");
+                                }
+                            }
+                            logger.log(Level.FINER, "deleting old file {0}", f);
+                            if ( !f.delete() ) {
+                                throw new IllegalArgumentException("unable to delete "+f );
+                            }
                         }
                     }
                     if ( !partFile.renameTo(f) ) {
