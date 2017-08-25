@@ -751,6 +751,8 @@ public class HttpFileSystem extends WebFileSystem {
                     list = HtmlUtil.getDirectoryListing( getURL(directory), fin );
                 }
                 
+                int n = FileSystemUtil.uriEncode(directory).length(); // note 20 lines above with getURL uriEncode is used in getURL
+                
                 //remove .css stuff
                 ArrayList newlist= new ArrayList();
                 List<String> hideExtensions= hideExtensions();
@@ -761,12 +763,19 @@ public class HttpFileSystem extends WebFileSystem {
                             if ( s.getFile().endsWith(e) ) hide= true;
                         }
                     }
+                    try {
+                        String ss= getLocalName(s).substring(n);
+                        if ( ss.split("/").length>1 ) {
+                            hide= true;
+                        }
+                    } catch ( IllegalArgumentException ex ) {
+                        hide= true;
+                    }
                     if ( !hide ) newlist.add(s);
                 }
                 list= (URL[]) newlist.toArray( new URL[newlist.size()] );
 
                 result = new LinkedHashMap();
-                int n = FileSystemUtil.uriEncode(directory).length(); // note 20 lines above with getURL uriEncode is used in getURL
                 for (URL url : list) {
                     DirectoryEntry de1= new DirectoryEntry();
                     de1.modified= Long.MAX_VALUE;
