@@ -9,12 +9,16 @@
 
 package org.das2.qds.util;
 
+import java.util.Arrays;
 import org.das2.qds.AbstractDataSet;
 import org.das2.qds.DataSetUtil;
 import org.das2.qds.QDataSet;
 
 /**
- * wrap a qube dataset to transpose the indeces.  Brute force implementation.  No copying.
+ * wrap a qube dataset to transpose the indeces.  This brute force implementation
+ * calculates the index mapping and is implemented without copying.  For rank 4
+ * datasets, order[0] must equal 0.
+ * 
  * @author jbf
  */
 public class TransposeRankNDataSet extends AbstractDataSet {
@@ -42,27 +46,40 @@ public class TransposeRankNDataSet extends AbstractDataSet {
             if ( depi!=null ) properties.put( "DEPEND_"+i, depi );
         }
         
-        if ( order[0]==0 ) {
-            if ( order[1]==1 ) {
-                shuffleType= SHUFFLE_123;
-            } else {
-                shuffleType= SHUFFLE_132;
+        int[] lorder= order;
+        if ( order.length==4 ) {
+            if ( order[0]!=0 ) {
+                throw new IllegalArgumentException("rank not supported unless order[0]=0");
             }
-        } else if ( order[0]==1 ) {
-            if ( order[1]==0 ) {
-                shuffleType= SHUFFLE_213;
-            } else {
-                shuffleType= SHUFFLE_231;
+            lorder= Arrays.copyOfRange( order, 1, 4 );
+            for ( int i=0; i<lorder.length; i++ ) {
+                lorder[i]-= 1;
             }
-        } else {
-            if ( order[1]==0 ) {
-                shuffleType= SHUFFLE_312;
-            } else {
-                shuffleType= SHUFFLE_321;
-            }
-        } 
+        }
+        
+        switch (lorder[0]) {
+            case 0:
+                if ( lorder[1]==1 ) {
+                    shuffleType= SHUFFLE_123;
+                } else {
+                    shuffleType= SHUFFLE_132;
+                }   break;
+            case 1:
+                if ( lorder[1]==0 ) {
+                    shuffleType= SHUFFLE_213;
+                } else {
+                    shuffleType= SHUFFLE_231;
+                }   break;
+            default:
+                if ( lorder[1]==0 ) {
+                    shuffleType= SHUFFLE_312;
+                } else {
+                    shuffleType= SHUFFLE_321;
+                }   break; 
+        }
     }
 
+    @Override
     public int rank() {
         return source.rank();
     }
@@ -91,7 +108,20 @@ public class TransposeRankNDataSet extends AbstractDataSet {
         }
     }
 
-
+    @Override
+    public double value(int i0, int i1, int i2, int i3) {    
+        // first (0th) element must be slice.
+        switch ( shuffleType ) {
+            case SHUFFLE_123: return source.value( i0, i1, i2, i3);
+            case SHUFFLE_132: return source.value( i0, i1, i3, i2);
+            case SHUFFLE_213: return source.value( i0, i2, i1, i3);
+            case SHUFFLE_231: return source.value( i0, i2, i3, i1);
+            case SHUFFLE_312: return source.value( i0, i3, i1, i2);
+            case SHUFFLE_321: return source.value( i0, i3, i2, i1);
+            default: throw new RuntimeException("implementation error");
+        }
+    }
+    
     @Override
     public Object property(String name) {
         Object v= properties.get(name); //TODO: verify this
@@ -118,5 +148,9 @@ public class TransposeRankNDataSet extends AbstractDataSet {
     public int length( int i, int j ) {
         return qube[order[2]];
     }
-
+       
+    @Override
+    public int length( int i, int j, int k ) {
+        return qube[order[3]];
+    }
 }
