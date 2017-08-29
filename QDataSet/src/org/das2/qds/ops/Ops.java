@@ -5181,6 +5181,7 @@ public class Ops {
      *print without( [0,1,2,3,4], '2 to 4' ) --> [ 1,1,0,0,1 ]
      *print without( ttag, 'orbit:rbspa-pp:172' )
      *</pre></blockquote>
+     * Note if bounds contain fill, then everything is fill.
      * 
      * @param ds rank N dataset where N &gt; 0
      * @param bounds a rank 1 bounding box.  
@@ -5197,7 +5198,7 @@ public class Ops {
      *print without( [0,1,2,3,4], '2 to 4' ) --> [ 1,1,0,0,1 ]
      *print without( ttag, 'orbit:rbspa-pp:172' )
      *</pre></blockquote>
-     * 
+     * Note if bounds contain fill, then everything is fill.
      * @param ds rank N dataset where N &gt; 0
      * @param bounds a rank 1 bounding box.  
      * @return rank N dataset containing non-zero where the condition is true.
