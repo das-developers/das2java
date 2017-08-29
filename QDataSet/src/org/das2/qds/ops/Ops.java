@@ -9833,6 +9833,16 @@ public class Ops {
     }
     
     /**
+     * flatten a rank 2 dataset where the y depend variable is just an offset from the xtag. 
+     * Note the new DEPEND_0 may have different units from ds.property(DEPEND_0).
+     * @param ds rank 2 waveform with tags for DEPEND_0 and offsets for DEPEND_1
+     * @return rank 1 waveform
+     */
+    public static QDataSet flattenWaveform( QDataSet ds ) {
+        return DataSetOps.flattenWaveform(ds);
+    }
+    
+    /**
      * Opposite of the flatten function, takes rank 2 bundle (x,y,z) and 
      * makes a table from it z(x,y). This presumes that the rank 1 X and
      * Y data contain repeating elements for the rows and columns of the grid.
