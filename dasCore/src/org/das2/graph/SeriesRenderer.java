@@ -665,7 +665,6 @@ public class SeriesRenderer extends Renderer {
         @Override
         public synchronized void update(DasAxis xAxis, DasAxis yAxis, QDataSet dataSet, ProgressMonitor mon) {
             logger.log(Level.FINE, "enter connector update" );
-            System.err.println("update667: "+dataSet);
             QDataSet xds= SemanticOps.xtagsDataSet( dataSet );
             if ( xds.rank()==2 && xds.property( QDataSet.BINS_1 )!=null ) {
                 xds= Ops.reduceMean(xds,1);
