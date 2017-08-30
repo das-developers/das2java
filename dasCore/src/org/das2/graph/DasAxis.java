@@ -1054,6 +1054,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * @param t The new label for this axis
      */
     public void setLabel(String t) {
+        logger.log(Level.FINE, "setLabel(\"{0}\")", t);
         if (t == null) {
             throw new NullPointerException("axis label cannot be null");
         }

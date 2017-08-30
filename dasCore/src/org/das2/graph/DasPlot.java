@@ -1768,6 +1768,7 @@ public class DasPlot extends DasCanvasComponent {
     public void setTitle(String t) {
         Object oldValue = plotTitle;
         plotTitle = t;
+        logger.log(Level.FINE, "setTitle(\"{0}\")", t);
         if ( t==null ) t="";
         if (getCanvas() != null) {
             FontMetrics fm = getFontMetrics(getCanvas().getFont());
