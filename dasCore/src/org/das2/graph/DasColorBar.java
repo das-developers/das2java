@@ -38,6 +38,8 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.swing.ImageIcon;
 
@@ -392,6 +394,8 @@ public class DasColorBar extends DasAxis {
         private final String desc;
         private javax.swing.Icon icon;
         
+        private static Map<String,Type> extraTypes= new HashMap<>();
+        
         private Type(String desc) {
             this.desc = desc;
         }
@@ -405,6 +409,7 @@ public class DasColorBar extends DasAxis {
         public Type(String desc,int[] colorTable ) {
             this.desc= desc;
             this.colorTable= colorTable;
+            extraTypes.put(desc,this);
         }
         
         @Override
@@ -589,7 +594,7 @@ public class DasColorBar extends DasAxis {
                 initializeBlueToOrange(size, bottom, top);
             } else if (this == SCIPY_PLASMA ) {
                 initializeSciPyPlasma(size, bottom, top);
-            }
+            } 
         }
         
         private void initializeColorWedge( int size, int bottom, int top ) {
@@ -744,7 +749,7 @@ public class DasColorBar extends DasAxis {
 		        
 		  
         //Rob W. JADE colorbar
-	private void initializeVioletYellow( int size, int bottom, int top ) {
+        private void initializeVioletYellow( int size, int bottom, int top ) {
             int [] index= {  0,  27,  64,  95, 127, 159, 183, 202, 225, 246, 255 };
             int [] red=   { 68,  71,  59,  45,  34,  36,  71, 110, 174, 233, 253 };
             int [] green= {  2,  36,  83, 111, 139, 171, 192, 206, 221, 229, 231 };
@@ -794,7 +799,12 @@ public class DasColorBar extends DasAxis {
                 case "scipy_plasma":
                     return SCIPY_PLASMA;
                 default:
-                    throw new IllegalArgumentException("invalid DasColorBar.Type string: " + s);
+                    Type r= extraTypes.get(s);
+                    if ( r==null ) {
+                        throw new IllegalArgumentException("undefined DasColorBar.Type identifier: " + s);
+                    } else {
+                        return r;
+                    }
             }
         }
         
