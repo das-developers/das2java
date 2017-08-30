@@ -109,6 +109,11 @@
                         <description>Slice several dimensions at once</description>
                     </bookmark> 
                     <bookmark>
+                        <title>Magnitude</title>
+                        <filter>|magnitude()</filter>
+                        <description>calculate the magnitude of the cartesian vectors.</description>
+                    </bookmark>
+                    <bookmark>
                         <title>Trim</title>
                         <filter>|trim(0,10)</filter>
                         <description>Trim the data to a smaller range</description>
