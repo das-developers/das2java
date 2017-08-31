@@ -6,6 +6,8 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Shape;
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -109,9 +111,14 @@ public class RGBImageRenderer extends Renderer {
         int iy0;
         int iy1; // inclusive
         
+        double dx= dep0.value(1)-dep0.value(0);
         int x0;
         if ( true ) { //if ( x0==-10000 ) {
-            ix0= (int)( Math.floor( Ops.findex( dep0, xAxis.invTransform( 0. ) ).value() ) );
+            if ( dx>0 ) {
+                ix0= (int)( Math.floor( Ops.findex( dep0, xAxis.invTransform( 0. ) ).value() ) );
+            } else {
+                ix0= (int)( Math.floor( Ops.findex( Ops.multiply(-1,dep0), xAxis.invTransform( 0. ).multiply(-1) ).value() ) );
+            }
             ix0= Math.max( 0, ix0 );
             ix0= Math.min( w-1, ix0 );
             x0= (int)xAxis.transform( dep0.value(ix0) - dx0/2, xunits);
@@ -127,7 +134,11 @@ public class RGBImageRenderer extends Renderer {
         
         int x1;
         if ( true ) { //if ( x1==10000 ) {
-            ix1= (int)( Math.ceil( Ops.findex( dep0, xAxis.invTransform( xAxis.getWidth()+xAxis.getX() ) ).value() ) );
+            if ( dx>0 ) {
+                ix1= (int)( Math.ceil( Ops.findex( dep0, xAxis.invTransform( xAxis.getWidth()+xAxis.getX() ) ).value() ) );
+            } else {
+                ix1= (int)( Math.ceil( Ops.findex( Ops.multiply(-1,dep0), xAxis.invTransform( xAxis.getWidth()+xAxis.getX() ).multiply(-1) ).value() ) );
+            }
             ix1= Math.max( 0, ix1 );
             ix1= Math.min( w-1, ix1 );
             x1= (int)xAxis.transform( dep0.value(ix1) + dx0/2, xunits);
@@ -154,7 +165,15 @@ public class RGBImageRenderer extends Renderer {
         }
         
         if ( ix0>0 || ix1<w || iy0>0 || iy1<h ) {
-            im= im.getSubimage( ix0, iy0, ix1-ix0, iy1-iy0 );
+            if ( ix0<ix1 ) {
+                im= im.getSubimage( ix0, iy0, ix1-ix0, iy1-iy0 );
+            } else {
+                im= im.getSubimage( ix1, iy0, ix0-ix1, iy1-iy0 );
+                AffineTransform tx = AffineTransform.getScaleInstance(-1, 1);
+                tx.translate(-im.getWidth(null), 0);
+                AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
+                im = op.filter(im, null);
+            }
         }
         
         g.drawImage( im, x0, y0, x1-x0, y1-y0, null );
