@@ -112,6 +112,7 @@ public class RGBImageRenderer extends Renderer {
         int iy1; // inclusive
         
         double dx= dep0.value(1)-dep0.value(0);
+        
         int x0;
         if ( true ) { //if ( x0==-10000 ) {
             if ( dx>0 ) {
@@ -124,9 +125,14 @@ public class RGBImageRenderer extends Renderer {
             x0= (int)xAxis.transform( dep0.value(ix0) - dx0/2, xunits);
         }
         
+        double dy= dep1.value(1)-dep1.value(0);
         int y0;
         if ( true ) { //y0==10000 ) {
-            iy0= (int)( Math.floor( Ops.findex( dep1, yAxis.invTransform( yAxis.getHeight()+yAxis.getY() ) ).value() ) );
+            if ( dy>0 ) {
+                iy0= (int)( Math.floor( Ops.findex( dep1, yAxis.invTransform( yAxis.getHeight()+yAxis.getY() ) ).value() ) );
+            } else {
+                iy0= (int)( Math.floor( Ops.findex( Ops.multiply(-1,dep1), yAxis.invTransform( yAxis.getHeight()+yAxis.getY() ).multiply(-1) ).value() ) );
+            }
             iy0= Math.max( 0, iy0 );
             iy0= Math.min( h-1, iy0 );
             y0= (int)yAxis.transform( dep1.value(iy0) - dy0/2, yunits);
@@ -146,7 +152,11 @@ public class RGBImageRenderer extends Renderer {
         
         int y1;
         if ( true ) { //if ( y1==-10000 ) {
-            iy1= (int)( Math.ceil( Ops.findex( dep1, yAxis.invTransform( 0 ) ).value() ) );
+            if ( dy>0 ) {
+                iy1= (int)( Math.ceil( Ops.findex( dep1, yAxis.invTransform( 0 ) ).value() ) );
+            } else {
+                iy1= (int)( Math.floor( Ops.findex( Ops.multiply(-1,dep1), yAxis.invTransform( 0. ).multiply(-1) ).value() ) );
+            }
             iy1= Math.max( 0, iy1 );
             iy1= Math.min( h-1, iy1 );
             y1= (int)yAxis.transform( dep1.value(iy1) + dy0/2, yunits);
@@ -166,13 +176,29 @@ public class RGBImageRenderer extends Renderer {
         
         if ( ix0>0 || ix1<w || iy0>0 || iy1<h ) {
             if ( ix0<ix1 ) {
-                im= im.getSubimage( ix0, iy0, ix1-ix0, iy1-iy0 );
+                if ( iy0<iy1 ) {
+                    im= im.getSubimage( ix0, iy0, ix1-ix0, iy1-iy0 );
+                } else {
+                    im= im.getSubimage( ix0, iy1, ix1-ix0, iy0-iy1 );
+                    AffineTransform tx = AffineTransform.getScaleInstance(1, -1);
+                    tx.translate(0,-im.getHeight(null));
+                    AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
+                    im = op.filter(im, null);
+                }
             } else {
-                im= im.getSubimage( ix1, iy0, ix0-ix1, iy1-iy0 );
-                AffineTransform tx = AffineTransform.getScaleInstance(-1, 1);
-                tx.translate(-im.getWidth(null), 0);
-                AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
-                im = op.filter(im, null);
+                if ( iy0<iy1 ) {
+                    im= im.getSubimage( ix1, iy0, ix0-ix1, iy1-iy0 );
+                    AffineTransform tx = AffineTransform.getScaleInstance(-1, 1);
+                    tx.translate(-im.getWidth(null), 0);
+                    AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
+                    im = op.filter(im, null);
+                } else {
+                    im= im.getSubimage( ix1, iy1, ix0-ix1, iy0-iy1 );
+                    AffineTransform tx = AffineTransform.getScaleInstance(-1, -1);
+                    tx.translate(-im.getWidth(null), -im.getHeight(null) );
+                    AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
+                    im = op.filter(im, null);
+                }
             }
         }
         
