@@ -16,6 +16,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.das2.DasApplication;
 import org.das2.DasException;
+import org.das2.datum.Datum;
 import org.das2.datum.Units;
 import org.das2.event.CrossHairMouseModule;
 import org.das2.event.DasMouseInputAdapter;
@@ -115,14 +116,18 @@ public class RGBImageRenderer extends Renderer {
         
         int x0;
         if ( true ) { //if ( x0==-10000 ) {
+            Datum d= xAxis.invTransform( 0. );
+            if ( !d.getUnits().isConvertibleTo(xunits) ) {
+                d= xunits.createDatum(d.value());
+            }
             if ( dx>0 ) {
                 ix0= (int)( Math.floor( Ops.findex( dep0, xAxis.invTransform( 0. ) ).value() ) );
             } else {
-                ix0= (int)( Math.floor( Ops.findex( Ops.multiply(-1,dep0), xAxis.invTransform( 0. ).multiply(-1) ).value() ) );
+                ix0= (int)( Math.floor( Ops.findex( Ops.multiply(-1,dep0), d.multiply(-1) ).value() ) );
             }
             ix0= Math.max( 0, ix0 );
             ix0= Math.min( w-1, ix0 );
-            x0= (int)xAxis.transform( dep0.value(ix0) - dx0/2, xunits);
+            x0= (int)xAxis.transform( dep0.value(ix0) - dx0/2, xAxis.getUnits() );
         }
         
         double dy= dep1.value(1)-dep1.value(0);
@@ -135,19 +140,23 @@ public class RGBImageRenderer extends Renderer {
             }
             iy0= Math.max( 0, iy0 );
             iy0= Math.min( h-1, iy0 );
-            y0= (int)yAxis.transform( dep1.value(iy0) - dy0/2, yunits);
+            y0= (int)yAxis.transform( dep1.value(iy0) - dy0/2, yAxis.getUnits() );
         }
         
         int x1;
         if ( true ) { //if ( x1==10000 ) {
+            Datum d= xAxis.invTransform( xAxis.getWidth()+xAxis.getX() );
+            if ( !d.getUnits().isConvertibleTo(xunits) ) {
+                d= xunits.createDatum(d.value());
+            }
             if ( dx>0 ) {
-                ix1= (int)( Math.ceil( Ops.findex( dep0, xAxis.invTransform( xAxis.getWidth()+xAxis.getX() ) ).value() ) );
+                ix1= (int)( Math.ceil( Ops.findex( dep0, d ).value() ) );
             } else {
-                ix1= (int)( Math.ceil( Ops.findex( Ops.multiply(-1,dep0), xAxis.invTransform( xAxis.getWidth()+xAxis.getX() ).multiply(-1) ).value() ) );
+                ix1= (int)( Math.ceil( Ops.findex( Ops.multiply(-1,dep0), d.multiply(-1) ).value() ) );
             }
             ix1= Math.max( 0, ix1 );
             ix1= Math.min( w-1, ix1 );
-            x1= (int)xAxis.transform( dep0.value(ix1) + dx0/2, xunits);
+            x1= (int)xAxis.transform( dep0.value(ix1) + dx0/2, xAxis.getUnits() );
         }
         
         int y1;
