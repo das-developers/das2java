@@ -8910,6 +8910,22 @@ public class Ops {
     }
     
     /**
+     * assign zeros to all the values of the dataset.  The 
+     * dataset must be mutable.  This was used to verify Jython behavior.
+     * @param ds 
+     */
+    public static void clearWritable( WritableDataSet ds ) {
+        if ( ds.isImmutable() ) {
+            throw new IllegalArgumentException("ds has been made immutable");
+        }
+        DataSetIterator it= new QubeDataSetIterator(ds);
+        while ( it.hasNext() ) {
+            it.next();
+            it.putValue(ds,E);
+        }
+    }
+    
+    /**
      * returns 1 where the data is not NaN, Inf, etc  I needed this when I was working with
      * the RBSP polar scatter script.  Note valid should be used to check for valid data, which
      * also checks for NaN.
