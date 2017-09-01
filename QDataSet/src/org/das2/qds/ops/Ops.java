@@ -8921,7 +8921,7 @@ public class Ops {
         DataSetIterator it= new QubeDataSetIterator(ds);
         while ( it.hasNext() ) {
             it.next();
-            it.putValue(ds,E);
+            it.putValue(ds,0.0);
         }
     }
     
