@@ -1046,6 +1046,19 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         }
     }
 
+    /**
+     * return the active mouse module, for scripting.  Active means the 
+     * button has been pressed, etc.
+     * @return null or the active module.
+     */
+    public MouseModule getActive() {
+        if ( this.active==null || this.active.isEmpty() ) {
+            return null;
+        } else {
+            return (MouseModule)this.active.get(0);
+        }
+    }
+    
     private void performResize(MouseEvent e) {
         int dxLeft = parent.getColumn().getDMinimum();
         int dxRight = parent.getColumn().getDMaximum();
