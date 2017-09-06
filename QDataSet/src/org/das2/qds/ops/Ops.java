@@ -11018,6 +11018,26 @@ public class Ops {
     }
 
     /**
+     * returns true if the name is a Java-style identifier, starting
+     * with one of a-z, A-Z, or _; followed by a-z, A-Z, 0-9, or _; and
+     * note that only ASCII characters are allowed.
+     * 
+     * @param name
+     * @return 
+     */
+    public static boolean isSafeName( String name ) {
+        if ( name.length()<1 ) return false;
+        if ( Character.isJavaIdentifierStart( name.charAt(0) ) && name.charAt(0)<128 ) {
+            for ( int i=1; i<name.length(); i++ ) {
+                if ( !( Character.isJavaIdentifierPart( name.charAt(i) ) && name.charAt(0)<128 ) ) return false;
+            }
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
+    /**
      * made a Java-style identifier from the provided string
      * See Autoplot/src/scripts/safeName.jy which demonstrates this.
      * @param suggest a name, possibly containing spaces and illegal characters
