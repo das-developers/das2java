@@ -11023,7 +11023,7 @@ public class Ops {
      * note that only ASCII characters are allowed.
      * 
      * @param name
-     * @return 
+     * @return  true if the name is a safe identifier name.
      */
     public static boolean isSafeName( String name ) {
         if ( name.length()<1 ) return false;
