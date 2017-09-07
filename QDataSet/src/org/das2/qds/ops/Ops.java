@@ -11148,6 +11148,8 @@ public class Ops {
      */
     public static boolean equivalent( QDataSet ds1, QDataSet ds2 ) {
         if ( ds1!=null && ds1==ds2 ) return true;
+        if ( ds1==null ) throw new NullPointerException("ds1 is null");
+        if ( ds2==null ) throw new NullPointerException("ds2 is null");
         Units u1= SemanticOps.getUnits(ds1);
         Units u2= SemanticOps.getUnits(ds2);
         if ( u1!=u2 && u1 instanceof EnumerationUnits && u2 instanceof EnumerationUnits ) {
