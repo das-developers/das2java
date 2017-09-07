@@ -1844,6 +1844,17 @@ public class AsciiParser {
         setRecordParser(rp);
         return rp;
     }
+    
+    /**
+     * return a regex parser for the given regular expression.  Groups are used 
+     * for the fields, for example getRegexParser( 'X (\d+) (\d+)' ) would 
+     * parse lines like "X 00005 00006".
+     * @param regex
+     * @return the regex parser
+     */
+    public RegexParser getRegexParser( String regex ) {
+        return new RegexParser(regex);
+    }
 
     /**
      * This initializes the parser, setting:
@@ -1857,9 +1868,11 @@ public class AsciiParser {
         fieldCount= count;
         fieldNames = new String[fieldCount];
         fieldParsers = new FieldParser[fieldCount];
+        fieldLabels= new String[fieldCount];
         for (int i = 0; i < fieldCount; i++) {
             fieldParsers[i] = DOUBLE_PARSER;
-            fieldNames[i] = "field" + (i);
+            fieldNames[i] = "field" + i;
+            fieldLabels[i] = fieldNames[i];
         }
         units = new Units[fieldCount]; //this is the one place where units array is initialized
         fieldUnits= new String[fieldCount];
@@ -1893,9 +1906,8 @@ public class AsciiParser {
     public final class RegexParser implements RecordParser {
 
         Pattern recordPattern;
-        int fieldCount;
 
-        protected RegexParser(String regex) {
+        public RegexParser(String regex) {
             recordPattern = Pattern.compile(regex);
             initializeByFieldCount(recordPattern.matcher("").groupCount());
         }
