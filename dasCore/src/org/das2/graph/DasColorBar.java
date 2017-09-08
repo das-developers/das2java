@@ -782,6 +782,8 @@ public class DasColorBar extends DasAxis {
                     return GSFC_RP_SPECIAL;
                 case "matlab_jet":
                     return MATLAB_JET;
+                case "matlab_jet_black0":
+                    return MATLAB_JET_BLACK0;
                 case "black_white":
                     return INVERSE_GRAYSCALE;
                 case "black_red":
