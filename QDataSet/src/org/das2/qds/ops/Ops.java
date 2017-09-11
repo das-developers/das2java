@@ -5028,6 +5028,20 @@ public class Ops {
         return imin( dataset(ds) );
     }
     
+    /**
+     * return the data at the indices given.  This will be a rank 1 QDataSet.
+     * Often the indices are created with the "where" function, for example:
+     * <code>
+     * QDataSet r= Ops.subset( ds, Ops.where( Ops.gt( ds, 1 ) ) )
+     * </code>
+     * will return the subset of ds where ds is greater than 1.
+     * @param ds rank N array, N &gt; 0.
+     * @param w rank 1 dataset of length l indexing a rank 1 array, or rank 2 ds[l,N] indexing a rank N array.
+     * @return rank 1 indeces.
+     */
+    public static QDataSet subset( QDataSet ds, QDataSet w ) {
+        return DataSetOps.applyIndex( ds, 0, w, true);
+    }
     
     /**
      * returns a dataset containing the indeces of where the dataset is non-zero.
@@ -9078,8 +9092,8 @@ public class Ops {
     public static QDataSet detrend( Object yy, int size ) {
         return detrend( dataset(yy), size );
     }
-    
- /**
+           
+    /**
      * Mean function that returns the average of the valid elements of a rank N dataset
      * @param ds rank N dataset
      * @return rank 0 dataset
