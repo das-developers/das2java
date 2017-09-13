@@ -899,9 +899,13 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
             if ( s.length()>0 ) {
                 if ( i<leditors.size() )  {
                     final FilterEditorPanel p = leditors.get(i);
-                    if ( p.validateFilter("|"+s,ds) ) {
-                        ds=null;
-                    } else {
+                    try {
+                        if ( p.validateFilter("|"+s,ds) ) {
+                            ds=null;
+                        } else {
+                            return false;
+                        }
+                    } catch ( RuntimeException ex ) {
                         return false;
                     }
                 }
