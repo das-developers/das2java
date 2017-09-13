@@ -1922,7 +1922,11 @@ public class SeriesRenderer extends Renderer {
             
             if (psymConnector != PsymConnector.NONE) {
                 try {
-                    psymConnectorElement.update(xAxis, yAxis, vds, monitor.getSubtaskMonitor("psymConnectorElement.update"));
+                    if ( vds!=null && vds.rank()==1 && dataSet.rank()==2 && SemanticOps.isBundle(dataSet) ) {
+                        psymConnectorElement.update(xAxis, yAxis, dataSet, monitor.getSubtaskMonitor("psymConnectorElement.update")); 
+                    } else {
+                        psymConnectorElement.update(xAxis, yAxis, vds, monitor.getSubtaskMonitor("psymConnectorElement.update"));
+                    }
                 } catch ( InconvertibleUnitsException ex ) {
                     return;
                 }
