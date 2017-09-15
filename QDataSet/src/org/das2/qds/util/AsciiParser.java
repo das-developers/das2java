@@ -935,6 +935,9 @@ public class AsciiParser {
                         }
                         firstRecord = line.length()>132 ? ( line.substring(0,132)+"..." ) : line;
                         builder.putProperty(PROPERTY_FIRST_RECORD, firstRecord);
+                        if ( line.length()>1 && ((int)line.charAt(0))==0xFEFF ) { //Excel UTF non-space
+                            line= line.substring(1);
+                        }
                     }
 
                     // *** here's where we parse each record ***
