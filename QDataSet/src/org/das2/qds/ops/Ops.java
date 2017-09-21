@@ -8986,13 +8986,32 @@ public class Ops {
     }
     
     /**
+     * smooth in both the first and second dimensions.  Presently, this just calls smooth and then smooth1.
+     * @param ds rank 2 data
+     * @param n0 the boxcar size in the first dimension
+     * @param n1 the boxcar size in the second dimension
+     * @return data with the same geometry
+     * @see #smooth(org.das2.qds.QDataSet, int) 
+     * @see #smooth1(org.das2.qds.QDataSet, int) 
+     */
+    public static QDataSet smooth2d( QDataSet ds, int n0, int n1 ) {
+        if ( ds.rank()!=2 ) throw new IllegalArgumentException("data must be rank 2");
+        ds= smooth(ds,n0);
+        ds= smooth1(ds,n1);
+        return ds;
+    }
+    
+    /**
      * run boxcar average over the dataset, returning a dataset of same geometry.  Points near the edge are simply copied from the
-     * source dataset.  The result dataset contains a property "weights" that is the weights for each point.  For rank 2 
-     * datasets, the smooth is done on the zeroth dimension, typically time.
+     * source dataset.  The result dataset contains a property "weights" that is the weights for each point.  
+     * 
+     * For rank 2 datasets, the smooth is done on the zeroth dimension, typically time.  Note IDL does the smooth 
+     * in both X and Y.  
      *
      * @param ds a rank 1 or rank 2 dataset of length N
      * @param size the number of adjacent bins to average
      * @return rank 1 or rank 2 dataset of length N
+     * @see #smooth2d(org.das2.qds.QDataSet, int, int) 
      */
     public static QDataSet smooth(QDataSet ds, int size) {
         switch (ds.rank()) {
