@@ -484,9 +484,32 @@ public class Schemes {
     }
     
     /**
+     * return a complex rank 2 dataset, which can be thought of as a 1-D array of complex numbers
+     * @return a complex rank 2 dataset
+     * @see #isComplexNumbers(org.das2.qds.QDataSet) 
+     */
+    public static QDataSet rank2ComplexNumbers() {
+        QDataSet w= rank2Waveform();
+        w= w.slice(0);
+        return Ops.fft(w);
+    }
+    
+    /**
+     * return true if the data represents an array of complex numbers.
+     * @param ds1 a dataset
+     * @return true if the data represents an array of complex numbers.
+     * @see Ops#checkComplexArgument(org.das2.qds.QDataSet) 
+     */
+    public static boolean isComplexNumbers( QDataSet ds1 ) {
+        QDataSet dep= (QDataSet) ds1.property("DEPEND_"+(ds1.rank()-1));
+        if ( dep==null ) return false;
+        return QDataSet.VALUE_COORDINATE_FRAME_COMPLEX_NUMBER.equals(dep.property(QDataSet.COORDINATE_FRAME));
+    }
+    
+    /**
      * return bundle with Time, Density, Speed, and Flux, to demonstrate
      * a bundle of datasets with differing rank.
-     * @return 
+     * @return bundle with Time, Density, Speed, and Flux
      */
     public static QDataSet complexBundleDataSet() {
         try {
