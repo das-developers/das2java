@@ -6825,13 +6825,7 @@ public class Ops {
     }
     
     private static QDataSet complexCoordinateSystem() {
-        EnumerationUnits u1 = EnumerationUnits.create("complexCoordinates");
-        DDataSet dep1 = DDataSet.createRank1(2);
-        dep1.putValue(0, u1.createDatum("real").doubleValue(u1));
-        dep1.putValue(1, u1.createDatum("imag").doubleValue(u1));
-        dep1.putProperty(QDataSet.COORDINATE_FRAME, QDataSet.VALUE_COORDINATE_FRAME_COMPLEX_NUMBER);
-        dep1.putProperty(QDataSet.UNITS, u1);
-        return dep1;
+        return Schemes.complexCoordinateSystemDepend();
     }
         
     /**     
