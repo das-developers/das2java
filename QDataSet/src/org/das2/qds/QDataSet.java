@@ -435,6 +435,11 @@ public interface QDataSet {
     public final static String VALUE_METADATA_MODEL_SPASE="SPASE";
 
     /**
+     * the value is a complex number, having two elements, the first is real second is imaginary.
+     */
+    public final static String VALUE_COORDINATE_FRAME_COMPLEX_NUMBER="ComplexNumber";
+    
+    /**
      * String, human consumable identifying data version.  Presently this 
      * is intended for human consumption, but eventually we may make them usable 
      * by software as well.  Note if multiple versions go into making a product 
