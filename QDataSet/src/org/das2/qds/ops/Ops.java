@@ -1971,6 +1971,7 @@ public class Ops {
      * equal to ComplexNumber.
      * @param ds1 a QDataSet possibly containing complex components.
      * @return true of the dataset is complex.
+     * @see Schemes#isComplexNumbers(org.das2.qds.QDataSet) 
      */
     private static boolean checkComplexArgument( QDataSet ds1 ) {
         QDataSet dep= (QDataSet) ds1.property("DEPEND_"+(ds1.rank()-1));
@@ -6831,7 +6832,29 @@ public class Ops {
         dep1.putProperty(QDataSet.UNITS, u1);
         return dep1;
     }
-            
+        
+    /**     
+     * create a complex dataset.
+     * @param realPart the real component.
+     * @param imaginaryPart the complex component.
+     * @return complex dataset
+     * @see org.das2.qds.examples.Schemes#complexRank2()
+     */
+    public static QDataSet complex( QDataSet realPart, QDataSet imaginaryPart ) {
+        if ( imaginaryPart==null ) {
+            ArrayDataSet im= DDataSet.createRank0();
+            im.putValue(0);
+            imaginaryPart= im;
+        }
+        QDataSet[] operands= new QDataSet[2];
+        CoerceUtil.coerce( realPart, imaginaryPart, false, operands );
+        realPart= operands[0];
+        imaginaryPart= operands[1];
+        QDataSet result= Ops.bundle( realPart, imaginaryPart );
+        MutablePropertyDataSet result1= Ops.putProperty( result, "DEPEND_"+(result.rank()-1), complexCoordinateSystem() );
+        DataSetUtil.copyDimensionProperties( realPart, result1 );
+        return result1;
+    }
     
     /**
      * scipy chirp function, used for testing.
