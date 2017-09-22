@@ -1967,6 +1967,18 @@ public class Ops {
     }
     
     /**
+     * return true if the argument is complex, having a DEPEND with COORDINATE_FRAME 
+     * equal to ComplexNumber.
+     * @param ds1 a QDataSet possibly containing complex components.
+     * @return true of the dataset is complex.
+     */
+    private static boolean checkComplexArgument( QDataSet ds1 ) {
+        QDataSet dep= (QDataSet) ds1.property("DEPEND_"+(ds1.rank()-1));
+        if ( dep==null ) return false;
+        return QDataSet.VALUE_COORDINATE_FRAME_COMPLEX_NUMBER.equals(dep.property(QDataSet.COORDINATE_FRAME));
+    }
+    
+    /**
      * element-wise multiply of two datasets with compatible geometry.
      * Presently, either ds1 or ds2 should be dimensionless.
      * TODO: units improvements.
@@ -1980,6 +1992,10 @@ public class Ops {
         Units units2= SemanticOps.getUnits(ds2);
         Units resultUnits= multiplyUnits( units1, units2 );
 
+        if ( checkComplexArgument(ds1) && checkComplexArgument(ds2) ) {
+            logger.warning("multiply used with two complex arguments, perhaps complexMultiply was intended");
+        }
+        
         MutablePropertyDataSet result= applyBinaryOp(ds1, ds2, new BinaryOp() {
             @Override
             public double op(double d1, double d2) {
@@ -6700,7 +6716,7 @@ public class Ops {
         DDataSet dep1 = DDataSet.createRank1(2);
         dep1.putValue(0, u1.createDatum("real").doubleValue(u1));
         dep1.putValue(1, u1.createDatum("imag").doubleValue(u1));
-        dep1.putProperty(QDataSet.COORDINATE_FRAME, "ComplexNumber");
+        dep1.putProperty(QDataSet.COORDINATE_FRAME, QDataSet.VALUE_COORDINATE_FRAME_COMPLEX_NUMBER);
         dep1.putProperty(QDataSet.UNITS, u1);
 
         result.putProperty(QDataSet.DEPEND_1, dep1);
@@ -6733,17 +6749,90 @@ public class Ops {
             result.putProperty(QDataSet.DEPEND_0, tags );
         }
 
-        EnumerationUnits u1 = EnumerationUnits.create("complexCoordinates");
-        DDataSet dep1 = DDataSet.createRank1(2);
-        dep1.putValue(0, u1.createDatum("real").doubleValue(u1));
-        dep1.putValue(1, u1.createDatum("imag").doubleValue(u1));
-        dep1.putProperty(QDataSet.COORDINATE_FRAME, "ComplexNumber");
-        dep1.putProperty(QDataSet.UNITS, u1);
+        QDataSet dep1 = complexCoordinateSystem();
         result.putProperty(QDataSet.DEPEND_1, dep1);
         
         return result;
     }
 
+    /**
+     * return the complex conjugate of the rank 1 or rank 2 QDataSet.
+     * @param ds ds[2] or ds[n,2]
+     * @return ds[2] or ds[n,2]
+     * @see #complexMultiply(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
+     */
+    public static final QDataSet complexConj( QDataSet ds ) {
+        QDataSet dep1= complexCoordinateSystem();
+        if ( ds.rank()==1 ) {
+            ArrayDataSet result= ArrayDataSet.copy(ds);
+            result.putValue( 1, -1*ds.value(1) );
+            result.putProperty( QDataSet.DEPEND_0, dep1 );
+            return result;
+        } else {
+            ArrayDataSet result= ArrayDataSet.copy(ds);
+            for ( int i=0; i<ds.length(); i++ ) {
+                result.putValue( i, 1, -1*ds.value( i, 1 ) );
+            }
+            result.putProperty( QDataSet.DEPEND_1, dep1 );
+            return result;
+        }
+    }
+    
+    /**
+     * perform complex multiplication, where the two datasets must have the same
+     * rank and must both end with a complex dimension.
+     * @param ds1 ds[2] or ds[n,2] or ds[n,m,2]
+     * @param ds2 ds[2] or ds[n,2] or ds[n,m,2]
+     * @return ds[2] or ds[n,2] or ds[n,m,2]
+     * @see #complexConj(org.das2.qds.QDataSet) 
+     */
+    public static final QDataSet complexMultiply( QDataSet ds1, QDataSet ds2 ) {
+        if ( ds1.rank()>3 ) throw new IllegalArgumentException("ds1 must be ds1[n,2]");
+        if ( ds1.rank()!=ds2.rank() ) throw new IllegalArgumentException("ds1 and ds2 must have the same rank");
+        QDataSet dep1= complexCoordinateSystem();
+        ArrayDataSet result= ArrayDataSet.copy(ds1);
+        switch (ds1.rank()) {
+            case 1: {
+                result.putValue( 0, ds1.value(0)*ds2.value(0) - ds1.value(1)*ds2.value(1) );
+                result.putValue( 1, ds1.value(0)*ds2.value(1) + ds1.value(1)*ds2.value(0) );
+                result.putProperty( QDataSet.DEPEND_0, dep1 );
+                break;
+            }
+            case 2: {
+                for ( int i=0; i<ds1.length(); i++ ) {
+                    result.putValue( i, 0, ds1.value(i,0)*ds2.value(i,0) - ds1.value(i,1)*ds2.value(i,1) );
+                    result.putValue( i, 1, ds1.value(i,0)*ds2.value(i,1) + ds1.value(i,1)*ds2.value(i,0) );
+                }
+                result.putProperty( QDataSet.DEPEND_1, dep1 );
+                break;
+            }
+            case 3: {
+                for ( int i=0; i<ds1.length(); i++ ) {
+                    for ( int j=0; j<ds1.length(i); j++ ) {
+                        result.putValue( i, j, 0, ds1.value(i,j,0)*ds2.value(i,j,0) - ds1.value(i,j,1)*ds2.value(i,j,1) );
+                        result.putValue( 1, j, 1, ds1.value(i,j,0)*ds2.value(i,j,1) + ds1.value(i,j,1)*ds2.value(i,j,0) );
+                    }
+                }
+                result.putProperty( QDataSet.DEPEND_2, dep1 );
+                break;
+            }
+            default:
+                throw new IllegalArgumentException("rank");
+        }
+        return result;        
+    }
+    
+    private static QDataSet complexCoordinateSystem() {
+        EnumerationUnits u1 = EnumerationUnits.create("complexCoordinates");
+        DDataSet dep1 = DDataSet.createRank1(2);
+        dep1.putValue(0, u1.createDatum("real").doubleValue(u1));
+        dep1.putValue(1, u1.createDatum("imag").doubleValue(u1));
+        dep1.putProperty(QDataSet.COORDINATE_FRAME, QDataSet.VALUE_COORDINATE_FRAME_COMPLEX_NUMBER);
+        dep1.putProperty(QDataSet.UNITS, u1);
+        return dep1;
+    }
+            
+    
     /**
      * scipy chirp function, used for testing.
      * @param t Times at which to evaluate the waveform.
