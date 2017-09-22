@@ -9,6 +9,7 @@
 package org.das2.qds;
 
 import java.lang.reflect.Array;
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -795,6 +796,7 @@ public class DataSetUtil {
      * 
      * @param ds any dataset.
      * @return a short, human-readable representation of the dataset.
+     * @see #format(org.das2.qds.QDataSet, boolean) 
      */
     public static String toString(QDataSet ds) {
 
@@ -843,6 +845,15 @@ public class DataSetUtil {
             } else {
                 return String.format( "%s %s (invalid because BINS_0=min,maxInclusive)", ds.slice(0), ds.slice(1) );
             }
+        }
+        
+        if ( ds.rank()==1 && Schemes.isComplexNumbers(ds) ) {
+            DecimalFormat df= new DecimalFormat("0.000E0");
+            String rs= String.valueOf(ds.value(0));
+            String is= String.valueOf(ds.value(1));
+            if ( rs.length()>7 ) rs= df.format(ds.value(0));
+            if ( is.length()>7 ) is= df.format(ds.value(1));
+            return "(" + rs + "+" + is+"j)"; // Use "j" instead of "i" because Python does this.
         }
 
         if ( ds.rank()==1 && Ops.isLegacyBundle(ds) && ds.length()<8 ) { // introduced to support where or rank 2 dataset.
@@ -2141,6 +2152,7 @@ public class DataSetUtil {
      * @param ds the dataset to represent
      * @param showContext show the context property (@slice2=1) if present and ds is rank0.
      * @return a human-readable string 
+     * @see #toString(org.das2.qds.QDataSet) 
      */
     public static String format(QDataSet ds,boolean showContext) {
         if ( ds.property(QDataSet.BUNDLE_0)!=null ) {
@@ -2185,7 +2197,14 @@ public class DataSetUtil {
                 result.append("SCALE_TYPE=").append(ds.property(QDataSet.SCALE_TYPE));
             }
             return result.toString();
-        }
+        } else if ( ds.rank()==1 && Schemes.isComplexNumbers(ds) ) {
+            DecimalFormat df= new DecimalFormat("0.000E0");
+            String rs= String.valueOf(ds.value(0));
+            String is= String.valueOf(ds.value(1));
+            if ( rs.length()>7 ) rs= df.format(ds.value(0));
+            if ( is.length()>7 ) is= df.format(ds.value(1));
+            return "(" + rs + "+" + is+"j)"; // Use "j" instead of "i" because Python does this.
+        }        
         if ( ds.rank()==0 ) {
             String name= (String) ds.property(QDataSet.NAME);
             Units u= (Units) ds.property(QDataSet.UNITS);
