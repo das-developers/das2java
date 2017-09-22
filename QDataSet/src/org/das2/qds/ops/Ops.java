@@ -208,6 +208,12 @@ public class Ops {
 
         QDataSet[] operands= new QDataSet[2];
 
+        if ( checkComplexArgument(ds1) || checkComplexArgument(ds2) ) {
+            if ( ds1.rank()!=ds2.rank() ) {
+                throw new IllegalArgumentException("complex numbers argument requires that rank must be equal.");
+            }
+        }
+        
         WritableDataSet result = CoerceUtil.coerce( ds1, ds2, true, operands );
 
         QubeDataSetIterator it1 = new QubeDataSetIterator( operands[0] );
