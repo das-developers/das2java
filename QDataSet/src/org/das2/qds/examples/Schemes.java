@@ -494,16 +494,60 @@ public class Schemes {
         return Ops.fft(w);
     }
     
+    private static final QDataSet COMPLEX_COORDINATE_SYSTEM_DEPEND;
+    static {
+        EnumerationUnits u1 = EnumerationUnits.create("complexCoordinates");
+        DDataSet dep1 = DDataSet.createRank1(2);
+        dep1.putValue(0, u1.createDatum("real").doubleValue(u1));
+        dep1.putValue(1, u1.createDatum("imag").doubleValue(u1));
+        dep1.putProperty(QDataSet.COORDINATE_FRAME, QDataSet.VALUE_COORDINATE_FRAME_COMPLEX_NUMBER);
+        dep1.putProperty(QDataSet.UNITS, u1);
+        COMPLEX_COORDINATE_SYSTEM_DEPEND= dep1;
+    }
+    
     /**
-     * return true if the data represents an array of complex numbers.
+     * returns the QDataSet used to identify the columns of a complex coordinate frame.
+     * @return the QDataSet used to identify the columns of a complex coordinate frame.
+     */
+    public static QDataSet complexCoordinateSystemDepend() {
+        return COMPLEX_COORDINATE_SYSTEM_DEPEND;
+    }
+    
+    /**
+     * return true if the data is length 2, rank 1, and has "ComplexNumber" as the COORDINATE_FRAME. 
+     * @param dep
+     * @return 
+     */
+    public static boolean isComplexCoordinateSystemDepend( QDataSet dep ) {
+        return dep.length()==2 && QDataSet.VALUE_COORDINATE_FRAME_COMPLEX_NUMBER.equals(dep.property(QDataSet.COORDINATE_FRAME));
+    }
+    
+    /**
+     * return true if the data represents an array of complex numbers, containing the property COORDINATE_FRAME
+     * on the last DEPEND, which is equal to "ComplexNumber"
      * @param ds1 a dataset
      * @return true if the data represents an array of complex numbers.
      * @see Ops#checkComplexArgument(org.das2.qds.QDataSet) 
      */
     public static boolean isComplexNumbers( QDataSet ds1 ) {
-        QDataSet dep= (QDataSet) ds1.property("DEPEND_"+(ds1.rank()-1));
+        int r= ds1.rank();
+        QDataSet dep;
+        switch (r) {
+            case 0:
+                return false;
+            case 1:
+                if ( ds1.length()!=2 ) return false;
+                dep= (QDataSet) ds1.property(QDataSet.DEPEND_0);
+                break;
+            case 2:
+                if ( ds1.length(0)!=2 ) return false;
+                dep= (QDataSet) ds1.property(QDataSet.DEPEND_1);
+                break;
+            default:
+                return false;
+        }
         if ( dep==null ) return false;
-        return QDataSet.VALUE_COORDINATE_FRAME_COMPLEX_NUMBER.equals(dep.property(QDataSet.COORDINATE_FRAME));
+        return isComplexCoordinateSystemDepend(dep);
     }
     
     /**
