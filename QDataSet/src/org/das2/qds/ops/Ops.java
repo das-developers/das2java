@@ -6719,12 +6719,7 @@ public class Ops {
         double[] tags = FFTUtil.getFrequencyDomainTags(1./cadence.value(), ds.length());
         result.putProperty(QDataSet.DEPEND_0, DDataSet.wrap(tags));
 
-        EnumerationUnits u1 = EnumerationUnits.create("complexCoordinates");
-        DDataSet dep1 = DDataSet.createRank1(2);
-        dep1.putValue(0, u1.createDatum("real").doubleValue(u1));
-        dep1.putValue(1, u1.createDatum("imag").doubleValue(u1));
-        dep1.putProperty(QDataSet.COORDINATE_FRAME, QDataSet.VALUE_COORDINATE_FRAME_COMPLEX_NUMBER);
-        dep1.putProperty(QDataSet.UNITS, u1);
+        QDataSet dep1 = complexCoordinateSystem();
 
         result.putProperty(QDataSet.DEPEND_1, dep1);
         return result;
@@ -6844,9 +6839,9 @@ public class Ops {
      * @param realPart the real component.
      * @param imaginaryPart the complex component.
      * @return complex dataset
-     * @see org.das2.qds.examples.Schemes#complexRank2()
+     * @see org.das2.qds.examples.Schemes#rank2ComplexNumbers() 
      */
-    public static QDataSet complex( QDataSet realPart, QDataSet imaginaryPart ) {
+    public static QDataSet complexDataset( QDataSet realPart, QDataSet imaginaryPart ) {
         if ( imaginaryPart==null ) {
             ArrayDataSet im= DDataSet.createRank0();
             im.putValue(0);
