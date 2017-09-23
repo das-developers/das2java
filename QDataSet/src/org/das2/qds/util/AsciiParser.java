@@ -331,8 +331,11 @@ public class AsciiParser {
             line = reader.readLine();
             int iline = 0;
 
+            if ( line==null ) {
+                throw new IllegalArgumentException("File is empty: "+filename);
+            }
             if ( line.length()>1 ) {
-                if ( line.charAt(0)==0 ) throw new IllegalArgumentException("ASCII file cannot start with 0");
+                if ( line.charAt(0)==0 ) throw new IllegalArgumentException("ASCII file cannot start with 0: "+filename);
             }
             
             headerBuffer= new StringBuffer();
