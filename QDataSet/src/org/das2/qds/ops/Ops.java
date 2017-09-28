@@ -6716,9 +6716,12 @@ public class Ops {
     }
     /**
      * Performs an FFT on the provided rank 1 dataset.  A rank 2 dataset of 
-     * complex numbers is returned.
+     * complex numbers is returned.  The data must not contain fill and
+     * must be uniformly spaced.  DEPEND_0 is used to identify frequencies
+     * if available.
      * @param ds a rank 1 dataset.
      * @return a rank 2 dataset of complex numbers.
+     * @see Schemes#rank2ComplexNumbers() 
      */
     public static QDataSet fft(QDataSet ds) {
         GeneralFFT fft = GeneralFFT.newDoubleFFT(ds.length());
@@ -6730,11 +6733,10 @@ public class Ops {
         }
 
         QDataSet dep0 = (QDataSet) ds.property(QDataSet.DEPEND_0);
-        RankZeroDataSet cadence = dep0 == null ? DRank0DataSet.create(1.0) : DataSetUtil.guessCadenceNew(dep0,null);
-        if ( cadence==null ) throw new IllegalArgumentException("can't establish data cadence");
+        if ( dep0==null ) dep0= Ops.findgen(ds.length());
 
-        double[] tags = FFTUtil.getFrequencyDomainTags(1./cadence.value(), ds.length());
-        result.putProperty(QDataSet.DEPEND_0, DDataSet.wrap(tags));
+        QDataSet tags = FFTUtil.getFrequencyDomainTags(dep0);
+        result.putProperty(QDataSet.DEPEND_0, tags );
 
         QDataSet dep1 = complexCoordinateSystem();
 
