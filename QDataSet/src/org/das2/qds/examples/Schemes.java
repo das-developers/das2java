@@ -484,8 +484,8 @@ public class Schemes {
     }
     
     /**
-     * return a complex rank 2 dataset, which can be thought of as a 1-D array of complex numbers
-     * @return a complex rank 2 dataset
+     * return a complex rank 2 dataset, N by 2, which can be thought of as a 1-D array of N complex numbers
+     * @return a complex rank 2 dataset ds[N,2]
      * @see #isComplexNumbers(org.das2.qds.QDataSet) 
      */
     public static QDataSet rank2ComplexNumbers() {
