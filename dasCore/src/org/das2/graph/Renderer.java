@@ -464,6 +464,9 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
 
     /**
      * convenient and official location for method that parses control string.
+     * This will split on ampersand, and when no ampersands are found then it will
+     * try semicolons.  This is to support embedding the control string in 
+     * other control strings (like Autoplot URIs) which use ampersands.
      * @param c the control string or null.
      * @return the control string, parsed.
      */
@@ -478,6 +481,9 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
         }
         if ( c.trim().length()==0 ) return result;
         String[] ss= c.split(ampstr);
+        if ( ss.length==1 ) {
+            ss= c.split(";");
+        }
         for ( int i=0; i<ss.length; i++ ) {
             if ( ss[i].trim().length()==0 ) continue;
             String[] ss2= ss[i].split("=",2);
