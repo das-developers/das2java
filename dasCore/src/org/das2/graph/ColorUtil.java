@@ -7,7 +7,9 @@ package org.das2.graph;
 import java.awt.Color;
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * single place to contain Color-Name mapping.  See https://sourceforge.net/p/autoplot/feature-requests/263/
@@ -20,7 +22,7 @@ public class ColorUtil {
     
     static { 
         // see /home/jbf/ct/autoplot/rfe/263/convertColorNames.jy 
-        namedColors= new HashMap<>();
+        namedColors= new LinkedHashMap<>();
         namedColors.put(Color.BLACK, "black" );
         namedColors.put(Color.BLUE, "blue" );                      // dark blue
         namedColors.put(Color.RED, "red" );
@@ -179,7 +181,7 @@ public class ColorUtil {
         namedColors.put(Color.decode("#D55E00"),"mms2Red");
         namedColors.put(Color.decode("#009E73"),"mms3Green");
         namedColors.put(Color.decode("#56B4E9"),"mms4Blue");
-        revNamedColors= new HashMap<>();
+        revNamedColors= new LinkedHashMap<>();
         revNamedColors.put("black",Color.BLACK  );
         revNamedColors.put("blue", Color.BLUE );                      // dark blue
         revNamedColors.put("red", Color.RED );
@@ -338,6 +340,18 @@ public class ColorUtil {
         revNamedColors.put("mms2red",Color.decode("#D55E00"));
         revNamedColors.put("mms3green",Color.decode("#009E73"));
         revNamedColors.put("mms4blue",Color.decode("#56B4E9"));
+    }
+    
+    /**
+     * return a map of the named colors.
+     * @return a map of the named colors.
+     */
+    public static Map<String,Color> getNamedColors() {
+        LinkedHashMap<String,Color> result= new LinkedHashMap<>();
+        for ( Entry<Color,String> e: namedColors.entrySet() ) {
+            result.put( e.getValue(), e.getKey() );
+        }
+        return result;
     }
     
     /**
