@@ -345,7 +345,11 @@ public class ColorUtil {
         if ( s!=null ) {
             return s;
         } else {
-            return "#" + Integer.toHexString(color.getRGB() & 0xFFFFFF);
+            if ( color.getAlpha()<255 ) {
+                return "#" + Integer.toHexString(color.getRGB());
+            } else {
+                return "#" + Integer.toHexString(color.getRGB() & 0xFFFFFF);
+            }
         }
     }
     
@@ -362,7 +366,13 @@ public class ColorUtil {
         if ( r!=null ) {
             return r;
         } else {
-            return Color.decode(s);
+            Integer i= Integer.decode(s);
+            if ( ( i & 0xFF000000 ) > 0 ) { 
+                r= new Color( i, true);
+            } else {
+                r= new Color( i );
+            }            
+            return r;
         }
     }
     
