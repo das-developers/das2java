@@ -16,6 +16,7 @@ import javax.swing.JList;
 import javax.swing.JScrollPane;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListModel;
+import javax.swing.ListSelectionModel;
 import javax.swing.colorchooser.AbstractColorChooserPanel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -35,7 +36,7 @@ public class NamedColorChooserPanel extends AbstractColorChooserPanel {
 
     @Override
     protected void buildChooser() {
-        JList l= new JList();
+        final JList l= new JList();
         final Map<String,Color> colors= ColorUtil.getNamedColors();
         final DefaultListModel m= new DefaultListModel( );
         for ( String s: colors.keySet() ) {
@@ -43,19 +44,30 @@ public class NamedColorChooserPanel extends AbstractColorChooserPanel {
         }
         l.setModel(m);
         ListCellRenderer r= new ListCellRenderer() {
+            JLabel label= new JLabel();
             @Override
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                JLabel lss= new JLabel(value.toString());
+                label.setText(String.valueOf(value));
                 Color cc=  colors.get((String)value);
-                lss.setIcon( DesktopColorChooserPanel.colorIcon( cc, 24, 16 ) );
-                return lss;
+                label.setIcon( DesktopColorChooserPanel.colorIcon( cc, 24, 16 ) );
+                if( isSelected ) {
+                    label.setBackground( list.getSelectionBackground() );
+                    label.setForeground( list.getSelectionForeground() );
+                    label.setOpaque(true);
+                } else {
+                    label.setBackground( list.getBackground() );
+                    label.setForeground( list.getForeground() );
+                    label.setOpaque(false);
+                }
+                return label;
             }
         };
         l.setCellRenderer(r);
+        l.setSelectionMode( ListSelectionModel.SINGLE_SELECTION );
         l.addListSelectionListener( new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
-                String colorName= (String)m.getElementAt(e.getFirstIndex());
+                String colorName= String.valueOf( l.getSelectedValue() );
                 getColorSelectionModel().setSelectedColor(colors.get(colorName));
             }
         });
