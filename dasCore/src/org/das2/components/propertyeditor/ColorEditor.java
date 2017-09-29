@@ -118,6 +118,7 @@ public class ColorEditor extends AbstractCellEditor implements java.beans.Proper
                 }
             } );
             custom.setColor( (Color)getValue() );
+            custom.addChooserPanel(new NamedColorChooserPanel()); 
             custom.addChooserPanel(new DesktopColorChooserPanel()); 
     }
 
