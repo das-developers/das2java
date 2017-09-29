@@ -175,7 +175,10 @@ public class ColorUtil {
         namedColors.put(Color.decode("#A9A9A9"),"DarkGray");
         namedColors.put(Color.decode("#808080"),"Gray");
         namedColors.put(Color.decode("#696969"),"DimGray");
-        namedColors.put(Color.decode("#000000"),"Black");        
+        namedColors.put(Color.decode("#000000"),"Black");      
+        namedColors.put(Color.decode("#D55E00"),"mms2Red");
+        namedColors.put(Color.decode("#009E73"),"mms3Green");
+        namedColors.put(Color.decode("#56B4E9"),"mms4Blue");
         revNamedColors= new HashMap<>();
         revNamedColors.put("black",Color.BLACK  );
         revNamedColors.put("blue", Color.BLUE );                      // dark blue
@@ -332,6 +335,9 @@ public class ColorUtil {
         revNamedColors.put("gray",Color.decode("#808080"));
         revNamedColors.put("dimgray",Color.decode("#696969"));
         revNamedColors.put("black",Color.decode("#000000"));
+        revNamedColors.put("mms2red",Color.decode("#D55E00"));
+        revNamedColors.put("mms3green",Color.decode("#009E73"));
+        revNamedColors.put("mms4blue",Color.decode("#56B4E9"));
     }
     
     /**
