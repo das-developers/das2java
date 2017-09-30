@@ -355,6 +355,24 @@ public class ColorUtil {
     }
     
     /**
+     * return the preferred name for the color
+     * @param color
+     * @return the preferred name (or #RGB) for the color
+     */
+    public static String nameForColor( Color color ) {
+        String n= namedColors.get(color);
+        if ( n!=null ) {
+            return n;
+        } else {
+            if ( color.getAlpha()<255 ) {
+                return "#" + Integer.toHexString(color.getRGB());
+            } else {
+                return "#" + Integer.toHexString(color.getRGB() & 0xFFFFFF);
+            }
+        }
+    }
+        
+    /**
      * return either a named color or 
      * "#" + Integer.toHexString( color.getRGB() &amp; 0xFFFFFF)
      * @param color
