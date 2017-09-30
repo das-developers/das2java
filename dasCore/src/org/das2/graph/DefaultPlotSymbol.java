@@ -108,7 +108,7 @@ public class DefaultPlotSymbol implements Enumeration, Displayable, PlotSymbol, 
         TRIANGLES = new DefaultPlotSymbol(triangle, "triangles");
     }
     
-    public static final DefaultPlotSymbol TRIANGLES_UP;
+    public static final DefaultPlotSymbol TRIANGLES_NORTH;
     static {
         GeneralPath triangle = new GeneralPath();
         float size = 0.7f;
@@ -116,10 +116,10 @@ public class DefaultPlotSymbol implements Enumeration, Displayable, PlotSymbol, 
         triangle.lineTo(size, size);
         triangle.lineTo(-size, size);
         triangle.lineTo(0f, -size);
-        TRIANGLES_UP = new DefaultPlotSymbol(triangle, "trianglesUp");
+        TRIANGLES_NORTH = new DefaultPlotSymbol(triangle, "trianglesNorth");
     }    
 
-    public static final DefaultPlotSymbol TRIANGLES_DOWN;
+    public static final DefaultPlotSymbol TRIANGLES_SOUTH;
     static {
         GeneralPath triangle = new GeneralPath();
         float size = 0.7f;
@@ -128,10 +128,10 @@ public class DefaultPlotSymbol implements Enumeration, Displayable, PlotSymbol, 
         triangle.lineTo(-size, size);
         triangle.lineTo(0f, -size);
         triangle.transform( AffineTransform.getRotateInstance(Math.PI) );
-        TRIANGLES_DOWN = new DefaultPlotSymbol(triangle, "trianglesDown");
+        TRIANGLES_SOUTH = new DefaultPlotSymbol(triangle, "trianglesSouth");
     }
     
-    public static final DefaultPlotSymbol TRIANGLES_LEFT;
+    public static final DefaultPlotSymbol TRIANGLES_WEST;
     static {
         GeneralPath triangle = new GeneralPath();
         float size = 0.7f;
@@ -140,10 +140,10 @@ public class DefaultPlotSymbol implements Enumeration, Displayable, PlotSymbol, 
         triangle.lineTo(-size, size);
         triangle.lineTo(0f, -size);
         triangle.transform( AffineTransform.getRotateInstance(-Math.PI/2) );
-        TRIANGLES_LEFT = new DefaultPlotSymbol(triangle, "trianglesLeft");
+        TRIANGLES_WEST = new DefaultPlotSymbol(triangle, "trianglesWest");
     }
 
-    public static final DefaultPlotSymbol TRIANGLES_RIGHT;
+    public static final DefaultPlotSymbol TRIANGLES_EAST;
     static {
         GeneralPath triangle = new GeneralPath();
         float size = 0.7f;
@@ -152,7 +152,7 @@ public class DefaultPlotSymbol implements Enumeration, Displayable, PlotSymbol, 
         triangle.lineTo(-size, size);
         triangle.lineTo(0f, -size);
         triangle.transform( AffineTransform.getRotateInstance(Math.PI/2) );
-        TRIANGLES_RIGHT = new DefaultPlotSymbol(triangle, "trianglesRight");
+        TRIANGLES_EAST = new DefaultPlotSymbol(triangle, "trianglesEast");
     }
     
     public static final DefaultPlotSymbol CROSS;
