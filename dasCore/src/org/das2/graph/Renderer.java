@@ -694,14 +694,14 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
                 return DefaultPlotSymbol.DIAMOND;
             case "BOX":
                 return DefaultPlotSymbol.BOX;
-            case "TRIANGLESRIGHT":
-                return DefaultPlotSymbol.TRIANGLES_RIGHT;
-            case "TRIANGLESUP":
-                return DefaultPlotSymbol.TRIANGLES_UP;
-            case "TRIANGLESLEFT":
-                return DefaultPlotSymbol.TRIANGLES_LEFT;
-            case "TRIANGLESDOWN":
-                return DefaultPlotSymbol.TRIANGLES_DOWN;
+            case "TRIANGLESEAST":
+                return DefaultPlotSymbol.TRIANGLES_EAST;
+            case "TRIANGLESNORTH":
+                return DefaultPlotSymbol.TRIANGLES_NORTH;
+            case "TRIANGLESWEST":
+                return DefaultPlotSymbol.TRIANGLES_WEST;
+            case "TRIANGLESSOUTH":
+                return DefaultPlotSymbol.TRIANGLES_SOUTH;
             default:
                 logger.log(Level.FINE, "unable to parse symbol: {0}", deflt);
                 return deflt;
