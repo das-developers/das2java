@@ -375,14 +375,33 @@ public class ColorUtil {
     
     /**
      * decode the color, throwing a RuntimeException when the color 
-     * is not parsable. Valid entries include:
-     *   "red" "RED" "0xFF0000" "0xff0000"
+     * is not parsable. Valid entries include:<ul>
+     * <li>"red" 
+     * <li>"RED" 
+     * <li>"0xFF0000" 
+     * <li>"0xff0000" 
+     * <li>"#ffeedd"
+     * </ul>
+     * This also allows a color name to follow the RGB like so:<ul>
+     * <li>"0xFFFF00 (Purple)"
+     * </ul>
+     * to improve legibility of .vap files.
      * @param s
      * @return 
      */
     public static Color decodeColor( String s ) throws NullPointerException {
-        s= s.toLowerCase();
+        s= s.toLowerCase().trim();
+        if ( s.endsWith(")") ) {
+            int i= s.indexOf("(");
+            if ( i>-1 ) {
+                s= s.substring(0,i).trim();
+            }
+        }
         Color r= revNamedColors.get(s);
+        
+        if ( r==null ) {
+            
+        }
         if ( r!=null ) {
             return r;
         } else {
