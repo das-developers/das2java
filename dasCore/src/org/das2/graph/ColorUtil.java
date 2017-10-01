@@ -424,7 +424,7 @@ public class ColorUtil {
             return r;
         } else {
             Integer i= Integer.decode(s);
-            if ( ( i & 0xFF000000 ) > 0 ) { 
+            if ( ( i & 0xFF000000 ) != 0 ) { 
                 r= new Color( i, true);
             } else {
                 r= new Color( i );
