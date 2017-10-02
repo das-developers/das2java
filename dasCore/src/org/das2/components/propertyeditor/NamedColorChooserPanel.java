@@ -29,14 +29,23 @@ import org.das2.util.DesktopColorChooserPanel;
  */
 public class NamedColorChooserPanel extends AbstractColorChooserPanel {
 
+    JList l;
+    
     @Override
     public void updateChooser() {
-        
+        Color c= getColorFromModel();
+        String s= ColorUtil.nameForColor(c);
+        if ( !s.startsWith("#") ) {
+            l.setSelectedValue( s, true );
+        } else {
+            l.clearSelection();
+            l.repaint();
+        }
     }
 
     @Override
     protected void buildChooser() {
-        final JList l= new JList();
+        l= new JList();
         final Map<String,Color> colors= ColorUtil.getNamedColors();
         final DefaultListModel m= new DefaultListModel( );
         for ( String s: colors.keySet() ) {
