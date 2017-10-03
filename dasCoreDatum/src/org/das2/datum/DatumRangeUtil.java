@@ -1165,6 +1165,9 @@ public class DatumRangeUtil {
                             while( idx<7 && ts1[idx]!=-1 ) idx++;
                             if ( idx==7 ) throw new ParseException( "can't resolve token in \""+stringIn+"\": "+beforeToUnresolved.get(i)+ " ("+format+")", 0 );
                             ts1[idx]= parseInt((String)beforeToUnresolved.get(i));
+                            if ( idx==0 && ts[idx]<1000 ) {
+                                throw new ParseException("Years must be four digit years: "+(String)beforeToUnresolved.get(i),0);
+                            }
                             String[] s= format.split("UNRSV1"+(i+1));
                             format= s[0]+formatCodes[idx]+s[1];
                         }
