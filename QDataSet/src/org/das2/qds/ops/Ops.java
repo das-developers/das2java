@@ -433,6 +433,14 @@ public class Ops {
             result.putProperty( QDataSet.UNITS, units1 );
         } else if ( UnitsUtil.isIntervalMeasurement(units2) && !UnitsUtil.isIntervalMeasurement(units1)) {
             throw new IllegalArgumentException("cannot subtract interval measurement from ratio measurement: " + units1 + " - "+ units2 );
+        } else if ( UnitsUtil.isIntervalOrRatioMeasurement(units1) && units2.isConvertibleTo(Units.dimensionless) ) {
+            result= (MutablePropertyDataSet) applyBinaryOp(ds1, ds2, new BinaryOp() {
+                @Override
+                public double op(double d1, double d2) {
+                    return d1 - d2;
+                }
+            } );
+            result.putProperty( QDataSet.UNITS, units1 );
         } else {
             throw new IllegalArgumentException("cannot subtract: " + units1 + " - "+ units2 );
         }
