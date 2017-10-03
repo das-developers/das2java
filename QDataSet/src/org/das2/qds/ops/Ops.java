@@ -89,6 +89,7 @@ import org.das2.qds.util.FFTUtil;
 import org.das2.qds.util.LSpec;
 import org.das2.qds.util.LinFit;
 import org.das2.qds.math.Contour;
+import org.das2.util.ColorUtil;
 
 /**
  * A fairly complete set of operations for QDataSets, including binary operations
@@ -10223,7 +10224,7 @@ public class Ops {
                     throw new IllegalArgumentException("color identified in string should be name like 'red' or r,g,b triple like '255,0,0'");
                 }
             } else {
-                c = Color.decode(sval);
+                c= ColorUtil.decodeColor(sval);
             }
         } catch (NumberFormatException ex) {
             c = (Color) ClassMap.getEnumElement(Color.class, sval);
