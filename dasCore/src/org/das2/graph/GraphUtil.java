@@ -812,7 +812,7 @@ public class GraphUtil {
      * @return translucent white color 
      */
     public static Color getRicePaperColor() {
-        return new Color(255, 255, 255, 128);
+        return ColorUtil.getRicePaperColor();
     }
 
     /**

@@ -1,12 +1,7 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package org.das2.graph;
 
 import java.awt.Color;
-import java.io.InputStream;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -438,6 +433,6 @@ public class ColorUtil {
      * @return 
      */
     public static Color getRicePaperColor() {
-        return GraphUtil.getRicePaperColor();
+        return new Color(255, 255, 255, 128);
     }
 }
