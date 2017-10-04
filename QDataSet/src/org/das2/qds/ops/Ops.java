@@ -449,7 +449,6 @@ public class Ops {
                 }
             } );
             result.putProperty( QDataSet.UNITS, units1 );
-            throw new IllegalArgumentException("cannot subtract: " + units1 + " - "+ units2 );
         } else {
             throw new IllegalArgumentException("cannot subtract: " + units1 + " - "+ units2 );
         }
