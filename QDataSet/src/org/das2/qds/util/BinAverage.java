@@ -19,6 +19,7 @@ import org.das2.qds.IDataSet;
 import org.das2.qds.SemanticOps;
 import org.das2.qds.WeightsDataSet;
 import org.das2.qds.ops.Ops;
+import static org.das2.qds.util.BinAverage.rebin;
 
 /**
  *
@@ -337,7 +338,7 @@ public class BinAverage {
 
         return result;
     }
-
+    
     /**
      * returns number of stddev from adjacent data.
      * @param ds, rank 1 dataset.
@@ -463,8 +464,10 @@ public class BinAverage {
     /**
      * reduce the rank 1 dataset by averaging blocks of bins together
      * @param ds rank 1 dataset with N points
-     * @param n0 number of bins in the result.  Note this changed in v2013a_6 from earlier versions of this routine.
+     * @param n0 number of bins in the result.
      * @return rank 1 dataset with n0 points.  Weights plane added.
+     * @see #rebin(org.das2.qds.QDataSet, int, int) 
+     * @see #rebin(org.das2.qds.QDataSet, int, int, int) 
      */
     public static QDataSet rebin(QDataSet ds, int n0 ) {
 
@@ -556,8 +559,86 @@ public class BinAverage {
 
         QDataSet dep1 = (QDataSet) ds.property(QDataSet.DEPEND_1);
         if (dep1 != null) {
+            if ( dep1.rank()!=1 ) throw new IllegalArgumentException("dep1 must be rank 1");
             result.putProperty(QDataSet.DEPEND_1, rebin(dep1, n1));
         }
+        DataSetUtil.copyDimensionProperties( ds, result );
+        
+        return result;
+    }
+
+    /**
+     * reduce the rank 3 dataset by averaging blocks of bins together.  depend
+     * datasets reduced as well.
+     * @param ds rank 3 dataset 
+     * @param n0 the number of bins in the result.
+     * @param n1 the number of bins in the result.
+     * @param n2 the number of bins in the result.
+     * @return rank 3 dataset ds[n0,n1,n2]
+     * @see #rebin(org.das2.qds.QDataSet, org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
+     * @see #rebin(org.das2.qds.QDataSet, int) 
+     */
+    public static QDataSet rebin(QDataSet ds, int n0, int n1, int n2) {
+        DDataSet result = DDataSet.createRank3( n0, n1, n2);
+        DDataSet weights = DDataSet.createRank3( n0, n1, n2);
+
+        QDataSet wds = DataSetUtil.weightsDataSet(ds);
+
+        double fill = ((Number) wds.property( WeightsDataSet.PROP_SUGGEST_FILL )).doubleValue();
+
+        int binSize0= ds.length() / n0;
+        int binSize1= ds.length(0) / n1;
+        int binSize2= ds.length(0,0) / n2;
+        
+        if ( binSize0==0 ) throw new IllegalArgumentException("rebin can only be used to reduce data");
+        if ( binSize1==0 ) throw new IllegalArgumentException("rebin can only be used to reduce data");
+        if ( binSize2==0 ) throw new IllegalArgumentException("rebin can only be used to reduce data");
+        
+        for (int i0 = 0; i0 < n0; i0++) {
+            for (int i1 = 0; i1 < n1; i1++) {
+                for (int i2 = 0; i2 < n2; i2++) {
+                    int j0 = i0 * binSize0;
+                    int j1 = i1 * binSize1;
+                    int j2 = i2 * binSize2;
+                    double s = 0, w = 0;
+
+                    for (int k0 = 0; k0 < binSize0; k0++) {
+                        for (int k1 = 0; k1 < binSize1; k1++) {
+                            for (int k2 = 0; k2 < binSize2; k2++) {
+                                double w1 = wds.value(j0 + k0, j1 + k1, j2 + k2 );
+                                if ( w1>0 ) {
+                                    w += w1;
+                                    s += w1 * ds.value(j0 + k0, j1 + k1, j2 + k2 );
+                                }
+                            }
+                        }
+                    }
+                    weights.putValue(i0, i1, i2, w);
+                    result.putValue(i0, i1, i2, w == 0 ? fill : s / w);
+                }
+            }
+        }
+
+        result.putProperty(QDataSet.WEIGHTS, weights);
+        result.putProperty(QDataSet.FILL_VALUE, fill);
+
+        QDataSet dep0 = (QDataSet) ds.property(QDataSet.DEPEND_0);
+        if (dep0 != null) {
+            result.putProperty(QDataSet.DEPEND_0, rebin(dep0, n0));
+        }
+
+        QDataSet dep1 = (QDataSet) ds.property(QDataSet.DEPEND_1);
+        if (dep1 != null) {
+            if ( dep1.rank()!=1 ) throw new IllegalArgumentException("dep1 must be rank 1");
+            result.putProperty(QDataSet.DEPEND_1, rebin(dep1, n1));
+        }
+        
+        QDataSet dep2 = (QDataSet) ds.property(QDataSet.DEPEND_2);
+        if (dep2 != null) {
+            if ( dep2.rank()!=1 ) throw new IllegalArgumentException("dep2 must be rank 1");
+            result.putProperty(QDataSet.DEPEND_2, rebin(dep2, n2));
+        }
+        
         DataSetUtil.copyDimensionProperties( ds, result );
         
         return result;
