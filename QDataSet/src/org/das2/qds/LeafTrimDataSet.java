@@ -177,6 +177,23 @@ public class LeafTrimDataSet extends AbstractDataSet {
             return ds.trim( this.start+start, this.start+end );
         } else {
             LeafTrimDataSet result= new  LeafTrimDataSet( ds.trim(start, end), this.start, this.end );
+            for ( int i=1; i<this.rank(); i++ ) {
+                String pname= "DEPEND_"+i;
+                QDataSet dds= (QDataSet)this.property(pname);
+                if ( dds!=null ) {
+                    result.putProperty( pname, dds );
+                }
+                pname= "BUNDLE_"+i;
+                dds= (QDataSet)this.property(pname);
+                if ( dds!=null ) {
+                    result.putProperty( pname, dds );
+                }       
+                pname= "BINS_"+i;
+                String s= (String)this.property(pname);
+                if ( s!=null ) {
+                    result.putProperty( pname, s );
+                }
+            }
             DataSetUtil.copyDimensionProperties( this, result );
             return result;
         }
