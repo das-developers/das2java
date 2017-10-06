@@ -250,6 +250,10 @@ public class AsciiParser {
             
             DataSetBuilder builder = new DataSetBuilder(2, 100, recordParser.fieldCount() );
             
+            // check for iso8601 times in the first two columns.
+            if ( UnitsUtil.isTimeLocation(this.units[0]) ) this.fieldParsers[0]= UNITS_PARSER;
+            if ( UnitsUtil.isTimeLocation(this.units[1]) ) this.fieldParsers[1]= UNITS_PARSER;
+                
             while (line != null && iline<HEADER_LENGTH_LIMIT && this.recordParser.tryParseRecord(line, 0, builder) == false) {
                 line = reader.readLine();
                 iline++;
