@@ -1471,12 +1471,16 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                         dp1= (DataPoint)dataPoints.get(~index+1);
                     }
                     
-                    Datum epsilon= Units.microseconds.createDatum(1000);
-                    if ( dp0!=null ) { // if we can check for numerical resolution, use this.
-                        double eps= newPoint.data[0].doubleValue(newPoint.data[0].getUnits());
-                        eps= eps * 0.00000000001;// something like numerical noise * 10.
-                        epsilon= newPoint.data[0].getUnits().getOffsetUnits().createDatum(eps);
-                    }
+                    Datum epsilon= Units.microseconds.createDatum(100);
+//                    if ( dp0!=null ) { // if we can check for numerical resolution, use this.
+//                        double eps= Math.abs( newPoint.data[0].doubleValue(((DataPoint)dataPoints.get(0)).data[0].getUnits()) );
+//                        for ( int i=0; i<dataPoints.size(); i++ ) {
+//                            double teps= Math.abs( ((DataPoint)dataPoints.get(i)).data[0].doubleValue(newPoint.data[0].getUnits()) );
+//                            if ( teps>eps ) eps= teps;
+//                        } 
+//                        eps= eps * 0.00000000001;// something like numerical noise * 10.
+//                        epsilon= newPoint.data[0].getUnits().getOffsetUnits().createDatum(eps);
+//                    }
                     if ( newPoint.data[0].getUnits().getOffsetUnits().isConvertibleTo(Units.milliseconds) ) {
                         if ( dp0!=null && dp0.data[0].subtract(newPoint.data[0]).abs().lt(epsilon) ) {
                             dataPoints.set( ~index, newPoint );
