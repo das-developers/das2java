@@ -1958,13 +1958,15 @@ public class TimeParser {
      * @param timel the decomposed time. 
      */
     private void normalizeSeconds( TimeStruct timel ) {
-        double dextraMillis= ( 1000 * ( timel.seconds - (int) timel.seconds ) ) + 0.1e-6; // add fraction of millisecond to avoid roundoff error.
-        int extraMillis= (int)Math.floor( dextraMillis );
+        double dextraMicros= ( 1000000 * ( timel.seconds - (int) timel.seconds ) );
         timel.seconds= (int)timel.seconds;
-
-        int extraMicros= (int)( 1000 * ( dextraMillis - extraMillis ) );
-        timel.millis+= extraMillis;
-        timel.micros+= extraMicros;
+        
+        timel.micros+= Math.round(dextraMicros);
+        
+        int millis= (int)( timel.micros / 1000 );
+        timel.millis+= millis;
+        timel.micros-= millis*1000;
+        
     }
     
     /**
