@@ -420,7 +420,7 @@ public final class TimeUtil {
         double midnight= Units.mj1958.convertDoubleTo( u, mjd1958 );
         double sinceMidnight= d-midnight;
         
-        if ( u==Units.cdfTT2000 && sinceMidnight<0.0 ) {
+        if ( u==Units.cdfTT2000 && sinceMidnight<0.0 ) { //TODO: huh?  this needs review
             mjd1958= mjd1958-1;
             sinceMidnight= sinceMidnight+86401e9;
         }
