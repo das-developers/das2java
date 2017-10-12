@@ -363,7 +363,7 @@ public class TimeParser {
             double nn= ( ( startTime.seconds-(int)startTime.seconds ) * ( 1000000/factor ) ) //legacy TimeStruct supported double seconds.
                     + ( startTime.millis * 1000 / factor ) 
                     + ( startTime.micros / factor );
-            return String.format( format, (int)Math.round(nn) );
+            return String.format( format, (int)Math.round(nn) ); 
         }
         
     }
