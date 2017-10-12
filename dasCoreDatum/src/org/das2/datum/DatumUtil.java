@@ -304,12 +304,12 @@ public final class DatumUtil {
         return buffer.toString();
     }
     
-    private static final String zeros100= "0.00000000000000000000"
+    private static final String ZEROS100= "0.00000000000000000000"
             + "0000000000000000000000000000000000000000"
             + "0000000000000000000000000000000000000000";
     public static String zeros(int count) {
         if ( count < 0 ) return "0";
-        else if ( count <= 100 ) return zeros100.substring(0,count+2);
+        else if ( count <= 100 ) return ZEROS100.substring(0,count+2);
         else {
            StringBuffer buff = new StringBuffer(count+2).append("0.");
            for (int index = 0; index < count; index++) {
@@ -523,7 +523,7 @@ public final class DatumUtil {
         if ( dunits instanceof LocationUnits ) return d;
         if ( dunits instanceof EnumerationUnits ) return d;
         
-        Units[] conversions = dunits.getConvertableUnits();
+        Units[] conversions = dunits.getConvertibleUnits();
         
         double bestScore = 0.2;
         Datum bestDatum = d;
