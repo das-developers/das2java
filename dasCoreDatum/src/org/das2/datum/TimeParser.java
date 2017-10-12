@@ -899,10 +899,9 @@ public class TimeParser {
 
             if ( qualifiers[i]!=null ) {
                 String[] ss2= qualifiers[i].split(";");
-                for ( int i2=0; i2<ss2.length; i2++ ) {
+                for ( String ss21 : ss2 ) {
                     boolean okay=false;
-                    String qual= ss2[i2].trim();
-                    
+                    String qual = ss21.trim();
                     if ( qual.equals("startTimeOnly") ) {
                         startTimeOnly= fc[i].charAt(0);
                         okay= true;
@@ -913,62 +912,109 @@ public class TimeParser {
                         String val= qual.substring(idx+1).trim();
                         //FieldHandler fh= (FieldHandler) fieldHandlers.get(name);
                         //fh.parse( val, context, timeWidth );
-                        if ( name.equals("Y") ) context.year= Integer.parseInt(val);
-                        else if ( name.equals("m") ) context.month= Integer.parseInt(val);
-                        else if ( name.equals("d") ) context.day= Integer.parseInt(val);
-                        else if ( name.equals("j") ) context.doy= Integer.parseInt(val);
-                        else if ( name.equals("H") ) context.hour= Integer.parseInt(val);
-                        else if ( name.equals("M") ) context.minute= Integer.parseInt(val);
-                        else if ( name.equals("S") ) context.seconds= Integer.parseInt(val);
-                        else if ( name.equals("cadence") ) span= Integer.parseInt(val);
-                        else if ( name.equals("span") ) span= Integer.parseInt(val);
-                        else if ( name.equals("delta") ) span= Integer.parseInt(val); // see http://tsds.org/uri_templates
-                        else if ( name.equals("resolution") ) span= Integer.parseInt(val);
-                        else if ( name.equals("period" ) ) {
-                            if ( val.startsWith("P") ) {
-                                try {
-                                    int[] r= DatumRangeUtil.parseISO8601Duration(val);
-                                    for ( int j=0; j<6; j++ ) {
-                                        if (r[j]>0 ) {
-                                            lsd= j;
-                                            lsdMult= r[j];
-                                            logger.log(Level.FINER, "lsd is now {0}, width={1}", new Object[]{lsd, lsdMult});
-                                            break;
+                        switch (name) {
+                            case "Y":
+                                context.year= Integer.parseInt(val);
+                                break;
+                            case "m":
+                                context.month= Integer.parseInt(val);
+                                break;
+                            case "d":
+                                context.day= Integer.parseInt(val);
+                                break;
+                            case "j":
+                                context.doy= Integer.parseInt(val);
+                                break;
+                            case "H":
+                                context.hour= Integer.parseInt(val);
+                                break;
+                            case "M":
+                                context.minute= Integer.parseInt(val);
+                                break;
+                            case "S":
+                                context.seconds= Integer.parseInt(val);
+                                break;
+                            case "cadence":
+                                span= Integer.parseInt(val);
+                                break;
+                            case "span":
+                                span= Integer.parseInt(val);
+                                break;
+                            case "delta":
+                                span= Integer.parseInt(val); // see http://tsds.org/uri_templates
+                                break;
+                            case "resolution":
+                                span= Integer.parseInt(val);
+                                break;
+                            case "period":
+                                if ( val.startsWith("P") ) {
+                                    try {
+                                        int[] r= DatumRangeUtil.parseISO8601Duration(val);
+                                        for ( int j=0; j<6; j++ ) {
+                                            if (r[j]>0 ) {
+                                                lsd= j;
+                                                lsdMult= r[j];
+                                                logger.log(Level.FINER, "lsd is now {0}, width={1}", new Object[]{lsd, lsdMult});
+                                                break;
+                                            }
                                         }
+                                    } catch (ParseException ex) {
+                                        Logger.getLogger(TimeParser.class.getName()).log(Level.SEVERE, null, ex);
                                     }
-                                } catch (ParseException ex) {
-                                    Logger.getLogger(TimeParser.class.getName()).log(Level.SEVERE, null, ex);
-                                }
-                            } else {
-                                char code= val.charAt(val.length()-1);
-                                if ( code=='Y' ) { lsd=0; }
-                                else if ( code=='m' ) { lsd=1; }
-                                else if ( code=='d' ) { lsd=2; }
-                                else if ( code=='j' ) { lsd=2; }
-                                else if ( code=='H' ) { lsd=3; }
-                                else if ( code=='M' ) { lsd=4; }
-                                else if ( code=='S' ) { lsd=5; }
-                                lsdMult= Integer.parseInt(val.substring(0,val.length()-1) );
-                                logger.log(Level.FINER, "lsd is now {0}, width={1}", new Object[]{lsd, lsdMult});
-                            }
-                        }
-                        else if ( name.equals("id") ) ; //TODO: orbit plug in handler...
-                        else if ( name.equals("places") ) ; //TODO: this all needs to be redone...
-                        else if ( name.equals("phasestart") )  ; //TODO: this all needs to be redone...
-                        else if ( name.equals("shift") ) {
-                            shift[i]= Integer.parseInt(val);
-                        }
-                        else if ( name.equals(""));
-                        else if ( name.equals("end") ) {
-                            if ( stopTimeDigit==AFTERSTOP_INIT ) {
-                                startLsd= lsd;
-                                stopTimeDigit= i;
-                            }
-                        }
-                        else {
-                            if ( !fieldHandlers.containsKey(fc[i]) ) {
-                                throw new IllegalArgumentException("unrecognized/unsupported field: "+name + " in "+qual );
-                            }
+                                } else {
+                                    char code= val.charAt(val.length()-1);
+                                    switch (code) {
+                                        case 'Y':
+                                            lsd=0;
+                                            break;
+                                        case 'm':
+                                            lsd=1;
+                                            break;
+                                        case 'd':
+                                            lsd=2;
+                                            break;
+                                        case 'j':
+                                            lsd=2;
+                                            break;
+                                        case 'H':
+                                            lsd=3;
+                                            break;
+                                        case 'M':
+                                            lsd=4;
+                                            break;
+                                        case 'S':
+                                            lsd=5;
+                                            break;
+                                        default:
+                                            break;
+                                    }
+                                    lsdMult= Integer.parseInt(val.substring(0,val.length()-1) );
+                                    logger.log(Level.FINER, "lsd is now {0}, width={1}", new Object[]{lsd, lsdMult});
+                                }   break;
+                            case "id":
+                                ; //TODO: orbit plug in handler...
+                                break;
+                            case "places":
+                                ; //TODO: this all needs to be redone...
+                                break;
+                            case "phasestart":
+                                ; //TODO: this all needs to be redone...
+                                break;
+                            case "shift":
+                                shift[i]= Integer.parseInt(val);
+                                break;
+                            case "":
+                                ;
+                                break;
+                            case "end":
+                                if ( stopTimeDigit==AFTERSTOP_INIT ) {
+                                    startLsd= lsd;
+                                    stopTimeDigit= i;
+                                }   break;
+                            default:
+                                if ( !fieldHandlers.containsKey(fc[i]) ) {
+                                    throw new IllegalArgumentException("unrecognized/unsupported field: "+name + " in "+qual );
+                                }   break;
                         }
                         okay= true;
                     } else if ( !okay ) {
@@ -998,13 +1044,31 @@ public class TimeParser {
                 if ( fc[i].length()==1 ) {
                     char code= fc[i].charAt(0);
                     int thisLsd= -1;
-                    if ( code=='Y' ) { thisLsd=0; }
-                    else if ( code=='m' ) { thisLsd=1; }
-                    else if ( code=='d' ) { thisLsd=2; }
-                    else if ( code=='j' ) { thisLsd=2; }
-                    else if ( code=='H' ) { thisLsd=3; }
-                    else if ( code=='M' ) { thisLsd=4; }
-                    else if ( code=='S' ) { thisLsd=5; }
+                    switch (code) {
+                        case 'Y':
+                            thisLsd=0;
+                            break;
+                        case 'm':
+                            thisLsd=1;
+                            break;
+                        case 'd':
+                            thisLsd=2;
+                            break;
+                        case 'j':
+                            thisLsd=2;
+                            break;
+                        case 'H':
+                            thisLsd=3;
+                            break;
+                        case 'M':
+                            thisLsd=4;
+                            break;
+                        case 'S':
+                            thisLsd=5;
+                            break;
+                        default:
+                            break;
+                    }
                     if ( thisLsd==lsd ) {  // allow subsequent repeat fields to reset (T$y$(m,delta=4)/$x_T$y$m$d.DAT)
                         lsdMult= 1;
                     }
@@ -1864,7 +1928,7 @@ public class TimeParser {
                     double t2 = toUs2000(stopTime);
                     return new DatumRange(t1, t2, Units.us2000);
                 } else {
-                    TimeStruct lstartTime = stopTime.copy();
+                    TimeStruct lstartTime;
                     lstartTime = TimeUtil.normalize(stopTime); // begin misguided attempt to subtract time...  Note this does not consider leap seconds...
                     int julianDay= TimeUtil.julianDay( lstartTime.year, lstartTime.month, lstartTime.day );
                     long micros= timeWidth.micros + timeWidth.millis*1000 + (int)timeWidth.seconds * 1000000L + timeWidth.minute * 60000000L + timeWidth.hour * 3600000000L;
