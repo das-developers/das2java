@@ -360,10 +360,10 @@ public class TimeParser {
 
         @Override
         public String format(TimeStruct startTime, TimeStruct timeWidth, int length, Map<String, String> extra) throws IllegalArgumentException {
-            return String.format( format, 
-                    (int) ( ( startTime.seconds-(int)startTime.seconds ) * ( 1000000/factor ) ) //legacy TimeStruct supported double seconds.
-                    + (int) ( startTime.millis * 1000 / factor ) 
-                    + (int) ( startTime.micros / factor ) );
+            double nn= ( ( startTime.seconds-(int)startTime.seconds ) * ( 1000000/factor ) ) //legacy TimeStruct supported double seconds.
+                    + ( startTime.millis * 1000 / factor ) 
+                    + ( startTime.micros / factor );
+            return String.format( format, (int)Math.round(nn) );
         }
         
     }
