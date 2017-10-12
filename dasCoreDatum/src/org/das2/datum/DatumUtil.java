@@ -549,4 +549,16 @@ public final class DatumUtil {
     }
     
     
+    /**
+     * return the numeric resolution of the Datum.
+     * @param datum a datum
+     * @return a datum in the offset units.
+     */
+    public static Datum numericalResolutionLimit( Datum datum ) {
+        double d= datum.doubleValue( datum.getUnits() );
+        double dp= Math.nextUp(d);
+        Datum datump= datum.getUnits().createDatum(dp);
+        return datump.subtract(datum);
+    }
+    
 }
