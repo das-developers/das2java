@@ -4999,12 +4999,14 @@ public class Ops {
      * @return 
      */
     public static QDataSet toRadians(QDataSet ds) {
-        return applyUnaryOp(ds, new UnaryOp() {
+        MutablePropertyDataSet result= applyUnaryOp(ds, new UnaryOp() {
             @Override
             public double op(double y) {
                 return y * Math.PI / 180.;
             }
         });
+        result.putProperty( QDataSet.UNITS, Units.radians );
+        return result;
     }
 
     public static QDataSet toRadians( Object ds ) {
@@ -5019,12 +5021,14 @@ public class Ops {
      * @return 
      */
     public static QDataSet toDegrees(QDataSet ds) {
-        return applyUnaryOp(ds, new UnaryOp() {
+        MutablePropertyDataSet result= applyUnaryOp(ds, new UnaryOp() {
             @Override
             public double op(double y) {
                 return y * 180 / Math.PI;
             }
         });
+        result.putProperty( QDataSet.UNITS, Units.degrees );
+        return result;
     }
     
     public static QDataSet toDegrees( Object ds ) {
