@@ -550,7 +550,9 @@ public final class DatumUtil {
     
     
     /**
-     * return the numeric resolution of the Datum.
+     * return the numeric resolution of the Datum.  Note some Datum implementations
+     * have additional information which allows the measurement resolution
+     * to be reflected as well, and this should be much smaller.
      * @param datum a datum
      * @return a datum in the offset units.
      */
@@ -560,5 +562,7 @@ public final class DatumUtil {
         Datum datump= datum.getUnits().createDatum(dp);
         return datump.subtract(datum);
     }
+    
+    
     
 }
