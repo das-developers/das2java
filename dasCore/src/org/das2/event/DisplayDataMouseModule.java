@@ -127,13 +127,11 @@ public class DisplayDataMouseModule extends MouseModule {
             
             int[] rows= table.getSelectedRows();
             int[] cols= table.getSelectedColumns();
-            if ( rows.length>1 ) {
-                for ( int j=0; j<rows.length; j++ ) {
-                    if ( j>0 ) build.append("\n");
-                    for ( int i=0; i<cols.length; i++ ) {
-                        if ( i>0 ) build.append(",");
-                        build.append(table.getValueAt(rows[j], cols[i]));
-                    }
+            for ( int j=0; j<rows.length; j++ ) {
+                if ( j>0 ) build.append("\n");
+                for ( int i=0; i<cols.length; i++ ) {
+                    if ( i>0 ) build.append(",");
+                    build.append(table.getValueAt(rows[j], cols[i]));
                 }
             }
             
