@@ -725,6 +725,8 @@ public class ImageVectorDataSetRenderer extends Renderer {
                 int lastIndex = xmono ? DataSetUtil.getNextIndex( xds, ddx.binStop(ddx.numberOfBins() - 1) ) : ds1.length()-1; // inclusive
                 if ( lastIndex>=firstIndex ) {
                     tds = histogram( tds, ddx, ddy, ds1, firstIndex, lastIndex );
+                } else {
+                    logger.fine("dropping record because it is off screen");
                 }
             }
             
