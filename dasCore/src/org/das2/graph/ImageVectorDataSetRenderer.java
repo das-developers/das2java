@@ -719,10 +719,11 @@ public class ImageVectorDataSetRenderer extends Renderer {
             for ( int k=0; k<ds.length(); k++ ) {
                 QDataSet ds1= ds.slice(k);
                 QDataSet xds= SemanticOps.xtagsDataSet(ds1);
+                xds.slice(0);
                 boolean xmono= SemanticOps.isMonotonic(xds);
                 int firstIndex = xmono ? DataSetUtil.getPreviousIndex( xds, ddx.binStart(0) ) : 0;
-                int lastIndex = xmono ? DataSetUtil.getNextIndex( xds, ddx.binStop(ddx.numberOfBins() - 1) ) : ds1.length()-1;
-                if ( lastIndex>firstIndex ) {
+                int lastIndex = xmono ? DataSetUtil.getNextIndex( xds, ddx.binStop(ddx.numberOfBins() - 1) ) : ds1.length()-1; // inclusive
+                if ( lastIndex>=firstIndex ) {
                     tds = histogram( tds, ddx, ddy, ds1, firstIndex, lastIndex );
                 }
             }
