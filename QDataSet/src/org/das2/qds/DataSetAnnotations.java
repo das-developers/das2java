@@ -29,7 +29,7 @@ public class DataSetAnnotations {
      */
     public static final Integer VALUE_1= 1;
     
-    private final WeakHashMap<QDataSet,Map<String,Object>> annotations= new WeakHashMap<QDataSet,Map<String,Object>>();
+    private final WeakHashMap<QDataSet,Map<String,Object>> annotations= new WeakHashMap<>();
     
     /**
      * set this to true to keep track of hits.
@@ -39,7 +39,7 @@ public class DataSetAnnotations {
     /**
      * keep track of how often an annotation is used.
      */
-    private final WeakHashMap<QDataSet,Map<String,Integer>> hits= new WeakHashMap<QDataSet,Map<String,Integer>>();
+    private final WeakHashMap<QDataSet,Map<String,Integer>> hits= new WeakHashMap<>();
      
     /**
      * access the single instance
@@ -67,6 +67,11 @@ public class DataSetAnnotations {
      */
     public static final String ANNOTATION_BOUNDS= "bounds";
     
+    /**
+     * the cadence for the dataset.
+     */
+    public static final String ANNOTATION_CADENCE= "cadence";
+
     /**
      * return either null or the value for the annotation.  Note some
      * Java compilers (Java6?) will not allow code such as:<tt>
