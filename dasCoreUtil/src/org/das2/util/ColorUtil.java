@@ -5,6 +5,8 @@ import java.awt.Color;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * single place to contain Color-Name mapping.  See https://sourceforge.net/p/autoplot/feature-requests/263/
@@ -15,6 +17,8 @@ public class ColorUtil {
     private static final Map<Color,String> namedColors;
     private static final Map<String,Color> revNamedColors;
     
+    private static final Logger logger= Logger.getLogger("das2.util");
+            
     static { 
         // see /home/jbf/ct/autoplot/rfe/263/convertColorNames.jy 
         namedColors= new LinkedHashMap<>();
@@ -394,13 +398,16 @@ public class ColorUtil {
      * <li>"0xFF0000" 
      * <li>"0xff0000" 
      * <li>"#ffeedd"
+     * <li>"LightPink"
      * </ul>
      * This also allows a color name to follow the RGB like so:<ul>
      * <li>"0xFFFF00 (Purple)"
      * </ul>
      * to improve legibility of .vap files.
-     * @param s
-     * @return 
+     * @param s the string representation 
+     * @return the color
+     * @see https://en.wikipedia.org/wiki/X11_color_names
+     * @see http://cng.seas.rochester.edu/CNG/docs/x11color.html
      */
     public static Color decodeColor( String s ) throws NullPointerException {
         s= s.toLowerCase().trim();
@@ -413,7 +420,7 @@ public class ColorUtil {
         Color r= revNamedColors.get(s);
         
         if ( r==null ) {
-            
+            logger.log(Level.INFO, "unable to find color for \"{0}\"", s);
         }
         if ( r!=null ) {
             return r;
