@@ -87,6 +87,7 @@ public class PropertyEditor extends JComponent {
     }
     private JTable table;
     private JButton closeButton;
+    private JButton cancelButton;
     private JPanel buttonPanel;
     private JDialog dialog;
     private Object bean;
@@ -269,7 +270,8 @@ public class PropertyEditor extends JComponent {
             //JButton loadButton = new JButton(createLoadAction(this.bean));
             //buttonPanel.add(loadButton);
         }
-        final JButton cancel = new JButton("Cancel");
+        cancelButton = new JButton("Cancel");
+        cancelButton.setEnabled(false); // it depends on how it is used.
 
         final JButton apply = new JButton("Apply");
 
@@ -287,7 +289,7 @@ public class PropertyEditor extends JComponent {
                         } else if (ef.getSource() == closeButton) {
                             globalApplyChanges();
                             dismissDialog(false);
-                        } else if ( ef.getSource()==cancel ) {
+                        } else if ( ef.getSource()==cancelButton ) {
                             dismissDialog(false);
                         }
                     }
@@ -296,7 +298,7 @@ public class PropertyEditor extends JComponent {
         };
         apply.addActionListener(al);
         closeButton.addActionListener(al);
-        cancel.addActionListener(al);
+        cancelButton.addActionListener(al);
 
         JButton refresh = new JButton("Refresh");
         refresh.addActionListener(new ActionListener() {
@@ -308,7 +310,7 @@ public class PropertyEditor extends JComponent {
 
         buttonPanel.add(refresh);
         buttonPanel.add(Box.createHorizontalGlue());
-        buttonPanel.add(cancel);
+        buttonPanel.add(cancelButton);
         buttonPanel.add(apply);
         buttonPanel.add(closeButton);
         add(buttonPanel, BorderLayout.SOUTH);
@@ -345,8 +347,12 @@ public class PropertyEditor extends JComponent {
                 globalApplyChanges();
             }
         }
-        dialog.setVisible(false);
-        dialog.dispose();
+        if ( dialog!=null ) {
+            dialog.setVisible(false);
+            dialog.dispose();
+        } else {
+            logger.info("dialog has not been created");
+        }
     }
 
     public void showModalDialog(Component c) {
@@ -376,6 +382,7 @@ public class PropertyEditor extends JComponent {
             dialog.setLocationRelativeTo(c);
         }
         dialog.setVisible(true);        
+        cancelButton.setEnabled(true);
     }
 
     public void showDialog(Component c) {
@@ -383,6 +390,7 @@ public class PropertyEditor extends JComponent {
         if (c != null) {
             dialog.setLocationRelativeTo(c);
         }
+        cancelButton.setEnabled(true);
         dialog.setVisible(true);
     }
 
