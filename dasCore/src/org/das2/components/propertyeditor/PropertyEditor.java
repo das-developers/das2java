@@ -314,7 +314,10 @@ public class PropertyEditor extends JComponent {
         add(buttonPanel, BorderLayout.SOUTH);
     }
 
-    private void refresh() {
+    /**
+     * request a refresh, the same as if the "refresh" button was pressed.
+     */
+    public void refresh() {
         TreeTableModel model = (TreeTableModel) table.getModel();
         PropertyTreeNodeInterface root = (PropertyTreeNodeInterface) model.getRoot();
         root.refresh();
