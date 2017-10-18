@@ -398,7 +398,7 @@ public class ColorUtil {
      * <li>"0xFF0000" 
      * <li>"0xff0000" 
      * <li>"#ffeedd"
-     * <li>"LightPink"
+     * <li>"LightPink" (X11 color names)
      * </ul>
      * This also allows a color name to follow the RGB like so:<ul>
      * <li>"0xFFFF00 (Purple)"
@@ -417,6 +417,8 @@ public class ColorUtil {
                 s= s.substring(0,i).trim();
             }
         }
+        //s= s.replaceAll("\\s+",""); // there's a problem where we have "dark green" and "darkgreen"
+        
         Color r= revNamedColors.get(s);
         
         if ( r==null ) {
