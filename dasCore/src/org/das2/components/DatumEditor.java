@@ -374,6 +374,7 @@ public class DatumEditor implements PropertyEditor, TableCellEditor {
     @Override
     public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
         setValue(value);
+        maybeInitGui();
         return panel;
     }
 
