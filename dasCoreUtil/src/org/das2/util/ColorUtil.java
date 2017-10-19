@@ -421,19 +421,21 @@ public class ColorUtil {
         
         Color r= revNamedColors.get(s);
         
-        if ( r==null ) {
-            logger.log(Level.INFO, "unable to find color for \"{0}\"", s);
-        }
         if ( r!=null ) {
             return r;
         } else {
-            Integer i= Integer.decode(s);
-            if ( ( i & 0xFF000000 ) != 0 ) { 
-                r= new Color( i, true);
-            } else {
-                r= new Color( i );
-            }            
-            return r;
+            try {
+                Integer i= Integer.decode(s);            
+                if ( ( i & 0xFF000000 ) != 0 ) { 
+                    r= new Color( i, true);
+                } else {
+                    r= new Color( i );
+                }            
+                return r;
+            } catch ( NumberFormatException ex ) {        
+                logger.log(Level.INFO, "unable to find color for \"{0}\"", s);
+                return Color.GRAY;
+            }
         }
     }
     
