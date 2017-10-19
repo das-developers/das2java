@@ -7,6 +7,7 @@ import java.util.Map;
 /**
  * single place to contain Color-Name mapping.  See https://sourceforge.net/p/autoplot/feature-requests/263/
  * @author jbf
+ * @deprecated use org.das2.util#ColorUtil
  */
 public class ColorUtil {
     
