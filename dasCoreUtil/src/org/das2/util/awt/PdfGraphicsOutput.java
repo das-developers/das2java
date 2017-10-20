@@ -19,6 +19,7 @@ import java.awt.Font;
 import java.awt.FontFormatException;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.geom.AffineTransform;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -51,6 +52,8 @@ public class PdfGraphicsOutput implements GraphicsOutput {
 
     private float width;
     private float height;
+    private int ppi=72;
+    
     private OutputStream out;
     private Document doc;
     private PdfWriter writer;
@@ -298,6 +301,7 @@ public class PdfGraphicsOutput implements GraphicsOutput {
         } else {
             graphics = new PdfGraphics2D(cb, width, height, fontMapper);
         }
+        graphics.setTransform( AffineTransform.getScaleInstance(72./ppi,72./ppi));
 
         return graphics;
     }
@@ -340,11 +344,20 @@ public class PdfGraphicsOutput implements GraphicsOutput {
         this.width = (float)width;
         this.height = (float)height;
     }
+    
+    /**
+     * set the scaling from graphics pixels to physical paper coordinates,
+     * where 72dpi is the default.
+     * @param ppi 
+     */
+    public void setPixelsPerInch( int ppi ) {
+        this.ppi= ppi;
+    }
+    
     @Override
     public void start() {
         try {
-            Rectangle rect = new Rectangle(width, height);
-            doc = new Document(rect, 0f, 0f, 0f, 0f); // This has the effect of scaling to the page size.  TODO: add control for this.
+            doc = new Document( PageSize.LETTER, 0f, 0f, 0f, 0f); // This has the effect of scaling to the page size.  TODO: add control for this.
             //doc=  new Document(PageSize.LETTER);
             doc.addCreator("das2.org");
             doc.addCreationDate();
