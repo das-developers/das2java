@@ -1543,8 +1543,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
     public Image getImageNonPrint(int width, int height) {
 
         long t0= System.currentTimeMillis();
-
-        String msg = "dasCanvas.getImage(" + width + "," + height + ")";
+        String msg = "dasCanvas.getImageNonPrint(" + width + "," + height + ")";
         logger.fine(msg);
 
         prepareForOutput(width, height);
