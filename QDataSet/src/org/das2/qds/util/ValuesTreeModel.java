@@ -1,7 +1,4 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package org.das2.qds.util;
 
 import java.util.Enumeration;
@@ -11,10 +8,8 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
 import org.das2.datum.EnumerationUnits;
-import org.das2.qds.DataSetOps;
 import org.das2.qds.DataSetUtil;
 import org.das2.qds.QDataSet;
-import org.das2.qds.RankZeroDataSet;
 import org.das2.qds.ops.Ops;
 
 /**
@@ -51,6 +46,10 @@ public class ValuesTreeModel extends DefaultTreeModel {
      * should eventually allow for exploration of any dataset.  This is not used right now in the metadata
      * tab of Autoplot because the root node of the tree is a MutableTreeNode and all children must therefore
      * be MutableTreeNodes.
+     * @param prefix string prefix, a number of spaces to indent
+     * @param parent the parent node
+     * @param ds the dataset source of the values.
+     * @return the tree node
      */
     public static TreeNode valuesTreeNode2( final String prefix, final TreeNode parent, final QDataSet ds ) {
         final Units units= (Units) ds.property( QDataSet.UNITS );
@@ -60,6 +59,7 @@ public class ValuesTreeModel extends DefaultTreeModel {
 
         return new TreeNode() {
 
+            @Override
             public TreeNode getChildAt(int i) {
                 if ( ds.rank()==1 ) {
                     String sval= units==null ? String.valueOf(ds.value(i)) : String.valueOf(units.createDatum(ds.value(i)));
@@ -72,33 +72,41 @@ public class ValuesTreeModel extends DefaultTreeModel {
                 }
             }
 
+            @Override
             public int getChildCount() {
                 return Math.min( ds.length(), 10 ); // TODO: "..."
             }
 
+            @Override
             public TreeNode getParent() {
                 return parent;
             }
 
+            @Override
             public int getIndex(TreeNode node) {
                 throw new UnsupportedOperationException("Not supported yet.");
             }
 
+            @Override
             public boolean getAllowsChildren() {
                 return true;
             }
 
+            @Override
             public boolean isLeaf() {
                 return false;
             }
 
+            @Override
             public Enumeration children() {
                 return new Enumeration() {
                     int i=0;
+                    @Override
                     public boolean hasMoreElements() {
                         return i<getChildCount();
                     }
 
+                    @Override
                     public Object nextElement() {
                         return getChildAt(i++);
                     }
@@ -156,93 +164,90 @@ public class ValuesTreeModel extends DefaultTreeModel {
         Units depu= dep0==null ? Units.dimensionless : (Units) dep0.property(QDataSet.UNITS);
         if ( depu==null ) depu= Units.dimensionless;
 
-        if ( ds.rank()==0 ) {
-            String sval= DataSetUtil.asDatum(ds).toString();
-            aroot.insert(  new DefaultMutableTreeNode( prefix+")="+sval), aroot.getChildCount() );
-        } else if ( ds.rank()==1 ) {
-            Units units= (Units) ds.property(QDataSet.UNITS);
-            if ( units==null ) units= Units.dimensionless;
-            for ( int i=0; i<Math.min( ds.length(), sizeLimit ); i++ ) {
-                Units u= units;
-                if ( bundle!=null ) {
-                    u= (Units)bundle.property( QDataSet.UNITS, i );
-                    if ( u==null ) u= Units.dimensionless;
-                }
-                String sval;
-                if ( u instanceof EnumerationUnits ) {
-                    try {
-                        sval= svalRank1( wds, ds, i );
-                    } catch ( IllegalArgumentException ex ) {
-                        sval= "" + ds.value(i) + " (error)";
-                    }
-                } else {
-                    sval= svalRank1( wds, ds, i );
-                }
-                //TODO: future datum class may allow for toString to return nominal data for invalid data.
-                if ( dep0!=null ) {
-                    sval += " @ " +( svalRank1( wdsDep0, dep0, i ) );
-                }
-                if ( bundle!=null ) {
-                    sval = bundle.property(QDataSet.NAME,i)+" = " + ( svalRank1( wds, ds, i ) );
-                    //sval = bundle.property(QDataSet.NAME,i)+" = " + ( wds.value(i) > 0. ? DataSetUtil.getStringValue( bundle.slice(i), ds.value(i) ) : "fill" ); //TODO: check this
-                    aroot.insert(  new DefaultMutableTreeNode( sval), aroot.getChildCount() );
-                } else {
-                    aroot.insert(  new DefaultMutableTreeNode( prefix+""+i+")="+sval), aroot.getChildCount() );
-                }
-            }
-            if ( ds.length()>=sizeLimit ) {
-                aroot.insert( new DefaultMutableTreeNode( "..." ), aroot.getChildCount() );
-            }
-            // insert last N values
-            for ( int i=Math.max( ds.length()-TAIL_COUNT,sizeLimit ); i<ds.length(); i++ ) {
-                Units u= units;
-                if ( bundle!=null ) {
-                    u= (Units)bundle.property( QDataSet.UNITS, i );
-                    if ( u==null ) u= Units.dimensionless;
-                }
-                String sval;
-                if ( u instanceof EnumerationUnits ) {
-                    try {
-                        sval= svalRank1( wds, ds, i );
-                    } catch ( IllegalArgumentException ex ) {
-                        sval= "" + ds.value(i) + " (error)";
-                    }
-                } else {
-                    sval= svalRank1( wds, ds, i );
-                }
-                //TODO: future datum class may allow for toString to return nominal data for invalid data.
-                if ( dep0!=null ) {
-                    sval += " @ " +( svalRank1( wdsDep0, dep0, i ) );
-                }
-                if ( bundle!=null ) {
-                    sval = bundle.property(QDataSet.NAME,i)+" = " + ( svalRank1( wds, ds, i ) );
-                    //sval = bundle.property(QDataSet.NAME,i)+" = " + ( wds.value(i) > 0. ? DataSetUtil.getStringValue( bundle.slice(i), ds.value(i) ) : "fill" ); //TODO: check this
-                    aroot.insert(  new DefaultMutableTreeNode( sval), aroot.getChildCount() );
-                } else {
-                    aroot.insert(  new DefaultMutableTreeNode( prefix+""+i+")="+sval), aroot.getChildCount() );
-                }
-            }
-        } else {
-            if ( dep0==null ) dep0= Ops.dindgen(ds.length());
-            if ( depu==null ) depu= Units.dimensionless;
+        String sval;
         
-            for ( int i=0; i<Math.min( ds.length(), sizeLimit ); i++ ) {
-                if ( dep0.rank()==1 ) { //TODO: what should this do for rank>1?
-                    MutableTreeNode sliceNode= new DefaultMutableTreeNode( "values @ "+depu.createDatum(dep0.value(i)) );
-                    aroot.insert( sliceNode, aroot.getChildCount() );
-                    valuesTreeNode( prefix + i+",", sliceNode, ds.slice(i), 20 );
-                }
-            }
-            if ( ds.length()>=sizeLimit ) {
-                aroot.insert( new DefaultMutableTreeNode( "..." ), aroot.getChildCount() );
-            }
-            for ( int i=Math.max( ds.length()-TAIL_COUNT,sizeLimit ); i<ds.length(); i++  ) {
-                if ( dep0.rank()==1 ) { //TODO: what should this do for rank>1?
-                    MutableTreeNode sliceNode= new DefaultMutableTreeNode( "values @ "+depu.createDatum(dep0.value(i)) );
-                    aroot.insert( sliceNode, aroot.getChildCount() );
-                    valuesTreeNode( prefix + i+",", sliceNode, ds.slice(i), 20 );
-                }
-            }
+        switch (ds.rank()) {
+            case 0:
+                sval= DataSetUtil.asDatum(ds).toString();
+                aroot.insert(  new DefaultMutableTreeNode( prefix+")="+sval), aroot.getChildCount() );
+                break;
+            case 1:
+                Units units= (Units) ds.property(QDataSet.UNITS);
+                if ( units==null ) units= Units.dimensionless;
+                for ( int i=0; i<Math.min( ds.length(), sizeLimit ); i++ ) {
+                    Units u= units;
+                    if ( bundle!=null ) {
+                        u= (Units)bundle.property( QDataSet.UNITS, i );
+                        if ( u==null ) u= Units.dimensionless;
+                    }
+                    if ( u instanceof EnumerationUnits ) {
+                        try {
+                            sval= svalRank1( wds, ds, i );
+                        } catch ( IllegalArgumentException ex ) {
+                            sval= "" + ds.value(i) + " (error)";
+                        }
+                    } else {
+                        sval= svalRank1( wds, ds, i );
+                    }
+                    //TODO: future datum class may allow for toString to return nominal data for invalid data.
+                    if ( dep0!=null ) {
+                        sval += " @ " +( svalRank1( wdsDep0, dep0, i ) );
+                    }
+                    if ( bundle!=null ) {
+                        sval = bundle.property(QDataSet.NAME,i)+" = " + ( svalRank1( wds, ds, i ) );
+                        //sval = bundle.property(QDataSet.NAME,i)+" = " + ( wds.value(i) > 0. ? DataSetUtil.getStringValue( bundle.slice(i), ds.value(i) ) : "fill" ); //TODO: check this
+                        aroot.insert(  new DefaultMutableTreeNode( sval), aroot.getChildCount() );
+                    } else {
+                        aroot.insert(  new DefaultMutableTreeNode( prefix+""+i+")="+sval), aroot.getChildCount() );
+                    }
+                }   if ( ds.length()>=sizeLimit ) {
+                    aroot.insert( new DefaultMutableTreeNode( "..." ), aroot.getChildCount() );
+                }   // insert last N values
+                for ( int i=Math.max( ds.length()-TAIL_COUNT,sizeLimit ); i<ds.length(); i++ ) {
+                    Units u= units;
+                    if ( bundle!=null ) {
+                        u= (Units)bundle.property( QDataSet.UNITS, i );
+                        if ( u==null ) u= Units.dimensionless;
+                    }
+                    if ( u instanceof EnumerationUnits ) {
+                        try {
+                            sval= svalRank1( wds, ds, i );
+                        } catch ( IllegalArgumentException ex ) {
+                            sval= "" + ds.value(i) + " (error)";
+                        }
+                    } else {
+                        sval= svalRank1( wds, ds, i );
+                    }
+                    //TODO: future datum class may allow for toString to return nominal data for invalid data.
+                    if ( dep0!=null ) {
+                        sval += " @ " +( svalRank1( wdsDep0, dep0, i ) );
+                    }
+                    if ( bundle!=null ) {
+                        sval = bundle.property(QDataSet.NAME,i)+" = " + ( svalRank1( wds, ds, i ) );
+                        //sval = bundle.property(QDataSet.NAME,i)+" = " + ( wds.value(i) > 0. ? DataSetUtil.getStringValue( bundle.slice(i), ds.value(i) ) : "fill" ); //TODO: check this
+                        aroot.insert(  new DefaultMutableTreeNode( sval), aroot.getChildCount() );
+                    } else {
+                        aroot.insert(  new DefaultMutableTreeNode( prefix+""+i+")="+sval), aroot.getChildCount() );
+                    }
+                }   break;
+            default:
+                if ( dep0==null ) dep0= Ops.dindgen(ds.length());
+                if ( depu==null ) depu= Units.dimensionless;
+                for ( int i=0; i<Math.min( ds.length(), sizeLimit ); i++ ) {
+                    if ( dep0.rank()==1 ) { //TODO: what should this do for rank>1?
+                        MutableTreeNode sliceNode= new DefaultMutableTreeNode( "values @ "+depu.createDatum(dep0.value(i)) );
+                        aroot.insert( sliceNode, aroot.getChildCount() );
+                        valuesTreeNode( prefix + i+",", sliceNode, ds.slice(i), 20 );
+                    }
+                }   if ( ds.length()>=sizeLimit ) {
+                    aroot.insert( new DefaultMutableTreeNode( "..." ), aroot.getChildCount() );
+                }   for ( int i=Math.max( ds.length()-TAIL_COUNT,sizeLimit ); i<ds.length(); i++  ) {
+                    if ( dep0.rank()==1 ) { //TODO: what should this do for rank>1?
+                        MutableTreeNode sliceNode= new DefaultMutableTreeNode( "values @ "+depu.createDatum(dep0.value(i)) );
+                        aroot.insert( sliceNode, aroot.getChildCount() );
+                        valuesTreeNode( prefix + i+",", sliceNode, ds.slice(i), 20 );
+                    }
+                }   break;
         }
         return aroot;
     }
