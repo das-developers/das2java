@@ -27,6 +27,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.regex.Pattern;
 import org.das2.qds.buffer.BufferDataSet;
 import org.das2.datum.CacheTag;
@@ -4128,6 +4129,86 @@ public class Ops {
         
         return lds;
         
+    }
+    
+    /**
+     * return an events list of when events are found in both events lists.
+     * @param tE rank 2 canonical events list
+     * @param tB rank 2 canonical events list
+     * @return rank 2 canonical events list
+     * @see Schemes#eventsList() 
+     */
+    public static QDataSet eventsConjunction( QDataSet tE, QDataSet tB ) {
+
+        int iE= 0;
+        int iB= 0;
+
+        String state= "open";
+        Object start= null;
+
+        tE= createEvents(tE);
+        tB= createEvents(tB);
+                
+        tE= Ops.trim1( tE, 0, 2 );
+        Units tu= (Units)tE.slice(0).slice(0).property( QDataSet.UNITS );
+        tB= Ops.trim1( tB, 0, 2 );
+        Units bu= (Units)tB.slice(0).slice(0).property( QDataSet.UNITS );
+        tB= Ops.putProperty( tB, QDataSet.UNITS, bu );
+        tB= convertUnitsTo( tB, tu );
+                
+        DataSetBuilder dsb= new DataSetBuilder(2,100,4);
+
+        while ( iE<tE.length() && iB<tB.length() ) {
+
+            switch (state) {
+                case "tE":
+                    if ( tE.value(iE,1)<=tB.value(iB,0) ) {
+                        state= "open";
+                        iE= iE+1;
+                    } else if ( tE.value(iE,1)>tB.value(iB,0)) {
+                        state= "tEB";
+                        start= tB.slice(iB).slice(0);
+                    }   break;
+                case "tB":
+                    if ( tB.value(iB,1)<=tE.value(iE,0) ) {
+                        state= "open";
+                        iB= iB+1;
+                    } else if ( tB.value(iB,1)>tE.value(iE,0) ) {
+                        state= "tEB";
+                        start= tE.slice(iE).slice(0);
+                    }   break;
+                case "tEB":
+                    if ( tE.value(iE,1)<= tB.value(iB,1) ) {
+                        state= "tB";
+                        dsb.nextRecord( start, tE.slice(iE).slice(1), 0xA0A0A0, "" );
+                        start= null;
+                        iE= iE+1;
+                        
+                    } else if ( tB.value(iB,1)<=tE.value(iE,1) ) {
+                        state= "tE";
+                        dsb.nextRecord( start, tB.slice(iB).slice(1), 0xA0A0A0, "" );
+                        start= null;
+                        iB= iB+1;
+                    } else {
+                        System.err.println("huh");
+                    }   break;
+                case "open":
+                    if ( tE.value(iE,0)<=tB.value(iB,0) ) {
+                        state= "tE";
+                    } else if ( tE.value(iE,0)>tB.value(iB,0) ) {
+                        state= "tB";
+                    }   break;
+                default:
+                    break;
+            }
+        }
+        
+        dsb.putProperty( QDataSet.BUNDLE_1, tE.property(QDataSet.BUNDLE_1 ) );
+        dsb.putProperty( QDataSet.BINS_1, QDataSet.VALUE_BINS_MIN_MAX );
+        
+        QDataSet result= dsb.getDataSet();
+                
+        return result;
     }
     
     /**
@@ -9952,6 +10033,9 @@ public class Ops {
      */
     public static QDataSet convertUnitsTo( QDataSet ds, Units u ) {
         UnitsConverter uc= Units.getConverter( SemanticOps.getUnits(ds), u );
+        if ( uc==UnitsConverter.IDENTITY ) {
+            return ds;
+        }
         ArrayDataSet ds2= ArrayDataSet.copy(ds);
         for ( int i=0; i<ds.rank(); i++ ) {
             if ( ds2.property("BUNDLE_"+i) !=null ) {
