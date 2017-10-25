@@ -831,8 +831,13 @@ public class DataSetUtil {
         
         if ( ds.rank()==1 && QDataSet.VALUE_BINS_MIN_MAX.equals(ds.property(QDataSet.BINS_0)) ) {
             if (  ds.value(0) <= ds.value(1) ) {
-                DatumRange dr= new DatumRange( ds.value(0), ds.value(1), u );
-                return dr.toString();
+                if ( u!=Units.dimensionless ) {
+                    DatumRange dr= new DatumRange( ds.value(0), ds.value(1), u );
+                    return dr.toString();
+                } else {
+                    DatumRange dr= new DatumRange( Ops.datum(ds.slice(0)), Ops.datum(ds.slice(1)) );
+                    return dr.toString();
+                }
             } else {
                 return String.format( "%s %s (invalid because BINS_0=min,max)", ds.slice(0), ds.slice(1) );
             }
