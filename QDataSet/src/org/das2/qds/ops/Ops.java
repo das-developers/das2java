@@ -4157,7 +4157,8 @@ public class Ops {
         tB= convertUnitsTo( tB, tu );
                 
         DataSetBuilder dsb= new DataSetBuilder(2,100,4);
-
+        EnumerationUnits eu= EnumerationUnits.create("default");
+            
         while ( iE<tE.length() && iB<tB.length() ) {
 
             switch (state) {
@@ -4180,13 +4181,13 @@ public class Ops {
                 case "tEB":
                     if ( tE.value(iE,1)<= tB.value(iB,1) ) {
                         state= "tB";
-                        dsb.nextRecord( start, tE.slice(iE).slice(1), 0xA0A0A0, "" );
+                        dsb.nextRecord( start, tE.slice(iE).slice(1), 0xA0A0A0, eu.createDatum("x") );
                         start= null;
                         iE= iE+1;
                         
                     } else if ( tB.value(iB,1)<=tE.value(iE,1) ) {
                         state= "tE";
-                        dsb.nextRecord( start, tB.slice(iB).slice(1), 0xA0A0A0, "" );
+                        dsb.nextRecord( start, tB.slice(iB).slice(1), 0xA0A0A0, eu.createDatum("x") );
                         start= null;
                         iB= iB+1;
                     } else {
