@@ -4146,10 +4146,10 @@ public class Ops {
         String state= "open";
         Object start= null;
 
-        tE= createEvents(tE);
+        QDataSet tE4= createEvents(tE);
         tB= createEvents(tB);
                 
-        tE= Ops.trim1( tE, 0, 2 );
+        tE= Ops.trim1( tE4, 0, 2 );
         Units tu= (Units)tE.slice(0).slice(0).property( QDataSet.UNITS );
         tB= Ops.trim1( tB, 0, 2 );
         Units bu= (Units)tB.slice(0).slice(0).property( QDataSet.UNITS );
@@ -4204,8 +4204,8 @@ public class Ops {
             }
         }
         
-        dsb.putProperty( QDataSet.BUNDLE_1, tE.property(QDataSet.BUNDLE_1 ) );
-        dsb.putProperty( QDataSet.BINS_1, QDataSet.VALUE_BINS_MIN_MAX );
+        dsb.putProperty( QDataSet.BUNDLE_1, tE4.property(QDataSet.BUNDLE_1 ) );
+        //dsb.putProperty( QDataSet.BINS_1, QDataSet.VALUE_BINS_MIN_MAX );
         
         QDataSet result= dsb.getDataSet();
                 
