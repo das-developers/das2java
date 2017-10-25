@@ -99,6 +99,15 @@ public class Slice1DataSet extends AbstractDataSet {
             DRank0DataSet context= DataSetUtil.asDataSet(index);
             context.putProperty( QDataSet.NAME, "slice1" );
             if ( addContext ) DataSetUtil.addContext( this, context );
+            if ( ds.rank()==2 && ds.length()<3 ) {
+                Units u1= (Units)ds.slice(0).slice(index).property( QDataSet.UNITS );
+                Units u= u1;
+                for ( int i=1; i<ds.length(); i++ ) {
+                    Units u2= (Units)ds.slice(i).slice(index).property( QDataSet.UNITS );
+                    if ( u1!=u2 ) u=null;
+                }
+                if ( u!=null ) putProperty( QDataSet.UNITS, u );
+            }
         }
 
 
