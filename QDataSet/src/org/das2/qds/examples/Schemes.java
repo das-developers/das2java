@@ -109,6 +109,47 @@ public class Schemes {
     }
     
     /**
+     * return a join of rank 2 waveforms.
+     * @param ds
+     * @return 
+     */
+    public static QDataSet rank3Waveform( QDataSet ds ) {
+        QDataSet w1= Ops.ripplesWaveformTimeSeries(20);
+        
+        WritableDataSet w2= Ops.maybeCopy(Ops.ripplesWaveformTimeSeries(14));
+        WritableDataSet t2= Ops.maybeCopy( (QDataSet)w2.property(QDataSet.DEPEND_0) );
+        QDataSet et= Ops.extent((QDataSet)w1.property(QDataSet.DEPEND_0));
+        double dt= et.value(1)-et.value(0);
+        for ( int i=0; i<t2.length(); i++ ) t2.putValue(i,t2.value(i)+dt);
+        w2.putProperty( QDataSet.DEPEND_0, t2);
+        w2.putProperty( QDataSet.DEPEND_1, Ops.multiply(w2.property(QDataSet.DEPEND_1), 0.8 ) );
+        
+        WritableDataSet w3= Ops.maybeCopy(Ops.ripplesWaveformTimeSeries(3));
+        WritableDataSet t3= Ops.maybeCopy( (QDataSet)w3.property(QDataSet.DEPEND_0) );
+        et= Ops.extent((QDataSet)w2.property(QDataSet.DEPEND_0));
+        dt= et.value(1)-et.value(0);
+        for ( int i=0; i<t3.length(); i++ ) t3.putValue(i,t3.value(i)+dt);
+        w3.putProperty( QDataSet.DEPEND_0, t3);
+
+        return Ops.join( Ops.join( w1, w2 ), w3 );
+        
+    }
+    
+    /**
+     * return true if the data is a rank 3 join of rank 2 waveforms.
+     * @param ds a dataset
+     * @return true if the data is a rank 3 waveform.
+     */
+    public static boolean isRank3Waveform( QDataSet ds ) {
+        if ( ds.rank()!=3 ) return false;
+        boolean isWaveform= true;
+        for ( int i=0; i<ds.length(); i++ ) {
+            if ( !isRank2Waveform(ds.slice(i) ) ) isWaveform=false;
+        }
+        return isWaveform;
+    }
+    
+    /**
      * return a rank 2 waveform, but DEPEND_1 which contains the offsets is also  
      * rank 2.  This was introduced to support study where short waveform-like
      * structures were identified.
