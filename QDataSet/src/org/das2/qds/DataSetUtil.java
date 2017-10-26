@@ -1301,6 +1301,35 @@ public class DataSetUtil {
         return mpds;
     }
     
+    /**
+     * return the cadence between measurements of a waveform dataset.  This is
+     * different than the cadence typically quoted, which is the cadence between
+     * waveform records.
+     * @param ds
+     * @return the cadence
+     */
+    public static RankZeroDataSet getCadenceWaveform( QDataSet ds ) {
+        RankZeroDataSet xlimit;
+        if ( Schemes.isRank2Waveform(ds) ) {
+            QDataSet offsets= (QDataSet)ds.property(QDataSet.DEPEND_1);
+            if ( offsets.rank()==1 ) {
+                xlimit= DataSetUtil.guessCadenceNew( offsets, null );
+            } else {
+                xlimit= DataSetUtil.guessCadenceNew( offsets.slice(0), null );
+            }
+        } else if ( Schemes.isRank3Waveform(ds) ) {
+            xlimit= getCadenceWaveform(ds.slice(0));
+            for ( int i=1; i<ds.length(); i++ ) {
+                RankZeroDataSet xlimit1= getCadenceWaveform(ds.slice(i));
+                if ( Ops.gt( xlimit1, xlimit ).value()==1. ) {
+                    xlimit= xlimit1;
+                }
+            }
+        } else {
+            throw new IllegalArgumentException("data is not waveform");
+        }
+        return xlimit;
+    }
     
     /**
      * returns a rank 0 dataset indicating the cadence of the dataset.  Using a
@@ -1331,6 +1360,43 @@ public class DataSetUtil {
 //            o= DataSetAnnotations.getInstance().getAnnotation( xds, DataSetAnnotations.ANNOTATION_CADENCE );
 //        }
 //        
+        if ( yds!=null && yds.rank()>1 ) {
+            if ( Schemes.isRank2Waveform(yds)) {
+                RankZeroDataSet r1= guessCadenceNew(xds,null);
+                QDataSet dd= (QDataSet)yds.property(QDataSet.DEPEND_1);
+                Datum rw= null;
+                if ( dd.rank()==1 ) {
+                    QDataSet ee= Ops.extent(dd);
+                    rw= DataSetUtil.asDatum( Ops.subtract( ee.slice(1), ee.slice(0) ) );
+                    
+                } else {
+                    for ( int i=0; i<dd.length(); i++ ) {
+                        QDataSet ee= Ops.extent(dd);
+                        Datum t1= DataSetUtil.asDatum( Ops.subtract( ee.slice(1), ee.slice(0) ) );
+                        rw= rw==null ? t1 : ( rw.lt(t1) ? t1 : rw );
+                    }
+                }
+                if ( rw==null ) {
+                    return r1;
+                } else {
+                    if ( r1!=null && rw.multiply(2.0).gt( DataSetUtil.asDatum(r1) ) ) {
+                        return r1;
+                    } else {
+                        return DataSetUtil.asDataSet(rw);
+                    }
+                }
+            } else if ( Schemes.isRank3Waveform(yds) ) {
+                Datum dresult=null;
+                for ( int i=0; i<yds.length(); i++ ) {
+                    QDataSet yds1= yds.slice(i);
+                    QDataSet xds1= (QDataSet)yds1.property(QDataSet.DEPEND_0);
+                    Datum t1= DataSetUtil.asDatum( guessCadenceNew(xds1,yds1) );
+                    dresult= dresult==null ? t1 : ( dresult.lt(t1) ? t1 : dresult );
+                }
+                return DataSetUtil.asDataSet(dresult);
+            }
+        }
+
         Units u= SemanticOps.getUnits(xds);
 
         if ( UnitsUtil.isNominalMeasurement(u) ) return null;
