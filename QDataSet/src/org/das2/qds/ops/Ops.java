@@ -1429,7 +1429,13 @@ public class Ops {
         if ( ds==null ) {
             throw new NullPointerException("ds is null");
         }
+        if ( ds.length()==0 ) {
+            return ds;
+        }
+        
         QDataSet dep0= SemanticOps.xtagsDataSet(ds);
+        QDataSet dep0limit= DataSetUtil.guessCadenceNew(dep0,ds);
+        
         QDataSet dep0en= dep0;
         if ( dep0.rank()!=1 ) {
             if ( dep0.rank()==2 ) { // join of tags
@@ -1464,6 +1470,15 @@ public class Ops {
         f1= n<f1 ? n : f1;
         f2= 0>f2 ? 0 : f2;
         f2= n<f2 ? n : f2;
+        
+        if ( dep0limit!=null ) {
+            Datum t= DataSetUtil.asDatum(dep0.slice((int)f1)).add( DataSetUtil.asDatum( dep0limit ) );
+            Datum dst= DataSetUtil.asDatum(st);
+            if ( t.lt(dst) && f1<n ) {
+                f1= f1+1;
+            }
+            // we don't need to adjust f2 because the timetags are waveform starts, not waveform centers.
+        }
         
         if ( f1>f2 ) throw new IllegalArgumentException("st must be less than (or earlier than) en");
         
