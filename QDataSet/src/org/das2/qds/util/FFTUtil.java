@@ -6,6 +6,7 @@
 
 package org.das2.qds.util;
 
+import org.das2.datum.Datum;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
@@ -382,6 +383,20 @@ public class FFTUtil {
         return result;
     }
         
+    /**
+     * return the time domain tags for inverse fft.
+     * @param frequencyDomainTags
+     * @return the time Domain Tags
+     */
+    public static QDataSet getTimeDomainTags( QDataSet frequencyDomainTags ) {
+        
+        QDataSet nyquistFreq= frequencyDomainTags.slice(frequencyDomainTags.length()/2);
+        
+        Datum dt= Ops.datum( Ops.divide( 0.5,nyquistFreq ) );
+        
+        return Ops.taggen( 0, dt.value(), frequencyDomainTags.length(), dt.getUnits() );
+    }
+    
     /**
      * return the frequency tags for the given time offset tags, so 
      * <code>f[i]=  i / n*T</code>

@@ -6840,6 +6840,7 @@ public class Ops {
      * @param ds a rank 1 dataset.
      * @return a rank 2 dataset of complex numbers.
      * @see Schemes#rank2ComplexNumbers() 
+     * @see Ops#ifft(org.das2.qds.QDataSet) 
      */
     public static QDataSet fft(QDataSet ds) {
         GeneralFFT fft = GeneralFFT.newDoubleFFT(ds.length());
@@ -6867,6 +6868,7 @@ public class Ops {
      * A rank 2 dataset of complex numbers is returned.
      * @param ds a rank 2 dataset.
      * @return a rank 2 dataset of complex numbers.
+     * @see Ops#fft(org.das2.qds.QDataSet) 
      */
     public static QDataSet ifft(QDataSet ds) {
         GeneralFFT fft = GeneralFFT.newDoubleFFT(ds.length());
@@ -6881,9 +6883,7 @@ public class Ops {
 
         QDataSet dep0 = (QDataSet) ds.property(QDataSet.DEPEND_0);
         if ( dep0!=null ) {
-
-            QDataSet dt= Ops.div( 1,dep0.slice(1) );
-            QDataSet tags= Ops.multiply( Ops.findgen(result.length() ), dt );
+            QDataSet tags= FFTUtil.getTimeDomainTags(dep0);
             //double[] tags = FFTUtil.getFrequencyDomainTags(1./cadence.value(), ds.length());
             result.putProperty(QDataSet.DEPEND_0, tags );
         }
