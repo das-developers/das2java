@@ -1379,7 +1379,8 @@ public class DataSetUtil {
                 if ( rw==null ) {
                     return r1;
                 } else {
-                    if ( r1!=null && rw.multiply(2.0).gt( DataSetUtil.asDatum(r1) ) ) {
+                    Datum rt=  DataSetUtil.asDatum(r1);
+                    if ( r1!=null && rw.getUnits().isConvertibleTo(rt.getUnits()) && rw.multiply(2.0).gt( rt ) ) {
                         return r1;
                     } else {
                         return DataSetUtil.asDataSet(rw);
