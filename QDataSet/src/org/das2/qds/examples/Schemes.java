@@ -103,9 +103,14 @@ public class Schemes {
         if ( ds.rank()!=2 ) return false;
         QDataSet dep0= (QDataSet)ds.property(QDataSet.DEPEND_0);
         if ( dep0==null ) return false;
-        QDataSet dep1= (QDataSet)ds.property(QDataSet.DEPEND_1);
-        if ( dep1==null ) return false;
-        return SemanticOps.getUnits(dep0).getOffsetUnits().isConvertibleTo(SemanticOps.getUnits(dep1));
+        Units u0= SemanticOps.getUnits(dep0);
+        if ( u0==Units.dimensionless ) {
+            return false;
+        } else {
+            QDataSet dep1= (QDataSet)ds.property(QDataSet.DEPEND_1);
+            if ( dep1==null ) return false;
+            return u0.getOffsetUnits().isConvertibleTo(SemanticOps.getUnits(dep1));
+        }
     }
     
     /**
