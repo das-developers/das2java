@@ -114,11 +114,10 @@ public class Schemes {
     }
     
     /**
-     * return a join of rank 2 waveforms.
-     * @param ds
-     * @return 
+     * return a join of rank 2 waveforms, also called a rank 3 waveform.  
+     * @return rank 3 waveform
      */
-    public static QDataSet rank3Waveform( QDataSet ds ) {
+    public static QDataSet rank3Waveform( ) {
         QDataSet w1= Ops.ripplesWaveformTimeSeries(20);
         
         WritableDataSet w2= Ops.maybeCopy(Ops.ripplesWaveformTimeSeries(14));
