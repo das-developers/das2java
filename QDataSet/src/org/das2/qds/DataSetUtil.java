@@ -3557,7 +3557,8 @@ public class DataSetUtil {
                 if ( "log".equals( yds.property(QDataSet.SCALE_TYPE) ) ) {
                     s = String.format( Locale.US, "%9.3e", value ).trim();
                 } else {
-                    QDataSet bounds= SemanticOps.bounds(yds);
+                    QDataSet bounds=null;
+                    if ( yds.rank()>0 ) bounds= SemanticOps.bounds(yds);
                     if ( bounds!=null && bounds.rank()==2 ) {
                         if ( Math.abs(bounds.value(1,0))<0.0001 || Math.abs(bounds.value(1,1))<0.0001 ) {
                             s = String.format( Locale.US, "%9.3e", value ).trim();
