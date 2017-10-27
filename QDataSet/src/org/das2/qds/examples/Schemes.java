@@ -130,9 +130,11 @@ public class Schemes {
         
         WritableDataSet w3= Ops.maybeCopy(Ops.ripplesWaveformTimeSeries(3));
         WritableDataSet t3= Ops.maybeCopy( (QDataSet)w3.property(QDataSet.DEPEND_0) );
+        Units tu= (Units)t3.property(QDataSet.UNITS);
+                
         et= Ops.extent((QDataSet)w2.property(QDataSet.DEPEND_0));
-        dt= et.value(1)-et.value(0);
-        for ( int i=0; i<t3.length(); i++ ) t3.putValue(i,t3.value(i)+dt);
+        double dt2= et.value(1)-et.value(0);
+        for ( int i=0; i<t3.length(); i++ ) t3.putValue(i,t3.value(i)+dt + dt2 + Units.seconds.convertDoubleTo( tu.getOffsetUnits(), 1) );
         w3.putProperty( QDataSet.DEPEND_0, t3);
 
         return Ops.join( Ops.join( w1, w2 ), w3 );
