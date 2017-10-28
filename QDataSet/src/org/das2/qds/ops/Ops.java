@@ -7470,7 +7470,7 @@ public class Ops {
             min= Ops.slice1(ds,0);
             max= Ops.slice1(ds,1);
             ds= min;
-            wds= Ops.slice1(wds,0);
+            if ( wds!=null ) wds= Ops.slice1(wds,0);
         }
         
         if ( ds.property(QDataSet.BIN_MAX )!=null ) {
@@ -7509,16 +7509,8 @@ public class Ops {
 
             monoCheck= Boolean.TRUE.equals( ds.property(QDataSet.MONOTONIC ));
             if ( ds.rank()==1 && monoCheck && n>0 ) {
-                while ( ifirst<n && wds.value(ifirst)==0.0 ) ifirst++;
-                while ( ilast>=0 && wds.value(ilast)==0.0 ) ilast--;
-                int imiddle= ( ifirst + ilast ) / 2;
-                if ( wds.value(imiddle)>0 ) {
-                    double dir= ds.value(ilast) - ds.value(ifirst) ;
-                    if ( ( ds.value(imiddle) - ds.value(ifirst) ) * dir < 0 ) {
-                        logger.fine("this data isn't really monotonic.");
-                        monoCheck= false;
-                    }
-                }
+                monoCheck= DataSetUtil.isMonotonicAndIncreasingQuick(ds);
+                if ( !monoCheck ) logger.log(Level.WARNING, "this data isn''t really monotonic: {0}", ds);
             }
         } else {
             monoCheck= false;
