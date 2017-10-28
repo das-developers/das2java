@@ -22,6 +22,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Random;
 import java.util.logging.Logger;
 import org.das2.datum.CacheTag;
 import org.das2.datum.Datum;
@@ -120,6 +121,7 @@ public class DataSetUtil {
      * @return true when the dataset is monotonically increasing.
      * @see org.das2.qds.QDataSet#MONOTONIC
      * @see org.das2.qds.ArrayDataSet#monotonicSubset(org.das2.qds.ArrayDataSet) 
+     * @see #isMonotonicAndIncreasing(org.das2.qds.QDataSet) 
      */
     public static boolean isMonotonic(QDataSet ds) {
         if (ds.rank() != 1) { // TODO: support bins dataset rank 2 with BINS_1="min,max"
@@ -162,15 +164,16 @@ public class DataSetUtil {
     /**
      * returns true if the dataset is monotonically increasing 
      * and does not contain repeat values.
-     * If the dataset has the MONOTONIC property set to Boolean.TRUE, believe it.
      * An empty dataset is not monotonic.
      * The dataset may contain fill data, only the non-fill portions are considered.
      * @param ds the rank 1 dataset with physical units.
      * @return true when the dataset is monotonically increasing.
      * @see org.das2.qds.QDataSet#MONOTONIC
      * @see org.das2.qds.ArrayDataSet#monotonicSubset(org.das2.qds.ArrayDataSet) 
+     * @see #isMonotonic(org.das2.qds.QDataSet) 
      */
     public static boolean isMonotonicAndIncreasing(QDataSet ds) {
+        logger.finest("enter isMonotonicAndIncreasing test for "+QDataSet.MONOTONIC);
         if (ds.rank() != 1) { // TODO: support bins dataset rank 2 with BINS_1="min,max"
             return false;
         }
@@ -204,7 +207,49 @@ public class DataSetUtil {
         return true;
     }
     
-    
+    /**
+     * quickly determine, with high accuracy, if data is monotonic.  This should
+     * be a constant-time operation, and be extremely unlikely to fail.
+     * @param ds
+     * @return true if the data does pass quick tests for monotonic increasing.
+     * @see #isMonotonicAndIncreasing(org.das2.qds.QDataSet) 
+     * @see QDataSet#MONOTONIC
+     */
+    public static boolean isMonotonicAndIncreasingQuick(QDataSet ds) {
+        logger.finest("enter isMonotonicAndIncreasingQuick test for "+QDataSet.MONOTONIC);
+        if (ds.rank() == 1) {
+            if (ds.length() < 100) {
+                return DataSetUtil.isMonotonicAndIncreasing(ds);
+            } else {
+                QDataSet wds = DataSetUtil.weightsDataSet(ds);
+                Random r = new Random(0);
+                int i = 0;
+                double last = -1.0 * Double.MAX_VALUE;
+                int n = ds.length();
+                int jump = n / 20;
+                for (; i < ds.length(); i += (1 + (int) (jump * r.nextDouble()))) {
+                    double d = ds.value(i);
+                    double w = wds.value(i);
+                    while (w == 0 && i < n) {
+                        i++;
+                        d = ds.value(i);
+                        w = wds.value(i);
+                    }
+                    if (i == n) {
+                        break;
+                    }
+                    if (d <= last) {
+                        return false;
+                    }
+                    last = d;
+                }
+                return true;
+            }
+        } else {
+            return false;
+        }
+    }
+
     /**
      * perform a binary search for key within ds, constraining the search to between low and high.
      * @param ds a rank 1 monotonic dataset.
