@@ -266,8 +266,8 @@ public interface QDataSet {
     public final static String WEIGHTS="WEIGHTS";
 
     /**
-     * Boolean, Boolean.TRUE if dataset is monotonically increasing.  Data may 
-     * only contain invalid values at the beginning or end, and may contain repeated 
+     * Boolean, Boolean.TRUE if dataset is monotonically increasing, and the data is rank 1.
+     * Data may only contain invalid values at the beginning or end, and may contain repeated 
      * values.  Generally this will be used with tags datasets. 
      */
     public final static String MONOTONIC="MONOTONIC";
