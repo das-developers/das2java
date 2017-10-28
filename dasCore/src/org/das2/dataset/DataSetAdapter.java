@@ -523,7 +523,7 @@ public class DataSetAdapter {
                 properties.put(QDataSet.TYPICAL_MAX, zRng.max().value());
             }
             properties.put(QDataSet.RENDER_TYPE, dasProps.get(DataSet.PROPERTY_RENDERER));
-            properties.put(QDataSet.MONOTONIC, dasProps.get(DataSet.PROPERTY_X_MONOTONIC));
+            //properties.put(QDataSet.MONOTONIC, dasProps.get(DataSet.PROPERTY_X_MONOTONIC));
             properties.put(QDataSet.FILL_VALUE, dasProps.get(DataSet.PROPERTY_Z_FILL));
 
             properties.put(QDataSet.VALID_MIN, dasProps.get(DataSet.PROPERTY_Z_VALID_MIN));
