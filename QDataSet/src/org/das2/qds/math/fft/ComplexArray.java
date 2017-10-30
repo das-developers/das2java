@@ -260,7 +260,9 @@ public class ComplexArray {
     }
     
     /**
-     * returns the magnitude of ah element in an array
+     * returns the magnitude of an element in an array.
+     * @param array the complex array.
+     * @param i the element index
      */
     final public static double magnitude2( ComplexArray.Double array, int i ) {
         return Math.pow( array.getReal(i),2 ) + Math.pow( array.getImag(i), 2 );
