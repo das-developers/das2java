@@ -53,6 +53,7 @@ public class PdfGraphicsOutput implements GraphicsOutput {
     private float width;
     private float height;
     private int ppi=72;
+    private boolean oldMethod= true; // do what das2 used to do.
     
     private OutputStream out;
     private Document doc;
@@ -301,7 +302,9 @@ public class PdfGraphicsOutput implements GraphicsOutput {
         } else {
             graphics = new PdfGraphics2D(cb, width, height, fontMapper);
         }
-        graphics.setTransform( AffineTransform.getScaleInstance(72./ppi,72./ppi));
+        if ( ppi!=72 ) {
+            graphics.setTransform( AffineTransform.getScaleInstance(72./ppi,72./ppi));
+        }
 
         return graphics;
     }
@@ -352,12 +355,18 @@ public class PdfGraphicsOutput implements GraphicsOutput {
      */
     public void setPixelsPerInch( int ppi ) {
         this.ppi= ppi;
+        oldMethod= false;
     }
     
     @Override
     public void start() {
         try {
-            doc = new Document( PageSize.LETTER, 0f, 0f, 0f, 0f); // This has the effect of scaling to the page size.  TODO: add control for this.
+            if ( oldMethod ) {
+                Rectangle rect = new Rectangle(width, height);
+                doc = new Document(rect, 0f, 0f, 0f, 0f); // This has the effect of scaling to the page size.  TODO: add control for this.
+            } else {
+                doc = new Document( PageSize.LETTER, 0f, 0f, 0f, 0f); // This has the effect of scaling to the page size.  TODO: add control for this.
+            }
             //doc=  new Document(PageSize.LETTER);
             doc.addCreator("das2.org");
             doc.addCreationDate();
