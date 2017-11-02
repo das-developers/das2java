@@ -71,6 +71,17 @@ public class TimeLocationUnits extends LocationUnits {
             return TimeUtil.toDatum(TimeUtil.parseTime(s),this);
         }
     }
+
+    @Override
+    public Datum getFillDatum() {
+        return this.fill;
+    }
+
+    @Override
+    public double getFillDouble() {
+        return this.fill.doubleValue(this);
+    }
+    
     
     public String getTimeZone() {
         return "UT";
