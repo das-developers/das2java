@@ -61,7 +61,7 @@ public class TimeLocationUnits extends LocationUnits {
         
     @Override
     public Datum parse(String s) throws java.text.ParseException {
-        if ( s.length()==0 || s.equals("NaN") ) {
+        if ( s.equals("NaN") ) {
             return fill;
         }
         int [] rr= DatumRangeUtil.parseISO8601(s);
