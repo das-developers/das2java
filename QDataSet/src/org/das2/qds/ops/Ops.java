@@ -1480,7 +1480,13 @@ public class Ops {
             // we don't need to adjust f2 because the timetags are waveform starts, not waveform centers.
         }
         
-        if ( f1>f2 ) throw new IllegalArgumentException("st must be less than (or earlier than) en");
+        if ( (int)f1>Math.ceil(f2) ) {
+            if ( Ops.ge(st,en).value()>0 ) {
+                throw new IllegalArgumentException("st must be less than (or earlier than) en");
+            } else {
+                return ds.trim((int)f1,(int)f1);
+            }
+        }
         
         return ds.trim((int)f1,(int)Math.ceil(f2));
     }
