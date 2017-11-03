@@ -1112,6 +1112,13 @@ public class Ops {
         }
     }
     
+    /**
+     * Collapse the rank 4 dataset on the zeroth index.
+     * @see org.das2.qds.OperationsProcessor#sprocess(java.lang.String, org.das2.qds.QDataSet, org.das2.util.monitor.ProgressMonitor) 
+     * @param ds rank 4 dataset
+     * @param mon
+     * @return rank 3 dataset
+     */
     public static QDataSet collapse0R4( QDataSet ds, ProgressMonitor mon ) {
         if ( ds.rank()==4 ) {
             int[] qube = DataSetUtil.qubeDims(ds);
@@ -1166,6 +1173,13 @@ public class Ops {
         
     }
 
+    /**
+     * Collapse the rank 4 dataset on the first index.
+     * @see org.das2.qds.OperationsProcessor#sprocess(java.lang.String, org.das2.qds.QDataSet, org.das2.util.monitor.ProgressMonitor) 
+     * @param ds rank 4 dataset
+     * @param mon
+     * @return rank 3 dataset
+     */
     public static QDataSet collapse1R4( QDataSet ds, ProgressMonitor mon ) {
         if ( ds.rank()==4 ) {
             int[] qube = DataSetUtil.qubeDims(ds);
@@ -1250,6 +1264,13 @@ public class Ops {
         }
     }
 
+    /**
+     * Collapse the rank 4 dataset on the second index.
+     * @see org.das2.qds.OperationsProcessor#sprocess(java.lang.String, org.das2.qds.QDataSet, org.das2.util.monitor.ProgressMonitor) 
+     * @param ds rank 4 dataset
+     * @param mon
+     * @return rank 3 dataset
+     */
     public static QDataSet collapse2R4( QDataSet ds, ProgressMonitor mon ) {
         if ( ds.rank()==4 ) {
             int[] qube = DataSetUtil.qubeDims(ds);
@@ -1319,6 +1340,13 @@ public class Ops {
         }
     }
     
+    /**
+     * Collapse the rank 4 dataset on the third index.
+     * @see org.das2.qds.OperationsProcessor#sprocess(java.lang.String, org.das2.qds.QDataSet, org.das2.util.monitor.ProgressMonitor) 
+     * @param ds rank 4 dataset
+     * @param mon
+     * @return rank 3 dataset
+     */
     public static QDataSet collapse3R4( QDataSet ds, ProgressMonitor mon ) {
         if ( ds.rank()==4 ) {
             int[] qube = DataSetUtil.qubeDims(ds);
