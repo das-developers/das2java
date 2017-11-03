@@ -296,18 +296,21 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                 if ( j==0 && timeFormatter!=null && UnitsUtil.isTimeLocation( d.getUnits() ) ) {
                     return timeFormatter.format(d);
                 } else {
-                    DatumFormatter format = d.getFormatter();
                     if ( d.isFill() ) {
                         return "fill";
                     } else {
-                        return format.format(d, unitsArray[j]);
+                        return d.getFormatter().format(d, unitsArray[j]);
                     }
                 }
             } else {
                 Object o = x.getPlane(planesArray[j]);
                 if (o instanceof Datum) {
                     Datum d = (Datum) o;
-                    return d.getFormatter().format(d, unitsArray[j]);
+                    if ( d.isFill() ) {
+                        return "fill";
+                    } else {
+                        return d.getFormatter().format(d, unitsArray[j]);
+                    }
                 } else {
                     return (String) o;
                 }
@@ -1215,6 +1218,62 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             myTableModel.fireTableStructureChanged();
         }
     }
+    
+    private Action getInsertFillAction() {
+        return new AbstractAction("Insert Fill...") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int index= table.getSelectedRow();
+                if ( index==-1 ) {
+                    JOptionPane.showMessageDialog(DataPointRecorder.this,"Row must be selected");
+                    return;
+                }
+                if ( JOptionPane.OK_OPTION==
+                        JOptionPane.showConfirmDialog(DataPointRecorder.this,
+                                "Insert a fill record into in data?", 
+                                "Insert Fill", JOptionPane.OK_CANCEL_OPTION ) ) {
+                    insertFill();
+                }
+            }            
+        };
+    }
+    
+    /**
+     * insert a fill record at the selected cell.
+     */
+    private void insertFill() { 
+        Map planes= new LinkedHashMap<>();
+        int icol=0;
+        for ( String p: planesArray ) {
+            planes.put( p, unitsArray[icol].getFillDatum() );
+            icol++;
+        }
+        DataPoint fill= new DataPoint( unitsArray[0].getFillDatum(), unitsArray[1].getFillDatum(), planes );
+        int index= table.getSelectedRow();
+        if ( index==-1 ) {
+            throw new IllegalArgumentException("Row must be selected");
+        }
+        index= table.convertRowIndexToModel(index);
+        dataPoints.add( index, fill );
+        modified = true;
+        Runnable run= new Runnable() {
+            public void run() {
+                updateStatus();
+                updateClients();
+                table.repaint();
+                if (active) {
+                    fireDataSetUpdateListenerDataSetUpdated(new DataSetUpdateEvent(this));
+                }
+            }
+        };   
+        if ( SwingUtilities.isEventDispatchThread() ) {
+            run.run();
+        } else {
+            SwingUtilities.invokeLater(run);
+        }
+    }
+    
+    
     /**
      * Notify listeners that the dataset has updated.  Pressing the "Update" 
      * button calls this.
@@ -1248,6 +1307,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         editMenu.add(new JMenuItem(getPropertiesAction()));
         
         editMenu.add(new JMenuItem(getSetUnitsAction()));
+        editMenu.add(new JMenuItem(getInsertFillAction()));
         
         editMenu.add( new JMenuItem( new AbstractAction("Clear Table Sorting") {
             @Override
