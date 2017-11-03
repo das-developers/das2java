@@ -23,6 +23,7 @@ import static java.lang.Math.cos;
 import static java.lang.Math.sin;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumVector;
 import org.das2.datum.format.DatumFormatter;
@@ -201,11 +202,25 @@ public class PolarPlotRenderer extends Renderer {
         
         QDataSet ads= SemanticOps.xtagsDataSet(ds);
         QDataSet rds= SemanticOps.ytagsDataSet(ds); // this is why they are semanticOps.  ytagsDataSet is just used for convenience even though this is not the y values.
-
-        Double angleFactor= isAngleRange(ads);
+        QDataSet wds= SemanticOps.weightsDataSet(rds);
         
-        double x= rds.value(0) * cos( ads.value(0) * angleFactor );
-        double y= rds.value(0) * sin( ads.value(0) * angleFactor );
+        if ( ads.rank()!=1) throw new IllegalArgumentException("ads should be rank 1");
+        if ( rds.rank()!=1) throw new IllegalArgumentException("ads should be rank 1");
+        
+        Double angleFactor= isAngleRange(ads);
+
+        int i=0; 
+        while( i<ads.length() ) {
+            if ( wds.value(i)>0 ) break;
+        }
+        if ( i==ads.length() ) {
+            getParent().postMessage( this,"no valid data", Level.WARNING, null, null );
+            return;
+        }
+        
+        double x= rds.value(i) * cos( ads.value(i) * angleFactor );
+        double y= rds.value(i) * sin( ads.value(i) * angleFactor );
+        i++;
         
         GeneralPath gp= new GeneralPath();
         
@@ -214,11 +229,20 @@ public class PolarPlotRenderer extends Renderer {
         
         gp.moveTo( xAxis.transform( x, xunits ), yAxis.transform( y, yunits ) );
         
-        for ( int i=1; i<ads.length(); i++ ) {
-            x= rds.value(i) * cos( ads.value(i) * angleFactor );
-            y= rds.value(i) * sin( ads.value(i) * angleFactor );
+        boolean penDown= true;
         
-            gp.lineTo( xAxis.transform( x, xunits ), yAxis.transform( y, yunits ) );
+        for ( ; i<ads.length(); i++ ) {
+            if ( wds.value(i)==0 ) {
+                penDown= false;
+            } else {
+                x= rds.value(i) * cos( ads.value(i) * angleFactor );
+                y= rds.value(i) * sin( ads.value(i) * angleFactor );
+                if ( penDown ) {
+                    gp.lineTo( xAxis.transform( x, xunits ), yAxis.transform( y, yunits ) );
+                } else {
+                    gp.moveTo( xAxis.transform( x, xunits ), yAxis.transform( y, yunits ) );
+                }
+            }
         }
         
         g.setColor( getColorControl("color",Color.black) );
@@ -288,6 +312,10 @@ public class PolarPlotRenderer extends Renderer {
             }
         }
         
+        if ( xAxis.getUnits()!=yAxis.getUnits() ) {
+            getParent().postMessage( this, "xaxis and yaxis should have same units", Level.WARNING, null, null );
+            return;
+        }
         double x0= xAxis.transform(0,yunits);
         double y0= yAxis.transform(0,yunits);
 
@@ -399,8 +427,13 @@ public class PolarPlotRenderer extends Renderer {
         } else {
         
             if ( !( SemanticOps.isTableDataSet(tds) ) ) {
-                parent.postException( this, new IllegalArgumentException("expected Table: " +tds ) );
-                return;
+                if ( SemanticOps.isBundle( tds ) ) {
+                    renderRank1( g1, xAxis, yAxis, mon );
+                    return;
+                } else {
+                    parent.postException( this, new IllegalArgumentException("expected Table: " +tds ) );
+                    return;
+                }
             }
 
             if ( !xAxis.getUnits().isConvertibleTo( yAxis.getUnits() ) ) {
