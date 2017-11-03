@@ -1583,11 +1583,12 @@ public class Ops {
         if ( dep1.rank()!=1 ) {
             throw new IllegalArgumentException("dataset must have rank 1 tags");
         }
-        QDataSet findex= Ops.findex( dep1, st );
-        double f1= findex.value();
-        findex= Ops.findex( dep1, en );
-        double f2= findex.value();
         
+        QDataSet findex= Ops.findex( dep1, st );
+        double f1= Math.ceil( findex.value() );
+        findex= Ops.findex( dep1, en );
+        double f2= Math.ceil( findex.value() ); // f2 is exclusive.
+                
         int n= dep1.length();
         f1= 0>f1 ? 0 : f1;
         f1= n<f1 ? n : f1;
