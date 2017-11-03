@@ -1462,7 +1462,6 @@ public class Ops {
         }
         
         QDataSet dep0= SemanticOps.xtagsDataSet(ds);
-        QDataSet dep0limit= DataSetUtil.guessCadenceNew(dep0,ds);
         
         QDataSet dep0en= dep0;
         if ( dep0.rank()!=1 ) {
@@ -1489,34 +1488,24 @@ public class Ops {
             }
         }
         QDataSet findex= Ops.findex( dep0, st );
-        double f1= findex.value();
+        double f1= Math.ceil( findex.value() );
         findex= Ops.findex( dep0en, en );
-        double f2= findex.value();
+        double f2= Math.ceil( findex.value() ); // f2 is exclusive.
         
         int n= dep0.length();
         f1= 0>f1 ? 0 : f1;
         f1= n<f1 ? n : f1;
         f2= 0>f2 ? 0 : f2;
         f2= n<f2 ? n : f2;
-        
-        if ( dep0limit!=null ) {
-            Datum t= DataSetUtil.asDatum(dep0.slice((int)f1)).add( DataSetUtil.asDatum( dep0limit ) );
-            Datum dst= DataSetUtil.asDatum(st);
-            if ( t.lt(dst) && f1<n ) {
-                f1= f1+1;
-            }
-            // we don't need to adjust f2 because the timetags are waveform starts, not waveform centers.
-        }
-        
-        if ( (int)f1>Math.ceil(f2) ) {
+               
+        if ( f1>f2 ) {
             if ( Ops.ge(st,en).value()>0 ) {
                 throw new IllegalArgumentException("st must be less than (or earlier than) en");
             } else {
                 return ds.trim((int)f1,(int)f1);
             }
         }
-        
-        return ds.trim((int)f1,(int)Math.ceil(f2));
+        return ds.trim((int)f1,(int)f2);
     }
     
     /**
