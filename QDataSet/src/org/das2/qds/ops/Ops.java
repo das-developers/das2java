@@ -1541,18 +1541,18 @@ public class Ops {
             return trim( ds, st, en );
         } else {
             QDataSet dep= (QDataSet) ds.property( "DEPEND_"+dim );
-            
+        
             QDataSet findex= Ops.findex( dep, st );
-            double f1= findex.value();
+            double f1= Math.ceil( findex.value() );
             findex= Ops.findex( dep, en );
-            double f2= findex.value();
+            double f2= Math.ceil( findex.value() ); // f2 is exclusive.
         
             int n= dep.length();
             f1= 0>f1 ? 0 : f1;
             f1= n<f1 ? n : f1;
             f2= 0>f2 ? 0 : f2;
-            f2= n<f2 ? n : f2;
-            
+            f2= n<f2 ? n : f2;            
+                                
             TrimStrideWrapper tsw= new TrimStrideWrapper(ds);
             tsw.setTrim( dim, (int)f1, (int)f2, 1 );
             return tsw;
