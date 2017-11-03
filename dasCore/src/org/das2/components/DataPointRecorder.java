@@ -29,6 +29,7 @@ import org.das2.system.DasLogger;
 import java.awt.BorderLayout;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.BufferedReader;
@@ -751,6 +752,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
 
             // tabs detected in file.
             String delim= "\t";
+            boolean delimCheck= true;
             
             mon.setTaskSize(lineCount);
             mon.started();
@@ -760,19 +762,36 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                 if (mon.isCancelled()) {
                     break;
                 }
-                line= line.trim();
-                if ( line.length()==0 ) {
+                String tline= line.trim();
+                if ( tline.length()==0 ) {
                     continue;
                 }
+                
+                if ( delimCheck && !line.contains("\t") ) {
+                    Pattern p= Pattern.compile("([\\s\\,\\;])");
+                    Matcher m= p.matcher(line);
+                    if ( m.find() ) {
+                        char cdelim= m.group(1).charAt(0);
+                        if ( Character.isWhitespace(cdelim) ) {
+                            delim= "\\s+";
+                        } else {
+                            delim= m.group(1);
+                        }
+                    }
+                }
+                delimCheck= false;
+                
                 mon.setTaskProgress(linenum);
                 if (line.startsWith("## ") || line.length()>0 && Character.isJavaIdentifierStart( line.charAt(0) ) ) {
                     if ( unitsArray1!=null ) continue;
                     while ( line.startsWith("#") ) line = line.substring(1);
-                    if ( !line.contains("\t") ) delim= "\\s+";
                     String[] s = line.split(delim,-2);
                     for ( int i=0; i<s.length; i++ ) {
                         s[i]= s[i].trim();
-                    }                    
+                    }
+                    if ( s[s.length-1].length()==0 ) {
+                        s= Arrays.copyOf(s,s.length-1);
+                    }
                     Pattern p = Pattern.compile("([^\\(]+)\\((.*)\\)");
                     planesArray1 = new String[s.length];
                     unitsArray1 = new Units[s.length];
@@ -800,7 +819,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                     }
                     continue;
                 }
-                String[] s = line.split(delim);
+                String[] s = line.split(delim,-2);
                 for ( int i=0; i<s.length; i++ ) {
                     s[i]= s[i].trim();
                 }
@@ -816,14 +835,18 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                             unitsArray1[i] = DatumUtil.parseValid(s[i]).getUnits();
                         }
                     }
-                    planesArray1 = new String[]{"X", "Y", "comment"};
+                    planesArray1 = new String[s.length];
+                    System.arraycopy( new String[]{"X", "Y", "comment"}, 0, planesArray1, 0, planesArray1.length );
+                    for ( int i=3; i<planesArray1.length; i++ ) {
+                        planesArray1[i]= "comment"+i;
+                    }
                 }
 
                 try {
 
                     planes = new LinkedHashMap();
 
-                    for (int i = 2; i < s.length; i++) {
+                    for (int i = 2; i < unitsArray1.length; i++) {
                         if (unitsArray1[i] == null) {
                             Pattern p = Pattern.compile("\"(.*)\".*");
                             Matcher m = p.matcher(s[i]);
@@ -1223,16 +1246,20 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         return new AbstractAction("Insert Fill...") {
             @Override
             public void actionPerformed(ActionEvent e) {
-                int index= table.getSelectedRow();
-                if ( index==-1 ) {
-                    JOptionPane.showMessageDialog(DataPointRecorder.this,"Row must be selected");
-                    return;
-                }
-                if ( JOptionPane.OK_OPTION==
-                        JOptionPane.showConfirmDialog(DataPointRecorder.this,
-                                "Insert a fill record into in data?", 
-                                "Insert Fill", JOptionPane.OK_CANCEL_OPTION ) ) {
-                    insertFill();
+                if ( ( e.getModifiers() & KeyEvent.SHIFT_MASK )==KeyEvent.SHIFT_MASK ) {
+                    insertFill(true);
+                } else {
+                    int index= table.getSelectedRow();
+                    if ( index==-1 ) {
+                        JOptionPane.showMessageDialog(DataPointRecorder.this,"Row must be selected");
+                        return;
+                    }
+                    if ( JOptionPane.OK_OPTION==
+                            JOptionPane.showConfirmDialog(DataPointRecorder.this,
+                                    "Insert a fill record into in data?", 
+                                    "Insert Fill", JOptionPane.OK_CANCEL_OPTION ) ) {
+                        insertFill(false);
+                    }
                 }
             }            
         };
@@ -1241,7 +1268,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     /**
      * insert a fill record at the selected cell.
      */
-    private void insertFill() { 
+    private void insertFill( boolean appendToEnd ) { 
         Map planes= new LinkedHashMap<>();
         int icol=0;
         for ( String p: planesArray ) {
@@ -1249,11 +1276,16 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             icol++;
         }
         DataPoint fill= new DataPoint( unitsArray[0].getFillDatum(), unitsArray[1].getFillDatum(), planes );
-        int index= table.getSelectedRow();
-        if ( index==-1 ) {
-            throw new IllegalArgumentException("Row must be selected");
+        int index;
+        if ( appendToEnd ) {
+            index= table.getRowCount();
+        } else {
+            index= table.getSelectedRow();
+            if ( index==-1 ) {
+                throw new IllegalArgumentException("Row must be selected");
+            }
+            index= table.convertRowIndexToModel(index);
         }
-        index= table.convertRowIndexToModel(index);
         dataPoints.add( index, fill );
         modified = true;
         Runnable run= new Runnable() {
@@ -1307,7 +1339,9 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         editMenu.add(new JMenuItem(getPropertiesAction()));
         
         editMenu.add(new JMenuItem(getSetUnitsAction()));
-        editMenu.add(new JMenuItem(getInsertFillAction()));
+        JMenuItem i= new JMenuItem(getInsertFillAction());
+        i.setToolTipText("insert a fill record (interrupts data cadence) at the selected row, or hold shift to append a fill record.");
+        editMenu.add(i);
         
         editMenu.add( new JMenuItem( new AbstractAction("Clear Table Sorting") {
             @Override
