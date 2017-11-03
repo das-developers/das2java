@@ -15,6 +15,7 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
+import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import org.das2.datum.Units;
@@ -25,9 +26,13 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import org.das2.datum.Datum;
+import org.das2.datum.DatumRange;
 import org.das2.datum.DatumVector;
 import org.das2.datum.format.DatumFormatter;
 import org.das2.qds.ArrayDataSet;
+import org.das2.qds.DataSetUtil;
+import org.das2.qds.examples.Schemes;
+import org.das2.util.monitor.NullProgressMonitor;
 
 /**
  * Draws a pitch angle distribution, which is a spectrogram wrapped around an origin.  Datasets must
@@ -41,6 +46,40 @@ public class PolarPlotRenderer extends Renderer {
 
     public PolarPlotRenderer( DasColorBar cb ) {
         setColorBar(cb);
+    }
+
+    /**
+     * experiment with drawing the list icon dynamically.
+     * @return 
+     */
+    @Override
+    public Icon getListIcon() {
+        QDataSet dsl= getDataSet();
+        if ( dsl==null ) {
+            return super.getListIcon();
+            
+        } else {
+            BufferedImage result= new BufferedImage(16,16,BufferedImage.TYPE_INT_RGB);
+        
+            Graphics2D g= (Graphics2D) result.getGraphics();
+            g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
+            g.setColor( Color.WHITE );
+            g.fillRect( 0, 0, 16, 16 );
+            
+            QDataSet bounds= doAutorange(dsl);
+            
+            DatumRange xrange= DataSetUtil.asDatumRange( bounds.slice(0) );
+            DatumRange yrange= DataSetUtil.asDatumRange( bounds.slice(1) );
+            
+            DasAxis tinyX= new DasAxis( xrange.min(), xrange.max(), DasAxis.HORIZONTAL );
+            tinyX.setColumn( new DasColumn( getParent().getCanvas(), null, 0, 0, 0, 0, 0, 16 ) );
+            DasAxis tinyY= new DasAxis( yrange.min(), yrange.max(), DasAxis.VERTICAL );
+            tinyY.setRow( new DasRow( getParent().getCanvas(), null, 0, 0, 0, 0, 0, 16 ) );
+            render( g, tinyX, tinyY, new NullProgressMonitor() );
+            //g.drawImage( image, 0,0, 16,16, null ); // TODO: preserve aspect ratio, pick representative region. 
+            return new ImageIcon( result );
+        }
+
     }
 
     /**
@@ -95,11 +134,6 @@ public class PolarPlotRenderer extends Renderer {
             updateCacheImage();
         }
     };
-
-    @Override
-    public Icon getListIcon() {
-        return new ImageIcon(SpectrogramRenderer.class.getResource("/images/icons/pitchAngleDistribution.png"));
-    }
 
 
     @Override
