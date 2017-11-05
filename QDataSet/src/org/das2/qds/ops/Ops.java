@@ -9723,8 +9723,7 @@ public class Ops {
     }
 
     public static QDataSet contour( Object tds, Object vv ) {
-        QDataSet vds = Contour.contour( dataset(tds), dataset(vv) );
-        return vds;
+        return contour( dataset(tds), dataset(vv) );
     }
     
     /**
