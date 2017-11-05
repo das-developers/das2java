@@ -395,10 +395,11 @@ public class AsciiParser {
             for (String line1 : lines) {
                 if (p.fieldCount(line1) == p.fieldCount()) {
                     line = line1;
-                    Units[] u= new Units[this.units.length];
-                    System.arraycopy( this.units, 0, u, 0, this.units.length );
+                    int n= this.units.length;
+                    Units[] u= new Units[n];
+                    System.arraycopy( this.units, 0, u, 0, n );
                     result = createDelimParser(line1, p.getDelim(), -1); // set column names
-                    System.arraycopy( u, 0, this.units, 0, this.units.length );
+                    System.arraycopy( u, 0, this.units, 0, n );
                     break;
                 }
             }
