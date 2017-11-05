@@ -61,12 +61,35 @@ public class Contour {
             }
         }
         
-        /*
+        /**
+         * return bundle of X,Y,Z[STEP] where STEP contains gaps indicating breaks.
+         */
+        public static final String PERFORM_CONTOUR_RETURN_FORM4= "ret4";
+        
+        /**
+         * return bundle of X,Y,Z with DEPEND_0 equal to the step number, with a gap indicating a break.
+         */
+        public static final String PERFORM_CONTOUR_RETURN_FORM3= "ret3";
+        
+        /**
+         * perform the contour using PERFORM_CONTOUR_RETURN_FORM3
+         * @see #performContour(java.lang.Object) 
+         * @return rank 2 bundle of [n,3] with DEPEND_0 as the contour number
+         */
+        public QDataSet performContour() {
+            return performContour(PERFORM_CONTOUR_RETURN_FORM3);
+        }
+        
+        /**
          * returns a rank 2 bundle QDataSet of ds[:,3] with the contours.
          * x is ds[:,0], y is ds[:,1], and Zval is ds[:,2]
          * DEPEND_0 is a step number, where steps greater than 1 indicate a break in the contour.
+         *
+         * @param form data form to return, see PERFORM_CONTOUR_RETURN_FORM3 
+         * @see #PERFORM_CONTOUR_RETURN_FORM3
+         * @return rank 2 bundle of [n,3] for PERFORM_CONTOUR_RETURN_FORM3 or [n,4] for PERFORM_CONTOUR_RETURN_FORM4
          */
-        public QDataSet performContour() {
+        public QDataSet performContour(Object form) {
             DataSetBuilder builder= new DataSetBuilder( 2, 100, 4 ); // store ii in the last column.
 
             int workLength = 2 * xSteps * ySteps * ncv;
@@ -77,12 +100,20 @@ public class Contour {
 
             MutablePropertyDataSet result= builder.getDataSet();
 
-            QDataSet istep= DataSetOps.unbundle( result, 3 );
-
-            result= DataSetOps.leafTrim( result, 0, 3 );
-            result.putProperty( QDataSet.BUNDLE_1, getBundleDescriptor(this,result) );
-            result.putProperty( QDataSet.DEPEND_0, istep );
-            result.putProperty( QDataSet.RENDER_TYPE, "contour" );
+            if ( form==PERFORM_CONTOUR_RETURN_FORM3 ) {
+                QDataSet istep= DataSetOps.unbundle( result, 3 );
+                result= DataSetOps.leafTrim( result, 0, 3 );
+                result.putProperty( QDataSet.BUNDLE_1, getBundleDescriptor(this,result) );
+                result.putProperty( QDataSet.DEPEND_0, istep );
+                result.putProperty( QDataSet.RENDER_TYPE, "contour" );
+            } else if ( form==PERFORM_CONTOUR_RETURN_FORM4 ) {
+                QDataSet istep= DataSetOps.unbundle( result, 3 );
+                result= DataSetOps.leafTrim( result, 0, 3 );
+                MutablePropertyDataSet bundle1= getBundleDescriptor(this,result) ;
+                bundle1.putProperty( QDataSet.DEPEND_0, 2, istep );
+                result.putProperty( QDataSet.BUNDLE_1, bundle1 );
+                result.putProperty( QDataSet.RENDER_TYPE, "contour" );
+            }
             
             return result;
         }
@@ -520,7 +551,7 @@ public class Contour {
         }
     }
 
-    private static QDataSet getBundleDescriptor( ContourPlot cp, QDataSet input ) {
+    private static MutablePropertyDataSet getBundleDescriptor( ContourPlot cp, QDataSet input ) {
         QDataSet dep0= cp.xx;
 
         String name0= dep0==null ? "X" : Ops.guessName( dep0, "X" );
@@ -559,7 +590,7 @@ public class Contour {
      */
     public static QDataSet contour( QDataSet tds, QDataSet levels ) {
         Contour.ContourPlot cp= new ContourPlot( tds, levels );
-        return cp.performContour();
+        return cp.performContour(Contour.ContourPlot.PERFORM_CONTOUR_RETURN_FORM4);
     }
     
     /**
