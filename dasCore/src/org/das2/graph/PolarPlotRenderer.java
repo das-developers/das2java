@@ -30,6 +30,7 @@ import java.util.logging.Level;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
 import org.das2.datum.DatumVector;
+import org.das2.datum.UnitsUtil;
 import org.das2.datum.format.DatumFormatter;
 import org.das2.qds.ArrayDataSet;
 import org.das2.qds.DataSetUtil;
@@ -300,13 +301,18 @@ public class PolarPlotRenderer extends Renderer {
             ads= SemanticOps.xtagsDataSet(ds);
             rds= SemanticOps.ytagsDataSet(ds); // this is why they are semanticOps.  ytagsDataSet is just used for convenience even though this is not the y values.
         }
-        QDataSet wds= SemanticOps.weightsDataSet(rds);
-        
+        QDataSet wds= Ops.copy( SemanticOps.weightsDataSet(rds) );
+           
         if ( ads.rank()!=1) throw new IllegalArgumentException("ads should be rank 1");
         if ( rds.rank()!=1) throw new IllegalArgumentException("ads should be rank 1");
         
         Double angleFactor= isAngleRange(ads);
 
+        QDataSet cadence= DataSetUtil.guessCadenceNew( ads, rds );
+        
+        QDataSet tds= SemanticOps.xtagsDataSet(ads);
+        boolean close= ! UnitsUtil.isTimeLocation( SemanticOps.getUnits(tds) ); // if true then return to the first point to make a complete circuit.
+        
         int i=0; 
         while( i<ads.length() ) {
             if ( wds.value(i)>0 ) break;
@@ -315,6 +321,8 @@ public class PolarPlotRenderer extends Renderer {
             getParent().postMessage( this,"no valid data", Level.WARNING, null, null );
             return;
         }
+        
+        int i0= i;
         
         double x= rds.value(i) * cos( ads.value(i) * angleFactor );
         double y= rds.value(i) * sin( ads.value(i) * angleFactor );
@@ -329,10 +337,13 @@ public class PolarPlotRenderer extends Renderer {
         
         boolean penDown= true;
         
+        int lastIndex= -1;
+        
         for ( ; i<ads.length(); i++ ) {
             if ( wds.value(i)==0 ) {
                 penDown= false;
             } else {
+                lastIndex= i;
                 x= rds.value(i) * cos( ads.value(i) * angleFactor );
                 y= rds.value(i) * sin( ads.value(i) * angleFactor );
                 if ( penDown ) {
@@ -343,6 +354,19 @@ public class PolarPlotRenderer extends Renderer {
                     gp.moveTo( xAxis.transform( x, xunits ), yAxis.transform( y, yunits ) );
                 }
                 penDown= true; //TODO: data surrounded by fill.
+            }
+        }
+        
+        if ( close ) {
+            double da= Math.abs( ( ads.value(i0)- ads.value(lastIndex) ) * angleFactor );
+            if ( da>Math.PI ) da= (2*Math.PI)-da;
+            
+            if ( cadence!=null && cadence.rank()==0 && da<(1.1*cadence.value()*angleFactor) ) {
+                x= rds.value(i0) * cos( ads.value(i0) * angleFactor );
+                y= rds.value(i0) * sin( ads.value(i0) * angleFactor );
+                double dx= xAxis.transform( x, xunits );
+                double dy= yAxis.transform( y, yunits );
+                gp.lineTo( dx,dy );
             }
         }
         
