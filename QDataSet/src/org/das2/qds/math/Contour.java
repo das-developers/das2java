@@ -590,7 +590,7 @@ public class Contour {
      */
     public static QDataSet contour( QDataSet tds, QDataSet levels ) {
         Contour.ContourPlot cp= new ContourPlot( tds, levels );
-        return cp.performContour(Contour.ContourPlot.PERFORM_CONTOUR_RETURN_FORM4);
+        return cp.performContour(Contour.ContourPlot.PERFORM_CONTOUR_RETURN_FORM3);
     }
     
     /**
