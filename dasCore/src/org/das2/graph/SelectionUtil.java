@@ -38,6 +38,8 @@ public class SelectionUtil {
             return ((ImageVectorDataSetRenderer)r).selectionArea();
         } else if ( r instanceof RGBImageRenderer ) {
             return ((RGBImageRenderer)r).selectionArea();
+        } else if ( r instanceof PolarPlotRenderer ) {
+            return ((PolarPlotRenderer)r).selectionArea();
         } else if ( r instanceof TickCurveRenderer ) {
             return ((TickCurveRenderer)r).selectionArea();
         } else {
