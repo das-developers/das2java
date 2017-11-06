@@ -13,6 +13,7 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.awt.Shape;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
@@ -31,7 +32,6 @@ import org.das2.datum.DatumVector;
 import org.das2.datum.format.DatumFormatter;
 import org.das2.qds.ArrayDataSet;
 import org.das2.qds.DataSetUtil;
-import org.das2.qds.examples.Schemes;
 import org.das2.util.monitor.NullProgressMonitor;
 
 /**
@@ -45,9 +45,15 @@ import org.das2.util.monitor.NullProgressMonitor;
 public class PolarPlotRenderer extends Renderer {
 
     public PolarPlotRenderer( DasColorBar cb ) {
-        setColorBar(cb);
+        setColorBar(cb);    
     }
+    
+    private GeneralPath path;
+    private Shape _shape; //cache, derived from path
 
+    DasAxis tinyX;
+    DasAxis tinyY;
+    
     /**
      * experiment with drawing the list icon dynamically.
      * @return 
@@ -70,11 +76,16 @@ public class PolarPlotRenderer extends Renderer {
             
             DatumRange xrange= DataSetUtil.asDatumRange( bounds.slice(0) );
             DatumRange yrange= DataSetUtil.asDatumRange( bounds.slice(1) );
+            if ( tinyX==null ) {
+                tinyX= new DasAxis( xrange, DasAxis.HORIZONTAL );
+                tinyX.setColumn( new DasColumn( getParent().getCanvas(), null, 0, 0, 0, 0, 0, 16 ) );
+                tinyY= new DasAxis( yrange, DasAxis.VERTICAL );
+                tinyY.setRow( new DasRow( getParent().getCanvas(), null, 0, 0, 0, 0, 0, 16 ) );
+            } else {
+                tinyX.setDatumRange(xrange);
+                tinyY.setDatumRange(yrange);
+            }
             
-            DasAxis tinyX= new DasAxis( xrange.min(), xrange.max(), DasAxis.HORIZONTAL );
-            tinyX.setColumn( new DasColumn( getParent().getCanvas(), null, 0, 0, 0, 0, 0, 16 ) );
-            DasAxis tinyY= new DasAxis( yrange.min(), yrange.max(), DasAxis.VERTICAL );
-            tinyY.setRow( new DasRow( getParent().getCanvas(), null, 0, 0, 0, 0, 0, 16 ) );
             render( g, tinyX, tinyY, new NullProgressMonitor() );
             //g.drawImage( image, 0,0, 16,16, null ); // TODO: preserve aspect ratio, pick representative region. 
             return new ImageIcon( result );
@@ -82,6 +93,28 @@ public class PolarPlotRenderer extends Renderer {
 
     }
 
+    @Override
+    public boolean acceptContext(int x, int y) {
+        return selectionArea().contains(x,y);
+    }
+
+    public Shape selectionArea() {
+        if ( path==null ) {
+            DasRow row= getParent().getRow();
+            DasColumn column= getParent().getColumn();
+            return DasDevicePosition.toRectangle( row, column );
+        } else {
+            if ( _shape!=null ) {
+                return _shape;
+            } else {
+                Shape s = new BasicStroke( Math.min(14,1.f+8.f), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ).createStrokedShape(path);
+                _shape= s;
+                return s;
+            }
+        }
+    }    
+
+    
     /**
      * return true if the dataset can be interpreted as radian degrees from 0 to PI or from 0 to 2*PI.
      * @param ds any QDataSet.
@@ -158,6 +191,30 @@ public class PolarPlotRenderer extends Renderer {
         propertyChangeSupport.firePropertyChange(PROP_COLORBAR, oldColorBar, colorBar);
     }
    
+    /**
+     * the color for contour lines
+     */
+    private Color color = Color.BLACK;
+
+    /**
+     * Get the color for contour lines
+     * @return the color for contour lines
+     */
+    public Color getColor() {
+        return this.color;
+    }
+
+    /**
+     * Set the color for contour lines
+     * @param color the color for contour lines
+     */
+    public void setColor(Color color) {
+        Color oldColor = this.color;
+        this.color = color;
+        update();
+        propertyChangeSupport.firePropertyChange("color", oldColor, color);
+    }
+    
     private static QDataSet doAutorangeRank1(QDataSet rds ) {
         
         Units yunits= SemanticOps.getUnits(rds);
@@ -272,16 +329,24 @@ public class PolarPlotRenderer extends Renderer {
                 x= rds.value(i) * cos( ads.value(i) * angleFactor );
                 y= rds.value(i) * sin( ads.value(i) * angleFactor );
                 if ( penDown ) {
-                    gp.lineTo( xAxis.transform( x, xunits ), yAxis.transform( y, yunits ) );
+                    double dx= xAxis.transform( x, xunits );
+                    double dy= yAxis.transform( y, yunits );
+                    gp.lineTo( dx,dy );
                 } else {
                     gp.moveTo( xAxis.transform( x, xunits ), yAxis.transform( y, yunits ) );
                 }
+                penDown= true; //TODO: data surrounded by fill.
             }
         }
         
-        g.setColor( getColorControl("color",Color.black) );
+        g.setColor( color );
         g.draw(gp);
         
+        if ( xAxis!=tinyX ) {
+            path= gp;
+            _shape= null;
+        }
+
     }
     
     private void renderRank2( Graphics2D g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor monitor ) {
@@ -433,7 +498,7 @@ public class PolarPlotRenderer extends Renderer {
 
                         g.fill(gp);
                         g.draw(gp);
-
+                        
                     } else {
                         //g.setColor( Color.lightGray );
                     }
@@ -615,6 +680,7 @@ public class PolarPlotRenderer extends Renderer {
         this.drawPolarAxes= getBooleanControl("drawPolarAxes",false );
         this.origin= getControl("origin","");
         this.clockwise= getBooleanControl("clockwise",false);
+        this.color= getColorControl( "color", color );
     }    
 
     /**
