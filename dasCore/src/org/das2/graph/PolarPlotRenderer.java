@@ -292,8 +292,14 @@ public class PolarPlotRenderer extends Renderer {
 
         Graphics2D g= (Graphics2D)g1;
         
-        QDataSet ads= SemanticOps.xtagsDataSet(ds);
-        QDataSet rds= SemanticOps.ytagsDataSet(ds); // this is why they are semanticOps.  ytagsDataSet is just used for convenience even though this is not the y values.
+        QDataSet ads,rds;
+        if ( SemanticOps.isBundle(ds) ) {
+            ads= Ops.slice1( ds, 0 );
+            rds= Ops.slice1( ds, 1 );
+        } else {
+            ads= SemanticOps.xtagsDataSet(ds);
+            rds= SemanticOps.ytagsDataSet(ds); // this is why they are semanticOps.  ytagsDataSet is just used for convenience even though this is not the y values.
+        }
         QDataSet wds= SemanticOps.weightsDataSet(rds);
         
         if ( ads.rank()!=1) throw new IllegalArgumentException("ads should be rank 1");
