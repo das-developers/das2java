@@ -140,13 +140,14 @@ public class Orbits {
         try (BufferedReader rin = new BufferedReader( new InputStreamReader( in ) )) {
             String s= rin.readLine();
             int col= -1; // the first time column, 0 is the first column.
+            int labelColumn= -1;  // column of the identifiers.
             while ( s!=null ) {
                 String[] ss= s.trim().split("\\s+");
                 if ( ss.length>0 && ss[0].startsWith("#") ) {
                     s= rin.readLine();
                     continue;
                 }
-                if ( ss.length==3 && ( ss[1].startsWith("1") || ss[1].startsWith("2") ) ) { // quick checks
+                if ( ss.length>2 && ( ss[1].startsWith("1") || ss[1].startsWith("2") ) ) { // quick checks
                     Datum d1;
                     Datum d2;
                     String s0;
@@ -155,7 +156,11 @@ public class Orbits {
                             try {
                                 d1= TimeUtil.create(ss[col]);
                                 d2= TimeUtil.create(ss[col+1]);
-                                s0= ss[ col==0 ? 2 : 0 ];
+                                if ( ss.length<=labelColumn ) {
+                                    logger.info("number of columns changes, reverting to old logic");
+                                    labelColumn= 2;
+                                }
+                                s0= ss[ col==0 ? labelColumn : 0 ];
                             } catch ( ParseException ex ) {
                                 s= rin.readLine();
                                 continue;
@@ -169,6 +174,7 @@ public class Orbits {
                             }
                             s0= ss[2];
                             col= 0;
+                            labelColumn= ss.length-1;
                         }
                     } catch ( ParseException ex ) {
                         try {
@@ -176,6 +182,7 @@ public class Orbits {
                             d2= TimeUtil.create(ss[2]);
                             s0= ss[0];
                             col= 1;
+                            labelColumn= 0;
                         } catch ( ParseException ex1 ) {
                             s= rin.readLine();
                             continue;
