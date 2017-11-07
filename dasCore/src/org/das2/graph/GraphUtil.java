@@ -1028,4 +1028,30 @@ public class GraphUtil {
             bounds.height * percent / 100 );
         return result;
     }
+    
+    public static class DebuggingGeneralPath {
+        GeneralPath delegate;
+        DebuggingGeneralPath( int rule, int capacity ) {
+            delegate= new GeneralPath( rule, capacity );
+        }
+
+        void lineTo(double fx, double fy) {
+            logger.fine(String.format("lineTo(%5.1f,%5.1f)",fx,fy));
+            delegate.lineTo(fx, fy);
+        }
+
+        void moveTo(double fx, double fy) {
+            logger.fine(String.format("moveTo(%5.1f,%5.1f)",fx,fy));
+            delegate.moveTo(fx,fy);
+        }
+
+        PathIterator getPathIterator(AffineTransform at) {
+            return delegate.getPathIterator(at);
+        }
+
+        GeneralPath getGeneralPath() {
+            return delegate;
+        }
+    }
+
 }
