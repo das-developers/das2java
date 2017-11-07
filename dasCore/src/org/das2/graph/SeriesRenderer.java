@@ -697,7 +697,7 @@ public class SeriesRenderer extends Renderer {
             if ( lparent==null ) return;
             if ( lparent.isOverSize() ) {
                 window= new Rectangle( window.x- window.width/3, window.y-buffer, 5 * window.width / 3, window.height + 2 * buffer );
-                //TODO: there's a rectangle somewhere that is the preveiw.  Use this instead of assuming 1/3 on either side.
+                //TODO: there's a rectangle somewhere that is the preview.  Use this instead of assuming 1/3 on either side.
             } else {
                 window= new Rectangle( window.x- buffer, window.y-buffer, window.width + 2*buffer, window.height + 2 * buffer );
             }
@@ -851,6 +851,8 @@ public class SeriesRenderer extends Renderer {
                                             // See file:///home/jbf/ct/hudson/data.backup/cdf/virbo/poes_n17_20041228.cdf?P1_90[0:300]
                                             if ( penter!=null ) {    
                                                 newPath.moveTo(penter.getX(), penter.getY());
+                                            } else {
+                                                newPath.moveTo( fx, fy );
                                             }
                                         }
                                     } else {
