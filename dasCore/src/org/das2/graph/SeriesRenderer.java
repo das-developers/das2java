@@ -852,7 +852,11 @@ public class SeriesRenderer extends Renderer {
                                             if ( penter!=null ) {    
                                                 newPath.moveTo(penter.getX(), penter.getY());
                                             } else {
-                                                newPath.moveTo( fx, fy );
+                                                if ( Math.abs( lastPosition.getX() )<10000 ) {
+                                                    newPath.moveTo( lastPosition.getX(), lastPosition.getY() );
+                                                } else {
+                                                    newPath.moveTo( fx, fy );
+                                                }
                                             }
                                         }
                                     } else {
