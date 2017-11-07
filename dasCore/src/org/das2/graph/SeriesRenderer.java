@@ -846,10 +846,12 @@ public class SeriesRenderer extends Renderer {
                                     if (notInvalidInterleave) {
                                         if ( lastPosition !=null ) {
                                             Point2D penter = GraphUtil.lineRectangleIntersection( lastPosition, new Point2D.Double(fx, fy), window );
-                                        //!!!! let's kludge this in on a weekend and see what happens...                                          
-                                        // the challenge with all this is that every other point can be invalid, and then these are not interpretted as data breaks.  
-                                        // See file:///home/jbf/ct/hudson/data.backup/cdf/virbo/poes_n17_20041228.cdf?P1_90[0:300]
-                                            newPath.moveTo(penter.getX(), penter.getY());
+                                            //!!!! let's kludge this in on a weekend and see what happens...                                          
+                                            // the challenge with all this is that every other point can be invalid, and then these are not interpretted as data breaks.  
+                                            // See file:///home/jbf/ct/hudson/data.backup/cdf/virbo/poes_n17_20041228.cdf?P1_90[0:300]
+                                            if ( penter!=null ) {    
+                                                newPath.moveTo(penter.getX(), penter.getY());
+                                            }
                                         }
                                     } else {
                                         newPath.moveTo(fx0,fy0);
