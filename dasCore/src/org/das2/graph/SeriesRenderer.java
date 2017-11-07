@@ -645,13 +645,16 @@ public class SeriesRenderer extends Renderer {
         @Override
         public int render(Graphics2D g, DasAxis xAxis, DasAxis yAxis, QDataSet vds, ProgressMonitor mon) {
             long t0= System.currentTimeMillis();
-            Color color0= g.getColor();
-            g.setColor( Color.LIGHT_GRAY );
-            for ( int i=0; i<1000; i+=100 ) {
-                g.drawLine( i, 0, i, 1000 );
-                g.drawLine( 0, i, 1000, i );
+            final boolean debug= false;
+            if ( debug ) {
+                Color color0= g.getColor();
+                g.setColor( Color.LIGHT_GRAY );
+                for ( int i=0; i<1000; i+=100 ) {
+                    g.drawLine( i, 0, i, 1000 );
+                    g.drawLine( 0, i, 1000, i );
+                }
+                g.setColor(color0);
             }
-            g.setColor(color0);
             logger.log(Level.FINE, "enter connector render" );
             if ( vds.rank()!=1 && !SemanticOps.isRank2Waveform(vds) && !SemanticOps.isRank3JoinOfRank2Waveform(vds)) {
                 renderException( g, xAxis, yAxis, new IllegalArgumentException("dataset is not rank 1"));
