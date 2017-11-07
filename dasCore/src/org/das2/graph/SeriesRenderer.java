@@ -758,6 +758,8 @@ public class SeriesRenderer extends Renderer {
             x = (double) xds.value(index);
             y = (double) vds.value(index);
 
+            Point2D lastPosition= null;
+
             //System.err.println("vds length "+vds.length());
             //System.err.println("xds range " + Ops.extent(xds) );
             //System.err.println("first,last index " +firstIndex + " " + lastIndex );
@@ -839,13 +841,16 @@ public class SeriesRenderer extends Renderer {
                             newPath.lineTo(fx1, fy);
                             newPath.lineTo(fx, fy);
                         } else {
-                            if ( visible ) {
-                                if ( !visible0 ) {
-                                    if ( notInvalidInterleave ) {
+                            if (visible) {
+                                if (!visible0) {
+                                    if (notInvalidInterleave) {
+                                        if ( lastPosition !=null ) {
+                                            Point2D penter = GraphUtil.lineRectangleIntersection( lastPosition, new Point2D.Double(fx, fy), window );
                                         //!!!! let's kludge this in on a weekend and see what happens...                                          
                                         // the challenge with all this is that every other point can be invalid, and then these are not interpretted as data breaks.  
                                         // See file:///home/jbf/ct/hudson/data.backup/cdf/virbo/poes_n17_20041228.cdf?P1_90[0:300]
-                                        newPath.moveTo(fx,fy);
+                                            newPath.moveTo(penter.getX(), penter.getY());
+                                        }
                                     } else {
                                         newPath.moveTo(fx0,fy0);
                                     }
@@ -879,7 +884,7 @@ public class SeriesRenderer extends Renderer {
                     fx0 = fx;
                     fy0 = fy;
                     visible0 = visible;
-
+                    lastPosition= new Point2D.Double(fx, fy);
                 } else {
                     if (visible0) {
                         if ( histogram ) {
