@@ -14,6 +14,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.Shape;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Arc2D;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
@@ -355,6 +356,8 @@ public class PolarPlotRenderer extends Renderer {
                 }
                 penDown= true; //TODO: data surrounded by fill.
             }
+            gp.transform( AffineTransform.getTranslateInstance(Math.random()-0.5,Math.random()-0.5) );
+            g.draw(gp);
         }
         
         if ( close ) {
