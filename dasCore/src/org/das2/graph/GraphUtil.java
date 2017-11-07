@@ -1031,18 +1031,24 @@ public class GraphUtil {
     
     public static class DebuggingGeneralPath {
         GeneralPath delegate;
+        int count= 0;
+        
         DebuggingGeneralPath( int rule, int capacity ) {
             delegate= new GeneralPath( rule, capacity );
+            System.err.println(String.format("==newPath=="));
+            count= 0;
         }
 
         void lineTo(double fx, double fy) {
-            System.err.println(String.format("lineTo(%5.1f,%5.1f)",fx,fy));
+            System.err.println(String.format("lineTo(%5.1f,%5.1f) %d",fx,fy,count));
             delegate.lineTo(fx, fy);
+            count++;
         }
 
         void moveTo(double fx, double fy) {
-            System.err.println(String.format("moveTo(%5.1f,%5.1f)",fx,fy));
+            System.err.println(String.format("moveTo(%5.1f,%5.1f) %d",fx,fy,count));
             delegate.moveTo(fx,fy);
+            count++;
         }
 
         PathIterator getPathIterator(AffineTransform at) {
