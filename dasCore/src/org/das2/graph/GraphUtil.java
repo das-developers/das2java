@@ -1036,12 +1036,12 @@ public class GraphUtil {
         }
 
         void lineTo(double fx, double fy) {
-            logger.fine(String.format("lineTo(%5.1f,%5.1f)",fx,fy));
+            System.err.println(String.format("lineTo(%5.1f,%5.1f)",fx,fy));
             delegate.lineTo(fx, fy);
         }
 
         void moveTo(double fx, double fy) {
-            logger.fine(String.format("moveTo(%5.1f,%5.1f)",fx,fy));
+            System.err.println(String.format("moveTo(%5.1f,%5.1f)",fx,fy));
             delegate.moveTo(fx,fy);
         }
 
