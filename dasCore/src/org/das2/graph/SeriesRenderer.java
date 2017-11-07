@@ -42,6 +42,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.IndexColorModel;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.text.ParseException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -644,6 +645,13 @@ public class SeriesRenderer extends Renderer {
         @Override
         public int render(Graphics2D g, DasAxis xAxis, DasAxis yAxis, QDataSet vds, ProgressMonitor mon) {
             long t0= System.currentTimeMillis();
+            Color color0= g.getColor();
+            g.setColor( Color.LIGHT_GRAY );
+            for ( int i=0; i<1000; i+=100 ) {
+                g.drawLine( i, 0, i, 1000 );
+                g.drawLine( 0, i, 1000, i );
+            }
+            g.setColor(color0);
             logger.log(Level.FINE, "enter connector render" );
             if ( vds.rank()!=1 && !SemanticOps.isRank2Waveform(vds) && !SemanticOps.isRank3JoinOfRank2Waveform(vds)) {
                 renderException( g, xAxis, yAxis, new IllegalArgumentException("dataset is not rank 1"));
@@ -700,6 +708,7 @@ public class SeriesRenderer extends Renderer {
             
             int pathLengthApprox= Math.max( 5, 110 * (lastIndex - firstIndex) / 100 );
             GeneralPath newPath = new GeneralPath(GeneralPath.WIND_NON_ZERO, pathLengthApprox );
+            //GraphUtil.DebuggingGeneralPath newPath= new GraphUtil.DebuggingGeneralPath(GeneralPath.WIND_NON_ZERO, pathLengthApprox );
 
             Datum sw = null;
             try {// TODO: this really shouldn't be here, since we calculate it once.
@@ -797,7 +806,15 @@ public class SeriesRenderer extends Renderer {
             // now loop through all of them. //
             boolean ignoreCadence= ! cadenceCheck;
             boolean isValid= false;
-
+            
+            //poes_n17_20041228.cdf?P1_90[0:300] contains fill records between 
+            //each measurement. Test for this.
+            int invalidInterleaveCount= 0;
+            for ( int i=1; i<xds.length(); i++ ) {
+                if ( wds.value(i-1)>0 && wds.value(i)==0 ) invalidInterleaveCount++;
+            }
+            boolean notInvalidInterleave= invalidInterleaveCount<(wds.length()/3);
+            
             for (; index < lastIndex; index++) {
 
                 x = xds.value(index);
@@ -821,7 +838,7 @@ public class SeriesRenderer extends Renderer {
                         } else {
                             if ( visible ) {
                                 if ( !visible0 ) {
-                                    if ( ignoreCadence || step<0 ) {
+                                    if ( notInvalidInterleave ) {
                                         //!!!! let's kludge this in on a weekend and see what happens...                                          
                                         // the challenge with all this is that every other point can be invalid, and then these are not interpretted as data breaks.  
                                         // See file:///home/jbf/ct/hudson/data.backup/cdf/virbo/poes_n17_20041228.cdf?P1_90[0:300]
@@ -893,6 +910,7 @@ public class SeriesRenderer extends Renderer {
                 logger.fine( String.format("reduce path in=%d  out=%d\n", lastIndex-firstIndex, count) );
             } else {
                 this.path1 = newPath;
+                //this.path1 = newPath.getGeneralPath();
             }
 
             //dumpPath( getParent().getCanvas().getWidth(), getParent().getCanvas().getHeight(), path1 );  // dumps jython script showing problem.
