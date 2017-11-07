@@ -97,6 +97,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     public static final String PROP_UNITS = "units";
     public static final String PROPERTY_TICKS = "ticks";
 
+    private static final int DEVICE_POSITIVE_LIMIT= 10000;
     private static final int MAX_TCA_LINES=10; // maximum number of TCA lines
     /*
      * PUBLIC CONSTANT DECLARATIONS
@@ -1683,7 +1684,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         int intersects = 0;
         for (int i = 1; intersects<8 && i < minor.getLength(); i++) {
             int x1 = (int) transform(minor.get(i));
-            if ( x1<10000 ) {
+            if ( x1<DEVICE_POSITIVE_LIMIT ) {
                 if (Math.abs(x0 - x1) < 6 ) {
                     intersects++;
                 } else {
@@ -2923,7 +2924,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         double scale2 = (0. + getMemento().dmin - getMemento().dmax) / (memento.dmin - memento.dmax);
         double trans2 = -1 * memento.dmin * scale2 + getMemento().dmin;
 
-        if ( dmin0==10000 || dmin0==-10000 | dmax0==10000 | dmax0==10000 ) {
+        if ( dmin0==DEVICE_POSITIVE_LIMIT || dmin0==-DEVICE_POSITIVE_LIMIT | dmax0==DEVICE_POSITIVE_LIMIT | dmax0==DEVICE_POSITIVE_LIMIT ) {
             logger.info("unable to create transform");
         }
 
@@ -3663,11 +3664,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             result = (device_range * (data - minimum) / data_range) + dmin;
         }
 
-        if (result > 10000) {
-            result = 10000;
+        if (result > DEVICE_POSITIVE_LIMIT) {
+            result = DEVICE_POSITIVE_LIMIT;
         }
-        if (result < -10000) {
-            result = -10000;
+        if (result < -DEVICE_POSITIVE_LIMIT) {
+            result = -DEVICE_POSITIVE_LIMIT;
         }
         return result;
     }
