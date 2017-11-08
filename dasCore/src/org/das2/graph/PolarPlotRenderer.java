@@ -89,7 +89,12 @@ public class PolarPlotRenderer extends Renderer {
                 tinyY.setDatumRange(yrange);
             }
             
-            render( g, tinyX, tinyY, new NullProgressMonitor() );
+            try {
+                render( g, tinyX, tinyY, new NullProgressMonitor() );
+            } catch ( NullPointerException ex ) {
+                ex.printStackTrace();
+                g.drawLine(0,0,16,16);
+            }
             //g.drawImage( image, 0,0, 16,16, null ); // TODO: preserve aspect ratio, pick representative region. 
             return new ImageIcon( result );
         }
