@@ -710,8 +710,8 @@ public class SeriesRenderer extends Renderer {
             long t0= System.currentTimeMillis();
             
             int pathLengthApprox= Math.max( 5, 110 * (lastIndex - firstIndex) / 100 );
-            //GeneralPath newPath = new GeneralPath(GeneralPath.WIND_NON_ZERO, pathLengthApprox );
-            GraphUtil.DebuggingGeneralPath newPath= new GraphUtil.DebuggingGeneralPath(GeneralPath.WIND_NON_ZERO, pathLengthApprox );
+            GeneralPath newPath = new GeneralPath(GeneralPath.WIND_NON_ZERO, pathLengthApprox );
+            //GraphUtil.DebuggingGeneralPath newPath= new GraphUtil.DebuggingGeneralPath(GeneralPath.WIND_NON_ZERO, pathLengthApprox );
 
             Datum sw = null;
             try {// TODO: this really shouldn't be here, since we calculate it once.
@@ -925,8 +925,8 @@ public class SeriesRenderer extends Renderer {
                 int count = GraphUtil.reducePath20140622(newPath.getPathIterator(null), path1, 1, 5 );
                 logger.fine( String.format("reduce path in=%d  out=%d\n", lastIndex-firstIndex, count) );
             } else {
-                //this.path1 = newPath;
-                this.path1 = newPath.getGeneralPath();
+                this.path1 = newPath;
+                //this.path1 = newPath.getGeneralPath();
             }
 
             //dumpPath( getParent().getCanvas().getWidth(), getParent().getCanvas().getHeight(), path1 );  // dumps jython script showing problem.
