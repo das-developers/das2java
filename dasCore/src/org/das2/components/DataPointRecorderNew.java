@@ -655,7 +655,7 @@ public class DataPointRecorderNew extends JPanel {
             active= active0;
             modified = false;
 
-            table.getColumnModel();
+            //table.getColumnModel();
             myTableModel.fireTableStructureChanged();
             table.repaint();
         }

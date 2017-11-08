@@ -675,7 +675,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                     for (int j = 2; j < planesArray.length; j++) {
                         Object o = x.getPlane(planesArray[j]);
                         if ( o==null ) {
-                            x.getPlane(planesArray[j]); // for debugging
+                            //x.getPlane(planesArray[j]); // for debugging
                             throw new IllegalArgumentException("unable to find plane: "+planesArray[j]);
                         }
                         if (unitsArray[j] == null) {
@@ -914,7 +914,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             Runnable run= new Runnable() {
                 @Override
                 public void run() {
-                    table.getColumnModel();
+                    //table.getColumnModel();
                     myTableModel.fireTableStructureChanged();
                     table.repaint();
                 }
