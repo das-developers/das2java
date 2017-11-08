@@ -1061,7 +1061,7 @@ public class GraphUtil {
                 System.err.println(String.format("lineTo(%5.1f,%5.1f) %d",fx,fy,count));
             }
             if ( arrows ) {
-                if ( inity==lastfy0 ) {
+                if ( inity==lastfy0 && initx==lastfx0 ) {
                     double perpy= fx-lastfx0;
                     double perpx= -1 * ( fy-lastfy0 );
                     double n= Math.sqrt( perpx*perpx + perpy*perpy );
