@@ -1068,8 +1068,8 @@ public class GraphUtil {
                     perpx= perpx/n;
                     perpy= perpy/n;
                     int len=4;
-                    delegate.lineTo( initx - perpx*len, inity - perpy*len );
-                    delegate.lineTo( initx + perpx*len, inity + perpy*len );
+                    delegate.lineTo( lastfx0 - perpx*len, lastfy0 - perpy*len );
+                    delegate.lineTo( lastfx0 + perpx*len, lastfy0 + perpy*len );
                     delegate.moveTo( lastfx0, lastfy0 );
                 }
             }
