@@ -204,6 +204,25 @@ public class PolarPlotRenderer extends Renderer {
      */
     private Color color = Color.BLACK;
 
+    private double lineWidth = 1.0;
+
+    public static final String PROP_LINEWIDTH = "lineWidth";
+
+    /**
+     * get the width, in pixels of the contour lines.
+     * @return width in pixels
+     */
+    public double getLineWidth() {
+        return lineWidth;
+    }
+
+    public void setLineWidth(double lineWidth) {
+        double oldLineWidth = this.lineWidth;
+        this.lineWidth = lineWidth;
+        update();
+        propertyChangeSupport.firePropertyChange(PROP_LINEWIDTH, oldLineWidth, lineWidth);
+    }
+
     /**
      * Get the color for contour lines
      * @return the color for contour lines
@@ -334,7 +353,8 @@ public class PolarPlotRenderer extends Renderer {
         double y= rds.value(i) * sin( ads.value(i) * angleFactor );
         i++;
         
-        GeneralPath gp= new GeneralPath();
+        //GeneralPath gp= new GeneralPath();
+        GraphUtil.DebuggingGeneralPath gp= new GraphUtil.DebuggingGeneralPath();
         
         Units xunits= xAxis.getUnits();
         Units yunits= yAxis.getUnits();
@@ -361,8 +381,8 @@ public class PolarPlotRenderer extends Renderer {
                 }
                 penDown= true; //TODO: data surrounded by fill.
             }
-            gp.transform( AffineTransform.getTranslateInstance(Math.random()-0.5,Math.random()-0.5) );
-            g.draw(gp);
+            //gp.transform( AffineTransform.getTranslateInstance(Math.random()-0.5,Math.random()-0.5) );
+            //g.draw(gp);
         }
         
         if ( close ) {
@@ -379,10 +399,13 @@ public class PolarPlotRenderer extends Renderer {
         }
         
         g.setColor( color );
-        g.draw(gp);
+        g.setStroke(new BasicStroke((float)lineWidth));
+        //g.draw(gp);
+        g.draw(gp.getGeneralPath());
         
         if ( xAxis!=tinyX ) {
-            path= gp;
+            //path= gp;
+            path= gp.getGeneralPath();
             _shape= null;
         }
 
@@ -712,6 +735,9 @@ public class PolarPlotRenderer extends Renderer {
             controls.remove("originNorth");
         }
         if ( clockwise ) controls.put("clockwise", "T" );
+        controls.put( "color", encodeColorControl(color) );
+        controls.put( "lineWidth", String.valueOf(lineWidth) );
+        
         return Renderer.formatControl(controls);
     }
     
@@ -726,6 +752,7 @@ public class PolarPlotRenderer extends Renderer {
         this.origin= getControl("origin","");
         this.clockwise= getBooleanControl("clockwise",false);
         this.color= getColorControl( "color", color );
+        this.lineWidth= getDoubleControl( "lineWidth", lineWidth );
     }    
 
     /**
