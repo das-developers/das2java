@@ -1052,8 +1052,6 @@ public class DasPlot extends DasCanvasComponent {
                 lcacheImageBounds.height = height;
             }            
             if ( lcacheImageBounds.width==0 || lcacheImageBounds.height==0 ) {
-                getWidth();
-                getHeight();
                 throw new IllegalArgumentException("width or height is 0.");
             }
             logger.log( Level.FINE, "create cacheImage {0}x{1}", new Object[]{lcacheImageBounds.width, lcacheImageBounds.height});
