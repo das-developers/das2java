@@ -12,6 +12,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
@@ -54,8 +55,10 @@ public class PolarPlotRenderer extends Renderer {
     private GeneralPath path;
     private Shape _shape; //cache, derived from path
 
-    DasAxis tinyX;
-    DasAxis tinyY;
+    private DasAxis tinyX;
+    private DasAxis tinyY;
+    
+    private Icon icon;
     
     /**
      * experiment with drawing the list icon dynamically.
@@ -68,35 +71,42 @@ public class PolarPlotRenderer extends Renderer {
             return super.getListIcon();
             
         } else {
-            BufferedImage result= new BufferedImage(16,16,BufferedImage.TYPE_INT_RGB);
-        
-            Graphics2D g= (Graphics2D) result.getGraphics();
-            g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
-            g.setColor( Color.WHITE );
-            g.fillRect( 0, 0, 16, 16 );
             
-            QDataSet bounds= doAutorange(dsl);
-            
-            DatumRange xrange= DataSetUtil.asDatumRange( bounds.slice(0) );
-            DatumRange yrange= DataSetUtil.asDatumRange( bounds.slice(1) );
-            if ( tinyX==null ) {
-                tinyX= new DasAxis( xrange, DasAxis.HORIZONTAL );
-                tinyX.setColumn( new DasColumn( getParent().getCanvas(), null, 0, 0, 0, 0, 0, 16 ) );
-                tinyY= new DasAxis( yrange, DasAxis.VERTICAL );
-                tinyY.setRow( new DasRow( getParent().getCanvas(), null, 0, 0, 0, 0, 0, 16 ) );
+            if ( icon!=null ) {
+                return icon; 
             } else {
-                tinyX.setDatumRange(xrange);
-                tinyY.setDatumRange(yrange);
+                BufferedImage result= new BufferedImage(64,64,BufferedImage.TYPE_INT_RGB);
+
+                Graphics2D g= (Graphics2D) result.getGraphics();
+                g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
+                g.setColor( Color.WHITE );
+                g.fillRect( 0, 0, 64, 64 );
+
+                QDataSet bounds= doAutorange(dsl);
+
+                DatumRange xrange= DataSetUtil.asDatumRange( bounds.slice(0) );
+                DatumRange yrange= DataSetUtil.asDatumRange( bounds.slice(1) );
+                if ( tinyX==null ) {
+                    tinyX= new DasAxis( xrange, DasAxis.HORIZONTAL );
+                    tinyX.setColumn( new DasColumn( getParent().getCanvas(), null, 0, 0, 0, 0, 0, 64 ) );
+                    tinyY= new DasAxis( yrange, DasAxis.VERTICAL );
+                    tinyY.setRow( new DasRow( getParent().getCanvas(), null, 0, 0, 0, 0, 0, 64 ) );
+                } else {
+                    tinyX.setDatumRange(xrange);
+                    tinyY.setDatumRange(yrange);
+                }
+
+                try {
+                    render( g, tinyX, tinyY, new NullProgressMonitor() );
+                } catch ( NullPointerException ex ) {
+                    ex.printStackTrace();
+                    g.drawLine(0,0,64,64);
+                }
+
+                icon = new ImageIcon( result.getScaledInstance(16,16,Image.SCALE_SMOOTH) );
+                return icon;
+                
             }
-            
-            try {
-                render( g, tinyX, tinyY, new NullProgressMonitor() );
-            } catch ( NullPointerException ex ) {
-                ex.printStackTrace();
-                g.drawLine(0,0,16,16);
-            }
-            //g.drawImage( image, 0,0, 16,16, null ); // TODO: preserve aspect ratio, pick representative region. 
-            return new ImageIcon( result );
         }
 
     }
@@ -198,7 +208,13 @@ public class PolarPlotRenderer extends Renderer {
             }
         propertyChangeSupport.firePropertyChange(PROP_COLORBAR, oldColorBar, colorBar);
     }
-   
+
+    @Override
+    public void update() {
+        super.update(); 
+        this.icon= null;
+    }
+    
     /**
      * the color for contour lines
      */
@@ -353,8 +369,9 @@ public class PolarPlotRenderer extends Renderer {
         double y= rds.value(i) * sin( ads.value(i) * angleFactor );
         i++;
         
-        //GeneralPath gp= new GeneralPath();
-        GraphUtil.DebuggingGeneralPath gp= new GraphUtil.DebuggingGeneralPath();
+        GeneralPath gp= new GeneralPath();
+        //GraphUtil.DebuggingGeneralPath gp= new GraphUtil.DebuggingGeneralPath();
+        //gp.setArrows(true);
         
         Units xunits= xAxis.getUnits();
         Units yunits= yAxis.getUnits();
@@ -400,12 +417,12 @@ public class PolarPlotRenderer extends Renderer {
         
         g.setColor( color );
         g.setStroke(new BasicStroke((float)lineWidth));
-        //g.draw(gp);
-        g.draw(gp.getGeneralPath());
+        g.draw(gp);
+        //g.draw(gp.getGeneralPath());
         
         if ( xAxis!=tinyX ) {
-            //path= gp;
-            path= gp.getGeneralPath();
+            path= gp;
+            //path= gp.getGeneralPath();
             _shape= null;
         }
 
