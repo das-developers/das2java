@@ -1033,6 +1033,12 @@ public class GraphUtil {
     public static class DebuggingGeneralPath {
         GeneralPath delegate;
         int count= 0;
+        double lastfx0=0;
+        double lastfy0=0;
+        double initx=0;
+        double inity=0;
+        boolean arrows=false;
+        boolean printRoute= true;
         
         DebuggingGeneralPath( int rule, int capacity ) {
             delegate= new GeneralPath( rule, capacity );
@@ -1046,15 +1052,54 @@ public class GraphUtil {
             count= 0;
         }        
 
-        void lineTo(double fx, double fy) {
-            System.err.println(String.format("lineTo(%5.1f,%5.1f) %d",fx,fy,count));
+        public void setArrows( boolean drawArrows ) {
+            this.arrows= drawArrows;
+        }
+        
+        public void lineTo(double fx, double fy) {
+            if ( printRoute ) {
+                System.err.println(String.format("lineTo(%5.1f,%5.1f) %d",fx,fy,count));
+            }
+            if ( arrows ) {
+                if ( inity==lastfy0 ) {
+                    double perpy= fx-lastfx0;
+                    double perpx= -1 * ( fy-lastfy0 );
+                    double n= Math.sqrt( perpx*perpx + perpy*perpy );
+                    perpx= perpx/n;
+                    perpy= perpy/n;
+                    int len=4;
+                    delegate.lineTo( initx - perpx*len, inity - perpy*len );
+                    delegate.lineTo( initx + perpx*len, inity + perpy*len );
+                    delegate.moveTo( lastfx0, lastfy0 );
+                }
+            }
             delegate.lineTo(fx, fy);
+            if ( arrows ) {
+                double perpy= fx-lastfx0;
+                double perpx= -1 * ( fy-lastfy0 );
+                double n= Math.sqrt( perpx*perpx + perpy*perpy );
+                perpx= perpx/n;
+                perpy= perpy/n;
+                int len=4;
+                delegate.lineTo( fx+perpx*len - perpy*len, fy+perpy*len + perpx*len );
+                delegate.lineTo( fx , fy );
+            }
+            lastfx0= fx;
+            lastfy0= fy;
             count++;
         }
 
-        void moveTo(double fx, double fy) {
-            System.err.println(String.format("moveTo(%5.1f,%5.1f) %d",fx,fy,count));
+        public void moveTo(double fx, double fy) {
+            if ( printRoute ) {
+                System.err.println(String.format("moveTo(%5.1f,%5.1f) %d",fx,fy,count));
+            }
             delegate.moveTo(fx,fy);
+            lastfx0= fx;
+            lastfy0= fy;       
+            if ( count==0 ) {
+                initx= fx;
+                inity= fy;
+            }
             count++;
         }
 
