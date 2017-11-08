@@ -11,6 +11,7 @@ import org.das2.datum.Datum;
 import org.das2.datum.UnitsUtil;
 import java.awt.*;
 import java.awt.geom.*;
+import static java.awt.geom.Path2D.WIND_NON_ZERO;
 import java.awt.image.BufferedImage;
 import java.awt.image.ConvolveOp;
 import java.awt.image.Kernel;
@@ -1038,6 +1039,12 @@ public class GraphUtil {
             System.err.println(String.format("==newPath=="));
             count= 0;
         }
+        
+        DebuggingGeneralPath( ) {
+            delegate= new GeneralPath(GeneralPath.WIND_NON_ZERO, 20 );
+            System.err.println(String.format("==newPath=="));
+            count= 0;
+        }        
 
         void lineTo(double fx, double fy) {
             System.err.println(String.format("lineTo(%5.1f,%5.1f) %d",fx,fy,count));
