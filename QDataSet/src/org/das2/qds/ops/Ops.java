@@ -6947,6 +6947,10 @@ public class Ops {
      */
     public static final QDataSet complexMultiply( QDataSet ds1, QDataSet ds2 ) {
         if ( ds1.rank()>3 ) throw new IllegalArgumentException("ds1 must be ds1[n,2]");
+        if ( !Schemes.isComplexNumbers(ds1) ) ds1= complexDataset( ds1, null );
+        if ( !Schemes.isComplexNumbers(ds2) ) ds2= complexDataset( ds2, null );
+        if ( ds1.rank()==1 && ds2.rank()==2 ) ds1= replicate( ds1, ds2.length() );
+        if ( ds1.rank()==2 && ds1.rank()==1 ) ds2= replicate( ds2, ds1.length() );
         if ( ds1.rank()!=ds2.rank() ) throw new IllegalArgumentException("ds1 and ds2 must have the same rank");
         QDataSet dep1= complexCoordinateSystem();
         ArrayDataSet result= ArrayDataSet.copy(ds1);
