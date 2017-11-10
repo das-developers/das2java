@@ -857,7 +857,22 @@ public class GraphUtil {
         }
         return new ConvolveOp(kernel, ConvolveOp.EDGE_NO_OP, null);
     }
-        
+    
+    /**
+     * blur the image with a Guassian blur. 
+     * @param im
+     * @param size the size of the blur, roughly in pixels.
+     * @return image
+     */
+    public static BufferedImage blurImage( BufferedImage im, int size ) {
+        ConvolveOp op= getGaussianBlurFilter( size, true );
+        BufferedImage out= new BufferedImage( im.getWidth(), im.getHeight(), im.getType() );
+        op.filter( im, out );
+        op= getGaussianBlurFilter( size, false );
+        im= out;
+        out= new BufferedImage( im.getWidth(), im.getHeight(), im.getType() );
+        return op.filter( im, out );
+    }
         
     /**
      * describe the path for debugging.
