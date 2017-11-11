@@ -1041,8 +1041,8 @@ public class DataSetOps {
             int rank= bundle1.length(j);
             int n=1;
 
-            for (int k = 0; k < rank; k++) {
-                 n *= bundle1.value(j, k);
+            for (int k = 1; k < rank; k++) {
+                 n *= bundle1.value(j, k-1);
             }
             nr1+= n;
 
