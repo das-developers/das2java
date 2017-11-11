@@ -25,6 +25,7 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
+import org.das2.datum.EnumerationUnits;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
 import org.das2.datum.format.DatumFormatter;
@@ -312,6 +313,13 @@ public class QDataSetTableModel extends AbstractTableModel {
 
             c.setPreferredWidth( ( u!=null && UnitsUtil.isTimeLocation(u) ) ? 150 : 80 );
             c.setMinWidth(  ( u!=null && UnitsUtil.isTimeLocation(u) ) ? 130 : 80 );
+            if ( u instanceof EnumerationUnits && ds.length()>0 ) {
+                String s= ds.slice(0).slice(i).toString();
+                if ( s.length()>14 ) {
+                    c.setPreferredWidth( Math.min( s.length() * 7, 600 ) );
+                    //c.setMinWidth( s.length()*4 );
+                }
+            }
             result.addColumn( c );
 
         }
