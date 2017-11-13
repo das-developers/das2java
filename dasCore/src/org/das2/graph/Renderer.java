@@ -22,6 +22,7 @@
  */
 package org.das2.graph;
 
+import org.das2.util.ColorUtil;
 import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.Font;
