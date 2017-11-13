@@ -42,7 +42,6 @@ import org.das2.dataset.VectorDataSet;
 import org.das2.DasApplication;
 import org.das2.DasException;
 import org.das2.graph.DasAxis.Memento;
-import org.das2.util.DasExceptionHandler;
 import java.beans.PropertyChangeListener;
 import org.das2.util.monitor.ProgressMonitor;
 import org.das2.components.propertyeditor.Editable;
@@ -427,7 +426,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
         if ( oldValue==s || ( oldValue != null && oldValue.equals(s) ) ) {
 	    return;
 	}
-        controls= parseControl(s);
+        this.controls= parseControl(s);
         update();
         propertyChangeSupport.firePropertyChange(PROP_CONTROL, oldValue, control );
     }
@@ -637,7 +636,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
      * @see ColorUtil#decodeColor(java.lang.String) 
      */
     public Color getColorControl( String key, Color deft ) {
-        String v= controls.get(key);
+        String v= this.controls.get(key);
         if ( v!=null ) {
             try { 
                 return ColorUtil.decodeColor(v);
