@@ -730,16 +730,16 @@ public class SeriesRenderer extends Renderer {
                     xSampleWidth = doubleValue( sw, xUnits.getOffsetUnits() );
                     logStep= false;
                 }
+                newPath.setCadence( sw );
             } else {
                 xSampleWidth= 1e37; // something really big
                 logStep= false;
             }
 
-
+                
             /* fuzz the xSampleWidth */
             double xSampleWidthExact= xSampleWidth;
-            xSampleWidth = xSampleWidth * 1.20;
-
+            
             double x;
             double y;
 
