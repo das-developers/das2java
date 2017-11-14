@@ -252,7 +252,7 @@ public class AsciiParser {
             
             // check for iso8601 times in the first two columns.
             if ( UnitsUtil.isTimeLocation(this.units[0]) ) this.fieldParsers[0]= UNITS_PARSER;
-            if ( UnitsUtil.isTimeLocation(this.units[1]) ) this.fieldParsers[1]= UNITS_PARSER;
+            if ( recordParser.fieldCount()>1 && UnitsUtil.isTimeLocation(this.units[1]) ) this.fieldParsers[1]= UNITS_PARSER;
                 
             while (line != null && iline<HEADER_LENGTH_LIMIT && this.recordParser.tryParseRecord(line, 0, builder) == false) {
                 line = reader.readLine();
@@ -1534,6 +1534,9 @@ public class AsciiParser {
         int fieldCount;
         String delimRegex;
         Pattern delimPattern;
+        /**
+         * true if we should attempt to parse the field, false if it should be skipped.
+         */
         boolean[] doParseField;
         public String header=null; // place to store the header.
         boolean showException= true;
