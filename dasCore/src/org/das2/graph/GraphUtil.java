@@ -1108,6 +1108,9 @@ public class GraphUtil {
             if ( printRoute ) {
                 System.err.println(String.format("moveTo(%5.1f,%5.1f) %d",fx,fy,count));
             }
+            //if ( count==3 ) {
+            //    System.err.println("here1112");
+            //}
             delegate.moveTo(fx,fy);
             lastfx0= fx;
             lastfy0= fy;       
