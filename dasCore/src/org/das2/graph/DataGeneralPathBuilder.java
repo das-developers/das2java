@@ -2,7 +2,9 @@
 package org.das2.graph;
 
 import java.awt.geom.GeneralPath;
+import java.awt.geom.PathIterator;
 import org.das2.datum.Datum;
+import org.das2.datum.Units;
 
 /**
  * introduce class to handle the task of creating GeneralPaths from a
@@ -19,6 +21,8 @@ public class DataGeneralPathBuilder {
     private final GeneralPath gp;
     private final DasAxis xaxis;
     private final DasAxis yaxis;
+    private final Units xunits;
+    private final Units yunits;
     
     private static final Object PEN_UP= "penup";
     private static final Object PEN_DOWN= "pendown";
@@ -32,6 +36,8 @@ public class DataGeneralPathBuilder {
         this.gp= new GeneralPath();
         this.xaxis= xaxis;
         this.yaxis= yaxis;
+        this.xunits= xaxis.getUnits();
+        this.yunits= yaxis.getUnits();
     }
     
     public void addDataPoint( boolean valid, Datum x, Datum y ) {
@@ -58,8 +64,36 @@ public class DataGeneralPathBuilder {
         }
     }
     
+    public void addDataPoint( boolean valid, double x, double y ) {
+        if ( pen==PEN_UP ) {
+            if ( valid ) {
+                gp.moveTo( xaxis.transform(x,xunits), yaxis.transform(y,yunits) );
+                pen= PEN_DOWN;
+                pendingx= xunits.createDatum(x);
+                pendingy= yunits.createDatum(y);
+            } else {
+                pen= PEN_UP;
+            }
+        } else {
+            if ( valid ) {
+                gp.lineTo( xaxis.transform(x,xunits), yaxis.transform(y,yunits) );
+            } else {
+                if ( pendingx!=null ) {
+                    gp.lineTo( xaxis.transform(pendingx), yaxis.transform(pendingy) );
+                }
+                pen= PEN_UP;
+            }
+            pendingx=null;
+            pendingy=null;            
+        }
+    }
+    
     public GeneralPath getGeneralPath() {
         return gp;
+    }
+    
+    public PathIterator getPathIterator() {
+        return gp.getPathIterator(null);
     }
     
 }
