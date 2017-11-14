@@ -55,6 +55,7 @@ import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
 import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.Units;
+import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
 import org.das2.event.CrossHairMouseModule;
 import org.das2.event.DasMouseInputAdapter;
@@ -687,8 +688,10 @@ public class SeriesRenderer extends Renderer {
 
             Units xUnits = SemanticOps.getUnits(xds);
             Units yUnits = SemanticOps.getUnits(vds);
+            Units xaxisUnits= xAxis.getUnits();
+            Units yaxisUnits= yAxis.getUnits();
             if ( unitsWarning ) yUnits= yAxis.getUnits();
-            if ( xunitsWarning ) xUnits= yAxis.getUnits();
+            if ( xunitsWarning ) xUnits= xAxis.getUnits();
 
             Rectangle window= DasDevicePosition.toRectangle( yAxis.getRow(), xAxis.getColumn() );
             int buffer= (int)Math.ceil( Math.max( getLineWidth(),10 ) );
@@ -709,11 +712,8 @@ public class SeriesRenderer extends Renderer {
 
             long t0= System.currentTimeMillis();
             
-            int pathLengthApprox= Math.max( 5, 110 * (lastIndex - firstIndex) / 100 );
-            GeneralPath newPath = new GeneralPath(GeneralPath.WIND_NON_ZERO, pathLengthApprox );
-            //GraphUtil.DebuggingGeneralPath newPath= new GraphUtil.DebuggingGeneralPath(GeneralPath.WIND_NON_ZERO, pathLengthApprox );
-            //newPath.setArrows(true);
-
+            DataGeneralPathBuilder newPath= new DataGeneralPathBuilder(xAxis,yAxis);
+            
             Datum sw = null;
             try {// TODO: this really shouldn't be here, since we calculate it once.
                 sw= SemanticOps.guessXTagWidth( xds.trim(firstIndex,lastIndex), vds.trim(firstIndex,lastIndex) );
@@ -743,74 +743,32 @@ public class SeriesRenderer extends Renderer {
             double x;
             double y;
 
-            double x0; /* the last plottable point */
             //double y0; /* the last plottable point */
 
-            double fx;
-            double fy;
-            double fx0;
-            double fy0;
-            boolean visible;  // true if this line can be seen
-            boolean visible0; // true if the last line can be seen
+            UnitsConverter xuc= SemanticOps.getUnits(xds).getConverter(xaxisUnits);
+            UnitsConverter yuc= SemanticOps.getUnits(vds).getConverter(yaxisUnits);
             
             int index;
 
             index = firstIndex;
-            x = (double) xds.value(index);
-            y = (double) vds.value(index);
+            x = xuc.convert( (double) xds.value(index) );
+            y = yuc.convert( (double) vds.value(index) );
 
-            Point2D lastPosition= null;
+            newPath.addDataPoint( true, x, y );
 
-            //System.err.println("vds length "+vds.length());
-            //System.err.println("xds range " + Ops.extent(xds) );
-            //System.err.println("first,last index " +firstIndex + " " + lastIndex );
-            try {
-                fx = xAxis.transform(x, xUnits);
-            } catch ( InconvertibleUnitsException ex ) {
-                xunitsWarning= true;
-                xUnits= xAxis.getUnits();
-                fx = xAxis.transform(x, xUnits);
-            }
-            try {
-                fy = yAxis.transform(y, yUnits);
-            } catch ( InconvertibleUnitsException ex ) {
-                unitsWarning= true;
-                yUnits= yAxis.getUnits();
-                fy = yAxis.transform(y, yUnits);
-                //return;
-            } catch ( IllegalArgumentException ex ) {
-                if ( UnitsUtil.isOrdinalMeasurement( yUnits ) ) {
-                    unitsWarning= true;
-                    return;
-                } else {
-                    logger.severe("Illegal Argument when trying transform.");
-                    unitsWarning= true;
-                    return;                    
-                }
-            }
-
-            // first point //
-            logger.log(Level.FINE, "firstPoint moveTo,LineTo (plotCoordinates)= {0}, {1}", new Object[]{fx, fy});
-
-            visible0= window.contains(fx,fy);
             if (histogram) {
-                double fx1 = midPoint( xAxis, x, xUnits, xSampleWidthExact, logStep, -0.5 );
-                newPath.moveTo(fx1, fy);
-                newPath.lineTo(fx, fy);
+                double fx1 = midPointData( xAxis, x, xUnits, xSampleWidthExact, logStep, -0.5 );
+                newPath.addDataPoint( true, fx1, y );
+                double fx2 = midPointData( xAxis, x, xUnits, xSampleWidthExact, logStep, +0.5 );
+                newPath.addDataPoint( true, fx2, y );
             } else {
-                newPath.moveTo(fx, fy);
-                newPath.lineTo(fx, fy);
+                newPath.addDataPoint( true, x, y );
             }
-
-            x0 = x;
-            //y0 = y;
-            fx0 = fx;
-            fy0 = fy;
 
             index++;
 
             // now loop through all of them. //
-            boolean ignoreCadence= ! cadenceCheck;
+            //boolean ignoreCadence= ! cadenceCheck;
             boolean isValid= false;
             
             //poes_n17_20041228.cdf?P1_90[0:300] contains fill records between 
@@ -820,112 +778,41 @@ public class SeriesRenderer extends Renderer {
                 if ( wds.value(i-1)>0 && wds.value(i)==0 ) invalidInterleaveCount++;
             }
             boolean notInvalidInterleave= invalidInterleaveCount<(wds.length()/3);
+            if ( ! notInvalidInterleave ) {
+                QDataSet r= Ops.where(wds);
+                xds= DataSetOps.applyIndex( xds, r );
+                vds= DataSetOps.applyIndex( vds, r );
+                wds= DataSetOps.applyIndex( wds, r );
+            }
             
             for (; index < lastIndex; index++) {
 
-                x = xds.value(index);
-                y = vds.value(index);
+                x = xuc.convert( xds.value(index) );
+                y = yuc.convert( vds.value(index) );
 
-                isValid = wds.value( index )>0 && xUnits.isValid(x);
+                isValid = wds.value( index )>0;
 
-                fx = xAxis.transform(x, xUnits);
-                fy = yAxis.transform(y, yUnits);
-                visible= isValid && window.intersectsLine( fx0,fy0, fx,fy );
-                
-                if (isValid) {
-                    double step= logStep ? Math.log(x/x0) : x-x0;
-                    if ( ignoreCadence || step < xSampleWidth) {
-                        // draw connect-a-dot between last valid and here
-                        if (histogram) {
-                            double fx1 = (fx0 + fx) / 2;
-                            newPath.lineTo(fx1, fy0);
-                            newPath.lineTo(fx1, fy);
-                            newPath.lineTo(fx, fy);
-                        } else {
-                            if (visible) {
-                                if (!visible0) {
-                                    if (notInvalidInterleave) {
-                                        if ( lastPosition !=null && ( Math.abs(fx0)>9999 || Math.abs(fy0)>9999 ) )  {
-                                            Point2D penter = GraphUtil.lineRectangleIntersection( lastPosition, new Point2D.Double(fx, fy), window );
-                                            //!!!! let's kludge this in on a weekend and see what happens...                                          
-                                            // the challenge with all this is that every other point can be invalid, and then these are not interpretted as data breaks.  
-                                            // See file:///home/jbf/ct/hudson/data.backup/cdf/virbo/poes_n17_20041228.cdf?P1_90[0:300]
-                                            if ( penter!=null ) {    
-                                                newPath.moveTo(penter.getX(), penter.getY());
-                                            } else {
-                                                newPath.moveTo(fx,fy);
-                                            }
-                                        }
-                                    } else {
-                                        newPath.moveTo(fx0,fy0);
-                                    }
-                                }
-                                newPath.lineTo(fx, fy); // this is the typical path
-                            } else {
-                                newPath.moveTo(fx, fy); // I can't figure out why this is needed.
-                            }
-
-                        }
-
-                    } else {
-                        // introduce break in line
-                        if (histogram) {
-                            double fx1 = xAxis.transform(x0 + xSampleWidthExact / 2, xUnits);
-                            newPath.lineTo(fx1, fy0);
-                            // there's a bug here if you pan around the dataset shown in SeriesBreakHist.java
-                            fx1 = xAxis.transform(x - xSampleWidthExact / 2, xUnits);
-                            newPath.moveTo(fx1, fy);
-                            newPath.lineTo(fx, fy);
-
-                        } else {
-                            if ( visible ) {
-                                newPath.moveTo(fx, fy);
-                                newPath.lineTo(fx, fy);
-                            }
-                        }
-
-                    } // else introduce break in line
-
-                    x0 = x;
-                    //y0 = y;
-                    fx0 = fx;
-                    fy0 = fy;
-                    visible0 = visible;
-                    lastPosition= new Point2D.Double(fx, fy);
+                if ( histogram ) {
+                    double fx1 = midPointData( xAxis, x, xUnits, xSampleWidthExact, logStep, -0.5 );
+                    newPath.addDataPoint( true, fx1, y );
+                    double fx2 = midPointData( xAxis, x, xUnits, xSampleWidthExact, logStep, +0.5 );
+                    newPath.addDataPoint( true, fx2, y );
                 } else {
-                    if (visible0) {
-                        if ( histogram ) {
-                            double fx1 = midPoint( xAxis, x0, xUnits, xSampleWidthExact, logStep, 0.5 );
-                            newPath.lineTo(fx1, fy0);
-                        } else {
-                            newPath.moveTo(fx0, fy0); // place holder
-                        }
-                        visible0 = false; 
-                    }
-
+                    newPath.addDataPoint( isValid, x, y );
                 }
-
+                                
             } // for ( ; index < ixmax && lastIndex; index++ )
-
-            if ( histogram ) {
-                if ( isValid ) {
-                    fx = xAxis.transform( x + xSampleWidthExact / 2, xUnits );
-                    newPath.lineTo(fx, fy0);
-                }
-            }
             
             logger.log(Level.FINE, "done create general path ({0}ms)", ( System.currentTimeMillis()-t0  ));
             
             if (!histogram && simplifyPaths && colorByDataSetId.length()==0 ) {
-                //j   System.err.println( "input: " );
-                //j   System.err.println( GraphUtil.describe( newPath, true) );
+                int pathLengthApprox= Math.max( 5, 110 * (lastIndex - firstIndex) / 100 );
                 this.path1= new GeneralPath(GeneralPath.WIND_NON_ZERO, pathLengthApprox );
-                //int count = GraphUtil.reducePath(newPath.getPathIterator(null), path1 );
-                int count = GraphUtil.reducePath20140622(newPath.getPathIterator(null), path1, 1, 5 );
+                int count = GraphUtil.reducePath20140622(newPath.getPathIterator(), path1, 1, 5 );
                 logger.fine( String.format("reduce path in=%d  out=%d\n", lastIndex-firstIndex, count) );
             } else {
-                this.path1 = newPath;
-                //this.path1 = newPath.getGeneralPath();
+                //this.path1 = newPath;
+                this.path1 = newPath.getGeneralPath();
             }
 
             //dumpPath( getParent().getCanvas().getWidth(), getParent().getCanvas().getHeight(), path1 );  // dumps jython script showing problem.
@@ -969,6 +856,18 @@ public class SeriesRenderer extends Renderer {
         }
         return fx1;
     }
+    
+    private double midPointData(DasAxis axis, double d1, Units units, double delta, boolean ratiometric, double alpha ) {
+        double fx1;
+        if (axis.isLog() && ratiometric ) {
+            fx1 = Math.exp( Math.log(d1) + delta * alpha );
+        } else {
+            fx1 = d1 + delta * alpha;
+        }
+        return fx1;
+    }
+    
+    
 
 //        /* dumps a jython script which draws the path See https://sourceforge.net/p/autoplot/bugs/1215/ */
 //        private static void dumpPath( int width, int height, GeneralPath path1 ) {
