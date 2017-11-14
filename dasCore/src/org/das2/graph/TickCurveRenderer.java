@@ -543,6 +543,9 @@ public final class TickCurveRenderer extends Renderer {
 
     }
 
+    private final Object PEN_UP= "penup";
+    private final Object PEN_DOWN= "pendown";
+    
     @Override
     public void render(java.awt.Graphics g1, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
         
@@ -612,7 +615,7 @@ public final class TickCurveRenderer extends Renderer {
         
         QDataSet wds= Ops.multiply( Ops.valid(xds), Ops.valid(yds) );
         double[] len= new double[tds.length()];
-        
+                
         int lastValid=0;
         
         // we will populate this general path, inserting moveTo's when there is a data gap.
@@ -643,7 +646,7 @@ public final class TickCurveRenderer extends Renderer {
                     double len1=  Math.sqrt( Math.pow(ddata[0][i]- ddata[0][i-1],2 ) 
                             + Math.pow(ddata[1][i]- ddata[1][i-1],2 ) );
                     len[i]= len1;
-                    if ( len1>limit ) {
+                    if ( len1>limit && wds.value(i-1)==1 ) {
                         p.moveTo( ddata[0][i],ddata[1][i] );  // TODO: verify this
                         brk= true;
                     } else {
