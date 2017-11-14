@@ -712,6 +712,7 @@ public class SeriesRenderer extends Renderer {
             int pathLengthApprox= Math.max( 5, 110 * (lastIndex - firstIndex) / 100 );
             GeneralPath newPath = new GeneralPath(GeneralPath.WIND_NON_ZERO, pathLengthApprox );
             //GraphUtil.DebuggingGeneralPath newPath= new GraphUtil.DebuggingGeneralPath(GeneralPath.WIND_NON_ZERO, pathLengthApprox );
+            //newPath.setArrows(true);
 
             Datum sw = null;
             try {// TODO: this really shouldn't be here, since we calculate it once.
@@ -749,8 +750,8 @@ public class SeriesRenderer extends Renderer {
             double fy;
             double fx0;
             double fy0;
-            boolean visible;  // true if this point can be seen
-            boolean visible0; // true if the last point can be seen
+            boolean visible;  // true if this line can be seen
+            boolean visible0; // true if the last line can be seen
             
             int index;
 
@@ -844,7 +845,7 @@ public class SeriesRenderer extends Renderer {
                             if (visible) {
                                 if (!visible0) {
                                     if (notInvalidInterleave) {
-                                        if ( lastPosition !=null ) {
+                                        if ( lastPosition !=null && ( Math.abs(fx0)>9999 || Math.abs(fy0)>9999 ) )  {
                                             Point2D penter = GraphUtil.lineRectangleIntersection( lastPosition, new Point2D.Double(fx, fy), window );
                                             //!!!! let's kludge this in on a weekend and see what happens...                                          
                                             // the challenge with all this is that every other point can be invalid, and then these are not interpretted as data breaks.  
@@ -852,11 +853,7 @@ public class SeriesRenderer extends Renderer {
                                             if ( penter!=null ) {    
                                                 newPath.moveTo(penter.getX(), penter.getY());
                                             } else {
-                                                if ( Math.abs( lastPosition.getX() )<10000 ) {
-                                                    newPath.moveTo( fx, fy );
-                                                } else {
-                                                    newPath.moveTo( fx, fy );
-                                                }
+                                                newPath.moveTo(fx,fy);
                                             }
                                         }
                                     } else {
@@ -864,6 +861,8 @@ public class SeriesRenderer extends Renderer {
                                     }
                                 }
                                 newPath.lineTo(fx, fy); // this is the typical path
+                            } else {
+                                newPath.moveTo(fx, fy); // I can't figure out why this is needed.
                             }
 
                         }
