@@ -32,6 +32,9 @@ public class DataGeneralPathBuilder {
     private Datum pendingx= null;
     private Datum pendingy= null;
     
+    private double lastx=-Double.MAX_VALUE;
+    private double cadence=0.0;
+    
     public DataGeneralPathBuilder( DasAxis xaxis, DasAxis yaxis ) {
         this.gp= new GeneralPath();
         this.xaxis= xaxis;
@@ -39,32 +42,25 @@ public class DataGeneralPathBuilder {
         this.xunits= xaxis.getUnits();
         this.yunits= yaxis.getUnits();
     }
-    
+
+    /**
+     * set the limit where two points are considered adjacent
+     * @param sw 
+     */
+    public void setCadence(Datum sw) {
+        this.cadence= sw.multiply(1.2).doubleValue(xunits.getOffsetUnits());
+    }
+
     public void addDataPoint( boolean valid, Datum x, Datum y ) {
-        if ( pen==PEN_UP ) {
-            if ( valid ) {
-                gp.moveTo( xaxis.transform(x), yaxis.transform(y) );
-                pen= PEN_DOWN;
-                pendingx= x;
-                pendingy= y;
-            } else {
-                pen= PEN_UP;
-            }
-        } else {
-            if ( valid ) {
-                gp.lineTo( xaxis.transform(x), yaxis.transform(y) );
-            } else {
-                if ( pendingx!=null ) {
-                    gp.lineTo( xaxis.transform(pendingx), yaxis.transform(pendingy) );
-                }
-                pen= PEN_UP;
-            }
-            pendingx=null;
-            pendingy=null;            
-        }
+        double xx= x.doubleValue(xunits);
+        double yy= y.doubleValue(yunits);
+        addDataPoint( valid, xx, yy );
     }
     
     public void addDataPoint( boolean valid, double x, double y ) {
+        if ( pen==PEN_DOWN && this.cadence>0 && ( x-lastx ) > this.cadence ) {
+            pen= PEN_UP;
+        }
         if ( pen==PEN_UP ) {
             if ( valid ) {
                 gp.moveTo( xaxis.transform(x,xunits), yaxis.transform(y,yunits) );
@@ -86,6 +82,7 @@ public class DataGeneralPathBuilder {
             pendingx=null;
             pendingy=null;            
         }
+        lastx= x;
     }
     
     public GeneralPath getGeneralPath() {
