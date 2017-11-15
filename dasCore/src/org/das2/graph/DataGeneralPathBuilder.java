@@ -5,6 +5,7 @@ import java.awt.geom.GeneralPath;
 import java.awt.geom.PathIterator;
 import org.das2.datum.Datum;
 import org.das2.datum.Units;
+import org.das2.datum.UnitsUtil;
 
 /**
  * introduce class to handle the task of creating GeneralPaths from a
@@ -34,6 +35,7 @@ public class DataGeneralPathBuilder {
     
     private double lastx=-Double.MAX_VALUE;
     private double cadence=0.0;
+    private boolean logStep= false;
     
     public DataGeneralPathBuilder( DasAxis xaxis, DasAxis yaxis ) {
         this.gp= new GeneralPath();
@@ -48,7 +50,15 @@ public class DataGeneralPathBuilder {
      * @param sw 
      */
     public void setCadence(Datum sw) {
-        this.cadence= sw.multiply(1.2).doubleValue(xunits.getOffsetUnits());
+        if ( UnitsUtil.isRatiometric( sw.getUnits() )) {
+            System.err.println( "Here ratio");
+        }
+        if ( UnitsUtil.isRatiometric( sw.getUnits() ) ) {
+            this.cadence= sw.multiply(1.2).doubleValue(Units.logERatio);
+            this.logStep= true;
+        } else {
+            this.cadence= sw.multiply(1.2).doubleValue(xunits.getOffsetUnits());
+        }
     }
 
     public void addDataPoint( boolean valid, Datum x, Datum y ) {
@@ -58,8 +68,11 @@ public class DataGeneralPathBuilder {
     }
     
     public void addDataPoint( boolean valid, double x, double y ) {
-        if ( pen==PEN_DOWN && this.cadence>0 && ( x-lastx ) > this.cadence ) {
-            pen= PEN_UP;
+        if ( this.cadence>0 && pen==PEN_DOWN ) {
+            double step= logStep ? Math.log(x/lastx) :  x-lastx ;
+            if ( step > this.cadence ) {
+                pen= PEN_UP;
+            }
         }
         if ( pen==PEN_UP ) {
             if ( valid ) {
