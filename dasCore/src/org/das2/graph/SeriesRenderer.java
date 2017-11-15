@@ -690,20 +690,17 @@ public class SeriesRenderer extends Renderer {
             Units yUnits = SemanticOps.getUnits(vds);
             Units xaxisUnits= xAxis.getUnits();
             Units yaxisUnits= yAxis.getUnits();
-            if ( unitsWarning ) yUnits= yAxis.getUnits();
-            if ( xunitsWarning ) xUnits= xAxis.getUnits();
-
-            Rectangle window= DasDevicePosition.toRectangle( yAxis.getRow(), xAxis.getColumn() );
-            int buffer= (int)Math.ceil( Math.max( getLineWidth(),10 ) );
+            if ( !yUnits.isConvertibleTo(yaxisUnits) ) {
+                yUnits= yAxis.getUnits();
+                unitsWarning= true;
+            }
+            if ( !xUnits.isConvertibleTo(xaxisUnits) ) {
+                xUnits= xAxis.getUnits();
+                unitsWarning= true;
+            }
 
             DasPlot lparent= getParent();
             if ( lparent==null ) return;
-            if ( lparent.isOverSize() ) {
-                window= new Rectangle( window.x- window.width/3, window.y-buffer, 5 * window.width / 3, window.height + 2 * buffer );
-                //TODO: there's a rectangle somewhere that is the preview.  Use this instead of assuming 1/3 on either side.
-            } else {
-                window= new Rectangle( window.x- buffer, window.y-buffer, window.width + 2*buffer, window.height + 2 * buffer );
-            }
 
             if ( lastIndex-firstIndex==0 ) {
                 this.path1= null;
@@ -745,8 +742,8 @@ public class SeriesRenderer extends Renderer {
 
             //double y0; /* the last plottable point */
 
-            UnitsConverter xuc= SemanticOps.getUnits(xds).getConverter(xaxisUnits);
-            UnitsConverter yuc= SemanticOps.getUnits(vds).getConverter(yaxisUnits);
+            UnitsConverter xuc= xUnits.getConverter(xaxisUnits);
+            UnitsConverter yuc= yUnits.getConverter(yaxisUnits);
             
             int index;
 
