@@ -730,9 +730,17 @@ public class SeriesRenderer extends Renderer {
                 }
                 //double-check cadence
                 int cadenceGapCount= 0;
-                for ( int i=1; i<xds.length(); i++ ) {
-                    if ( xds.value(i)-xds.value(i-1) > xSampleWidth ) cadenceGapCount++;
+                double xSampleWidthFudge= xSampleWidth*1.20;
+                if ( logStep ) {
+                    for ( int i=1; i<xds.length(); i++ ) {
+                        if ( Math.log( xds.value(i) / xds.value(i-1) ) > xSampleWidthFudge ) cadenceGapCount++;
+                    }
+                } else {
+                    for ( int i=1; i<xds.length(); i++ ) {
+                        if ( xds.value(i)-xds.value(i-1) > xSampleWidthFudge ) cadenceGapCount++;
+                    }
                 }
+                
                 if ( cadenceGapCount>(wds.length()/2) ) {
                     newPath.setCadence( null );
                 } else {
