@@ -46,15 +46,21 @@ public class DataGeneralPathBuilder {
     }
 
     /**
-     * set the limit where two points are considered adjacent
+     * set the limit where two points are considered adjacent, or null
+     * if no check should be done.
      * @param sw 
      */
     public void setCadence(Datum sw) {
-        if ( UnitsUtil.isRatiometric( sw.getUnits() ) ) {
-            this.cadence= sw.multiply(1.2).doubleValue(Units.logERatio);
-            this.logStep= true;
+        if ( sw==null ) {
+            this.cadence= 0.;
+            this.logStep= false;
         } else {
-            this.cadence= sw.multiply(1.2).doubleValue(xunits.getOffsetUnits());
+            if ( UnitsUtil.isRatiometric( sw.getUnits() ) ) {
+                this.cadence= sw.multiply(1.2).doubleValue(Units.logERatio);
+                this.logStep= true;
+            } else {
+                this.cadence= sw.multiply(1.2).doubleValue(xunits.getOffsetUnits());
+            }
         }
     }
 
