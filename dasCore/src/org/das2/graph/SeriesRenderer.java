@@ -775,12 +775,6 @@ public class SeriesRenderer extends Renderer {
                 if ( wds.value(i-1)>0 && wds.value(i)==0 ) invalidInterleaveCount++;
             }
             boolean notInvalidInterleave= invalidInterleaveCount<(wds.length()/3);
-            if ( ! notInvalidInterleave ) {
-                QDataSet r= Ops.where(wds);
-                xds= DataSetOps.applyIndex( xds, r );
-                vds= DataSetOps.applyIndex( vds, r );
-                wds= DataSetOps.applyIndex( wds, r );
-            }
             
             for (; index < lastIndex; index++) {
 
@@ -789,13 +783,15 @@ public class SeriesRenderer extends Renderer {
 
                 isValid = wds.value( index )>0;
 
-                if ( histogram ) {
-                    double fx1 = midPointData( xAxis, x, xUnits, xSampleWidthExact, logStep, -0.5 );
-                    newPath.addDataPoint( true, fx1, y );
-                    double fx2 = midPointData( xAxis, x, xUnits, xSampleWidthExact, logStep, +0.5 );
-                    newPath.addDataPoint( true, fx2, y );
-                } else {
-                    newPath.addDataPoint( isValid, x, y );
+                if ( isValid || notInvalidInterleave ) {
+                    if ( histogram ) {
+                        double fx1 = midPointData( xAxis, x, xUnits, xSampleWidthExact, logStep, -0.5 );
+                        newPath.addDataPoint( true, fx1, y );
+                        double fx2 = midPointData( xAxis, x, xUnits, xSampleWidthExact, logStep, +0.5 );
+                        newPath.addDataPoint( true, fx2, y );
+                    } else {
+                        newPath.addDataPoint( isValid, x, y );
+                    }
                 }
                                 
             } // for ( ; index < ixmax && lastIndex; index++ )
