@@ -50,9 +50,6 @@ public class DataGeneralPathBuilder {
      * @param sw 
      */
     public void setCadence(Datum sw) {
-        if ( UnitsUtil.isRatiometric( sw.getUnits() )) {
-            System.err.println( "Here ratio");
-        }
         if ( UnitsUtil.isRatiometric( sw.getUnits() ) ) {
             this.cadence= sw.multiply(1.2).doubleValue(Units.logERatio);
             this.logStep= true;
