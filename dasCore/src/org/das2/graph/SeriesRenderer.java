@@ -714,6 +714,7 @@ public class SeriesRenderer extends Renderer {
             Datum sw = null;
             try {// TODO: this really shouldn't be here, since we calculate it once.
                 sw= SemanticOps.guessXTagWidth( xds.trim(firstIndex,lastIndex), vds.trim(firstIndex,lastIndex) );
+                // Note it uses a cached value that runs along with the data.
             } catch ( IllegalArgumentException ex ) {
                 logger.log( Level.WARNING, null, ex );
             }
@@ -775,6 +776,16 @@ public class SeriesRenderer extends Renderer {
                 if ( wds.value(i-1)>0 && wds.value(i)==0 ) invalidInterleaveCount++;
             }
             boolean notInvalidInterleave= invalidInterleaveCount<(wds.length()/3);
+            
+            if ( xSampleWidth<1e37 ) {
+                int cadenceGapCount= 0;
+                for ( int i=1; i<xds.length(); i++ ) {
+                    if ( xds.value(i)-xds.value(i-1) > xSampleWidth ) cadenceGapCount++;
+                }
+                if ( cadenceGapCount>(wds.length()/2) ) {
+                    newPath.setCadence( null );
+                }
+            }
             
             for (; index < lastIndex; index++) {
 
