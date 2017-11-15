@@ -728,12 +728,21 @@ public class SeriesRenderer extends Renderer {
                     xSampleWidth = doubleValue( sw, xUnits.getOffsetUnits() );
                     logStep= false;
                 }
-                newPath.setCadence( sw );
+                //double-check cadence
+                int cadenceGapCount= 0;
+                for ( int i=1; i<xds.length(); i++ ) {
+                    if ( xds.value(i)-xds.value(i-1) > xSampleWidth ) cadenceGapCount++;
+                }
+                if ( cadenceGapCount>(wds.length()/2) ) {
+                    newPath.setCadence( null );
+                } else {
+                    newPath.setCadence( sw );
+                }
             } else {
                 xSampleWidth= 1e37; // something really big
                 logStep= false;
             }
-
+          
                 
             /* fuzz the xSampleWidth */
             double xSampleWidthExact= xSampleWidth;
@@ -776,17 +785,7 @@ public class SeriesRenderer extends Renderer {
                 if ( wds.value(i-1)>0 && wds.value(i)==0 ) invalidInterleaveCount++;
             }
             boolean notInvalidInterleave= invalidInterleaveCount<(wds.length()/3);
-            
-            if ( xSampleWidth<1e37 ) {
-                int cadenceGapCount= 0;
-                for ( int i=1; i<xds.length(); i++ ) {
-                    if ( xds.value(i)-xds.value(i-1) > xSampleWidth ) cadenceGapCount++;
-                }
-                if ( cadenceGapCount>(wds.length()/2) ) {
-                    newPath.setCadence( null );
-                }
-            }
-            
+                        
             for (; index < lastIndex; index++) {
 
                 x = xuc.convert( xds.value(index) );
