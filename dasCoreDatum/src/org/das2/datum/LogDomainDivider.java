@@ -59,11 +59,13 @@ public class LogDomainDivider implements DomainDivider {
     }
 
     public long boundaryCount(Datum min, Datum max) {
-        if (min.doubleValue() > max.doubleValue())
-            throw new IllegalArgumentException("LogDomainDivider: Illegal range specified (min>max)");
+        if (min.doubleValue() > max.doubleValue()) {
+            return 0;
+        }
         // log scale cannot span zero
-        if (min.doubleValue() <= 0 && max.doubleValue() > 0)
+        if (min.doubleValue() <= 0 && max.doubleValue() > 0) {
             throw new IllegalArgumentException("LogDomainDivider: input range cannot contain zero");
+        }
 
         double logmin = Math.log10(min.doubleValue());
         double logmax = Math.log10(max.doubleValue());
