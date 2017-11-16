@@ -4097,6 +4097,11 @@ public class Ops {
                 {
                     QDataSet dep0= (QDataSet) vds.property(QDataSet.DEPEND_0);
                     if ( dep0==null ) {
+                        if ( UnitsUtil.isTimeLocation(SemanticOps.getUnits(vds)) ) {
+                            dep0= vds;
+                        } 
+                    }
+                    if ( dep0==null ) {
                         throw new IllegalArgumentException("cannot make events data set from this rank 1 dataset with no timetags.");
                     } else if ( dep0.rank() == 2  ) {
                         if ( SemanticOps.isBins(dep0) ) {
@@ -4123,7 +4128,11 @@ public class Ops {
                         }
                         xmins= Ops.subtract(dep0, org.das2.qds.DataSetUtil.asDataSet(width) );
                         xmaxs= Ops.add(dep0, org.das2.qds.DataSetUtil.asDataSet(width) );
-                        msgs= vds;
+                        if ( vds==dep0 ) {
+                            msgs= Ops.replicate( dataset( EnumerationUnits.create("default").createDatum("_") ), vds.length() );
+                        } else {
+                            msgs= vds;
+                        }
                     } else {
                         throw new IllegalArgumentException("dataset is not correct form");
                     }       
