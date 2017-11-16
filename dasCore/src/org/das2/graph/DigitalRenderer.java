@@ -326,7 +326,7 @@ public class DigitalRenderer extends Renderer {
         } else if ( xMono ) {
             DatumRange visibleRange = xAxis.getDatumRange();
             DasPlot parent= getParent();
-            if (parent.isOverSize()) {
+            if ( parent!=null && parent.isOverSize()) {
                 Rectangle plotBounds = parent.getUpdateImageBounds();
                 if ( plotBounds!=null ) {
                     visibleRange = new DatumRange(xAxis.invTransform(plotBounds.x), xAxis.invTransform(plotBounds.x + plotBounds.width));
