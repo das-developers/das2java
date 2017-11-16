@@ -10,7 +10,7 @@ package org.das2.datum;
  * be the case when dividing a time interval into months, or into log spaced
  * intervals.
  * <p>
- * Implemenations should have protected constructors so factory methods in
+ * Implementations should have protected constructors so factory methods in
  * <code>DomainDividerUtil</code> can access them.
  *
  * @author Ed Jackson
@@ -31,7 +31,7 @@ public interface DomainDivider {
     /**
      * Return a new divider with smaller intervals. If the <code>superset</code>
      * parameter is true, the interval boundaries of the existing divider are
-     * guaranteed to align with (some) intervalues of the new one.  In other
+     * guaranteed to align with (some) intervals of the new one.  In other
      * words, the new divider will subdivide the existing one.
      * @param superset true to force boundary alignment with the calling <code>DomainDivider</code>
      *     For a given range, the boundaries will be aligned.
@@ -45,6 +45,7 @@ public interface DomainDivider {
      * Returns the boundaries between intervals on the given data range. When
      * min or max lay on a boundary, it should be returned.  Note this is
      * inconsistent with DatumRange logic, where the max is exclusive.
+     * If min>=max, then an empty list should be returned.
      * @param min
      * @param max
      * @return a <code>DatumVector</code> containing the boundary values
@@ -55,7 +56,8 @@ public interface DomainDivider {
      * Compute the number of intervals produced by this <code>DomainDivider</code>
      * on the given range.  This allows the DomainDivider to indicate the number
      * of intervals (e.g. a zillion) without having to enumerate them.  When
-     * min or max lay on a boundary, it should be counted.
+     * min or max lay on a boundary, it should be counted.  If min>=max, then 
+     * zero should be returned.
      * @param min
      * @param max
      * @return
