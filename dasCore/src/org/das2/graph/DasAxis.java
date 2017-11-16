@@ -3389,7 +3389,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
         //Add room for ticks
         if (leftTicks) {
-            int x = leftPosition - Math.min( 0,tickLen );
+            int x = leftPosition - Math.max( 0,tickLen );
             int y = DMin;
             int width = Math.abs( tickLen );
             int height = DWidth;
