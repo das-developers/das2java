@@ -4,6 +4,7 @@ package org.das2.graph;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.PathIterator;
 import org.das2.datum.Datum;
+import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
 
@@ -59,7 +60,12 @@ public class DataGeneralPathBuilder {
                 this.cadence= sw.multiply(1.2).doubleValue(Units.logERatio);
                 this.logStep= true;
             } else {
-                this.cadence= sw.multiply(1.2).doubleValue(xunits.getOffsetUnits());
+                try {
+                    this.cadence= sw.multiply(1.2).doubleValue(xunits.getOffsetUnits());
+                } catch ( InconvertibleUnitsException ex ) {
+                    this.cadence= sw.multiply(1.2).doubleValue(sw.getUnits());
+                }
+                
             }
         }
     }
