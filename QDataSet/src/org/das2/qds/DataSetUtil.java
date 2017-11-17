@@ -2716,7 +2716,7 @@ public class DataSetUtil {
             Number validMin,validMax;
             Units u;
             QDataSet bds= (QDataSet)ds.property(QDataSet.BUNDLE_1);
-            if ( bds!=null && ds.rank()>1 && ds.length()>0 && ds.length(0)>0 ) {   
+            if ( bds!=null && ds.rank()==2 && ds.length()>0 && ds.length(0)>0 ) {   
                 return bundleWeightsDataSet(ds);
             } else {
                 validMin = (Number) ds.property(QDataSet.VALID_MIN);
