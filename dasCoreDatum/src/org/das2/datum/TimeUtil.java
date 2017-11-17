@@ -1469,11 +1469,23 @@ public final class TimeUtil {
         }
     }
     
+    /**
+     * provide the previous midnight, similar to the floor function, noting that
+     * if the datum provided is midnight exactly then it is simply returned.
+     * @param datum
+     * @return the Datum for the next day boundary.
+     */
     public static Datum prevMidnight(Datum datum) {
         //return datum.subtract(getMicroSecondsSinceMidnight(datum), Units.microseconds);
         return datum.subtract(getSecondsSinceMidnight(datum), Units.seconds);
     }
     
+    /**
+     * provide the next midnight, similar to the ceil function, noting that
+     * if the datum provided is midnight already then it is simply returned.
+     * @param datum
+     * @return the Datum for the next day boundary.
+     */
     public static Datum nextMidnight( Datum datum ) {
         double d= getMicroSecondsSinceMidnight(datum);
         if ( d==0 ) {
