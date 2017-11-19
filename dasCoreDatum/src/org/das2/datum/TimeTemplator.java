@@ -92,7 +92,7 @@ public class TimeTemplator extends javax.swing.JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 409, Short.MAX_VALUE)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 583, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(templateTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -131,6 +131,7 @@ public class TimeTemplator extends javax.swing.JPanel {
         JDialog d= new JDialog((JDialog)SwingUtilities.getWindowAncestor(this),true);
         d.getContentPane().add(ttfp);
         d.pack();
+        d.setLocationRelativeTo(this);
         d.setVisible(true);
         templateTextField.setText(ttfp.getTemplate());
     }//GEN-LAST:event_fieldTypeButtonActionPerformed
