@@ -3417,9 +3417,25 @@ public class DataSetUtil {
         return closestIndex( table, units.createDatum(x) );
     }
 
-
     /**
-     * returns the first column that is before the given datum.  Note the
+     * With Ivar 20171120.
+     * @param ds
+     * @param datum
+     * @return 
+     */
+    public static Integer getPreviousIndexStrict( QDataSet ds, Datum datum ) {
+        int i= getPreviousIndex( ds, datum );
+        if ( Ops.gt( ds.slice(i), datum ).value()>0. ) {
+            return null;
+        }  else {
+            return i;
+        }
+    }
+    
+    /**
+     * returns the first index that is before the given datum, or zero
+     * if no data is found before the datum.
+     * PARV!
      * if the datum identifies (==) an xtag, then the previous column is
      * returned.
      * @param ds the dataset
