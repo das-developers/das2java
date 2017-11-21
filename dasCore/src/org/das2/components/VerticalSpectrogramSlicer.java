@@ -72,6 +72,7 @@ import org.das2.qds.DataSetOps;
 import org.das2.qds.DataSetUtil;
 import org.das2.qds.QDataSet;
 import org.das2.qds.SemanticOps;
+import org.das2.qds.ops.Ops;
 
 
 public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
@@ -391,7 +392,13 @@ public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
         
             QDataSet xds = SemanticOps.xtagsDataSet(tds1);
             ix = org.das2.qds.DataSetUtil.closestIndex(xds, xValue);
-            xx= DataSetUtil.asDatum(xds.slice(ix));
+            xds= xds.slice(ix);
+            if ( xds.rank()==0 ) {
+                xx= DataSetUtil.asDatum(xds);
+            } else {
+                xx= DataSetUtil.asDatum(xds.slice(0));
+                xx= xx.add( DataSetUtil.asDatum( Ops.divide( Ops.subtract( xds.slice(1), xds.slice(0) ), 2 ) ) );
+            }
             sliceDataSet = tds1.slice(ix);
         }
         
