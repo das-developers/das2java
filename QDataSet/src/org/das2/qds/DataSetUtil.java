@@ -3418,14 +3418,41 @@ public class DataSetUtil {
     }
 
     /**
-     * With Ivar 20171120.
-     * @param ds
-     * @param datum
-     * @return 
+     * Returns the index of the value which is less than the
+     * value less of the datum.  Note for rank 2 bins, the first bin which
+     * has an end less than the datum.
+     * @param ds rank 1 monotonic tags, or rank 2 bins.
+     * @param datum a datum of the same or convertible units.
+     * @return the index, or null (None).
      */
     public static Integer getPreviousIndexStrict( QDataSet ds, Datum datum ) {
+        if ( ds.length()==0 ) return null;
+        if ( SemanticOps.isBins(ds) && ds.rank()==2 ) { // BINS SCHEME
+            ds= Ops.slice1( ds, 1 );
+        }
         int i= getPreviousIndex( ds, datum );
         if ( Ops.gt( ds.slice(i), datum ).value()>0. ) {
+            return null;
+        }  else {
+            return i;
+        }
+    }
+
+    /**
+     * Returns the index of the value which is greater than the
+     * value less of the datum.  Note for rank 2 bins, the first bin which
+     * has an beginning less than the datum.
+     * @param ds rank 1 monotonic tags, or rank 2 bins.
+     * @param datum a datum of the same or convertible units.
+     * @return the index, or null (None).
+     */
+    public static Integer getNextIndexStrict( QDataSet ds, Datum datum ) {
+        if ( ds.length()==0 ) return null;
+        if ( SemanticOps.isBins(ds) && ds.rank()==2 ) { // BINS SCHEME
+            ds= Ops.slice1( ds, 0 );
+        }
+        int i= getNextIndex( ds, datum );
+        if ( Ops.le( ds.slice(i), datum ).value()>0. ) {
             return null;
         }  else {
             return i;
