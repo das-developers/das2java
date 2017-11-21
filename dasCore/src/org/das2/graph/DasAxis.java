@@ -687,7 +687,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         DatumRange oldRange= dataRange.getDatumRange();
         Units oldUnits = getUnits();
         if ( !rangeIsAcceptable(dr) ) { 
-            logger.log(Level.INFO, "invalid range ignored{0}", dr);
+            logger.log(Level.WARNING, "invalid range ignored: {0}", dr);
             return;
         }
         synchronized ( tickLock ) {
