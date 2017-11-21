@@ -181,6 +181,7 @@ public class DataSetUtil {
         if (ds.length() == 0) {
             return false;
         }
+        if (ds instanceof IndexGenDataSet ) return true;
         
         QDataSet wds= DataSetUtil.weightsDataSet(ds);
         int i;
@@ -217,6 +218,7 @@ public class DataSetUtil {
      */
     public static boolean isMonotonicAndIncreasingQuick(QDataSet ds) {
         logger.finest("enter isMonotonicAndIncreasingQuick test for "+QDataSet.MONOTONIC);
+        if (ds instanceof IndexGenDataSet ) return true;
         if (ds.rank() == 1) {
             if (ds.length() < 100) {
                 return DataSetUtil.isMonotonicAndIncreasing(ds);
@@ -227,7 +229,7 @@ public class DataSetUtil {
                 double last = -1.0 * Double.MAX_VALUE;
                 int n = ds.length();
                 int jump = n / 20;
-                for (; i < ds.length(); i += (1 + (int) (jump * r.nextDouble()))) {
+                for (; i < n; i += (1 + (int) (jump * r.nextDouble()))) {
                     double d = ds.value(i);
                     double w = wds.value(i);
                     while (w == 0 && i < n) {
