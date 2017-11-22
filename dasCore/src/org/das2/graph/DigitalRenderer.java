@@ -706,7 +706,7 @@ public class DigitalRenderer extends Renderer {
                 s= formatDatum(form, d, type );
                 iy = (int) yAxis.transform(y);
                 if ( plotSymbol!=DefaultPlotSymbol.NONE ) {
-                    plotSymbol.draw( g, ix,  yAxis.transform(y), 3, FillStyle.STYLE_FILL );
+                    plotSymbol.draw( g, ix,  yAxis.transform(y), 3, FillStyle.STYLE_SOLID );
                 }
                 iy= iy + ha;
                 
@@ -718,7 +718,7 @@ public class DigitalRenderer extends Renderer {
                 } else {
                     iy = (int) yAxis.transform(y);
                     if ( plotSymbol!=DefaultPlotSymbol.NONE ) {
-                        plotSymbol.draw( g, ix,  yAxis.transform(y), 3, FillStyle.STYLE_FILL );
+                        plotSymbol.draw( g, ix,  yAxis.transform(y), 3, FillStyle.STYLE_SOLID );
                     }
                     iy= iy + ha;
                 }

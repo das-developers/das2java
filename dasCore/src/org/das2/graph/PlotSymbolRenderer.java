@@ -77,7 +77,7 @@ public class PlotSymbolRenderer extends Renderer {
         g.setColor(color);
         cmx= (int)( symsize / 2 );
         cmy= (int)( symsize / 2 );
-        psym.draw(g, symsize / 2, symsize / 2, (float) symsize, FillStyle.STYLE_FILL);
+        psym.draw(g, symsize / 2, symsize / 2, (float) symsize, FillStyle.STYLE_SOLID);
         psymImage = image;
 
         if (colorBar != null) {
@@ -89,7 +89,7 @@ public class PlotSymbolRenderer extends Renderer {
                 g = (Graphics2D) image.getGraphics();
                 g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 g.setColor(c);
-                psym.draw(g, symsize / 2, symsize / 2, (float) symsize, FillStyle.STYLE_FILL);
+                psym.draw(g, symsize / 2, symsize / 2, (float) symsize, FillStyle.STYLE_SOLID);
                 coloredPsyms[i] = image;
             }
         }

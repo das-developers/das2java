@@ -45,7 +45,7 @@ public class DefaultPlotSymbol implements Enumeration, Displayable, PlotSymbol, 
     public void draw(Graphics2D g, double x, double y, float size, FillStyle style) {
         AffineTransform at = AffineTransform.getScaleInstance(size, size);
         at.translate(x / size, y / size);
-        if (style == FillStyle.STYLE_FILL) {
+        if (style == FillStyle.STYLE_FILL || style==FillStyle.STYLE_SOLID ) {
             g.fill(path.createTransformedShape(at));
             if (empty) {
                 g.draw(path.createTransformedShape(at)); // for crosses and symbols with no volume
@@ -57,7 +57,7 @@ public class DefaultPlotSymbol implements Enumeration, Displayable, PlotSymbol, 
             g.fill(path.createTransformedShape(at));
             g.setColor(fore);
             g.draw(path.createTransformedShape(at));
-        } else if (style == FillStyle.STYLE_DRAW) {
+        } else if (style == FillStyle.STYLE_DRAW || style==FillStyle.STYLE_NONE ) {
             g.draw(path.createTransformedShape(at));
         }
     }

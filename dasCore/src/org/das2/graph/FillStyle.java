@@ -20,7 +20,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 
 /**
- *
+ * Controls if the symbols are filled or not.
  * @author jbf
  */
 public class FillStyle implements Displayable, Enumeration {
@@ -63,7 +63,15 @@ public class FillStyle implements Displayable, Enumeration {
         g.drawImage(i.getImage(), x, y, null);
     }
 
+    /**
+     * @deprecated use solid
+     */
     public static final FillStyle STYLE_FILL= new FillStyle( "fill" );
+    public static final FillStyle STYLE_SOLID= new FillStyle( "solid" );
+    public static final FillStyle STYLE_NONE= new FillStyle( "none" );
+    /**
+     * @deprecated use none
+     */
     public static final FillStyle STYLE_DRAW= new FillStyle( "draw" );
     public static final FillStyle STYLE_OUTLINE= new FillStyle( "outline" );
 }
