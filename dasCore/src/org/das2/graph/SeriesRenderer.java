@@ -99,7 +99,7 @@ public class SeriesRenderer extends Renderer {
 
     private boolean histogram = false;
     private PsymConnector psymConnector = PsymConnector.SOLID;
-    private FillStyle fillStyle = FillStyle.STYLE_FILL;
+    private FillStyle fillStyle = FillStyle.STYLE_SOLID;
     //private int renderCount = 0;
     //private int updateImageCount = 0;
     private Color color = Color.BLACK;
