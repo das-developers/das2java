@@ -1408,7 +1408,7 @@ public class DataSetUtil {
 //        }
 //        
         if ( yds!=null && yds.rank()>1 ) {
-            if ( Schemes.isRank2Waveform(yds)) {
+            if ( Schemes.isRank2Waveform(yds)) {// leverage that we have the timetag offsets, and we can look at the first waveform to guess the cadence.
                 RankZeroDataSet r1= guessCadenceNew(xds,null);
                 QDataSet dd= (QDataSet)yds.property(QDataSet.DEPEND_1);
                 Datum rw= null;
@@ -1423,14 +1423,18 @@ public class DataSetUtil {
                         rw= rw==null ? t1 : ( rw.lt(t1) ? t1 : rw );
                     }
                 }
-                if ( rw==null ) {
+                if ( rw==null ) { // rank 2 offsets.
                     return r1;
                 } else {
-                    Datum rt=  DataSetUtil.asDatum(r1);
-                    if ( r1!=null && rw.getUnits().isConvertibleTo(rt.getUnits()) && rw.multiply(2.0).gt( rt ) ) {
-                        return r1;
+                    if ( r1==null ) {
+                        return rw==null ? null : DataSetUtil.asDataSet(rw);
                     } else {
-                        return DataSetUtil.asDataSet(rw);
+                        Datum rt=  DataSetUtil.asDatum(r1);
+                        if ( r1!=null && rw.getUnits().isConvertibleTo(rt.getUnits()) && rw.multiply(2.0).gt( rt ) ) {
+                            return r1;
+                        } else {
+                            return DataSetUtil.asDataSet(rw);
+                        }
                     }
                 }
             } else if ( Schemes.isRank3Waveform(yds) ) {
