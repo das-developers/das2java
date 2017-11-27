@@ -1483,6 +1483,20 @@ public class Ops {
                 Ops.lt( dep0, dep0en );
             }
         }
+        
+        if ( dep0.length()<1 ) {
+            return ds;
+        } else if ( dep0.length()<2 ) {
+            Datum startDatum= datum(st);
+            Datum stopDatum= datum(en);
+            Datum t= datum(dep0.slice(0));
+            if ( startDatum.le(t) && t.le(stopDatum) ) {
+                return ds;
+            } else {
+                return ds.trim(0, 0);
+            }
+        }
+        
         QDataSet findex= Ops.findex( dep0, st );
         double f1= Math.ceil( findex.value() );
         findex= Ops.findex( dep0en, en );
