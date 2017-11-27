@@ -16,8 +16,12 @@ import org.das2.util.DasMath;
 import java.text.ParseException;
 import java.util.*;
 import org.das2.datum.DomainDivider;
+import org.das2.datum.DomainDividerUtil;
 import org.das2.datum.EnumerationUnits;
 import org.das2.datum.UnitsUtil;
+import org.das2.qds.QDataSet;
+import org.das2.qds.SemanticOps;
+import org.das2.qds.ops.Ops;
 
 /** A TickVDescriptor describes the position that ticks
  * should be drawn, so that a fairly generic tick drawing routine
@@ -52,6 +56,52 @@ public class TickVDescriptor {
         this.minorTickV = DatumVector.newDatumVector(minorTicks, units);
         this.units = units;
         this.datumFormatter = DefaultDatumFormatterFactory.getInstance().defaultFormatter();
+    }
+
+    /**
+     * create the tickVDescriptor for a bunch of given ticks.  The first two ticks are used
+     * to derive minor ticks, using the DomainDivider code.
+     * @param ticks set of major ticks.
+     */
+    public TickVDescriptor( QDataSet ticks ) {
+        Units u= SemanticOps.getUnits(ticks);
+        this.units= u;
+        double [] major= new double[ticks.length()];
+        for ( int i=0; i<ticks.length(); i++ ) {
+            major[i]= ticks.value(i);
+        }
+        this.tickV = DatumVector.newDatumVector(major,u);
+        if ( ticks.length()>1 ) {
+            Datum min= Ops.datum(ticks.slice(0));
+            Datum max= Ops.datum(ticks.slice(1));
+            if ( min.ge(max) ) throw new IllegalArgumentException("ticks must be monotonically increasing");
+            DomainDivider dd= DomainDividerUtil.getDomainDivider( min, max );
+            while ( dd.boundaryCount(min, max)<2 ) {
+                dd= dd.finerDivider(false);
+            }
+            while ( dd.boundaryCount(min, max)>10 ) {
+                dd= dd.coarserDivider(false);
+            }
+            ArrayList<Double> minTicks= new ArrayList<>();
+            for ( int i=0; i<ticks.length()-1; i++ ) {
+                min= Ops.datum(ticks.slice(i));
+                max= Ops.datum(ticks.slice(i+1));
+                DatumVector dv= dd.boundaries(min, max);
+                for ( int j=0; j<dv.getLength(); j++ ) {
+                    minTicks.add(dv.doubleValue(j, u));
+                }
+            }
+            double[] minordd= new double[minTicks.size()];
+            for ( int i=0; i<minordd.length; i++ ) {
+                minordd[i]= minTicks.get(i);
+            }
+            this.minorTickV = DatumVector.newDatumVector(minordd, u);
+        } else {
+            this.minorTickV= this.tickV;
+        }
+        
+        this.datumFormatter= DatumUtil.bestFormatter( this.tickV );
+        
     }
 
     public static TickVDescriptor newTickVDescriptor(DatumVector majorTicks, DatumVector minorTicks) {
