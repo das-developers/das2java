@@ -180,6 +180,10 @@ public class FileSystemSettings {
 
     private boolean offline= false;
 
+    /**
+     * true indicate file system is offline and cached files should be used.
+     * @return 
+     */
     public boolean isOffline() {
         return offline;
     }
