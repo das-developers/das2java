@@ -14,6 +14,7 @@ import org.das2.datum.Units;
 import org.das2.graph.DasPlot;
 import org.das2.graph.Renderer;
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Point;
@@ -32,16 +33,19 @@ import java.util.logging.Level;
 import javax.swing.AbstractAction;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.ListCellRenderer;
 import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.DefaultTableModel;
@@ -296,6 +300,19 @@ public class DisplayDataMouseModule extends MouseModule {
         this.yrange= yrng;
 
         comboBox.setModel( new DefaultComboBoxModel( rlabels ) );
+        comboBox.setRenderer( new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                final javax.swing.JLabel label;
+                label= (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                if ( index>-1 && index<rends1.length ) {
+                    label.setIcon(rends1[index].getListIcon());
+                } else {
+                    label.setIcon(null);
+                }
+                return label;
+            }   
+        });
         comboBox.setSelectedIndex(icurrent);
         
         setDataSet(currentRenderer.getDataSet(),xrange,yrange);
