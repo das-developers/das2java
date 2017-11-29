@@ -65,15 +65,18 @@ public class ZoomPanMouseModule extends MouseModule {
         
         double xshift = 0., yshift = 0.;
 
+        if ((e.isShiftDown()) ) {
+            logger.fine("shift is down but no longer has any effect.  Use control to pan.");
+            return;
+        }
         if ((e.isControlDown() )) {  // shift no longer triggers because Mac Mouse pad.
             if (xAxis != null && yAxis != null) return; // this happens when mouse drifts onto plot during xaxis pan.
-            if (e.getWheelRotation() < 0) {
-                nmin = -0.20; // pan left on xaxis
-                nmax = +0.80;
-            } else {
-                nmin = +0.20; // pan right on xaxis
-                nmax = +1.20;
-            }
+            double rot = e.getPreciseWheelRotation();
+            if ( rot<-2.0 ) rot=-2.0;
+            if ( rot>+2.0 ) rot=+2.0;
+            nmin = 0.20*rot; // pan left on xaxis
+            nmax = nmin + 1.0;
+
         } else {
             Point ep= SwingUtilities.convertPoint( e.getComponent(), e.getPoint(), parent.getCanvas() );
             
@@ -83,6 +86,8 @@ public class ZoomPanMouseModule extends MouseModule {
 
             //mac trackpads coast a while after release, so let's govern the speed a little more
             double rot = e.getPreciseWheelRotation();
+            if ( rot<-2.0 ) rot=-2.0;
+            if ( rot>+2.0 ) rot=+2.0;
             if ( rot < 0) {
                 nmin = 0.10 * (-1*rot); // zoom in
                 nmax = 1.0 - nmin;
