@@ -34,6 +34,7 @@ import org.das2.datum.DatumRange;
 import org.das2.datum.DatumRangeUtil;
 import org.das2.datum.DatumUtil;
 import org.das2.datum.InconvertibleUnitsException;
+import org.das2.datum.TimeParser;
 import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
 import org.das2.math.filter.Butterworth;
@@ -4870,24 +4871,33 @@ public class Ops {
                    try {
                       DatumRange dr= DatumRangeUtil.parseISO8601Range(sarg); 
                       if ( dr==null ) {
-                         throw new IllegalArgumentException( "unable to parse string: "+sarg ); // legacy.  It should throw ParseException now.
+                          EnumerationUnits eu= EnumerationUnits.create("default");
+                          Datum d= eu.createDatum(sarg);
+                          return DataSetUtil.asDataSet(d);
                       } else {
                          return DataSetUtil.asDataSet(dr);
                       }
                    } catch ( ParseException ex1 ) {
-                       throw new IllegalArgumentException( "unable to parse string: "+sarg, ex1 );
+                       throw new IllegalArgumentException( "unable to parse string: "+sarg, ex1 ); //TODO: does this happen?
                    }
                }
             }
         } else if ( arg0 instanceof List ) {
             List p= (List)arg0;
             double[] j= new double[ p.size() ];
+            Units u= null;
             for ( int i=0; i<p.size(); i++ ) {
                 Object n= p.get(i);
-                //TODO: consider enumerations for Strings.
-                j[i]= ((Number)n).doubleValue();
+                if ( n instanceof Number ) {
+                    j[i]= ((Number)n).doubleValue();
+                } else if ( n instanceof String ) {
+                    QDataSet ds1= dataset(n);
+                    if ( u==null ) u= SemanticOps.getUnits(ds1);
+                    j[i]= ds1.value();
+                }
             }
             QDataSet q= DDataSet.wrap( j );
+            if ( u!=null ) ((DDataSet)q).putProperty(QDataSet.UNITS,u);
             return q;            
         } else if ( arg0.getClass().isArray() ) { // convert Java array into QDataSet.  Assumes qube.
             //return DataSetUtil.asDataSet(arg0); // I think this is probably a better implementation.
@@ -6015,7 +6025,44 @@ public class Ops {
     public static WritableDataSet removeValuesLessThan( Object ds, Object v ) {
         return removeValuesLessThan( dataset(ds), dataset(v) );
     }
-           
+        
+    /**
+     * apply the indeces 
+     * @param vv values to return, a rank 1, N-element dataset.
+     * @param ds the indeces.
+     * @return data a dataset with the geometry of ds and the units of values.
+     */
+    public static WritableDataSet applyIndex( QDataSet vv, QDataSet ds ) {
+        QubeDataSetIterator iter= new QubeDataSetIterator(ds);
+        DDataSet result= iter.createEmptyDs();
+        while ( iter.hasNext() ) {
+            iter.next();
+            int idx= (int)( iter.getValue(ds) );
+            iter.putValue( result, vv.value(idx) );
+        }
+        result.putProperty(QDataSet.UNITS,vv.property(QDataSet.UNITS));
+        return result;
+    }
+    
+    /**
+     * apply the indeces 
+     * @param vvo values to return, a rank 1, N-element dataset.
+     * @param ds the indeces.
+     * @return data a dataset with the geometry of ds and the units of values.
+     */
+    public static WritableDataSet applyIndex( Object vvo, QDataSet ds ) {
+        QDataSet vv= dataset(vvo);
+        QubeDataSetIterator iter= new QubeDataSetIterator(ds);
+        DDataSet result= iter.createEmptyDs();
+        while ( iter.hasNext() ) {
+            iter.next();
+            int idx= (int)( iter.getValue(ds) );
+            iter.putValue( result, vv.value(idx) );
+        }
+        result.putProperty(QDataSet.UNITS,vv.property(QDataSet.UNITS));
+        return result;
+    }
+
     /**
      * returns the reverse of the rank 1 dataset.
      * @param ds
