@@ -206,7 +206,8 @@ public class EventsRenderer extends Renderer {
                     return String.format( "%s", d ) ; // don't indicate time if it's zero width, because this is redundant and clutter.
                 }
             } else {
-                return String.format( "%s (%s)!c%s", dr, sy, d ) ;
+                String ssy= sy.toString().trim();
+                return String.format( "%s (%s)!c%s", dr, ssy, d ) ;
             }
         }
     };
@@ -348,7 +349,7 @@ public class EventsRenderer extends Renderer {
     private MouseModule getMouseModule() {
         if ( mouseModule==null ) {
             DasPlot parent= getParent();
-            mouseModule= new MouseModule( parent, new DragRenderer(parent), "event lookup" );
+            mouseModule= new MouseModule( parent, new DragRenderer(parent), "Event Lookup" );
         }
         return mouseModule;
     }
