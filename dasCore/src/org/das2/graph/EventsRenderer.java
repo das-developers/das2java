@@ -44,6 +44,7 @@ import org.das2.qds.JoinDataSet;
 import org.das2.qds.QDataSet;
 import org.das2.qds.RankZeroDataSet;
 import org.das2.qds.SemanticOps;
+import org.das2.qds.TagGenDataSet;
 import org.das2.qds.WritableDataSet;
 import org.das2.qds.ops.Ops;
 import org.das2.qds.util.DataSetBuilder;
@@ -480,9 +481,15 @@ public class EventsRenderer extends Renderer {
         } else if ( vds.rank()==1 ) {
             QDataSet dep0= (QDataSet) vds.property(QDataSet.DEPEND_0);
             if ( dep0==null ) {
-                xmins= vds;
-                xmaxs= vds;
-                msgs= vds;
+                if ( UnitsUtil.isNominalMeasurement(SemanticOps.getUnits(vds)) ) {
+                    xmins= new TagGenDataSet(vds.length(),1.0,0.0);
+                    xmaxs= new TagGenDataSet(vds.length(),1.0,1.0);
+                    msgs= vds;
+                } else {
+                    xmins= vds;
+                    xmaxs= vds;
+                    msgs= vds;
+                }
             } else if ( dep0.rank() == 2  ) {
                 if ( SemanticOps.isBins(dep0) ) {
                     xmins= DataSetOps.slice1( dep0, 0 );
