@@ -5249,6 +5249,7 @@ public class Ops {
      * @param ds rank N array, N &gt; 0.
      * @param w rank 1 dataset of length l indexing a rank 1 array, or rank 2 ds[l,N] indexing a rank N array.
      * @return rank 1 indeces.
+     * @see #applyIndex(org.das2.qds.QDataSet, org.das2.qds.QDataSet) which does the same thing.
      */
     public static QDataSet subset( QDataSet ds, QDataSet w ) {
         return DataSetOps.applyIndex( ds, 0, w, true);
@@ -6031,6 +6032,7 @@ public class Ops {
      * @param vv values to return, a rank 1, N-element dataset.
      * @param ds the indeces.
      * @return data a dataset with the geometry of ds and the units of values.
+     * @see #subset(org.das2.qds.QDataSet, org.das2.qds.QDataSet) which does the same thing.
      */
     public static WritableDataSet applyIndex( QDataSet vv, QDataSet ds ) {
         QubeDataSetIterator iter= new QubeDataSetIterator(ds);
