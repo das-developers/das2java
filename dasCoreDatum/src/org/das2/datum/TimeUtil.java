@@ -957,6 +957,18 @@ public final class TimeUtil {
     }
 
     /**
+     * return a DatumRange for the day containing the given time.  Midnight
+     * is contained within the following day.
+     * @param t a time.
+     * @return the day containing the time.
+     */
+    public static DatumRange dayContaining( Datum t ) {
+        Datum midnight= prevMidnight(t);
+        return new DatumRange( midnight, next( DAY, midnight ) );
+    }
+    
+    
+    /**
      * step down the previous ordinal.  If the datum is already at an ordinal
      * boundary, then step down by one ordinal.
      * @param step the ordinal location, such as TimeUtil.DAY or TimeUtil.HALF_YEAR
