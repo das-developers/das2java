@@ -67,6 +67,7 @@ public class ZoomPanMouseModule extends MouseModule {
 
         if ((e.isShiftDown()) ) {
             logger.fine("shift is down but no longer has any effect.  Use control to pan.");
+            parent.getDasMouseInputAdapter().getFeedback().setMessage("shift has no effect, press control to pan");
             return;
         }
         if ((e.isControlDown() )) {  // shift no longer triggers because Mac Mouse pad.
