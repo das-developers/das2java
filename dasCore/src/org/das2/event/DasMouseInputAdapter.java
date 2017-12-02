@@ -204,6 +204,14 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         this.feedback= f;
     }
     
+    /**
+     * get the feedback object, so its message can be set.
+     * @return the feedback object.
+     */
+    public Feedback getFeedback() {
+        return this.feedback;
+    }
+    
     public void replaceMouseModule(MouseModule oldModule, MouseModule newModule) {
         JRadioButtonMenuItem j = (JRadioButtonMenuItem) primaryActionButtonMap.get(oldModule);
         primaryActionButtonMap.put(newModule, j);
@@ -472,7 +480,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         secondarySelectedItem = j;
         secondary = module;
     }
-
+    
     /**
      * create the popup for the component.  This popup has three
      * sections:
