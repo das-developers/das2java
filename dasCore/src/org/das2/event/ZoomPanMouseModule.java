@@ -71,7 +71,10 @@ public class ZoomPanMouseModule extends MouseModule {
             return;
         }
         if ((e.isControlDown() )) {  // shift no longer triggers because Mac Mouse pad.
-            if (xAxis != null && yAxis != null) return; // this happens when mouse drifts onto plot during xaxis pan.
+            if (xAxis != null && yAxis != null) {
+                parent.getDasMouseInputAdapter().getFeedback().setMessage("pan is disabled when there are two axes");
+                return;
+            } // this happens when mouse drifts onto plot during xaxis pan.
             double rot = e.getPreciseWheelRotation();
             if ( rot<-2.0 ) rot=-2.0;
             if ( rot>+2.0 ) rot=+2.0;
@@ -113,7 +116,7 @@ public class ZoomPanMouseModule extends MouseModule {
                     break;
             }
         }
-
+        
         //int clickMag= Math.abs(e.getWheelRotation());
         int clickMag = 1;
         final long t1 = System.nanoTime();
