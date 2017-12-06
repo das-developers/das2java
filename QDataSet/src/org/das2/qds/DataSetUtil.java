@@ -233,9 +233,9 @@ public class DataSetUtil {
                     double d = ds.value(i);
                     double w = wds.value(i);
                     while (w == 0 && i < n) {
-                        i++;
                         d = ds.value(i);
                         w = wds.value(i);
+                        i++;
                     }
                     if (i == n) {
                         break;
