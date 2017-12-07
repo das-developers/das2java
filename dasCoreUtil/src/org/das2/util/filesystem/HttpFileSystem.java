@@ -713,19 +713,25 @@ public class HttpFileSystem extends WebFileSystem {
             File f= new File(localRoot, directory).getCanonicalFile();
             logger.log(Level.FINER, "this filesystem is offline, using local listing: {0}", f);
 
-            if ( !f.exists() ) throw new FileSystemOfflineException("unable to list "+f+" when offline");
-            File[] listing = f.listFiles();
+            result= addRoCacheEntries( directory, new LinkedHashMap() );
+            
+            if ( !f.exists() && result.isEmpty() ) throw new FileSystemOfflineException("unable to list "+f+" when offline");
 
             List<String> result1= new ArrayList();
-            for (File f1 : listing) {
-                if ( f1.getName().endsWith(".listing") ) continue;
-                if ( f1.isDirectory() ) {
-                    result1.add( f1.getName() + "/" );
-                } else {
-                    result1.add( f1.getName() );
+            
+            if ( f.exists() ) {
+                File[] listing = f.listFiles();
+
+                for (File f1 : listing) {
+                    if ( f1.getName().endsWith(".listing") ) continue;
+                    if ( f1.isDirectory() ) {
+                        result1.add( f1.getName() + "/" );
+                    } else {
+                        result1.add( f1.getName() );
+                    }
                 }
             }
-            result= addRoCacheEntries( directory, new LinkedHashMap() );
+            
             for ( DirectoryEntry f1: result.values() ) {
                 if ( f1.type=='d' ) {
                     result1.add( f1.name + "/" );
