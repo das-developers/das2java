@@ -410,7 +410,19 @@ public class GraphUtil {
                 sr.setRebinner(((SpectrogramRenderer)r).getRebinner());
             } else if ( r instanceof SeriesRenderer ) {
                 cr= new SeriesRenderer();
+                SeriesRenderer sr= (SeriesRenderer)cr;
                 ((SeriesRenderer)cr).setAntiAliased(((SeriesRenderer) r).isAntiAliased());
+                sr.setColor( ((SeriesRenderer) r).getColor() );
+                sr.setFillColor(((SeriesRenderer) r).getFillColor() );
+                sr.setFillStyle(((SeriesRenderer) r).getFillStyle() );
+                sr.setLineWidth(((SeriesRenderer) r).getLineWidth() );
+                sr.setSymSize(((SeriesRenderer) r).getSymSize() );
+                sr.setPsym(((SeriesRenderer) r).getPsym() );
+                sr.setPsymConnector(((SeriesRenderer) r).getPsymConnector() );
+            } else if ( r instanceof ImageVectorDataSetRenderer ) {
+                cr= new ImageVectorDataSetRenderer(null);
+                ImageVectorDataSetRenderer sr= (ImageVectorDataSetRenderer)cr;
+                sr.setColor( ((ImageVectorDataSetRenderer) r).getColor() );
             } else {
                 throw new UnsupportedOperationException("source renderer cannot be copied");
             }
