@@ -1427,10 +1427,10 @@ public class DataSetUtil {
                     return r1;
                 } else {
                     if ( r1==null ) {
-                        return rw==null ? null : DataSetUtil.asDataSet(rw);
+                        return DataSetUtil.asDataSet(rw);
                     } else {
                         Datum rt=  DataSetUtil.asDatum(r1);
-                        if ( r1!=null && rw.getUnits().isConvertibleTo(rt.getUnits()) && rw.multiply(2.0).gt( rt ) ) {
+                        if ( rw.getUnits().isConvertibleTo(rt.getUnits()) && rw.multiply(2.0).gt( rt ) ) {
                             return r1;
                         } else {
                             return DataSetUtil.asDataSet(rw);
