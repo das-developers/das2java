@@ -28,6 +28,7 @@ import java.awt.Color;
 import java.awt.Dialog;
 import java.awt.Frame;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.Point;
@@ -64,6 +65,7 @@ import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.Units;
 import org.das2.event.MouseModule;
 import org.das2.event.PointSlopeDragRenderer;
+import org.das2.graph.Painter;
 import org.das2.graph.Renderer;
 import org.das2.graph.SpectrogramRenderer;
 import org.das2.util.monitor.ProgressMonitor;
@@ -102,16 +104,16 @@ public class HorizontalSpectrogramSlicer implements DataPointSelectionListener {
         this.parentPlot= parent;
     }
 
-    private void initPlot() {
+    private void initPlot( DasCanvas canvas ) {
         DasAxis xAxis= sourceXAxis.createAttachedAxis( DasAxis.HORIZONTAL );
         DasAxis yAxis = sourceZAxis.createAttachedAxis(DasAxis.VERTICAL);
         myPlot= new DasPlot( xAxis, yAxis);
         renderer= new SymbolLineRenderer();
         renderer.setAntiAliased(true);
         myPlot.addRenderer(renderer);
-        myPlot.addRenderer( new Renderer() {
+        canvas.addTopDecorator( new Painter() {
             @Override
-            public void render(Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
+            public void paint(Graphics2D g) {
                 int ix= (int)myPlot.getXAxis().transform(xValue);
                 DasRow row= myPlot.getRow();
                 int iy0= (int)row.getDMinimum();
@@ -225,12 +227,12 @@ public class HorizontalSpectrogramSlicer implements DataPointSelectionListener {
     
     /** This method should ONLY be called by the AWT event thread */
     private void createPopup() {
-        if ( myPlot==null ) {
-            initPlot();
-        }
         int width = parentPlot.getCanvas().getWidth() / 2;
         int height = parentPlot.getCanvas().getHeight() / 2;
         final DasCanvas canvas = new DasCanvas(width, height);
+        if ( myPlot==null ) {
+            initPlot(canvas);
+        }
         DasRow row = new DasRow(canvas, null, 0, 1.0, 3, -5, 0, 0 );
         DasColumn column = new DasColumn(canvas, null, 0, 1.0, 7, -3, 0, 0 );
         canvas.add( myPlot, row, column);
