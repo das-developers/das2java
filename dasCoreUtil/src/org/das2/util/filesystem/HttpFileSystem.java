@@ -725,7 +725,7 @@ public class HttpFileSystem extends WebFileSystem {
                 for (File f1 : listing) {
                     if ( f1.getName().endsWith(".listing") ) continue;
                     if ( f1.isDirectory() ) {
-                        result1.add( f1.getName() + "/" );
+                        result1.add( f1.getName() + '/' );
                     } else {
                         result1.add( f1.getName() );
                     }
@@ -734,7 +734,12 @@ public class HttpFileSystem extends WebFileSystem {
             
             for ( DirectoryEntry f1: result.values() ) {
                 if ( f1.type=='d' ) {
-                    result1.add( f1.name + "/" );
+                    int n= f1.name.length();
+                    if ( n>0 && f1.name.charAt(n-1)=='/' ) {
+                        result1.add( f1.name );
+                    } else {
+                        result1.add( f1.name + '/' );
+                    }
                 } else {
                     result1.add( f1.name );
                 }
