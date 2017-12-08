@@ -11,7 +11,6 @@ import org.das2.datum.Datum;
 import org.das2.datum.UnitsUtil;
 import java.awt.*;
 import java.awt.geom.*;
-import static java.awt.geom.Path2D.WIND_NON_ZERO;
 import java.awt.image.BufferedImage;
 import java.awt.image.ConvolveOp;
 import java.awt.image.Kernel;
@@ -416,6 +415,8 @@ public class GraphUtil {
                 sr.setFillColor(((SeriesRenderer) r).getFillColor() );
                 sr.setFillStyle(((SeriesRenderer) r).getFillStyle() );
                 sr.setLineWidth(((SeriesRenderer) r).getLineWidth() );
+                sr.setFillToReference(((SeriesRenderer) r).isFillToReference() );
+                sr.setReference(((SeriesRenderer) r).getReference() );
                 sr.setSymSize(((SeriesRenderer) r).getSymSize() );
                 sr.setPsym(((SeriesRenderer) r).getPsym() );
                 sr.setPsymConnector(((SeriesRenderer) r).getPsymConnector() );
