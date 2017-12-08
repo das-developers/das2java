@@ -379,7 +379,15 @@ public class GraphUtil {
     }
     
     /**
-     * return a copy of the plot.
+     * return a copy of the plot.  This will include the Renderers and the 
+     * data they contain.  The plot is not attached to a canvas or row 
+     * and column.
+     * <code>  cnvsNew= new DasCanvas(500,500);
+     *   row= new DasRow(cnvsNew,0.2,0.8);
+     *   column= new DasColumn(cnvsNew,0.2,0.8);
+     *   p= GraphUtil.copyPlot(dp); 
+     *   cnvsNew.add(p,row,column); 
+     * </code>
      * @param p
      * @return 
      */
