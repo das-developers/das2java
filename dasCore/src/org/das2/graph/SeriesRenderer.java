@@ -2460,10 +2460,18 @@ public class SeriesRenderer extends Renderer {
         updateCacheImage();
     }
 
+    /**
+     * how each plot symbol is filled.
+     * @return 
+     */
     public FillStyle getFillStyle() {
         return fillStyle;
     }
 
+    /**
+     * how each plot symbol is filled.
+     * @param fillStyle 
+     */
     public void setFillStyle(FillStyle fillStyle) {
         this.fillStyle = fillStyle;
         updatePsym();
