@@ -351,6 +351,66 @@ public class GraphUtil {
     }
 
     /**
+     * return a copy of the plot.  It does not have the
+     * row and column set to its own row and column.
+     * @param a
+     * @return 
+     */
+    public static DasAxis copyAxis( DasAxis a ) {
+        DasAxis c= new DasAxis( a.getDatumRange(), a.getOrientation() );
+        c.setLog(a.isLog());
+        c.setLabel(a.getLabel());
+        c.setFlipLabel(a.isFlipLabel());
+        return c;
+    }
+    
+    /**
+     * return a copy of the plot.  It does not have the
+     * row and column set to its own row and column.
+     * @param a
+     * @return 
+     */
+    public static DasColorBar copyColorBar( DasColorBar a ) {
+        DasColorBar c= new DasColorBar( a.getDataMinimum(), a.getDataMaximum(), a.getOrientation(), a.isLog() );
+        c.setLabel(a.getLabel());
+        c.setFlipLabel(a.isFlipLabel());
+        c.setType(a.getType());
+        return c;
+    }
+    
+    /**
+     * return a copy of the plot.
+     * @param p
+     * @return 
+     */
+    public static DasPlot copyPlot( DasPlot p ) {
+        DasAxis xaxis= copyAxis(p.getXAxis());
+        DasAxis yaxis= copyAxis(p.getYAxis());
+        DasPlot c= new DasPlot(xaxis, yaxis);
+        c.setTitle( p.getTitle() );
+        c.setDrawGrid( p.isDrawGrid() );
+        c.setPreviewEnabled( p.isPreviewEnabled() );
+        for ( Renderer r: p.getRenderers() ) {
+            Renderer cr;
+            if ( r instanceof SpectrogramRenderer ) {
+                DasColorBar cb= copyColorBar(((SpectrogramRenderer)r).getColorBar());
+                cr= new SpectrogramRenderer(null,cb);
+                SpectrogramRenderer sr= (SpectrogramRenderer)cr;
+                sr.setRebinner(((SpectrogramRenderer)r).getRebinner());
+            } else if ( r instanceof SeriesRenderer ) {
+                cr= new SeriesRenderer();
+                ((SeriesRenderer)cr).setAntiAliased(((SeriesRenderer) r).isAntiAliased());
+            } else {
+                throw new UnsupportedOperationException("source renderer cannot be copied");
+            }
+            cr.setControl(r.getControl());
+            cr.setDataSet(r.getDataSet());
+            c.addRenderer( cr );
+        }
+        return c;
+    }
+    
+    /**
      * get a plot and add it to a JFrame.
      * @param ds
      * @return 
