@@ -6,18 +6,25 @@
 
 package org.das2.graph;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.datum.Units;
 import javax.sound.sampled.*;
+import javax.swing.JButton;
+import javax.swing.JPanel;
+import org.das2.datum.Datum;
 import org.das2.datum.LoggerManager;
 import org.das2.datum.UnitsConverter;
+import org.das2.qds.DataSetUtil;
 import org.das2.qds.FlattenWaveformDataSet;
 import org.das2.qds.QDataSet;
 import org.das2.qds.SemanticOps;
 import org.das2.qds.ops.Ops;
+import org.das2.util.DebugPropertyChangeSupport;
 
 /**
  * Stream QDataSet to the sound system, using DEPEND_0 to control
@@ -38,6 +45,12 @@ public class Auralizor {
     double max;
     
     QDataSet ds;
+    QDataSet dep0;
+    
+    int currentRecord= 0;
+    boolean playing= false;
+    
+    PropertyChangeSupport pcs= new DebugPropertyChangeSupport(this);
     
     /**
      * set the dataset to stream.  The dataset should be 
@@ -56,6 +69,7 @@ public class Auralizor {
             default:
                 throw new IllegalArgumentException("dataset must be rank 1 or rank 2 waveform");
         }
+        this.dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
         min= -1;
         max= 1;
         QDataSet yrange= Ops.extent(this.ds);
@@ -63,11 +77,63 @@ public class Auralizor {
         max= yrange.value(1);        
     }
     
+    
+    public JPanel getControlPanel() {
+        AuralizorControlPanel acp= new AuralizorControlPanel();
+        acp.setAuralizor(this);
+        return acp;
+    }
+    
+    public void reset() {
+        currentRecord= 0;
+        playing= false;
+        setPosition(Units.seconds.createDatum(0));
+    }
+    
+    private Datum position = Units.seconds.createDatum(0);
+    private Datum lastAnnouncedPosition= null;
+    private Datum limit= Units.milliseconds.createDatum(100);
+    
+    public static final String PROP_POSITION = "position";
+
+    public Datum getPosition() {
+        return DataSetUtil.asDatum( dep0.slice(currentRecord) );
+    }
+
+    public void setPosition(Datum position) {
+        if ( position!=this.position ) {
+            this.currentRecord= DataSetUtil.closestIndex( dep0, position );
+            if ( lastAnnouncedPosition==null || lastAnnouncedPosition.subtract(position).abs().gt(limit) ) {
+                Datum newPosition= getPosition();
+                pcs.firePropertyChange( PROP_POSITION, lastAnnouncedPosition, newPosition );
+                lastAnnouncedPosition= newPosition;
+            }
+        }
+    }
+
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        pcs.addPropertyChangeListener(listener);
+    }
+        
+    public void addPropertyChangeListener(String propname,PropertyChangeListener listener) {
+        pcs.addPropertyChangeListener(propname,listener);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        pcs.removePropertyChangeListener(listener);
+    }
+        
+    public void removePropertyChangeListener(String propname,PropertyChangeListener listener) {
+        pcs.removePropertyChangeListener(propname,listener);
+    }    
+    
     /**
      * begin streaming the sound.  This will block the current
      * thread until complete.
      */
     public void playSound() {
+        playing= true;
+        
         QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
         UnitsConverter uc= UnitsConverter.getConverter( SemanticOps.getUnits(dep0).getOffsetUnits(), Units.seconds );
         float sampleRate=   (float) ( 1. / uc.convert( dep0.value(1)-dep0.value(0) )  ) ;
@@ -91,10 +157,15 @@ public class Auralizor {
         
         line.start();
         
-        int i=0;
+        int i=currentRecord;
         int ibuf=0;
 
-        while ( i<dep0.length() ) {
+        while ( currentRecord<dep0.length() ) {
+            if ( playing==false ) {
+                break;
+            }
+            i= currentRecord;
+            
             double d= ds.value(i++);
             int b= (int) ( 65536 * ( d - min ) / ( max-min ) ) - 32768;
             try {
@@ -108,6 +179,8 @@ public class Auralizor {
                 line.write(buf, 0, ibuf );
                 ibuf=0;
             }
+            currentRecord= i;
+            setPosition(getPosition());
         }
         line.write(buf, 0, ibuf );
         
@@ -133,8 +206,8 @@ public class Auralizor {
      */
     public Auralizor( QDataSet ds ) {
         setDataSet(ds);
-    }
+    }  
     
-
+    
     
 }
