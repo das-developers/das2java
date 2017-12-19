@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import org.das2.datum.TimeUtil.TimeStruct;
 
 /**
@@ -74,6 +75,9 @@ public class Orbits {
      */
     private static LinkedHashMap<String,DatumRange> readOrbits( String sc, List<URL> source ) throws IOException {
         List<URL> urls= new ArrayList<>();
+        if ( SwingUtilities.isEventDispatchThread() ) {
+            logger.warning("read orbits called on event thread");
+        }
         try {
             if ( sc.contains(":") ) {
                 urls.add( new URL( sc ) );  // orbit:http://das2.org/wiki/index.php/Orbits/crres:6 allowed.
