@@ -87,7 +87,11 @@ public class CollapseFilterEditorPanel extends javax.swing.JPanel implements Fil
         String[] depNames1= FilterEditorPanelUtil.getDimensionNames(ds);
         int index= dimensionCB.getSelectedIndex();
         dimensionCB.setModel(new DefaultComboBoxModel(depNames1));
-        dimensionCB.setSelectedIndex(index);
+        try {
+            dimensionCB.setSelectedIndex(index);
+        } catch ( IllegalArgumentException ex ) {
+            dimensionCB.setSelectedIndex(depNames1.length-1);
+        }
     }
 
     @Override
