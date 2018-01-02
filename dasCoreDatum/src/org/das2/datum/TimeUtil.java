@@ -25,6 +25,7 @@ package org.das2.datum;
 import java.util.*;
 
 import java.text.ParseException;
+import java.util.logging.Logger;
 import org.das2.datum.format.TimeDatumFormatter;
 
 /**
@@ -32,7 +33,9 @@ import org.das2.datum.format.TimeDatumFormatter;
  * @author  jbf
  */
 public final class TimeUtil {
-
+    
+    private static final Logger logger= LoggerManager.getLogger("das2.datum");
+    
     private TimeUtil() {
     }
     
@@ -587,6 +590,17 @@ public final class TimeUtil {
         int year = timeArray[0];
         int month = timeArray[1];
         int day = timeArray[2];
+        if ( month<1 ) { // support a little slop, like 2018-00-01 to mean Dec 2017.
+            logger.info("month was less than 0");
+            month+=12;
+            year-=1;
+        }
+        if ( month>12 ) {
+            month-=12;
+            year+=1;
+        }
+        if ( month<1 ) throw new IllegalArgumentException("month is less than 1");
+        if ( month>12 ) throw new IllegalArgumentException("month is greater than 12");
         int jd = 367 * year - 7 * (year + (month + 9) / 12) / 4 -
                 3 * ((year + (month - 9) / 7) / 100 + 1) / 4 +
                 275 * month / 9 + day + 1721029;

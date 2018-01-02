@@ -19,7 +19,7 @@ import org.das2.datum.format.TimeDatumFormatter;
  */
 public class DatumRangeUtil {
 
-    private static final Logger logger= LoggerManager.getLogger("datum");
+    private static final Logger logger= LoggerManager.getLogger("das2.datum");
 
     private static final boolean DEBUG=false;
 
@@ -632,10 +632,18 @@ public class DatumRangeUtil {
         
         if ( d1 ) {
             for ( int i=0; i<7; i++ ) digits0[i] = digits1[i] - digits0[i];
+            if ( digits0[1]<1 ) {
+                digits0[1]+=12;
+                digits0[0]-=1;
+            }
         }
 
         if ( d2 ) {
             for ( int i=0; i<7; i++ ) digits1[i] = digits0[i] + digits1[i];
+            if ( digits1[1]>12 ) {
+                digits1[1]-=12;
+                digits1[0]+=1;
+            }
         }
 
         Datum t1= TimeUtil.toDatum(digits0);
