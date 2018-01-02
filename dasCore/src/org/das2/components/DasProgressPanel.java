@@ -197,6 +197,7 @@ public class DasProgressPanel implements ProgressMonitor {
         showProgressRate = true;
         isCancelled = false;
         running = false;
+        //System.err.println("here create " + label + " " + Integer.toHexString( this.hashCode() )  );
     }
 
     /**
@@ -423,6 +424,10 @@ public class DasProgressPanel implements ProgressMonitor {
     
     @Override
     public synchronized void finished() {
+        //System.err.println("here finished " + Integer.toHexString( this.hashCode() )  );
+        //if ( this.progressMessageString.endsWith("t: 31" ) ) {
+        //    System.err.println("*** here finished t31 " + Integer.toHexString( this.hashCode() )  );    
+        //}
         if ( finished==true ) {
             logger.warning("monitor finished was called twice!");
             logger.warning("here was the first call:");
@@ -566,6 +571,7 @@ public class DasProgressPanel implements ProgressMonitor {
      * this must be run on the event thread
      */
     private void updateUIComponents() {
+        //logger.finer("finished="+this.finished+ "  "+  Integer.toHexString( this.hashCode() ) );
         long elapsedTimeMs = System.currentTimeMillis() - taskStartedTime;
 
         long kb = currentTaskPosition;
@@ -734,6 +740,7 @@ public class DasProgressPanel implements ProgressMonitor {
 
     @Override
     public void cancel() {
+        //logger.finest("cancel "+ Integer.toHexString( this.hashCode() ) );
         isCancelled = true;
         finished();
     }
@@ -777,6 +784,10 @@ public class DasProgressPanel implements ProgressMonitor {
 
     @Override
     public void setProgressMessage(String message) {
+        logger.finest("setProgressMessage");
+        //if ( this.message.endsWith("t: 31") ) {
+        //    System.err.println("setProgressMessage "+ Integer.toHexString( this.hashCode() ) );
+        //}
         this.progressMessageString = message;
         this.progressMessageDirty = true;
     }
