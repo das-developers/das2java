@@ -15,7 +15,7 @@ import java.util.logging.Logger;
 
 public class DatumRange implements Comparable, Serializable {
     
-    private static final Logger logger = LoggerManager.getLogger("org.das2.datum");
+    private static final Logger logger = LoggerManager.getLogger("das2.datum");
     
     Datum s1;
     Datum s2;

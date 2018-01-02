@@ -41,7 +41,7 @@ import org.das2.datum.format.TimeDatumFormatter;
  */
 public final class DatumUtil {
 
-    private static final Logger logger = LoggerManager.getLogger("datum");
+    private static final Logger logger = LoggerManager.getLogger("das2.datum");
 
     /** Creates a new instance of DatumUtil */
     private DatumUtil() {

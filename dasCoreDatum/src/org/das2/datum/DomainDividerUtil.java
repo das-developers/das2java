@@ -12,7 +12,7 @@ import org.das2.datum.format.DefaultDatumFormatter;
  */
 public final class DomainDividerUtil {
 
-    private static final Logger logger= LoggerManager.getLogger("datum.ddiv");
+    private static final Logger logger= LoggerManager.getLogger("das2.datum.ddiv");
     
     // Still need to decide what all should be in here.
 

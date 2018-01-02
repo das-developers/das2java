@@ -44,7 +44,7 @@ import org.das2.datum.format.EnumerationDatumFormatterFactory;
  */
 public class EnumerationUnits extends Units {
 
-    private static final Logger logger= LoggerManager.getLogger("das2.units.enum");
+    private static final Logger logger= LoggerManager.getLogger("das2.datum.enum");
     
     private Map<Integer, Datum> ordinals;  // maps from ordinal to Datum.Integer
     private int highestOrdinal; // highest ordinal for each Units type

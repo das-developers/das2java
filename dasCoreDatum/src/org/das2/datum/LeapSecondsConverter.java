@@ -22,7 +22,7 @@ import java.util.logging.Logger;
  */
 public class LeapSecondsConverter extends UnitsConverter {
 
-    private static Logger logger= LoggerManager.getLogger("datum.uc");
+    private static Logger logger= LoggerManager.getLogger("das2.datum.uc");
 
     public static final int T1972_LEAP = 10;
 

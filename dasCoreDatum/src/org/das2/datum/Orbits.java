@@ -38,7 +38,7 @@ import org.das2.datum.TimeUtil.TimeStruct;
  */
 public class Orbits {
 
-    private static final Logger logger= LoggerManager.getLogger("datum.orbits");
+    private static final Logger logger= LoggerManager.getLogger("das2.datum.orbits");
 
     private final String sc;
 
