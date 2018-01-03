@@ -8094,9 +8094,12 @@ public class Ops {
     }
 
     /**
-     * use one pass auto-scaling histogram
-     * @param ds
-     * @return
+     * AutoHistogram is a one-pass self-scaling histogram, useful in autoranging data.  
+     * The data is fed into the routine, and bins will grow as more and more data is added,
+     * to result in about 100 bins.  For example, if the initial binsize is 1.0 unit, and the data extent
+     * is 0-200, then bins are combined so that the new binsize is 2.0 units and 100 bins are used.
+     * @param ds rank N dataset (all ranks are supported).
+     * @return rank 1 dataset
      */
     public static QDataSet autoHistogram( QDataSet ds ) {
         if ( ds==null ) {
@@ -10004,7 +10007,7 @@ public class Ops {
         if ( nn ) ff= Ops.round(ff);        
         ds= interpolate( ds, ff );
 
-        return ds;        
+        return ds;
     }
     
     /**
