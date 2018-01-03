@@ -3,6 +3,7 @@ package org.das2.qds.ops;
 
 import java.awt.Color;
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Array;
 import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
@@ -10134,8 +10135,24 @@ public class Ops {
                 tt1= (QDataSet)ds.property( QDataSet.DEPEND_0 );
                 ff= findex( tt1, tt );
             }
-            ff= Ops.round(ff);
-            ds= interpolate( ds, ff );
+            QDataSet iff= Ops.round(ff);
+            ds= interpolate( ds, iff );
+            QDataSet tlimit= DataSetUtil.guessCadenceNew( tt1, null );
+            if ( tlimit!=null ) {
+                tlimit= Ops.multiply( tlimit, Ops.dataset(1.5) );
+                Number fillValue= (Number) ds.property(QDataSet.FILL_VALUE);
+                if ( fillValue==null ) fillValue= Double.NaN;
+                QDataSet tcel= Ops.applyIndex(tt1,Ops.ceil(ff));
+                QDataSet tflr= Ops.applyIndex(tt1,Ops.floor(ff));
+                QDataSet tdff= Ops.subtract( tcel,tflr );
+                QDataSet r= Ops.where( Ops.gt( tdff, tlimit ) );
+                try {
+                    new QStreamFormatter().formatToFile( "/tmp/ap/tdff.qds", tdff );
+                } catch (IOException ex) {
+                    Logger.getLogger(Ops.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                ds= Ops.putValues( ds, r, fillValue );
+            }            
             result.add( ds );
             iarg++;
         }
