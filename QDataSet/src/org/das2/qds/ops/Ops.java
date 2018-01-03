@@ -2,6 +2,7 @@
 package org.das2.qds.ops;
 
 import java.awt.Color;
+import java.io.File;
 import java.lang.reflect.Array;
 import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
@@ -87,6 +88,8 @@ import org.das2.qds.util.FFTUtil;
 import org.das2.qds.util.LSpec;
 import org.das2.qds.util.LinFit;
 import org.das2.qds.math.Contour;
+import org.das2.qds.util.AsciiFormatter;
+import org.das2.qds.util.QStreamFormatter;
 import org.das2.util.ColorUtil;
 
 /**
@@ -8537,7 +8540,7 @@ public class Ops {
         
         // Starting with v2014a_12, immodest extrapolations beyond 0.5 are no longer allowed.
         boolean noExtrapolate= true;
-        
+               
         while (it.hasNext()) {
             it.next();
 
@@ -10059,6 +10062,17 @@ public class Ops {
             boolean nn= UnitsUtil.isOrdinalMeasurement( SemanticOps.getUnits(ds) );
             if ( nn ) ff= Ops.round(ff);
             ds= interpolate( ds, ff );
+            QDataSet tlimit= DataSetUtil.guessCadenceNew( tt1, null );
+            if ( tlimit!=null ) {
+                tlimit= Ops.multiply( tlimit, Ops.dataset(1.5) );
+                Number fillValue= (Number) ds.property(QDataSet.FILL_VALUE);
+                if ( fillValue==null ) fillValue= Double.NaN;
+                QDataSet tcel= Ops.applyIndex(tt1,Ops.ceil(ff));
+                QDataSet tflr= Ops.applyIndex(tt1,Ops.floor(ff));
+                QDataSet tdff= Ops.subtract( tcel,tflr );
+                QDataSet r= Ops.where( Ops.gt( tdff, tlimit ) );
+                ds= Ops.putValues( ds, r, fillValue );
+            }
             result.add( ds );
             iarg++;
         }
