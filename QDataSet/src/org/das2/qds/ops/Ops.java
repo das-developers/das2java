@@ -10146,11 +10146,6 @@ public class Ops {
                 QDataSet tflr= Ops.applyIndex(tt1,Ops.floor(ff));
                 QDataSet tdff= Ops.subtract( tcel,tflr );
                 QDataSet r= Ops.where( Ops.gt( tdff, tlimit ) );
-                try {
-                    new QStreamFormatter().formatToFile( "/tmp/ap/tdff.qds", tdff );
-                } catch (IOException ex) {
-                    Logger.getLogger(Ops.class.getName()).log(Level.SEVERE, null, ex);
-                }
                 ds= Ops.putValues( ds, r, fillValue );
             }            
             result.add( ds );
