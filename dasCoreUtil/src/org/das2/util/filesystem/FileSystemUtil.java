@@ -334,7 +334,7 @@ public class FileSystemUtil {
         //surl = surl.replaceAll("#", "%23" );
         surl = surl.replaceAll("%", "%25" ); // see above
         surl = surl.replaceAll(" ", "%20" );
-        surl = surl.replaceAll(":", "%3A" );
+        //surl = surl.replaceAll(":", "%3A" );
         //surl = surl.replaceAll("&", "%26" );
         //surl = surl.replaceAll("\\+", "%2B" );
         //surl = surl.replaceAll("/", "%2F" );
@@ -364,7 +364,7 @@ public class FileSystemUtil {
         //surl = surl.replaceAll("%26", "&" );
         //surl = surl.replaceAll("%2B", "+" );
         //surl = surl.replaceAll("%2F", "/" );
-        surl = surl.replaceAll("%3A", ":" );
+        //surl = surl.replaceAll("%3A", ":" );
         //surl = surl.replaceAll("%3B", ";" );
         surl = surl.replaceAll("%3C", "<" );
         surl = surl.replaceAll("%3E", ">" );
