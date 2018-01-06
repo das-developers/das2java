@@ -338,7 +338,7 @@ public class Ops {
             if ( units1!=Units.dimensionless ) properties.put( QDataSet.UNITS, units1 );
         } else if ( UnitsUtil.isIntervalMeasurement(units1) ) {
             if ( UnitsUtil.isIntervalMeasurement(units2) ) {
-                throw new IllegalArgumentException("units cannot be added: " + units1 + ", "+ units2  );
+                throw new IllegalArgumentException("two location units cannot be added: " + units1 + ", "+ units2  );
             }
             final UnitsConverter uc= UnitsConverter.getConverter( units2, units1.getOffsetUnits() );
             result= new BinaryOp() {
