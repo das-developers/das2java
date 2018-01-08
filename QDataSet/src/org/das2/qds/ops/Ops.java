@@ -4713,7 +4713,9 @@ public class Ops {
     }       
     
     /**
-     * element-wise atan2, 4-quadrant atan.
+     * element-wise atan2, 4-quadrant atan.  Note different languages have different argument order.  
+     * Microsoft office uses atan2(x,y); IDL uses atan(y,x);  Matlab uses atan2(y,x); and  
+     * NumPy uses arctan2(y,x).
      * @param y the y values
      * @param x the x values
      * @return angles between -PI and PI
