@@ -9811,7 +9811,8 @@ public class Ops {
     /**
      * return array that is the differences between each successive pair in the dataset.
      * Result[i]= ds[i+1]-ds[i], so that for an array with N elements, an array with
-     * N-1 elements is returned.  DEPEND_0 will contain the average of the two points.
+     * N-1 elements is returned.  When the data has a DEPEND_0, the result
+     * will have a DEPEND_0 which contains the average of the corresponding points.
      * @param ds a rank 1 dataset with N elements.
      * @return a rank 1 dataset with N-1 elements.
      * @see #accum(org.das2.qds.QDataSet) 
