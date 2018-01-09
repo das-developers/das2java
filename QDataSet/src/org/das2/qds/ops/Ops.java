@@ -9467,6 +9467,7 @@ public class Ops {
     public static QDataSet mean( QDataSet ds ) {
         double avg = 0;
         int n= 0;
+        double offs= Double.NaN;
         
         DataSetIterator it= new QubeDataSetIterator(ds);
         QDataSet wds= valid(ds);
@@ -9474,10 +9475,13 @@ public class Ops {
         while ( it.hasNext() )  {
             it.next();
             if ( it.getValue(wds)==0 ) continue;
-            avg += it.getValue(ds);
             n= n+1;
+            if ( n==1 ) {
+                offs= it.getValue(ds);
+            }
+            avg += ( it.getValue(ds) - offs );
         }
-        double m = avg / n;
+        double m = offs + avg / n;
         return DataSetUtil.asDataSet( m,SemanticOps.getUnits(ds) );
     }
     
