@@ -1210,6 +1210,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     }
     
     private void maybeStartTcaTimer() {
+        logger.fine("enter maybeStartTcaTimer");
         final DasCanvas lcanvas= getCanvas();
         final Object tcaLock= "tcastart_"+this.getDasName();
         if ( lcanvas!=null ) {
@@ -1334,7 +1335,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 timeDs.join( ArrayDataSet.copy(double.class,ex) );
             }
             timeDs.putProperty( QDataSet.BUNDLE_1, timeDs.slice(0).property(QDataSet.BUNDLE_0) );
-            
+
             QDataSet tickss= ltcaFunction.values(timeDs);
             if ( tickss.rank()!=2 ) {
                 throw new IllegalArgumentException("result of tcaFunction value() should be rank 1");
