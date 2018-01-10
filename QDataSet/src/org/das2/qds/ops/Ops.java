@@ -11025,7 +11025,7 @@ public class Ops {
             if ( d <= last  ) {
                 mdep0.putValue(i,fill);
             } else {
-                last = d; // TODO: study this.  
+                last = d; 
             }
         }
         
