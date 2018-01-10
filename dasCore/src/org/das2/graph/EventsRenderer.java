@@ -250,6 +250,8 @@ public class EventsRenderer extends Renderer {
             if ( vds.length()==0 ) return new Rectangle[0];
 
             QDataSet ds= cds;
+            if ( ds==null ) return new Rectangle[0];
+            
             QDataSet xmins= DataSetOps.unbundle( ds,0 );
             QDataSet xmaxs= DataSetOps.unbundle( ds,1 );
             QDataSet msgs= DataSetOps.unbundle(ds,ds.length(0)-1);
