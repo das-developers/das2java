@@ -9845,7 +9845,7 @@ public class Ops {
             }
             if ( dep0ds!=null ) {
                 assert dep0!=null;
-                dep0.putValue(i, ( dep0ds.value(i+1) + dep0ds.value(i)) / 2 );
+                dep0.putValue(i, ( dep0ds.value(i) + ( dep0ds.value(i+1) - dep0ds.value(i) ) / 2 ) );
             }
         }
         result.putProperty(QDataSet.FILL_VALUE, fill );
@@ -11024,8 +11024,9 @@ public class Ops {
             if ( w==0 ) continue;
             if ( d <= last  ) {
                 mdep0.putValue(i,fill);
-            } 
-            last = d;
+            } else {
+                last = d; // TODO: study this.  
+            }
         }
         
         logger.exiting( "org.das2.qds.Ops","ensureMonotonicWithFill" );        
