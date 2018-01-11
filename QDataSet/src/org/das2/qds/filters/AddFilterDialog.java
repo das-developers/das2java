@@ -255,6 +255,11 @@ public class AddFilterDialog extends javax.swing.JPanel {
                         break;
                     case "description":
                         break;
+                    case "bookmark-list":
+                        break;
+                    default:
+                        logger.log(Level.INFO, "unrecognized tag: {0}", localName);
+                        break;
                 }
             }
 
@@ -276,6 +281,12 @@ public class AddFilterDialog extends javax.swing.JPanel {
                     case "description":
                         ((Bookmark) (stack.peek().getUserObject())).description = charsBuilder.toString().trim();
                         break;
+                    case "bookmark-list":
+                        break;
+                    default:
+                        logger.log(Level.INFO, "unrecognized tag: {0}", localName);
+                        break;
+                        
                 }
                 charsBuilder.delete(0, charsBuilder.length());
             }
