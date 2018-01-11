@@ -9942,6 +9942,50 @@ public class Ops {
     }
     
     /**
+     * for each element i of ds, set the result[i] to the maximum of ds[0:(i+1)]
+     * @param ds rank 1 dataset
+     * @return the cumulative maximum
+     */
+    public static QDataSet cumulativeMax( QDataSet ds ) {
+        if ( ds.rank()!=1 ) throw new IllegalArgumentException("argument must be rank 1");
+        ArrayDataSet result= ArrayDataSet.copy(ds);
+        QDataSet w= Ops.valid(ds);
+        double max= -1*Double.MAX_VALUE;
+        for ( int i=0; i<result.length(); i++ ) {
+            if ( w.value(i)>0 ) {
+                double t= result.value(i);
+                if ( t>max ) max= t;
+                result.putValue( i, max );
+            } else {
+                result.putValue( i, Double.NaN );
+            }
+        }
+        return result;
+    }
+    
+    /**
+     * for each element i of ds, set the result[i] to the minimum of ds[0:(i+1)]
+     * @param ds rank 1 dataset
+     * @return the cumulative minimum
+     */
+    public static QDataSet cumulativeMin( QDataSet ds ) {
+        if ( ds.rank()!=1 ) throw new IllegalArgumentException("argument must be rank 1");
+        ArrayDataSet result= ArrayDataSet.copy(ds);
+        QDataSet w= Ops.valid(ds);
+        double min= Double.MAX_VALUE;
+        for ( int i=0; i<result.length(); i++ ) {
+            if ( w.value(i)>0 ) {
+                double t= result.value(i);
+                if ( t<min ) min= t;
+                result.putValue( i, min );
+            } else {
+                result.putValue( i, Double.NaN );
+            }
+        }
+        return result;
+    }
+    
+    /**
      * append two datasets that are QUBEs.  DEPEND_0 and other metadata is
      * handled as well.  So for example: 
      *<blockquote><pre>
