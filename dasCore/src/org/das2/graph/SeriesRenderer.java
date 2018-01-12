@@ -772,6 +772,7 @@ public class SeriesRenderer extends Renderer {
             newPath.addDataPoint( true, x, y );
 
             if (histogram) {
+                //HERE BUG: if the xSampleWidthExact is not the same as the actual spacing, the data will be drawn incorrectly.
                 double fx1 = midPointData( xAxis, x, xUnits, xSampleWidthExact, logStep, -0.5 );
                 newPath.addDataPoint( true, fx1, y );
                 double fx2 = midPointData( xAxis, x, xUnits, xSampleWidthExact, logStep, +0.5 );
