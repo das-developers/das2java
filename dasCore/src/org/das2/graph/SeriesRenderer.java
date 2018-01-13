@@ -772,10 +772,21 @@ public class SeriesRenderer extends Renderer {
             newPath.addDataPoint( true, x, y );
 
             if (histogram) {
+                double dx= xSampleWidthExact;
+                if ( index>0 ) {
+                    dx= (double) xds.value(index) - xds.value(index-1);
+                } else {
+                    dx= (double) xds.value(index+1) - xds.value(index);
+                }
                 //HERE BUG: if the xSampleWidthExact is not the same as the actual spacing, the data will be drawn incorrectly.
-                double fx1 = midPointData( xAxis, x, xUnits, xSampleWidthExact, logStep, -0.5 );
+                double fx1 = midPointData( xAxis, x, xUnits, dx, logStep, -0.5 );
                 newPath.addDataPoint( true, fx1, y );
-                double fx2 = midPointData( xAxis, x, xUnits, xSampleWidthExact, logStep, +0.5 );
+                if ( index<xds.length()-1 ) {
+                    dx= (double) xds.value(index+1) - xds.value(index);
+                } else {
+                    dx= (double) xds.value(index) - xds.value(index-1);
+                }              
+                double fx2 = midPointData( xAxis, x, xUnits, dx/2, logStep, +0.5 );
                 newPath.addDataPoint( true, fx2, y );
             } else {
                 newPath.addDataPoint( true, x, y );
@@ -804,9 +815,20 @@ public class SeriesRenderer extends Renderer {
 
                 if ( isValid || notInvalidInterleave ) {
                     if ( histogram ) {
-                        double fx1 = midPointData( xAxis, x, xUnits, xSampleWidthExact, logStep, -0.5 );
+                        double dx= xSampleWidthExact;
+                        if ( index>0 ) {
+                            dx= (double) xds.value(index) - xds.value(index-1);
+                        } else {
+                            dx= (double) xds.value(index+1) - xds.value(index);
+                        }
+                        double fx1 = midPointData( xAxis, x, xUnits, dx, logStep, -0.5 );
                         newPath.addDataPoint( true, fx1, y );
-                        double fx2 = midPointData( xAxis, x, xUnits, xSampleWidthExact, logStep, +0.5 );
+                        if ( index<xds.length()-1 ) {
+                            dx= (double) xds.value(index+1) - xds.value(index);
+                        } else {
+                            dx= (double) xds.value(index) - xds.value(index-1);
+                        }
+                        double fx2 = midPointData( xAxis, x, xUnits, dx, logStep, +0.5 );
                         newPath.addDataPoint( true, fx2, y );
                     } else {
                         newPath.addDataPoint( isValid, x, y );
