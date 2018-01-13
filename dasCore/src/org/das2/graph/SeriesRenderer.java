@@ -713,7 +713,7 @@ public class SeriesRenderer extends Renderer {
             
             Datum sw = null;
             try {// TODO: this really shouldn't be here, since we calculate it once.
-                sw= SemanticOps.guessXTagWidth( xds.trim(firstIndex,lastIndex), vds.trim(firstIndex,lastIndex) );
+                sw= getCadence( xds, vds, firstIndex, lastIndex );
                 // Note it uses a cached value that runs along with the data.
             } catch ( IllegalArgumentException ex ) {
                 logger.log( Level.WARNING, null, ex );
@@ -773,20 +773,9 @@ public class SeriesRenderer extends Renderer {
 
             if (histogram) {
                 double dx= xSampleWidthExact;
-                if ( index>0 ) {
-                    dx= (double) xds.value(index) - xds.value(index-1);
-                } else {
-                    dx= (double) xds.value(index+1) - xds.value(index);
-                }
-                //HERE BUG: if the xSampleWidthExact is not the same as the actual spacing, the data will be drawn incorrectly.
                 double fx1 = midPointData( xAxis, x, xUnits, dx, logStep, -0.5 );
                 newPath.addDataPoint( true, fx1, y );
-                if ( index<xds.length()-1 ) {
-                    dx= (double) xds.value(index+1) - xds.value(index);
-                } else {
-                    dx= (double) xds.value(index) - xds.value(index-1);
-                }              
-                double fx2 = midPointData( xAxis, x, xUnits, dx/2, logStep, +0.5 );
+                double fx2 = midPointData( xAxis, x, xUnits, dx, logStep, +0.5 );
                 newPath.addDataPoint( true, fx2, y );
             } else {
                 newPath.addDataPoint( true, x, y );
@@ -1017,7 +1006,7 @@ public class SeriesRenderer extends Renderer {
             int pathLengthApprox= Math.max( 5, 110 * (lastIndex - firstIndex) / 100 );
             GeneralPath fillPath = new GeneralPath(GeneralPath.WIND_NON_ZERO, pathLengthApprox );
 
-            Datum sw = SemanticOps.guessXTagWidth( xds.trim(firstIndex,lastIndex) , dataSet.trim(firstIndex,lastIndex) );
+            Datum sw= getCadence( xds, vds, firstIndex, lastIndex );
             double xSampleWidth;
             boolean logStep;
             if ( sw!=null ) {
@@ -1067,7 +1056,7 @@ public class SeriesRenderer extends Renderer {
             fy = yAxis.transform(y, yUnits);
             if (histogram) {
                 double fx1;
-                fx1= midPoint( xAxis, x, xUnits, xSampleWidthExact, logStep, -0.5 );
+                fx1= xAxis.transform( midPointData( xAxis, x, xUnits, xSampleWidthExact, logStep, -0.5 ), xUnits );
                 fillPath.moveTo(fx1-1, fyref); // doesn't line up, -1 is fudge
                 fillPath.lineTo(fx1-1, fy);
                 fillPath.lineTo(fx, fy);
@@ -1101,7 +1090,9 @@ public class SeriesRenderer extends Renderer {
                         if ( ignoreCadence || step < xSampleWidth) {
                             // draw connect-a-dot between last valid and here
                             if (histogram) {
-                                double fx1 = (fx0 + fx) / 2; //sloppy with ratiometric spacing
+                                //System.err.println("fill: "+index);
+                                double fx1= xAxis.transform( midPointData( xAxis, x, xUnits, xSampleWidthExact, logStep, -0.5 ), xUnits );
+                                //double fx1 = (fx0 + fx) / 2; //sloppy with ratiometric spacing
                                 fillPath.lineTo(fx1, fy0);
                                 fillPath.lineTo(fx1, fy);
                                 fillPath.lineTo(fx, fy);
@@ -1112,10 +1103,11 @@ public class SeriesRenderer extends Renderer {
                         } else {
                             // introduce break in line
                             if (histogram) {
-                                double fx1 = midPoint( xAxis, x0, xUnits, xSampleWidthExact, logStep, 0.5 );
+                                //System.err.println("fill: "+index);
+                                double fx1 = xAxis.transform( midPointData( xAxis, x0, xUnits, xSampleWidthExact, logStep, 0.5 ), xUnits );
                                 fillPath.lineTo(fx1, fy0);
                                 fillPath.lineTo(fx1, fyref);
-                                fx1 = midPoint( xAxis, x, xUnits, xSampleWidthExact, logStep, -0.5 );
+                                fx1 = xAxis.transform( midPointData( xAxis, x, xUnits, xSampleWidthExact, logStep, -0.5 ), xUnits );
                                 fillPath.moveTo(fx1, fyref);
                                 fillPath.lineTo(fx1, fy);
                                 fillPath.lineTo(fx, fy);
@@ -1140,7 +1132,8 @@ public class SeriesRenderer extends Renderer {
             }
 
             if ( histogram ) {
-                double fx1 = midPoint( xAxis, x0, xUnits, xSampleWidthExact, logStep, 0.5 );
+                //System.err.println("fill: "+index);
+                double fx1 = xAxis.transform( midPointData( xAxis, x0, xUnits, xSampleWidthExact, logStep, 0.5 ), xUnits );
                 fillPath.lineTo(fx1, fy0);
                 fillPath.lineTo(fx1, fyref);
             } else {
@@ -1162,6 +1155,15 @@ public class SeriesRenderer extends Renderer {
         public boolean acceptContext(Point2D.Double dp) {
             return fillToRefPath1 != null && fillToRefPath1.contains(dp);
         }
+    }
+
+    /**
+     * get the cadence for the data.  TODO: ideally, we wouldn't do this repeatedly.
+     */
+    private Datum getCadence(QDataSet xds, QDataSet yds, int firstIndex, int lastIndex) {
+        MutablePropertyDataSet xds1= Ops.copy(xds.trim(firstIndex,lastIndex));
+        xds1.putProperty(QDataSet.CADENCE,null);
+        return SemanticOps.guessXTagWidth( xds1, yds.trim(firstIndex,lastIndex) );
     }
 
     /**
