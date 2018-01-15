@@ -805,18 +805,8 @@ public class SeriesRenderer extends Renderer {
                 if ( isValid || notInvalidInterleave ) {
                     if ( histogram ) {
                         double dx= xSampleWidthExact;
-                        if ( index>0 ) {
-                            dx= (double) xds.value(index) - xds.value(index-1);
-                        } else {
-                            dx= (double) xds.value(index+1) - xds.value(index);
-                        }
                         double fx1 = midPointData( xAxis, x, xUnits, dx, logStep, -0.5 );
                         newPath.addDataPoint( true, fx1, y );
-                        if ( index<xds.length()-1 ) {
-                            dx= (double) xds.value(index+1) - xds.value(index);
-                        } else {
-                            dx= (double) xds.value(index) - xds.value(index-1);
-                        }
                         double fx2 = midPointData( xAxis, x, xUnits, dx, logStep, +0.5 );
                         newPath.addDataPoint( true, fx2, y );
                     } else {
@@ -870,16 +860,6 @@ public class SeriesRenderer extends Renderer {
         }
     }
 
-    private double midPoint(DasAxis axis, double d1, Units units, double delta, boolean ratiometric, double alpha ) {
-        double fx1;
-        if (axis.isLog() && ratiometric ) {
-            fx1 = (double) axis.transform( Math.exp( Math.log(d1) + delta * alpha ), units);
-        } else {
-            fx1 = (double) axis.transform( d1 + delta * alpha, units);
-        }
-        return fx1;
-    }
-    
     private double midPointData(DasAxis axis, double d1, Units units, double delta, boolean ratiometric, double alpha ) {
         double fx1;
         if (axis.isLog() && ratiometric ) {
