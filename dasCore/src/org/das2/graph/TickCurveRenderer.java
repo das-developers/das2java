@@ -33,9 +33,11 @@ import java.text.ParseException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.das2.dataset.NoDataInIntervalException;
+import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
 import org.das2.datum.DatumVector;
 import org.das2.datum.DomainDivider;
@@ -474,36 +476,62 @@ public final class TickCurveRenderer extends Renderer {
         QDataSet trange= Ops.extent(tds);
         DatumRange dr= DataSetUtil.asDatumRange( trange, true );
 
-        if ( ticksDivider==null ) {
-             ticksDivider= DomainDividerUtil.getDomainDivider( dr.min(), dr.max(), false );
-        }
+        DatumVector major, minor;
         
-        double plen= 0;
-        int ic= 1;
-        for ( int i=1; i<ddata[0].length; i++ ) {
-            if ( Math.abs( ddata[0][i] )<10000 && Math.abs( ddata[0][i-1] )<10000 &&  Math.abs( ddata[1][i] )<10000 && Math.abs( ddata[1][i-1] )<10000 ) {
-                double dx= ddata[0][i] - ddata[0][i-1];
-                double dy= ddata[1][i] - ddata[1][i-1];
-                plen += Math.sqrt( dx*dx + dy*dy );
-                ic++;
+        if ( tickSpacing.length()>0 ) {
+            if ( ticksDivider==null ) {
+                 ticksDivider= DomainDividerUtil.getDomainDivider( dr.min(), dr.max(), false );
             }
+            Datum ticksSpacingD;
+            try {
+                ticksSpacingD = dr.min().getUnits().getOffsetUnits().parse(tickSpacing);
+                while ( ticksDivider.rangeContaining(dr.min()).width().gt(ticksSpacingD) ) {
+                    ticksDivider= ticksDivider.finerDivider(false);
+                }
+            
+                while ( ticksDivider.rangeContaining(dr.min()).width().lt(ticksSpacingD) ) {
+                    ticksDivider= ticksDivider.coarserDivider(false);
+                }
+                
+            } catch (ParseException ex) {
+                ticksDivider= DomainDividerUtil.getDomainDivider( dr.min(), dr.max(), false );
+                logger.warning("unable to parse "+tickSpacing);
+            }
+                
+        } else {
+            if ( ticksDivider==null ) {
+                 ticksDivider= DomainDividerUtil.getDomainDivider( dr.min(), dr.max(), false );
+            }
+
+            double plen= 0;
+            int ic= 1;
+            for ( int i=1; i<ddata[0].length; i++ ) {
+                if ( Math.abs( ddata[0][i] )<10000 && Math.abs( ddata[0][i-1] )<10000 &&  Math.abs( ddata[1][i] )<10000 && Math.abs( ddata[1][i-1] )<10000 ) {
+                    double dx= ddata[0][i] - ddata[0][i-1];
+                    double dy= ddata[1][i] - ddata[1][i-1];
+                    plen += Math.sqrt( dx*dx + dy*dy );
+                    ic++;
+                }
+            }
+
+            if ( ic>0 ) { // compensate for stuff that can't be transformed.
+                plen= plen * ddata[0].length / ic;
+            }
+            if ( plen<100 ) plen=100;
+
+            while ( ticksDivider.boundaryCount( dr.min(), dr.max() ) < Math.ceil( plen / 100 ) ) {
+                ticksDivider= ticksDivider.finerDivider(false);
+            }
+            while ( ticksDivider.boundaryCount( dr.min(), dr.max() ) > Math.ceil( plen / 50 ) ) {
+                ticksDivider= ticksDivider.coarserDivider(false);
+            }
+
         }
         
-        if ( ic>0 ) { // compensate for stuff that can't be transformed.
-            plen= plen * ddata[0].length / ic;
-        }
-        if ( plen<100 ) plen=100;
-
-        while ( ticksDivider.boundaryCount( dr.min(), dr.max() ) < Math.ceil( plen / 100 ) ) {
-            ticksDivider= ticksDivider.finerDivider(false);
-        }
-        while ( ticksDivider.boundaryCount( dr.min(), dr.max() ) > Math.ceil( plen / 50 ) ) {
-            ticksDivider= ticksDivider.coarserDivider(false);
-        }
-
-        DatumVector major = ticksDivider.boundaries(dr.min(), dr.max());
-        DatumVector minor = ticksDivider.finerDivider(true).boundaries(dr.min(), dr.max());
-        tickv = TickVDescriptor.newTickVDescriptor(major, minor);
+        major = ticksDivider.boundaries(dr.min(), dr.max());
+        minor = ticksDivider.finerDivider(true).boundaries(dr.min(), dr.max());
+        
+        tickv = TickVDescriptor.newTickVDescriptor(major, minor);        
         tickv.datumFormatter= DomainDividerUtil.getDatumFormatter( ticksDivider, dr );
 
         return tickv;
@@ -752,6 +780,30 @@ public final class TickCurveRenderer extends Renderer {
         invalidateParentCacheImage();
     }
     
+    
+    private String tickSpacing = "";
+
+    public static final String PROP_TICKSPACING = "tickSpacing";
+
+    /**
+     * get the spacing between ticks, which might be "" meaning automatic.
+     * @return 
+     */
+    public String getTickSpacing() {
+        return tickSpacing;
+    }
+
+    /**
+     * set the spacing between ticks, for example "2hr" is every two hours, and an
+     * empty string is the default automatic behavior.
+     * @param tickSpacing 
+     */
+    public void setTickSpacing(String tickSpacing) {
+        String oldTickSpacing = this.tickSpacing;
+        this.tickSpacing = tickSpacing;
+        propertyChangeSupport.firePropertyChange(PROP_TICKSPACING, oldTickSpacing, tickSpacing);
+    }
+
     /** Getter for property lineWidth.
      * @return Value of property lineWidth.
      *
