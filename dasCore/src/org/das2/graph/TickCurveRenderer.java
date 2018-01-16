@@ -801,6 +801,8 @@ public final class TickCurveRenderer extends Renderer {
     public void setTickSpacing(String tickSpacing) {
         String oldTickSpacing = this.tickSpacing;
         this.tickSpacing = tickSpacing;
+        ticksDivider= null;
+        update();
         propertyChangeSupport.firePropertyChange(PROP_TICKSPACING, oldTickSpacing, tickSpacing);
     }
 
