@@ -256,8 +256,12 @@ public final class LDataSet extends ArrayDataSet {
 
     @Override
     public void putValue( double value ) {
-        checkImmutable();        
-        back[0]= (long) value;
+        checkImmutable();      
+        if ( Double.isFinite(value) ) {
+            back[0]= (long) value;
+        } else {
+            back[0]= Long.MIN_VALUE;
+        }  
     }
 
     @Override
@@ -267,8 +271,12 @@ public final class LDataSet extends ArrayDataSet {
             if (i0 < 0 || i0 >= len0) {
                 throw new IndexOutOfBoundsException("i0=" + i0 + " " + this);
             }
-        }        
-        back[ i0 ]= (long)value;
+        }
+        if ( Double.isFinite(value) ) {
+            back[ i0 ]= (long)value;
+        } else {
+            back[ i0 ]= Long.MIN_VALUE;
+        }
     }
 
     @Override
@@ -281,8 +289,12 @@ public final class LDataSet extends ArrayDataSet {
             if (i1 < 0 || i1 >= len1) {
                 throw new IndexOutOfBoundsException("i1=" + i1 + " " + this);
             }
-        }    
-        back[  i0 * len1 + i1 ]= (long)value;
+        }
+        if ( Double.isFinite(value) ) {
+            back[  i0 * len1 + i1 ]= (long)value;
+        } else {
+            back[  i0 * len1 + i1 ]= Long.MIN_VALUE;
+        }
     }
 
     @Override
@@ -298,8 +310,12 @@ public final class LDataSet extends ArrayDataSet {
             if (i2 < 0 || i2 >= len2) {
                 throw new IndexOutOfBoundsException("i2=" + i2 + " " + this);
             }
-        }  
-        back[ i0 * len1 * len2 + i1 *len2 + i2  ]= (long)value;
+        }
+        if ( Double.isFinite(value) ) {
+            back[ i0 * len1 * len2 + i1 *len2 + i2  ]= (long)value;
+        } else {
+            back[ i0 * len1 * len2 + i1 *len2 + i2  ]= Long.MIN_VALUE;
+        }
     }
 
     @Override
@@ -318,8 +334,12 @@ public final class LDataSet extends ArrayDataSet {
             if (i3 < 0 || i3 >= len3) {
                 throw new IndexOutOfBoundsException("i3=" + i3 + " " + this);
             }
-        }        
-        back[ i0*len1*len2*len3 + i1*len2*len3 + i2*len3 +i3 ] = (long)value;
+        }
+        if ( Double.isFinite(value) ) {
+            back[ i0*len1*len2*len3 + i1*len2*len3 + i2*len3 +i3 ] = (long)value;
+        } else {
+            back[ i0*len1*len2*len3 + i1*len2*len3 + i2*len3 +i3 ] = Long.MIN_VALUE;
+        }
     }
 
     /**
