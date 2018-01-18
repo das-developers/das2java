@@ -473,9 +473,40 @@ public final class LDataSet extends ArrayDataSet {
             } else {
                 return (T) this;
             }
+        } else if ( clazz==LongReadAccess.class ) {
+            return clazz.cast( new LDataSetLongReadAccess() );
         } else {
             return super.capability(clazz);
         }
+    }
+    
+    public class LDataSetLongReadAccess implements LongReadAccess {
+
+        @Override
+        public long lvalue() {
+            return back[ 0 ];
+        }
+
+        @Override
+        public long lvalue(int i0) {
+            return back[ i0 ];
+        }
+
+        @Override
+        public long lvalue(int i0, int i1) {
+            return back[ i0*len1 + i1 ];
+        }
+
+        @Override
+        public long lvalue(int i0, int i1, int i2) {
+            return back[ i0*len1*len2 + i1*len2 + i2];
+        }
+
+        @Override
+        public long lvalue(int i0, int i1, int i2, int i3) {
+            return back[ i0*len1*len2*len3 + i1*len2*len3 + i2*len3 + i3 ];
+        }
+        
     }
 
 }
