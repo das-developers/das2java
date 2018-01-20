@@ -496,7 +496,7 @@ public class ArgumentList {
                 if ( args[i].indexOf('=') != -1 ) {
                     value= args[i].substring( args[i].indexOf('=')+1 );
                 } else {
-                    if ( i+1 < args.length && ( ! args[i+1].startsWith("-") ) ) {
+                    if ( i+1 < args.length && ( args[i+1].equals("-") || ! args[i+1].startsWith("-") ) ) {
                         value= args[i+1];
                         i= i+1;
                     } else {
@@ -543,7 +543,6 @@ public class ArgumentList {
                 i= processSwitch( args, i );
             } else {
                 String key;
-                String value;
                 key= this.positionKeys[iposition];
                 if ( key==null ) {
                     System.err.println( "\nWarning: position value found when position value was not expected: "+ args[i] + "\n" );
