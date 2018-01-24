@@ -3741,18 +3741,18 @@ public class DataSetUtil {
      * looking at the MAX_VALUE property of the indeces.
      * 
      * @param ds the dataset. 
-     * @param indeces the indeces which refer to a subset of dataset.
+     * @param indices the indeces which refer to a subset of dataset.
      */
-    public static void checkListOfIndeces(QDataSet ds, QDataSet indeces) {
-        Units u= (Units) indeces.property(QDataSet.UNITS);
-        if ( u!=null && u.isConvertibleTo(Units.dimensionless ) ) {
-            throw new IllegalArgumentException("indeces must not contain units");
+    public static void checkListOfIndeces(QDataSet ds, QDataSet indices) {
+        Units u= (Units) indices.property(QDataSet.UNITS);
+        if ( u!=null && !u.isConvertibleTo(Units.dimensionless ) ) {
+            throw new IllegalArgumentException("indices must not contain units");
         }
         if ( ds.rank()==1 ) {
-            Number len= (Number) indeces.property(QDataSet.VALID_MAX);
+            Number len= (Number) indices.property(QDataSet.VALID_MAX);
             if ( len!=null ) {
                 if ( len.intValue()!=ds.length() ) {
-                    logger.warning("indeces appear to be from a dataset with different length");
+                    logger.warning("indices appear to be from a dataset with different length");
                 }
             }
         }

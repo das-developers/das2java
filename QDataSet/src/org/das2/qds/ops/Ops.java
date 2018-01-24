@@ -5956,9 +5956,14 @@ public class Ops {
         double dvalue= Double.NaN;
         UnitsConverter uc=null;
         if ( value!=null ) {
-            uc= SemanticOps.getUnitsConverter(value,ds);
-            if ( value.rank()==0) {
-                dvalue= uc.convert( value.value() );
+            Units vu= SemanticOps.getUnits(value);
+            if ( vu!=Units.dimensionless ) {
+                uc= SemanticOps.getUnitsConverter(value,ds);
+                if ( value.rank()==0) {
+                    dvalue= uc.convert( value.value() );
+                }
+            } else {
+                dvalue= value.value();
             }
         }
             
