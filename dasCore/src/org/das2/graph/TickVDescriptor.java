@@ -823,12 +823,14 @@ public class TickVDescriptor {
                     Units.dimensionless.createDatum(yearMax), nTicksMin, nTicksMax, fin);
             yearTicks.units = minD.getUnits();
             double[] tickV = yearTicks.tickV.toDoubleArray(Units.dimensionless);
+            for ( int i=0; i<tickV.length; i++ ) if ( tickV[i]<=1582 ) tickV[i]=1583;
             for (int i = 0; i < tickV.length; i++) {
                 int iyear = (int) tickV[i];
                 tickV[i] = TimeUtil.convert(iyear, 1, 1, 0, 0, 0, (TimeLocationUnits) yearTicks.units);
             }
             yearTicks.tickV = DatumVector.newDatumVector(tickV, yearTicks.units);
             double[] minorTickV = yearTicks.minorTickV.toDoubleArray(Units.dimensionless);
+            for ( int i=0; i<minorTickV.length; i++ ) if ( minorTickV[i]<=1582 ) minorTickV[i]=1583;
             for (int i = 0; i < minorTickV.length; i++) {
                 int iyear = (int) minorTickV[i];
                 minorTickV[i] = TimeUtil.convert(iyear, 1, 1, 0, 0, 0, (TimeLocationUnits) yearTicks.units);
