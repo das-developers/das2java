@@ -821,7 +821,7 @@ public class SeriesRenderer extends Renderer {
             
             logger.log(Level.FINE, "done create general path ({0}ms)", ( System.currentTimeMillis()-t0  ));
             
-            if (!histogram && simplifyPaths && colorByDataSetId.length()==0 ) {
+            if (!histogram && simplifyPaths && (lastIndex-firstIndex)<SIMPLIFY_PATHS_MIN_LIMIT && colorByDataSetId.length()==0 ) {
                 int pathLengthApprox= Math.max( 5, 110 * (lastIndex - firstIndex) / 100 );
                 this.path1= new GeneralPath(GeneralPath.WIND_NON_ZERO, pathLengthApprox );
                 int count = GraphUtil.reducePath20140622(newPath.getPathIterator(), path1, 1, 5 );
