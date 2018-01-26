@@ -1038,7 +1038,7 @@ public final class TimeUtil {
     
     /**
      * convert the month components to a double in the given units.
-     * @param year the year 
+     * @param year the year, which must be greater than 1582
      * @param month the month
      * @param day the day of month, unless month==0, then day is day of year.
      * @param hour additional hours
