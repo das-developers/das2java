@@ -653,9 +653,9 @@ public class SeriesRenderer extends Renderer {
             if ( debug ) {
                 Color color0= g.getColor();
                 g.setColor( Color.LIGHT_GRAY );
-                for ( int i=0; i<SIMPLIFY_PATHS_MIN_LIMIT; i+=100 ) {
-                    g.drawLine(i, 0, i, SIMPLIFY_PATHS_MIN_LIMIT);
-                    g.drawLine(0, i, SIMPLIFY_PATHS_MIN_LIMIT, i );
+                for ( int i=0; i<1000; i+=100 ) { // draw grid
+                    g.drawLine(i, 0, i, 1000);
+                    g.drawLine(0, i, 1000, i );
                 }
                 g.setColor(color0);
             }
@@ -821,7 +821,8 @@ public class SeriesRenderer extends Renderer {
             
             logger.log(Level.FINE, "done create general path ({0}ms)", ( System.currentTimeMillis()-t0  ));
             
-            if (!histogram && simplifyPaths && (lastIndex-firstIndex)<SIMPLIFY_PATHS_MIN_LIMIT && colorByDataSetId.length()==0 ) {
+            boolean allowSimplify= (lastIndex-firstIndex)>SIMPLIFY_PATHS_MIN_LIMIT && xSampleWidth<1e37;
+            if (!histogram && simplifyPaths && allowSimplify && colorByDataSetId.length()==0 ) {
                 int pathLengthApprox= Math.max( 5, 110 * (lastIndex - firstIndex) / 100 );
                 this.path1= new GeneralPath(GeneralPath.WIND_NON_ZERO, pathLengthApprox );
                 int count = GraphUtil.reducePath20140622(newPath.getPathIterator(), path1, 1, 5 );
@@ -1125,8 +1126,9 @@ public class SeriesRenderer extends Renderer {
             }
 
             this.fillToRefPath1 = fillPath;
-
-            if ( simplifyPaths && (lastIndex-firstIndex)<SIMPLIFY_PATHS_MIN_LIMIT ) {
+            
+            boolean allowSimplify= (lastIndex-firstIndex)>SIMPLIFY_PATHS_MIN_LIMIT && xSampleWidth<1e37;
+            if ( !histogram && simplifyPaths && allowSimplify && colorByDataSetId.length()==0 ) {
                 GeneralPath newPath= new GeneralPath(GeneralPath.WIND_NON_ZERO, pathLengthApprox );
                 int count= GraphUtil.reducePath(fillToRefPath1.getPathIterator(null), newPath );
                 fillToRefPath1= newPath;
