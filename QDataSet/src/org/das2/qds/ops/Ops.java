@@ -5778,6 +5778,134 @@ public class Ops {
         return mds;        
         
     }
+    
+    /**
+     * convert the object into the type needed for the property.
+     * @param context the dataset to which we are assigning the value.
+     * @param name the property name
+     * @param value the value
+     * @return the correct value.
+     * @see org.autoplot.jythonsupport.PyQDataSet#convertPropertyValue
+     */
+    public static Object convertPropertyValue( QDataSet context, String name, Object value ) {
+        
+        if ( value==null ) return value;
+        
+        String type= DataSetUtil.getPropertyType(name);
+        if ( type==null ) {
+            throw new IllegalArgumentException("unrecognized property: "+name );
+            
+        } else {
+            Units u= context==null ? Units.dimensionless : (Units)context.property(QDataSet.UNITS);
+        
+            switch (type) {
+                case DataSetUtil.PROPERTY_TYPE_QDATASET:
+                    return Ops.dataset(value);
+                    
+                case DataSetUtil.PROPERTY_TYPE_UNITS:
+                    if ( value instanceof String ) {
+                        String svalue= (String)value;
+                        value= Units.lookupUnits(svalue);
+                        return value;
+                    } else if ( value instanceof Units ) {
+                        return value;
+                    } else {
+                        throw new IllegalArgumentException("cannot convert to value for "+name+": "+value);
+                    }
+                    
+                case DataSetUtil.PROPERTY_TYPE_BOOLEAN:
+                    if ( value instanceof String ) {
+                        String svalue= (String)value;
+                        value= Boolean.valueOf(svalue);
+                    } else if ( value instanceof Number ) {
+                        value= !((Number)value).equals(0);
+                    } else if ( value instanceof QDataSet ) {
+                        value= !(((QDataSet)value).value()==0);
+                    } else if (value instanceof Boolean ) {
+                        return value;
+                    }
+                    
+                case DataSetUtil.PROPERTY_TYPE_NUMBER:
+                    if ( value instanceof String ) {
+                        String svalue= (String)value;
+                        if ( u!=null ) {
+                            try {
+                                value= u.parse(svalue).doubleValue(u);
+                            } catch (ParseException ex) {
+                                try {
+                                    value= Integer.valueOf(svalue);
+                                } catch ( NumberFormatException ex2 ) {
+                                    throw new IllegalArgumentException(ex);
+                                }
+                            }
+                        } else {
+                            if ( svalue.contains(".") || svalue.contains("e") || svalue.contains("E") ) {
+                                value= Double.valueOf(svalue);
+                            } else {
+                                value= Integer.valueOf(svalue);
+                            }
+                        }
+                        return value;
+                    } else if ( value instanceof QDataSet ) {
+                        QDataSet qvalue= (QDataSet)value;
+                        if ( qvalue.rank()>1 ) throw new IllegalArgumentException("rank 0 dataset needed for property of type Number: "+name);
+                        value= datum(qvalue).doubleValue(u);
+                        return value;
+                    } else if ( value instanceof Datum ) {
+                        value= ((Datum)value).doubleValue(u);
+                        return value;
+                    }
+                    
+                case DataSetUtil.PROPERTY_TYPE_CACHETAG:
+                    if ( value instanceof String ) {
+                        String svalue= (String)value;
+                        int i= svalue.indexOf("@");
+                        try {
+                            DatumRange tr= DatumRangeUtil.parseTimeRange( svalue.substring(0,i) );
+                            CacheTag r;
+                            if ( i==-1 ) {
+                                value= new CacheTag( tr, null );
+                            } else if ( svalue.substring(i+1).trim().equals("intrinsic") ) {
+                                value= new CacheTag( tr, null );
+                            } else {
+                                Datum res= Units.seconds.parse(svalue.substring(i+1));
+                                value= new CacheTag( tr, res );
+                            }
+                            return value;
+                        } catch ( ParseException ex ) {
+                            throw new IllegalArgumentException(ex);
+                        }
+                    } else if ( value instanceof CacheTag ) {
+                        return value;
+                    } else {
+                        throw new IllegalArgumentException("cannot convert to value for "+name+": "+value);
+                    }
+                    
+                case DataSetUtil.PROPERTY_TYPE_MAP:
+                    if ( !( value instanceof Map ) ) {
+                        try {
+                            String json= value.toString();
+                            JSONObject obj= new JSONObject(json);
+                            Map<String,Object> result= new HashMap<>();
+                            Iterator i= obj.keys();
+                            while ( i.hasNext() ) {
+                                String k= String.valueOf( i.next() );
+                                result.put( k, obj.get(k) );
+                            }
+                            return result;
+                        } catch (JSONException ex) {
+                            throw new IllegalArgumentException("cannot convert to value for "+name+": "+value);                            
+                        }
+                    } else {
+                        return value;
+                    }
+                case DataSetUtil.PROPERTY_TYPE_STRING:
+                    return value.toString();
+                default:
+                    return value;
+            }
+        }
+    }
         
     /**
      * Like putProperty, but this inserts the value at the index.  This
