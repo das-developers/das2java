@@ -42,6 +42,9 @@ import java.awt.image.BufferedImage;
 import java.awt.image.IndexColorModel;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.text.ParseException;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -650,9 +653,9 @@ public class SeriesRenderer extends Renderer {
             if ( debug ) {
                 Color color0= g.getColor();
                 g.setColor( Color.LIGHT_GRAY );
-                for ( int i=0; i<1000; i+=100 ) {
-                    g.drawLine( i, 0, i, 1000 );
-                    g.drawLine( 0, i, 1000, i );
+                for ( int i=0; i<SIMPLIFY_PATHS_MIN_LIMIT; i+=100 ) {
+                    g.drawLine(i, 0, i, SIMPLIFY_PATHS_MIN_LIMIT);
+                    g.drawLine(0, i, SIMPLIFY_PATHS_MIN_LIMIT, i );
                 }
                 g.setColor(color0);
             }
@@ -926,16 +929,16 @@ public class SeriesRenderer extends Renderer {
 //                float[] coords= new float[6];
 //                
 //                int type= it.currentSegment(coords);
-//                write.printf( "%9d ", type );
+//                write.printf( "%10d ", type );
 //                if ( type==PathIterator.SEG_MOVETO) {
 //                    for ( int i=0; i<6; i++ ) {
-//                        write.printf( "%9.1f ", -99999.  );
+//                        write.printf( "%10.2f ", -99999.  );
 //                    }
 //                    write.println();
-//                    write.printf( "%9d ", type );
+//                    write.printf( "%10d ", type );
 //                }
 //                for ( int i=0; i<6; i++ ) {
-//                    write.printf( "%9.1f ", coords[i] );
+//                    write.printf( "%10.2f ", coords[i] );
 //                }
 //                write.println();
 //                it.next();
@@ -956,6 +959,7 @@ public class SeriesRenderer extends Renderer {
             if ( fillToRefPath1==null ) {
                 return 0;
             }
+            //g.setRenderingHint( RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE );
             //PathIterator it= fillToRefPath1.getPathIterator(null);
             //dumpPath(it);
                     
@@ -1122,7 +1126,7 @@ public class SeriesRenderer extends Renderer {
 
             this.fillToRefPath1 = fillPath;
 
-            if (simplifyPaths) {
+            if ( simplifyPaths && (lastIndex-firstIndex)<SIMPLIFY_PATHS_MIN_LIMIT ) {
                 GeneralPath newPath= new GeneralPath(GeneralPath.WIND_NON_ZERO, pathLengthApprox );
                 int count= GraphUtil.reducePath(fillToRefPath1.getPathIterator(null), newPath );
                 fillToRefPath1= newPath;
@@ -1136,6 +1140,8 @@ public class SeriesRenderer extends Renderer {
             return fillToRefPath1 != null && fillToRefPath1.contains(dp);
         }
     }
+    
+    private static final int SIMPLIFY_PATHS_MIN_LIMIT = 1000;
 
     /**
      * get the cadence for the data.  TODO: ideally, we wouldn't do this repeatedly.
