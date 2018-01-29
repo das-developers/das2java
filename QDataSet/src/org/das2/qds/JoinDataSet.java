@@ -212,6 +212,16 @@ public class JoinDataSet extends AbstractDataSet {
             return result;
         }
     }
+    
+    @Override
+    public Object property(String name) {
+        Object result= properties.get(name);
+        if ( result==null && name.equals(QDataSet.UNITS) && datasets.size()>0 ) {
+            return datasets.get(0).property(name); // all joined datasets must have the same length.
+        } else {
+            return result;
+        }
+    }
 
     /**
      * We override putProperty here because we remove the JOIN_0 if DEPEND_0 is set.
