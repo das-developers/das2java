@@ -416,7 +416,7 @@ public interface QDataSet {
     public final static String METADATA="METADATA";
 
     /**
-     * a scheme for the metadata tree, such as ISTP or SPASE.  This should identify
+     * String, a scheme for the metadata tree, such as ISTP or SPASE.  This should identify
      * a node's type when the node is present, but should not require that the node
      * be present.  When a required node is missing, this should be treated as if
      * none of the metadata is available.  This logic is to support aggregating
