@@ -109,6 +109,7 @@ public class Schemes {
         } else {
             QDataSet dep1= (QDataSet)ds.property(QDataSet.DEPEND_1);
             if ( dep1==null ) return false;
+            if ( dep1.length()<QDataSet.MIN_WAVEFORM_LENGTH ) return false;
             return u0.getOffsetUnits().isConvertibleTo(SemanticOps.getUnits(dep1));
         }
     }
