@@ -87,7 +87,43 @@ import org.das2.qds.DataSetUtil;
  */
 public class DasPlot extends DasCanvasComponent {
 
-    /**
+	/**
+	 * Interface to allow customizations to plots to be injected at the end of the DasPlot constructor.
+	 * The caller needs to be very cautious using this, especially when calling any non-final methods.
+	 */
+	public interface Customizer {
+		/**
+		 * Perform any action(s) to change the default behavior of a newly constructed plot.
+		 * @param plot the plot being customized
+		 */
+		void customize(DasPlot plot);
+	}
+
+	private static final List<Customizer> PLOT_CUSTOMIZERS = new ArrayList<>();
+
+	/**
+	 * Return a copy of all current customizing objects in a list.
+	 * @return the customizers currently being used when constructing new plots
+	 */
+	public static List<Customizer> getCustomizers() {
+		return new ArrayList<>(PLOT_CUSTOMIZERS);
+	}
+
+	/**
+	 * Set or replace the current collection of customizers with the new iterable
+	 * of Customizer objects. Since this replaces completely the current collection,
+	 * the caller can use this method to control completely what customizations
+	 * are performed, and in what order.
+	 * @param customizers the new customizers
+	 */
+	public static void setCustomizers(Iterable<Customizer> customizers) {
+		PLOT_CUSTOMIZERS.clear();
+		for (Customizer customizer : customizers) {			
+			PLOT_CUSTOMIZERS.add(customizer);
+		}
+	}
+
+	/**
      * title for the plot
      */
     public static final String PROP_TITLE = "title";
@@ -243,6 +279,10 @@ public class DasPlot extends DasCanvasComponent {
 
         if (!"true".equals(DasApplication.getProperty("java.awt.headless", "false"))) {
             addDefaultMouseModules();
+        }
+
+        for (Customizer c: PLOT_CUSTOMIZERS) {
+        	c.customize(this);
         }
     }
 
