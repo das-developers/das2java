@@ -55,7 +55,6 @@ public class ContoursRenderer extends Renderer {
     String[] pathLabels;
 
     Converter fontConverter= null;
-    Font currentFont=null;
     
     /**
      * autorange on the data, returning a rank 2 bounds for the dataset.
@@ -103,7 +102,6 @@ public class ContoursRenderer extends Renderer {
     @Override
     public void setParent(DasPlot parent) {
         fontConverter= GraphUtil.getFontConverter( parent, "sans-9" );
-        this.currentFont= parent.getFont().deriveFont( ((Number)fontConverter.convertForward(fontSize)).floatValue() );
         super.setParent(parent); //To change body of generated methods, choose Tools | Templates.
     }
     
@@ -280,9 +278,6 @@ public class ContoursRenderer extends Renderer {
     public void setFontSize(String fontSize) {
         String oldFontSize = this.fontSize;
         this.fontSize = fontSize;
-        if ( fontConverter!=null ) {
-            this.currentFont= getParent().getFont().deriveFont( ((Number)fontConverter.convertForward(fontSize)).floatValue() );
-        }
         propertyChangeSupport.firePropertyChange(PROP_FONTSIZE, oldFontSize, fontSize);
     }
 
@@ -295,14 +290,10 @@ public class ContoursRenderer extends Renderer {
 
         Area clip = new Area();
 
-        Font font0 = g.getFont();
-
         // do labels
         AffineTransform at0 = g.getTransform();
         
-        String s= "8pt";
-        
-        Font font = currentFont;
+        Font font = getParent().getFont().deriveFont( ((Number)fontConverter.convertForward(fontSize)).floatValue() );
 
         g.setFont(font);
 
