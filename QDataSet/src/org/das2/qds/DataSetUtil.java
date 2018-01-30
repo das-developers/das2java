@@ -2700,8 +2700,12 @@ public class DataSetUtil {
         if ( o!=null ) {
             if ( !(o instanceof QDataSet) ) {
                 logger.log(Level.WARNING, "WEIGHTS_PLANE contained something that was not a qdataset: {0}", o);
-                o=null;
-            } else if ( ( ds.rank()==0 && ((QDataSet)o).rank()==0 ) || ( ((QDataSet)o).length()!=ds.length() ) ) {
+                o= null;
+            } else if ( ds.rank()==0 ) {
+                if ( ((QDataSet)o).rank()!=0 ) {
+                    o= null;
+                }
+            } else if ( ((QDataSet)o).length()!=ds.length() ) {
                 //logger.log(Level.WARNING, "WEIGHTS_PLANE was dataset with the wrong length: {0}", o);
                 //TODO: this was coming up in  script:sftp://jbf@klunk:/home/jbf/project/rbsp/study/bill/digitizing/newDigitizer/newdigitizer2.jy
                 //hide it for now...
