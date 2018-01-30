@@ -357,9 +357,20 @@ public class GraphUtil {
      */
     public static DasAxis copyAxis( DasAxis a ) {
         DasAxis c= new DasAxis( a.getDatumRange(), a.getOrientation() );
+        c.setDataMinimum( a.getDataMinimum() );
+        c.setDataMaximum( a.getDataMaximum() );
         c.setLog(a.isLog());
         c.setLabel(a.getLabel());
         c.setFlipLabel(a.isFlipLabel());
+        c.setFlipped(a.isFlipped());
+        c.setEnabled( a.isEnabled() );
+        c.setEnableHistory( a.isEnableHistory() );
+        c.setLog( a.isLog() );
+        c.setOpaque( a.isOpaque() );
+        c.setOppositeAxisVisible( a.isOppositeAxisVisible() );
+        c.setTickLabelsVisible( a.isTickLabelsVisible() );
+        c.setUseDomainDivider( a.isUseDomainDivider() );
+        c.setUserDatumFormatter( a.getUserDatumFormatter() );
         return c;
     }
     
@@ -398,8 +409,11 @@ public class GraphUtil {
         DasAxis yaxis= copyAxis(p.getYAxis());
         DasPlot c= new DasPlot(xaxis, yaxis);
         c.setTitle( p.getTitle() );
+        c.setDisplayTitle( p.isDisplayTitle() );
         c.setDrawGrid( p.isDrawGrid() );
         c.setPreviewEnabled( p.isPreviewEnabled() );
+        c.setLegendPosition( p.getLegendPosition() );
+        c.setDisplayLegend( p.isDisplayLegend() );
         for ( Renderer r: p.getRenderers() ) {
             Renderer cr;
             if ( r instanceof SpectrogramRenderer ) {
@@ -420,6 +434,8 @@ public class GraphUtil {
                 sr.setSymSize(((SeriesRenderer) r).getSymSize() );
                 sr.setPsym(((SeriesRenderer) r).getPsym() );
                 sr.setPsymConnector(((SeriesRenderer) r).getPsymConnector() );
+                sr.setLegendLabel(((SeriesRenderer) r).getLegendLabel());
+                sr.setDrawLegendLabel(((SeriesRenderer) r).isDrawLegendLabel());
             } else if ( r instanceof ImageVectorDataSetRenderer ) {
                 cr= new ImageVectorDataSetRenderer(null);
                 ImageVectorDataSetRenderer sr= (ImageVectorDataSetRenderer)cr;
