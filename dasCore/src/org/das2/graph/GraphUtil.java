@@ -16,6 +16,7 @@ import java.awt.image.ConvolveOp;
 import java.awt.image.Kernel;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.text.ParseException;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -26,6 +27,7 @@ import org.das2.qds.DataSetOps;
 import org.das2.qds.QDataSet;
 import org.das2.qds.SemanticOps;
 import org.das2.qds.ops.Ops;
+import org.jdesktop.beansbinding.Converter;
 //import org.apache.xml.serialize.*;
 
 /**
@@ -1229,5 +1231,54 @@ public class GraphUtil {
             return delegate;
         }
     }
+    
+    /**
+     * converts forward from relative font spec to point size, used by
+     * the annotation and axis nodes.
+     * @param dcc the canvas component.
+     * @param fallbackFont the font to use when a font is not available, like "sans-8"
+     * @return the converter that converts between strings like "1em" and the font.
+     */
+    public static Converter getFontConverter( final DasCanvasComponent dcc, final String fallbackFont ) {
+        return new Converter() {
+            @Override
+            public Object convertForward(Object s) {
+                try {
+                    double[] dd= DasDevicePosition.parseLayoutStr((String)s);
+                    Font f= dcc.getFont();
+                    if ( f==null ) {
+                        f= Font.decode( fallbackFont );
+                    }
+                    if ( dd[1]==1 && dd[2]==0 ) {
+                        return f.getSize2D();
+                    } else {
+                        double parentSize= f.getSize2D();
+                        double newSize= dd[1]*parentSize + dd[2];
+                        return (float)newSize;
+                    }
+                } catch (ParseException ex) {
+                    ex.printStackTrace();
+                    return 0.f;
+                }
+            }
+
+            @Override
+            public Object convertReverse(Object t) {
+                float size= (float)t;
+                Font f= dcc.getFont();
+                if ( f==null ) {
+                    f= Font.decode( fallbackFont );
+                }                
+                if ( size==0 ) {
+                    return "1em";
+                } else {
+                    double parentSize= f.getSize2D();
+                    double relativeSize= size / parentSize;
+                    return String.format( Locale.US, "%.2fem", relativeSize );
+                }
+            }  
+        };
+    }
+
 
 }
