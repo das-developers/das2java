@@ -27,8 +27,7 @@ import java.awt.geom.GeneralPath;
 import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -197,10 +196,11 @@ public class ContoursRenderer extends Renderer {
         super.setControl(s);
         this.contours= getControl( "levels", contours );
         this.drawLabels= getBooleanControl( "labels", drawLabels );
-        this.lineThick= getDoubleControl( PROP_LINETHICK, lineThick );
-        this.labelCadence= getDoubleControl( "labelCadence", labelCadence );
+        this.lineThick= getDoubleControl( CONTROL_KEY_LINE_THICK, lineThick );
+        this.labelCadence= getControl( "labelCadence", labelCadence );
         this.color= getColorControl( "color",  color );
-        setFontSize( getControl( PROP_FONTSIZE, fontSize) );
+        this.format= getControl( PROP_FORMAT, format );
+        setFontSize( getControl( CONTROL_KEY_FONT_SIZE, fontSize) );
         updateContours();
     }
     
@@ -209,10 +209,11 @@ public class ContoursRenderer extends Renderer {
         Map<String,String> controls= new LinkedHashMap();
         controls.put( "levels", contours );
         controls.put( "labels", encodeBooleanControl( drawLabels ) );
-        controls.put( PROP_LINETHICK, String.valueOf(lineThick) );
+        controls.put( CONTROL_KEY_LINE_THICK, String.valueOf(lineThick) );
         controls.put( "labelCadence", String.valueOf(labelCadence) );
         controls.put( CONTROL_KEY_COLOR, encodeColorControl( color ) );
-        controls.put( PROP_FONTSIZE, fontSize );
+        controls.put( PROP_FORMAT, format );
+        controls.put( CONTROL_KEY_FONT_SIZE, fontSize );
         return Renderer.formatControl(controls);
     }
 
@@ -278,9 +279,50 @@ public class ContoursRenderer extends Renderer {
     public void setFontSize(String fontSize) {
         String oldFontSize = this.fontSize;
         this.fontSize = fontSize;
+        updateCacheImage();
         propertyChangeSupport.firePropertyChange(PROP_FONTSIZE, oldFontSize, fontSize);
     }
 
+    /**
+     * format, empty string means use the default format.
+     */
+    public static final String PROP_FORMAT= "format";
+
+    private String format="";
+
+    public String getFormat() {
+        return format;
+    }
+
+    /**
+     * explicitly set the format.
+     * format is found there.
+     * @param value
+     */
+    public void setFormat(String value) {
+        String oldValue= this.format;
+        this.format = value;
+        updateCacheImage();
+        propertyChangeSupport.firePropertyChange(PROP_FORMAT, oldValue, value );
+        propertyChangeSupport.firePropertyChange(PROP_CONTROL, null, getControl() );
+    }
+
+    private double getPixelLength( String s, double em ) {
+        try {
+            double[] dd= DasDevicePosition.parseLayoutStr((String)s);
+            if ( dd[1]==1 && dd[2]==0 ) {
+                return em;
+            } else {
+                double parentSize= em;
+                double newSize= dd[1]*parentSize + dd[2];
+                return (float)newSize;
+            }
+        } catch (ParseException ex) {
+            ex.printStackTrace();
+            return 0.f;
+        }
+    }
+    
     /**
      * returns clip, in the canvas reference frame
      * @param g the graphics context.
@@ -299,6 +341,8 @@ public class ContoursRenderer extends Renderer {
 
         GeneralPath[] lpaths= getPaths();
         
+        double labelCadencePixels= getPixelLength( labelCadence, font.getSize2D() );
+            
         double minLength= 20;
         for (int i = 0; i < lpaths.length; i++) {
             if (lpaths[i] == null) {
@@ -316,9 +360,9 @@ public class ContoursRenderer extends Renderer {
 
                     double len = GraphUtil.pointsAlongCurve(it1, null, null, null, true);
 
-                    int nlabel = 1 + (int) Math.floor( len / this.labelCadence );
+                    int nlabel = 1 + (int) Math.floor( len / labelCadencePixels );
 
-                    double phase = (len - ( nlabel-1 )  * labelCadence ) / 2;
+                    double phase = (len - ( nlabel-1 )  * labelCadencePixels ) / 2;
 
                     if ( len < minLength ) {
                         //advance it2.
@@ -327,10 +371,10 @@ public class ContoursRenderer extends Renderer {
                     } else {
                         double[] lens = new double[nlabel*2];
                         double labelWidth=10; // approx.
-                        if ( labelWidth > labelCadence ) labelWidth= labelCadence * 0.99;
+                        if ( labelWidth > labelCadencePixels ) labelWidth= labelCadencePixels * 0.99;
                         for (int ilabel = 0; ilabel < nlabel; ilabel++) {
-                            lens[ilabel*2] = phase + labelCadence * ilabel;
-                            lens[ilabel*2+1] = phase + labelCadence * ilabel + labelWidth;
+                            lens[ilabel*2] = phase + labelCadencePixels * ilabel;
+                            lens[ilabel*2+1] = phase + labelCadencePixels * ilabel + labelWidth;
                         }
                         Point2D.Double[] points = new Point2D.Double[nlabel*2];
                         double[] orient = new double[nlabel*2];
@@ -382,6 +426,15 @@ public class ContoursRenderer extends Renderer {
     public String getListLabel() {
         return "" + ( getLegendLabel().length()> 0 ? getLegendLabel() +" " : "contours" );
     }
+    
+    private String getFormat( QDataSet zds ) {
+        String form=this.format;
+        
+        if ( form.length()==0 ) {
+            form= "%.2f";
+        }
+        return form;
+    }
 
     @Override
     public synchronized void updatePlotImage(DasAxis xAxis, DasAxis yAxis, ProgressMonitor monitor) throws DasException {
@@ -416,8 +469,12 @@ public class ContoursRenderer extends Renderer {
 
         int n0 = 0; // node counter.  Breaks are indicated by increment, so keep track of the last node.
 
-        NumberFormat nf = new DecimalFormat("0.00");
-
+        String form= getFormat();
+        if (form.length()==0 ) form= "%.2f";
+        
+        Units zunits= SemanticOps.getUnits(zds);
+        char c= DigitalRenderer.typeForFormat(form);
+        
         for (int i = 0; i < zds.length(); i++) {
             double d = zds.value(i);
             int n = (int) ids.value(i);
@@ -434,7 +491,7 @@ public class ContoursRenderer extends Renderer {
                 
                 currentPath = new GeneralPath();
                 list.add(currentPath);
-                labels.add(nf.format(d));
+                labels.add( DigitalRenderer.formatDatum( form, zunits.createDatum(d), c ) );
 
                 d0 = d;
                 currentPath.moveTo(fx, fy);
@@ -476,16 +533,17 @@ public class ContoursRenderer extends Renderer {
         update();
         propertyChangeSupport.firePropertyChange("contours", oldContours, contours);
     }
+    
     /**
-     * the inter-label distance, in ems.
+     * the inter-label distance, such as "100px" or "50em".
      */
-    private double labelCadence = 100;
+    private String labelCadence = "100px";
 
     /**
      * return the inter-label distance, in ems.
      * @return get the inter-label distance, in ems.
      */
-    public double getLabelCadence() {
+    public String getLabelCadence() {
         return this.labelCadence;
     }
 
@@ -493,8 +551,8 @@ public class ContoursRenderer extends Renderer {
      * set the inter-label distance, in ems.
      * @param labelCadence the inter-label distance, in ems.
      */
-    public void setLabelCadence(double labelCadence) {
-        double oldLabelCadence = this.labelCadence;
+    public void setLabelCadence(String labelCadence) {
+        String oldLabelCadence = this.labelCadence;
         this.labelCadence = labelCadence;
         update();
         propertyChangeSupport.firePropertyChange("labelCadence", oldLabelCadence, labelCadence );
