@@ -2696,7 +2696,7 @@ public class DataSetUtil {
      * @return a dataset with the same geometry with zero or positive weights.
      */
     public static QDataSet weightsDataSet(final QDataSet ds) {
-        Object o= ds.property(QDataSet.WEIGHTS);
+        Object o= ds.property(QDataSet.WEIGHTS); // See Ivar's script /home/jbf/project/rbsp/users/ivar/20180129/process-chorus3.jyds
         if ( o!=null ) {
             if ( !(o instanceof QDataSet) ) {
                 logger.log(Level.WARNING, "WEIGHTS_PLANE contained something that was not a qdataset: {0}", o);
