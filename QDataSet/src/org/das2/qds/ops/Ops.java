@@ -5864,6 +5864,8 @@ public class Ops {
                     } else if ( value instanceof Datum ) {
                         value= ((Datum)value).doubleValue(u);
                         return value;
+                    } else if ( value instanceof Number ) {
+                        return value;
                     }
                     
                 case DataSetUtil.PROPERTY_TYPE_CACHETAG:
@@ -10365,18 +10367,36 @@ public class Ops {
         if ( uc==UnitsConverter.IDENTITY ) {
             return ds;
         }
-        ArrayDataSet ds2= ArrayDataSet.copy(ds);
+        
+        ArrayDataSet ds2;
+        Class c= ArrayDataSet.guessBackingStore( ds );
+        if ( c==float.class || c==double.class ) {
+            ds2= ArrayDataSet.copy(ds);
+        } else {
+            ds2= DDataSet.copy(ds);
+        }
+        
         for ( int i=0; i<ds.rank(); i++ ) {
             if ( ds2.property("BUNDLE_"+i) !=null ) {
                 ds2.putProperty("BUNDLE_"+i,null);
             }
         }
+        
+        QDataSet wds= DataSetUtil.weightsDataSet(ds);
         DataSetIterator iter= new QubeDataSetIterator( ds2 );
         while ( iter.hasNext() ) {
             iter.next();
-            iter.putValue( ds2, uc.convert( iter.getValue(ds) ) );
+            if ( iter.getValue(wds)>0 ) {
+                iter.putValue( ds2, uc.convert( iter.getValue(ds) ) );
+            } else {
+                iter.putValue( ds2, -1e38 );
+            }
         }
-        ds2.putProperty( QDataSet.UNITS, u );  
+        ds2.putProperty( QDataSet.UNITS, u );
+        ds2.putProperty( QDataSet.FILL_VALUE, -1e38 );
+        ds2.putProperty( QDataSet.VALID_MIN, null );
+        ds2.putProperty( QDataSet.VALID_MAX, null );
+        
         return ds2;
     }
 
