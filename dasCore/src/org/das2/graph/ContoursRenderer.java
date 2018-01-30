@@ -40,6 +40,7 @@ import org.das2.qds.QDataSet;
 import org.das2.qds.SemanticOps;
 import org.das2.qds.JoinDataSet;
 import org.das2.qds.ops.Ops;
+import org.jdesktop.beansbinding.Converter;
 
 /**
  * Renderer for making contour plots.  
@@ -53,6 +54,9 @@ public class ContoursRenderer extends Renderer {
     GeneralPath[] paths;
     String[] pathLabels;
 
+    Converter fontConverter= null;
+    Font currentFont=null;
+    
     /**
      * autorange on the data, returning a rank 2 bounds for the dataset.
      *
@@ -95,6 +99,15 @@ public class ContoursRenderer extends Renderer {
         xrange= Ops.rescaleRangeLogLin(xrange, -0.1, 1.1 );
         return xrange;
     }    
+
+    @Override
+    public void setParent(DasPlot parent) {
+        fontConverter= GraphUtil.getFontConverter( parent, "sans-9" );
+        this.currentFont= parent.getFont().deriveFont( ((Number)fontConverter.convertForward(fontSize)).floatValue() );
+        super.setParent(parent); //To change body of generated methods, choose Tools | Templates.
+    }
+    
+    
     
     /**
      * return false if the inputs are okay, true if there's no data, etc.
@@ -128,6 +141,7 @@ public class ContoursRenderer extends Renderer {
     public synchronized void render(Graphics g1, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
         
         DasPlot lparent= getParent();
+        if ( lparent==null ) return; // ???
         
         Graphics2D g = (Graphics2D) g1;
         if ( ds==null ) {
@@ -188,6 +202,7 @@ public class ContoursRenderer extends Renderer {
         this.lineThick= getDoubleControl( PROP_LINETHICK, lineThick );
         this.labelCadence= getDoubleControl( "labelCadence", labelCadence );
         this.color= getColorControl( "color",  color );
+        setFontSize( getControl( PROP_FONTSIZE, fontSize) );
         updateContours();
     }
     
@@ -199,6 +214,7 @@ public class ContoursRenderer extends Renderer {
         controls.put( PROP_LINETHICK, String.valueOf(lineThick) );
         controls.put( "labelCadence", String.valueOf(labelCadence) );
         controls.put( CONTROL_KEY_COLOR, encodeColorControl( color ) );
+        controls.put( PROP_FONTSIZE, fontSize );
         return Renderer.formatControl(controls);
     }
 
@@ -253,6 +269,23 @@ public class ContoursRenderer extends Renderer {
         vds= Contour.contour(tds, DDataSet.wrap(dv.toDoubleArray(units) ) );
     }
     
+    private String fontSize = "8pt";
+
+    public static final String PROP_FONTSIZE = "fontSize";
+
+    public String getFontSize() {
+        return fontSize;
+    }
+
+    public void setFontSize(String fontSize) {
+        String oldFontSize = this.fontSize;
+        this.fontSize = fontSize;
+        if ( fontConverter!=null ) {
+            this.currentFont= getParent().getFont().deriveFont( ((Number)fontConverter.convertForward(fontSize)).floatValue() );
+        }
+        propertyChangeSupport.firePropertyChange(PROP_FONTSIZE, oldFontSize, fontSize);
+    }
+
     /**
      * returns clip, in the canvas reference frame
      * @param g the graphics context.
@@ -267,7 +300,9 @@ public class ContoursRenderer extends Renderer {
         // do labels
         AffineTransform at0 = g.getTransform();
         
-        Font font = font0.deriveFont(8f);
+        String s= "8pt";
+        
+        Font font = currentFont;
 
         g.setFont(font);
 
