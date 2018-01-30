@@ -483,31 +483,51 @@ public class DataSetUtil {
     /**
      * return the type of the property, as a string to support use in Jython:
      * String,Number,Boolean,Map,QDataSet,CacheTag,Units
-     * //TODO: review this for completeness!
      * @param name the property name
      * @return the property type or null if the name is not recognized
      * @see #getPropertyClass(java.lang.String) 
+     * @see org.das2.qds.QDataSet
      */
     public static String getPropertyType( String name ) {
-        if ( name.equals(QDataSet.TITLE) || name.equals(QDataSet.LABEL) ) {
-            return PROPERTY_TYPE_STRING;
-        } else if (  name.equals(QDataSet.UNITS) ) {
-            return PROPERTY_TYPE_UNITS;
-        } else if (  name.equals(QDataSet.NAME) || name.equals(QDataSet.FORMAT) || name.equals(QDataSet.RENDER_TYPE) || name.equals(QDataSet.SCALE_TYPE) ) {
-            return PROPERTY_TYPE_STRING;
-        } else if ( name.equals(QDataSet.TYPICAL_MIN) || name.equals(QDataSet.TYPICAL_MAX) 
-                || name.startsWith(QDataSet.VALID_MIN) || name.startsWith(QDataSet.VALID_MAX) 
-                || name.equals(QDataSet.FILL_VALUE) ) {
-            return PROPERTY_TYPE_NUMBER;
-        } else if ( name.equals(QDataSet.MONOTONIC) || name.equals(QDataSet.QUBE) ) {
-            return PROPERTY_TYPE_BOOLEAN;
-        } else if ( name.equals(QDataSet.CACHE_TAG) ) {
-            return PROPERTY_TYPE_CACHETAG;
-        } else if ( name.equals(QDataSet.USER_PROPERTIES) || name.equals(QDataSet.METADATA) ) {
-            return PROPERTY_TYPE_MAP;
-        } else if ( name.startsWith("JOIN_") || name.startsWith("BINS_") || name.equals(QDataSet.METADATA_MODEL) ) {
-            return PROPERTY_TYPE_STRING;
-        } else if ( name.startsWith(QDataSet.SOURCE) || name.startsWith(QDataSet.VERSION) || name.equals(QDataSet.METADATA_MODEL) ) {
+        switch (name) {
+            case QDataSet.LABEL:
+            case QDataSet.TITLE:
+            case QDataSet.DESCRIPTION:
+                return PROPERTY_TYPE_STRING;
+            case QDataSet.UNITS:
+                return PROPERTY_TYPE_UNITS;
+            case QDataSet.NAME:
+            case QDataSet.FORMAT:
+            case QDataSet.RENDER_TYPE:
+            case QDataSet.SCALE_TYPE:
+                return PROPERTY_TYPE_STRING;
+            case QDataSet.TYPICAL_MIN:
+            case QDataSet.TYPICAL_MAX:
+            case QDataSet.VALID_MIN:
+            case QDataSet.VALID_MAX:
+            case QDataSet.FILL_VALUE:
+                return PROPERTY_TYPE_NUMBER;
+            case QDataSet.MONOTONIC:
+            case QDataSet.QUBE:
+                return PROPERTY_TYPE_BOOLEAN;
+            case QDataSet.CACHE_TAG:
+                return PROPERTY_TYPE_CACHETAG;
+            case QDataSet.USER_PROPERTIES:
+            case QDataSet.METADATA:
+                return PROPERTY_TYPE_MAP;
+            case QDataSet.CADENCE:
+            case QDataSet.WEIGHTS:
+                return PROPERTY_TYPE_QDATASET;
+            case QDataSet.SOURCE:
+            case QDataSet.VERSION:
+            case QDataSet.METADATA_MODEL:
+            case QDataSet.COORDINATE_FRAME:
+                return PROPERTY_TYPE_STRING;
+            default:
+                break;
+        }
+               
+        if ( name.startsWith("JOIN_") || name.startsWith("BINS_") ) {
             return PROPERTY_TYPE_STRING;
         } else if ( name.startsWith("DEPEND_") || name.startsWith("BUNDLE_") || name.startsWith("DELTA_") || name.startsWith("BIN_") || name.startsWith("CONTEXT_")) {
             return PROPERTY_TYPE_QDATASET;
@@ -2681,7 +2701,7 @@ public class DataSetUtil {
             if ( !(o instanceof QDataSet) ) {
                 logger.log(Level.WARNING, "WEIGHTS_PLANE contained something that was not a qdataset: {0}", o);
                 o=null;
-            } else if ( ((QDataSet)o).length()!=ds.length() ) {
+            } else if ( ( ds.rank()==0 && ((QDataSet)o).rank()==0 ) || ( ((QDataSet)o).length()!=ds.length() ) ) {
                 //logger.log(Level.WARNING, "WEIGHTS_PLANE was dataset with the wrong length: {0}", o);
                 //TODO: this was coming up in  script:sftp://jbf@klunk:/home/jbf/project/rbsp/study/bill/digitizing/newDigitizer/newdigitizer2.jy
                 //hide it for now...
