@@ -428,7 +428,12 @@ public class DigitalRenderer extends Renderer {
         return form;
     }
     
-    private char typeForFormat(String form) {
+    /**
+     * return the data type needed for the format.  For example, %d needs integers, %f needs floats.
+     * @param form
+     * @return d, f, etc.
+     */
+    public static char typeForFormat(String form) {
         int i= form.indexOf("%");
         if ( i==-1 ) {
             throw new IllegalArgumentException("format should contain %");
@@ -460,7 +465,7 @@ public class DigitalRenderer extends Renderer {
      * @param type 'x' 'X' 'd' 'o' 'c' 'C' or 'f'
      * @return the string
      */
-    private String formatDatum( String form, Datum d, char type) {
+    public static String formatDatum( String form, Datum d, char type) {
 
         String s;
         boolean isLongs=false;
