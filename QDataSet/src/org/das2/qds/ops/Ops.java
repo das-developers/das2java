@@ -10646,7 +10646,7 @@ public class Ops {
 
     /**
      * return the color encoded as one of:<ul>
-     * <li>"red" or "RED"
+     * <li>"red" or "RED" or X11 color names like "LightPink" 
      * <li>#FF0000
      * <li>255,0,0 or 1.0,0,0
      * </ul>
