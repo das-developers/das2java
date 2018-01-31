@@ -886,20 +886,19 @@ public class DatumRangeUtil {
             
             String[] ss= result.split("to"); //findbugs SBSC_USE_STRINGBUFFER_CONCATENATION okay
             
-            StringBuilder resultsb= new StringBuilder();
             if ( ss.length>2 ) {
-                resultsb.append( ss[0] );
+                result= ss[0];
                 for ( int i=1; i<ss.length; i++ ) {
-                    resultsb.append("-").append(ss[i]);
+                    result= result + "-" + ss[i];
                 }
             } else if ( ss.length==2 ) { // kludgy check for YYYY to YYYY, everything else is error
                 String s0= ss[0].trim();
                 String s1= ss[1].trim();
                 if ( !isYear(s0) || !isYear(s1) ) {
-                    resultsb.append(s0).append(" ").append(s1);
+                    result= s0 + " " + s1;
                 }
             }
-            return resultsb.toString();
+            return result;
         }
         
         /**
