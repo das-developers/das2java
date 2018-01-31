@@ -381,6 +381,10 @@ public class ContoursRenderer extends Renderer {
 
                         //advance it2.
                         GraphUtil.pointsAlongCurve(it2, lens, points, orient, true);
+                        
+                        for (int ilabel = 0; ilabel < nlabel*2; ilabel++) {
+                            if ( Math.abs(orient[ilabel])>Math.PI/2) orient[ilabel]+=Math.PI;
+                        }
 
                         for (int ilabel = 0; ilabel < nlabel; ilabel++) {
                             AffineTransform at = new AffineTransform();
