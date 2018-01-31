@@ -885,19 +885,21 @@ public class DatumRangeUtil {
             String result= newString.toString();
             
             String[] ss= result.split("to"); //findbugs SBSC_USE_STRINGBUFFER_CONCATENATION okay
+            
+            StringBuilder resultsb= new StringBuilder();
             if ( ss.length>2 ) {
-                result= ss[0];
+                resultsb.append( ss[0] );
                 for ( int i=1; i<ss.length; i++ ) {
-                    result= result + "-" + ss[i];
+                    resultsb.append("-").append(ss[i]);
                 }
             } else if ( ss.length==2 ) { // kludgy check for YYYY to YYYY, everything else is error
                 String s0= ss[0].trim();
                 String s1= ss[1].trim();
                 if ( !isYear(s0) || !isYear(s1) ) {
-                    result= s0 + " " + s1;
+                    resultsb.append(s0).append(" ").append(s1);
                 }
             }
-            return result;
+            return resultsb.toString();
         }
         
         /**
