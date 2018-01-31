@@ -174,7 +174,7 @@ public class ContoursRenderer extends Renderer {
         g.setStroke( new BasicStroke((float)lineThick) );
                 
         if (drawLabels) {
-            Area labelClip = paintLabels(g);
+             Area labelClip = paintLabels(g);
             
             Shape rclip = g.getClip() == null ? new Rectangle(lparent.getX(), lparent.getY(), lparent.getWidth(), lparent.getHeight()) : g.getClip();
             Area clip = new Area(rclip);
@@ -307,6 +307,24 @@ public class ContoursRenderer extends Renderer {
         propertyChangeSupport.firePropertyChange(PROP_CONTROL, null, getControl() );
     }
 
+    /**
+     * preference for orientation of labels, if any.  One of "", "up"
+     */
+    private String orientPref = "";
+
+    public static final String PROP_ORIENTPREF = "orientPref";
+
+    public String getOrientPref() {
+        return orientPref;
+    }
+
+    public void setOrientPref(String orientPref) {
+        String oldOrientPref = this.orientPref;
+        this.orientPref = orientPref;
+        updateCacheImage();
+        propertyChangeSupport.firePropertyChange(PROP_ORIENTPREF, oldOrientPref, orientPref);
+    }
+
     private double getPixelLength( String s, double em ) {
         try {
             double[] dd= DasDevicePosition.parseLayoutStr((String)s);
@@ -335,7 +353,13 @@ public class ContoursRenderer extends Renderer {
         // do labels
         AffineTransform at0 = g.getTransform();
         
-        Font font = getParent().getFont().deriveFont( ((Number)fontConverter.convertForward(fontSize)).floatValue() );
+        String lfontSize= fontSize;
+        if ( lfontSize.length()==0 ) lfontSize= "8pt";
+        Font font = getParent().getFont().deriveFont( ((Number)fontConverter.convertForward(lfontSize)).floatValue() );
+        if ( font.getSize2D()==0.0 ) { // typo
+            logger.info("parsed font size is 0.0, using 8pt");
+            font= font.deriveFont(8.f);
+        }
 
         g.setFont(font);
 
@@ -382,8 +406,10 @@ public class ContoursRenderer extends Renderer {
                         //advance it2.
                         GraphUtil.pointsAlongCurve(it2, lens, points, orient, true);
                         
-                        for (int ilabel = 0; ilabel < nlabel*2; ilabel++) {
-                            if ( Math.abs(orient[ilabel])>Math.PI/2) orient[ilabel]+=Math.PI;
+                        if ( orientPref.equals("up") ) {
+                            for (int ilabel = 0; ilabel < nlabel*2; ilabel++) {
+                                if ( Math.abs(orient[ilabel])>Math.PI/2) orient[ilabel]+=Math.PI;
+                            }                
                         }
 
                         for (int ilabel = 0; ilabel < nlabel; ilabel++) {
