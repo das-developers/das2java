@@ -16,6 +16,7 @@ import java.awt.BasicStroke;
 import org.das2.util.monitor.ProgressMonitor;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
@@ -412,6 +413,8 @@ public class ContoursRenderer extends Renderer {
                             }                
                         }
 
+                        FontMetrics fm= g.getFontMetrics(font);
+                        
                         for (int ilabel = 0; ilabel < nlabel; ilabel++) {
                             AffineTransform at = new AffineTransform();
                             at.translate(points[ilabel*2].x, points[ilabel*2].y);
@@ -419,6 +422,7 @@ public class ContoursRenderer extends Renderer {
                             //double dy= points[ilabel*2+1].y - points[ilabel*2].y;
                             //double orient1= Math.atan2(dy,dx);
                             at.rotate(orient[ilabel*2]);
+                            at.translate( 0, fm.getAscent()/2-1 );
                             //at.rotate(orient1);
                             
 
