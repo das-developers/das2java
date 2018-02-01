@@ -428,9 +428,11 @@ public class ContoursRenderer extends Renderer {
 
                             Rectangle2D sbounds = g.getFontMetrics().getStringBounds(label, g);
                             double w = sbounds.getWidth();
+                            double emw= fm.getAscent()/3.; // space to on left and right of the label.
 
+                            sbounds= new Rectangle2D.Double( sbounds.getX(), sbounds.getY(), w+emw, sbounds.getHeight() );
                             GeneralPath rect = new GeneralPath(sbounds);
-                            rect.transform(AffineTransform.getTranslateInstance(-w / 2, 0));
+                            rect.transform(AffineTransform.getTranslateInstance( -w / 2, 0));
                             rect.transform(at);
                             clip.add(new Area(rect));
 
@@ -439,7 +441,7 @@ public class ContoursRenderer extends Renderer {
                             
                             g.setTransform( gat );
                             g.setColor(color);
-                            g.drawString(label, (int) (-w / 2), 0);
+                            g.drawString(label, (int) ( (-w / 2) + emw/2 ), 0);
                         }
                     }
                 }
