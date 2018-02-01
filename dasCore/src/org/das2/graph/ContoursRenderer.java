@@ -195,29 +195,37 @@ public class ContoursRenderer extends Renderer {
     @Override
     public void setControl(String s) {
         super.setControl(s);
-        this.contours= getControl( "levels", contours );
-        this.drawLabels= getBooleanControl( "labels", drawLabels );
+        this.contours= getControl(CONTROL_KEY_LEVELS, contours );
+        this.drawLabels= getBooleanControl(CONTROL_KEY_LABELS, drawLabels );
         this.lineThick= getDoubleControl( CONTROL_KEY_LINE_THICK, lineThick );
-        this.labelCadence= getControl( "labelCadence", labelCadence );
-        this.color= getColorControl( "color",  color );
-        this.format= getControl( PROP_FORMAT, format );
+        this.labelCadence= getControl(CONTROL_KEY_LABEL_CADENCE, labelCadence );
+        this.color= getColorControl( CONTROL_KEY_COLOR,  color );
+        this.format= getControl( CONTROL_KEY_FORMAT, format );
         setFontSize( getControl( CONTROL_KEY_FONT_SIZE, fontSize) );
+        setLabelOrient( getControl( CONTROL_KEY_LABEL_ORIENT, labelOrient ) );
         updateContours();
     }
     
     @Override
     public String getControl() {
         Map<String,String> controls= new LinkedHashMap();
-        controls.put( "levels", contours );
-        controls.put( "labels", encodeBooleanControl( drawLabels ) );
+        controls.put(CONTROL_KEY_LEVELS, contours );
+        controls.put(CONTROL_KEY_LABELS, encodeBooleanControl( drawLabels ) );
         controls.put( CONTROL_KEY_LINE_THICK, String.valueOf(lineThick) );
-        controls.put( "labelCadence", String.valueOf(labelCadence) );
+        controls.put(CONTROL_KEY_LABEL_CADENCE, String.valueOf(labelCadence) );
         controls.put( CONTROL_KEY_COLOR, encodeColorControl( color ) );
-        controls.put( PROP_FORMAT, format );
+        controls.put( CONTROL_KEY_FORMAT, format );
         controls.put( CONTROL_KEY_FONT_SIZE, fontSize );
+        controls.put( CONTROL_KEY_LABEL_ORIENT, labelOrient );
         return Renderer.formatControl(controls);
     }
-
+    
+    public static final String CONTROL_KEY_LEVELS = "levels";
+    public static final String CONTROL_KEY_LABELS = "labels";
+    public static final String CONTROL_KEY_LABEL_CADENCE = "labelCadence";
+    public static final String CONTROL_KEY_FORMAT = "format";
+    public static final String CONTROL_KEY_LABEL_ORIENT = "labelOrient";
+    
     @Override
     public boolean acceptsDataSet(QDataSet ds) {
         if ( ds==null ) return true;
@@ -311,19 +319,19 @@ public class ContoursRenderer extends Renderer {
     /**
      * preference for orientation of labels, if any.  One of "", "up"
      */
-    private String orientPref = "";
+    private String labelOrient = "";
 
-    public static final String PROP_ORIENTPREF = "orientPref";
+    public static final String PROP_LABELORIENT = "labelOrient";
 
-    public String getOrientPref() {
-        return orientPref;
+    public String getLabelOrient() {
+        return labelOrient;
     }
 
-    public void setOrientPref(String orientPref) {
-        String oldOrientPref = this.orientPref;
-        this.orientPref = orientPref;
+    public void setLabelOrient(String labelOrient) {
+        String oldLabelOrient = this.labelOrient;
+        this.labelOrient = labelOrient;
         updateCacheImage();
-        propertyChangeSupport.firePropertyChange(PROP_ORIENTPREF, oldOrientPref, orientPref);
+        propertyChangeSupport.firePropertyChange(PROP_LABELORIENT, oldLabelOrient, labelOrient);
     }
 
     private double getPixelLength( String s, double em ) {
@@ -407,7 +415,7 @@ public class ContoursRenderer extends Renderer {
                         //advance it2.
                         GraphUtil.pointsAlongCurve(it2, lens, points, orient, true);
                         
-                        if ( orientPref.equals("up") ) {
+                        if ( labelOrient.equals("N") ) {
                             for (int ilabel = 0; ilabel < nlabel*2; ilabel++) {
                                 if ( Math.abs(orient[ilabel])>Math.PI/2) orient[ilabel]+=Math.PI;
                             }                
@@ -591,7 +599,7 @@ public class ContoursRenderer extends Renderer {
         String oldLabelCadence = this.labelCadence;
         this.labelCadence = labelCadence;
         update();
-        propertyChangeSupport.firePropertyChange("labelCadence", oldLabelCadence, labelCadence );
+        propertyChangeSupport.firePropertyChange(CONTROL_KEY_LABEL_CADENCE, oldLabelCadence, labelCadence );
     }
 
     private synchronized GeneralPath[] getPaths() {
