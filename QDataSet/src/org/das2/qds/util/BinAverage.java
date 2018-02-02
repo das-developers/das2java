@@ -39,8 +39,24 @@ public class BinAverage {
      * @param newTags0 a rank 1 tags dataset, that must be MONOTONIC.
      * @return rank 1 dataset with DEPEND_0 = newTags.
      * @see #rebin(org.das2.qds.QDataSet, org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
+     * @see #binAverage(QDataSet, QDataSet ) 
      */
     public static DDataSet rebin(QDataSet ds, QDataSet newTags0) {
+        return binAverage( ds, newTags0 );
+    } 
+    
+    /**
+     * returns a dataset with tags specified by newTags0.  Data from <tt>ds</tt>
+     * are averaged together when they fall into the same bin.  Note the result
+     * will have the property WEIGHTS.
+     *
+     * @param ds a rank 1 dataset, no fill
+     * @param newTags0 a rank 1 tags dataset, that must be MONOTONIC.
+     * @return rank 1 dataset with DEPEND_0 = newTags.
+     * @see #rebin(org.das2.qds.QDataSet, org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
+     * @see #binAverage(QDataSet, QDataSet ) 
+     */
+    public static DDataSet binAverage(QDataSet ds, QDataSet newTags0 ) {
         QDataSet dstags = (QDataSet) ds.property(QDataSet.DEPEND_0);
 
         QDataSet wds = DataSetUtil.weightsDataSet(ds);
@@ -87,9 +103,26 @@ public class BinAverage {
      * @see #rebin(org.das2.qds.QDataSet, int, int) 
      * @see #rebinBundle(org.das2.qds.QDataSet, org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      * @see #rebin(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
+     * @deprecated see binAverage
+     * @see #binAverage(QDataSet, QDataSet, QDataSet ) 
      */
     public static DDataSet rebin(QDataSet ds, QDataSet newTags0, QDataSet newTags1) {
-
+        return binAverage( ds, newTags0, newTags1 );
+    }
+    
+    
+    /**
+     * returns a dataset with tags specified by newTags.
+     * @param ds a rank 2 dataset.  If it's a bundle, then rebinBundle is called.
+     * @param newTags0 rank 1 monotonic dataset
+     * @param newTags1 rank 1 monotonic dataset
+     * @return rank 2 dataset with newTags0 for the DEPEND_0 tags, newTags1 for the DEPEND_1 tags.  WEIGHTS property contains the weights.
+     * @see #rebin(org.das2.qds.QDataSet, int, int) 
+     * @see #rebinBundle(org.das2.qds.QDataSet, org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
+     * @see #rebin(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
+     */
+    public static DDataSet binAverage(QDataSet ds, QDataSet newTags0, QDataSet newTags1) {
+    
         if (ds.rank() != 2) {
             throw new IllegalArgumentException("ds must be rank2");
         }
@@ -188,8 +221,25 @@ public class BinAverage {
      * @param dep2 the rank 1 depend2 for the result, which must be uniformly spaced.
      * @return rank 3 dataset of z averages with depend_0, depend_1, and depend_2.  WEIGHTS contains the total weight for each bin.
      * @see #rebinBundle(org.das2.qds.QDataSet, org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
+     * @deprecated see binAverageBundle
+     * @see #binAverageBundle(org.das2.qds.QDataSet, org.das2.qds.QDataSet, org.das2.qds.QDataSet, org.das2.qds.QDataSet ) 
      */
     public static DDataSet rebinBundle( QDataSet ds, QDataSet dep0, QDataSet dep1, QDataSet dep2 ) {
+        return binAverageBundle( ds, dep0, dep1, dep2 );
+    }
+    
+    /**
+     * 
+     * takes rank 2 bundle (x,y,z,f) and averages it into rank 3 qube f(x,y,z).  This is 
+     * similar to what happens in the spectrogram routine.
+     * @param ds rank 2 bundle(x,y,z,f)
+     * @param dep0 the rank 1 depend0 for the result, which must be uniformly spaced.
+     * @param dep1 the rank 1 depend1 for the result, which must be uniformly spaced.
+     * @param dep2 the rank 1 depend2 for the result, which must be uniformly spaced.
+     * @return rank 3 dataset of z averages with depend_0, depend_1, and depend_2.  WEIGHTS contains the total weight for each bin.
+     * @see #rebinBundle(org.das2.qds.QDataSet, org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
+     */    
+    public static DDataSet binAverageBundle( QDataSet ds, QDataSet dep0, QDataSet dep1, QDataSet dep2 ) {        
         DDataSet sresult= DDataSet.createRank3( dep0.length(), dep1.length(), dep2.length() );
         IDataSet nresult= IDataSet.createRank3( dep0.length(), dep1.length(), dep2.length() );
         QDataSet wds= DataSetUtil.weightsDataSet( DataSetOps.slice1(ds,3) );
@@ -276,8 +326,25 @@ public class BinAverage {
      * @return rank 2 dataset of z averages with depend_0 and depend_1.  WEIGHTS contains the total weight for each bin.
      * @see #rebin(org.das2.qds.QDataSet, org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      * @see #rebinBundle(org.das2.qds.QDataSet, org.das2.qds.QDataSet, org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
+     * @deprecated see binAverageBundle
+     * @see #binAverageBundle(org.das2.qds.QDataSet, org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      */
     public static DDataSet rebinBundle( QDataSet ds, QDataSet dep0, QDataSet dep1 ) {
+        return binAverageBundle( ds, dep0, dep1 );
+    }
+    
+    /**
+     * takes rank 2 bundle (x,y,z) and averages it into table z(x,y).  This is 
+     * similar to what happens in the spectrogram routine.
+     * @param ds rank 2 bundle(x,y,z)
+     * @param dep0 the rank 1 depend0 for the result, which must be uniformly spaced.
+     * @param dep1 the rank 1 depend1 for the result, which must be uniformly spaced.
+     * @return rank 2 dataset of z averages with depend_0 and depend_1.  WEIGHTS contains the total weight for each bin.
+     * @see #rebin(org.das2.qds.QDataSet, org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
+     * @see #rebinBundle(org.das2.qds.QDataSet, org.das2.qds.QDataSet, org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
+     */
+    public static DDataSet binAverageBundle( QDataSet ds, QDataSet dep0, QDataSet dep1 ) {
+    
         DDataSet sresult= DDataSet.createRank2( dep0.length(), dep1.length() );
         IDataSet nresult= IDataSet.createRank2( dep0.length(), dep1.length() );
         QDataSet wds= DataSetUtil.weightsDataSet( DataSetOps.slice1(ds,2) );
