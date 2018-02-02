@@ -55,6 +55,7 @@ public class BinAverage {
      * @return rank 1 dataset with DEPEND_0 = newTags.
      * @see #rebin(org.das2.qds.QDataSet, org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      * @see #binAverage(QDataSet, QDataSet ) 
+     * @see #binAverage(QDataSet, QDataSet, QDataSet ) 
      */
     public static DDataSet binAverage(QDataSet ds, QDataSet newTags0 ) {
         QDataSet dstags = (QDataSet) ds.property(QDataSet.DEPEND_0);
@@ -119,7 +120,8 @@ public class BinAverage {
      * @return rank 2 dataset with newTags0 for the DEPEND_0 tags, newTags1 for the DEPEND_1 tags.  WEIGHTS property contains the weights.
      * @see #rebin(org.das2.qds.QDataSet, int, int) 
      * @see #rebinBundle(org.das2.qds.QDataSet, org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
-     * @see #rebin(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
+     * @see #binAverage(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
+     * @see #binAverage(org.das2.qds.QDataSet ) 
      */
     public static DDataSet binAverage(QDataSet ds, QDataSet newTags0, QDataSet newTags1) {
     
