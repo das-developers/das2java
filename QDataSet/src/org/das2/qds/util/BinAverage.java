@@ -22,7 +22,7 @@ import org.das2.qds.ops.Ops;
 import static org.das2.qds.util.BinAverage.rebin;
 
 /**
- *
+ * utility class providing methods for bin averaging.
  * @author jbf
  */
 public class BinAverage {
@@ -32,11 +32,13 @@ public class BinAverage {
 
     /**
      * returns a dataset with tags specified by newTags0.  Data from <tt>ds</tt>
-     * are averaged together when they fall into the same bin.  
+     * are averaged together when they fall into the same bin.  Note the result
+     * will have the property WEIGHTS.
      *
      * @param ds a rank 1 dataset, no fill
      * @param newTags0 a rank 1 tags dataset, that must be MONOTONIC.
      * @return rank 1 dataset with DEPEND_0 = newTags.
+     * @see #rebin(org.das2.qds.QDataSet, org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      */
     public static DDataSet rebin(QDataSet ds, QDataSet newTags0) {
         QDataSet dstags = (QDataSet) ds.property(QDataSet.DEPEND_0);
@@ -77,13 +79,14 @@ public class BinAverage {
     }
     
     /**
-     * returns a dataset with tags specified by newTags
+     * returns a dataset with tags specified by newTags.
      * @param ds a rank 2 dataset.  If it's a bundle, then rebinBundle is called.
      * @param newTags0 rank 1 monotonic dataset
      * @param newTags1 rank 1 monotonic dataset
      * @return rank 2 dataset with newTags0 for the DEPEND_0 tags, newTags1 for the DEPEND_1 tags.  WEIGHTS property contains the weights.
      * @see #rebin(org.das2.qds.QDataSet, int, int) 
      * @see #rebinBundle(org.das2.qds.QDataSet, org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
+     * @see #rebin(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      */
     public static DDataSet rebin(QDataSet ds, QDataSet newTags0, QDataSet newTags1) {
 
