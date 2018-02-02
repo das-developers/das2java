@@ -75,7 +75,89 @@ public class BinAverage {
 
         return result;
     }
+    
+    /**
+     * returns a dataset with tags specified by newTags
+     * @param ds a rank 2 dataset.  If it's a bundle, then rebinBundle is called.
+     * @param newTags0 rank 1 monotonic dataset
+     * @param newTags1 rank 1 monotonic dataset
+     * @return rank 2 dataset with newTags0 for the DEPEND_0 tags, newTags1 for the DEPEND_1 tags.  WEIGHTS property contains the weights.
+     * @see #rebin(org.das2.qds.QDataSet, int, int) 
+     * @see #rebinBundle(org.das2.qds.QDataSet, org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
+     */
+    public static DDataSet rebin(QDataSet ds, QDataSet newTags0, QDataSet newTags1) {
 
+        if (ds.rank() != 2) {
+            throw new IllegalArgumentException("ds must be rank2");
+        }
+
+        if ( SemanticOps.isBundle(ds) ) {
+            return rebinBundle( ds, newTags0, newTags1 );
+        }
+
+        QDataSet dstags0 = (QDataSet) ds.property(QDataSet.DEPEND_0);
+        if ( dstags0==null ) {
+            throw new IllegalArgumentException("expected ds to have DEPEND_0");
+        }
+
+        QDataSet wds = DataSetUtil.weightsDataSet(ds);
+
+        double fill = ((Number) wds.property(QDataSet.FILL_VALUE)).doubleValue();
+
+        DDataSet result = DDataSet.createRank2(newTags0.length(), newTags1.length());
+        DDataSet weights = DDataSet.createRank2(newTags0.length(), newTags1.length());
+
+        QDataSet ibin1CacheDs = null;
+        int[] ibins1 = null;
+
+        int ibin0 = -1;
+        for (int i = 0; i < ds.length(); i++) {
+            ibin0 = DataSetUtil.closest(newTags0, dstags0.value(i), ibin0);
+
+            QDataSet dstags1 = (QDataSet) ds.property(QDataSet.DEPEND_1, i);
+
+            if (dstags1 != ibin1CacheDs) {
+                ibins1 = new int[dstags1.length()];
+                Arrays.fill(ibins1, -1);
+                for (int j = 0; j < dstags1.length(); j++) {
+                    ibins1[j] = DataSetUtil.closest(newTags1, dstags1.value(j), ibins1[j]);
+                }
+                ibin1CacheDs = dstags1;
+            }
+
+            for (int j = 0; j < dstags1.length(); j++) {
+                int ibin1 = ibins1[j];
+                double d = ds.value(i, j);
+                double w = wds.value(i, j);
+                double s = result.value(ibin0, ibin1);
+                result.putValue(ibin0, ibin1, s + w * d);
+                double n = weights.value(ibin0, ibin1);
+                weights.putValue(ibin0, ibin1, n + w);
+
+            }
+        }
+
+        for (int i = 0; i < result.length(); i++) {
+            for (int j = 0; j < result.length(i); j++) {
+                if (weights.value(i, j) > 0) {
+                    result.putValue(i, j, result.value(i, j) / weights.value(i, j));
+                } else {
+                    result.putValue(i, j, fill);
+                }
+            }
+        }
+
+        weights.putProperty(QDataSet.DEPEND_0, newTags0);
+        weights.putProperty(QDataSet.DEPEND_1, newTags1);
+        result.putProperty(QDataSet.DEPEND_0, newTags0);
+        result.putProperty(QDataSet.DEPEND_1, newTags1);
+        result.putProperty(QDataSet.FILL_VALUE, fill );
+        result.putProperty(QDataSet.WEIGHTS, weights);
+
+        return result;
+    }
+
+    
     /**
      * return true if the data is linearly spaced with the given base and offset.
      * @param dep0
@@ -256,87 +338,6 @@ public class BinAverage {
         sresult.putProperty( QDataSet.RENDER_TYPE, "nnSpectrogram" );
 
         return sresult;
-    }
-
-    /**
-     * returns a dataset with tags specified by newTags
-     * @param ds a rank 2 dataset.  If it's a bundle, then rebinBundle is called.
-     * @param newTags0 rank 1 monotonic dataset
-     * @param newTags1 rank 1 monotonic dataset
-     * @return rank 2 dataset with newTags0 for the DEPEND_0 tags, newTags1 for the DEPEND_1 tags.  WEIGHTS property contains the weights.
-     * @see #rebin(org.das2.qds.QDataSet, int, int) 
-     * @see #rebinBundle(org.das2.qds.QDataSet, org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
-     */
-    public static DDataSet rebin(QDataSet ds, QDataSet newTags0, QDataSet newTags1) {
-
-        if (ds.rank() != 2) {
-            throw new IllegalArgumentException("ds must be rank2");
-        }
-
-        if ( SemanticOps.isBundle(ds) ) {
-            return rebinBundle( ds, newTags0, newTags1 );
-        }
-
-        QDataSet dstags0 = (QDataSet) ds.property(QDataSet.DEPEND_0);
-        if ( dstags0==null ) {
-            throw new IllegalArgumentException("expected ds to have DEPEND_0");
-        }
-
-        QDataSet wds = DataSetUtil.weightsDataSet(ds);
-
-        double fill = ((Number) wds.property(QDataSet.FILL_VALUE)).doubleValue();
-
-        DDataSet result = DDataSet.createRank2(newTags0.length(), newTags1.length());
-        DDataSet weights = DDataSet.createRank2(newTags0.length(), newTags1.length());
-
-        QDataSet ibin1CacheDs = null;
-        int[] ibins1 = null;
-
-        int ibin0 = -1;
-        for (int i = 0; i < ds.length(); i++) {
-            ibin0 = DataSetUtil.closest(newTags0, dstags0.value(i), ibin0);
-
-            QDataSet dstags1 = (QDataSet) ds.property(QDataSet.DEPEND_1, i);
-
-            if (dstags1 != ibin1CacheDs) {
-                ibins1 = new int[dstags1.length()];
-                Arrays.fill(ibins1, -1);
-                for (int j = 0; j < dstags1.length(); j++) {
-                    ibins1[j] = DataSetUtil.closest(newTags1, dstags1.value(j), ibins1[j]);
-                }
-                ibin1CacheDs = dstags1;
-            }
-
-            for (int j = 0; j < dstags1.length(); j++) {
-                int ibin1 = ibins1[j];
-                double d = ds.value(i, j);
-                double w = wds.value(i, j);
-                double s = result.value(ibin0, ibin1);
-                result.putValue(ibin0, ibin1, s + w * d);
-                double n = weights.value(ibin0, ibin1);
-                weights.putValue(ibin0, ibin1, n + w);
-
-            }
-        }
-
-        for (int i = 0; i < result.length(); i++) {
-            for (int j = 0; j < result.length(i); j++) {
-                if (weights.value(i, j) > 0) {
-                    result.putValue(i, j, result.value(i, j) / weights.value(i, j));
-                } else {
-                    result.putValue(i, j, fill);
-                }
-            }
-        }
-
-        weights.putProperty(QDataSet.DEPEND_0, newTags0);
-        weights.putProperty(QDataSet.DEPEND_1, newTags1);
-        result.putProperty(QDataSet.DEPEND_0, newTags0);
-        result.putProperty(QDataSet.DEPEND_1, newTags1);
-        result.putProperty(QDataSet.FILL_VALUE, fill );
-        result.putProperty(QDataSet.WEIGHTS, weights);
-
-        return result;
     }
     
     /**
