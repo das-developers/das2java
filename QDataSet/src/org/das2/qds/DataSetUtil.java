@@ -3388,20 +3388,25 @@ public class DataSetUtil {
             if ( DataSetAnnotations.VALUE_0.equals(DataSetAnnotations.getInstance().getAnnotation(ds,DataSetAnnotations.ANNOTATION_INVALID_COUNT)) ) { 
                 r= null;
             } else {
-                r= Ops.where( wds );
-                if ( r.length()<ds.length() ) {
-                    if ( r.length()==0 ) throw new IllegalArgumentException("dataset is all fill");
-                    handleFill= true;
-                    ds= DataSetOps.applyIndex( ds, 0, r, false );
-                } else {
+                if ( ds instanceof IndexGenDataSet && wds instanceof org.das2.qds.WeightsDataSet.Finite ) { // this happens a lot.
                     DataSetAnnotations.getInstance().putAnnotation(ds,DataSetAnnotations.ANNOTATION_INVALID_COUNT, DataSetAnnotations.VALUE_0 );
+                    r= null;
+                } else {
+                    r= Ops.where( wds );
+                    if ( r.length()<ds.length() ) {
+                        if ( r.length()==0 ) throw new IllegalArgumentException("dataset is all fill");
+                        handleFill= true;
+                        ds= DataSetOps.applyIndex( ds, 0, r, false );
+                    } else {
+                        DataSetAnnotations.getInstance().putAnnotation(ds,DataSetAnnotations.ANNOTATION_INVALID_COUNT, DataSetAnnotations.VALUE_0 );
+                    }
                 }
             }
         }
         
         double ddatum= datum.doubleValue( SemanticOps.getUnits(ds) );
 
-        if ( !isMonotonic(ds) ) {
+        if ( !mono ) {
             int closest= 0;
             double v= Math.abs( ds.value(closest)-ddatum );
             for ( int i=1; i<ds.length(); i++ ) {
