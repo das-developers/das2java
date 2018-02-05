@@ -159,6 +159,7 @@ public class GrannyTextRenderer {
      */
     public double getAscent() {
         if ( lineBounds==null ) throw new IllegalArgumentException("string is not set");
+        if ( lineBounds.isEmpty() ) throw new IllegalArgumentException("getAscent called but string has not been drawn");
         return -1*((Rectangle)lineBounds.get(0)).getY();
     }
     
