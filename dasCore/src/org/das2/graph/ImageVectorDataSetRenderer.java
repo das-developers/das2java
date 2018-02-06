@@ -25,6 +25,7 @@ import org.das2.util.monitor.ProgressMonitor;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
@@ -546,7 +547,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
     private FDataSet histogram( FDataSet tds, RebinDescriptor ddx, RebinDescriptor ddy, QDataSet ds, int firstIndex, int lastIndex ) {
         
         logger.entering( "org.das2.graph.ImageVectorDataSetRenderer", "histogram");
-
+        
         ddx.setOutOfBoundsAction(RebinDescriptor.MINUSONE);
         ddy.setOutOfBoundsAction(RebinDescriptor.MINUSONE);
 
@@ -595,19 +596,35 @@ public class ImageVectorDataSetRenderer extends Renderer {
                 double vmax= ovmax==null ? Double.MAX_VALUE : ovmax.doubleValue();
                 double vmin= ovmin==null ? -Double.MAX_VALUE : ovmin.doubleValue();
                 double vfill= ofill==null ? Double.MAX_VALUE : ofill.doubleValue();
-                for (; i <= n; i++) {
-                    double v= vds.value(i);
-                    boolean isNotValid =  v == vfill || Double.isNaN(v) || v > vmax || v < vmin;
-                    if ( isNotValid ) {
-                    } else {
-                        int ix = ddx.whichBin( xuc.convert( xds.value(i) ), targetXUnits);
-                        int iy = ddy.whichBin( yuc.convert( v ), targetYUnits);
-                        if (ix != -1 && iy != -1) {
-                            double d = tds.value(ix, iy);
-                            tds.putValue( ix, iy, d+1 );
+                if ( xuc==UnitsConverter.IDENTITY && yuc==UnitsConverter.IDENTITY ) {
+                    for (; i <= n; i++) {
+                        double v= vds.value(i);
+                        boolean isNotValid =  v == vfill || Double.isNaN(v) || v > vmax || v < vmin;
+                        if ( isNotValid ) {
+                        } else {
+                            int ix = ddx.whichBin( xds.value(i), targetXUnits);
+                            int iy = ddy.whichBin( v, targetYUnits);
+                            if (ix != -1 && iy != -1) {
+                                double d = tds.value(ix, iy);
+                                tds.putValue( ix, iy, d+1 );
+                            }
                         }
                     }
-                } 
+                } else {
+                    for (; i <= n; i++) {
+                        double v= vds.value(i);
+                        boolean isNotValid =  v == vfill || Double.isNaN(v) || v > vmax || v < vmin;
+                        if ( isNotValid ) {
+                        } else {
+                            int ix = ddx.whichBin( xuc.convert( xds.value(i) ), targetXUnits);
+                            int iy = ddy.whichBin( yuc.convert( v ), targetYUnits);
+                            if (ix != -1 && iy != -1) {
+                                double d = tds.value(ix, iy);
+                                tds.putValue( ix, iy, d+1 );
+                            }
+                        }
+                    }
+                }
             }
         }
 
