@@ -472,9 +472,95 @@ public final class FDataSet extends ArrayDataSet {
             } else {
                 return (T) this;
             }
+        } else if ( clazz==FloatReadAccess.class ) {
+            return clazz.cast( new FDataSet.FDataSetFloatReadAccess() );
         } else {
             return super.capability(clazz);
-        }
+        }        
     }
 
+    public class FDataSetFloatReadAccess implements FloatReadAccess {
+        @Override
+        public float fvalue() {
+            if ( RANGE_CHECK ) {
+                if ( rank!=0 ) {
+                    throw new IllegalArgumentException("rank 0 access on rank "+rank+" dataset");
+                }
+            }
+            return back[0];
+            
+        }
+
+        @Override
+        public float fvalue(int i0) {
+            if (RANGE_CHECK) {
+                if ( rank!=1 ) {
+                    throw new IllegalArgumentException("rank 1 access on rank "+rank+" dataset");
+                }
+                if (i0 < 0 || i0 >= len0) {
+                    throw new IndexOutOfBoundsException("i0=" + i0 + " " + this);
+                }
+            }
+            return back[i0];
+        }    
+
+        @Override
+        public float fvalue(int i0, int i1) {
+            if (RANGE_CHECK) {
+                if ( rank!=2 ) {
+                    throw new IllegalArgumentException("rank 2 access on rank "+rank+" dataset");
+                }
+                if (i0 < 0 || i0 >= len0) {
+                    throw new IndexOutOfBoundsException("i0=" + i0 + " " + this);
+                }
+                if (i1 < 0 || i1 >= len1) {
+                    throw new IndexOutOfBoundsException("i1=" + i1 + " " + this);
+                }
+            }
+            return back[ i0 * len1 + i1 ];
+        }    
+
+        @Override
+        public float fvalue(int i0, int i1, int i2) {
+            if (RANGE_CHECK) {
+                if ( rank!=3 ) {
+                    throw new IllegalArgumentException("rank 3 access on rank "+rank+" dataset");
+                }
+                if (i0 < 0 || i0 >= len0) {
+                    throw new IndexOutOfBoundsException("i0=" + i0 + " " + this);
+                }
+                if (i1 < 0 || i1 >= len1) {
+                    throw new IndexOutOfBoundsException("i1=" + i1 + " " + this);
+                }
+                if (i2 < 0 || i2 >= len2) {
+                    throw new IndexOutOfBoundsException("i2=" + i2 + " " + this);
+                }
+            }
+            return back[ i0 * len1 * len2 + i1 *len2 + i2 ];
+            
+        }
+
+        @Override
+        public float fvalue(int i0, int i1, int i2, int i3) {
+            if (RANGE_CHECK) {
+                if ( rank!=4 ) {
+                    throw new IllegalArgumentException("rank 4 access on rank "+rank+" dataset");
+                }
+                if (i0 < 0 || i0 >= len0) {
+                    throw new IndexOutOfBoundsException("i0=" + i0 + " " + this);
+                }
+                if (i1 < 0 || i1 >= len1) {
+                    throw new IndexOutOfBoundsException("i1=" + i1 + " " + this);
+                }
+                if (i2 < 0 || i2 >= len2) {
+                    throw new IndexOutOfBoundsException("i2=" + i2 + " " + this);
+                }
+                if (i3 < 0 || i3 >= len3) {
+                    throw new IndexOutOfBoundsException("i3=" + i3 + " " + this);
+                }
+            }
+            return back[ i0*len1*len2*len3 + i1*len2*len3 + i2*len3 +i3 ];
+        }
+    }
+    
 }
