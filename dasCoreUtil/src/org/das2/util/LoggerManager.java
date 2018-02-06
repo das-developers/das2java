@@ -234,11 +234,13 @@ public final class LoggerManager {
     }
     
     /**
-     * reset the timer.  The lifecycle is like so:
-     *  LoggerManager.resetTimer("big task");
-     *  LoggerManager.markTime("done loading");
-     *  LoggerManager.markTime("calculated data");
-     *  LoggerManager.clearTimer();  
+     * reset the timer.  The lifecycle is like so:<ul>
+     * <li>LoggerManager.setTimerLogfile("/tmp/mylogfile.txt") 
+     * <li>LoggerManager.resetTimer("big task");
+     * <li>LoggerManager.markTime("done loading");
+     * <li>LoggerManager.markTime("calculated data");
+     * <li>LoggerManager.clearTimer();  
+     * </ul>
      * Note the timers are stored with weak references to the threads, so 
      * clearTimer needn't be called.
      */
@@ -249,6 +251,7 @@ public final class LoggerManager {
     
     /**
      * reset the timer for this thread.  The lifecycle is like so:<ul>
+     * <li>LoggerManager.setTimerLogfile("/tmp/mylogfile.txt") 
      * <li>LoggerManager.resetTimer("big task");
      * <li>LoggerManager.markTime("done loading");
      * <li>LoggerManager.markTime("calculated data");
@@ -259,6 +262,7 @@ public final class LoggerManager {
      * clearTimer needn't be called.
      * @param task 
      * @see #setEnableTimers(boolean) 
+     * @see #setTimerLogfile(java.lang.String) 
      */
     public static void resetTimer( String task ) {
         if ( disableTimers ) return;
