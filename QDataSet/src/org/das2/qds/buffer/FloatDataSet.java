@@ -1,6 +1,8 @@
 package org.das2.qds.buffer;
 
 import java.nio.ByteBuffer;
+import org.das2.qds.FloatReadAccess;
+import org.das2.qds.LongReadAccess;
 import org.das2.qds.WritableDataSet;
 
 public class FloatDataSet extends BufferDataSet implements WritableDataSet {
@@ -54,4 +56,55 @@ public class FloatDataSet extends BufferDataSet implements WritableDataSet {
         back.putFloat( offset(i0, i1, i2, i3), (float)d );
     }
 
+    /**
+     * Clients should use this instead of casting the class to the 
+     * capability class.
+     * @param <T>
+     * @param clazz the class, such as WritableDataSet.class
+     * @return null or the capability if exists, such as WritableDataSet
+     */
+    @Override
+    public <T> T capability(Class<T> clazz) {
+        if ( clazz==WritableDataSet.class ) {
+            if ( isImmutable() ) {
+                return null;
+            } else {
+                return (T) this;
+            }
+        } else if ( clazz==FloatReadAccess.class ) {
+            return clazz.cast( new FloatDataSet.FloatDataSetFloatReadAccess() );
+        } else {
+            return super.capability(clazz);
+        }
+    }
+    
+    public class FloatDataSetFloatReadAccess implements FloatReadAccess {
+
+        @Override
+        public float fvalue() {
+            return back.getFloat( offset() );
+        }
+
+        @Override
+        public float fvalue(int i0) {
+            return back.getFloat( offset(i0) );
+        }
+
+        @Override
+        public float fvalue(int i0, int i1) {
+            return back.getFloat( offset(i0, i1) );
+        }
+
+        @Override
+        public float fvalue(int i0, int i1, int i2) {
+            return back.getFloat( offset(i0, i1, i2) );
+        }
+
+        @Override
+        public float fvalue(int i0, int i1, int i2, int i3) {
+            return back.getFloat( offset(i0, i1, i2, i3) );
+        }
+        
+    }
+    
 }
