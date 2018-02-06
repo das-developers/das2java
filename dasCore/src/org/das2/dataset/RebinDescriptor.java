@@ -39,7 +39,7 @@ import org.das2.qds.SemanticOps;
  * lifetime.
  * @author  jbf
  */
-public class RebinDescriptor {
+public final class RebinDescriptor {
     
     Units units;
     protected double start;
