@@ -700,9 +700,15 @@ public final class TimeUtil {
     public static TimeStruct carry(TimeStruct t) {
         TimeStruct result= t;
         
-        if (result.seconds>=60 && ( result.hour<23 || result.minute<59 ) ) {
-            result.seconds-=60;
-            result.minute++;
+        boolean isLeap= false;
+        if ( result.seconds>=60 ) {
+            if ( ( result.month==6 && result.day==30 ) || ( result.month==12 && result.day==31 ) ) {
+                isLeap= true; //TODO: note this incorrect for non-leap-seconds.
+            }
+            if ( result.hour<23 || result.minute<59 || !isLeap ) {
+                result.seconds-=60;
+                result.minute++;
+            }
         }
         if (result.minute>=60) {
             result.minute-=60;
