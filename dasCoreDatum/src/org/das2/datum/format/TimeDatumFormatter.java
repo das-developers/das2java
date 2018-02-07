@@ -403,7 +403,7 @@ public class TimeDatumFormatter extends DatumFormatter {
      * @return [ year, month, dayOfMonth, dayOfYear, hour, minute, seconds, ... ]
      */
     private Number[] timeStructToArray(TimeUtil.TimeStruct ts) {
-        int secondsFieldCount = scaleSeconds == null ? 0 : scaleSeconds.length;
+        int secondsFieldCount = scaleSeconds == null ? 0 : scaleSeconds.length; 
         int maxScale = scaleSeconds == null ? 10 : (int)Math.pow(10, max(scaleSeconds));
         int fieldCount = TIMESTAMP_FIELD_COUNT + secondsFieldCount;
         Number[] array = new Number[fieldCount];
@@ -412,6 +412,10 @@ public class TimeDatumFormatter extends DatumFormatter {
         ts.seconds= seconds;
         ts.micros= (int)(fracSeconds * 1e6);
 
+        if ( ts.micros<0 ) {
+            ts.seconds--;
+            ts.micros+=1000000;
+        }
         TimeUtil.carry(ts);
 
         array[YEAR_FIELD_INDEX] = ts.year;
