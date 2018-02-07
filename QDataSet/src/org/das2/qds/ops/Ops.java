@@ -5385,7 +5385,15 @@ public class Ops {
      * @see #binsWithin(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      */
     public static QDataSet within( QDataSet ds, QDataSet bounds ) {
-        return and( ge( ds, bounds.slice(0) ), lt( ds, bounds.slice(1) ) );
+        final UnitsConverter uc= SemanticOps.getLooseUnitsConverter( bounds, ds );
+        final double min= uc.convert(bounds.value(0));
+        final double max= uc.convert(bounds.value(1));
+        return applyUnaryOp( ds, new UnaryOp() {
+            @Override
+            public double op(double d1) {
+                return ( d1 >= min && d1 < max ) ? 1.0 : 0.0;
+            }
+        });
     }
 
     /**
@@ -5404,8 +5412,7 @@ public class Ops {
      * @see #binsWithin(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      */
     public static QDataSet within( Object ds, Object bounds ) {
-        QDataSet boundsDs= dataset( datumRange( bounds ) );
-        return and( ge( ds, boundsDs.slice(0) ), lt( ds, boundsDs.slice(1) ) );
+        return within( dataset(ds), dataset( datumRange( bounds ) ) );
     }
     
     /**
