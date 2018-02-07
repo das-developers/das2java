@@ -5312,8 +5312,10 @@ public class Ops {
         QubeDataSetIterator iter = new QubeDataSetIterator(ds);
         QDataSet wds= DataSetUtil.weightsDataSet(ds);
 
+        int blocksize= Math.max( 100, ds.length() / 4 );
+        
         if (ds.rank() == 1) {
-            builder = new DataSetBuilder( 1, 100 );
+            builder = new DataSetBuilder( 1, blocksize );
             while (iter.hasNext()) {
                 iter.next();
                 if ( iter.getValue(wds)> 0 && iter.getValue(ds) != 0.) {
@@ -5328,7 +5330,7 @@ public class Ops {
             }
             builder.putProperty( QDataSet.VALID_MAX, ds.length() );
         } else {
-            builder = new DataSetBuilder( 2, 100, ds.rank() );
+            builder = new DataSetBuilder( 2, blocksize, ds.rank() );
             while (iter.hasNext()) {
                 iter.next();
                 if ( iter.getValue(wds)> 0 && iter.getValue(ds) != 0.) {
