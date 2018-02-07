@@ -350,18 +350,23 @@ public class TimeDatumFormatter extends DatumFormatter {
                 case '{': 
                     int i1= ss[i].indexOf('}');
                     String spec= ss[i].substring(1,i1);
-                    if ( spec.equals("milli") ) {
-                       int digitCount = 3;
-                       int fieldIndex = addScaleFactor(digitCount);
-                       appendSubFormat(frmtString, fieldIndex, digitCount);
-                       ss[i]= ss[i].substring(i1);
-                    } else if ( spec.equals("micro") ) {
-                       int digitCount = 3;
-                       int fieldIndex = addScaleFactor(6);
-                       appendSubFormat(frmtString, fieldIndex, digitCount);
-                       ss[i]= ss[i].substring(i1);
-                    } else {
-                        throw new ParseException("bad format code: {"+spec+"}",offset);
+                    switch (spec) {
+                        case "milli": {
+                            int digitCount = 3;
+                            int fieldIndex = addScaleFactor(digitCount);
+                            appendSubFormat(frmtString, fieldIndex, digitCount);
+                            ss[i]= ss[i].substring(i1);
+                            break;
+                        }
+                        case "micro": {
+                            int digitCount = 3;
+                            int fieldIndex = addScaleFactor(6);
+                            appendSubFormat(frmtString, fieldIndex, digitCount);
+                            ss[i]= ss[i].substring(i1);
+                            break;
+                        }
+                        default:
+                            throw new ParseException("bad format code: {"+spec+"}",offset);
                     }
                     break;
                 default: throw new ParseException("bad format code: "+c,offset);
