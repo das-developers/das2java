@@ -423,12 +423,18 @@ public final class TimeUtil {
         double midnight= Units.mj1958.convertDoubleTo( u, mjd1958 );
         double sinceMidnight= d-midnight;
         
+        int jd= 2436205 + mjd1958;
+
         if ( u==Units.cdfTT2000 && sinceMidnight<0.0 ) { //TODO: huh?  this needs review
-            mjd1958= mjd1958-1;
-            sinceMidnight= sinceMidnight+86401e9;
+            TimeStruct result= julianToGregorian( jd );
+            boolean isLeap= ( result.month==1 && result.day==1 ) || ( result.month==1 && result.day==1 ); // TODO: still kludgy
+            if ( isLeap ) {
+                mjd1958= mjd1958-1;
+                jd= 2436205 + mjd1958;
+                sinceMidnight= sinceMidnight+86401e9;
+            } 
         }
 
-        int jd= 2436205 + mjd1958;
         double nanoseconds= u.getOffsetUnits().convertDoubleTo( Units.nanoseconds, sinceMidnight );
 
         if ( jd<0 ) {
