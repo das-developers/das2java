@@ -431,7 +431,7 @@ public class DigitalRenderer extends Renderer {
     /**
      * return the data type needed for the format.  For example, %d needs integers, %f needs floats.
      * @param form
-     * @return d, f, etc.
+     * @return 'x' 'X' 'd' 'o' 'c' 'C' or 'f'
      */
     public static char typeForFormat(String form) {
         int i= form.indexOf("%");
