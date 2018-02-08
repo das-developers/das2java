@@ -209,6 +209,51 @@ public class DataSetUtil {
     }
     
     /**
+     * quickly determine, with high accuracy, if data is monotonic (repeated values
+     * allowed).  This should
+     * be a constant-time operation, and be extremely unlikely to fail.
+     * @param ds
+     * @return true if the data does pass quick tests for monotonic.
+     * @see #isMonotonicAndIncreasing(org.das2.qds.QDataSet) 
+     * @see QDataSet#MONOTONIC
+     */
+    public static boolean isMonotonicQuick(QDataSet ds) {
+        logger.finest("enter isMonotonicQuick test for "+QDataSet.MONOTONIC);
+        if (ds instanceof IndexGenDataSet ) return true;
+        if (ds.rank() == 1) {
+            if (ds.length() < 100) {
+                return DataSetUtil.isMonotonic(ds);
+            } else {
+                QDataSet wds = DataSetUtil.weightsDataSet(ds);
+                Random r = new Random(0);
+                int i = 0;
+                double last = -1.0 * Double.MAX_VALUE;
+                int n = ds.length();
+                int jump = n / 20;
+                for (; i < n; i += (1 + (int) (jump * r.nextDouble()))) {
+                    double d = ds.value(i);
+                    double w = wds.value(i);
+                    while (w == 0 && i < n) {
+                        d = ds.value(i);
+                        w = wds.value(i);
+                        i++;
+                    }
+                    if (i == n) {
+                        break;
+                    }
+                    if (d < last) {
+                        return false;
+                    }
+                    last = d;
+                }
+                return true;
+            }
+        } else {
+            return false;
+        }
+    }
+    
+    /**
      * quickly determine, with high accuracy, if data is monotonic.  This should
      * be a constant-time operation, and be extremely unlikely to fail.
      * @param ds
