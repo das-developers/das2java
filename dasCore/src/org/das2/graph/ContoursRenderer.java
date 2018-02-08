@@ -517,7 +517,12 @@ public class ContoursRenderer extends Renderer {
         if (form.length()==0 ) form= "%.2f";
         
         Units zunits= SemanticOps.getUnits(zds);
-        char c= DigitalRenderer.typeForFormat(form);
+        char c;
+        try {
+            c = DigitalRenderer.typeForFormat(form);
+        } catch ( IllegalArgumentException ex ) {
+            c = 'f';
+        }
         
         for (int i = 0; i < zds.length(); i++) {
             double d = zds.value(i);
