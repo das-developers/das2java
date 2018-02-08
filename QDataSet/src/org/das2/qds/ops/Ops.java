@@ -7768,7 +7768,7 @@ public class Ops {
 
             monoCheck= Boolean.TRUE.equals( ds.property(QDataSet.MONOTONIC ));
             if ( ds.rank()==1 && monoCheck && n>0 ) {
-                monoCheck= DataSetUtil.isMonotonicAndIncreasingQuick(ds);
+                monoCheck= DataSetUtil.isMonotonicQuick(ds);
                 if ( !monoCheck ) logger.log(Level.WARNING, "this data isn''t really monotonic: {0}", ds);
             }
         } else {
