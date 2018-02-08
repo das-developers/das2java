@@ -88,22 +88,22 @@ public class LongDataSet extends BufferDataSet {
 
         @Override
         public long lvalue(int i0) {
-            return back.getLong( i0 );
+            return back.getLong( offset(i0) );
         }
 
         @Override
         public long lvalue(int i0, int i1) {
-            return back.getLong( i0*len1 + i1 );
+            return back.getLong( offset(i0, i1) );
         }
 
         @Override
         public long lvalue(int i0, int i1, int i2) {
-            return back.getLong( i0*len1*len2 + i1*len2 + i2 );
+            return back.getLong( offset(i0, i1, i2) );
         }
 
         @Override
         public long lvalue(int i0, int i1, int i2, int i3) {
-            return back.getLong( i0*len1*len2*len3 + i1*len2*len3 + i2*len3 + i3 );
+            return back.getLong( offset(i0, i1, i2, i3) );
         }
         
     }
