@@ -741,6 +741,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         }
         
         if ( doIncrementPaintCountTimer ) {
+            logger.log(Level.FINE, "incrementPaintCountTimer.restart() {0}", paintCount);
             incrementPaintCountTimer.restart();
         } else {
             doIncrementPaintCountTimer= true;
