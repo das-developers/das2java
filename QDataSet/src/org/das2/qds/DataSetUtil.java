@@ -628,14 +628,33 @@ public class DataSetUtil {
      * @return true if the property is inherited
      */
     public static boolean isInheritedProperty( String prop ) {
-        boolean indexProp= prop.startsWith("DEPEND_")
-                || prop.startsWith("BUNDLE_")
-                || prop.startsWith("BINS_")
-                || prop.startsWith("JOIN_")
-                || prop.startsWith("PLANE_")
-                || prop.equals( QDataSet.START_INDEX )
-                || prop.equals( QDataSet.RENDER_TYPE );
+        // QDataSet.MAX_RANK is equal to 4.
+        switch (prop) {
+            case QDataSet.DEPEND_0:
+            case QDataSet.DEPEND_1:
+            case QDataSet.DEPEND_2:
+            case QDataSet.DEPEND_3:
+                return false;
+            case QDataSet.BUNDLE_0:
+            case QDataSet.BUNDLE_1:
+            case QDataSet.BUNDLE_2:
+            case QDataSet.BUNDLE_3:
+                return false;
+            case QDataSet.BINS_0:
+            case QDataSet.BINS_1:
+                return false;
+            case QDataSet.JOIN_0:
+            case "JOIN_1":
+                return false;
+            case QDataSet.START_INDEX:
+            case QDataSet.RENDER_TYPE:
+                return false;
+            default:
+                break;
+        }
+        boolean indexProp= prop.startsWith("PLANE_");
         // note CONTEXT* is inherited.
+        //TODO: shouldn't DELTA_PLUS and DELTA_MINUS be on this list?
         return !indexProp;
     }
 
@@ -675,11 +694,12 @@ public class DataSetUtil {
 
     /**
      * help out implementations of the QDataSet.trim() command.  This does the dimension properties
-     * and geometric properties like DEPEND_0  and DELTA_PLUS.
+     * and geometric properties like DEPEND_0  and DELTA_PLUS.  This also
+     * checks for indexed properties, which are NAME__i.
      * @param ds the dataset with properties to trim.
      * @param start start index of trim operation
      * @param stop exclusive stop index of the trim operation.
-     * @return the properties of ds, trimmed to the indeces.
+     * @return the properties of ds, trimmed to the indices.  
      */
     public static Map<String,Object> trimProperties( QDataSet ds, int start, int stop ) {
 
