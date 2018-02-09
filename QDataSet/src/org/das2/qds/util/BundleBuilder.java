@@ -33,7 +33,7 @@ public class BundleBuilder {
     public void putProperty( String name, int index, Object value ) {
         if ( readOnly ) throw new IllegalArgumentException("cannot be used after getDataSet is called");
         SemanticOps.checkPropertyType( name, value, true );
-        ds.putProperty( String.format( "%s__%d", name, index ), value );
+        ds.putProperty( name, index, value );
     }
 
     public QDataSet getDataSet() {
