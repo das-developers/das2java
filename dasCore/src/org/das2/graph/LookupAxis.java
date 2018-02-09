@@ -117,7 +117,7 @@ public class LookupAxis extends DasCanvasComponent {
         QDataSet div= Ops.subtract( DataSetOps.applyIndex( yy, Ops.add(r,1) ), DataSetOps.applyIndex( yy,r ) );
         QDataSet ff= Ops.divide( Ops.subtract( Ops.dataset(y),                            DataSetOps.applyIndex( yy,r ) ) , 
                                  div );
-        QDataSet rzero= Ops.where( Ops.magnitude(div).equals(0) );
+        QDataSet rzero= Ops.where( Ops.eq( Ops.abs(div), 0 ) );
         if ( rzero.length()>0 ) throw new IllegalArgumentException("yy cannot have repeating values");
 
         if ( UnitsUtil.isIntervalMeasurement( SemanticOps.getUnits(xx) ) ) {            
