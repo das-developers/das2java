@@ -68,7 +68,9 @@ import java.nio.channels.*;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 import org.das2.DasException;
 import org.das2.dataset.DataSetAdapter;
@@ -87,39 +89,54 @@ import org.das2.qds.DataSetUtil;
  */
 public class DasPlot extends DasCanvasComponent {
 
-	/**
-	 * Interface to allow customizations to plots to be injected at the end of the DasPlot constructor.
-	 * The caller needs to be very cautious using this, especially when calling any non-final methods.
-	 */
-	public interface Customizer {
-		/**
-		 * Perform any action(s) to change the default behavior of a newly constructed plot.
-		 * @param plot the plot being customized
-		 */
-		void customize(DasPlot plot);
-	}
-
-	private static final List<Customizer> PLOT_CUSTOMIZERS = new ArrayList<>();
+	private static final List<CustomizerKey> CUSTOMIZER_KEYS = new ArrayList<>();
+	private static final Map<CustomizerKey, Customizer> PLOT_CUSTOMIZERS = new HashMap<>();
 
 	/**
-	 * Return a copy of all current customizing objects in a list.
-	 * @return the customizers currently being used when constructing new plots
+	 * Return a list of keys of all current customizing objects in the order they would be invoked.
+	 * @return the keys
 	 */
-	public static List<Customizer> getCustomizers() {
-		return new ArrayList<>(PLOT_CUSTOMIZERS);
+	public static List<CustomizerKey> getCustomizerKeys() {
+		synchronized ( CUSTOMIZER_KEYS ) {
+			// Defensive copy to ensure data structures maintain invariants.
+			return new ArrayList<>(CUSTOMIZER_KEYS);
+		}
 	}
 
 	/**
-	 * Set or replace the current collection of customizers with the new iterable
-	 * of Customizer objects. Since this replaces completely the current collection,
-	 * the caller can use this method to control completely what customizations
-	 * are performed, and in what order.
-	 * @param customizers the new customizers
+	 * Add a new customizer to the collection of customizers being used when creating
+	 * new plots. The new customizer will be invoked last.
+	 * @param key the new customizer's lookup key
+	 * @param customizer the new customizer
 	 */
-	public static void setCustomizers(Iterable<Customizer> customizers) {
-		PLOT_CUSTOMIZERS.clear();
-		for (Customizer customizer : customizers) {			
-			PLOT_CUSTOMIZERS.add(customizer);
+	public static void addCustomizer(CustomizerKey key, Customizer customizer) {
+		synchronized ( CUSTOMIZER_KEYS ) {
+			PLOT_CUSTOMIZERS.put(key,  customizer);
+			if (!PLOT_CUSTOMIZERS.containsKey(key)) {
+				CUSTOMIZER_KEYS.add(key);
+			}
+		}
+	}
+
+	/*
+	 * Return the customizer that is associated with the given key.
+	 * @param key the key for which to find the cutomizer
+	 * @returns the customizer, or null if the customizer is not present
+	 */
+	public static Customizer getCustomizer(CustomizerKey key) {
+		synchronized ( CUSTOMIZER_KEYS ) {
+			return PLOT_CUSTOMIZERS.get(key);
+		}
+	}
+
+	/**
+	 * Remove the customizer that is associated with the given key.
+	 * @param key the key to the customizer to be removed.
+	 */
+	public static void removeCustomizer(CustomizerKey key) {
+		synchronized ( CUSTOMIZER_KEYS ) {			
+			CUSTOMIZER_KEYS.remove(key);
+			PLOT_CUSTOMIZERS.remove(key);
 		}
 	}
 
@@ -281,8 +298,10 @@ public class DasPlot extends DasCanvasComponent {
             addDefaultMouseModules();
         }
 
-        for (Customizer c: PLOT_CUSTOMIZERS) {
-        	c.customize(this);
+        synchronized ( CUSTOMIZER_KEYS ) {        	
+        	for (CustomizerKey k : CUSTOMIZER_KEYS) {
+        		PLOT_CUSTOMIZERS.get(k).customize(this);
+        	}
         }
     }
 
