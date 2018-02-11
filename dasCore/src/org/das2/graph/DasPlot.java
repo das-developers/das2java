@@ -111,8 +111,13 @@ public class DasPlot extends DasCanvasComponent {
 	 */
 	public static void addCustomizer(CustomizerKey key, Customizer customizer) {
 		synchronized ( CUSTOMIZER_KEYS ) {
-			PLOT_CUSTOMIZERS.put(key,  customizer);
-			if (!PLOT_CUSTOMIZERS.containsKey(key)) {
+			if (PLOT_CUSTOMIZERS.containsKey(key)) {
+				// A customizer with this key is already in the list and map.
+				// Just replace the customizer but don't tamper with list order.
+				PLOT_CUSTOMIZERS.put(key, customizer);
+			} else {
+				// Add the customizer, and add the key at the end of the key list.
+				PLOT_CUSTOMIZERS.put(key, customizer);
 				CUSTOMIZER_KEYS.add(key);
 			}
 		}
