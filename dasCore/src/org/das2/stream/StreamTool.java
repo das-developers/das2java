@@ -598,12 +598,13 @@ public class StreamTool {
             System.err.println(new String(bytes));
         }
         ByteBufferInputStream bbin = new ByteBufferInputStream(xml);
-        InputStreamReader isr = new InputStreamReader(bbin);
+        InputStreamReader isr = new InputStreamReader(bbin,"UTF-8");
 
         try {
             DocumentBuilder builder;
             builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
             InputSource source = new InputSource(isr);
+            source.setEncoding("UTF-8");
             Document document = builder.parse(source);
             return document;
         } catch (ParserConfigurationException ex) {
