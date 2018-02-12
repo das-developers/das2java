@@ -38,6 +38,18 @@ import org.jdesktop.beansbinding.Converter;
  * @author  Jeremy
  */
 public class GraphUtil {
+	
+	/**
+	 * Classes that implement this interface provide their instances with
+	 * the ability to copy themselves in a manner similar to Cloneable objects,
+	 * but without the drawbacks of Cloneable.
+	 * 
+	 * Implementers need not return an object of their exact type, but the object
+	 * they return should have all the same supertypes as the original object.
+	 */
+	public interface Copyable<T> {
+		T copy();
+	}
 
     private static final Logger logger= LoggerManager.getLogger("das2.graphics.util");
     
@@ -418,7 +430,11 @@ public class GraphUtil {
         c.setDisplayLegend( p.isDisplayLegend() );
         for ( Renderer r: p.getRenderers() ) {
             Renderer cr;
-            if ( r instanceof SpectrogramRenderer ) {
+            if ( r instanceof Copyable ) {
+            	@SuppressWarnings("unchecked")
+				Copyable<Renderer> copyable = (Copyable<Renderer>) r;
+            	cr = copyable.copy();
+            } else if ( r instanceof SpectrogramRenderer ) {
                 DasColorBar cb= copyColorBar(((SpectrogramRenderer)r).getColorBar());
                 cr= new SpectrogramRenderer(null,cb);
                 SpectrogramRenderer sr= (SpectrogramRenderer)cr;
