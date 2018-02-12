@@ -32,7 +32,7 @@ public class Arrow extends DasCanvasComponent {
     }
     
     public void resize() {
-        Rectangle bounds= new Rectangle();
+        Rectangle bounds= new Rectangle( (int)(head.x-em), (int)(head.y-em), 0, 0 );
         bounds.add( head.x - em, head.y-em ); // account for stroke width
         bounds.add( tail.x + em, tail.y+em );
         setBounds(bounds);
