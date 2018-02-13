@@ -745,11 +745,12 @@ public class DataSetUtil {
         if ( ds.length()<QDataSet.MAX_PLANE_COUNT ) { 
             //kludge for indexed properties.
             for ( int i=0; i<stop-start; i++ ) {
-                Object o= ds.property( "NAME__" + ( i+start ) );
+                int ips= i+start;
+                Object o= ds.property( QDataSet.NAME, ( ips ) );
                 if ( o!=null ) result.put( "NAME__"+i, o );
-                o= ds.property( "UNITS__" + ( i+start ) );
+                o= ds.property( QDataSet.UNITS, ( ips ) );
                 if ( o!=null ) result.put( "UNITS__"+i, o );            
-                o= ds.property( "FORMAT__" + ( i+start ) );
+                o= ds.property( QDataSet.FORMAT, ( ips ) );
                 if ( o!=null ) result.put( "FORMAT__"+i, o );            
             }
         }
