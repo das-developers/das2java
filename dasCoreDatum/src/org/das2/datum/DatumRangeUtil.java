@@ -996,7 +996,7 @@ public class DatumRangeUtil {
                     ts2[HOUR]= tt.hour;
                     ts2[MINUTE]= tt.minute;
                     ts2[SECOND]= (int)tt.seconds;
-                    ts2[NANO]= (int)(( tt.seconds - ts2[SECOND] ) * 1e9);
+                    ts2[NANO]= (int)(( tt.seconds - ts2[SECOND] ) * 1e9) + tt.millis*1000000 + tt.micros*1000;
                     ipos= newString.length();
                 }
                 
