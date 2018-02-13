@@ -359,11 +359,12 @@ public class TimeDatumFormatter extends DatumFormatter {
                             break;
                         }
                         case "micro": {
-                            int digitCount = 3;
-                            int fieldIndex = addScaleFactor(6);
-                            appendSubFormat(frmtString, fieldIndex, digitCount);
-                            ss[i]= ss[i].substring(i1);
-                            break;
+                            throw new IllegalArgumentException("This is no longer supported, use subsec");
+                            //int digitCount = 3;
+                            //int fieldIndex = addScaleFactor(6);
+                            //appendSubFormat(frmtString, fieldIndex, digitCount);
+                            //ss[i]= ss[i].substring(i1);
+                            //break;
                         }
                         default:
                             throw new ParseException("bad format code: {"+spec+"}",offset);
@@ -422,6 +423,7 @@ public class TimeDatumFormatter extends DatumFormatter {
             ts.micros+=1000000;
         }
         TimeUtil.carry(ts);
+        ts= TimeUtil.roundNDigits(ts,scaleSeconds[0]);
 
         array[YEAR_FIELD_INDEX] = ts.year;
         array[MONTH_FIELD_INDEX] = ts.month;
