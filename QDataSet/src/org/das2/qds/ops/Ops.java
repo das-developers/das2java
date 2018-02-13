@@ -4877,6 +4877,8 @@ public class Ops {
             return DataSetUtil.asDataSet( ((Number)arg0).doubleValue() );
         } else if ( arg0 instanceof Datum ) {
             return DataSetUtil.asDataSet( (Datum)arg0 );
+        } else if ( arg0 instanceof Boolean ) {
+            return DataSetUtil.asDataSet( ((Boolean)arg0) ? 1.0 : 0.0 );
         } else if ( arg0 instanceof DatumRange ) {
             return DataSetUtil.asDataSet( (DatumRange)arg0 );
         } else if ( arg0 instanceof String ) {
