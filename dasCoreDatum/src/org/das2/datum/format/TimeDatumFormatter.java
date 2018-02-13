@@ -423,7 +423,9 @@ public class TimeDatumFormatter extends DatumFormatter {
             ts.micros+=1000000;
         }
         TimeUtil.carry(ts);
-        ts= TimeUtil.roundNDigits(ts,scaleSeconds[0]);
+        if ( scaleSeconds!=null && scaleSeconds[0]<7 ) {
+            ts= TimeUtil.roundNDigits(ts,scaleSeconds[0]);
+        }
 
         array[YEAR_FIELD_INDEX] = ts.year;
         array[MONTH_FIELD_INDEX] = ts.month;
