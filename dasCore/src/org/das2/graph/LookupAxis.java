@@ -205,7 +205,7 @@ public class LookupAxis extends DasCanvasComponent {
                 if ( axis.isHorizontal() ) {
                     gtr.draw( g, ix - myX - (int)gtr.getWidth()/2, height-5-3 );
                     int height0= (int)gtr.getHeight()+8;
-                    if ( height0>maxWidth ) maxHeight=height0;              
+                    if ( height0>maxHeight ) maxHeight=height0;              
                 } else {
                     gtr.draw( g, 5+3, ix+ascent/2-myY );
                     int width0= (int)gtr.getWidth();
