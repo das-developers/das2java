@@ -35,7 +35,7 @@ import org.das2.datum.format.TimeDatumFormatter;
 public final class TimeUtil {
     
     private static final Logger logger= LoggerManager.getLogger("das2.datum");
-    
+
     private TimeUtil() {
     }
     
@@ -804,6 +804,33 @@ public final class TimeUtil {
         }
         return carry(borrow(t));
     }
+
+    /**
+     * round seconds to N decimal places.  For example, n=3 means round to the 
+     * millisecond.
+     * @param ts a time structure
+     * @param n number of digits, 3 is millis, 6 is micros.
+     * @return rounded and normalized TimeStruct.
+     */
+    public static TimeStruct roundNDigits(TimeStruct ts, int n) {
+        if ( n>6 ) {
+            throw new IllegalArgumentException("only 0 to 6 digits supported");
+        }
+        double fracSeconds= ts.seconds - (int)ts.seconds;
+        ts.seconds= (int)ts.seconds;
+        ts.micros+= ts.millis*1000;
+        ts.millis= 0;
+        double pow= Math.pow( 10, 6-n );
+        int roundMicros= (int)( Math.round( (double)( ts.micros + 1000000 * fracSeconds ) / pow ) * pow );
+        ts.micros= roundMicros;
+        if ( ts.micros>=1000000 ) {
+            ts.micros-= 1000000;
+            ts.seconds++;
+        }
+        return normalize(ts);
+        
+    }
+    
     
     /**
      * return the next boundary
