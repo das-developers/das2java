@@ -628,7 +628,7 @@ public class DasAnnotation extends DasCanvasComponent {
             r.y = anchor.y + em + yoffset ;
         } else if ( anchorPosition==AnchorPosition.OutsideNE ) {
             r.x = anchor.x + anchor.width + em + xoffset;
-            r.y = anchor.y + em - yoffset;
+            r.y = anchor.y + em + yoffset;
         } else if ( anchorPosition==AnchorPosition.OutsideSE ) {
             r.x = anchor.x + anchor.width + em + xoffset;
             r.y = anchor.y + anchor.height - r.height - yoffset;
