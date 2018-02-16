@@ -517,7 +517,7 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
      * Get the DasMouseInputAdapter, which handles mouse input for the component.
      * @return the dasMouseInputAdapter.
      */
-    public DasMouseInputAdapter getDasMouseInputAdapter() {
+    public final DasMouseInputAdapter getDasMouseInputAdapter() {
         return this.mouseAdapter;
     }
     
