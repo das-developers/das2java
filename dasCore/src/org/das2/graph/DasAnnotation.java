@@ -433,13 +433,13 @@ public class DasAnnotation extends DasCanvasComponent {
             back= getBackground();
         }
          
-        if ( anchorType==AnchorType.CANVAS ) {
-            back= Color.PINK;
-        } else if ( anchorType==AnchorType.PLOT ) {
-            back= org.das2.util.ColorUtil.decodeColor("Lavender");
-        } else if ( anchorType==AnchorType.DATA ) {
-            back= org.das2.util.ColorUtil.decodeColor("LemonChiffon");
-        }
+//        if ( anchorType==AnchorType.CANVAS ) {
+//            back= Color.PINK;
+//        } else if ( anchorType==AnchorType.PLOT ) {
+//            back= org.das2.util.ColorUtil.decodeColor("Lavender");
+//        } else if ( anchorType==AnchorType.DATA ) {
+//            back= org.das2.util.ColorUtil.decodeColor("LemonChiffon");
+//        }
         
         if ( fontSize>0 ) g.setFont( getFont().deriveFont(fontSize) );
 
