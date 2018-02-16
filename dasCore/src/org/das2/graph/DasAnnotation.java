@@ -30,6 +30,7 @@ import javax.swing.Action;
 import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
 import org.das2.datum.DatumRange;
+import org.das2.datum.DatumRangeUtil;
 import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.LoggerManager;
 import org.das2.datum.Units;
@@ -106,13 +107,40 @@ public class DasAnnotation extends DasCanvasComponent {
                     adjustAnchorOffset( dx, dy );
                     resize();
                     repaint();                    
-                } else {
+                } else if ( getAnchorType()==AnchorType.PLOT ) {
                     Point p= e.getPoint();
                     int dx = p.x - p0.x;
                     int dy = p.y - p0.y;
                     adjustAnchorOffset( dx, dy );
                     resize();
                     repaint();
+                } else if ( getAnchorType()==AnchorType.DATA ) {
+                    Point p= e.getPoint();
+                    DasAxis axis;
+                    axis= plot.getXAxis();
+                    DatumRange xrange= getXrange();
+                    if ( axis.isLog() ) {
+                        Datum d= axis.invTransform(p.x).divide(axis.invTransform(p0.x));
+                        xrange= new DatumRange( xrange.min().multiply(d), xrange.max().multiply(d) );
+                    } else {
+                        Datum d= axis.invTransform(p.x).subtract(axis.invTransform(p0.x));
+                        xrange= new DatumRange( xrange.min().add(d), xrange.max().add(d) );
+                    }
+                    setXrange(xrange);
+                    axis= plot.getYAxis();
+                    DatumRange range= getYrange();
+                    if ( axis.isLog() ) {
+                        Datum d= axis.invTransform(p.y).divide(axis.invTransform(p0.y));
+                        range= new DatumRange( range.min().multiply(d), range.max().multiply(d) );
+                    } else {
+                        Datum d= axis.invTransform(p.y).subtract(axis.invTransform(p0.y));
+                        range= new DatumRange( range.min().add(d), range.max().add(d) );
+                    }
+                    setYrange(range);
+                    resize();
+                    repaint();
+                } else {
+                    throw new IllegalArgumentException("not implemented");
                 }
             }
         };
@@ -165,6 +193,10 @@ public class DasAnnotation extends DasCanvasComponent {
 
     }
 
+    private void adjustDataRanges( int dx, int dy ) {
+        
+    }
+    
     private void adjustAnchorOffset( int dx, int dy ) {
         if ( anchorPosition==AnchorPosition.NW ) {
         } else if ( anchorPosition==AnchorPosition.N ) {
@@ -400,7 +432,15 @@ public class DasAnnotation extends DasCanvasComponent {
             ltextColor= textColor;
             back= getBackground();
         }
-                
+         
+        if ( anchorType==AnchorType.CANVAS ) {
+            back= Color.PINK;
+        } else if ( anchorType==AnchorType.PLOT ) {
+            back= org.das2.util.ColorUtil.decodeColor("Lavender");
+        } else if ( anchorType==AnchorType.DATA ) {
+            back= org.das2.util.ColorUtil.decodeColor("LemonChiffon");
+        }
+        
         if ( fontSize>0 ) g.setFont( getFont().deriveFont(fontSize) );
 
         int em = (int) getEmSize() / 2;
