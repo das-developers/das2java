@@ -20,7 +20,9 @@ package org.das2.qds;
 public interface MutablePropertyDataSet extends QDataSet {
     
     /**
-     * assign the name value to the property.  
+     * assign the name value to the property.  Note that name__i can be
+     * used as a alias for an indexed property, but when possible 
+     * putProperty(name,i,value) should be used.
      * @param name property name like "UNITS" (Use QDataSet.UNITS)
      * @param value the property value.
      * @see org.das2.qds.ops.Ops#putProperty(org.das2.qds.QDataSet, java.lang.String, java.lang.Object) putProperty which properly checks mutability of the dataset

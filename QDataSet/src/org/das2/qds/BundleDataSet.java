@@ -144,7 +144,7 @@ public final class BundleDataSet extends AbstractDataSet {
 
         @Override
         public Object property(String name, int i) {
-            Object v= properties.get( name+"__"+i );
+            Object v= super.property(name,i);
             if ( i>=datasets.size() ) {
                 throw new IndexOutOfBoundsException("No dataset at index " + i + " only " + datasets.size() +" datasets." );
             }

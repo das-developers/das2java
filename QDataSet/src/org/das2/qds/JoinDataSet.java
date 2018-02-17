@@ -201,8 +201,7 @@ public class JoinDataSet extends AbstractDataSet {
 
     @Override
     public Object property(String name, int i0) {
-        String sname= name + "__" + i0;
-        Object result= properties.get(sname);
+        Object result= super.property(name, i0);
         if ( result==null ) {
             if ( i0>=datasets.size() ) {
                 throw new IndexOutOfBoundsException("no dataset at index: "+i0);
