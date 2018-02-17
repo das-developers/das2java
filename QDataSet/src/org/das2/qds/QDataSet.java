@@ -133,6 +133,7 @@ public interface QDataSet {
      * type QDataSet, a correlated plane of data.  An additional dependent DataSet that is correlated by the first index.  
      * Note "0" is just a count, and does not refer to the 0th index.  All correlated datasets must be 
      * correlated by the first index.  TODO: what about two rank 2 datasets?  
+     * Note that if PLANE_i==null then PLANE_(i+1) must also be null.
      */
     public final static String PLANE_0= "PLANE_0";
 
