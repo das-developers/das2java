@@ -130,8 +130,10 @@ public class SetDepend0CadenceFilterEditorPanel extends AbstractFilterEditorPane
         if ( dep0!=null ) {
             Units u= SemanticOps.getUnits(dep0);
             if ( u!=currentUnits ) {
-                Units[] uu= u.getOffsetUnits().getConvertableUnits();
+                Units[] uu= u.getOffsetUnits().getConvertibleUnits();
+                Units oldu= (Units)unitsCB.getSelectedItem();
                 unitsCB.setModel( new DefaultComboBoxModel(uu) );
+                unitsCB.setSelectedItem(oldu);
                 currentUnits= u;
             }
         } else {
