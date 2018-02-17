@@ -10,6 +10,7 @@
 package org.das2.qds;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.datum.Units;
@@ -26,11 +27,12 @@ import org.das2.util.LoggerManager;
 public abstract class AbstractDataSet implements QDataSet, MutablePropertyDataSet {
 
     private static final Logger logger= LoggerManager.getLogger("qdataset");
+    boolean hasIndexedProperties= false;
     protected HashMap<String,Object> properties;
     private boolean immutable= false;
     
     public AbstractDataSet() {
-        properties= new HashMap<String,Object>();
+        properties= new HashMap<>();
     }
 
     @Override
@@ -68,8 +70,11 @@ public abstract class AbstractDataSet implements QDataSet, MutablePropertyDataSe
 
     @Override
     public Object property(String name, int i) {
-        String pname= name + "__" + i;
-        Object r= properties.get( pname );
+        Object r= null;
+        if ( hasIndexedProperties ) {
+            String pname= name + "__" + i;
+            r= properties.get( pname );
+        }
         if ( r!=null ) {
             return r;
         } else {
@@ -83,35 +88,86 @@ public abstract class AbstractDataSet implements QDataSet, MutablePropertyDataSe
 
     /**
      * print a warning message when the property is not the correct type.
-     * @param name
-     * @param value
+     * @param name property name
+     * @param value property value
      */
-    private void checkPropertyType( String name, Object value ) {
-        String[] props= DataSetUtil.correlativeProperties();
-        for (String prop : props) {
-            if (name.equals(prop)) {
+    private static void checkPropertyType( String name, Object value ) {
+        switch ( name ) {
+            case QDataSet.DELTA_MINUS:
+            case QDataSet.DELTA_PLUS: 
+            case QDataSet.BIN_MINUS:
+            case QDataSet.BIN_PLUS:
+            case QDataSet.WEIGHTS:
                 if ( value!=null && !( value instanceof QDataSet ) ) {
                     logger.warning( String.format( "AbstractDataSet.checkPropertyType: %s is not a QDataSet (%s)", name, value.toString() ) );
                 }
-            }
-        }
-        if ( name.equals(QDataSet.DEPEND_0) ) {
-            if ( value!=null && !( value instanceof QDataSet ) ) {
-                logger.warning( String.format( "AbstractDataSet.checkPropertyType: %s is not a QDataSet (%s)", name, value.toString() ) );
-            }
-        }
-        if ( name.equals(QDataSet.UNITS) ) {
-            if ( value!=null && !( value instanceof Units ) ) {
-                logger.warning( String.format( "AbstractDataSet.checkPropertyType: %s is not as Unit (%s)", name, value.toString() ) );
-            }
+                return;
+            case QDataSet.DEPEND_0:
+            case QDataSet.DEPEND_1:
+            case QDataSet.DEPEND_2:
+            case QDataSet.DEPEND_3:
+            case QDataSet.BUNDLE_0:
+            case QDataSet.BUNDLE_1:
+            case QDataSet.BUNDLE_2:
+            case QDataSet.BUNDLE_3:
+                if ( value!=null && !( value instanceof QDataSet ) ) {
+                    logger.warning( String.format( "AbstractDataSet.checkPropertyType: %s is not a QDataSet (%s)", name, value.toString() ) );
+                }
+                return;
+            case QDataSet.UNITS:
+                if ( value!=null && !( value instanceof Units ) ) {
+                    logger.warning( String.format( "AbstractDataSet.checkPropertyType: %s is not a Unit (%s)", name, value.toString() ) );
+                }
+                return;
+            case QDataSet.NAME:
+            case QDataSet.LABEL:
+            case QDataSet.TITLE:
+            case QDataSet.FORMAT:
+            case QDataSet.SCALE_TYPE:
+            case QDataSet.METADATA_MODEL:
+            case QDataSet.BINS_0:
+            case QDataSet.BINS_1:
+                if ( value!=null && !( value instanceof String ) ) {
+                    logger.warning( String.format( "AbstractDataSet.checkPropertyType: %s is not a String (%s)", name, value.toString() ) );
+                }
+                return;
+            case QDataSet.VALID_MIN:
+            case QDataSet.VALID_MAX:
+            case QDataSet.TYPICAL_MIN:
+            case QDataSet.TYPICAL_MAX:
+            case QDataSet.FILL_VALUE:
+                if ( value!=null && !( value instanceof Number ) ) {
+                    logger.warning( String.format( "AbstractDataSet.checkPropertyType: %s is not a Number (%s)", name, value.toString() ) );
+                }
+                return;                
+            case QDataSet.USER_PROPERTIES:
+            case QDataSet.METADATA:
+                if ( value!=null && !( value instanceof Map ) ) {
+                    logger.warning( String.format( "AbstractDataSet.checkPropertyType: %s is not a Map (%s)", name, value.toString() ) );
+                }
+                return;                
+            case QDataSet.QUBE:
+                if ( value!=null && !( value instanceof Boolean ) ) {
+                    logger.warning( String.format( "AbstractDataSet.checkPropertyType: %s is not a Boolean (%s)", name, value.toString() ) );
+                }
+                return;
+            default:
+                return;
         }
     }
 
     @Override
     public void putProperty( String name, Object value ) {
         checkImmutable();
-        checkPropertyType( name, value );
-        properties.put( name, value );
+
+        String propCheckName= name;        
+        int i__= name.indexOf("__");
+        if ( i__>-1 ) {
+            hasIndexedProperties= true;
+            propCheckName= name.substring(0,i__);
+        }
+        if ( value!=null ) checkPropertyType( propCheckName, value );
+        
         if ( name.equals( QDataSet.DEPEND_0 ) && value!=null ) {
             if ( value instanceof QDataSet ) { // BUNDLES can have string value here
                 QDataSet dep0= ((QDataSet)value);
@@ -135,11 +191,15 @@ public abstract class AbstractDataSet implements QDataSet, MutablePropertyDataSe
                 }
             }
         }
+
+        properties.put( name, value );
+        
     }
     
     @Override
     public void putProperty( String name, int index, Object value ) {
         checkImmutable();
+        hasIndexedProperties= true;
         properties.put( name + "__" + index, value );
     }
 
