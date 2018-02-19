@@ -42,10 +42,6 @@ import java.awt.image.BufferedImage;
 import java.awt.image.IndexColorModel;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.text.ParseException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -537,6 +533,12 @@ public class SeriesRenderer extends Renderer {
             if (lp == null) {
                 return 0;
             }
+            Rectangle b= lp.getBounds();
+            Rectangle canvasRect= getParent().getCanvas().getBounds();
+            if ( !b.intersects(canvasRect) ) {
+                logger.log(Level.FINE, "all data is off-page" );
+                return 0;
+            }
             g.draw(lp);
             return lastIndex - firstIndex;
         }
@@ -667,6 +669,14 @@ public class SeriesRenderer extends Renderer {
             if (lpath1 == null) {
                 return 0;
             }
+            Rectangle b= lpath1.getBounds();
+            Rectangle canvasRect= getParent().getCanvas().getBounds();
+            long t= ( System.currentTimeMillis()-t0  );
+            if ( !b.intersects(canvasRect) ) {
+                logger.log(Level.FINE, "all data is off-page ({0}ms)", ( t-t0  ) );
+                return 0;
+            }
+                    
             //dumpPath();
             psymConnector.draw(g, lpath1, (float)lineWidth);
             logger.log(Level.FINE, "done connector render ({0}ms)", ( System.currentTimeMillis()-t0  ) );
@@ -958,6 +968,13 @@ public class SeriesRenderer extends Renderer {
         @Override
         public int render(Graphics2D g, DasAxis xAxis, DasAxis yAxis, QDataSet vds, ProgressMonitor mon) {
             if ( fillToRefPath1==null ) {
+                return 0;
+            }
+            
+            Rectangle b= fillToRefPath1.getBounds();
+            Rectangle canvasRect= getParent().getCanvas().getBounds();
+            if ( !b.intersects(canvasRect) ) {
+                logger.log(Level.FINE, "all data is off-page" );
                 return 0;
             }
             //g.setRenderingHint( RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE );
