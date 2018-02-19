@@ -229,7 +229,20 @@ public class PropertyEditor extends JComponent {
                     JOptionPane.showMessageDialog( table, "No items selected" );
                     return;
                 } else if (selected.length == 1) {
-                    p = new PropertyEditor(node.getValue());
+                    if ( node instanceof IndexedPropertyTreeNode ) {
+                        IndexedPropertyTreeNode inode= (IndexedPropertyTreeNode)node;
+                        ArrayList kids= Collections.list( inode.children() );
+                        java.util.List<Object> peers = new ArrayList(selected.length);
+                        Object leader= ((PropertyTreeNode) kids.get(0) ).getValue();
+                        for (int i = 0; i < kids.size(); i++) {
+                            Object peer= ((PropertyTreeNode) kids.get(i) ).getValue();
+                            if ( leader.getClass().isInstance(peer) ) peers.add(peer);
+                        }
+                        p = createPeersEditor( leader, peers.toArray() );
+                        
+                    } else {
+                        p = new PropertyEditor(node.getValue());
+                    }
                 } else {
                     int ileader= table.getSelectedRow();
                     java.util.List<Object> peers = new ArrayList(selected.length);
