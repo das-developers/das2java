@@ -11,6 +11,8 @@ package org.das2.qds;
 
 import java.lang.reflect.Array;
 import java.util.Map;
+import org.das2.datum.Units;
+import org.das2.datum.UnitsUtil;
 
 /**
  * rank 0,1,2,3 or 4 dataset backed by float array (4 byte real numbers).
@@ -389,6 +391,11 @@ public final class FDataSet extends ArrayDataSet {
      */
     @Override
     public void putProperty(String name, Object value) {
+        if ( name.equals(QDataSet.UNITS) ) {
+            if ( UnitsUtil.isTimeLocation( (Units)value ) ) {
+                logger.warning("float array is being used to store times, which typically lacks sufficient resolution to represent data.");
+            }
+        }
         super.putProperty(name, value);
         if ( name.equals(QDataSet.FILL_VALUE) ) checkFill(); // because of rounding errors
     }
