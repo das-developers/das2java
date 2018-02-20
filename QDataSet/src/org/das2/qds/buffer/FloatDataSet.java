@@ -45,7 +45,7 @@ public class FloatDataSet extends BufferDataSet implements WritableDataSet {
             if ( UnitsUtil.isTimeLocation( (Units)value ) ) {
                 logger.warning("floats are being used to store times, which typically lacks sufficient resolution to represent data.");
             }
-        }
+        } 
         super.putProperty(name, value);
         //if ( name.equals(QDataSet.FILL_VALUE) ) checkFill(); // because of rounding errors
     }

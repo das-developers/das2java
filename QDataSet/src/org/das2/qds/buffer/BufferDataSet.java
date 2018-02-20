@@ -37,7 +37,7 @@ import org.das2.qds.ops.Ops;
  */
 public abstract class BufferDataSet extends AbstractDataSet implements WritableDataSet {
 
-    protected static final Logger logger= LoggerManager.getLogger( "qdataset.bufferdataset" );
+    protected static final Logger logger= LoggerManager.getLogger( "qdataset.bufferdataset" ); 
     
     int rank;
     int len0;
