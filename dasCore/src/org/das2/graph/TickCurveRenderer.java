@@ -42,6 +42,8 @@ import org.das2.datum.DatumRange;
 import org.das2.datum.DatumVector;
 import org.das2.datum.DomainDivider;
 import org.das2.datum.DomainDividerUtil;
+import org.das2.datum.TimeUtil;
+import org.das2.datum.UnitsUtil;
 import static org.das2.graph.ContoursRenderer.PROP_LINETHICK;
 import org.das2.qds.DDataSet;
 import org.das2.qds.DataSetOps;
@@ -137,6 +139,7 @@ public final class TickCurveRenderer extends Renderer {
         this.color= getColorControl( CONTROL_KEY_COLOR, color );
         this.fontSize= getControl( CONTROL_KEY_FONT_SIZE, fontSize );
         this.tickLength= getControl(CONTROL_TICK_LENGTH, tickLength );
+        this.tickSpacing= getControl( PROP_TICKSPACING, tickSpacing );
         update();
     }
     
@@ -147,6 +150,7 @@ public final class TickCurveRenderer extends Renderer {
         controls.put( CONTROL_KEY_COLOR, encodeColorControl(color) );
         controls.put( CONTROL_KEY_FONT_SIZE, fontSize );
         controls.put( CONTROL_TICK_LENGTH, tickLength );
+        controls.put( PROP_TICKSPACING, tickSpacing );
         return Renderer.formatControl(controls);
     }
     
@@ -616,7 +620,7 @@ public final class TickCurveRenderer extends Renderer {
         if ( tds==null ) {
             tds= DataSetOps.unbundle( ds3, 0 );
         }
-
+        
 
         xunits= SemanticOps.getUnits(xds);
         yunits= SemanticOps.getUnits(yds);
