@@ -1,8 +1,10 @@
 package org.das2.qds.buffer;
 
 import java.nio.ByteBuffer;
+import org.das2.datum.Units;
+import org.das2.datum.UnitsUtil;
 import org.das2.qds.FloatReadAccess;
-import org.das2.qds.LongReadAccess;
+import org.das2.qds.QDataSet;
 import org.das2.qds.WritableDataSet;
 
 public class FloatDataSet extends BufferDataSet implements WritableDataSet {
@@ -31,6 +33,23 @@ public class FloatDataSet extends BufferDataSet implements WritableDataSet {
         return back.getFloat(offset(i0, i1, i2,i3));
     }
 
+    /**
+     * check for fill as well, since often numerical noise will corrupt 
+     * the fill values.
+     * @param name the property name
+     * @param value the property value
+     */
+    @Override
+    public void putProperty(String name, Object value) {
+        if ( name.equals(QDataSet.UNITS) ) {
+            if ( UnitsUtil.isTimeLocation( (Units)value ) ) {
+                logger.warning("floats are being used to store times, which typically lacks sufficient resolution to represent data.");
+            }
+        }
+        super.putProperty(name, value);
+        //if ( name.equals(QDataSet.FILL_VALUE) ) checkFill(); // because of rounding errors
+    }
+    
     public void putValue(double d) {
         ensureWritable();
         back.putFloat( offset(), (float)d );
