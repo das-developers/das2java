@@ -10262,6 +10262,7 @@ public class Ops {
                 continue;
             }
             QDataSet tt1= (QDataSet)ds.property( QDataSet.DEPEND_0 );
+            if ( tt1==null ) throw new IllegalArgumentException("dataset (number "+(iarg+1) +" of "+dss.length + ") sent to synchronize doesn't have timetags: "+ds );
             QDataSet ff;
             try {
                 ff= findex( tt1, tt );
