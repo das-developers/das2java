@@ -10264,8 +10264,11 @@ public class Ops {
             }
             QDataSet tt1= (QDataSet)ds.property( QDataSet.DEPEND_0 );
             if ( tt1==null ) throw new IllegalArgumentException("dataset (number "+(iarg+1) +" of "+dss.length + ") sent to synchronize doesn't have timetags: "+ds );
+            if ( tt1.length()!=ds.length() ) throw new IllegalArgumentException("malformed dataset (number "+(iarg+1) +" of "+dss.length + ") DEPEND_0 length not correct: "+tt1 + " " + ds );
             QDataSet ff;
             try {
+                //Ops.extent(tt1);
+                //Ops.extent(tt);
                 ff= findex( tt1, tt );
             } catch ( IllegalArgumentException ex ) {  // data is not monotonic
                 logger.log(Level.WARNING, "when calling synchronize, DEPEND_0 was not monotonic for dss argument #{0}, using monotonic subset of points", iarg);
