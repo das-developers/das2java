@@ -73,6 +73,7 @@ import org.das2.qds.SemanticOps;
 import org.das2.qds.TransposeRank2DataSet;
 import org.das2.qds.DataSetAnnotations;
 import static org.das2.qds.DataSetUtil.propertyNames;
+import org.das2.qds.IndexGenDataSet;
 import org.das2.qds.IndexListDataSetIterator;
 import org.das2.qds.SortDataSet;
 import org.das2.qds.SparseDataSet;
@@ -2610,16 +2611,16 @@ public class Ops {
     // IDL,Matlab - inspired routines
     /**
      * returns rank 1 dataset with values [0,1,2,...]
+     * This returns an immutable dataset, so that it can
+     * be used in Jython like so: for i in indgen(200000).  Note before
+     * February 2018, this would return a mutable dataset, and now
+     * this returns an IndexGenDataSet, which is immutable.
+     *
      * @param len0
-     * @return
+     * @return 
      */
     public static QDataSet indgen(int len0) {
-        int size = len0;
-        int[] back = new int[size];
-        for (int i = 0; i < size; i++) {
-            back[i] = i;
-        }
-        return IDataSet.wrap(back, 1, len0, 1, 1);
+        return new IndexGenDataSet(len0);
     }
 
     /**

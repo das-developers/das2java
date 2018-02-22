@@ -1,11 +1,3 @@
-/*
- * IndexGenDataSet.java
- *
- * Created on April 1, 2007, 7:55 AM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
 
 package org.das2.qds;
 
@@ -25,6 +17,7 @@ public final class IndexGenDataSet extends AbstractDataSet {
         super();
         this.length= length;
         properties.put( QDataSet.MONOTONIC, Boolean.TRUE );
+        properties.put( QDataSet.FORMAT, "%d" );
     }
 
     @Override
