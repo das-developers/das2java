@@ -5705,7 +5705,13 @@ public class Ops {
         } else {
             switch (type) {
                 case DataSetUtil.PROPERTY_TYPE_QDATASET:
-                    mds.putProperty(name, Ops.dataset(value));
+                    QDataSet arg= Ops.dataset(value);
+                    if ( name.equals("DEPEND_0") ) {
+                        if ( arg.rank()>0 && mds.rank()>0 && arg.length()!=mds.length() ) {
+                            throw new IllegalArgumentException("DEPEND_0 must be the same length as dataset");
+                        }
+                    }
+                    mds.putProperty(name, arg);
                     break;
                 case DataSetUtil.PROPERTY_TYPE_UNITS:
                     if ( value instanceof String ) {
@@ -10246,19 +10252,19 @@ public class Ops {
      * Note that when one of the dataset's DEPEND_0 is not monotonic, a 
      * monotonic subset of its points will be used.
      * Ordinal units use the nearest neighbor interpolation.
-     * @param ds1 the dataset providing timetags, or the timetags themselves.
+     * @param targetDs the dataset providing timetags, or the timetags themselves.
      * @param dss the N datasets to synch up.
      * @return a list of N datasets, synchronized
      * @see #synchronizeNN(org.das2.qds.QDataSet, org.das2.qds.QDataSet...) 
      * @see #synchronize(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      */
-    public static List<QDataSet> synchronize( QDataSet ds1, QDataSet ... dss ) {
-        QDataSet tt= (QDataSet) ds1.property( QDataSet.DEPEND_0 );
-        if ( tt==null && DataSetUtil.isMonotonic(ds1) ) tt= ds1;
+    public static List<QDataSet> synchronize( QDataSet targetDs, QDataSet ... dss ) {
+        QDataSet targetTimes= (QDataSet) targetDs.property( QDataSet.DEPEND_0 );
+        if ( targetTimes==null && DataSetUtil.isMonotonic(targetDs) ) targetTimes= targetDs;
         List<QDataSet> result= new ArrayList<>();
         int iarg=0;
         for ( QDataSet ds : dss ) {
-            if ( ds==ds1 ) {
+            if ( ds==targetDs ) {
                 result.add( ds );
                 continue;
             }
@@ -10269,14 +10275,14 @@ public class Ops {
             try {
                 //Ops.extent(tt1);
                 //Ops.extent(tt);
-                ff= findex( tt1, tt );
+                ff= findex( tt1, targetTimes );
             } catch ( IllegalArgumentException ex ) {  // data is not monotonic
                 logger.log(Level.WARNING, "when calling synchronize, DEPEND_0 was not monotonic for dss argument #{0}, using monotonic subset of points", iarg);
                 QDataSet dsx=Ops.monotonicSubset(ds);
                 logger.log(Level.INFO, "monotonicSubset removes {0} records", (ds.length()-dsx.length()));
                 ds= dsx;
                 tt1= (QDataSet)ds.property( QDataSet.DEPEND_0 );
-                ff= findex( tt1, tt );
+                ff= findex( tt1, targetTimes );
             }
             boolean nn= UnitsUtil.isOrdinalMeasurement( SemanticOps.getUnits(ds) );
             if ( nn ) ff= Ops.round(ff);
