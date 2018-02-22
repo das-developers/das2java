@@ -10273,9 +10273,9 @@ public class Ops {
             if ( tt1.length()!=ds.length() ) throw new IllegalArgumentException("malformed dataset (number "+(iarg+1) +" of "+dss.length + ") DEPEND_0 length not correct: "+tt1 + " " + ds );
             QDataSet ff;
             try {
-                //Ops.extent(tt1);
-                //Ops.extent(tt);
-                ff= findex( tt1, targetTimes );
+                Ops.extent(tt1);
+                Ops.extent(targetTimes);
+                ff= findex( tt1, targetTimes ); // TODO: cache ff in case tt1 is the same for each dss.
             } catch ( IllegalArgumentException ex ) {  // data is not monotonic
                 logger.log(Level.WARNING, "when calling synchronize, DEPEND_0 was not monotonic for dss argument #{0}, using monotonic subset of points", iarg);
                 QDataSet dsx=Ops.monotonicSubset(ds);
@@ -10292,8 +10292,10 @@ public class Ops {
                 tlimit= Ops.multiply( tlimit, Ops.dataset(1.5) );
                 Number fillValue= (Number) ds.property(QDataSet.FILL_VALUE);
                 if ( fillValue==null ) fillValue= Double.NaN;
-                QDataSet tcel= Ops.applyIndex(tt1,Ops.ceil(ff));
-                QDataSet tflr= Ops.applyIndex(tt1,Ops.floor(ff));
+                QDataSet iceil= Ops.lesserOf( Ops.ceil(ff), tt1.length()-1 ); // TODO: rewrite this as stream to save memory.
+                QDataSet tcel= Ops.applyIndex(tt1,iceil);
+                QDataSet iflr= Ops.greaterOf( Ops.floor(ff), 0 );
+                QDataSet tflr= Ops.applyIndex(tt1,iflr);
                 QDataSet tdff= Ops.subtract( tcel,tflr );
                 QDataSet r= Ops.where( Ops.gt( tdff, tlimit ) );
                 ds= Ops.putValues( ds, r, fillValue );
