@@ -670,6 +670,8 @@ public class SeriesRenderer extends Renderer {
                 return 0;
             }
             Rectangle b= lpath1.getBounds();
+            if ( b.height==0 ) b.height=1; // horizontal points
+            if ( b.width==1 ) b.width=1; //vertical points
             Rectangle canvasRect= getParent().getCanvas().getBounds();
             long t= ( System.currentTimeMillis()-t0  );
             if ( !b.intersects(canvasRect) ) {
