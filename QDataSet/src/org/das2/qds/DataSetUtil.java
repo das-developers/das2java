@@ -2436,6 +2436,7 @@ public class DataSetUtil {
                 result.append(name).append("=");
             }
             if ( format!=null && format.trim().length()>0 ) {
+                FormatStringFormatter fsf= new FormatStringFormatter( format, true );
                 if ( u!=null ) {
                     if ( UnitsUtil.isTimeLocation(u) ) {
                         double millis= u.convertDoubleTo(Units.t1970, ds.value() );
@@ -2443,11 +2444,10 @@ public class DataSetUtil {
                         cal.setTimeInMillis( (long)millis ); // TODO: check how to specify to nanos.
                         result.append( String.format(Locale.US,format,cal) );
                     } else {
-                        result.append( String.format(Locale.US,format,ds.value()) );
-                        if ( u!=Units.dimensionless ) result.append( " " ).append(u.toString());
+                        result.append( fsf.format( DataSetUtil.asDatum(ds) ) );
                     }
                 } else {
-                    result.append( String.format(Locale.US,format,ds.value()) );
+                    result.append( fsf.format( DataSetUtil.asDatum(ds) ) );
                 }
             } else {
                 if ( u!=null ) {
