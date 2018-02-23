@@ -577,6 +577,13 @@ public final class TickCurveRenderer extends Renderer {
 
     private final Object PEN_UP= "penup";
     private final Object PEN_DOWN= "pendown";
+
+    @Override
+    public void setDataSet(QDataSet ds) {
+        super.setDataSet(ds); 
+        this.tickv= null;
+    }
+    
     
     @Override
     public void render(java.awt.Graphics g1, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
