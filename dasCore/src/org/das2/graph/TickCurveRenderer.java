@@ -52,6 +52,7 @@ import org.das2.qds.JoinDataSet;
 import org.das2.qds.QDataSet;
 import org.das2.qds.SemanticOps;
 import org.das2.qds.ops.Ops;
+import org.das2.util.LoggerManager;
 
 /**
  * Renderer showing ticks along a curve, useful for orbits.  Note this renderer
@@ -60,6 +61,8 @@ import org.das2.qds.ops.Ops;
  * @author  jbf
  */
 public final class TickCurveRenderer extends Renderer {
+    
+    protected static final Logger logger= LoggerManager.getLogger("das2.graphics.renderer.tickCurveRenderer");
     
     TickVDescriptor tickv;
     TickVDescriptor manualTickV=null;
@@ -787,6 +790,7 @@ public final class TickCurveRenderer extends Renderer {
      *
      */
     public void setTickStyle(TickStyle tickStyle) {
+        logger.log(Level.CONFIG, "setTickStyle({0})", tickStyle);
         this.tickStyle = tickStyle;
         invalidateParentCacheImage();
     }
@@ -810,6 +814,7 @@ public final class TickCurveRenderer extends Renderer {
      * @param tickSpacing 
      */
     public void setTickSpacing(String tickSpacing) {
+        logger.log(Level.CONFIG, "setTickSpacing({0})", tickSpacing);
         String oldTickSpacing = this.tickSpacing;
         this.tickSpacing = tickSpacing;
         ticksDivider= null;
