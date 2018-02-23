@@ -1241,6 +1241,9 @@ public class DatumRangeUtil {
                 i= i-1;
             }
             
+            if ( ts1lsd!=ts2lsd && beforeTo ) {
+                throw new ParseException( "expected to find \"to\" when hours are specified", 0 );
+            }
             
             if ( ts1lsd != ts2lsd && ( ts1lsd<HOUR || ts2lsd<HOUR ) ) {
                 throw new ParseException( "resolution mismatch: "+digitIdentifiers[ts1lsd]+" specified for start, but "
