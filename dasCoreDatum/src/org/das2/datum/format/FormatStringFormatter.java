@@ -16,7 +16,8 @@ import org.das2.datum.UnitsUtil;
 /**
  * This is based on the C-style format strings introduced in Java 5 that
  * we can now use.  Note this should not be used for times.  In the future this
- * may be supported.  
+ * may be supported.  TODO: See Autoplot's DataSetUtil.toString, which shows
+ * use with Calendar objects.
  * @author jbf
  */
 public class FormatStringFormatter extends DefaultDatumFormatter {
@@ -39,20 +40,26 @@ public class FormatStringFormatter extends DefaultDatumFormatter {
         this.format= formatStr;
         this.units= units;
 
-        // attempt to use the string
-        try {
-            String s= String.format( format, 0. );
+        if ( formatStr.equals("%d") ) { // see if we can avoid the exception by checking for this case.
+            String s= String.format( format, 0 );
             logger.log( Level.FINEST, "format string results in {0}", s);
-            integer= false;
-        }  catch ( IllegalFormatException ex ) {
             integer= true;
+        } else {
+            // attempt to use the string
+            try {
+                String s= String.format( format, 0. );
+                logger.log( Level.FINEST, "format string results in {0}", s);
+                integer= false;
+            }  catch ( IllegalFormatException ex ) {
+                integer= true;
+            }
         }
     }
 
     @Override
     public String format(Datum datum) {
         String s= format( datum, datum.getUnits() );
-        if ( units ) {
+        if ( units && datum.getUnits()!=Units.dimensionless ) {
             s+= " " + datum.getUnits().toString();
         }
         return s;
