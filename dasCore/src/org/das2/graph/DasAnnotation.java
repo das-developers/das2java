@@ -34,6 +34,7 @@ import org.das2.datum.DatumRangeUtil;
 import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.LoggerManager;
 import org.das2.datum.Units;
+import org.das2.datum.UnitsUtil;
 
 /**
  * This makes a DasCanvasComponent for GrannyTextRenderer, and 
@@ -394,10 +395,14 @@ public class DasAnnotation extends DasCanvasComponent {
             if ( plot!=null ) {
                 try {
                     headx= (int)plot.getXAxis().transform(pointAtX);
+                } catch ( InconvertibleUnitsException ex ) {
+                    headx= (int)plot.getXAxis().transform(pointAtX.value(),plot.getXAxis().getUnits());
+                }
+                try {
                     heady= (int)plot.getYAxis().transform(pointAtY);
                 } catch ( InconvertibleUnitsException ex ) {
-                
-                }
+                    heady= (int)plot.getYAxis().transform(pointAtY.value(),plot.getYAxis().getUnits());
+                }                    
                 r.add( headx, heady );
             }
         }
@@ -466,9 +471,13 @@ public class DasAnnotation extends DasCanvasComponent {
             if ( plot!=null ) {
                 try {
                     headx= (int)plot.getXAxis().transform(pointAtX);
+                } catch ( InconvertibleUnitsException ex ) {
+                    headx= (int)plot.getXAxis().transform(pointAtX.value(),plot.getXAxis().getUnits());
+                }   
+                try {
                     heady= (int)plot.getYAxis().transform(pointAtY);
                 } catch ( InconvertibleUnitsException ex ) {
-                
+                    heady= (int)plot.getYAxis().transform(pointAtY.value(),plot.getYAxis().getUnits());
                 }   
             }
             
@@ -564,12 +573,22 @@ public class DasAnnotation extends DasCanvasComponent {
                 try {
                     anchorRect.x= (int)(plot.getXAxis().transform( pointAtX ) );
                 } catch ( InconvertibleUnitsException ex ) {
-                    anchorRect.x= getColumn().getDMiddle();
+                    if ( pointAtX.getUnits()==Units.dimensionless && UnitsUtil.isRatioMeasurement(plot.getXAxis().getUnits())  ) {
+                        anchorRect.x= (int)(plot.getXAxis().transform( pointAtX.value(), plot.getXAxis().getUnits() ) );
+                    } else {
+                        logger.info("unable to convert x units for annotation");
+                        anchorRect.x= getColumn().getDMiddle();
+                    }
                 }
                 try {
                     anchorRect.y= (int)(plot.getYAxis().transform( pointAtY ) );
                 } catch ( InconvertibleUnitsException ex ) {
-                    anchorRect.y= getRow().getDMiddle();
+                    if ( pointAtY.getUnits()==Units.dimensionless && UnitsUtil.isRatioMeasurement(plot.getYAxis().getUnits()) ) {
+                        anchorRect.y= (int)(plot.getYAxis().transform( pointAtY.value(), plot.getYAxis().getUnits() ) );
+                    } else {
+                        logger.info("unable to convert y units for annotation");
+                        anchorRect.y= getRow().getDMiddle();
+                    }
                 }
                 anchorRect.width= 1;
                 anchorRect.height= 1;
@@ -584,8 +603,20 @@ public class DasAnnotation extends DasCanvasComponent {
                     }
                     anchorRect.width= x1- anchorRect.x;
                 } catch ( InconvertibleUnitsException ex ) {
-                    anchorRect.x= getColumn().getDMinimum();
-                    anchorRect.width= getColumn().getWidth();
+                    if ( xrange.getUnits()==Units.dimensionless && UnitsUtil.isRatioMeasurement(plot.getXAxis().getUnits())  ) {
+                        anchorRect.x= (int)(plot.getXAxis().transform(xrange.min().value(),plot.getXAxis().getUnits()));
+                        int x1= (int)(plot.getXAxis().transform(xrange.max().value(),plot.getXAxis().getUnits()));
+                        if ( x1<anchorRect.x ) {
+                            int t= anchorRect.x;
+                            anchorRect.x= x1;
+                            x1= t;
+                        }                
+                        anchorRect.width= x1- anchorRect.x;
+                    } else {
+                        logger.info("unable to convert units for annotation");
+                        anchorRect.x= getColumn().getDMinimum();
+                        anchorRect.width= getColumn().getWidth();
+                    }
                 }
                 try {
                     anchorRect.y= (int)(plot.getYAxis().transform(yrange.min()));
@@ -597,8 +628,20 @@ public class DasAnnotation extends DasCanvasComponent {
                     }
                     anchorRect.height= y1- anchorRect.y;
                 } catch ( InconvertibleUnitsException ex ) {
-                    anchorRect.y= getRow().getDMinimum();
-                    anchorRect.height= getRow().getHeight();
+                    if ( yrange.getUnits()==Units.dimensionless && UnitsUtil.isRatioMeasurement(plot.getYAxis().getUnits())  ) {
+                        anchorRect.y= (int)(plot.getYAxis().transform(yrange.min().value(),plot.getYAxis().getUnits()));
+                        int y1= (int)(plot.getYAxis().transform(yrange.max().value(),plot.getYAxis().getUnits()));
+                        if ( y1<anchorRect.y ) {
+                            int t= anchorRect.y;
+                            anchorRect.y= y1;
+                            y1= t;
+                        }                
+                        anchorRect.height= y1- anchorRect.y;
+                    } else {
+                        logger.info("unable to convert units for annotation");
+                        anchorRect.y= getRow().getDMinimum();
+                        anchorRect.height= getRow().getHeight();
+                    }
                 }
             }
             
