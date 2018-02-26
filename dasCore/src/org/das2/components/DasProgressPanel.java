@@ -38,6 +38,8 @@ import org.das2.graph.DasCanvasComponent;
 import org.das2.system.DasLogger;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.text.DecimalFormat;
@@ -460,6 +462,8 @@ public class DasProgressPanel implements ProgressMonitor {
             }
         };
         SwingUtilities.invokeLater(run);
+        
+        propertyChangeSupport.firePropertyChange( PROP_FINISHED, false, true );
     }
 
     /* ProgressMonitor interface */
@@ -705,7 +709,17 @@ public class DasProgressPanel implements ProgressMonitor {
     public boolean isVisible() {
         return (!componentsInitialized || thePanel.isVisible());
     }
+    
+    public final static String PROP_STARTED="started";
 
+    public final static String PROP_FINISHED="finished";
+    
+    /**
+     * true if the task is cancelled.  Note cancelled will be set
+     * before finished.
+     */
+    public final static String PROP_CANCELLED="cancelled";
+    
     @Override
     public void started() {
         taskStartedTime = System.currentTimeMillis();
@@ -731,6 +745,8 @@ public class DasProgressPanel implements ProgressMonitor {
             setVisible(true);
         }
 
+        propertyChangeSupport.firePropertyChange( PROP_STARTED, false, true );
+        
         // cancel() might have been called before we got here, so check it.
         if (isCancelled)
             return;
@@ -742,6 +758,9 @@ public class DasProgressPanel implements ProgressMonitor {
     public void cancel() {
         //logger.finest("cancel "+ Integer.toHexString( this.hashCode() ) );
         isCancelled = true;
+        
+        propertyChangeSupport.firePropertyChange( PROP_CANCELLED, false, true );
+        
         finished();
     }
 
@@ -801,4 +820,23 @@ public class DasProgressPanel implements ProgressMonitor {
     public boolean isFinished() {
         return finished;
     }
+    
+    private transient final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.addPropertyChangeListener(listener);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.removePropertyChangeListener(listener);
+    }
+    
+    public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+        propertyChangeSupport.addPropertyChangeListener(propertyName, listener);
+    }    
+
+    public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+        propertyChangeSupport.removePropertyChangeListener(propertyName, listener);
+    }
+
 }
