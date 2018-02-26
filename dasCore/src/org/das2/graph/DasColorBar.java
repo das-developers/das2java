@@ -192,13 +192,10 @@ public class DasColorBar extends DasAxis {
             if (isHorizontal()) {
                 image = type.getHorizontalScaledImage(width, height);
             } else {
-                image = type.getVerticalScaledImage(width, height);
+                image = type.getVerticalScaledImage(width, height+1);
             }
             //}
             g.translate(-getX(), -getY());
-            if (!isHorizontal()) {
-                y++;
-            }
             try {
                 g.drawImage(image, x, y, this);
             } catch ( ClassCastException ex ) {
