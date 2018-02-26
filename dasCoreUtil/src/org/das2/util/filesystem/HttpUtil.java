@@ -176,6 +176,8 @@ public final class HttpUtil {
         if (urlConnection instanceof HttpURLConnection) {
             HttpURLConnection huc = (HttpURLConnection) urlConnection;
             huc.setInstanceFollowRedirects(true);
+            huc.setConnectTimeout( FileSystem.settings().getConnectTimeoutMs() );
+            huc.setReadTimeout( FileSystem.settings().getReadTimeoutMs() );
             loggerUrl.log(Level.FINEST, "getResponseCode {0}", urlConnection.getURL());
             int responseCode = huc.getResponseCode();
             if (responseCode == HttpURLConnection.HTTP_MOVED_PERM || responseCode == HttpURLConnection.HTTP_MOVED_TEMP || responseCode == HttpURLConnection.HTTP_SEE_OTHER) {
