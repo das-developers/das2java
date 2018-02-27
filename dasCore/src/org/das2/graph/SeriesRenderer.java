@@ -788,9 +788,12 @@ public class SeriesRenderer extends Renderer {
 
             if (histogram) {
                 double dx= xSampleWidthExact;
+                x=  (double) xds.value(index);
                 double fx1 = midPointData( xAxis, x, xUnits, dx, logStep, -0.5 );
+                fx1= xuc.convert(fx1);
                 newPath.addDataPoint( true, fx1, y );
                 double fx2 = midPointData( xAxis, x, xUnits, dx, logStep, +0.5 );
+                fx2= xuc.convert(fx2);
                 newPath.addDataPoint( true, fx2, y );
             } else {
                 newPath.addDataPoint( true, x, y );
@@ -820,9 +823,12 @@ public class SeriesRenderer extends Renderer {
                 if ( isValid || notInvalidInterleave ) {
                     if ( histogram ) {
                         double dx= xSampleWidthExact;
+                        x=  (double) xds.value(index);                
                         double fx1 = midPointData( xAxis, x, xUnits, dx, logStep, -0.5 );
+                        fx1= xuc.convert(fx1);
                         newPath.addDataPoint( true, fx1, y );
                         double fx2 = midPointData( xAxis, x, xUnits, dx, logStep, +0.5 );
+                        fx2= xuc.convert(fx2);
                         newPath.addDataPoint( true, fx2, y );
                     } else {
                         newPath.addDataPoint( isValid, x, y );
@@ -1095,6 +1101,7 @@ public class SeriesRenderer extends Renderer {
                             // draw connect-a-dot between last valid and here
                             if (histogram) {
                                 //System.err.println("fill: "+index);
+                                Units.cdfTT2000.createDatum(x);
                                 double fx1= xAxis.transform( midPointData( xAxis, x, xUnits, xSampleWidthExact, logStep, -0.5 ), xUnits );
                                 //double fx1 = (fx0 + fx) / 2; //sloppy with ratiometric spacing
                                 fillPath.lineTo(fx1, fy0);
