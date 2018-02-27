@@ -42,7 +42,6 @@ import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.TimeLocationUnits;
 import org.das2.DasProperties;
 import org.das2.util.GrannyTextRenderer;
-import org.das2.util.DasExceptionHandler;
 import org.das2.util.DasMath;
 import org.das2.DasApplication;
 import java.awt.*;
@@ -79,7 +78,6 @@ import org.das2.qds.JoinDataSet;
 import org.das2.qds.QDataSet;
 import org.das2.qds.QFunction;
 import org.das2.qds.SemanticOps;
-import org.das2.qds.ops.Ops;
 
 /** 
  * One dimensional axis component that transforms data to device space and back, 
@@ -123,7 +121,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     private static final String SCAN_PREVIOUS_LABEL = "<< step";
     private static final String SCAN_NEXT_LABEL = "step >>";
 
-    // these cannot be set to positive because it pushes the titles out.  This needs to be done with care and it's 5:15pm on release day!  DEBUG_GRAPHICS needs to be an environment variable, or just a switch.
+    // these cannot be set to positive because it pushes the titles out.  This 
+    // needs to be done with care and it's 5:15pm on release day!  DEBUG_GRAPHICS 
+    // needs to be an environment variable, or just a switch.
     int downPad=0; // TODO: if we had the graphics, we could get this perfectly, but it doesn't hurt to have extra pixels.
     int leftPad=0;
     int upPad=0;
@@ -273,9 +273,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     public static final String PROPERTY_DATUMRANGE = "datumRange";
     /* DEBUGGING INSTANCE MEMBERS */
     
-	private static final boolean DEBUG_GRAPHICS = true;
+    private static final boolean DEBUG_GRAPHICS = false;
     
-	private static final Color[] DEBUG_COLORS;
+    private static final Color[] DEBUG_COLORS;
 
     int tickLen= 0; // this is reset after sizing.
 
