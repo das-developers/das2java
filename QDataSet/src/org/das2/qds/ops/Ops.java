@@ -10048,6 +10048,7 @@ public class Ops {
         double accumDep0=0;
         QDataSet dep0ds= (QDataSet) ds.property(QDataSet.DEPEND_0);
         Units units;
+        UnitsConverter uc= null;
         if ( accumDs==null ) {
             accumDep0= dep0ds!=null ? dep0ds.value(0) : 0;
             units= Units.dimensionless;
@@ -10056,14 +10057,19 @@ public class Ops {
             accumDep0Ds= (QDataSet) accumDs.property( QDataSet.CONTEXT_0 );
             if ( accumDep0Ds!=null ) accumDep0= accumDep0Ds.value(); else accumDep0=0;
             units= SemanticOps.getUnits(accumDs);
+            Units ddUnits= SemanticOps.getUnits(ds);
+            uc= UnitsConverter.getConverter( ddUnits, units.getOffsetUnits() );
         } else if ( accumDs.rank()==1 ) {
             accum= accumDs.value(accumDs.length()-1);
             accumDep0Ds= (QDataSet)  accumDs.property( QDataSet.DEPEND_0 );
             if ( accumDep0Ds!=null ) accumDep0= accumDep0Ds.value(accumDs.length()); else accumDep0=0;
             units= SemanticOps.getUnits(accumDs);
+            Units ddUnits= SemanticOps.getUnits(ds);
+            uc= UnitsConverter.getConverter( ddUnits, units.getOffsetUnits() );
         } else {
             throw new IllegalArgumentException("accumDs must be rank 0 or rank 1");
         }
+        if ( uc==UnitsConverter.IDENTITY ) uc=null;        
         WritableDataSet result= zeros( ds );
         result.putProperty( QDataSet.UNITS, units );
         DDataSet dep0= null;
@@ -10072,7 +10078,8 @@ public class Ops {
             DataSetUtil.putProperties( DataSetUtil.getProperties(dep0ds), dep0 );
         }
         for ( int i=0; i<result.length(); i++ ) {
-            accum+= ds.value(i);
+            double d= ds.value(i);
+            accum+= uc==null ?  d: uc.convert(d);
             result.putValue(i,accum);
             if ( dep0ds!=null ) {
                 assert dep0!=null;
