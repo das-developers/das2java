@@ -724,7 +724,7 @@ public class SeriesRenderer extends Renderer {
 
             long t0= System.currentTimeMillis();
             
-            DataGeneralPathBuilder newPath= new DataGeneralPathBuilder(xAxis,yAxis);
+            DataGeneralPathBuilder pathBuilder= new DataGeneralPathBuilder(xAxis,yAxis);
             
             Datum sw = null;
             try {// TODO: this really shouldn't be here, since we calculate it once.
@@ -757,9 +757,9 @@ public class SeriesRenderer extends Renderer {
                 }
                 
                 if ( cadenceGapCount>(wds.length()/2) ) {
-                    newPath.setCadence( null );
+                    pathBuilder.setCadence( null );
                 } else {
-                    newPath.setCadence( sw );
+                    pathBuilder.setCadence( sw );
                 }
             } else {
                 xSampleWidth= 1e37; // something really big
@@ -784,19 +784,20 @@ public class SeriesRenderer extends Renderer {
             x = xuc.convert( (double) xds.value(index) );
             y = yuc.convert( (double) vds.value(index) );
 
-            newPath.addDataPoint( true, x, y );
+            pathBuilder.addDataPoint( true, x, y );
 
             if (histogram) {
                 double dx= xSampleWidthExact;
                 x=  (double) xds.value(index);
+                xUnits.createDatum(x);
                 double fx1 = midPointData( xAxis, x, xUnits, dx, logStep, -0.5 );
                 fx1= xuc.convert(fx1);
-                newPath.addDataPoint( true, fx1, y );
+                pathBuilder.addDataPoint( true, fx1, y );
                 double fx2 = midPointData( xAxis, x, xUnits, dx, logStep, +0.5 );
                 fx2= xuc.convert(fx2);
-                newPath.addDataPoint( true, fx2, y );
+                pathBuilder.addDataPoint( true, fx2, y );
             } else {
-                newPath.addDataPoint( true, x, y );
+                pathBuilder.addDataPoint( true, x, y );
             }
 
             index++;
@@ -826,12 +827,12 @@ public class SeriesRenderer extends Renderer {
                         x=  (double) xds.value(index);                
                         double fx1 = midPointData( xAxis, x, xUnits, dx, logStep, -0.5 );
                         fx1= xuc.convert(fx1);
-                        newPath.addDataPoint( true, fx1, y );
+                        pathBuilder.addDataPoint( true, fx1, y );
                         double fx2 = midPointData( xAxis, x, xUnits, dx, logStep, +0.5 );
                         fx2= xuc.convert(fx2);
-                        newPath.addDataPoint( true, fx2, y );
+                        pathBuilder.addDataPoint( true, fx2, y );
                     } else {
-                        newPath.addDataPoint( isValid, x, y );
+                        pathBuilder.addDataPoint( isValid, x, y );
                     }
                 }
                                 
@@ -843,11 +844,11 @@ public class SeriesRenderer extends Renderer {
             if (!histogram && simplifyPaths && allowSimplify && colorByDataSetId.length()==0 ) {
                 int pathLengthApprox= Math.max( 5, 110 * (lastIndex - firstIndex) / 100 );
                 this.path1= new GeneralPath(GeneralPath.WIND_NON_ZERO, pathLengthApprox );
-                int count = GraphUtil.reducePath20140622(newPath.getPathIterator(), path1, 1, 5 );
+                int count = GraphUtil.reducePath20140622(pathBuilder.getPathIterator(), path1, 1, 5 );
                 logger.fine( String.format("reduce path in=%d  out=%d\n", lastIndex-firstIndex, count) );
             } else {
                 //this.path1 = newPath;
-                this.path1 = newPath.getGeneralPath();
+                this.path1 = pathBuilder.getGeneralPath();
             }
 
             //dumpPath( getParent().getCanvas().getWidth(), getParent().getCanvas().getHeight(), path1 );  // dumps jython script showing problem.
