@@ -613,7 +613,11 @@ public class DasAnnotation extends DasCanvasComponent {
                         }                
                         anchorRect.width= x1- anchorRect.x;
                     } else {
-                        logger.info("unable to convert units for annotation");
+                        if ( xrange.min().getUnits()==Units.dimensionless && xrange.min().value()==0.0 ) {
+                            logger.fine("unable to convert x units for annotation, transitional state");
+                        } else {
+                            logger.info("unable to convert x units for annotation");
+                        }
                         anchorRect.x= getColumn().getDMinimum();
                         anchorRect.width= getColumn().getWidth();
                     }
@@ -638,7 +642,11 @@ public class DasAnnotation extends DasCanvasComponent {
                         }                
                         anchorRect.height= y1- anchorRect.y;
                     } else {
-                        logger.info("unable to convert units for annotation");
+                        if ( xrange.min().getUnits()==Units.dimensionless && xrange.min().value()==0.0 ) {
+                            logger.fine("unable to convert y units for annotation, transitional state");
+                        } else {
+                            logger.info("unable to convert y units for annotation");
+                        }
                         anchorRect.y= getRow().getDMinimum();
                         anchorRect.height= getRow().getHeight();
                     }
