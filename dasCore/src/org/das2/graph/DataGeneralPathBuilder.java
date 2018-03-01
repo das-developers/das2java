@@ -3,6 +3,7 @@ package org.das2.graph;
 
 import java.awt.geom.GeneralPath;
 import java.awt.geom.PathIterator;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.datum.Datum;
 import org.das2.datum.InconvertibleUnitsException;
@@ -22,7 +23,7 @@ import org.das2.datum.UnitsUtil;
  */
 public class DataGeneralPathBuilder {
     
-    private static final Logger logger= LoggerManager.getLogger("das2.graph.renderer");
+    private static final Logger logger= LoggerManager.getLogger("das2.graph.renderer.path");
     
     private final GeneralPath gp;
     private int pointCount=0;
@@ -50,7 +51,7 @@ public class DataGeneralPathBuilder {
         this.yaxis= yaxis;
         this.xunits= xaxis.getUnits();
         this.yunits= yaxis.getUnits();
-        System.err.println( "-----" );
+        logger.fine( "-----" );
     }
 
     /**
@@ -89,7 +90,7 @@ public class DataGeneralPathBuilder {
             logger.fine("here 1");
         }
         if ( lastx>x ) {
-            logger.fine( "data step back: "+ xunits.createDatum(lastx) + " -> " + xunits.createDatum(x) );
+            logger.log(Level.FINE, "data step back: {0} -> {1}", new Object[]{xunits.createDatum(lastx), xunits.createDatum(x)});
         }
         if ( this.cadence>0 && pen==PEN_DOWN ) {
             double step= logStep ? Math.log(x/lastx) :  x-lastx ;
