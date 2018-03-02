@@ -534,6 +534,8 @@ public class SeriesRenderer extends Renderer {
                 return 0;
             }
             Rectangle b= lp.getBounds();
+            if ( b.height==0 ) b.height=1; // horizontal points
+            if ( b.width==0 ) b.width=1; //vertical points            
             Rectangle canvasRect= getParent().getCanvas().getBounds();
             if ( !b.intersects(canvasRect) ) {
                 logger.log(Level.FINE, "all data is off-page" );
@@ -671,7 +673,7 @@ public class SeriesRenderer extends Renderer {
             }
             Rectangle b= lpath1.getBounds();
             if ( b.height==0 ) b.height=1; // horizontal points
-            if ( b.width==1 ) b.width=1; //vertical points
+            if ( b.width==0 ) b.width=1; //vertical points
             Rectangle canvasRect= getParent().getCanvas().getBounds();
             long t= ( System.currentTimeMillis()-t0  );
             if ( !b.intersects(canvasRect) ) {
@@ -981,6 +983,8 @@ public class SeriesRenderer extends Renderer {
             }
             
             Rectangle b= fillToRefPath1.getBounds();
+            if ( b.height==0 ) b.height=1; // horizontal points
+            if ( b.width==0 ) b.width=1; //vertical points
             Rectangle canvasRect= getParent().getCanvas().getBounds();
             if ( !b.intersects(canvasRect) ) {
                 logger.log(Level.FINE, "all data is off-page" );
