@@ -6111,6 +6111,25 @@ public class Ops {
             result= copy(ds);
         }
         
+        // promote rank to match data, if necessary.  
+        if ( result.rank()>1 && indeces.rank()==1 ) { // allow rank 1 indeces to putValues in rank N>1 dataset (promoting rank).
+            DataSetBuilder dsb= new DataSetBuilder(2,indeces.length()*result.length(0),result.rank());
+            Object[] iii= new Object[result.rank()];
+            for ( int i=0; i<indeces.length(); i++ ) {
+                int i0= (int)indeces.value(i);
+                iii[0]= i0;
+                DataSetIterator it= new QubeDataSetIterator(result.slice(i0));
+                while ( it.hasNext() ) {
+                    it.next();
+                    for ( int j=1; j<result.rank(); j++ ) {
+                        iii[j]= it.index(j-1);
+                        dsb.nextRecord(iii);
+                    }
+                }
+            }
+            indeces= dsb.getDataSet();
+        }
+        
         double dvalue= Double.NaN;
         UnitsConverter uc=null;
         if ( value!=null ) {
