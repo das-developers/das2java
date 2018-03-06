@@ -5,16 +5,21 @@
 package org.das2.qds.filters;
 
 import java.lang.ref.WeakReference;
+import java.text.ParseException;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingUtilities;
+import org.das2.datum.Datum;
+import org.das2.datum.Units;
 import org.das2.util.LoggerManager;
 import org.das2.qds.DataSetUtil;
 import org.das2.qds.QDataSet;
+import org.das2.qds.SemanticOps;
 import static org.das2.qds.filters.FilterEditorPanel.PROP_FILTER;
 
 /**
@@ -89,6 +94,11 @@ public class SliceFilterEditorPanel extends AbstractFilterEditorPanel implements
         jLabel2.setText("Slice Dimension:");
 
         sliceAtDatumTF.setText("2000-01-01T00:00:00.000Z");
+        sliceAtDatumTF.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                sliceAtDatumTFActionPerformed(evt);
+            }
+        });
 
         buttonGroup1.add(sliceAtIndexButton);
 
@@ -199,6 +209,10 @@ public class SliceFilterEditorPanel extends AbstractFilterEditorPanel implements
         updateFeedback();
     }//GEN-LAST:event_sliceIndexSpinnerMouseWheelMoved
 
+    private void sliceAtDatumTFActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sliceAtDatumTFActionPerformed
+        updateFeedback();
+    }//GEN-LAST:event_sliceAtDatumTFActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JLabel jLabel1;
@@ -215,7 +229,6 @@ public class SliceFilterEditorPanel extends AbstractFilterEditorPanel implements
         Runnable run= new Runnable() {
             public void run() {
                 int dim= sliceDimensionCB.getSelectedIndex();
-                int index= (Integer)sliceIndexSpinner.getValue();
                 boolean na= true;
                 if ( inputDs!=null ) {
                     QDataSet ds= inputDs.get();
@@ -223,11 +236,31 @@ public class SliceFilterEditorPanel extends AbstractFilterEditorPanel implements
                         QDataSet dep= (QDataSet)ds.property("DEPEND_"+dim);
                         if ( dep!=null && dep.rank()==1 ) {
                             if ( getIndexMode() ) {
+                                int index= (Integer)sliceIndexSpinner.getValue();
                                 String s= DataSetUtil.asDatum( dep.slice(index) ).toString();
                                 sliceAtDatumTF.setText(s);
                                 na= false;
                             } else {
-                                
+                                String t= sliceAtDatumTF.getText();
+                                Units depu= SemanticOps.getUnits(dep);
+                                try {
+                                    if ( t!=null ) {
+                                        Datum dt= depu.parse(t);
+                                        int i= DataSetUtil.closestIndex( dep,dt );
+                                        Object o= sliceIndexSpinner.getValue();
+                                        if ( o!=null && o instanceof Integer ) {
+                                            int i0= ((Integer)o);
+                                            if ( i0!= i ) {
+                                                sliceIndexSpinner.setValue(i);
+                                            }
+                                        } else {
+                                            sliceIndexSpinner.setValue(i);
+                                        }
+                                        
+                                    }
+                                } catch (ParseException ex) {
+                                    Logger.getLogger(SliceFilterEditorPanel.class.getName()).log(Level.SEVERE, null, ex);
+                                }
                             }
                         }
                     }

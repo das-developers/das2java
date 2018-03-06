@@ -111,6 +111,9 @@
       <Properties>
         <Property name="text" type="java.lang.String" value="2000-01-01T00:00:00.000Z"/>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="sliceAtDatumTFActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JRadioButton" name="sliceAtIndexButton">
       <Properties>
