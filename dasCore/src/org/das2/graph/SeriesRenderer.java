@@ -994,9 +994,20 @@ public class SeriesRenderer extends Renderer {
             //g.setRenderingHint( RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE );
             //PathIterator it= fillToRefPath1.getPathIterator(null);
             //dumpPath(it);
-                    
-            g.setColor(fillColor);
-            g.fill(fillToRefPath1);
+
+            if ( fillColor.getAlpha()==0 ) {
+                double y;
+                try {
+                    y= yAxis.transform( reference );
+                } catch ( InconvertibleUnitsException ex ) {
+                    y= yAxis.transform( reference.value(), yAxis.getUnits() );
+                }
+                DasColumn column= getParent().getColumn();
+                g.draw( new java.awt.geom.Line2D.Double( (double)column.getDMinimum(), y, (double)column.getDMaximum(), y ) );
+            } else {
+                g.setColor(fillColor);
+                g.fill(fillToRefPath1);
+            }
             return 0;
         }
 
