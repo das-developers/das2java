@@ -198,12 +198,22 @@ public class StreamProducer implements StreamHandler {
             Element root = sd.getDOMElement(document);
             document.appendChild(root);
             ByteArrayOutputStream out = new ByteArrayOutputStream();
-            OutputStreamWriter writer = new OutputStreamWriter(out, "US-ASCII");
+            OutputStreamWriter writer = new OutputStreamWriter(out, "UTF-8");
             StreamTool.formatHeader(document, writer);
             writer.append("\n");
             writer.flush();
             byte[] header = out.toByteArray();
             int length = header.length;
+            if ( length>999999 ) {
+                throw new IllegalArgumentException("packet header is longer than can be formatted to a packet header (longer than 999999 bytes).");
+            }
+            if (bigBuffer.remaining() < (length + 10)) {
+                flush();
+            }
+            if (bigBuffer.capacity() < (length + 10)) {
+                resizeBuffer(length + (length / 2) + 15);
+            }
+            
             six[0] = '[';
             six[1] = six[2] = '0';
             six[3] = ']';
