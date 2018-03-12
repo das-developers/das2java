@@ -30,6 +30,7 @@ import org.das2.stream.DasStreamFormatException;
 import org.das2.util.URLBuddy;
 import org.das2.DasIOException;
 import org.das2.system.DasLogger;
+import org.das2.util.filesystem.FileSystem;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -245,47 +246,31 @@ public class DasServer {
     }
 
     public TreeModel getDataSetListWithDiscovery() throws org.das2.DasException {
-        String formData= "server=discovery";
-
-        InputStream in=null;
-        try {
-            URL server= new URL(sProto,host,port,path+"?"+formData);
-
-            logger.log( Level.FINE, "connecting to {0}", server);
-
-            URLConnection urlConnection = server.openConnection();
-            urlConnection.connect();
-
-            in= urlConnection.getInputStream();
-
-            TreeModel result= createModel(in);
-            logger.log( Level.FINE, "response->{0}", result);
-            return result;
-
-        } catch (IOException e) {
-            throw new DasIOException( e.getMessage() );
-        } finally {
-            if ( in!=null ) try {
-                in.close();
-            } catch ( IOException ex ) {   
-                logger.log( Level.WARNING, ex.toString(), ex );
-            }
-        }
+        return getDataSetList("?server=discovery");
     }
 
     public TreeModel getDataSetList() throws org.das2.DasException {
-        String formData= "server=list";
+        return getDataSetList("?server=list");
+    }
+    
+    protected TreeModel getDataSetList(String sSuffix) throws DasIOException{
         InputStream in=null;
         try {
-            URL server= new URL(sProto,host,port,path+"?"+formData);
+            URL server= new URL(sProto,host,port,path+sSuffix);
 
             logger.log( Level.FINE, "connecting to {0}", server);
 
-            URLConnection urlConnection = server.openConnection();
-            urlConnection.connect();
-
-            in= urlConnection.getInputStream();
-
+            URLConnection conn = server.openConnection();
+            conn.setConnectTimeout(FileSystem.settings().getConnectTimeoutMs());
+            if(conn instanceof HttpURLConnection){
+                HttpURLConnection httpConn = (HttpURLConnection) conn;
+                int nStatus = httpConn.getResponseCode();
+                    
+                if(nStatus >= 400)   // Just fail on 400's and 500's
+                    throw new java.io.IOException("Server returned HTTP response "
+                           + "code:" + nStatus + " for URL: " + server);
+            }
+            in= conn.getInputStream();
             TreeModel result= createModel(in);
             logger.log( Level.FINE, "response->{0}", result);
             return result;
@@ -298,8 +283,7 @@ public class DasServer {
             } catch ( IOException ex ) {   
                 logger.log( Level.WARNING, ex.toString(), ex );
             }
-        }
-
+        } 
     }
 
     /**
