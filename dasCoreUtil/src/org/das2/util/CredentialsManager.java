@@ -176,18 +176,18 @@ public class CredentialsManager{
 		return loc.hasCredentials();
 	}
 	
-        public void setHttpBasicHashRaw( String sLocationId, String userInfo ) {
+   public void setHttpBasicHashRaw(String sLocationId, String userInfo){
 		if(!hasCredentials(sLocationId)){
-                    m_dLocs.put(sLocationId, new Location(sLocationId, null, null));
+			m_dLocs.put(sLocationId, new Location(sLocationId, null, null));
 		}
-                Location loc= m_dLocs.get(sLocationId);
-		
-                String[] ss= userInfo.split(":",-2); //TODO: allow colons in passwords
-                
-                loc.sUser= ss[0];
-                loc.sPasswd= ss[1];
-                        
-        }
+		Location loc = m_dLocs.get(sLocationId);
+
+		String[] ss = userInfo.split(":", -2); //TODO: allow colons in passwords
+
+		loc.sUser = ss[0];
+		loc.sPasswd = ss[1];
+
+	}
         
 	/** Determine if a given location has been described
 	 * 
@@ -229,40 +229,39 @@ public class CredentialsManager{
 	 * @return The string USERNAME + ":" + PASSWORD that is then run through a base64 
 	 * encoding.  If no credentials are available for the given location ID and none can be 
 	 * gathered from the user (possibly due to the java.awt.headless being set or the
-         * user pressing cancel), null is returned.
-         * @see #getHttpBasicHashRaw(java.lang.String) 
+	 * user pressing cancel), null is returned.
+	 * @see #getHttpBasicHashRaw(java.lang.String) 
 	 */
 	public String getHttpBasicHash(String sLocationId){
-                String sTmp= getHttpBasicHashRaw( sLocationId );
+		String sTmp= getHttpBasicHashRaw( sLocationId );
 		String sHash = Base64.encodeBytes( sTmp.getBytes());
 		return sHash;
 	}
         
-        /**
-         * Get credentials in the form of a hashed HTTP Basic authentication string
-	 * 
-	 * If there are no credentials stored for the given location id, this function may
-	 * trigger interaction with the user, such as presenting modal dialogs, or changing the
-	 * TTY to non-echo.
-	 * 
-	 * @param sLocationId A unique string identifying a location.  There are no formation
-	 * rules on the string, but convenience functions are provided if a uniform naming 
+   /** Get credentials in the form of a hashed HTTP Basic authentication string.
+	 *
+	 * If there are no credentials stored for the given location id, this function
+	 * may trigger interaction with the user, such as presenting modal dialogs, or
+	 * changing the TTY to non-echo.
+	 *
+	 * @param sLocationId A unique string identifying a location. There are no formation
+	 * rules on the string, but convenience functions are provided if a uniform naming
 	 * convention is desired.
-	 * 
-	 * @return The string USERNAME + ":" + PASSWORD.  If no credentials are 
-         * available for the given location ID and none can be 
-	 * gathered from the user (possibly due to the java.awt.headless being set or the
-         * user pressing cancel), null is returned.
-         * @see #getHttpBasicHash(java.lang.String) 
-         */
-        public String getHttpBasicHashRaw( String  sLocationId){
-		
+	 *
+	 * @return The string USERNAME + ":" + PASSWORD. If no credentials are available for
+	 * the given location ID and none can be gathered from the user (possibly due to the
+	 * java.awt.headless being set or the user pressing cancel), null is returned.
+	 * @see #getHttpBasicHash(java.lang.String)
+	 */
+	public String getHttpBasicHashRaw(String sLocationId){
+
 		if(!m_dLocs.containsKey(sLocationId)){
 			synchronized(this){
 				//Check again.  Though unlikely, the key could have been added between
 				//the call above and the start of the sychronized section
-				if(!m_dLocs.containsKey(sLocationId))
+				if(!m_dLocs.containsKey(sLocationId)){
 					m_dLocs.put(sLocationId, new Location(sLocationId, null, null));
+				}
 			}
 		}
 		
@@ -344,22 +343,24 @@ public class CredentialsManager{
 		return true;
 	}
 	
-        /**
-         * get the credentials from the command line.
-         * @param loc
-         * @return 
-         */
+	/**
+	 * get the credentials from the command line.
+	 *
+	 * @param loc
+	 * @return
+	 */
 	protected synchronized boolean getCredentialsCmdLine(Location loc){
-            
-            Console c= System.console();
-            
-            if ( c==null ) {
-                throw new IllegalArgumentException("Console is not available to query username and password for "+loc.sDesc);
-            } else {
-                c.printf( "%s\n", loc.sDesc );
-                loc.sUser= c.readLine( "Username: " );
-                loc.sPasswd= new String( c.readPassword( "Password: " ) );
-                return true;
-            }
-        }
+
+		Console c = System.console();
+
+		if(c == null){
+			throw new IllegalArgumentException("Console is not available to query username and password for " + loc.sDesc);
+		}
+		else{
+			c.printf("%s\n", loc.sDesc);
+			loc.sUser = c.readLine("Username: ");
+			loc.sPasswd = new String(c.readPassword("Password: "));
+			return true;
+		}
+	}
 }
