@@ -100,7 +100,7 @@ public class DasServer {
      */
     public static DasServer createPlasmaWaveGroup() {
         try {
-            return DasServer.create(new URL("http://www-pw.physics.uiowa.edu/das/das2Server"));
+            return DasServer.create(new URL("http://planet.physics.uiowa.edu/das/das2Server"));
         } catch ( java.net.MalformedURLException e ) {
             throw new IllegalArgumentException(e);
         }
