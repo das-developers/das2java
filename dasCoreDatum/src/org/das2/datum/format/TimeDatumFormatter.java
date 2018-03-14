@@ -149,7 +149,7 @@ public class TimeDatumFormatter extends DatumFormatter {
         
     /**
      * returns a TimeDatumFormatter suitable for the specified scale and context.
-     * Context may be null to indicate that the formatted string will be interpretted
+     * Context may be null to indicate that the formatted string will be interpreted
      * outside of any context.
      * @param scale the length we wish to represent, such as TimeUtil.HOUR
      * @param context the context for the formatter, or null if the formatted string
@@ -163,7 +163,7 @@ public class TimeDatumFormatter extends DatumFormatter {
     
     /**
      * returns a TimeDatumFormatter suitable for the specified scale and context.
-     * Context may be null to indicate that the formatted string will be interpretted
+     * Context may be null to indicate that the formatted string will be interpreted
      * outside of any context.
      * @param scale the length we wish to represent, such as TimeUtil.HOUR
      * @param context the context for the formatter, or null if the formatted string
