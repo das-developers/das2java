@@ -420,7 +420,7 @@ public class Ops {
 
         if ( units2.isConvertibleTo(units1) && UnitsUtil.isRatioMeasurement(units1) ) {
             final UnitsConverter uc= UnitsConverter.getConverter( units2, units1);
-            result= (MutablePropertyDataSet)  applyBinaryOp(ds1, ds2, new BinaryOp() {
+            result= applyBinaryOp(ds1, ds2, new BinaryOp() {
                 @Override
                 public double op(double d1, double d2) {
                     return d1 - uc.convert(d2);
@@ -429,7 +429,7 @@ public class Ops {
             if ( units1!=Units.dimensionless ) result.putProperty( QDataSet.UNITS, units1 );
         } else if ( UnitsUtil.isIntervalMeasurement(units1) && UnitsUtil.isIntervalMeasurement(units2) ) {
             final UnitsConverter uc= UnitsConverter.getConverter( units2, units1 );
-            result= (MutablePropertyDataSet) applyBinaryOp(ds1, ds2, new BinaryOp() {
+            result= applyBinaryOp(ds1, ds2, new BinaryOp() {
                 @Override
                 public double op(double d1, double d2) {
                     return d1 - uc.convert(d2);
@@ -438,7 +438,7 @@ public class Ops {
             result.putProperty( QDataSet.UNITS, units1.getOffsetUnits() );
         } else if ( UnitsUtil.isIntervalMeasurement(units1) && !UnitsUtil.isIntervalMeasurement(units2)) {
             final UnitsConverter uc= UnitsConverter.getConverter( units2, units1.getOffsetUnits() );
-            result= (MutablePropertyDataSet) applyBinaryOp(ds1, ds2, new BinaryOp() {
+            result= applyBinaryOp(ds1, ds2, new BinaryOp() {
                 @Override
                 public double op(double d1, double d2) {
                     return d1 - uc.convert(d2);
@@ -449,7 +449,7 @@ public class Ops {
             throw new IllegalArgumentException("cannot subtract interval measurement from ratio measurement: " + units1 + " - "+ units2 );
 
         } else if ( UnitsUtil.isRatioMeasurement(units1) && units2.isConvertibleTo(Units.dimensionless) ) {
-            result= (MutablePropertyDataSet) applyBinaryOp(ds1, ds2, new BinaryOp() {
+            result= applyBinaryOp(ds1, ds2, new BinaryOp() {
                 @Override
                 public double op(double d1, double d2) {
                     return d1 - d2;
@@ -458,7 +458,7 @@ public class Ops {
             result.putProperty( QDataSet.UNITS, units1 );
 
         } else if ( UnitsUtil.isRatioMeasurement(units2) && units1.isConvertibleTo(Units.dimensionless) ) {
-            result= (MutablePropertyDataSet) applyBinaryOp(ds1, ds2, new BinaryOp() {
+            result= applyBinaryOp(ds1, ds2, new BinaryOp() {
                 @Override
                 public double op(double d1, double d2) {
                     return d1 - d2;
@@ -10902,7 +10902,7 @@ public class Ops {
      * first argument can be null in order to simplify loops in client code.
      * @param ds1 null, rank N dataset with n records or rank N+1 bundle dataset
      * @param ds2 rank N dataset.
-     * @return rank N+1 bundle dataset
+     * @return rank N+1 bundle dataset, presently with mutable properties.
      * @see #join(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      */
     public static QDataSet bundle( QDataSet ds1, QDataSet ds2 ) {

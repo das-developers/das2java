@@ -77,7 +77,7 @@ public class Reduction {
         offsets.putProperty( QDataSet.VALID_MAX, null );
         
         if ( offsets.rank()==2 ) {
-            offsets= (MutablePropertyDataSet)(QDataSet)offsets.slice(0);
+            offsets= (MutablePropertyDataSet)offsets.slice(0);
             logger.fine("slice(0) on rank 2 dataset because code doesn't support time-varying DEPEND_1");
         }
         

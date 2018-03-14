@@ -1664,7 +1664,11 @@ public class DataSetOps {
         tlabel= String.valueOf(tlabel);
         MutablePropertyDataSet context= (MutablePropertyDataSet) ( Ops.labelsDataset( new String[] { tlabel } )).slice(0);
         if ( !Ops.safeName(tlabel).equals(tname) ) {
-            context.putProperty( QDataSet.NAME, tname );
+            if ( context.isImmutable() ) {
+                logger.warning("action not taken because dataset is immutable.  This needs review.");
+            } else {
+                context.putProperty( QDataSet.NAME, tname );
+            }
         }
         return context;
     }

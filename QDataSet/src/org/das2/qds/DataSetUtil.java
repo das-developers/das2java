@@ -878,9 +878,12 @@ public class DataSetUtil {
      * that are equal to null are not copied, since null is equivalent to the
      * property not found.
      * @param properties the properties
-     * @param ds the dataset
+     * @param ds the mutable property dataset, which is still mutable.
      */
     public static void putProperties(Map<String, Object> properties, MutablePropertyDataSet ds) {
+        if ( ds.isImmutable() ) {
+            logger.warning( "ds is immutable, an exception will be thrown.");
+        }
         for ( Map.Entry<String,Object> e : properties.entrySet() ) {
             if ( e.getKey().startsWith("DEPEND_") && e.getValue() instanceof Map ) {
                 QDataSet dep= (QDataSet) ds.property(e.getKey());
@@ -2128,7 +2131,7 @@ public class DataSetUtil {
                 return false;
             }
         }
-        if ( ds instanceof MutablePropertyDataSet ) {
+        if ( ds instanceof MutablePropertyDataSet && !((MutablePropertyDataSet)ds).isImmutable() ) {
             logger.fine("putProperty(QDataSet.QUBE,Boolean.TRUE)");
             ((MutablePropertyDataSet)ds).putProperty( QDataSet.QUBE, Boolean.TRUE );
         }
@@ -2163,7 +2166,7 @@ public class DataSetUtil {
                         }
                     }
                 }
-                if ( ds instanceof MutablePropertyDataSet ) {
+                if ( ds instanceof MutablePropertyDataSet && !((MutablePropertyDataSet)ds).isImmutable() ) {
                     logger.fine("putProperty(QDataSet.QUBE,Boolean.TRUE)");
                     ((MutablePropertyDataSet)ds).putProperty( QDataSet.QUBE, Boolean.TRUE );
                 }
