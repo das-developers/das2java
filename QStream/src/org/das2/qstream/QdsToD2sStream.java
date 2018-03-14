@@ -9,8 +9,11 @@ import java.nio.ByteOrder;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 import java.nio.charset.StandardCharsets;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -20,26 +23,18 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import org.das2.datum.Datum;
+import org.das2.datum.LoggerManager;
+import org.das2.datum.TimeLocationUnits;
+import org.das2.datum.TimeUtil;
 import org.das2.datum.Units;
+import org.das2.datum.format.DatumFormatter;
+import org.das2.datum.format.TimeDatumFormatter;
 import org.das2.qds.DataSetOps;
 import org.das2.qds.QDataSet;
 import org.das2.qds.SemanticOps;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-/** Write QDataSets that vary over at most 2 independent variables as a Das2 
- * stream.
- * Since Das2 streams can have at most 2 independent variables, higher
- * dimensional (not necessarily higher rank) QDataSets can't be written using
- * this code.  Streams that can be written have the following plane structure
- * 
- *   X Y [Y Y Y Y ... ]
- *   X YScan [YScan YScan YScan ... ]
- *   X Y Z [Z Z Z Z ... ]
- * 
- * This is a direct seralization of QDataSet and does not require any legacy
- * Das2 classes.
- */
 
  // In general QDataSet conglomerations have the following possible structure
  // though many multi-element items may collapse to a single item:
@@ -62,10 +57,34 @@ import org.w3c.dom.Element;
  // So where do we look for fundamental items such as the xTagWidth?  Well
  // They can be anywhere and you have to crawl the hierarchy to find out.  Also
  // different paths down the hierarchy may lead to different answers.
- 
+
+/** Write QDataSets that vary over at most 2 independent variables as a Das2 
+ * stream.
+ * Since Das2 streams can have at most 2 independent variables, higher
+ * dimensional (not necessarily higher rank) QDataSets can't be written using
+ * this code.  Streams that can be written have the following plane structure
+ * 
+ *   X Y [Y Y Y Y ... ]
+ *   X YScan [YScan YScan YScan ... ]
+ *   X Y Z [Z Z Z Z ... ]
+ * 
+ * All binary output is streamed in machine-native order.  Since datasets written
+ * on one architecture are most likely to be read on the same architecture this
+ * choice causes the least amount of byte swapping.  
+ * 
+ * This is a direct seralization of QDataSet and does not require any legacy
+ * das2 dataset classes such as VectorDataset or TableDataset.
+ */
 public class QdsToD2sStream {
 	
-	private boolean bText;               // Flag to send text variants of values
+	private static final Logger log = LoggerManager.getLogger("qstream");
+	
+	// Handling for text output, throw this back to the user if they want text
+	// output.  The reason not to just do our best to figure it out on our own
+	// is that it changes the packet header definitions, which we don't want to
+	// do when writing cache files.
+	int nSigDigit;
+	int nFracSecDigit;
 	
 	// List of transmitted packet hdrs, index is the packet ID.
 	private List<String> lHdrsSent = new ArrayList<>();  
@@ -75,12 +94,46 @@ public class QdsToD2sStream {
 	
 	// Public interface //////////////////////////////////////////////////////
 	
-	/** Initialize a writer
-	 * @param bText If true, format all data values as text before pushing them
-	 *        onto the stream
+	/** Initialize a binary QDataSet to das2 stream exporter */
+	public QdsToD2sStream(){ 
+		nSigDigit = -1; nFracSecDigit = -1;
+	}
+	
+	/** Initialize a text, or partial text, QDataSet to das2 stream exporter
+	 * 
+	 * @param nSigDigit The number of significant digits used for general
+	 *    data output.  Set this to 1 or less to trigger binary output, use
+	 *    a greater than 1 for text output.  If you don't know what else to
+	 *    pick, 6 is typically a great precision without being ridiculous.
+	 * 
+	 * @param nFacSecDigits  The number of fractional seconds digits to
+	 *    use for ISO-8601 date-time values. Set this to -1 (or less) for
+	 *    binary time output.  The number of fraction seconds can be set
+	 *    as low as 0 and as high as 12 (picoseconds).  If successive time
+	 *    values vary by less than the specified precision (but not 0,
+	 *    repeats are accepted) then stream writing fails.  Use 3 (i.e.
+	 *    microseconds) if you don't know what else to choose.
 	 */
-	public QdsToD2sStream(boolean bText){
-		this.bText = bText;
+	public QdsToD2sStream(int genSigDigits, int fracSecDigits){
+		if(genSigDigits > 1){
+			if(genSigDigits > 16){
+				throw new IllegalArgumentException(String.format(
+					"Number of significant digits in the output must be between 2 "
+					+ "and 17, received %d", genSigDigits
+				));
+			}
+			nSigDigit = genSigDigits;
+		}
+		
+		if(fracSecDigits >= 0){
+			if(fracSecDigits < 0 || fracSecDigits > 12){
+				throw new IllegalArgumentException(String.format(
+					"Number of fractional seconds digits in the output must be "
+					+ "between 0 and 12 inclusive, received %d", fracSecDigits
+				));
+			}
+			nFracSecDigit = fracSecDigits;
+		}
 	}
 	
 	/** Determine if a given dataset be serialized as a das2 stream
@@ -276,14 +329,41 @@ public class QdsToD2sStream {
 	
 	// Helper structures for making packet headers and writing data ///////////
 	
-	// Hold the transfer information for a single QDS
+	// Make and hold the transfer information for a single QDS
 	private class QdsXferInfo {
 		QDataSet qds;
 		TransferType transtype;
-		ByteOrder byteorder;
-
-		QdsXferInfo(QDataSet _qds, TransferType _tt, ByteOrder _bo) {
-			qds = _qds; transtype = _tt; byteorder = _bo;
+		String sType;
+		
+		// Figure out how to represent the values.  In general everything is 
+		// output as a float unless it's an epoch time type.
+		QdsXferInfo(QDataSet _qds, int nGenDigits, int nFracSec){
+			qds = _qds;
+				
+			Units units = (Units) qds.property(QDataSet.UNITS);
+			if((units != null) && (units instanceof TimeLocationUnits)){
+				if(nFracSec < 0){ 
+					transtype = new DoubleTransferType();
+					sType = ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN ? 
+					     "little_endian_real8" : "sun_real8";
+				}
+				else{
+					transtype = new AsciiVariableTimeTransType(units, nFracSec);
+					sType = String.format("time%d", transtype.sizeBytes());
+				}
+			}
+			else{
+				//Non epoch stuff
+				if(nGenDigits < 0){
+					transtype = new FloatTransferType();
+					sType = ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN ? 
+					     "little_endian_real4" : "sun_real4";
+				}
+				else{
+					transtype = new AsciiTransferType(nGenDigits + 7, true);
+					sType = String.format("ascii%d", transtype.sizeBytes());
+				}
+			}
 		}
 	}
 	
@@ -344,6 +424,8 @@ public class QdsToD2sStream {
 	private PacketXferInfo makePktHdr(QDataSet qds) {
 		Document doc = newXmlDoc();
 		List<QdsXferInfo> lDsXfer = new ArrayList<>();
+		lDsXfer.add(null);  // Depend 0 goes here, if we have one
+		lDsXfer.add(null);  // Depend 1 goes here for X,Y,Z datasets
 		
 		assert(!SemanticOps.isJoin(qds));  //Don't call this for join datasets
 		
@@ -359,13 +441,20 @@ public class QdsToD2sStream {
 		else
 			lDs.add(qds);
 		
-		
 		QDataSet dsX0 = null;
 		QDataSet dsY0 = null;  // All yTags must match
 		for(QDataSet ds: lDs){
 			QDataSet dep0 = (QDataSet) ds.property(QDataSet.DEPEND_0);
 			if(dep0 != null){
-				if(dsX0 == null) dsX0 = dep0;
+				if(lDsXfer.get(0) == null){
+					lDsXfer.set(0, new QdsXferInfo(dep0, nSigDigit, nFracSecDigit));
+				}  
+				else{
+					if(dsX0 != dep0){ 
+						log.warning("Multiple independent X-value sets in dataset");
+						return null;
+					}
+				}
 			}
 		}
 		
@@ -382,8 +471,9 @@ public class QdsToD2sStream {
 		int nBufLen = pktXfer.slice0Length() + 4;
 		byte[] aBuf = new byte[nBufLen];
 		ByteBuffer buffer = ByteBuffer.wrap(aBuf);
+		buffer.order(ByteOrder.nativeOrder());        // Since we have a choice, use native
 		String sPktId = String.format(":%02d:", iPktId);
-		buffer.put(sPktId.getBytes(StandardCharsets.US_ASCII)); // Stays in buffer
+		buffer.put(sPktId.getBytes(StandardCharsets.US_ASCII));      // tag stays in buffer
 		
 		int nPkts = pktXfer.lDsXfer.get(0).qds.length();
 		
@@ -392,7 +482,6 @@ public class QdsToD2sStream {
 			QdsXferInfo qi = null;
 			for(int iDs = 0; iDs < pktXfer.datasets(); ++iDs){
 				qi = pktXfer.lDsXfer.get(iDs);
-				buffer.order(qi.byteorder);
 				
 				switch(qi.qds.rank()){
 				case 1: qi.transtype.write(qi.qds.value(iPkt), buffer); break;
@@ -616,5 +705,86 @@ public class QdsToD2sStream {
 		if(SemanticOps.isJoin(qds)) qds = DataSetOps.slice0(qds, 0);
 		
 		return SemanticOps.getUnits(qds).toString();
+	}
+	
+	
+	public class AsciiVariableTimeTransType extends TransferType{
+		
+		Units units;
+		DatumFormatter formatter;
+		byte[] aFill;
+		int nSize;
+		
+		/** Create a time datum formatter with a variable length number of
+		 * seconds 
+		 * 
+		 * @param units the units of the double values to convert to an ascii
+		 *        time
+		 * @param nFracSec Any value from 0 to 12 (picoseconds) inclusive.
+		 */
+		public AsciiVariableTimeTransType(Units units, int nFracSec)
+		{
+			this.units = units;
+			
+			// yyyy-mm-ddThh:mm:ss.ssssssssssss +1 for space at end
+			// 12345678901234567890123456789012
+			nSize = 20;
+			String sFmt =  "yyyy-MM-dd'T'HH:mm:ss' '";
+			String sFill =        "                    ";
+			
+			if(nFracSec > 0){ 
+				sFmt += ".";
+				sFill += " ";
+			}
+			for(int i = 0; i < nFracSec; ++i){ 
+				sFmt += "S";
+				sFill += " ";
+			}
+			
+			aFill = sFill.getBytes(StandardCharsets.US_ASCII);
+			try{
+				formatter = new TimeDatumFormatter(sFmt);
+			}
+			catch(ParseException ex){
+				throw new RuntimeException(ex);
+			}
+			
+			if(nFracSec > 0) ++nSize;  //decimal point
+			nSize += nFracSec;
+		}
+		
+		@Override
+		public void write(double rVal, ByteBuffer buffer) {
+			if(units.isFill(rVal)){
+				buffer.put(aFill);
+			}
+			else{
+				String sOut = formatter.format(units.createDatum(rVal));
+				buffer.put(sOut.getBytes(StandardCharsets.US_ASCII));
+			}
+		}
+
+		@Override
+		public double read(ByteBuffer buffer){
+			try{
+				byte[] aBuf = new byte[nSize];
+				buffer.get(aBuf);
+				String sTime = new String(aBuf, "US-ASCII").trim();
+				double result = TimeUtil.create(sTime).doubleValue(units);
+				return result;
+			}
+			catch(UnsupportedEncodingException | ParseException e){
+				throw new RuntimeException(e);
+			}
+		}
+
+		@Override
+		public int sizeBytes(){ return nSize; }
+
+		@Override
+		public boolean isAscii(){ return true; }
+
+		@Override
+		public String name(){ return String.format("time%d", nSize); }
 	}
 }
