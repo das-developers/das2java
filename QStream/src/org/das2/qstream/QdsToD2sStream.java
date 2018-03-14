@@ -4,9 +4,12 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.channels.Channels;
+import java.nio.channels.WritableByteChannel;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -51,7 +54,7 @@ import org.w3c.dom.Element;
  //      |
  //      |- ds    maybe has dependencies and stats (regular)  <y> <yscan> <z>
  //         |
- //       dependency (or statistic)
+ //       dependency, statistic or plane
  //         |
  //         |- ds   Support datasets                      <x> <y> <yscan> <z>
  //  
@@ -62,13 +65,15 @@ import org.w3c.dom.Element;
  
 public class QdsToD2sStream {
 	
-	boolean bText;                        // Flag to send text variants of values
+	private boolean bText;               // Flag to send text variants of values
 	
 	// List of transmitted packet hdrs, index is the packet ID.
-	List<String> lHdrsSent = new ArrayList<>();  
+	private List<String> lHdrsSent = new ArrayList<>();  
 	
 	// A das2 limitation, not an arbitrary choice
-	public static int MAX_HDRS = 100;  
+	private static final int MAX_HDRS = 100;
+	
+	// Public interface //////////////////////////////////////////////////////
 	
 	/** Initialize a writer
 	 * @param bText If true, format all data values as text before pushing them
@@ -96,6 +101,87 @@ public class QdsToD2sStream {
 		}
 		return canWriteNonJoin(qds);
 	}
+	
+	/** Write a QDataSet as a das2 stream
+	 * 
+	 * To test whether it looks like this code could stream a dataset use the
+	 * canWrite() function.  This function may be called multiple times to add
+	 * additional data to the stream.  If a compatable header has already been
+	 * emitted for a particular dataset it is not re-sent.
+	 * 
+	 * @param qds The dataset to write, may have join's bundles etc. but no
+	 *        rank 3 or higher component datasets.
+	 * 
+	 * @param os an open output stream, which is not closed by this code.
+	 * 
+	 * @return true if the entire dataset could be written, false otherwise.
+	 *         IO failures do not return false, they throw.  False simply 
+	 *         means that this code does not know how (or can't) stream the 
+	 *         given dataset.  Since deeper inspection occurs when actually
+	 *         writing the data then when testing, false may be returned even
+	 *         if canWrite() returned true.
+	 * 
+	 * @throws javax.xml.transform.TransformerException  if the dom is bad, which
+	 *         shouldn't happen
+	 * @throws java.io.IOException
+	 */
+	public boolean write(QDataSet qds, OutputStream os) 
+		throws TransformerException, IOException {
+		
+		if(! canWrite(qds)) return false;   // Try not to create invalid output
+		
+		String sPktHdr;
+		List<String> lHdrsToSend = new ArrayList<>();
+		
+		Document doc; // XML document
+		if(lHdrsSent.isEmpty()){
+			if((doc = makeStreamHdr(qds)) == null) return false;
+			lHdrsToSend.add( xmlDocToStr(doc) );
+		}
+		
+		// Take advantage of the fact that we have all the data here to place all
+		// headers first.  This way someone can use a text editor to inspect the
+		// top of the stream, even for binary streams
+		
+		PacketXferInfo pi;
+		List<PacketXferInfo> lPi = new ArrayList<>();
+	
+		if(SemanticOps.isJoin(qds)){
+			for(int i = 0; i < qds.length(); ++i){
+				QDataSet ds = DataSetOps.slice0(qds, i);
+				if((pi = makePktHdr(ds)) == null) return false;
+				else lPi.add(pi);
+				sPktHdr = xmlDocToStr(pi.doc);
+				if(!lHdrsSent.contains(sPktHdr)) lHdrsToSend.add(sPktHdr);
+			}
+		}
+		else{
+			if((pi = makePktHdr(qds)) == null) return false;
+			else lPi.add(pi);
+			sPktHdr = xmlDocToStr(pi.doc);
+			if(!lHdrsSent.contains(sPktHdr)) lHdrsToSend.add(sPktHdr);
+		}
+		
+		for(int i = 0; i < lHdrsToSend.size(); ++i){
+			int iPktId = lHdrsSent.size() + i;
+			if(iPktId >= MAX_HDRS) return false;
+			
+			writeHeader(os, iPktId, lHdrsToSend.get(i));
+			lHdrsSent.add(lHdrsToSend.get(i));
+		}
+		
+		// Now write the data, find out packet ID by our header value
+		int iPktId;
+		for(PacketXferInfo pktinfo: lPi){
+			sPktHdr = xmlDocToStr(pktinfo.doc);
+			iPktId = lHdrsSent.indexOf(sPktHdr);
+			writeData(iPktId, pktinfo, os);
+		}
+		
+		return true;
+	}
+	
+	// Top level helper functions and structures //////////////////////////////
 	
 	protected boolean canWriteNonJoin(QDataSet qds){
 		// Bundles are used all over the place.  They just represent items that 
@@ -159,93 +245,7 @@ public class QdsToD2sStream {
 		return true;  // We ran the gauntlet
 	}
 	
-	
-	/** Write a QDataSet as a das2 stream
-	 * 
-	 * To test whether it looks like this code could stream a dataset use the
-	 * canWrite() function.  This function may be called multiple times to add
-	 * additional data to the stream.  If a compatable header has already been
-	 * emitted for a particular dataset it is not re-sent.
-	 * 
-	 * @param qds The dataset to write, may have join's bundles etc. but no
-	 *        rank 3 or higher component datasets.
-	 * 
-	 * @param os an open output stream, which is not closed by this code.
-	 * 
-	 * @return true if the entire dataset could be written, false otherwise
-	 *         a return of false is not used for IO failures but only for
-	 *         datasets that are not understood by this code.  
-	 * 
-	 * @throws javax.xml.transform.TransformerException  if the dom is bad, which
-	 *         shouldn't happen
-	 * @throws java.io.IOException
-	 */
-	public boolean write(QDataSet qds, OutputStream os) 
-		throws TransformerException, IOException {
-		
-		if(! canWrite(qds)) return false;   // Try not to create invalid output
-		
-		Document doc; // XML document
-		String sPktHdr;
-		List<String> lHdrsToSend = new ArrayList<>();
-		
-		if(lHdrsSent.isEmpty()){
-			if((doc = makeStreamHdr(qds)) == null) return false;
-			lHdrsToSend.add( xmlDocToStr(doc) );
-		}
-		
-		// Take advantage of the fact that we have all the data here to place all
-		// headers first.  This way someone can use a text editor to inspect the
-		// format, even for binary streams
-		if(SemanticOps.isJoin(qds)){
-			for(int i = 0; i < qds.length(); ++i){
-				QDataSet ds = DataSetOps.slice0(qds, i);
-				if((doc = makePktHdr(ds)) == null) return false;
-				sPktHdr = xmlDocToStr(doc);
-				if(!lHdrsSent.contains(sPktHdr)) lHdrsToSend.add(sPktHdr);
-			}
-		}
-		else{
-			if((doc = makePktHdr(qds)) == null) return false;
-			sPktHdr = xmlDocToStr(doc);
-			if(!lHdrsSent.contains(sPktHdr)) lHdrsToSend.add(sPktHdr);
-		}
-		
-		for(int i = 0; i < lHdrsToSend.size(); ++i){
-			int iPktId = lHdrsSent.size() + i;
-			if(iPktId >= MAX_HDRS) return false;
-			
-			writeHeader(os, iPktId, lHdrsToSend.get(i));
-			lHdrsSent.add(lHdrsToSend.get(i));
-		}
-		
-		// Now write the data, find out packet ID by our header value
-		int iPktId;
-		if(SemanticOps.isJoin(qds)){
-			for(int i = 0; i < qds.length(); ++i){
-				QDataSet ds = DataSetOps.slice0(qds, i);
-				if((doc = makePktHdr(ds)) == null) return false;
-				sPktHdr = xmlDocToStr(doc);
-				
-				iPktId = lHdrsSent.indexOf(sPktHdr);
-				writeData(iPktId, ds);
-			}
-			return true;  // Done with bundle
-		}
-		
-		if((doc = makePktHdr(qds)) == null) return false;
-		sPktHdr = xmlDocToStr(doc);
-				
-		iPktId = lHdrsSent.indexOf(sPktHdr);
-		writeData(iPktId, qds);
-		return true;
-	}
-	
-	// Top level helper functions below here //////////////////////////////////
-	
-	
-	///////////////////////////////////////////////////////////////////////////
-	// Make header for join
+	// Make header for join, <stream>
 	
 	// For non-bundle datasets a lot of the properties can be placed in the
 	// stream header and it's common to do so.  I am not using any of the 
@@ -264,15 +264,7 @@ public class QdsToD2sStream {
 		nProps += addStrProp(props, qds, QDataSet.DESCRIPTION, "summary");
 		nProps += addStrProp(props, qds, QDataSet.RENDER_TYPE, "renderer");
 		
-		String sAxis = null;
-		if(!SemanticOps.isJoin(qds) && !SemanticOps.isBundle(qds) && 
-			(qds.property(QDataSet.PLANE_0) != null)){
-			
-			// Top level dataset is hiding in a plane, pull it out.
-			qds = (QDataSet)qds.property(QDataSet.PLANE_0);
-			sAxis = "z";
-		}
-		if(sAxis == null) sAxis = getPropAxis(qds);
+		String sAxis = qd2DataAxis(qds);
 		if(sAxis == null) return null;
 		
 		nProps += addSimpleProps(props, qds, sAxis);
@@ -282,56 +274,145 @@ public class QdsToD2sStream {
 		return doc;
 	}
 	
-	///////////////////////////////////////////////////////////////////////////
-	// Make header for bundle 
+	// Helper structures for making packet headers and writing data ///////////
 	
-	private Document makePktHdr(QDataSet qds) {
+	// Hold the transfer information for a single QDS
+	private class QdsXferInfo {
+		QDataSet qds;
+		TransferType transtype;
+		ByteOrder byteorder;
+
+		QdsXferInfo(QDataSet _qds, TransferType _tt, ByteOrder _bo) {
+			qds = _qds; transtype = _tt; byteorder = _bo;
+		}
+	}
+	
+	// Hold the information for serializing a single packet and it's dependencies
+	private class PacketXferInfo {
+		Document doc;        // Overall header document
+		List<QdsXferInfo> lDsXfer;
+		
+		PacketXferInfo(Document _doc, List<QdsXferInfo> _lDsXfer ){
+			doc = _doc; lDsXfer = _lDsXfer;
+		}
+		
+		int datasets(){ return lDsXfer.size(); }
+		
+		// Calc length of buffer needed to hold a single slice in the 0th
+		// dimension across all qdatasets.
+		int slice0Length() {
+			int nLen = 0;
+			for(QdsXferInfo qi: lDsXfer) nLen += qi.transtype.sizeBytes();
+			return nLen;
+		}
+	}
+	
+	// Make header for bundle, <packet>
+	
+	// For each member of the bundle
+	//
+	// 1. Get it's depend0, this is the X axis, if it's not the first make sure
+	//    that the new depend0 is not different from the first one.  
+	//
+	// 2. If the member has no depend0 then it is an extra X axis, place it 
+	//    after any X that arises as a depend 0
+	//
+	// 3. If it has a depend1, assume it's a <yscan>, if not it's a <y>.  
+	//
+	// <yscan> branch
+	//
+	//    a. See if depend1 has a depend0, we don't have a way to save these
+	//       at this time.
+	//
+	//    b. See if it has a plane_0, this would mean it's a 4-D dataset,
+	//       we don't have a way to deal with those at this time.
+	//
+	//    c. See if the depend1's can be saved as a sequence, if not save
+	//       as ytags
+	// 
+	// <y> branch
+	//
+	//    a. See if it has a plane_0, if so plane_0 is a <z> item.  I don't
+	//       think there is a pattern established yet for multi <z>'s but check
+	//       that <z> is not a bundle.
+	//
+	// 4. If it has a BIN_MAX, BIN_MIN, DELTA_PLUS, DELTA_MINUS properties.  
+	//    all these cause the creation of extra <y> or <yscans> with the same
+	//    SOURCE and (if needed yTags) properties
+	
+	
+	private PacketXferInfo makePktHdr(QDataSet qds) {
 		Document doc = newXmlDoc();
+		List<QdsXferInfo> lDsXfer = new ArrayList<>();
 		
 		assert(!SemanticOps.isJoin(qds));  //Don't call this for join datasets
 		
-		Element packet = doc.createElement("packet");
+		Element elPkt = doc.createElement("packet");
 		
-		// Find dep0
-		QDataSet dep0 = findDep0(qds);
-		String sType = null;
-		String sUnits = null;
-		if(dep0 != null){
-			// It is legal to have a stream with no <x>, just really odd.
-			Element X = doc.createElement("x");
-			X.setAttribute("type", sType);
-			X.setAttribute("units", sUnits);
-			Element props = doc.createElement("properties");
-			if(addSimpleProps(props, dep0, "x") > 0)
-				X.appendChild(props);
-			packet.appendChild(X);
-		}
+		String sDataAxis = qd2DataAxis(qds);
+		if(sDataAxis == null) return null;   // Can't determine data values axis
 		
-		if(SemanticOps.isBundle(qds)){
+		List<QDataSet> lDs = new ArrayList<>();
+		if(!SemanticOps.isBundle(qds))
+			for(int i = 0; i < qds.length(); ++i)
+				lDs.add( DataSetOps.slice0(qds, i) );
+		else
+			lDs.add(qds);
 		
-			for(int i = 0; i < qds.length(); ++i){
-				QDataSet dsPlane = DataSetOps.slice0(qds, i);
-				
-				//They may have bundled in depend 0, don't send that
-				if(dsPlane == dep0) continue;
-				
-				
+		
+		QDataSet dsX0 = null;
+		QDataSet dsY0 = null;  // All yTags must match
+		for(QDataSet ds: lDs){
+			QDataSet dep0 = (QDataSet) ds.property(QDataSet.DEPEND_0);
+			if(dep0 != null){
+				if(dsX0 == null) dsX0 = dep0;
 			}
 		}
-		else{
-			
-		}
 		
-		return doc;
+		return new PacketXferInfo(doc, lDsXfer);
 	}
 	
-	////////////////////////////////////////////////////////////////////////////
+	
 	// Send Bundle data
-	
-	private void writeData(int iPktId, QDataSet ds) {
+	private void writeData(int iPktId, PacketXferInfo pktXfer, OutputStream out) 
+		throws IOException {
 		
+		WritableByteChannel channel = Channels.newChannel(out);
+		
+		int nBufLen = pktXfer.slice0Length() + 4;
+		byte[] aBuf = new byte[nBufLen];
+		ByteBuffer buffer = ByteBuffer.wrap(aBuf);
+		String sPktId = String.format(":%02d:", iPktId);
+		buffer.put(sPktId.getBytes(StandardCharsets.US_ASCII)); // Stays in buffer
+		
+		int nPkts = pktXfer.lDsXfer.get(0).qds.length();
+		
+		for(int iPkt = 0; iPkt < nPkts; ++iPkt){
+			
+			QdsXferInfo qi = null;
+			for(int iDs = 0; iDs < pktXfer.datasets(); ++iDs){
+				qi = pktXfer.lDsXfer.get(iDs);
+				buffer.order(qi.byteorder);
+				
+				switch(qi.qds.rank()){
+				case 1: qi.transtype.write(qi.qds.value(iPkt), buffer); break;
+				case 2: 
+					// Checked when making packet header that the data are a qube
+					// since that's all das2 streams support, hence length(0) below.
+					for(int iVal = 0; iVal < qi.qds.length(0); ++iVal)
+						qi.transtype.write(qi.qds.value(iPkt, iVal), buffer);
+					break;
+				default:
+					assert(false);
+				}
+			}
+			if(qi != null && qi.transtype.isAscii()) 
+				buffer.put(nBufLen - 1, (byte)'\n');
+			buffer.flip();
+			channel.write(buffer);
+			buffer.position(4);
+		}
 	}	
-	
 	
 	
 	// Secondary helpers functions below here //////////////////////////////////
@@ -351,11 +432,11 @@ public class QdsToD2sStream {
 	private void writeHeader(OutputStream os, int nPktId, String sHdr) 
 		throws UnsupportedEncodingException, IOException{
 		
-		byte[] aRec = sHdr.getBytes(StandardCharsets.UTF_8);
-		byte[] aPktHdr = String.format("[%02d]%06d", nPktId, aRec.length).
-				                  getBytes(StandardCharsets.US_ASCII);
-		os.write(aPktHdr);
-		os.write(aRec);
+		byte[] aHdr = sHdr.getBytes(StandardCharsets.UTF_8);
+		String sTag = String.format("[%02d]%06d", nPktId, aHdr.length);
+		byte[] aTag = sTag.getBytes(StandardCharsets.US_ASCII);
+		os.write(aTag);
+		os.write(aHdr);
 	}
 	
 	private Document newXmlDoc() {
@@ -420,74 +501,6 @@ public class QdsToD2sStream {
 		return 1;
 	}
 	
-	// Based on the number of dependencies, get the property axis for top-level
-	// properties of this dataset, returns one of "x", "y", "z" or null if 
-	// we can't figure it out.
-	String getPropAxis(QDataSet qds){
-		
-		//If join just look at the first element of the join
-		if(SemanticOps.isJoin(qds)) qds = DataSetOps.slice0(qds, 0);
-		//If see if the bundle is bigger than size 1.  If so assume
-		if(SemanticOps.isBundle(qds)){
-			if(qds.rank() == 1){  //trival bundle
-				qds = DataSetOps.slice0(qds, 0);
-				if(qds.property(QDataSet.PLANE_0) != null)
-					throw new UnsupportedOperationException(
-						"Don't use this function with QDataSets that have Z values "+
-						"hiding in PLANE_0"
-				);
-				if(qds.rank() == 1) return "y";
-				if(qds.rank() == 2) return "z";
-				return null;
-			}
-			else{
-				// I'm continuing the false assmption that rank = paramenter space
-				// dimensionality which is the the core of the CDF/QDataSet problem.
-				// We will have to face this head on someday.  The only indicator
-				// that a rank 1 item is actually a Z value is the existance of
-				// a PLANE_0 property.
-				int nMaxRank = 0;
-				for(int i = 0; i < qds.length(); ++i){
-					QDataSet ds = DataSetOps.slice0(qds, i);
-					int nRank = ds.rank();
-					if(ds.property(QDataSet.PLANE_0) != null)
-						throw new UnsupportedOperationException(
-							"Don't use this function with QDataSets that have Z "+
-							"values hiding in PLANE_0"
-						);			
-					if(nRank > nMaxRank) nMaxRank = ds.rank();
-				}
-				if(nMaxRank == 1) return "y";
-				if(nMaxRank == 2) return "z";
-				return null;
-			}
-		}
-		//Okay, not a bundle.  To decide our axis just check our dependencies
-		//rank, and planes.  Here's the swiss cheese check:
-		// rank 0 -> X
-		// rank 1 with no depend_0 -> X
-		// rank 1 with a depend_0 -> Y
-		// rank 1 with a depend_0 and plane_0 -> Y (rem to pull out plane for Z's)
-		// rank 2 -> Z
-		if(qds.property(QDataSet.PLANE_0) != null)
-			throw new UnsupportedOperationException(
-				"Don't use this function with QDataSets that have Z "+
-				"values hiding in PLANE_0"
-			);			
-		
-		// All this guessing could be avoided if the dimensionality were 
-		// explicitly denoted in the dataset object, das2 general streams address
-		// this problem, of course they will probably never get used.
-		switch(qds.rank()){
-		case 0: return "x";
-		case 2: return "z";
-		case 1: 
-			if(qds.property(QDataSet.DEPEND_0) == null) return "x";
-			return "y";
-		}
-		return null;
-	}
-	
 	// Get all the simple standard properties of a dataset and add these to the
 	// attributes of a property element.  Complex properties dependencies and 
 	// associated datasets are not handled here.  Returns the number of props
@@ -525,7 +538,83 @@ public class QdsToD2sStream {
 		return nProps;
 	}
 
-	private QDataSet findDep0(QDataSet qds){
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	///////////////////////////////////////////////////////////////////////////
+	// Das2 specific dataset information functions that could just be an add on
+	// for qdataset.  These could be move somewhere else.  If we were writing
+	// in D universal function call syntax would allow for:
+	//   
+	//   qds.qd2DataAxis();
+	
+	/** Determine the name of the das2 axis on which values from a dataset
+	 * would typically be plotted.
+	 * 
+	 * This is a duck-typing check.  Which looks at the number of dependencies 
+	 * and planes in a dataset.  If the dataset has a PLANE_0 property, the axis
+	 * of the PLANE_0 values is returned instead of the axis of the primary
+	 * dataset.  The output of this function is an educated guess since coordinates
+	 * are not denoted as separate from data values in QDataSets or CDFs.
+	 * 
+	 * @param qds
+	 * @return one of "x", "y", "z" or null if we can't figure it out.
+	 */
+	public static String qd2DataAxis(QDataSet qds){
+		
+		//If join just look at the first element of the join
+		if(SemanticOps.isJoin(qds)) qds = DataSetOps.slice0(qds, 0);
+		
+		//If see if the bundle is bigger than size 1.
+		if(SemanticOps.isBundle(qds)){
+			if(qds.rank() == 1){  //trival bundle
+				qds = DataSetOps.slice0(qds, 0);
+				// now handle as single dataset below
+			}
+			else{
+				// I'm continuing the false assmption that paramenter space 
+				// dimensionality ~= rank which is the the core of the CDF/QDataSet
+				// path dataset problem.   We will have to face this head on someday.
+				// The only indicator that a rank 1 item is actually a Z value is the
+				// existance of a PLANE_0 property.
+				int nMaxRank = 0;
+				for(int i = 0; i < qds.length(); ++i){
+					QDataSet ds = DataSetOps.slice0(qds, i);
+					int nRank = ds.rank();
+					if(ds.property(QDataSet.PLANE_0) != null)
+						//throw new UnsupportedOperationException(
+						//	"Cannot determine the canonical axis for bundles which contain "+
+						//	"datasets which have a PLANE_0 property."
+						//);
+						return null;
+					
+					if(nRank > nMaxRank) nMaxRank = ds.rank();
+				}
+				if(nMaxRank == 1) return "y";
+				if(nMaxRank == 2) return "z";
+				return null;
+			}
+		}
+		
+		//Okay, not a bundle.  To decide our axis just check our dependencies
+		//rank, and planes.  Here's the swiss cheese check:
+		// rank 0 -> X
+		// rank 1 with no depend_0 -> X
+		// rank 1 with a depend_0 -> Y
+		// rank 1 with a depend_0 and plane_0 -> Z (rem to pull out plane for Z's)
+		// rank 2 -> Z
+		
+		switch(qds.rank()){
+		case 0: return "x";
+		case 2: return "z";
+		case 1: 
+			if(qds.property(QDataSet.DEPEND_0) == null) return "x";
+			if(qds.property(QDataSet.PLANE_0) == null) return "y";
+			return "z";
+		}
+		return null;
+	}
+	
+	public static String qd2DataUnits(QDataSet qds){
+		if(SemanticOps.isJoin(qds)) qds = DataSetOps.slice0(qds, 0);
+		
+		return SemanticOps.getUnits(qds).toString();
 	}
 }
