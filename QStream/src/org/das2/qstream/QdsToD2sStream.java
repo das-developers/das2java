@@ -12,7 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
+import java.util.Map;
 import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -84,7 +84,7 @@ public class QdsToD2sStream {
 	// is that it changes the packet header definitions, which we don't want to
 	// do when writing cache files.
 	int nSigDigit;
-	int nFracSecDigit;
+	int nSecDigit;
 	
 	// List of transmitted packet hdrs, index is the packet ID.
 	private List<String> lHdrsSent = new ArrayList<>();  
@@ -96,17 +96,17 @@ public class QdsToD2sStream {
 	
 	/** Initialize a binary QDataSet to das2 stream exporter */
 	public QdsToD2sStream(){ 
-		nSigDigit = -1; nFracSecDigit = -1;
+		nSigDigit = -1; nSecDigit = -1;
 	}
 	
 	/** Initialize a text, or partial text, QDataSet to das2 stream exporter
 	 * 
-	 * @param nSigDigit The number of significant digits used for general
+	 * @param genSigDigits The number of significant digits used for general
 	 *    data output.  Set this to 1 or less to trigger binary output, use
 	 *    a greater than 1 for text output.  If you don't know what else to
 	 *    pick, 6 is typically a great precision without being ridiculous.
 	 * 
-	 * @param nFacSecDigits  The number of fractional seconds digits to
+	 * @param fracSecDigits  The number of fractional seconds digits to
 	 *    use for ISO-8601 date-time values. Set this to -1 (or less) for
 	 *    binary time output.  The number of fraction seconds can be set
 	 *    as low as 0 and as high as 12 (picoseconds).  If successive time
@@ -132,7 +132,7 @@ public class QdsToD2sStream {
 					+ "between 0 and 12 inclusive, received %d", fracSecDigits
 				));
 			}
-			nFracSecDigit = fracSecDigits;
+			nSecDigit = fracSecDigits;
 		}
 	}
 	
@@ -330,15 +330,34 @@ public class QdsToD2sStream {
 	// Helper structures for making packet headers and writing data ///////////
 	
 	// Make and hold the transfer information for a single QDS
+	private final static int X_PLANE = 1;
+	private final static int Y_PLANE = 2;
+	private final static int Z_PLANE = 3;
+	private final static int YSCAN_PLANE = 4;
+	
 	private class QdsXferInfo {
 		QDataSet qds;
 		TransferType transtype;
 		String sType;
+		int nPlane;
+		
+		String   sSource;     // Only used to indicate plane + stats groups
+		String   sOperation;  // Only used to indicate satatistic type
 		
 		// Figure out how to represent the values.  In general everything is 
 		// output as a float unless it's an epoch time type.
-		QdsXferInfo(QDataSet _qds, int nGenDigits, int nFracSec){
+		QdsXferInfo(QDataSet _qds, int nGenDigits, int nFracSec, int _nPlane){
+			this(_qds, nGenDigits, nFracSec, _nPlane, null, null);
+		}
+		
+		// Extra constructor for statistics datasets.
+		QdsXferInfo(QDataSet _qds, int nGenDigits, int nFracSec, int _nPlane, 
+		            String _sSource, String sOp){
+
+			sSource = _sSource;
+			sOperation = sOp;
 			qds = _qds;
+			nPlane = _nPlane;
 				
 			Units units = (Units) qds.property(QDataSet.UNITS);
 			if((units != null) && (units instanceof TimeLocationUnits)){
@@ -422,43 +441,354 @@ public class QdsToD2sStream {
 	
 	
 	private PacketXferInfo makePktHdr(QDataSet qds) {
-		Document doc = newXmlDoc();
+		
 		List<QdsXferInfo> lDsXfer = new ArrayList<>();
-		lDsXfer.add(null);  // Depend 0 goes here, if we have one
-		lDsXfer.add(null);  // Depend 1 goes here for X,Y,Z datasets
 		
 		assert(!SemanticOps.isJoin(qds));  //Don't call this for join datasets
 		
-		Element elPkt = doc.createElement("packet");
+		QDataSet dep0;
+		List<QDataSet> lDsIn = new ArrayList<>();
+		List<QDataSet> lDsOut = new ArrayList<>();
 		
-		String sDataAxis = qd2DataAxis(qds);
-		if(sDataAxis == null) return null;   // Can't determine data values axis
-		
-		List<QDataSet> lDs = new ArrayList<>();
-		if(!SemanticOps.isBundle(qds))
+		if(!SemanticOps.isBundle(qds)){
+			// Primary <X> handling: Maybe the bundle's depend_0 is <x>
+			if( (dep0 = (QDataSet) qds.property(QDataSet.DEPEND_0)) != null)
+				lDsXfer.add(new QdsXferInfo(dep0, nSigDigit, nSecDigit, X_PLANE));
+			
 			for(int i = 0; i < qds.length(); ++i)
-				lDs.add( DataSetOps.slice0(qds, i) );
-		else
-			lDs.add(qds);
+				lDsIn.add( DataSetOps.slice0(qds, i) );
+		}
+		else{
+			lDsIn.add(qds);
+		}
 		
-		QDataSet dsX0 = null;
-		QDataSet dsY0 = null;  // All yTags must match
-		for(QDataSet ds: lDs){
-			QDataSet dep0 = (QDataSet) ds.property(QDataSet.DEPEND_0);
-			if(dep0 != null){
-				if(lDsXfer.get(0) == null){
-					lDsXfer.set(0, new QdsXferInfo(dep0, nSigDigit, nFracSecDigit));
-				}  
+		// Handle <x> planes
+		for(QDataSet ds: lDsIn){
+			// Maybe the bundle's members depend_0 is <x>
+			if( (dep0 = (QDataSet) ds.property(QDataSet.DEPEND_0)) != null){
+				
+				if(lDsXfer.isEmpty()){
+					lDsXfer.add(new QdsXferInfo(dep0, nSigDigit, nSecDigit, X_PLANE));
+				}
 				else{
-					if(dsX0 != dep0){ 
-						log.warning("Multiple independent X-value sets in dataset");
+					if(dep0 != lDsXfer.get(0).qds){
+						log.warning("Multiple independent depend_0 datasets in bundle");
 						return null;
 					}
+				}
+				lDsOut.add(ds);  // Used the depend0, but keep top level dataset
+			}
+			else{
+				// Rank 1 with no depend 0 is an <x> plane
+				if(lDsXfer.isEmpty() && (ds.rank() == 1))
+					lDsXfer.add(new QdsXferInfo(ds, nSigDigit, nSecDigit, X_PLANE));
+				// no-add
+			}
+		}
+		
+		// Handle <y> planes, these are always rank 1 and have a depend 0, if
+		// you see a PLANE_0 save it out as a Z plane.
+		String sFb;  // Correlating source fallback name
+		int nNewPlanes;
+		lDsIn = lDsOut;
+		lDsOut = new ArrayList<>();
+		QDataSet dsZ = null;
+		QDataSet dsSubZ = null;
+		int nYs = 0;
+		int nZs = 0;
+		for(QDataSet ds: lDsIn){
+			if(ds.rank() > 1){ lDsOut.add(ds);  continue; }  //<yscan>
+			
+			assert(ds.property(QDataSet.DEPEND_0) != null);
+			
+			// Once we hit a Z plane we're done with y's and yscans
+			if(dsZ != null){
+				log.warning("Multiple Y planes encountered in X,Y,Z dataset");
+				return null;
+			}
+			
+			sFb = String.format("Y_%d", nYs);
+			nNewPlanes = _addPlaneWithStats(lDsXfer, ds, nSigDigit, nSecDigit, Y_PLANE, sFb);
+			if(nNewPlanes == 0) return null;
+			nYs += nNewPlanes;
+		
+			if( (dsZ = (QDataSet) ds.property(QDataSet.PLANE_0)) != null){
+				// If plane0 is a bundle we have multiple Z's
+				if(SemanticOps.isBundle(dsZ)){
+					for(int i = 0; i < dsZ.length(); ++i){
+						dsSubZ = DataSetOps.slice0(dsZ, i);
+						sFb = String.format("Z_%d", nZs);
+						nNewPlanes = _addPlaneWithStats(lDsXfer, dsSubZ, nSigDigit, nSecDigit, Z_PLANE, sFb);
+						if(nNewPlanes == 0) return null;
+						nZs += nNewPlanes;
+					}
+				}
+				else{
+					sFb = String.format("Z_%d", nZs);
+					nNewPlanes = _addPlaneWithStats(lDsXfer, dsZ, nSigDigit, nSecDigit, Z_PLANE, sFb);
+					if(nNewPlanes == 0) return null;
+					nZs += nNewPlanes;
 				}
 			}
 		}
 		
+		// Handle <yscan> planes.
+		lDsIn = lDsOut;
+		QDataSet dsYTags = null;
+		QDataSet dep1;
+		int nYScans = 0;
+		for(QDataSet ds: lDsIn){
+			if(ds.rank() > 2){ assert(false); return null; }
+			if(dsZ != null){
+				log.warning("YScan planes not allowed in the same packets as Z planes");
+				return null;
+			}
+			
+			if( (dep1 = (QDataSet)ds.property(QDataSet.DEPEND_1)) != null){
+				if(dsYTags == null){ 
+					dsYTags = dep1;
+				}
+				else{
+					if(dsYTags != dep1){
+						log.warning("Independent Y values for rank-2 datasets in the "
+								       + "same bundle");
+						return null;
+					}
+				}
+			}
+			
+			// Have our YTags
+			sFb = String.format("YScan_%d", nYScans);
+			nNewPlanes = _addPlaneWithStats(lDsXfer, ds, nSigDigit, nSecDigit, YSCAN_PLANE, sFb);
+			if(nNewPlanes < 1) return null;
+			nYScans += nNewPlanes;
+		}
+		
+		// Now make the packet header
+		Document doc; 
+		if( (doc = _makePktHdrFromXfer(lDsXfer, dsYTags)) == null) return null;
+		
 		return new PacketXferInfo(doc, lDsXfer);
+	}
+	
+	// Helper to setup transfer info for a plane and it's companion statistics
+	// planes
+	
+	int _addPlaneWithStats(
+		List<QdsXferInfo> lDsXfer, QDataSet dsPrimary, int nSigDigit, 
+		int nSecDigit, int nPlane, String sFallBackSrc
+	){
+		QdsXferInfo xferPrimary;
+		xferPrimary = new QdsXferInfo(dsPrimary, nSigDigit, nSecDigit, nPlane);
+		lDsXfer.add(xferPrimary);
+		
+		// See if source was set.
+		Map<String, Object> dUserProps;
+		dUserProps = (Map<String,Object>) dsPrimary.property(QDataSet.USER_PROPERTIES);
+		String sSource = null;
+		if(dUserProps != null){
+			if(dUserProps.containsKey("source"))
+				sSource = (String)dUserProps.get("source");
+		}
+		else{
+			sSource = (String)dsPrimary.property(QDataSet.NAME);
+			if(sSource == null) sSource = sFallBackSrc;
+		}
+			
+		// See if BIN_MIN or BIN_MAX datasets are present, these are planes with
+		// the same rank as the initial plane.
+		QDataSet dsStats;
+		String sErr = "Statistics dataset is a different rank than the average dataset";
+		String[] aProps = {
+			QDataSet.BIN_MIN, QDataSet.BIN_MAX, QDataSet.BIN_MINUS, QDataSet.BIN_PLUS
+		};
+		int nStatsPlanes = 0;
+		for(String sProp: aProps){
+			if((dsStats = (QDataSet)dsPrimary.property(sProp)) != null){
+				if(dsStats.rank() != dsPrimary.rank()){ 
+					log.warning(sErr); 
+					return 0; 
+				}
+				lDsXfer.add(new QdsXferInfo(dsStats, nSigDigit, nSecDigit, nPlane,
+			                               sSource, sProp));
+				++nStatsPlanes;
+			}
+		}
+		if(nStatsPlanes > 0) xferPrimary.sSource = sSource;
+		return 1 + nStatsPlanes;
+	}
+	
+	Document _makePktHdrFromXfer(List<QdsXferInfo> lDsXfer, QDataSet dsYTags)
+	{
+		Document doc = newXmlDoc();
+		Element elPkt = doc.createElement("packet");
+		
+		Element elPlane;
+		int nProps = 0;
+		int nYs = 0;
+		int nYscans = 0;
+		int nZs = 0;
+		
+		YTagStrings yts = null;
+		if(dsYTags != null) yts = _getYTagStrings(dsYTags, nSigDigit);
+	
+		for(QdsXferInfo xfer: lDsXfer){
+			
+			Element elProps = doc.createElement("properties");  // May not get used
+			String sName = (String)xfer.qds.property(QDataSet.NAME);
+			Units units  = (Units)xfer.qds.property(QDataSet.UNITS);
+			String sUnits = "";
+			if(units != null) sUnits = units.toString();
+			nProps = 0;
+						
+			switch(xfer.nPlane){
+			
+			case X_PLANE:
+				elPlane = doc.createElement("x");
+				elPlane.setAttribute("units", sUnits);
+				if(sName != null) elPlane.setAttribute("group", sName);
+				
+				nProps = addSimpleProps(elProps, xfer.qds, "x");
+				break;
+			
+			case Y_PLANE:
+				elPlane = doc.createElement("y");
+				elPlane.setAttribute("units", sUnits);
+				if(sName == null) sName = String.format("Y_%d", nYs);
+				elPlane.setAttribute("group", sName);
+				
+				nProps = addSimpleProps(elProps, xfer.qds, "y");
+				++nYs;
+				break;
+			
+			case Z_PLANE:
+				elPlane = doc.createElement("z");
+				elPlane.setAttribute("units", sUnits);
+				if(sName == null) sName = String.format("Z_%d", nZs);
+				elPlane.setAttribute("group", sName);
+				
+				nProps = addSimpleProps(elProps, xfer.qds, "z");
+				++nZs;
+				break;
+			
+			case YSCAN_PLANE:
+				elPlane = doc.createElement("yscan");
+				elPlane.setAttribute("zUnits", sUnits);
+				if(sName == null) sName = String.format("YScan_%d", nYscans);
+				elPlane.setAttribute("group", sName);
+				
+				//Extra stuff for YScans
+				if(dsYTags == null){
+					log.warning("Missing yTags dataset for yScan dataset");
+					return null;
+				}
+				units  = (Units)dsYTags.property(QDataSet.UNITS);
+				sUnits = "";
+				if(units != null) sUnits = units.toString();
+				elPlane.setAttribute("yUnits", sUnits);
+				elPlane.setAttribute("nitems", String.format("%d",dsYTags.length()));
+				
+				if(yts != null){
+					if(yts.sYTags != null){
+						elPlane.setAttribute("yTags", yts.sYTags);
+					}
+					else{
+						elPlane.setAttribute("yTagInterval", yts.sYTagInterval);
+						elPlane.setAttribute("yTagMin", yts.sYTagMin);
+					}
+				}
+				else{
+					assert(false);
+					log.warning("No YTags, for output yscans");
+					return null;
+				}
+				
+				nProps = addSimpleProps(elProps, dsYTags, "y");
+				nProps += addSimpleProps(elProps, xfer.qds, "z");
+				++nYscans;
+				break;
+				
+			default:
+				assert(false); return null;
+			}
+			
+			// Common stuff here
+			elPlane.setAttribute("type", xfer.sType);
+			Object oProp = xfer.qds.property(QDataSet.UNITS);
+			if(oProp != null) elPlane.setAttribute("units", ((Units)oProp).toString());
+			else 	elPlane.setAttribute("units", "");
+			
+			// Linking stats planes and averages planes if source is given
+			if(xfer.sSource != null){
+				// Both averages plane and stats planes have a source set
+				elProps.setAttribute("source", xfer.sSource);
+				++nProps;
+				if(xfer.sOperation != null){
+					// But only the stats planes have an operation set
+					elProps.setAttribute("operation", xfer.sOperation);
+					++nProps;
+				}
+			}
+			if(nProps > 0) elPlane.appendChild(elProps);
+			elPkt.appendChild(elPlane);
+		}
+		
+		doc.appendChild(elPkt);
+		return doc;
+	}
+	
+	// Getting string representation for ytags
+	private class YTagStrings {
+		String sYTagInterval = null;
+		String sYTagMin = null;
+		String sYTags = null;
+	}
+	
+	YTagStrings _getYTagStrings(QDataSet qds, int nFracDigits){
+		YTagStrings strs = new YTagStrings();
+		
+		if(qds.rank() != 1){
+			log.warning("YTags must have rank 1 for now.");
+			return null;
+		}
+		
+		// Get my format string
+		String sFmt = String.format("%%.%de", nFracDigits - 1);
+		
+		double rMin = qds.value(0);
+		if(qds.length() == 0){
+			strs.sYTags = String.format(sFmt, rMin);
+			return strs;
+		}
+
+		// Try to use sequence representation if we can, allow for jitter in
+		// intervals of one part in 100,000.
+		boolean bUseInterval = true;
+		double rInterval = qds.value(1) - rMin;
+		double rNextInterval, rAvg, rJitter;
+		for(int i = 2; i < qds.length(); ++i){
+			rNextInterval = qds.value(i) - qds.value(i - 1);
+			rAvg = Math.abs(rNextInterval + rInterval)/2;
+			rJitter = Math.abs(rNextInterval - rInterval) / rAvg;
+			if(rJitter > 1e-5){
+				bUseInterval = false;
+				break;
+			}
+		}
+		
+		if(bUseInterval){
+			strs.sYTagMin = String.format(sFmt, rMin);
+			strs.sYTagInterval = String.format(sFmt, rInterval);
+		}
+		else{
+			StringBuilder sb = new StringBuilder();
+			sb.append(String.format(sFmt, rMin));
+			for(int i = 1; i < qds.length(); ++i)
+				sb.append(",").append(String.format(sFmt, qds.value(i)));
+			strs.sYTags = sb.toString();
+		}
+		
+		return strs;
 	}
 	
 	
@@ -547,16 +877,6 @@ public class QdsToD2sStream {
 		return 0;
 	}
 	
-	int addUnitsProp(Element el, QDataSet qds, String qkey, String d2key){
-		Object oProp;
-		if((oProp = qds.property(qkey)) != null){
-			Units units = (Units)oProp;
-			el.setAttribute(d2key, units.toString());
-			return 1;
-		}
-		return 0;
-	}
-	
 	int addRealProp(Element el, QDataSet qds, String qkey, String d2key){
 		Object oProp;
 		if((oProp = qds.property(qkey)) != null){
@@ -579,11 +899,11 @@ public class QdsToD2sStream {
 		String sValue;
 		if(oUnits != null){
 			String sUnits = ((Units)oUnits).toString();
-			sValue = String.format("%.6e to %.6e %s", rMax.doubleValue(), 
+			sValue = String.format("%.6e to %.6e %s", rMin.doubleValue(), 
 			                       rMax.doubleValue(), sUnits);
 		}
 		else
-			sValue = String.format("%.6e to %.6e", rMax.doubleValue(), 
+			sValue = String.format("%.6e to %.6e", rMin.doubleValue(), 
 			                       rMax.doubleValue());
 		
 		el.setAttribute("DatumRange:"+d2key, sValue);
@@ -602,8 +922,6 @@ public class QdsToD2sStream {
 		nProps += addStrProp(el, qds, QDataSet.SCALE_TYPE, sAxis + "ScaleType");
 		nProps += addStrProp(el, qds, QDataSet.LABEL, sAxis + "Label");
 		nProps += addStrProp(el, qds, QDataSet.DESCRIPTION, sAxis + "Summary");
-		
-		nProps += addUnitsProp(el, qds, QDataSet.UNITS, sAxis + "Units");
 		
 		nProps += addRealProp(el, qds, QDataSet.FILL_VALUE, sAxis + "Fill");
 		nProps += addRealProp(el, qds, QDataSet.VALID_MIN, sAxis + "ValidMin");
@@ -699,14 +1017,7 @@ public class QdsToD2sStream {
 			return "z";
 		}
 		return null;
-	}
-	
-	public static String qd2DataUnits(QDataSet qds){
-		if(SemanticOps.isJoin(qds)) qds = DataSetOps.slice0(qds, 0);
-		
-		return SemanticOps.getUnits(qds).toString();
-	}
-	
+	}	
 	
 	public class AsciiVariableTimeTransType extends TransferType{
 		
