@@ -1486,9 +1486,12 @@ public class SeriesRenderer extends Renderer {
 
         if ( !haveReportedUnitProblem && !yaxisUnitsOkay ) {
             if ( unitsWarning ) {
-                //UnitsUtil.isRatioMeasurement( SemanticOps.getUnits(vds) ) && UnitsUtil.isRatioMeasurement( yAxis.getUnits() )
                 if ( vds!=null ) { // don't bother with the other mode.
-                    lparent.postMessage( this, "yaxis units changed from \""+SemanticOps.getUnits(vds) + "\" to \"" + yAxis.getUnits() + "\"", DasPlot.INFO, null, null );
+                    if ( yAxis.getUnits()==Units.dimensionless ) {
+                        logger.log(Level.FINE, "data units \"{0}\" plotted on dimensionless axis", SemanticOps.getUnits(vds));
+                    } else {
+                        lparent.postMessage( this, "yaxis units changed from \""+SemanticOps.getUnits(vds) + "\" to \"" + yAxis.getUnits() + "\"", DasPlot.INFO, null, null );
+                    }
                 }
             } else {
                 lparent.postMessage( this, "inconvertible yaxis units", DasPlot.INFO, null, null );
@@ -1498,8 +1501,11 @@ public class SeriesRenderer extends Renderer {
 
         if ( !haveReportedUnitProblem && !xaxisUnitsOkay ) {
             if ( xunitsWarning ) {
-                //UnitsUtil.isRatioMeasurement( SemanticOps.getUnits(vds) ) && UnitsUtil.isRatioMeasurement( yAxis.getUnits() )
-                lparent.postMessage( this, "xaxis units changed from \""+SemanticOps.getUnits(xds) + "\" to \"" + xAxis.getUnits() + "\"", DasPlot.INFO, null, null );
+                if ( yAxis.getUnits()==Units.dimensionless ) {
+                    logger.log(Level.FINE, "data units \"{0}\" plotted on dimensionless axis", SemanticOps.getUnits(xds));
+                } else {
+                    lparent.postMessage( this, "xaxis units changed from \""+SemanticOps.getUnits(xds) + "\" to \"" + xAxis.getUnits() + "\"", DasPlot.INFO, null, null );
+                }
             } else {
                 lparent.postMessage( this, "inconvertible xaxis units", DasPlot.INFO, null, null );
                 return;
