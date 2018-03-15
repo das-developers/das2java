@@ -1746,6 +1746,8 @@ public class SeriesRenderer extends Renderer {
 
         QDataSet xds = SemanticOps.xtagsDataSet(dataSet);
 
+        Units yunits;
+        
         if ( dataSet.rank()<3 && !SemanticOps.isRank2Waveform(dataSet) ) {  // xtags are rank 2 bins can happen too
             vds= ytagsDataSet(ds);
             if ( vds==null ) {
@@ -1769,16 +1771,20 @@ public class SeriesRenderer extends Renderer {
                 return;
             }
             unitsWarning= false;
-            plottable = SemanticOps.getUnits(vds).isConvertibleTo(yAxis.getUnits());
+            yunits=  SemanticOps.getUnits(vds);
+            plottable = yunits.isConvertibleTo(yAxis.getUnits()) || 
+                    ( yAxis.getUnits()==Units.dimensionless && UnitsUtil.isRatioMeasurement( yunits ) );
             if ( !plottable ) {
-                if ( UnitsUtil.isRatioMeasurement( SemanticOps.getUnits(vds) ) && UnitsUtil.isRatioMeasurement( yAxis.getUnits() ) ) {
+                if ( UnitsUtil.isRatioMeasurement( yunits ) && UnitsUtil.isRatioMeasurement( yAxis.getUnits() ) ) {
                     unitsWarning= true;
                 }
             }
 
         } else if (SemanticOps.isRank2Waveform(dataSet)) {
             tds = (QDataSet) dataSet;
-            plottable = SemanticOps.getUnits(tds).isConvertibleTo(yAxis.getUnits());
+            yunits= SemanticOps.getUnits(tds);
+            plottable = yunits.isConvertibleTo(yAxis.getUnits()) || 
+                    ( yAxis.getUnits()==Units.dimensionless && UnitsUtil.isRatioMeasurement( yunits ) );
             if ( !plottable ) {
                 if ( UnitsUtil.isRatioMeasurement( SemanticOps.getUnits(tds) ) && UnitsUtil.isRatioMeasurement( yAxis.getUnits() ) ) {
                     unitsWarning= true;
@@ -1786,13 +1792,15 @@ public class SeriesRenderer extends Renderer {
             }
         } else if ( SemanticOps.isRank3JoinOfRank2Waveform(dataSet) ) {
             tds = (QDataSet) dataSet;
-            plottable = SemanticOps.getUnits(tds).isConvertibleTo(yAxis.getUnits());
+            yunits= SemanticOps.getUnits(tds);            
+            plottable = yunits.isConvertibleTo(yAxis.getUnits()) || 
+                    ( yAxis.getUnits()==Units.dimensionless && UnitsUtil.isRatioMeasurement( yunits ) );
             if ( !plottable ) {
                 if ( UnitsUtil.isRatioMeasurement( SemanticOps.getUnits(tds) ) && UnitsUtil.isRatioMeasurement( yAxis.getUnits() ) ) {
                     unitsWarning= true;
                 }
             }
-        }
+        } 
 
         plottable = SemanticOps.getUnits(xds).isConvertibleTo(xAxis.getUnits());
         xunitsWarning= false;
