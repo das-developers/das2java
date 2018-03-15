@@ -1786,7 +1786,7 @@ public class SeriesRenderer extends Renderer {
             plottable = yunits.isConvertibleTo(yAxis.getUnits()) || 
                     ( yAxis.getUnits()==Units.dimensionless && UnitsUtil.isRatioMeasurement( yunits ) );
             if ( !plottable ) {
-                if ( UnitsUtil.isRatioMeasurement( SemanticOps.getUnits(tds) ) && UnitsUtil.isRatioMeasurement( yAxis.getUnits() ) ) {
+                if ( UnitsUtil.isRatioMeasurement( yunits ) && UnitsUtil.isRatioMeasurement( yAxis.getUnits() ) ) {
                     unitsWarning= true;
                 }
             }
@@ -1796,7 +1796,7 @@ public class SeriesRenderer extends Renderer {
             plottable = yunits.isConvertibleTo(yAxis.getUnits()) || 
                     ( yAxis.getUnits()==Units.dimensionless && UnitsUtil.isRatioMeasurement( yunits ) );
             if ( !plottable ) {
-                if ( UnitsUtil.isRatioMeasurement( SemanticOps.getUnits(tds) ) && UnitsUtil.isRatioMeasurement( yAxis.getUnits() ) ) {
+                if ( UnitsUtil.isRatioMeasurement( yunits ) && UnitsUtil.isRatioMeasurement( yAxis.getUnits() ) ) {
                     unitsWarning= true;
                 }
             }
