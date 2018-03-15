@@ -1501,7 +1501,7 @@ public class SeriesRenderer extends Renderer {
 
         if ( !haveReportedUnitProblem && !xaxisUnitsOkay ) {
             if ( xunitsWarning ) {
-                if ( yAxis.getUnits()==Units.dimensionless ) {
+                if ( xAxis.getUnits()==Units.dimensionless ) {
                     logger.log(Level.FINE, "data units \"{0}\" plotted on dimensionless axis", SemanticOps.getUnits(xds));
                 } else {
                     lparent.postMessage( this, "xaxis units changed from \""+SemanticOps.getUnits(xds) + "\" to \"" + xAxis.getUnits() + "\"", DasPlot.INFO, null, null );
