@@ -2,7 +2,6 @@ package org.das2.qstream;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -13,16 +12,15 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 import org.das2.datum.Datum;
+import org.das2.datum.DatumRange;
 import org.das2.datum.LoggerManager;
 import org.das2.datum.TimeLocationUnits;
 import org.das2.datum.TimeUtil;
@@ -32,8 +30,13 @@ import org.das2.datum.format.TimeDatumFormatter;
 import org.das2.qds.DataSetOps;
 import org.das2.qds.QDataSet;
 import org.das2.qds.SemanticOps;
+import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.ls.DOMImplementationLS;
+import org.w3c.dom.ls.LSSerializer;
 
 
  // In general QDataSet conglomerations have the following possible structure
@@ -77,6 +80,22 @@ import org.w3c.dom.Element;
  */
 public class QdsToD2sStream {
 	
+	public static final String FORMAT_2_2 = "2.2";
+	public static final String FORMAT_2_3 = "2.3";
+	public static final String[] formats = {FORMAT_2_2, FORMAT_2_3};
+	
+	private boolean bDas23;
+	
+	private String VERSION;
+	private String X;
+	private String Y;
+	private String XSCAN;
+	private String Z;
+	private String YSCAN;
+	private String TYPE;
+	private String YTAGS;
+	private String XTAGS;
+	
 	private static final Logger log = LoggerManager.getLogger("qstream");
 	
 	// Handling for text output, throw this back to the user if they want text
@@ -94,12 +113,20 @@ public class QdsToD2sStream {
 	
 	// Public interface //////////////////////////////////////////////////////
 	
-	/** Initialize a binary QDataSet to das2 stream exporter */
-	public QdsToD2sStream(){ 
+	/** Initialize a binary QDataSet to das2 stream exporter 
+	 * @param version The output version to write, valid choices are defined 
+	 *        in the static formats array
+	 */
+	public QdsToD2sStream(String version){ 
 		nSigDigit = -1; nSecDigit = -1;
+		bDas23 = version.equals(FORMAT_2_3);
+		_setNames(bDas23);
 	}
 	
 	/** Initialize a text, or partial text, QDataSet to das2 stream exporter
+	 * 
+	 * @param version The output version to write, valid choices are defined 
+	 *        in the static formats array
 	 * 
 	 * @param genSigDigits The number of significant digits used for general
 	 *    data output.  Set this to 1 or less to trigger binary output, use
@@ -114,7 +141,10 @@ public class QdsToD2sStream {
 	 *    repeats are accepted) then stream writing fails.  Use 3 (i.e.
 	 *    microseconds) if you don't know what else to choose.
 	 */
-	public QdsToD2sStream(int genSigDigits, int fracSecDigits){
+	public QdsToD2sStream(String version, int genSigDigits, int fracSecDigits){
+		
+		bDas23 = version.equals(FORMAT_2_3);
+		_setNames(bDas23);
 		if(genSigDigits > 1){
 			if(genSigDigits > 16){
 				throw new IllegalArgumentException(String.format(
@@ -133,6 +163,21 @@ public class QdsToD2sStream {
 				));
 			}
 			nSecDigit = fracSecDigits;
+		}
+	}
+	
+	final void _setNames(boolean _bDas23){
+		if(_bDas23){
+			VERSION = "2.3";
+			X = "X"; Y = "Y"; XSCAN = "YofX"; Z = "Z"; YSCAN = "ZofXY"; 
+			TYPE = "format"; YTAGS = "yValues"; XSCAN = "YofX"; 
+			XTAGS = "xOffsets";
+		}
+		else{
+			VERSION = "2.2";
+			X = "x"; Y = "y"; XSCAN = null;   Z = "z"; YSCAN = "yscan"; 
+			TYPE = "type"; YTAGS = "yTags"; XSCAN = null; 
+			XTAGS = null;
 		}
 	}
 	
@@ -173,13 +218,10 @@ public class QdsToD2sStream {
 	 *         given dataset.  Since deeper inspection occurs when actually
 	 *         writing the data then when testing, false may be returned even
 	 *         if canWrite() returned true.
-	 * 
-	 * @throws javax.xml.transform.TransformerException  if the dom is bad, which
-	 *         shouldn't happen
 	 * @throws java.io.IOException
 	 */
 	public boolean write(QDataSet qds, OutputStream os) 
-		throws TransformerException, IOException {
+		throws IOException {
 		
 		if(! canWrite(qds)) return false;   // Try not to create invalid output
 		
@@ -216,7 +258,7 @@ public class QdsToD2sStream {
 		}
 		
 		for(int i = 0; i < lHdrsToSend.size(); ++i){
-			int iPktId = lHdrsSent.size() + i;
+			int iPktId = lHdrsSent.size();  // So zero is always stream header
 			if(iPktId >= MAX_HDRS) return false;
 			
 			writeHeader(os, iPktId, lHdrsToSend.get(i));
@@ -308,7 +350,7 @@ public class QdsToD2sStream {
 		Document doc = newXmlDoc();
 		
 		Element stream = doc.createElement("stream");
-		stream.setAttribute("version", "2.2");
+		stream.setAttribute("version", VERSION);
 		
 		Element props = doc.createElement("properties");
 		int nProps = 0;
@@ -321,6 +363,15 @@ public class QdsToD2sStream {
 		if(sAxis == null) return null;
 		
 		nProps += addSimpleProps(props, qds, sAxis);
+		
+		// If the user_properties are present, add them in
+		Map<String, Object> dUser;
+		dUser = (Map<String, Object>)qds.property(QDataSet.USER_PROPERTIES);
+		if(dUser != null) nProps += addPropsFromMap(props, dUser);
+		
+		// If the ISTP-CDF metadata weren't so long, we'd include these as well
+		// maybe a Das 2.3 sub tag is appropriate for them, ignore for now...
+		
 		if(nProps > 0) stream.appendChild(props);
 		
 		doc.appendChild(stream);
@@ -351,7 +402,7 @@ public class QdsToD2sStream {
 		}
 		
 		// Extra constructor for statistics datasets.
-		QdsXferInfo(QDataSet _qds, int nGenDigits, int nFracSec, int _nPlane, 
+		QdsXferInfo(QDataSet _qds, int nGenSigDigit, int nFracSec, int _nPlane, 
 		            String _sSource, String sOp){
 
 			sSource = _sSource;
@@ -367,19 +418,19 @@ public class QdsToD2sStream {
 					     "little_endian_real8" : "sun_real8";
 				}
 				else{
-					transtype = new AsciiVariableTimeTransType(units, nFracSec);
+					transtype = new D2TextTimeTransfer(units, nFracSec);
 					sType = String.format("time%d", transtype.sizeBytes());
 				}
 			}
 			else{
 				//Non epoch stuff
-				if(nGenDigits < 0){
+				if(nGenSigDigit < 0){
 					transtype = new FloatTransferType();
 					sType = ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN ? 
 					     "little_endian_real4" : "sun_real4";
 				}
 				else{
-					transtype = new AsciiTransferType(nGenDigits + 7, true);
+					transtype = new D2SciNoteTransfer(nGenSigDigit);
 					sType = String.format("ascii%d", transtype.sizeBytes());
 				}
 			}
@@ -401,7 +452,11 @@ public class QdsToD2sStream {
 		// dimension across all qdatasets.
 		int slice0Length() {
 			int nLen = 0;
-			for(QdsXferInfo qi: lDsXfer) nLen += qi.transtype.sizeBytes();
+			for(QdsXferInfo qi: lDsXfer){ 
+				int nItems = 1;
+				if(qi.qds.rank() > 1) nItems = qi.qds.length(0);
+				nLen += qi.transtype.sizeBytes() * nItems;
+			}
 			return nLen;
 		}
 	}
@@ -450,7 +505,7 @@ public class QdsToD2sStream {
 		List<QDataSet> lDsIn = new ArrayList<>();
 		List<QDataSet> lDsOut = new ArrayList<>();
 		
-		if(!SemanticOps.isBundle(qds)){
+		if(SemanticOps.isBundle(qds)){
 			// Primary <X> handling: Maybe the bundle's depend_0 is <x>
 			if( (dep0 = (QDataSet) qds.property(QDataSet.DEPEND_0)) != null)
 				lDsXfer.add(new QdsXferInfo(dep0, nSigDigit, nSecDigit, X_PLANE));
@@ -488,7 +543,7 @@ public class QdsToD2sStream {
 		
 		// Handle <y> planes, these are always rank 1 and have a depend 0, if
 		// you see a PLANE_0 save it out as a Z plane.
-		String sFb;  // Correlating source fallback name
+		String sFallBackSrcName;  // Correlating source fallback name
 		int nNewPlanes;
 		lDsIn = lDsOut;
 		lDsOut = new ArrayList<>();
@@ -507,8 +562,10 @@ public class QdsToD2sStream {
 				return null;
 			}
 			
-			sFb = String.format("Y_%d", nYs);
-			nNewPlanes = _addPlaneWithStats(lDsXfer, ds, nSigDigit, nSecDigit, Y_PLANE, sFb);
+			sFallBackSrcName = String.format("Y_%d", nYs);
+			nNewPlanes = _addPlaneWithStats(
+				lDsXfer, ds, nSigDigit, nSecDigit, Y_PLANE, sFallBackSrcName
+			);
 			if(nNewPlanes == 0) return null;
 			nYs += nNewPlanes;
 		
@@ -517,15 +574,19 @@ public class QdsToD2sStream {
 				if(SemanticOps.isBundle(dsZ)){
 					for(int i = 0; i < dsZ.length(); ++i){
 						dsSubZ = DataSetOps.slice0(dsZ, i);
-						sFb = String.format("Z_%d", nZs);
-						nNewPlanes = _addPlaneWithStats(lDsXfer, dsSubZ, nSigDigit, nSecDigit, Z_PLANE, sFb);
+						sFallBackSrcName = String.format("Z_%d", nZs);
+						nNewPlanes = _addPlaneWithStats(
+							 lDsXfer, dsSubZ, nSigDigit, nSecDigit, Z_PLANE, sFallBackSrcName
+						);
 						if(nNewPlanes == 0) return null;
 						nZs += nNewPlanes;
 					}
 				}
 				else{
-					sFb = String.format("Z_%d", nZs);
-					nNewPlanes = _addPlaneWithStats(lDsXfer, dsZ, nSigDigit, nSecDigit, Z_PLANE, sFb);
+					sFallBackSrcName = String.format("Z_%d", nZs);
+					nNewPlanes = _addPlaneWithStats(
+						lDsXfer, dsZ, nSigDigit, nSecDigit, Z_PLANE, sFallBackSrcName
+					);
 					if(nNewPlanes == 0) return null;
 					nZs += nNewPlanes;
 				}
@@ -550,16 +611,18 @@ public class QdsToD2sStream {
 				}
 				else{
 					if(dsYTags != dep1){
-						log.warning("Independent Y values for rank-2 datasets in the "
-								       + "same bundle");
+						log.warning("Independent Y values for different rank-2 "
+								      + " datasets in the same bundle");
 						return null;
 					}
 				}
 			}
 			
 			// Have our YTags
-			sFb = String.format("YScan_%d", nYScans);
-			nNewPlanes = _addPlaneWithStats(lDsXfer, ds, nSigDigit, nSecDigit, YSCAN_PLANE, sFb);
+			sFallBackSrcName = String.format("YScan_%d", nYScans);
+			nNewPlanes = _addPlaneWithStats(
+				lDsXfer, ds, nSigDigit, nSecDigit, YSCAN_PLANE, sFallBackSrcName
+			);
 			if(nNewPlanes < 1) return null;
 			nYScans += nNewPlanes;
 		}
@@ -624,7 +687,7 @@ public class QdsToD2sStream {
 		Element elPkt = doc.createElement("packet");
 		
 		Element elPlane;
-		int nProps = 0;
+		int nProps;
 		int nYs = 0;
 		int nYscans = 0;
 		int nZs = 0;
@@ -639,12 +702,11 @@ public class QdsToD2sStream {
 			Units units  = (Units)xfer.qds.property(QDataSet.UNITS);
 			String sUnits = "";
 			if(units != null) sUnits = units.toString();
-			nProps = 0;
 						
 			switch(xfer.nPlane){
 			
 			case X_PLANE:
-				elPlane = doc.createElement("x");
+				elPlane = doc.createElement(X);
 				elPlane.setAttribute("units", sUnits);
 				if(sName != null) elPlane.setAttribute("group", sName);
 				
@@ -652,7 +714,7 @@ public class QdsToD2sStream {
 				break;
 			
 			case Y_PLANE:
-				elPlane = doc.createElement("y");
+				elPlane = doc.createElement(Y);
 				elPlane.setAttribute("units", sUnits);
 				if(sName == null) sName = String.format("Y_%d", nYs);
 				elPlane.setAttribute("group", sName);
@@ -662,7 +724,7 @@ public class QdsToD2sStream {
 				break;
 			
 			case Z_PLANE:
-				elPlane = doc.createElement("z");
+				elPlane = doc.createElement(Z);
 				elPlane.setAttribute("units", sUnits);
 				if(sName == null) sName = String.format("Z_%d", nZs);
 				elPlane.setAttribute("group", sName);
@@ -672,8 +734,10 @@ public class QdsToD2sStream {
 				break;
 			
 			case YSCAN_PLANE:
-				elPlane = doc.createElement("yscan");
-				elPlane.setAttribute("zUnits", sUnits);
+				elPlane = doc.createElement(YSCAN);
+				if(bDas23) elPlane.setAttribute("units", sUnits);
+				else elPlane.setAttribute("zUnits", sUnits);
+				
 				if(sName == null) sName = String.format("YScan_%d", nYscans);
 				elPlane.setAttribute("group", sName);
 				
@@ -682,17 +746,24 @@ public class QdsToD2sStream {
 					log.warning("Missing yTags dataset for yScan dataset");
 					return null;
 				}
+				elPlane.setAttribute("nitems", String.format("%d",dsYTags.length()));
+				
 				units  = (Units)dsYTags.property(QDataSet.UNITS);
 				sUnits = "";
 				if(units != null) sUnits = units.toString();
-				elPlane.setAttribute("yUnits", sUnits);
-				elPlane.setAttribute("nitems", String.format("%d",dsYTags.length()));
 				
 				if(yts != null){
 					if(yts.sYTags != null){
-						elPlane.setAttribute("yTags", yts.sYTags);
+						if(bDas23){ 
+							valueListChild(elPlane, YTAGS, sUnits, yts.sYTags);
+						}
+						else {
+							elPlane.setAttribute(YTAGS, yts.sYTags);
+							elPlane.setAttribute("yUnits", sUnits);
+						}
 					}
 					else{
+						elPlane.setAttribute("yUnits", sUnits);
 						elPlane.setAttribute("yTagInterval", yts.sYTagInterval);
 						elPlane.setAttribute("yTagMin", yts.sYTagMin);
 					}
@@ -713,10 +784,7 @@ public class QdsToD2sStream {
 			}
 			
 			// Common stuff here
-			elPlane.setAttribute("type", xfer.sType);
-			Object oProp = xfer.qds.property(QDataSet.UNITS);
-			if(oProp != null) elPlane.setAttribute("units", ((Units)oProp).toString());
-			else 	elPlane.setAttribute("units", "");
+			elPlane.setAttribute(TYPE, xfer.sType);
 			
 			// Linking stats planes and averages planes if source is given
 			if(xfer.sSource != null){
@@ -782,15 +850,41 @@ public class QdsToD2sStream {
 		}
 		else{
 			StringBuilder sb = new StringBuilder();
-			sb.append(String.format(sFmt, rMin));
-			for(int i = 1; i < qds.length(); ++i)
-				sb.append(",").append(String.format(sFmt, qds.value(i)));
+			// For Das 2.3 use whitespace to format the list nicely unless we are running
+			// low on space
+			String sNL = "\n            ";
+			if(bDas23){
+				sb.append(sNL);
+				sb.append(String.format(sFmt, rMin));
+				for(int i = 1; i < qds.length(); ++i){	
+					sb.append(",");
+					if( i % 8 == 0) sb.append(sNL);
+					else sb.append(" ");
+					sb.append(String.format(sFmt, qds.value(i)));
+				}
+				sb.append("\n        ");
+			}
+			else{
+				sb.append(String.format(sFmt, rMin));
+				for(int i = 1; i < qds.length(); ++i)
+					sb.append(",").append(String.format(sFmt, qds.value(i)));
+			}
 			strs.sYTags = sb.toString();
 		}
 		
 		return strs;
 	}
 	
+	void valueListChild(
+		Element elPlane, String sElement, String sUnits, String sValues
+	){
+		Document doc = elPlane.getOwnerDocument();
+		Element el = doc.createElement(sElement);
+		el.setAttribute("units", sUnits);
+		Node text = doc.createTextNode(sValues);
+		el.appendChild(text);
+		elPlane.appendChild(el);
+	}
 	
 	// Send Bundle data
 	private void writeData(int iPktId, PacketXferInfo pktXfer, OutputStream out) 
@@ -836,15 +930,16 @@ public class QdsToD2sStream {
 	
 	// Secondary helpers functions below here //////////////////////////////////
 	
-	private String xmlDocToStr(Document doc) throws TransformerException
-	{ 
-		// Shamelessly copied from stack overflow user "digitalsanctum" at URL
-		// https://stackoverflow.com/questions/315517/is-there-a-more-elegant-way-to-convert-an-xml-document-to-a-string-in-java-than
-		Transformer transformer = TransformerFactory.newInstance().newTransformer();
-		StreamResult result = new StreamResult(new StringWriter());
-		DOMSource source = new DOMSource(doc);
-		transformer.transform(source, result);
-		return result.getWriter().toString();
+	private String xmlDocToStr(Document doc)
+	{ 	
+		DOMImplementation imp = doc.getImplementation();
+		DOMImplementationLS ls = (DOMImplementationLS)imp.getFeature("LS", "3.0");
+		LSSerializer serializer = ls.createLSSerializer();
+		//DOMStringList props = serializer.getDomConfig().getParameterNames();
+		serializer.getDomConfig().setParameter("format-pretty-print", true);
+		serializer.getDomConfig().setParameter("xml-declaration", false);
+		String sDoc = serializer.writeToString(doc);		
+		return sDoc;
 	}
 	
 	// Write a UTF-8 header string onto the stream
@@ -868,26 +963,66 @@ public class QdsToD2sStream {
 		}
 	}
 	
-	int addStrProp(Element el, QDataSet qds, String qkey, String d2key){
-		Object oProp;
-		if((oProp = qds.property(qkey)) != null){
-			el.setAttribute(d2key, (String)oProp);
-			return 1;
-		}
-		return 0;
+	int addBoolProp(Element props, String sName, Object oValue){
+		String sValue = (Boolean)oValue ? "true" : "false";
+		if(bDas23) _addChildProp(props, sName, "boolean", sValue);
+		else props.setAttribute(sName, sValue);
+		return 1;
 	}
 	
-	int addRealProp(Element el, QDataSet qds, String qkey, String d2key){
+	int addStrProp(Element props, QDataSet qds, String qkey, String d2key){
 		Object oProp;
-		if((oProp = qds.property(qkey)) != null){
-			Number num = (Number)oProp;
-			el.setAttribute("double:"+d2key, String.format("%.6e", num.doubleValue()));
-			return 1;
-		}
+		if((oProp = qds.property(qkey)) != null)
+			return addStrProp(props, d2key, oProp);
 		return 0;
 	}
+	int addStrProp(Element props, String sName, Object oValue){
+		
+		// Special handling for substitutions, Das2 Streams flatten metadata
+		// so if a %{USER_PROPERTIES.thing} substitution string is being saved, 
+		// flatten it back to just %{thing} so that it works when read again
+		String sInput = (String)oValue;
+		
+		Pattern p = Pattern.compile("%\\{ *USER_PROPERTIES\\.");
+		Matcher m = p.matcher(sInput);
+		StringBuffer sb = new StringBuffer();
+		while(m.find()) m.appendReplacement(sb, "%{");
+		m.appendTail(sb);
+		String sOutput = sb.toString();
+		
+		if(bDas23) _addChildProp(props, sName, null, sOutput);
+		else props.setAttribute(sName, sOutput);
+		return 1;
+	}
 	
-	int addRngProp(Element el, QDataSet qds, String sMinKey, String sMaxKey,
+	int addRealProp(Element props, QDataSet qds, String qkey, String d2key){
+		Object oProp;
+		if((oProp = qds.property(qkey)) != null)
+			return addRealProp(props, d2key, oProp);
+		return 0;
+	}
+	int addRealProp(Element props, String sName, Object oValue){
+		Number num = (Number)oValue;
+		String sVal = String.format("%.6e", num.doubleValue());
+		if(bDas23) 	_addChildProp(props, sName, "double", sVal);
+		else  props.setAttribute("double:"+sName, sVal);
+		return 1;
+	}
+	
+	int addDatumProp(Element props, QDataSet qds, String qkey, String d2key){
+		Object oProp;
+		if((oProp = qds.property(qkey)) != null)
+			return addDatumProp(props, d2key, oProp);
+		return 0;
+	}
+	int addDatumProp(Element props, String sName, Object oValue){
+		Datum datum = (Datum)oValue;
+		if(bDas23) 	_addChildProp(props, sName, "Datum", datum.toString());
+		else  props.setAttribute("Datum:"+sName, datum.toString());
+		return 1;
+	}
+	
+	int addRngProp(Element props, QDataSet qds, String sMinKey, String sMaxKey,
 			         String sUnitsKey, String d2key){
 		Object oMin, oMax, oUnits;
 		oMin = qds.property(sMinKey); oMax = qds.property(sMaxKey);
@@ -906,28 +1041,67 @@ public class QdsToD2sStream {
 			sValue = String.format("%.6e to %.6e", rMin.doubleValue(), 
 			                       rMax.doubleValue());
 		
-		el.setAttribute("DatumRange:"+d2key, sValue);
+		if(bDas23) 	_addChildProp(props, d2key, "DatumRange", sValue);
+		else props.setAttribute("DatumRange:"+d2key, sValue);
 		return 1;
+	}
+	int addRngProp(Element props, String sName, Object oValue){
+		DatumRange rng = (DatumRange)oValue;
+		
+		// Work around a bug in DatumRange.  DatumRange can not read it's own
+		// output.  For example a time range becomes:
+		//    range.toString() => "2017-09-01 9:00 to 10:00"
+		// But the input reader expects:
+		//   "2017-09-01T9:00 to 2017-09-01T10:00 UTC"
+		// or it fails
+		
+		Units units = rng.getUnits();
+		String sOutput;
+		if( units instanceof TimeLocationUnits){
+			Datum dmMin = rng.min();
+			Datum dmMax = rng.max();
+			sOutput = String.format(
+				"%s to %s UTC", dmMin.toString().replaceAll("Z", ""),
+				dmMax.toString().replaceAll("Z", "")
+			);
+		}
+		else{
+			sOutput = rng.toString();
+		}
+		
+		if(bDas23) 	_addChildProp(props, sName, "DatumRange", sOutput);
+		else  props.setAttribute("DatumRange:"+sName, sOutput);
+		return 1;
+	}
+	
+	void _addChildProp(Element props, String sName, String sType, String sVal){
+		Document doc = props.getOwnerDocument();
+		Element prop = doc.createElement("prop");
+		prop.setAttribute("name", sName);
+		if(sType != null) prop.setAttribute("type", sType);
+		Node text = doc.createTextNode(sVal);
+		prop.appendChild(text);
+		props.appendChild(prop);
 	}
 	
 	// Get all the simple standard properties of a dataset and add these to the
 	// attributes of a property element.  Complex properties dependencies and 
 	// associated datasets are not handled here.  Returns the number of props
 	// added.
-	int addSimpleProps(Element el, QDataSet qds, String sAxis)
+	int addSimpleProps(Element props, QDataSet qds, String sAxis)
 	{
 		int nProps = 0;
 		
-		nProps += addStrProp(el, qds, QDataSet.FORMAT, sAxis + "Format");
-		nProps += addStrProp(el, qds, QDataSet.SCALE_TYPE, sAxis + "ScaleType");
-		nProps += addStrProp(el, qds, QDataSet.LABEL, sAxis + "Label");
-		nProps += addStrProp(el, qds, QDataSet.DESCRIPTION, sAxis + "Summary");
+		nProps += addStrProp(props, qds, QDataSet.FORMAT, sAxis + "Format");
+		nProps += addStrProp(props, qds, QDataSet.SCALE_TYPE, sAxis + "ScaleType");
+		nProps += addStrProp(props, qds, QDataSet.LABEL, sAxis + "Label");
+		nProps += addStrProp(props, qds, QDataSet.DESCRIPTION, sAxis + "Summary");
 		
-		nProps += addRealProp(el, qds, QDataSet.FILL_VALUE, sAxis + "Fill");
-		nProps += addRealProp(el, qds, QDataSet.VALID_MIN, sAxis + "ValidMin");
-		nProps += addRealProp(el, qds, QDataSet.VALID_MAX, sAxis + "ValidMax");
+		nProps += addRealProp(props, qds, QDataSet.FILL_VALUE, sAxis + "Fill");
+		nProps += addRealProp(props, qds, QDataSet.VALID_MIN, sAxis + "ValidMin");
+		nProps += addRealProp(props, qds, QDataSet.VALID_MAX, sAxis + "ValidMax");
 		
-		nProps += addRngProp(el, qds, QDataSet.TYPICAL_MIN, QDataSet.TYPICAL_MAX,
+		nProps += addRngProp(props, qds, QDataSet.TYPICAL_MIN, QDataSet.TYPICAL_MAX,
 		                     QDataSet.UNITS, sAxis + "Range");
 		
 		// The cadence is an odd bird, a QDataSet with 1 item, handle special
@@ -938,12 +1112,59 @@ public class QdsToD2sStream {
 			if(units == null) units = Units.dimensionless;
 			Datum dtm = Datum.create(dsTmp.value(), units);
 			
-			el.setAttribute("Datum:"+ sAxis + "TagWidth", dtm.toString());
+			if(bDas23) _addChildProp(props, sAxis+"TagWidth", "Datum", dtm.toString());
+			else props.setAttribute("Datum:"+ sAxis + "TagWidth", dtm.toString());
 			++nProps;
 		}
 		
 		return nProps;
 	}
+	
+	// Get all the user_data properties that don't conflict with any properties
+	// already present.  These don't care about prepending x,y,z axis identifiers
+	// to the attribute tag, though they may have them and that's okay.
+	int addPropsFromMap(Element props, Map<String, Object> dMap){
+		
+		if(dMap == null) return 0;
+		int nAdded = 0;
+		
+		for(Entry<String,Object> ent: dMap.entrySet()){
+			String sKey = ent.getKey();
+			
+			// For das2.2 ask about attributes, for das2.3 ask about child elements
+			if(bDas23){
+				NodeList nl = props.getElementsByTagName("prop");
+				boolean bHasItAlready = false;
+				for(int i = 0; i < nl.getLength(); ++i){
+					Element el = (Element)nl.item(i);
+					if(el.hasAttribute(sKey)){ bHasItAlready = true; break; }
+				}
+				if(bHasItAlready) continue;
+			}
+			else{
+				if(props.hasAttribute(sKey)) continue;
+			}
+			
+			Object oVal = ent.getValue();
+			if(oVal instanceof Boolean)
+				nAdded += addBoolProp(props, sKey, oVal);
+			else
+				if(oVal instanceof String)
+					nAdded += addStrProp(props, sKey, oVal);
+				else
+					if(oVal instanceof Number)
+						nAdded += addRealProp(props, sKey, oVal);
+					else
+						if(oVal instanceof Datum)
+							nAdded += addDatumProp(props, sKey, oVal);
+						else
+							if(oVal instanceof DatumRange)
+								nAdded += addRngProp(props, sKey, oVal);
+			
+		}
+		return nAdded;
+	}
+	
 
 	///////////////////////////////////////////////////////////////////////////
 	// Das2 specific dataset information functions that could just be an add on
@@ -1019,7 +1240,9 @@ public class QdsToD2sStream {
 		return null;
 	}	
 	
-	public class AsciiVariableTimeTransType extends TransferType{
+	// Custom ISO time transfer type handles fractional seconds at arbitrary
+	// precision instead of ms, microsec, and nanosec only
+	private class D2TextTimeTransfer extends TransferType{
 		
 		Units units;
 		DatumFormatter formatter;
@@ -1033,15 +1256,15 @@ public class QdsToD2sStream {
 		 *        time
 		 * @param nFracSec Any value from 0 to 12 (picoseconds) inclusive.
 		 */
-		public AsciiVariableTimeTransType(Units units, int nFracSec)
+		public D2TextTimeTransfer(Units units, int nFracSec)
 		{
 			this.units = units;
 			
 			// yyyy-mm-ddThh:mm:ss.ssssssssssss +1 for space at end
 			// 12345678901234567890123456789012
 			nSize = 20;
-			String sFmt =  "yyyy-MM-dd'T'HH:mm:ss' '";
-			String sFill =        "                    ";
+			String sFmt =  "yyyy-MM-dd'T'HH:mm:ss";
+			String sFill = "                   ";
 			
 			if(nFracSec > 0){ 
 				sFmt += ".";
@@ -1051,6 +1274,7 @@ public class QdsToD2sStream {
 				sFmt += "S";
 				sFill += " ";
 			}
+			sFmt += " "; sFill += " ";
 			
 			aFill = sFill.getBytes(StandardCharsets.US_ASCII);
 			try{
@@ -1097,5 +1321,55 @@ public class QdsToD2sStream {
 
 		@Override
 		public String name(){ return String.format("time%d", nSize); }
+	}
+
+	// Custom local transfer type for exponential notation, use a small 'e'
+	// and don't print + signs.
+	private class D2SciNoteTransfer extends TransferType {
+
+		final int nLen;
+		private String sFmt;
+
+		public D2SciNoteTransfer(int nSigDigits) {
+			if (nSigDigits < 2 || nSigDigits > 17) {
+				throw new IllegalArgumentException(String.format(
+						  "Significant digits for output must be between 2 and 17 "
+						  + "inclusive, recieved %d", nSigDigits
+				));
+			}
+			// 7 = room for sign(1), decimal(1), exponent (4) and trailing space(1)
+			nLen = nSigDigits + 7;
+			sFmt = String.format("%%.%de", nSigDigits - 1);
+		}
+
+		@Override
+		public void write(double rVal, ByteBuffer buffer) {
+			String sVal = String.format(sFmt, rVal);
+			if (rVal >= 0.0) {
+				buffer.put((byte) 32);  // take up room used by - sign
+			}
+			buffer.put(sVal.getBytes(StandardCharsets.US_ASCII));
+			buffer.put((byte) 32);
+		}
+
+		@Override
+		public double read(ByteBuffer buffer) {
+			byte[] bytes = new byte[nLen];
+			buffer.get(bytes);
+			String str;
+			try {
+				str = new String(bytes, StandardCharsets.US_ASCII).trim();
+				return Double.parseDouble(str);
+			} catch (NumberFormatException ex) {
+				return Double.NaN;
+			}
+		}
+		
+		@Override
+		public int sizeBytes()   { return nLen; }
+		@Override
+		public boolean isAscii() { return true; }
+		@Override
+		public String name()     { return "ascii" + nLen; }
 	}
 }
