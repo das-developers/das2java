@@ -26,6 +26,7 @@ package org.das2.util.filesystem;
 import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -576,7 +577,7 @@ public abstract class FileSystem  {
      * @param directory
      * @param regex regular expression that must be matched, or null.
      * @param monitor progress monitor for the task.  
-     * @return
+     * @return names of files within the directory which match the regex.
      * @throws IOException 
      */
     public String[] listDirectory( String directory, String regex, ProgressMonitor monitor ) throws IOException {
@@ -593,40 +594,62 @@ public abstract class FileSystem  {
     /**
      * do a deep listing of directories, resolving wildcards along the way.  Note this
      * can be quite expensive, so be careful when levels are too deep.
-     * @param directory
+     * @param directory location within the filesystem.
      * @param regex regular expression (.*\.dat) (not a glob like *.dat).
-     * @return
+     * @return the entire path of each matching name, including the directory within the filesystem.
      * @throws IOException
      */
     public String[] listDirectoryDeep( String directory, String regex ) throws IOException {
+        String[] arrayResult= listDirectoryDeep( directory, regex, 1 );
+        Arrays.sort(arrayResult);
+        return arrayResult;
+    }
+    
+    /**
+     * do a deep listing of directories, resolving wildcards along the way.  Note this
+     * can be quite expensive, so be careful when levels are too deep.
+     * @param directory
+     * @param regex regular expression (.*\.dat) (not a glob like *.dat).
+     * @return the entire path, including the directory.
+     * @throws IOException
+     */
+    private String[] listDirectoryDeep( String directory, String regex, int level ) throws IOException {    
         List<String> result= new ArrayList();
         int i= regex.indexOf( "/" );
         logger.fine( String.format( "listDirectoryDeep(%s,%s)\n",directory,regex) );
+        String[] ss;
         switch (i) {
             case -1:
-                return listDirectory( directory, regex );
+                ss= listDirectory( directory, regex );
+                for ( int j=0; j<ss.length; j++ ) {
+                    ss[j]= directory + ss[j];
+                }
+                return ss;
             case 0:
-                return listDirectory( directory, regex.substring(1) );
+                ss= listDirectory( directory, regex.substring(1) );
+                for ( int j=0; j<ss.length; i++ ) {
+                    ss[j]= directory + ss[j];
+                }
+                return ss;
             default:
-                String[] ss= listDirectory( directory, regex.substring(0,i) );
+                ss= listDirectory( directory, regex.substring(0,i) );
                 if ( ss.length==1 && ss[0].length()==(i+1) && ss[0].substring(0,i).equals(regex.substring(0,i) ) ) {
                     String dir= ss[0];
-                    String[] ss1= listDirectoryDeep( directory + dir, regex.substring(dir.length()) );
-                    for ( int j=0; j<ss1.length; j++ ) {
-                        ss1[j]= dir + ss1[j];
-                    }
+                    String[] ss1= listDirectoryDeep( directory + dir, regex.substring(dir.length()), level+1 );
                     return ss1;
-                }   for ( String s: ss ) {
+                }   
+                for ( String s: ss ) {
                     if ( s.endsWith("/") ) {
-                        String[] ss1= listDirectoryDeep( directory+s, regex.substring(i+1) );
+                        String[] ss1= listDirectoryDeep( directory+s, regex.substring(i+1), level+1 );
                         for ( String s1: ss1 ) {
-                            result.add( directory + s + s1 );
+                            result.add( s1 );
                         }
                     }
                 }   break;
         }
-        logger.fine( String.format( "listDirectoryDeep(%s,%s)->%d items\n",directory,regex,result.size()) );
-        return result.toArray( new String[result.size()] );
+        logger.fine( String.format( "listDirectoryDeep(%s,%s,%d)->%d items\n",directory,regex,level,result.size()) );
+        String[] arrayResult= result.toArray( new String[result.size()] );
+        return arrayResult;
     }
     /**
      * Boolean.TRUE if the filesystem ignores case, such as Windows local filesystem.
