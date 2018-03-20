@@ -770,9 +770,9 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                             xrangeWarning= null;
                         }
                         
-                        if ( yunits.isFill( bounds.value(1,0) ) ) {
+                        if ( yunits.isFill( bounds.value(1,0) ) && yunits.isFill( bounds.value(1,1) )  ) {
                             yrangeWarning= "no valid y tags in dataset";
-                            throw new NoDataInIntervalException(yrangeWarning);
+                           // throw new NoDataInIntervalException(yrangeWarning);
                         } else if ( compare( Datum.create(  bounds.value(1,0), yunits ), imageYRange.max() )> 0 ) {
                             yrangeWarning= "data starts above yrange";
                         } else if ( compare( Datum.create(  bounds.value(1,1), yunits ), imageYRange.min() ) < 0 ) {
