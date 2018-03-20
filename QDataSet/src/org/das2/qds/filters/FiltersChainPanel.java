@@ -195,6 +195,8 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
             result= new ReducexFilterEditorPanel();
         } else if ( f.matches( SetDepend0CadenceFilterEditorPanel.PROP_REGEX ) ) { // TODO: FilterEditorPanel might choose to accept a filter.
             result= new SetDepend0CadenceFilterEditorPanel();
+        } else if ( f.matches( SetDepend1CadenceFilterEditorPanel.PROP_REGEX ) ) { // TODO: FilterEditorPanel might choose to accept a filter.
+            result= new SetDepend1CadenceFilterEditorPanel();
         } else if ( f.matches("\\|setDepend0Units\\('(\\S+)'\\)") ) { // TODO: FilterEditorPanel might choose to accept a filter.
             result= new SetDepend0UnitsFilterEditorPanel();
         } else if ( f.matches("\\|setUnits\\('(\\S+)'\\)") ) { // TODO: FilterEditorPanel might choose to accept a filter.

@@ -322,7 +322,12 @@
                         <title>setDepend0Cadence</title>
                         <filter>|setDepend0Cadence('50s')</filter>
                         <description>Resets current DEPEND_0 cadence to new cadence (scalar and units)</description>
-                    </bookmark>                            
+                    </bookmark>
+                    <bookmark>
+                        <title>setDepend1Cadence</title>
+                        <filter>|setDepend1Cadence('50Hz')</filter>
+                        <description>Resets current DEPEND_1 cadence to new cadence (scalar and units)</description>
+                    </bookmark>
                 </bookmark-list>
             </bookmark-folder>
         </bookmark-list>
