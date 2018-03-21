@@ -1784,6 +1784,11 @@ public class SeriesRenderer extends Renderer {
                 if ( UnitsUtil.isRatioMeasurement( yunits ) && UnitsUtil.isRatioMeasurement( yAxis.getUnits() ) ) {
                     unitsWarning= true;
                 }
+            } else {
+                if (  !yunits.isConvertibleTo(yAxis.getUnits()) && 
+                    ( yAxis.getUnits()==Units.dimensionless && UnitsUtil.isRatioMeasurement( yunits ) ) ) {
+                    unitsWarning= true;
+                }
             }
 
         } else if (SemanticOps.isRank2Waveform(dataSet)) {
