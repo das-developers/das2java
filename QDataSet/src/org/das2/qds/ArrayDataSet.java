@@ -388,7 +388,7 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
     public void grow( int newRecCount ) {
         if ( newRecCount < len0 ) throw new IllegalArgumentException("new recsize for grow smaller than old");
         int newSize= newRecCount * len1 * len2 * len3;
-        Object back= getBack();
+        Object back= getBackReadOnly();
         int oldSize= Array.getLength(back);
 
         if ( newSize<oldSize ) { // it's possible that the dataset already has a backing that can support this.  Check for this.
@@ -503,12 +503,12 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
 
     /**
      * Copy the dataset to an ArrayDataSet only if the dataset is not 
-     * already an ArrayDataSet.
+     * already an ArrayDataSet that is mutable.
      * @param ds the dataset to copy, which may be an ArrayDataSet
      * @return an ArrayDataSet.
      */
     public static ArrayDataSet maybeCopy( QDataSet ds ) {
-        if ( ds instanceof ArrayDataSet ) {
+        if ( ds instanceof ArrayDataSet && !((ArrayDataSet)ds).isImmutable() ) {
             return (ArrayDataSet)ds;
         } else {
             return copy(ds);
