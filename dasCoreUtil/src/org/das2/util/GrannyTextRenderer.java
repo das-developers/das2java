@@ -99,7 +99,7 @@ public class GrannyTextRenderer {
                 bounds = new Rectangle( 0,-12,12,12 );
             } else {
                 ArrayList<Rectangle> llineBounds= new ArrayList<>(this.lineBounds);
-                if ( llineBounds.size()>0 ) {
+                if ( llineBounds.size()>0 && llineBounds.get(0)!=null ) {
                     bounds = new Rectangle((Rectangle)llineBounds.get(0));
                     for (int i = 1; i < llineBounds.size(); i++) {
                         bounds.add(llineBounds.get(i));
