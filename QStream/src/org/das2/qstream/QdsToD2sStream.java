@@ -821,7 +821,7 @@ public class QdsToD2sStream {
 		}
 		
 		// Get my format string
-		String sFmt = String.format("%%.%de", nFracDigits - 1);
+		String sFmt = String.format("%%.%de", 4);
 		
 		double rMin = qds.value(0);
 		if(qds.length() == 0){
