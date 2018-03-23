@@ -341,6 +341,9 @@ public class Ops {
             if ( UnitsUtil.isIntervalMeasurement(units2) ) {
                 throw new IllegalArgumentException("two location units cannot be added: " + units1 + ", "+ units2  );
             }
+            if ( units2==Units.dimensionless && !UnitsUtil.isTimeLocation(units1) ) {
+                units2= units1.getOffsetUnits();
+            }
             final UnitsConverter uc= UnitsConverter.getConverter( units2, units1.getOffsetUnits() );
             result= new BinaryOp() {
                 @Override
@@ -437,6 +440,9 @@ public class Ops {
             } );
             result.putProperty( QDataSet.UNITS, units1.getOffsetUnits() );
         } else if ( UnitsUtil.isIntervalMeasurement(units1) && !UnitsUtil.isIntervalMeasurement(units2)) {
+            if ( units2==Units.dimensionless && !UnitsUtil.isTimeLocation(units1) ) {
+                units2= units1.getOffsetUnits();
+            }
             final UnitsConverter uc= UnitsConverter.getConverter( units2, units1.getOffsetUnits() );
             result= applyBinaryOp(ds1, ds2, new BinaryOp() {
                 @Override
