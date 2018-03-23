@@ -372,9 +372,14 @@ public class DasColorBar extends DasAxis {
         public static final Type BLACK_BLUE = new Type("black_blue");
 
         /**
-         * black to blue, introduced to show the blue component of RGB images
+         * white to blue to black
          */
         public static final Type WHITE_BLUE_BLACK = new Type("white_blue_black");
+
+        /**
+         * black to blue to white
+         */
+        public static final Type INVERSE_WHITE_BLUE_BLACK = new Type("inverse_white_blue_black");
 		  
         /**
          * Violet -Yellow
@@ -585,6 +590,8 @@ public class DasColorBar extends DasAxis {
                 initializeWhiteBlue(size, bottom, top);
             } else if (this == WHITE_BLUE_BLACK) {
                 initializeWhiteBlueBlack(size, bottom, top);
+            } else if (this == INVERSE_WHITE_BLUE_BLACK) {
+                initializeRevWhiteBlueBlack(size, bottom, top);
             } else if (this == VIOLET_YELLOW ) {
                 initializeVioletYellow(size, bottom, top);
             } else if (this == BLUE_TO_ORANGE ) {
@@ -744,7 +751,24 @@ public class DasColorBar extends DasAxis {
             colorTable = makeColorTable( index, red, green, blue, size, bottom, top );
         }   
 		        
-		  
+		/**
+         * Masafumi requested reverse of reversed IDL colorbar 2
+         * @param size
+         * @param bottom
+         * @param top 
+         */
+        private void initializeRevWhiteBlueBlack( int size, int bottom, int top ) {
+            int [] index= { 0,   94,   188,  255  };
+            int [] red=   { 0,    0,     0,  255 };
+            int [] green= { 0,    0,   150,  255 };
+            int [] blue=  { 0,    133, 255,  255 };
+            //int [] index= { 0,     67,   161,  255  };
+            //int [] red=   { 255,    0,     0,  0 };
+            //int [] green= { 255,    150,   0,  0 };
+            //int [] blue=  { 255,    255, 133,  0 };
+            colorTable = makeColorTable( index, red, green, blue, size, bottom, top );
+        }   
+        
         //Rob W. JADE colorbar
         private void initializeVioletYellow( int size, int bottom, int top ) {
             int [] index= {  0,  27,  64,  95, 127, 159, 183, 202, 225, 246, 255 };
