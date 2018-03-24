@@ -16,6 +16,12 @@ import java.text.DecimalFormat;
 public class UnitsUtil {
     
     /**
+     * this is a utility class which cannot be instantiated.
+     */
+    private UnitsUtil() {
+    }
+    
+    /**
      * returns true if the unit is used to measure distance in a logarithmic
      * space, such as decibels or percent increase.  Note Units.dimensionless
      * are not considered ratiometric.  (Of course, all ratiometic
