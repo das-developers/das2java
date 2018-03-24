@@ -1,7 +1,4 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package org.das2.qds;
 
 import java.text.ParseException;
@@ -26,22 +23,28 @@ import org.das2.qds.ops.Ops;
  * are being applied.
  * @author jbf
  */
-public class SemanticOps {
+public final class SemanticOps {
 
+    /**
+     * this is a utility class which cannot be instanciated.
+     */
+    private SemanticOps() {   
+    }
+    
     private static final Logger logger= LoggerManager.getLogger("qdataset");
     
     /**
      * returns the units found in the UNITS property of the dataset,
      * or Units.dimensionless if it is not found.
      * @param ds
-     * @return
+     * @return the units found in the dataset, or Units.dimensionless.
      */
     public static Units getUnits(QDataSet ds) {
         if ( ds==null ) {
             throw new NullPointerException("ds is null"); // breakpoint here
         }
         Units u = (Units) ds.property(QDataSet.UNITS);
-        if ( u==null && isJoin(ds) ) {
+        if ( u==null && ( ds.rank()>1 && ds.property(QDataSet.JOIN_0)!=null ) ) {
             u= (Units) ds.slice(0).property(QDataSet.UNITS);
         }
         return u == null ? Units.dimensionless : u;
