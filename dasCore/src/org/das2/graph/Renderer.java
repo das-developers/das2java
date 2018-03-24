@@ -387,6 +387,8 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
      */
     public static final String CONTROL_KEY_COLOR= "color";
     public static final String CONTROL_KEY_FILL_COLOR= "fillColor";
+    public static final String CONTROL_KEY_FILL_DIRECTION= "fillDirection"; // "above" "below" "none" "both"
+    
     public static final String CONTROL_KEY_COLOR_TABLE= "colorTable";
     public static final String CONTROL_KEY_LINE_THICK= "lineThick";
     public static final String CONTROL_KEY_LINE_STYLE= "lineStyle";
@@ -408,6 +410,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
      * a ampersand-delimited string of name=value pairs.  This may return values that
      * are represented as a separate control, such as color.
      * {@code fill=red,above,5.0;grey,below,0.0&ref=2.5}
+     * (Note these are example controls which are not implemented.)
      */
     protected String control="";
 
