@@ -26,7 +26,7 @@ import org.das2.qds.ops.Ops;
 public final class SemanticOps {
 
     /**
-     * this is a utility class which cannot be instanciated.
+     * this is a utility class which cannot be instantiated.
      */
     private SemanticOps() {   
     }
