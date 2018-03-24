@@ -172,6 +172,7 @@ public class SeriesRenderer extends Renderer {
         super.setControl(s);
         setColor( getColorControl( CONTROL_KEY_COLOR, color ) );
         setFillColor( getColorControl( CONTROL_KEY_FILL_COLOR, fillColor ));
+        setFillDirection( getControl( CONTROL_KEY_FILL_DIRECTION, "both" ) );
         setLineWidth( getDoubleControl( CONTROL_KEY_LINE_THICK, lineWidth ) );
         setSymSize( getDoubleControl( CONTROL_KEY_SYMBOL_SIZE, symSize ) );
         setPsym( decodePlotSymbolControl( getControl( CONTROL_KEY_SYMBOL, psym.toString() ), psym ) );
@@ -183,6 +184,7 @@ public class SeriesRenderer extends Renderer {
         Map<String,String> controls= new LinkedHashMap();
         controls.put( CONTROL_KEY_COLOR, encodeColorControl(color) );
         controls.put( CONTROL_KEY_FILL_COLOR, encodeColorControl(fillColor) );
+        controls.put( CONTROL_KEY_FILL_DIRECTION, String.valueOf(fillDirection) );
         controls.put( CONTROL_KEY_LINE_THICK, String.valueOf(lineWidth) );
         controls.put( CONTROL_KEY_SYMBOL_SIZE, String.valueOf( symSize ) );
         controls.put( CONTROL_KEY_SYMBOL, encodePlotSymbolControl(psym) );
@@ -1033,6 +1035,9 @@ public class SeriesRenderer extends Renderer {
             int pathLengthApprox= Math.max( 5, 110 * (lastIndex - firstIndex) / 100 );
             GeneralPath fillPath = new GeneralPath(GeneralPath.WIND_NON_ZERO, pathLengthApprox );
 
+            boolean above= fillDirection.equals("above") || fillDirection.equals("both");
+            boolean below= fillDirection.equals("below") || fillDirection.equals("both");
+            
             Datum sw= getCadence( xds, vds, firstIndex, lastIndex );
             double xSampleWidth;
             boolean logStep;
@@ -1077,6 +1082,9 @@ public class SeriesRenderer extends Renderer {
             index = firstIndex;
             x = xds.value(index);
             y = vds.value(index);
+            
+            if ( !below ) y= Math.max( y, yref );
+            if ( !above ) y= Math.min( y, yref );
 
             // first point //
             fx = xAxis.transform(x, xUnits);
@@ -1107,6 +1115,9 @@ public class SeriesRenderer extends Renderer {
                     x = xds.value(index);
                     y = vds.value(index);
 
+                    if ( !below ) y= Math.max( y, yref );
+                    if ( !above ) y= Math.min( y, yref );
+                    
                     final boolean isValid = wds.value( index )>0 && xUnits.isValid(x);
 
                     fx = xAxis.transform(x, xUnits);
@@ -2346,6 +2357,7 @@ public class SeriesRenderer extends Renderer {
         return this.fillColor;
     }
 
+    
     /**
      * Setter for property fillReference.
      * @param color the color
@@ -2357,8 +2369,26 @@ public class SeriesRenderer extends Renderer {
             update();
             propertyChangeSupport.firePropertyChange("fillColor", old, color);
         }
-
     }
+    
+    /**
+     * One of ""
+     */
+    private String fillDirection = "both";
+
+    public static final String PROP_FILLDIRECTION = "fillDirection";
+
+    public String getFillDirection() {
+        return fillDirection;
+    }
+
+    public void setFillDirection(String fillDirection) {
+        String oldFillDirection = this.fillDirection;
+        this.fillDirection = fillDirection;
+        update();
+        propertyChangeSupport.firePropertyChange(PROP_FILLDIRECTION, oldFillDirection, fillDirection);
+    }
+
     /**
      * Holds value of property colorByDataSetId.
      */
