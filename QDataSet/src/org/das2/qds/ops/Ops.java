@@ -2,8 +2,6 @@
 package org.das2.qds.ops;
 
 import java.awt.Color;
-import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.Array;
 import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
@@ -36,7 +34,6 @@ import org.das2.datum.DatumRange;
 import org.das2.datum.DatumRangeUtil;
 import org.das2.datum.DatumUtil;
 import org.das2.datum.InconvertibleUnitsException;
-import org.das2.datum.TimeParser;
 import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
 import org.das2.math.filter.Butterworth;
@@ -90,8 +87,6 @@ import org.das2.qds.util.FFTUtil;
 import org.das2.qds.util.LSpec;
 import org.das2.qds.util.LinFit;
 import org.das2.qds.math.Contour;
-import org.das2.qds.util.AsciiFormatter;
-import org.das2.qds.util.QStreamFormatter;
 import org.das2.util.ColorUtil;
 
 /**
@@ -105,7 +100,7 @@ import org.das2.util.ColorUtil;
  * 
  * @author jbf
  */
-public class Ops {
+public final class Ops {
 
     private static final Logger logger= LoggerManager.getLogger("qdataset.ops");
 
