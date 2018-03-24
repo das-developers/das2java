@@ -13,7 +13,7 @@ import java.text.DecimalFormat;
  * @see http://www.statisticssolutions.com/data-levels-of-measurement/
  * @author  Jeremy
  */
-public class UnitsUtil {
+public final class UnitsUtil {
     
     /**
      * this is a utility class which cannot be instantiated.
