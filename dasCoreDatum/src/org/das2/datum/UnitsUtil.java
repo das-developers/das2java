@@ -10,6 +10,7 @@ import java.text.DecimalFormat;
 
 /**
  * Useful operations for units, and tests for Steven's Levels of Measurement.
+ * @see http://www.statisticssolutions.com/data-levels-of-measurement/
  * @author  Jeremy
  */
 public class UnitsUtil {
@@ -22,6 +23,8 @@ public class UnitsUtil {
      *
      * Do not confuse this with isRatioMeasurement.  "5kg" is ratio measurement.
      * "105%" is ratiometric.
+     * @param unit the unit
+     * @return true if the unit is used to measure distance in a logarithmic space
      */
     public static boolean isRatiometric( Units unit ) {
         return unit!=Units.dimensionless && unit.isConvertibleTo(Units.logERatio);
@@ -37,10 +40,10 @@ public class UnitsUtil {
     /**
      * returns true if the unit is a ratio measurement, meaning there is a physical zero
      * and you can make meaningful ratios between arbitrary numbers.  All operations
-     * like add, multiply and divide are allowed.  (What about negative numbers?  We
-     * need a statistician!)
+     * like add, multiply and divide are allowed.  
      * Examples include "5 km" or "0.2/cc" and "15 counts"
-     * See http://en.wikipedia.org/wiki/Level_of_measurement
+     * @see http://en.wikipedia.org/wiki/Level_of_measurement
+     * @see http://www.statisticssolutions.com/data-levels-of-measurement/
      * @param unit
      * @return
      */
@@ -53,7 +56,8 @@ public class UnitsUtil {
      * zero is arbitrary.  Subtraction and comparison are allowed, but addition, 
      * multiplication and division are invalid operators.  
      * Examples include "2008-04-09T14:27:00Z" and 15 deg W Longitude.
-     * See http://en.wikipedia.org/wiki/Level_of_measurement
+     * @see http://en.wikipedia.org/wiki/Level_of_measurement
+     * @see http://www.statisticssolutions.com/data-levels-of-measurement/
      * @param unit
      * @return
      */
@@ -80,7 +84,7 @@ public class UnitsUtil {
      * as ordinal data, so this always returns false.  
      * Examples include "Iowa City", and "Voyager 1".
      * See http://en.wikipedia.org/wiki/Level_of_measurement
-     * @param unit
+     * @param unit the unit
      * @return true if the unit is nominal.
      */
     public static boolean isNominalMeasurement( Units unit ) {
@@ -102,9 +106,10 @@ public class UnitsUtil {
     
     /**
      * returns the unit whose product with the parameter unit is unity.
+     * (Presently this is only supports time units like Hz->seconds).
+     * @param unit the unit
+     * @return the inverse unit, or throws exception if one is not known.
      * @throws IllegalArgumentException if the units inversion is not known.
-     *   (Presently this is only time units).
-     *
      */
     public static Units getInverseUnit( Units unit ) {
         if ( unit==Units.seconds ) {
@@ -168,6 +173,9 @@ public class UnitsUtil {
      * Special division operation that either does the Datum division if
      * possible, or returns the division of the magnitude parts of the
      * Datums plus the unit names "A/B", suitable for human consumption.
+     * @param aDatum the numerator
+     * @param bDatum the denominator
+     * @return String for the result, or "A/B"
      */
     public static String divideToString( Datum aDatum, Datum bDatum ) {
         try {
@@ -186,6 +194,9 @@ public class UnitsUtil {
     /**
      * attempt to perform the division of two Datums by looking for
      * convertible units or dimensionless.
+     * @param aDatum the numerator
+     * @param bDatum the denominator
+     * @return the result
      */
     public static Datum divide( Datum aDatum, Datum bDatum ) {
         Units bUnits= bDatum.getUnits();
