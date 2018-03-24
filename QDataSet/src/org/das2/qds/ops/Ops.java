@@ -1887,6 +1887,10 @@ public class Ops {
      * @return the value ds1**pow
      */
     public static QDataSet pow(QDataSet ds1, QDataSet pow) {
+        Units units1= SemanticOps.getUnits(ds1);
+        Units units2= SemanticOps.getUnits(pow);
+        if ( UnitsUtil.isTimeLocation(units1) ) throw new IllegalArgumentException("ds1 is time location");
+        if ( UnitsUtil.isTimeLocation(units2) ) throw new IllegalArgumentException("pow is time location");
         MutablePropertyDataSet result=  applyBinaryOp(ds1, pow, new BinaryOp() {
             @Override
             public double op(double d1, double d2) {
