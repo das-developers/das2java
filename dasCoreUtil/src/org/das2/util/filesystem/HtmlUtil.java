@@ -57,6 +57,7 @@ public class HtmlUtil {
      * http://docs.oracle.com/javase/1.5.0/docs/guide/net/http-keepalive.html suggests that you "do not abandon connection"
      * @param err the input stream
      * @throws IOException 
+     * @see HttpUtil#consumeStream(java.io.InputStream) 
      */
     @Deprecated
     public static void consumeStream( InputStream err ) throws IOException {
@@ -226,6 +227,7 @@ public class HtmlUtil {
      * @param props, if non-null, may be a map containing cookie.
      * @return the metadata
      * @throws java.io.IOException when HEAD requests are made.
+     * @see HttpUtil#getMetadata(java.net.URL, java.util.Map) 
      */
     @Deprecated
     public static Map<String,String> getMetadata( URL url, Map<String,String> props ) throws IOException {
@@ -240,6 +242,7 @@ public class HtmlUtil {
      * @return a connection, typically the same one as passed in.
      * @see HttpUtil#checkRedirect(java.net.URLConnection) 
      * @throws IOException 
+     * @see HttpUtil#checkRedirect(java.net.URLConnection) 
      */
     @Deprecated
     public static URLConnection checkRedirect( URLConnection urlConnection ) throws IOException {
