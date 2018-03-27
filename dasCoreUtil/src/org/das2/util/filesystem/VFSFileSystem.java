@@ -344,12 +344,13 @@ public class VFSFileSystem extends org.das2.util.filesystem.FileSystem {
             monitor.setTaskSize(downloadMonitor.getTaskSize());
 
             // this monitor can tell the downloading monitor to cancel.
-            if (monitor.isCancelled()) {
+            boolean isCancelled= monitor.isCancelled();
+            if ( isCancelled ) {
                 downloadMonitor.cancel();
+            } else {
+                // echo what the download monitor is reporting.
+                monitor.setTaskProgress(downloadMonitor.getTaskProgress());
             }
-
-            // echo what the download monitor is reporting.
-            monitor.setTaskProgress(downloadMonitor.getTaskProgress());
 
             try {
                 downloads.wait(100); // wait 100ms, then proceed to support progress information

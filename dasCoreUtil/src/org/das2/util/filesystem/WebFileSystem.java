@@ -404,11 +404,10 @@ public abstract class WebFileSystem extends FileSystem {
             monitor.setTaskSize( downloadMonitor.getTaskSize() );
 
             // this monitor can tell the downloading monitor to cancel.
-            if (monitor.isCancelled()) {
+            boolean isCancelled= monitor.isCancelled();
+            if ( isCancelled ) {
                 downloadMonitor.cancel();
-            }
-
-            if ( !monitor.isCancelled() ) {  //TODO: syncronized block or something
+            } else {
                 // echo what the download monitor is reporting.
                 monitor.setTaskProgress(downloadMonitor.getTaskProgress());
             }
