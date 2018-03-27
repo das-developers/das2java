@@ -238,6 +238,7 @@ public class HtmlUtil {
      * as this must connect to get the response code.
      * @param urlConnection if an HttpUrlConnection, check for 301 or 302; return connection otherwise.
      * @return a connection, typically the same one as passed in.
+     * @see HttpUtil#checkRedirect(java.net.URLConnection) 
      * @throws IOException 
      */
     @Deprecated
