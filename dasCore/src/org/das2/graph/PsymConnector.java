@@ -48,6 +48,8 @@ public class PsymConnector implements Enumeration, Displayable {
     public static final PsymConnector SOLID= new PsymConnector( "Solid", new BasicStroke( 1.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ) );
     public static final PsymConnector DOTFINE= new PsymConnector( "DotFine",new BasicStroke( 1.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 1.0f, new float[] {1.5f,2.0f}, 0.f ) );
     public static final PsymConnector DASHFINE= new PsymConnector( "DashFine",new BasicStroke( 1.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 1.0f, new float[] {3.0f,2.0f}, 2.5f ) );
+    public static final PsymConnector DASHES= new PsymConnector( "Dashes",new BasicStroke( 1.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 1.0f, new float[] {6.0f,4.0f}, 5.0f ) );
+    public static final PsymConnector DOTDASHES= new PsymConnector( "DotDashes",new BasicStroke( 1.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 1.0f, new float[] {0.0f,3.0f,6.0f,3.0f}, 4.5f ) );
     public static final PsymConnector DOTS= new PsymConnector( "Dots",new BasicStroke( 1.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 1.0f, new float[] {0.0f,3.0f}, 0.f ) );
     
     private PsymConnector( String name, BasicStroke stroke ) {
