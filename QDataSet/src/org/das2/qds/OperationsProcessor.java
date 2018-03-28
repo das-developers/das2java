@@ -244,7 +244,8 @@ public class OperationsProcessor {
                             }
                         }
                     }
-
+                } else if ( cmd.equals("|normalize") ) {
+                    fillDs= Ops.normalize(fillDs);
                 } else if ( cmd.equals("|diff") ) {
                     fillDs= Ops.diff(fillDs);
                 } else if ( cmd.equals("|accum") ) {

@@ -1039,6 +1039,21 @@ public final class Ops {
             throw new IllegalArgumentException("dataset must be rank 2 bins dataset, with min,max");
         }
     }
+    
+    /**
+     * normalize the data so that the max is 1, where we normalize by the biggest
+     * @param ds
+     * @return dataset with the same geometry as ds.
+     */
+    public static QDataSet normalize( QDataSet ds ) {
+        QDataSet n= abs( extent(ds) );
+        if ( n.value(0) > n.value(1) ) {
+            n= n.slice(0);
+        } else {
+            n= n.slice(1);
+        }
+        return Ops.divide( ds, n );
+    }
 
     /**
      * reduce the size of the data by keeping every 10th measurement.  

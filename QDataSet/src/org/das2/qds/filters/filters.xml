@@ -59,6 +59,11 @@
                         <description>Initializes Detrend Filter</description>
                     </bookmark>
                     <bookmark>
+                        <title>Normalize</title>
+                        <filter>|normalize()</filter>
+                        <description>Normalize the data so that the maximum value is 1.</description>
+                    </bookmark>
+                    <bookmark>
                         <title>Grid</title>
                         <filter>|grid()</filter>
                         <description>Flattened n,3 data is formed into table of x[i],y[j]->z[i,j]. </description>
