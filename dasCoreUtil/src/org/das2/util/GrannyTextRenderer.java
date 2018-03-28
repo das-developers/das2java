@@ -209,6 +209,9 @@ public class GrannyTextRenderer {
         this.str = Entities.decodeEntities(str);
         this.tokens = buildTokenArray(this.str);
         this.draw( g, g.getFont(), 0f, 0f, false );
+        if ( lineBounds.isEmpty() || lineBounds.get(0)==null ) {
+            System.err.println("rte_0015749633");
+        }
     }
     
     /**
