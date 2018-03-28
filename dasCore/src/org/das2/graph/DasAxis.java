@@ -948,7 +948,27 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             firePropertyChange(PROPERTY_DATUMRANGE, range, getDatumRange());
         }
     }
+    
+    
+    private String reference = "";
 
+    public static final String PROP_REFERENCE = "reference";
+
+    public String getReference() {
+        return reference;
+    }
+
+    /**
+     * draw an optional reference line at the location.  Valid entries
+     * can be parsed into a Datum, using the units of the axis.
+     * @param reference 
+     */
+    public void setReference(String reference) {
+        String oldReference = this.reference;
+        this.reference = reference.trim();
+        firePropertyChange(PROP_REFERENCE, oldReference, reference);
+    }
+    
     /** 
      * return the units of the axis.
      * @return the units of the axis.
@@ -2335,7 +2355,20 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             if (topLine) {
                 g.drawLine(DMin, topPosition, DMax, topPosition);
             }
-
+            
+            if ( !(reference.length()==0) ) {
+                Datum dreference;
+                try {
+                    dreference = dataRange.getUnits().parse(reference);
+                    int i= (int)Math.floor( transform(dreference) );
+                    if ( i>DMin && i<DMax ) {
+                        g.drawLine( i, bottomPosition, i, topPosition );
+                    }
+                } catch (ParseException ex) {
+                    Logger.getLogger(DasAxis.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+            
             int tickLengthMajor = tickLen; //labelFont.getSize() * 2 / 3;
             int tickLengthMinor = tickLengthMajor / 2;
             int tickLength;
@@ -2419,7 +2452,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                     gtr.draw(g2, (float) leftEdge, (float) baseline);
                 }
                 g2.dispose();
-            }
+            }            
         } catch (InconvertibleUnitsException ex) {
             // do nothing
         }
@@ -2462,7 +2495,21 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             if (rightLine) {
                 g.drawLine(rightPosition, DMin, rightPosition, DMax);
             }
-
+            
+                        
+            if ( !(reference.length()==0) ) {
+                Datum dreference;
+                try {
+                    dreference = dataRange.getUnits().parse(reference);
+                    int i= (int)Math.floor( transform(dreference) );
+                    if ( i>DMin && i<DMax ) {
+                        g.drawLine( rightPosition, i, leftPosition, i );                    
+                    }
+                } catch (ParseException ex) {
+                    Logger.getLogger(DasAxis.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+            
             int tickLengthMajor = tickLen;
             int tickLengthMinor = tickLengthMajor / 2;
             int tickLength;
@@ -3258,6 +3305,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             }
             trLineRect.setBounds(DMin, topPosition, DWidth + 1, 1);
         }
+        
+        if ( reference.length()>0 ) {
+            blLineRect.add( DMin, topPosition );
+            blLineRect.add( DMin, bottomPosition );
+        }
 
         //Add room for ticks
         if (bottomTicks) {
@@ -3389,6 +3441,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             trLineRect.setBounds(rightPosition, DMin, 1, DWidth + 1);
         }
 
+        if ( reference.length()>0 ) {
+            blLineRect.add( rightPosition, DMax );
+            blLineRect.add( leftPosition, DMin );
+        }
+        
         //Add room for ticks
         if (leftTicks) {
             int x = leftPosition - Math.max( 0,tickLen );
