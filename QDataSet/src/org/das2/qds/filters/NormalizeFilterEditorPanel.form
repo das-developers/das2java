@@ -44,7 +44,7 @@
   <SubComponents>
     <Component class="javax.swing.JLabel" name="jLabel1">
       <Properties>
-        <Property name="text" type="java.lang.String" value="the data is normalized by dividing by..."/>
+        <Property name="text" type="java.lang.String" value="data normalized by dividing by..."/>
       </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel2">

@@ -28,7 +28,7 @@ public class NormalizeFilterEditorPanel extends AbstractFilterEditorPanel  {
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
 
-        jLabel1.setText("the data is normalized by dividing by...");
+        jLabel1.setText("data normalized by dividing by...");
 
         jLabel2.setText("normalize()");
 
@@ -74,7 +74,7 @@ public class NormalizeFilterEditorPanel extends AbstractFilterEditorPanel  {
         } else {
             n= n.slice(1);
         }
-        jLabel1.setText( "the data normalized by dividing by "+n+"." );
+        jLabel1.setText( "data normalized by dividing by "+n+"." );
     }
 
 
