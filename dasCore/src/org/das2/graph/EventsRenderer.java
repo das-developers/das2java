@@ -667,6 +667,9 @@ public class EventsRenderer extends Renderer {
                 gtr.setString( g1,"xxx" );
                 int textHeight= (int)gtr.getHeight();
                 
+                int imin= xAxis.getColumn().getDMinimum();
+                int imax= xAxis.getColumn().getDMaximum();
+                
                 for ( int i=ivds0; i<ivds1; i++ ) {
 
                     long dt= System.currentTimeMillis()-t0;
@@ -690,6 +693,9 @@ public class EventsRenderer extends Renderer {
                         continue;
                     }
 
+                    ixmin= Math.max( ixmin, imin );
+                    ixmax= Math.min( ixmax, imax );
+                                            
                     int iwidth= Math.max( ixmax- ixmin, 1 ); 
 
                     if ( lcolor!=null ) {
