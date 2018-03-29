@@ -46,7 +46,7 @@ public class DasAxisBeanInfo extends AccessLevelBeanInfo {
         new Property("tickLabelsVisible", AccessLevel.DASML, "isTickLabelsVisible", "setTickLabelsVisible", null),
         new Property("tickLength",AccessLevel.DASML, "getTickLength", "setTickLength", null),
         new Property("oppositeAxisVisible", AccessLevel.DASML, "isOppositeAxisVisible", "setOppositeAxisVisible", null),
-        new Property("reference", AccessLevel.DASML, "setReference", "getReference", null),
+        new Property("reference", AccessLevel.DASML, "getReference", "setReference", null),
         new Property("useDomainDivider", AccessLevel.DASML, "isUseDomainDivider", "setUseDomainDivider", null),
         new Property("flipLabel", AccessLevel.DASML, "isFlipLabel", "setFlipLabel", null),
         new Property("dataPath", AccessLevel.DASML, "getDataPath", "setDataPath", null),
