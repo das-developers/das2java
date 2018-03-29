@@ -14,6 +14,7 @@ import org.das2.graph.DasColumn;
 import org.das2.graph.DasPlot;
 import org.das2.graph.DasRow;
 import org.das2.graph.DasSliceController;
+import org.das2.qds.QDataSet;
 
 
 /**
@@ -38,7 +39,7 @@ public class DasSliceControllerDemo {
         frame.pack();
         frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
         frame.setVisible(true);
-        frame.setSize(800, 800);
+        frame.setSize(800, 100);
         return frame;
     }
     
@@ -53,7 +54,8 @@ public class DasSliceControllerDemo {
         DasCanvas canvas = new DasCanvas(width, height);
         
         getContentPane().add(canvas, BorderLayout.CENTER );
-        DasSliceController sliceCont = new DasSliceController(1.123123, 2.23232);
+        QDataSet qds = null;
+        DasSliceController sliceCont = new DasSliceController(qds, 1.123123, 2.23232);
         canvas.add(sliceCont,new DasRow(canvas, 0, 1),new DasColumn(canvas, 0, 1));
         
     }
