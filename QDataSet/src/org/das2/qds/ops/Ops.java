@@ -1052,7 +1052,14 @@ public final class Ops {
         } else {
             n= n.slice(1);
         }
-        return Ops.divide( ds, n );
+        MutablePropertyDataSet result= Ops.maybeCopy( Ops.divide( ds, n ) );
+        Map<String,Object> props= DataSetUtil.getProperties(ds);
+        props.put(QDataSet.UNITS, Units.dimensionless );
+        props.put(QDataSet.TITLE, "" + props.get(QDataSet.TITLE)+" (normalized)");
+        props.put(QDataSet.LABEL, "" + props.get(QDataSet.LABEL)+" (normalized)");
+        DataSetUtil.putProperties( props, result );
+        
+        return result;
     }
 
     /**
@@ -4396,6 +4403,7 @@ public final class Ops {
      * TODO: This is not thorough, and this needs to be reviewed.
      * @param ds the data from which the properties are extracted.
      * @return a map of the properties.
+     * @see DataSetUtil#getProperties(org.das2.qds.QDataSet) 
      */
     public static Map copyProperties( QDataSet ds ) {
         Map result = new HashMap();
