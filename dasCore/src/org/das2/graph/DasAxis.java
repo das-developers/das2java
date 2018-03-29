@@ -966,6 +966,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     public void setReference(String reference) {
         String oldReference = this.reference;
         this.reference = reference.trim();
+        update();
         firePropertyChange(PROP_REFERENCE, oldReference, reference);
     }
     
