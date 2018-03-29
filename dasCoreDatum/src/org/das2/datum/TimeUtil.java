@@ -1191,6 +1191,10 @@ public final class TimeUtil {
         if ( s.length()==0 ) throw new java.text.ParseException("string is empty",0);
         if ( s.charAt(0)=='-') throw new ParseException("string starts with minus sign",0);
         
+        if ( s.equals("now") ) {
+            return toTimeStruct( TimeUtil.now() );
+        }
+        
         /* handl PDS time format */
         
         delimiters = DELIMITERS;
