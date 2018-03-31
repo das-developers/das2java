@@ -287,8 +287,10 @@ public class DasAnnotation extends DasCanvasComponent {
     public static final String PROP_TEXT = "text";
     
     /**
-     * Set the text, which can be Granny Text, or image URL.  URLs 
-     * must start with http:, https:, or file:.
+     * Set the text, which can be Granny Text, or image URL. (Image URL is 
+     * deprecated, use url property instead.)  If the url property has length>0,
+     * then this is ignored.
+     * URLs must start with http:, https:, or file:.
      *
      * @param string the text
      * @see GrannyTextRenderer
@@ -297,16 +299,19 @@ public class DasAnnotation extends DasCanvasComponent {
         String oldValue= this.templateString;
         this.templateString = string;
         if ( this.getGraphics()!=null ) {
-            if ( string.startsWith("http:") || string.startsWith("https:" ) || string.startsWith("file:" ) ) {
-                try {
-                    img= ImageIO.read(new URL(string));
-                    gtr= null;
-                } catch ( IOException ex ) {
+            if ( url.length()==0 ) {
+                if ( string.startsWith("http:") || string.startsWith("https:" ) || string.startsWith("file:" ) ) {
+                    try {
+                        img= ImageIO.read(new URL(string));
+                        gtr= null;
+                    } catch ( IOException ex ) {
+                        gtr= new GrannyTextRenderer();
+                        gtr.setString( this.getGraphics(), getString() );
+                    }
+                } else {
                     gtr= new GrannyTextRenderer();
                     gtr.setString( this.getGraphics(), getString() );
                 }
-            } else {
-                gtr.setString( this.getGraphics(), getString() );
             }
             resize();
         }
@@ -322,6 +327,37 @@ public class DasAnnotation extends DasCanvasComponent {
      */
     public String getText() {
         return templateString;
+    }
+
+    private String url = "";
+
+    public static final String PROP_URL = "url";
+
+    public String getUrl() {
+        return url;
+    }
+
+    /**
+     * set the URL to the location of a png or jpg file.  If this is set,
+     * then the text property is ignored.  
+     * @param url 
+     */
+    public void setUrl(String url) {
+        String oldUrl = this.url;
+        if ( url.length()==0 ) {
+            this.url= url;
+            setText( getText() );
+        } else {
+            try {
+                img= ImageIO.read(new URL(url));
+                gtr= null;
+            } catch ( IOException ex ) {
+                gtr= new GrannyTextRenderer();
+                gtr.setString( this.getGraphics(), url );
+            }
+        }
+        this.url = url;
+        firePropertyChange(PROP_URL, oldUrl, url);
     }
 
     @Override
@@ -390,8 +426,8 @@ public class DasAnnotation extends DasCanvasComponent {
             r.add(anchorRect);
         }
         if ( showArrow ) {
-            int headx= 0;
-            int heady= 0;
+            int headx;
+            int heady;
             if ( plot!=null ) {
                 try {
                     headx= (int)plot.getXAxis().transform(pointAtX);
@@ -692,14 +728,11 @@ public class DasAnnotation extends DasCanvasComponent {
                     xoffset= (int)( getCanvas().getWidth() * dd[0] + em * dd[1] + dd[2] );
                     dd= DasDevicePosition.parseLayoutStr(ss[1]);
                     yoffset= (int)( getCanvas().getHeight() * dd[0] + em * dd[1] + dd[2] );
-                } catch ( NumberFormatException ex ) {
+                } catch ( NumberFormatException | ParseException ex ) {
                     logger.log( Level.WARNING, null, ex );
                     xoffset= 0;
                     yoffset= 0;
-                } catch ( ParseException ex ) {
-                    logger.log( Level.WARNING, null, ex );
-                    xoffset= 0;
-                    yoffset= 0;                }                
+                }                
             } else {
                 logger.warning("anchorOffset");
             }
