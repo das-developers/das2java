@@ -12,8 +12,10 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import javax.swing.event.EventListenerList;
 import org.das2.datum.Datum;
 import org.das2.event.DataRangeSelectionEvent;
+import org.das2.event.DataRangeSelectionListener;
 import org.das2.qds.QDataSet;
 
 /**
@@ -22,6 +24,10 @@ import org.das2.qds.QDataSet;
  */
 public class DasSliceController extends DasCanvasComponent {
 
+    
+    // Objects to recieve event firing
+    private EventListenerList eListenerList = new EventListenerList();
+   
     // Dataset to slice;
     QDataSet qds;
     Datum datumLeft;
@@ -228,8 +234,8 @@ public class DasSliceController extends DasCanvasComponent {
                     update();
                 }
                 DataRangeSelectionEvent dataRangeEvent;
-                dataRangeEvent = new DataRangeSelectionEvent(this, datumLeft, datumRight);
-                // fire event
+                dataRangeEvent = new DataRangeSelectionEvent(this, (Datum) datumLeft, (Datum) datumRight);
+                fireDataRangeSelectionListenerDataRangeSelected(dataRangeEvent);
             }
             @Override
             public void mouseEntered(MouseEvent e){
@@ -266,6 +272,36 @@ public class DasSliceController extends DasCanvasComponent {
             }
             
         }; 
+    }
+    
+    
+    /** Registers DataRangeSelectionListener to receive events.
+     * @param listener The listener to register.
+     */
+    public void addDataRangeSelectionListener(DataRangeSelectionListener listener){
+        eListenerList.add(org.das2.event.DataRangeSelectionListener.class, listener);
+    }
+    
+    
+    /** Removes DataRangeSelectionListener from the list of listeners.
+     * @param listener The listener to remove.
+     */
+    public void removeDataRangeSelectionListener(DataRangeSelectionListener listener){
+        eListenerList.remove(org.das2.event.DataRangeSelectionListener.class, listener);
+    }
+    
+     /** Notifies all registered listeners about the event.
+     *
+     * @param event The event to be fired
+     */
+    private void fireDataRangeSelectionListenerDataRangeSelected(DataRangeSelectionEvent event){
+        Object[] listeners;
+        listeners = eListenerList.getListenerList();
+        for (int i = listeners.length-2; i>=0; i-=2) {
+            if (listeners[i]==org.das2.event.DataRangeSelectionListener.class) {
+                ((org.das2.event.DataRangeSelectionListener)listeners[i+1]).dataRangeSelected(event);
+            }
+        }
     }
 }
 

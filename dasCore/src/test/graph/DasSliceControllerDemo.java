@@ -8,6 +8,7 @@ package test.graph;
 import java.awt.BorderLayout;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import org.das2.event.DataRangeSelectionListener;
 import org.das2.graph.DasAnnotation;
 import org.das2.graph.DasCanvas;
 import org.das2.graph.DasColumn;
@@ -56,6 +57,7 @@ public class DasSliceControllerDemo {
         getContentPane().add(canvas, BorderLayout.CENTER );
         QDataSet qds = null;
         DasSliceController sliceCont = new DasSliceController(qds, 1.123123, 2.23232);
+       
         canvas.add(sliceCont,new DasRow(canvas, 0, 1),new DasColumn(canvas, 0, 1));
         
     }
