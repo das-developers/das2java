@@ -287,6 +287,7 @@ public class FileUtil {
     public static void fileCopy( File src, File dst ) throws FileNotFoundException, IOException {
         if ( !src.exists() ) throw new IllegalArgumentException("src does not exist.");
         if ( !src.canRead() ) throw new IllegalArgumentException("src cannot be read.");
+        if ( src.equals(dst) ) throw new IllegalArgumentException("src and dst files are the same");
         if ( src.isDirectory() && ( !dst.exists() || dst.isDirectory() ) ) {
             if ( !dst.exists() ) {
                 if ( !dst.mkdirs() ) throw new IOException("unable to mkdir " + dst);
