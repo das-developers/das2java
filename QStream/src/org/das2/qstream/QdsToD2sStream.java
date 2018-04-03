@@ -1,3 +1,41 @@
+/* This Java package, org.autoplot.das2Stream is part of the Autoplot application
+ *
+ * Copyright (C) 2018 Chris Piker <chris-piker@uiowa.edu>
+ * 
+ * Autoplot is free software; you can redistribute it and/or modify it under the 
+ * terms of the GNU General Public License version 2 as published by the Free
+ * Software Foundation, with the Classpath exception below.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A 
+ * PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License version 2
+ * containing the Classpath exception clause along with this library; if not, write
+ * to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+ * 02111-1307 USA
+ *
+ * Classpath Exception
+ * -------------------
+ * The copyright holders designate this particular java package as subject to the
+ * "Classpath" exception as provided here.
+ *
+ * Linking this package statically or dynamically with other modules is making a
+ * combined work based on this package.  Thus, the terms and conditions of the GNU
+ * General Public License cover the whole combination.
+ *
+ * As a special exception, the copyright holders of this package give you
+ * permission to link this package with independent modules to produce an
+ * application, regardless of the license terms of these independent modules, and
+ * to copy and distribute the resulting application under terms of your choice,
+ * provided that you also meet, for each independent module, the terms and
+ * conditions of the license of that module.  An independent module is a module
+ * which is not derived from or based on this package.  If you modify this package,
+ * you may extend this exception to your version of the package, but you are not
+ * obligated to do so.  If you do not wish to do so, delete this exception
+ * statement from your version.
+ */
+
 package org.das2.qstream;
 
 import java.io.IOException;
@@ -81,20 +119,41 @@ import org.w3c.dom.ls.LSSerializer;
 public class QdsToD2sStream {
 	
 	public static final String FORMAT_2_2 = "2.2";
-	public static final String FORMAT_2_3 = "2.3";
-	public static final String[] formats = {FORMAT_2_2, FORMAT_2_3};
+	public static final String FORMAT_2_3_BASIC = "2.3-basic";
+	public static final String FORMAT_2_3_GENERAL = "2.3-general";
+	public static final String[] formats = {FORMAT_2_2, FORMAT_2_3_BASIC};
+	
+	public static final int DEFAUT_FRAC_SEC = 3;
+	public static final int DEFAUT_SIG_DIGIT = 5;
 	
 	private boolean bDas23;
 	
 	private String VERSION;
+	private String FORMAT;
+	
+	// Data Values
 	private String X;
 	private String Y;
-	private String XSCAN;
+	private String Y_SCAN;
 	private String Z;
-	private String YSCAN;
-	private String TYPE;
-	private String YTAGS;
-	private String XTAGS;
+	private String Z_SCAN;
+	private String W;
+	private String W_SCAN;
+	
+	// Coordinate Values
+	private String X_REF;
+	private String Y_REF;
+	private String Z_REF;
+	private String Xoffsets;
+	private String X0;
+	private String Xdelta;
+	private String Yoffsets;
+	private String Y0;
+	private String Ydelta;
+	private String Zoffsets;
+	private String Z0;
+	private String Zdelta;
+	
 	
 	private static final Logger log = LoggerManager.getLogger("qstream");
 	
@@ -102,8 +161,9 @@ public class QdsToD2sStream {
 	// output.  The reason not to just do our best to figure it out on our own
 	// is that it changes the packet header definitions, which we don't want to
 	// do when writing cache files.
-	int nSigDigit;
-	int nSecDigit;
+	int nSigDigit = DEFAUT_SIG_DIGIT;
+	int nSecDigit = DEFAUT_FRAC_SEC;
+	boolean bBinary;
 	
 	// List of transmitted packet hdrs, index is the packet ID.
 	private List<String> lHdrsSent = new ArrayList<>();  
@@ -118,32 +178,31 @@ public class QdsToD2sStream {
 	 *        in the static formats array
 	 */
 	public QdsToD2sStream(String version){ 
-		nSigDigit = -1; nSecDigit = -1;
-		bDas23 = version.equals(FORMAT_2_3);
+		bDas23 = version.equals(FORMAT_2_3_BASIC);
+		bBinary = true;
 		_setNames(bDas23);
 	}
 	
-	/** Initialize a text, or partial text, QDataSet to das2 stream exporter
+	/** Initialize a text QDataSet to das2 stream exporter
 	 * 
 	 * @param version The output version to write, valid choices are defined 
 	 *        in the static formats array
 	 * 
 	 * @param genSigDigits The number of significant digits used for general
-	 *    data output.  Set this to 1 or less to trigger binary output, use
-	 *    a greater than 1 for text output.  If you don't know what else to
-	 *    pick, 6 is typically a great precision without being ridiculous.
+	 *    text value data output.  If you don't know what else to use, 5 is
+	 *    typically a fine precision without being ridiculous.
 	 * 
 	 * @param fracSecDigits  The number of fractional seconds digits to
-	 *    use for ISO-8601 date-time values. Set this to -1 (or less) for
-	 *    binary time output.  The number of fraction seconds can be set
-	 *    as low as 0 and as high as 12 (picoseconds).  If successive time
-	 *    values vary by less than the specified precision (but not 0,
-	 *    repeats are accepted) then stream writing fails.  Use 3 (i.e.
+	 *    use for ISO-8601 date-time values. The number of fraction seconds
+	 *    can be set as low as 0 and as high as 12 (picoseconds).  If
+	 *    successive time values vary by less than the specified precision 
+	 *    (but not 0, repeats are accepted) then stream writing fails.  Use 3 (i.e.
 	 *    microseconds) if you don't know what else to choose.
 	 */
 	public QdsToD2sStream(String version, int genSigDigits, int fracSecDigits){
 		
-		bDas23 = version.equals(FORMAT_2_3);
+		bBinary = false;
+		bDas23 = version.equals(FORMAT_2_3_BASIC);
 		_setNames(bDas23);
 		if(genSigDigits > 1){
 			if(genSigDigits > 16){
@@ -168,16 +227,62 @@ public class QdsToD2sStream {
 	
 	final void _setNames(boolean _bDas23){
 		if(_bDas23){
-			VERSION = "2.3";
-			X = "X"; Y = "Y"; XSCAN = "YofX"; Z = "Z"; YSCAN = "ZofXY"; 
-			TYPE = "format"; YTAGS = "yValues"; XSCAN = "YofX"; 
-			XTAGS = "xOffsets";
+			VERSION = "2.3-basic";
+			FORMAT = "format"; 
+			
+			// Das 2.3 uses element types to make data usage more explicit
+			
+			// X Coords
+			X_REF = "Xref";
+			Xoffsets = "xOffsets"; Xdelta = "xDelta"; X0 = "xOffset0";
+			
+			// Y Coords
+			Y_REF = "Yref";
+			Yoffsets = "yOffsets"; Ydelta = "yDelta"; Y0 = "yOffset0";
+			
+			// Z Coords
+			Z_REF = "Zref";
+			Zoffsets = "zOffsets"; Zdelta = "zDelta"; Z0 = "zOffset0";
+			
+			// X data
+			X = "X";  // No X scan
+			
+			// Y Data
+			Y = "Y_of_X"; Y_SCAN = "MultiY_of_X"; 
+			
+			// Z Data
+			Z = "Z_of_XY"; Z_SCAN = "MultiZ_of_XY";
+			
+			// W Data
+			W = "W_of_XYZ"; W_SCAN = "MultiW_of_XYZ";
+			
+			// To get all of mars express data we would need
+			// Z_REF, Zoffsets, Zdeltas, Z0 and W_of_XYZ, W_scan_XYZ, so 4-coords items
+			// and 2 data items.  I can see why people move away from specific dimensions
+			// for 3-D stuff.
 		}
 		else{
 			VERSION = "2.2";
-			X = "x"; Y = "y"; XSCAN = null;   Z = "z"; YSCAN = "yscan"; 
-			TYPE = "type"; YTAGS = "yTags"; XSCAN = null; 
-			XTAGS = null;
+			FORMAT = "type"; 
+			// Das 2.2  y, yscan, yTags, yInterval and yTagMin are ambiguous, their meanings
+			// change depending on which other elements are present
+			
+			// X Coords
+			X_REF = "x";
+			Xoffsets = "yTags"; Xdelta = "yTagInterval"; X0 = "yTagMin";
+			
+			// Y Coords
+			Y_REF = "y";
+			Yoffsets = "yTags"; Ydelta = "yTagInterval"; Y0 = "yTagMin";
+			
+			// Y Data
+			Y = "y"; Y_SCAN = "yscan"; 
+			
+			// Z Data
+			Z = "z"; Z_SCAN = "yscan";
+			
+			// W Data
+			W = null; W_SCAN = null;
 		}
 	}
 	
@@ -397,19 +502,21 @@ public class QdsToD2sStream {
 		
 		// Figure out how to represent the values.  In general everything is 
 		// output as a float unless it's an epoch time type.
-		QdsXferInfo(QDataSet _qds, int nGenDigits, int nFracSec, int _nPlane){
-			this(_qds, nGenDigits, nFracSec, _nPlane, null, null);
+		QdsXferInfo(QDataSet _qds, boolean bBinary, int nGenDigits, int nFracSec, int _nPlane){
+			this(_qds, bBinary, nGenDigits, nFracSec, _nPlane, null, null);
 		}
 		
 		// Extra constructor for statistics datasets.
-		QdsXferInfo(QDataSet _qds, int nGenSigDigit, int nFracSec, int _nPlane, 
+		QdsXferInfo(QDataSet _qds, boolean bBinary, int nGenSigDigit, int nFracSec, int _nPlane, 
 		            String _sSource, String sOp){
 
 			sSource = _sSource;
 			sOperation = sOp;
 			qds = _qds;
 			nPlane = _nPlane;
-				
+			
+			if(bBinary){ nGenSigDigit = -1; nFracSec = -1; }
+			
 			Units units = (Units) qds.property(QDataSet.UNITS);
 			if((units != null) && (units instanceof TimeLocationUnits)){
 				if(nFracSec < 0){ 
@@ -508,7 +615,7 @@ public class QdsToD2sStream {
 		if(SemanticOps.isBundle(qds)){
 			// Primary <X> handling: Maybe the bundle's depend_0 is <x>
 			if( (dep0 = (QDataSet) qds.property(QDataSet.DEPEND_0)) != null)
-				lDsXfer.add(new QdsXferInfo(dep0, nSigDigit, nSecDigit, X_PLANE));
+				lDsXfer.add(new QdsXferInfo(dep0, bBinary, nSigDigit, nSecDigit, X_PLANE));
 			
 			for(int i = 0; i < qds.length(); ++i)
 				lDsIn.add( DataSetOps.slice0(qds, i) );
@@ -523,7 +630,7 @@ public class QdsToD2sStream {
 			if( (dep0 = (QDataSet) ds.property(QDataSet.DEPEND_0)) != null){
 				
 				if(lDsXfer.isEmpty()){
-					lDsXfer.add(new QdsXferInfo(dep0, nSigDigit, nSecDigit, X_PLANE));
+					lDsXfer.add(new QdsXferInfo(dep0, bBinary, nSigDigit, nSecDigit, X_PLANE));
 				}
 				else{
 					if(dep0 != lDsXfer.get(0).qds){
@@ -536,7 +643,7 @@ public class QdsToD2sStream {
 			else{
 				// Rank 1 with no depend 0 is an <x> plane
 				if(lDsXfer.isEmpty() && (ds.rank() == 1))
-					lDsXfer.add(new QdsXferInfo(ds, nSigDigit, nSecDigit, X_PLANE));
+					lDsXfer.add(new QdsXferInfo(ds, bBinary, nSigDigit, nSecDigit, X_PLANE));
 				// no-add
 			}
 		}
@@ -642,7 +749,7 @@ public class QdsToD2sStream {
 		int nSecDigit, int nPlane, String sFallBackSrc
 	){
 		QdsXferInfo xferPrimary;
-		xferPrimary = new QdsXferInfo(dsPrimary, nSigDigit, nSecDigit, nPlane);
+		xferPrimary = new QdsXferInfo(dsPrimary, bBinary, nSigDigit, nSecDigit, nPlane);
 		lDsXfer.add(xferPrimary);
 		
 		// See if source was set.
@@ -672,7 +779,7 @@ public class QdsToD2sStream {
 					log.warning(sErr); 
 					return 0; 
 				}
-				lDsXfer.add(new QdsXferInfo(dsStats, nSigDigit, nSecDigit, nPlane,
+				lDsXfer.add(new QdsXferInfo(dsStats, bBinary, nSigDigit, nSecDigit, nPlane,
 			                               sSource, sProp));
 				++nStatsPlanes;
 			}
@@ -706,7 +813,7 @@ public class QdsToD2sStream {
 			switch(xfer.nPlane){
 			
 			case X_PLANE:
-				elPlane = doc.createElement(X);
+				elPlane = doc.createElement(X_REF);
 				elPlane.setAttribute("units", sUnits);
 				if(sName != null) elPlane.setAttribute("group", sName);
 				
@@ -714,7 +821,7 @@ public class QdsToD2sStream {
 				break;
 			
 			case Y_PLANE:
-				elPlane = doc.createElement(Y);
+				elPlane = doc.createElement(Y_REF);
 				elPlane.setAttribute("units", sUnits);
 				if(sName == null) sName = String.format("Y_%d", nYs);
 				elPlane.setAttribute("group", sName);
@@ -734,7 +841,7 @@ public class QdsToD2sStream {
 				break;
 			
 			case YSCAN_PLANE:
-				elPlane = doc.createElement(YSCAN);
+				elPlane = doc.createElement(Z_SCAN);
 				if(bDas23) elPlane.setAttribute("units", sUnits);
 				else elPlane.setAttribute("zUnits", sUnits);
 				
@@ -755,10 +862,10 @@ public class QdsToD2sStream {
 				if(yts != null){
 					if(yts.sYTags != null){
 						if(bDas23){ 
-							valueListChild(elPlane, YTAGS, sUnits, yts.sYTags);
+							valueListChild(elPlane, Yoffsets, sUnits, yts.sYTags);
 						}
 						else {
-							elPlane.setAttribute(YTAGS, yts.sYTags);
+							elPlane.setAttribute(Yoffsets, yts.sYTags);
 							elPlane.setAttribute("yUnits", sUnits);
 						}
 					}
@@ -784,7 +891,7 @@ public class QdsToD2sStream {
 			}
 			
 			// Common stuff here
-			elPlane.setAttribute(TYPE, xfer.sType);
+			elPlane.setAttribute(FORMAT, xfer.sType);
 			
 			// Linking stats planes and averages planes if source is given
 			if(xfer.sSource != null){
