@@ -14,9 +14,14 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import javax.swing.event.EventListenerList;
 import org.das2.datum.Datum;
+import org.das2.datum.DatumRange;
 import org.das2.event.DataRangeSelectionEvent;
 import org.das2.event.DataRangeSelectionListener;
 import org.das2.qds.QDataSet;
+import org.das2.datum.Units;
+import org.das2.qds.ops.*;
+import org.das2.qds.DataSetOps;
+import org.das2.qds.DataSetUtil;
 
 /**
  *
@@ -28,17 +33,25 @@ public class DasSliceController extends DasCanvasComponent {
     // Objects to recieve event firing
     private EventListenerList eListenerList = new EventListenerList();
    
-    // Dataset to slice;
+    // Rank 1 Dataset;
     QDataSet qds;
-    Datum datumLeft;
-    Datum datumRight;
+    
+    // The values stored in the left and right data cells
+    DatumRange validDatumRange;
+    DatumRange currentDatumRange;
+    
+    // How much to increase or decrease the data values 
+    // on a click and drag
+    Datum datumLeftChange;
+    Datum datumRightChange;
+    
     
     // Used to highlight area mouse is in
     enum MouseArea {
         LEFT, CENTER, RIGHT, NONE
     }
     
-    MouseArea mouseArea;
+    MouseArea mouseArea = MouseArea.NONE;
     
     // Stores point where the mouse is pressed and is used
     // to determine how much a data value should change 
@@ -49,16 +62,7 @@ public class DasSliceController extends DasCanvasComponent {
     // exits frame, but to stop highlighting if mouse exit
     // wasn't during a drag.
     boolean mouseIsDragging;
-    
-    // The values stored in the left and right data cells
-    double dataValueLeft;
-    double dataValueRight;
-    
-    // How much to increase or decrease the data values 
-    // on a click and drag
-    double dataValueLeftMouseUpdate; 
-    double dataValueRightMouseUpdate;
-   
+  
     
     // Interactive area for changing left data value
     Rectangle leftRect; 
@@ -130,13 +134,16 @@ public class DasSliceController extends DasCanvasComponent {
         
         g.setColor(Color.BLACK);
        
-        
         g.setFont(g.getFont().deriveFont(g.getFont().getSize() * 2.5f));
+        
         // Write data values
-        g.drawString(Double.toString(dataValueLeft  + dataValueLeftMouseUpdate), leftRect.x + leftRect.width / 5, rowMidPt + g.getFont().getSize() / 4);
-        g.drawString(Double.toString(dataValueRight + dataValueRightMouseUpdate), rightRect.x + rightRect.width / 5, rowMidPt + g.getFont().getSize() / 4);
+        g.drawString((currentDatumRange.min().plus(datumLeftChange)).toString(), 
+                leftRect.x + leftRect.width / 5, rowMidPt + g.getFont().getSize() / 4);
+        g.drawString((currentDatumRange.max().plus(datumRightChange)).toString(), 
+                rightRect.x + rightRect.width / 5, rowMidPt + g.getFont().getSize() / 4);
         
         g.setColor(new Color(.5f, .5f, 0, .5f));
+        
         // highlight area the mouse is in
         switch (this.mouseArea){
             case LEFT:
@@ -160,22 +167,27 @@ public class DasSliceController extends DasCanvasComponent {
         return DasDevicePosition.toRectangle( getRow(), getColumn() );
     }
     
-    public DasSliceController(QDataSet qds, double dataLeft, double dataRight){
+
+    public DasSliceController(QDataSet qds){
         super();
         this.qds = qds;
-        dataValueLeft = dataLeft;
-        dataValueLeftMouseUpdate = 0;
-        dataValueRight = dataRight;
-        dataValueRightMouseUpdate = 0;
+        this.validDatumRange = new DatumRange(
+            Datum.create(qds.value(0), (Units) qds.property(QDataSet.UNITS)),
+            Datum.create(qds.value(qds.length() - 1), (Units) qds.property(QDataSet.UNITS)) );
+        
+        this.currentDatumRange = this.validDatumRange;
+        
+        datumLeftChange = Datum.create(0, (Units) qds.property(QDataSet.UNITS));
+        datumRightChange = Datum.create(0, (Units) qds.property(QDataSet.UNITS));
         leftRect = new Rectangle();
         rightRect = new Rectangle();
         centerRect = new Rectangle();
-        mouseArea = MouseArea.NONE;
         MouseAdapter ma=  getMouseAdapter();
         addMouseListener( ma );
         addMouseMotionListener( ma );
         
     }
+
     
     private MouseAdapter getMouseAdapter() { 
         return new MouseAdapter() {
@@ -187,34 +199,38 @@ public class DasSliceController extends DasCanvasComponent {
             @Override
             public void mousePressed(MouseEvent e) {
                 super.mousePressed(e);
-                mousePressPt = e.getPoint();
-                
+                mousePressPt = e.getPoint(); 
             }
+            
             @Override
             public void mouseDragged(MouseEvent e) {
                 super.mouseDragged(e); 
                 mouseIsDragging = true;
                 Point currentPoint = e.getPoint();
                 int xDist = currentPoint.x - mousePressPt.x;
-                
+                Datum xDatumDist = Datum.create(xDist, (Units) qds.property(QDataSet.UNITS));
                 switch (mouseArea) {
                     case LEFT:
                         //ensure data left never gets larger than data right
-                        if(dataValueLeft + xDist >= dataValueRight){ 
-                            dataValueLeftMouseUpdate = dataValueRight - dataValueLeft;
+                        if( currentDatumRange.min().add(xDatumDist).
+                                    ge(currentDatumRange.max())  ){ 
+                             datumLeftChange = 
+                                     currentDatumRange.max().subtract(currentDatumRange.min());    
                         }else{
-                            dataValueLeftMouseUpdate = xDist;
+                            datumLeftChange = xDatumDist;
                         }   break;
                     case RIGHT:
                         //ensure data right never drops below data left
-                        if(dataValueRight + xDist <= dataValueLeft){ 
-                            dataValueRightMouseUpdate = dataValueLeft - dataValueRight;
-                        } else{
-                            dataValueRightMouseUpdate = xDist;
+                        if( currentDatumRange.max().add(xDatumDist).
+                                    le(currentDatumRange.min())  ){ 
+                             datumRightChange = 
+                                     currentDatumRange.min().subtract(currentDatumRange.max());    
+                        }else{
+                            datumRightChange = xDatumDist;
                         }   break;
                     case CENTER:
-                        dataValueLeftMouseUpdate = xDist;
-                        dataValueRightMouseUpdate = xDist;
+                        datumLeftChange = xDatumDist;
+                        datumRightChange = xDatumDist;
                         break;
                     default:
                         break;
@@ -225,18 +241,24 @@ public class DasSliceController extends DasCanvasComponent {
             public void mouseReleased(MouseEvent e) {
                 super.mouseReleased(e);
                 mouseIsDragging = false;
-                dataValueLeft += dataValueLeftMouseUpdate;
-                dataValueRight += dataValueRightMouseUpdate;
-                dataValueLeftMouseUpdate = 0;
-                dataValueRightMouseUpdate = 0;
+                currentDatumRange = new DatumRange(
+                        currentDatumRange.min().add(datumLeftChange),
+                        currentDatumRange.max().add(datumRightChange)  );
+                datumLeftChange = Datum.create(0, (Units) qds.property(QDataSet.UNITS));
+                datumRightChange = Datum.create(0, (Units) qds.property(QDataSet.UNITS));
+                
                 if(!getBounds().contains(e.getPoint())){
                     mouseArea = MouseArea.NONE;
                     update();
                 }
-                DataRangeSelectionEvent dataRangeEvent;
-                dataRangeEvent = new DataRangeSelectionEvent(this, (Datum) datumLeft, (Datum) datumRight);
+                
+                
+                DataRangeSelectionEvent dataRangeEvent = new DataRangeSelectionEvent(
+                        this, currentDatumRange.min(), currentDatumRange.max());
+
                 fireDataRangeSelectionListenerDataRangeSelected(dataRangeEvent);
             }
+            
             @Override
             public void mouseEntered(MouseEvent e){
                 super.mouseEntered(e);

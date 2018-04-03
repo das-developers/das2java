@@ -8,6 +8,9 @@ package test.graph;
 import java.awt.BorderLayout;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import org.das2.datum.Datum;
+import org.das2.datum.Units;
+import org.das2.event.DataRangeSelectionEvent;
 import org.das2.event.DataRangeSelectionListener;
 import org.das2.graph.DasAnnotation;
 import org.das2.graph.DasCanvas;
@@ -15,7 +18,9 @@ import org.das2.graph.DasColumn;
 import org.das2.graph.DasPlot;
 import org.das2.graph.DasRow;
 import org.das2.graph.DasSliceController;
+import org.das2.qds.DDataSet;
 import org.das2.qds.QDataSet;
+import static org.das2.qds.ops.Ops.dataset;
 
 
 /**
@@ -55,9 +60,22 @@ public class DasSliceControllerDemo {
         DasCanvas canvas = new DasCanvas(width, height);
         
         getContentPane().add(canvas, BorderLayout.CENTER );
-        QDataSet qds = null;
-        DasSliceController sliceCont = new DasSliceController(qds, 1.123123, 2.23232);
-       
+     
+        int[] intArr = new int[]{1,2,3,4,5};
+        QDataSet qds = dataset(intArr, Units.seconds);
+                
+        
+        DasSliceController sliceCont = new DasSliceController(qds);
+        DataRangeSelectionListener rangeListener = new DataRangeSelectionListener() {
+            @Override
+            public void dataRangeSelected(DataRangeSelectionEvent e) {
+               
+                System.err.println("Got the Data Range event");
+                System.err.println("Max = " + e.getMaximum());
+                System.err.println("Min = " + e.getMinimum());
+            }
+        };
+        sliceCont.addDataRangeSelectionListener(rangeListener);
         canvas.add(sliceCont,new DasRow(canvas, 0, 1),new DasColumn(canvas, 0, 1));
         
     }
