@@ -129,7 +129,10 @@ public class QdsToD2sStream {
 	private boolean bDas23;
 	
 	private String VERSION;
-	private String FORMAT;
+	private String FORMAT;  // Either type= or format=
+	private String DATASET; // Either <packet> or <dataset>
+	private String SHAPE;   // Either shape= or nitems=
+	private String JOINID;  // Either name= or group=
 	
 	// Data Values
 	private String X;
@@ -145,14 +148,10 @@ public class QdsToD2sStream {
 	private String Y_REF;
 	private String Z_REF;
 	private String Xoffsets;
-	private String X0;
-	private String Xdelta;
 	private String Yoffsets;
-	private String Y0;
-	private String Ydelta;
 	private String Zoffsets;
-	private String Z0;
-	private String Zdelta;
+	private String Offset0;
+	private String Delta;
 	
 	
 	private static final Logger log = LoggerManager.getLogger("qstream");
@@ -229,60 +228,40 @@ public class QdsToD2sStream {
 		if(_bDas23){
 			VERSION = "2.3-basic";
 			FORMAT = "format"; 
+			DATASET = "dataset";
+			SHAPE = "shape";
+			JOINID = "group";
 			
 			// Das 2.3 uses element types to make data usage more explicit
+			X_REF = "Xref"; Xoffsets = "xOffsets";    // X Coords
+			Y_REF = "Yref"; Yoffsets = "yOffsets";    // Y Coords
+			Z_REF = "Zref"; Zoffsets = "zOffsets";    // Z Coords
 			
-			// X Coords
-			X_REF = "Xref";
-			Xoffsets = "xOffsets"; Xdelta = "xDelta"; X0 = "xOffset0";
+			Delta = "delta"; Offset0 = "offset0";     // Slice delta attributes
 			
-			// Y Coords
-			Y_REF = "Yref";
-			Yoffsets = "yOffsets"; Ydelta = "yDelta"; Y0 = "yOffset0";
-			
-			// Z Coords
-			Z_REF = "Zref";
-			Zoffsets = "zOffsets"; Zdelta = "zDelta"; Z0 = "zOffset0";
-			
-			// X data
-			X = "X";  // No X scan
-			
-			// Y Data
-			Y = "Y_of_X"; Y_SCAN = "MultiY_of_X"; 
-			
-			// Z Data
-			Z = "Z_of_XY"; Z_SCAN = "MultiZ_of_XY";
-			
-			// W Data
-			W = "W_of_XYZ"; W_SCAN = "MultiW_of_XYZ";
-			
-			// To get all of mars express data we would need
-			// Z_REF, Zoffsets, Zdeltas, Z0 and W_of_XYZ, W_scan_XYZ, so 4-coords items
-			// and 2 data items.  I can see why people move away from specific dimensions
-			// for 3-D stuff.
+			X = "X";  // No X scan                    // X data
+			Y = "Y_of_X"; Y_SCAN = "multiY_of_X";     // Y Data
+			Z = "Z_of_XY"; Z_SCAN = "multiZ_of_XY";   // Z Data
+			W = "W_of_XYZ"; W_SCAN = "multiW_of_XYZ"; // W Data  (Mars Express)
 		}
 		else{
 			VERSION = "2.2";
-			FORMAT = "type"; 
+			FORMAT = "type";
+			DATASET = "packet";
+			SHAPE = "nitems";
+			JOINID = "name";
+			
 			// Das 2.2  y, yscan, yTags, yInterval and yTagMin are ambiguous, their meanings
 			// change depending on which other elements are present
 			
-			// X Coords
-			X_REF = "x";
-			Xoffsets = "yTags"; Xdelta = "yTagInterval"; X0 = "yTagMin";
+			X_REF = "x"; Xoffsets = "yTags";              // X Coords
+			Y_REF = "y"; Yoffsets = "yTags";              // Y Coords
+			Delta = "yTagInterval"; Offset0 = "yTagMin";  // Slice delta attributes
 			
-			// Y Coords
-			Y_REF = "y";
-			Yoffsets = "yTags"; Ydelta = "yTagInterval"; Y0 = "yTagMin";
-			
-			// Y Data
-			Y = "y"; Y_SCAN = "yscan"; 
-			
-			// Z Data
-			Z = "z"; Z_SCAN = "yscan";
-			
-			// W Data
-			W = null; W_SCAN = null;
+			X = "X";                                      // X Data (never happened)
+			Y = "y"; Y_SCAN = "yscan";                    // Y Data
+			Z = "z"; Z_SCAN = "yscan";                    // Z Data
+			W = null; W_SCAN = null;                      // W Data
 		}
 	}
 	
@@ -445,6 +424,22 @@ public class QdsToD2sStream {
 		return true;  // We ran the gauntlet
 	}
 	
+	private boolean _stripDotProps(QDataSet qds){
+		// Ephemeris data (x-multi-y) ported in from das1 add many redundant properties
+		// get rid of those if this is a bundle_1 dataset and each sub-item is rank 1
+		
+		if(qds.property(QDataSet.BUNDLE_1) != null){
+			for(int i = 0; i < qds.length(0); ++i){
+				QDataSet ds = DataSetOps.slice1(qds, i);
+				if(ds.rank() != 1) return false;
+			}
+		}
+		else{
+			return false;
+		}
+		return true;
+	}
+	
 	// Make header for join, <stream>
 	
 	// For non-bundle datasets a lot of the properties can be placed in the
@@ -472,7 +467,9 @@ public class QdsToD2sStream {
 		// If the user_properties are present, add them in
 		Map<String, Object> dUser;
 		dUser = (Map<String, Object>)qds.property(QDataSet.USER_PROPERTIES);
-		if(dUser != null) nProps += addPropsFromMap(props, dUser);
+		
+		boolean bStripDot = _stripDotProps(qds);
+		if(dUser != null) nProps += addPropsFromMap(props, dUser, bStripDot);
 		
 		// If the ISTP-CDF metadata weren't so long, we'd include these as well
 		// maybe a Das 2.3 sub tag is appropriate for them, ignore for now...
@@ -486,10 +483,11 @@ public class QdsToD2sStream {
 	// Helper structures for making packet headers and writing data ///////////
 	
 	// Make and hold the transfer information for a single QDS
-	private final static int X_PLANE = 1;
-	private final static int Y_PLANE = 2;
-	private final static int Z_PLANE = 3;
-	private final static int YSCAN_PLANE = 4;
+	private final static int XREF_PLANE = 1;
+	private final static int YREF_PLANE = 2;
+	private final static int Y_PLANE = 3;
+	private final static int Z_PLANE = 4;
+	private final static int YSCAN_PLANE = 5;
 	
 	private class QdsXferInfo {
 		QDataSet qds;
@@ -612,13 +610,14 @@ public class QdsToD2sStream {
 		List<QDataSet> lDsIn = new ArrayList<>();
 		List<QDataSet> lDsOut = new ArrayList<>();
 		
+		// Bundle is usually short for BUNDLE_1
 		if(SemanticOps.isBundle(qds)){
 			// Primary <X> handling: Maybe the bundle's depend_0 is <x>
 			if( (dep0 = (QDataSet) qds.property(QDataSet.DEPEND_0)) != null)
-				lDsXfer.add(new QdsXferInfo(dep0, bBinary, nSigDigit, nSecDigit, X_PLANE));
+				lDsXfer.add(new QdsXferInfo(dep0, bBinary, nSigDigit, nSecDigit, XREF_PLANE));
 			
-			for(int i = 0; i < qds.length(); ++i)
-				lDsIn.add( DataSetOps.slice0(qds, i) );
+			for(int i = 0; i < qds.length(0); ++i)
+				lDsIn.add( DataSetOps.slice1(qds, i) );
 		}
 		else{
 			lDsIn.add(qds);
@@ -630,7 +629,7 @@ public class QdsToD2sStream {
 			if( (dep0 = (QDataSet) ds.property(QDataSet.DEPEND_0)) != null){
 				
 				if(lDsXfer.isEmpty()){
-					lDsXfer.add(new QdsXferInfo(dep0, bBinary, nSigDigit, nSecDigit, X_PLANE));
+					lDsXfer.add(new QdsXferInfo(dep0, bBinary, nSigDigit, nSecDigit, XREF_PLANE));
 				}
 				else{
 					if(dep0 != lDsXfer.get(0).qds){
@@ -643,7 +642,7 @@ public class QdsToD2sStream {
 			else{
 				// Rank 1 with no depend 0 is an <x> plane
 				if(lDsXfer.isEmpty() && (ds.rank() == 1))
-					lDsXfer.add(new QdsXferInfo(ds, bBinary, nSigDigit, nSecDigit, X_PLANE));
+					lDsXfer.add(new QdsXferInfo(ds, bBinary, nSigDigit, nSecDigit, XREF_PLANE));
 				// no-add
 			}
 		}
@@ -726,7 +725,7 @@ public class QdsToD2sStream {
 			}
 			
 			// Have our YTags
-			sFallBackSrcName = String.format("YScan_%d", nYScans);
+			sFallBackSrcName = String.format("%s_%d", bDas23 ? "multiZ":"YScan", nYScans);
 			nNewPlanes = _addPlaneWithStats(
 				lDsXfer, ds, nSigDigit, nSecDigit, YSCAN_PLANE, sFallBackSrcName
 			);
@@ -791,7 +790,9 @@ public class QdsToD2sStream {
 	Document _makePktHdrFromXfer(List<QdsXferInfo> lDsXfer, QDataSet dsYTags)
 	{
 		Document doc = newXmlDoc();
-		Element elPkt = doc.createElement("packet");
+		Element elPkt = doc.createElement(DATASET);
+		
+		if(bDas23) elPkt.setAttribute("streamBy", "Xslice");
 		
 		Element elPlane;
 		int nProps;
@@ -812,19 +813,19 @@ public class QdsToD2sStream {
 						
 			switch(xfer.nPlane){
 			
-			case X_PLANE:
+			case XREF_PLANE:
 				elPlane = doc.createElement(X_REF);
 				elPlane.setAttribute("units", sUnits);
-				if(sName != null) elPlane.setAttribute("group", sName);
+				if(sName != null) elPlane.setAttribute(JOINID, sName);
 				
 				nProps = addSimpleProps(elProps, xfer.qds, "x");
 				break;
 			
 			case Y_PLANE:
-				elPlane = doc.createElement(Y_REF);
+				elPlane = doc.createElement(Y);
 				elPlane.setAttribute("units", sUnits);
 				if(sName == null) sName = String.format("Y_%d", nYs);
-				elPlane.setAttribute("group", sName);
+				elPlane.setAttribute(JOINID, sName);
 				
 				nProps = addSimpleProps(elProps, xfer.qds, "y");
 				++nYs;
@@ -834,7 +835,7 @@ public class QdsToD2sStream {
 				elPlane = doc.createElement(Z);
 				elPlane.setAttribute("units", sUnits);
 				if(sName == null) sName = String.format("Z_%d", nZs);
-				elPlane.setAttribute("group", sName);
+				elPlane.setAttribute(JOINID, sName);
 				
 				nProps = addSimpleProps(elProps, xfer.qds, "z");
 				++nZs;
@@ -845,40 +846,50 @@ public class QdsToD2sStream {
 				if(bDas23) elPlane.setAttribute("units", sUnits);
 				else elPlane.setAttribute("zUnits", sUnits);
 				
-				if(sName == null) sName = String.format("YScan_%d", nYscans);
-				elPlane.setAttribute("group", sName);
+				if(sName == null) 
+					sName = String.format("%s_%d", (bDas23 ?  "multiZ" : "YScan"), nYscans);
+				elPlane.setAttribute(JOINID, sName);
 				
 				//Extra stuff for YScans
 				if(dsYTags == null){
 					log.warning("Missing yTags dataset for yScan dataset");
 					return null;
 				}
-				elPlane.setAttribute("nitems", String.format("%d",dsYTags.length()));
+				if(bDas23)
+					elPlane.setAttribute(SHAPE, String.format("*;%d",dsYTags.length()));
+				else
+					elPlane.setAttribute(SHAPE, String.format("%d",dsYTags.length()));
 				
 				units  = (Units)dsYTags.property(QDataSet.UNITS);
 				sUnits = "";
 				if(units != null) sUnits = units.toString();
 				
-				if(yts != null){
-					if(yts.sYTags != null){
-						if(bDas23){ 
-							valueListChild(elPlane, Yoffsets, sUnits, yts.sYTags);
-						}
-						else {
-							elPlane.setAttribute(Yoffsets, yts.sYTags);
-							elPlane.setAttribute("yUnits", sUnits);
-						}
-					}
-					else{
-						elPlane.setAttribute("yUnits", sUnits);
-						elPlane.setAttribute("yTagInterval", yts.sYTagInterval);
-						elPlane.setAttribute("yTagMin", yts.sYTagMin);
-					}
-				}
-				else{
+				if(yts == null){
 					assert(false);
 					log.warning("No YTags, for output yscans");
 					return null;
+				}
+				if(bDas23){
+					if(yts.sYTags != null){
+						valueListChild(elPlane, Yoffsets, sUnits, yts.sYTags);
+					}
+					else {
+						Element elOffsets = elPlane.getOwnerDocument().createElement(Yoffsets);
+						elOffsets.setAttribute("units", sUnits);
+						elOffsets.setAttribute(Offset0, yts.sYTagMin);
+						elOffsets.setAttribute(Delta, yts.sYTagInterval);
+						elPlane.appendChild(elOffsets);
+					}			
+				}
+				else{
+					elPlane.setAttribute("yUnits", sUnits);
+					if(yts.sYTags != null){
+						elPlane.setAttribute(Yoffsets, yts.sYTags);
+					}
+					else{
+						elPlane.setAttribute(Delta, yts.sYTagInterval);
+						elPlane.setAttribute(Offset0, yts.sYTagMin);
+					}
 				}
 				
 				nProps = addSimpleProps(elProps, dsYTags, "y");
@@ -998,16 +1009,34 @@ public class QdsToD2sStream {
 		throws IOException {
 		
 		WritableByteChannel channel = Channels.newChannel(out);
+						
+		// Make the Xslice record tag
+		String sRecTag;
+		if(bDas23){
+			QdsXferInfo qi = null;
+			int nWidth = 0;
+			for(int iDs = 0; iDs < pktXfer.datasets(); ++iDs){
+				qi = pktXfer.lDsXfer.get(iDs);
+				int nSzEa = qi.transtype.sizeBytes();
+				if(qi.qds.rank() == 1) nWidth += nSzEa;
+				else nWidth += qi.qds.length(0) * nSzEa;
+			}
+			sRecTag = String.format("[XS|%d|%d]", iPktId, nWidth);
+		}
+		else{
+			sRecTag = String.format(":%02d:", iPktId);
+		}
 		
-		int nBufLen = pktXfer.slice0Length() + 4;
+		byte[] aRecTag = sRecTag.getBytes(StandardCharsets.US_ASCII);
+		
+		int nBufLen = pktXfer.slice0Length() + aRecTag.length;
 		byte[] aBuf = new byte[nBufLen];
 		ByteBuffer buffer = ByteBuffer.wrap(aBuf);
 		buffer.order(ByteOrder.nativeOrder());        // Since we have a choice, use native
-		String sPktId = String.format(":%02d:", iPktId);
-		buffer.put(sPktId.getBytes(StandardCharsets.US_ASCII));      // tag stays in buffer
+		
+		buffer.put(aRecTag);                          // tag stays in buffer
 		
 		int nPkts = pktXfer.lDsXfer.get(0).qds.length();
-		
 		for(int iPkt = 0; iPkt < nPkts; ++iPkt){
 			
 			QdsXferInfo qi = null;
@@ -1030,7 +1059,7 @@ public class QdsToD2sStream {
 				buffer.put(nBufLen - 1, (byte)'\n');
 			buffer.flip();
 			channel.write(buffer);
-			buffer.position(4);
+			buffer.position(aRecTag.length);
 		}
 	}	
 	
@@ -1049,12 +1078,22 @@ public class QdsToD2sStream {
 		return sDoc;
 	}
 	
-	// Write a UTF-8 header string onto the stream
+	// Write a UTF-8 header string onto the stream, if packet ID == 0 then
+	// write a stream header
 	private void writeHeader(OutputStream os, int nPktId, String sHdr) 
 		throws UnsupportedEncodingException, IOException{
 		
 		byte[] aHdr = sHdr.getBytes(StandardCharsets.UTF_8);
-		String sTag = String.format("[%02d]%06d", nPktId, aHdr.length);
+		String sTag;
+		if(bDas23){
+			if(nPktId == 0)
+				sTag = String.format("[SH||%d]", aHdr.length);
+			else
+				sTag = String.format("[DS|%d|%d]", nPktId, aHdr.length);
+		}
+		else{
+			sTag = String.format("[%02d]%06d", nPktId, aHdr.length);
+		}
 		byte[] aTag = sTag.getBytes(StandardCharsets.US_ASCII);
 		os.write(aTag);
 		os.write(aHdr);
@@ -1230,13 +1269,14 @@ public class QdsToD2sStream {
 	// Get all the user_data properties that don't conflict with any properties
 	// already present.  These don't care about prepending x,y,z axis identifiers
 	// to the attribute tag, though they may have them and that's okay.
-	int addPropsFromMap(Element props, Map<String, Object> dMap){
+	int addPropsFromMap(Element props, Map<String, Object> dMap, boolean bStripDot){
 		
 		if(dMap == null) return 0;
 		int nAdded = 0;
 		
 		for(Entry<String,Object> ent: dMap.entrySet()){
 			String sKey = ent.getKey();
+			if(bStripDot && sKey.contains(".")) continue;
 			
 			// For das2.2 ask about attributes, for das2.3 ask about child elements
 			if(bDas23){
