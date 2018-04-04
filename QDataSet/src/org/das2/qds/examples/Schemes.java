@@ -709,6 +709,11 @@ public class Schemes {
         return Ops.bundle(xx,yy);
     }
     
+    /**
+     * is a xyScatter data set.
+     * @param ds
+     * @return true if is a xyScatter data set.
+     */
     public static boolean isXYScatter( QDataSet ds ) {
         return ds.rank()==2 && ds.length(0)==2 && Schemes.isBundleDataSet(ds);
     }
@@ -725,6 +730,11 @@ public class Schemes {
         return Ops.link(Ops.bundle(xx,yy),zz);
     }
 
+    /**
+     * is a Z that is a function of X and Y of a xyScatter.
+     * @param ds
+     * @return true if is a Z that is a function of X and Y of a xyScatter.
+     */
     public static boolean isRank1AtXYScatter( QDataSet ds ) {
         QDataSet xy= (QDataSet) ds.property(QDataSet.DEPEND_0);
         return ( xy!=null && isXYScatter(xy) && ds.rank()==1 );
