@@ -30,53 +30,58 @@ import org.das2.qds.DataSetUtil;
 public class DasSliceController extends DasCanvasComponent {
 
     
-    // Objects to recieve event firing
+    /** Objects to receive event firing */
     private EventListenerList eListenerList = new EventListenerList();
    
-    // Rank 1 Dataset;
+    /** The Rank 1 slice Dataset */
     QDataSet qds;
     
-    // DatumRange containing the valid max and min of the QDataSet
+    /** DatumRange containing the valid max and min of the QDataSet */
     DatumRange validDatumRange;
-    // The current range displayed
+    /** The current range displayed */
     DatumRange currentDatumRange;
     
-    // How much to increase or decrease the data values 
-    // on a click and drag
-    Datum datumLeftChange;
-    Datum datumRightChange;
+    /** Amount to change currentDatumRange.min() on a click and drag */
+    Datum datumLeftDragVal;
+    /** Amount to change currentDatumRange.max() on a click and drag */
+    Datum datumRightDragVal;
     
     
-    // Used to highlight area mouse is in
+    /* Possible areas the mouse cursor can be */
     enum MouseArea {
         LEFT, CENTER, RIGHT, NONE
     }
     
+    /* Used to highlight area mouse is in */
     private MouseArea mouseArea = MouseArea.NONE;
     
-    // Stores point where the mouse is pressed and is used
-    // to determine how much a data value should change 
-    // when the mouse is released.
+    /** 
+     * Stores point where the mouse is pressed and is used
+     * to determine how much a data value should change 
+     * when the mouse is released.
+     */
     private Point mousePressPt;
     
-    // Used to keep an area highlighted if a mouse drag
-    // exits frame, but to stop highlighting if mouse exit
-    // wasn't during a drag.
+    /**
+     * Used to keep an area highlighted if a mouse drag
+     * exits frame, but to stop highlighting if mouse exit
+     * wasn't during a drag.
+     */
     private boolean mouseIsDragging;
   
     
-    // Interactive area for changing left data value
+    /** Interactive area for changing left data value */
     private Rectangle leftRect = new Rectangle(); 
-    // Interactive area for changing right data value
+    /** Interactive area for changing right data value */
     private Rectangle rightRect = new Rectangle();
-    // Interactive area for changing both data values at the same time
+    /** Interactive area for changing both data values at the same time */
     private Rectangle centerRect = new Rectangle();
     
-    // Portion of entire width used for a data cell
+    /** Portion of entire width used for leftRect and rightRect */
     private float widthFactor = 4.0f / 9.0f;
     
     
-    // Values to make painting the components easier
+    /* ****** USEFUL PAINT PARAMS ****** */
     private int colMin;
     private int colMax; 
     private int colWidth;
@@ -95,9 +100,10 @@ public class DasSliceController extends DasCanvasComponent {
     
     private int colRightCellBegin;
     private int colRightCellEnd;
+    /* *************************** */
     
     
-    // Called in paint method to update everything on a resize
+    /** Updates all the useful paint params */
     private void setRects(){
         
         colMin = getColumn().getDMinimum() ;
@@ -138,9 +144,9 @@ public class DasSliceController extends DasCanvasComponent {
         g.setFont(g.getFont().deriveFont(g.getFont().getSize() * 2.5f));
         
         // Write data values
-        g.drawString((currentDatumRange.min().plus(datumLeftChange)).toString(), 
+        g.drawString((currentDatumRange.min().plus(datumLeftDragVal)).toString(), 
                 leftRect.x + leftRect.width / 5, rowMidPt + g.getFont().getSize() / 4);
-        g.drawString((currentDatumRange.max().plus(datumRightChange)).toString(), 
+        g.drawString((currentDatumRange.max().plus(datumRightDragVal)).toString(), 
                 rightRect.x + rightRect.width / 5, rowMidPt + g.getFont().getSize() / 4);
         
         g.setColor(new Color(.5f, .5f, 0, .5f));
@@ -170,6 +176,7 @@ public class DasSliceController extends DasCanvasComponent {
     
 
     public DasSliceController(QDataSet qds){
+        
         super();
         this.qds = qds;
         if(qds.rank() != 1){
@@ -196,8 +203,8 @@ public class DasSliceController extends DasCanvasComponent {
         
         this.currentDatumRange = this.validDatumRange;
         
-        datumLeftChange = Datum.create(0, (Units) qds.property(QDataSet.UNITS));
-        datumRightChange = Datum.create(0, (Units) qds.property(QDataSet.UNITS));
+        datumLeftDragVal = Datum.create(0, (Units) qds.property(QDataSet.UNITS));
+        datumRightDragVal = Datum.create(0, (Units) qds.property(QDataSet.UNITS));
         
         MouseAdapter ma=  getMouseAdapter();
         addMouseListener( ma );
@@ -224,7 +231,10 @@ public class DasSliceController extends DasCanvasComponent {
                 super.mouseDragged(e); 
                 mouseIsDragging = true;
                 Point currentPoint = e.getPoint();
-                int xDist = currentPoint.x - mousePressPt.x;
+                
+                // Create Datum based on distance dragged to manipulate the current range
+                double xDist = currentPoint.x - mousePressPt.x;
+                xDist = factorOfXDist(xDist);
                 Datum xDatumDist = Datum.create(xDist, (Units) qds.property(QDataSet.UNITS));
                 updateValues(xDatumDist);
                 
@@ -234,17 +244,21 @@ public class DasSliceController extends DasCanvasComponent {
             public void mouseReleased(MouseEvent e) {
                 super.mouseReleased(e);
                 mouseIsDragging = false;
+                // Update currentRange with final drag value
                 currentDatumRange = new DatumRange(
-                        currentDatumRange.min().add(datumLeftChange),
-                        currentDatumRange.max().add(datumRightChange)  );
-                datumLeftChange = Datum.create(0, (Units) qds.property(QDataSet.UNITS));
-                datumRightChange = Datum.create(0, (Units) qds.property(QDataSet.UNITS));
+                        currentDatumRange.min().add(datumLeftDragVal),
+                        currentDatumRange.max().add(datumRightDragVal)  );
+                // Reset drag vals
+                datumLeftDragVal = Datum.create(0, (Units) qds.property(QDataSet.UNITS));
+                datumRightDragVal = Datum.create(0, (Units) qds.property(QDataSet.UNITS));
                 
+                // Stop highlighting if release is outside bounds
                 if(!getBounds().contains(e.getPoint())){
                     mouseArea = MouseArea.NONE;
                     update();
                 }
              
+                // Fire event for current range on mouse release
                 DataRangeSelectionEvent dataRangeEvent = new DataRangeSelectionEvent(
                         this, currentDatumRange.min(), currentDatumRange.max());
 
@@ -269,6 +283,8 @@ public class DasSliceController extends DasCanvasComponent {
             public void mouseMoved(MouseEvent e) {
                 super.mouseMoved(e); 
                 Point eP = e.getPoint();
+                
+                // Update mouse area for highlighting
                 if(leftRect.contains(eP)){
                     mouseArea = MouseArea.LEFT;
 //                    System.err.println("left");
@@ -286,12 +302,26 @@ public class DasSliceController extends DasCanvasComponent {
 //                    System.err.println("none");
                     update();
                 }
-                
-            }
-            
+            } 
         }; 
     }
     
+    /**
+     * Get some factor of xDist
+     * @param xDist the distance from initial point
+     * @return factored distance
+     */
+    private double factorOfXDist(double xDist){
+        return Math.pow(xDist / 100, 3) ;
+    }
+    
+    /**
+     * Updates current range during a mouse drag, making sure not to allow 
+     * bounds to exceed the valid ranges
+     * 
+     * @param xDatumDist datum corresponding to how far the mouse pointer is
+     *          from its starting point during a drag
+     */
     private void updateValues(Datum xDatumDist){
         switch (mouseArea) {
             case LEFT:
@@ -299,7 +329,7 @@ public class DasSliceController extends DasCanvasComponent {
                 if( currentDatumRange.min().add(xDatumDist).
                             ge(currentDatumRange.max())  ){ 
                     
-                    datumLeftChange = 
+                    datumLeftDragVal = 
                             currentDatumRange.max().subtract(currentDatumRange.min());   
                     
                 }
@@ -307,18 +337,18 @@ public class DasSliceController extends DasCanvasComponent {
                 else if(currentDatumRange.min().add(xDatumDist).
                             le(validDatumRange.min())){
                     
-                    datumLeftChange = 
+                    datumLeftDragVal = 
                             validDatumRange.min().subtract(currentDatumRange.min());
                 
                 }else{
-                    datumLeftChange = xDatumDist;
+                    datumLeftDragVal = xDatumDist;
                 }   break;
             case RIGHT:
                 //ensure data right never drops below data left
                 if( currentDatumRange.max().add(xDatumDist).
                             le(currentDatumRange.min())  ){ 
                     
-                    datumRightChange = 
+                    datumRightDragVal = 
                             currentDatumRange.min().subtract(currentDatumRange.max()); 
                     
                 }
@@ -326,11 +356,11 @@ public class DasSliceController extends DasCanvasComponent {
                 else if(currentDatumRange.max().add(xDatumDist).
                             ge(validDatumRange.max())){
                     
-                    datumRightChange = 
+                    datumRightDragVal = 
                             validDatumRange.max().subtract(currentDatumRange.max());
                 
                 }else{
-                    datumRightChange = xDatumDist;
+                    datumRightDragVal = xDatumDist;
                 }   break;
             case CENTER:
                 // Ensure currentDatumRange.max - currentDatumRange.min stays constant
@@ -341,8 +371,8 @@ public class DasSliceController extends DasCanvasComponent {
                         le(validDatumRange.min())){
                     xDatumDist = validDatumRange.min().subtract(currentDatumRange.min());
                 }
-                datumLeftChange = xDatumDist;
-                datumRightChange = xDatumDist;
+                datumLeftDragVal = xDatumDist;
+                datumRightDragVal = xDatumDist;
                 break;
             default:
                 break;

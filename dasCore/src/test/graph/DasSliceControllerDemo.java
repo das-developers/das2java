@@ -61,13 +61,10 @@ public class DasSliceControllerDemo {
         DasCanvas canvas = new DasCanvas(width, height);
         
         getContentPane().add(canvas, BorderLayout.CENTER );
-     
-        //int[] intArr = new int[]{5, 4, 3, 2, 1};
-        int[] intArr = new int[]{1, 2, 3, 4, 5};
-       
-        QDataSet qds = dataset(intArr, Units.seconds);
-        Ops.putProperty(qds, QDataSet.MONOTONIC, true);
         
+        QDataSet qds = Ops.findgen(100);
+        Ops.putProperty(qds, QDataSet.UNITS, Units.eV);
+
         DasSliceController sliceCont = new DasSliceController(qds);
         DataRangeSelectionListener rangeListener = new DataRangeSelectionListener() {
             @Override
