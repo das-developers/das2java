@@ -48,6 +48,7 @@ import java.nio.channels.WritableByteChannel;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -288,7 +289,7 @@ public class QdsToD2sStream {
 	 * 
 	 * To test whether it looks like this code could stream a dataset use the
 	 * canWrite() function.  This function may be called multiple times to add
-	 * additional data to the stream.  If a compatable header has already been
+	 * additional data to the stream.  If a compatible header has already been
 	 * emitted for a particular dataset it is not re-sent.
 	 * 
 	 * @param qds The dataset to write, may have join's bundles etc. but no
@@ -483,35 +484,43 @@ public class QdsToD2sStream {
 	// Helper structures for making packet headers and writing data ///////////
 	
 	// Make and hold the transfer information for a single QDS
-	private final static int XREF_PLANE = 1;
-	private final static int YREF_PLANE = 2;
-	private final static int Y_PLANE = 3;
-	private final static int Z_PLANE = 4;
-	private final static int YSCAN_PLANE = 5;
+	private final static int X_EL = 1;
+	private final static int XREF_EL = 2;
+	private final static int YREF_EL = 3;
+	private final static int Y_EL = 4;
+	private final static int Z_EL = 5;
+	private final static int YSCAN_EL = 6;
+	
+	// List of properties that should generate a plane
+	private final static String[] aStdPlaneProps = {
+		QDataSet.BIN_MIN, QDataSet.BIN_MAX, QDataSet.BIN_MINUS, QDataSet.BIN_PLUS
+	};
 	
 	private class QdsXferInfo {
 		QDataSet qds;
 		TransferType transtype;
 		String sType;
-		int nPlane;
+		int nComponent;
+		Map<String,QDataSet> dCoSets = new HashMap<>(); // Extra planes such as bin-widths
+		                                          // BIN_MAX etc.
 		
 		String   sSource;     // Only used to indicate plane + stats groups
 		String   sOperation;  // Only used to indicate satatistic type
 		
 		// Figure out how to represent the values.  In general everything is 
 		// output as a float unless it's an epoch time type.
-		QdsXferInfo(QDataSet _qds, boolean bBinary, int nGenDigits, int nFracSec, int _nPlane){
-			this(_qds, bBinary, nGenDigits, nFracSec, _nPlane, null, null);
+		QdsXferInfo(QDataSet _qds, boolean bBinary, int nGenDigits, int nFracSec, int _nComp){
+			this(_qds, bBinary, nGenDigits, nFracSec, _nComp, null, null);
 		}
 		
 		// Extra constructor for statistics datasets.
-		QdsXferInfo(QDataSet _qds, boolean bBinary, int nGenSigDigit, int nFracSec, int _nPlane, 
+		QdsXferInfo(QDataSet _qds, boolean bBinary, int nGenSigDigit, int nFracSec, int _nComp, 
 		            String _sSource, String sOp){
 
 			sSource = _sSource;
 			sOperation = sOp;
 			qds = _qds;
-			nPlane = _nPlane;
+			nComponent = _nComp;
 			
 			if(bBinary){ nGenSigDigit = -1; nFracSec = -1; }
 			
@@ -557,10 +566,14 @@ public class QdsToD2sStream {
 		// dimension across all qdatasets.
 		int slice0Length() {
 			int nLen = 0;
+			int nCoSets = 0;
 			for(QdsXferInfo qi: lDsXfer){ 
 				int nItems = 1;
 				if(qi.qds.rank() > 1) nItems = qi.qds.length(0);
-				nLen += qi.transtype.sizeBytes() * nItems;
+				
+				if(qi.dCoSets.size() > 0) nCoSets = qi.dCoSets.size();
+				
+				nLen += qi.transtype.sizeBytes() * nItems * (1 + nCoSets);
 			}
 			return nLen;
 		}
@@ -614,7 +627,7 @@ public class QdsToD2sStream {
 		if(SemanticOps.isBundle(qds)){
 			// Primary <X> handling: Maybe the bundle's depend_0 is <x>
 			if( (dep0 = (QDataSet) qds.property(QDataSet.DEPEND_0)) != null)
-				lDsXfer.add(new QdsXferInfo(dep0, bBinary, nSigDigit, nSecDigit, XREF_PLANE));
+				lDsXfer.add(new QdsXferInfo(dep0, bBinary, nSigDigit, nSecDigit, XREF_EL));
 			
 			for(int i = 0; i < qds.length(0); ++i)
 				lDsIn.add( DataSetOps.slice1(qds, i) );
@@ -629,7 +642,7 @@ public class QdsToD2sStream {
 			if( (dep0 = (QDataSet) ds.property(QDataSet.DEPEND_0)) != null){
 				
 				if(lDsXfer.isEmpty()){
-					lDsXfer.add(new QdsXferInfo(dep0, bBinary, nSigDigit, nSecDigit, XREF_PLANE));
+					lDsXfer.add(new QdsXferInfo(dep0, bBinary, nSigDigit, nSecDigit, XREF_EL));
 				}
 				else{
 					if(dep0 != lDsXfer.get(0).qds){
@@ -642,7 +655,7 @@ public class QdsToD2sStream {
 			else{
 				// Rank 1 with no depend 0 is an <x> plane
 				if(lDsXfer.isEmpty() && (ds.rank() == 1))
-					lDsXfer.add(new QdsXferInfo(ds, bBinary, nSigDigit, nSecDigit, XREF_PLANE));
+					lDsXfer.add(new QdsXferInfo(ds, bBinary, nSigDigit, nSecDigit, X_EL));
 				// no-add
 			}
 		}
@@ -670,7 +683,7 @@ public class QdsToD2sStream {
 			
 			sFallBackSrcName = String.format("Y_%d", nYs);
 			nNewPlanes = _addPlaneWithStats(
-				lDsXfer, ds, nSigDigit, nSecDigit, Y_PLANE, sFallBackSrcName
+				lDsXfer, ds, nSigDigit, nSecDigit, Y_EL, sFallBackSrcName
 			);
 			if(nNewPlanes == 0) return null;
 			nYs += nNewPlanes;
@@ -682,7 +695,7 @@ public class QdsToD2sStream {
 						dsSubZ = DataSetOps.slice0(dsZ, i);
 						sFallBackSrcName = String.format("Z_%d", nZs);
 						nNewPlanes = _addPlaneWithStats(
-							 lDsXfer, dsSubZ, nSigDigit, nSecDigit, Z_PLANE, sFallBackSrcName
+							 lDsXfer, dsSubZ, nSigDigit, nSecDigit, Z_EL, sFallBackSrcName
 						);
 						if(nNewPlanes == 0) return null;
 						nZs += nNewPlanes;
@@ -691,7 +704,7 @@ public class QdsToD2sStream {
 				else{
 					sFallBackSrcName = String.format("Z_%d", nZs);
 					nNewPlanes = _addPlaneWithStats(
-						lDsXfer, dsZ, nSigDigit, nSecDigit, Z_PLANE, sFallBackSrcName
+						lDsXfer, dsZ, nSigDigit, nSecDigit, Z_EL, sFallBackSrcName
 					);
 					if(nNewPlanes == 0) return null;
 					nZs += nNewPlanes;
@@ -727,7 +740,7 @@ public class QdsToD2sStream {
 			// Have our YTags
 			sFallBackSrcName = String.format("%s_%d", bDas23 ? "multiZ":"YScan", nYScans);
 			nNewPlanes = _addPlaneWithStats(
-				lDsXfer, ds, nSigDigit, nSecDigit, YSCAN_PLANE, sFallBackSrcName
+				lDsXfer, ds, nSigDigit, nSecDigit, YSCAN_EL, sFallBackSrcName
 			);
 			if(nNewPlanes < 1) return null;
 			nYScans += nNewPlanes;
@@ -755,35 +768,47 @@ public class QdsToD2sStream {
 		Map<String, Object> dUserProps;
 		dUserProps = (Map<String,Object>) dsPrimary.property(QDataSet.USER_PROPERTIES);
 		String sSource = null;
-		if(dUserProps != null){
-			if(dUserProps.containsKey("source"))
-				sSource = (String)dUserProps.get("source");
-		}
-		else{
-			sSource = (String)dsPrimary.property(QDataSet.NAME);
-			if(sSource == null) sSource = sFallBackSrc;
+		// Old Das 2.2 needed some sort of Key to let readers know that one plane was
+		// derived (via some means) from another.  This is not needed for das 2.3
+		if(!bDas23){
+			if(dUserProps != null){
+				if(dUserProps.containsKey("source"))
+					sSource = (String)dUserProps.get("source");
+			}
+			else{
+				sSource = (String)dsPrimary.property(QDataSet.NAME);
+				if(sSource == null) sSource = sFallBackSrc;
+			}
 		}
 			
 		// See if BIN_MIN or BIN_MAX datasets are present, these are planes with
 		// the same rank as the initial plane.
 		QDataSet dsStats;
 		String sErr = "Statistics dataset is a different rank than the average dataset";
-		String[] aProps = {
-			QDataSet.BIN_MIN, QDataSet.BIN_MAX, QDataSet.BIN_MINUS, QDataSet.BIN_PLUS
-		};
+		
 		int nStatsPlanes = 0;
-		for(String sProp: aProps){
+		for(String sProp: aStdPlaneProps){
 			if((dsStats = (QDataSet)dsPrimary.property(sProp)) != null){
 				if(dsStats.rank() != dsPrimary.rank()){ 
 					log.warning(sErr); 
 					return 0; 
 				}
-				lDsXfer.add(new QdsXferInfo(dsStats, bBinary, nSigDigit, nSecDigit, nPlane,
-			                               sSource, sProp));
-				++nStatsPlanes;
+				// Going through the checks in this code is good in general because extra
+				// planes must have the same shape as the primary, but don't add extra
+				// top-level data transfer entries for Das 2.3 statistics planes.  These are
+				// handled as explicit planes in the data output phase.  Just mark the
+				// transfer object for the primary as having a plane
+				if(bDas23){
+					xferPrimary.dCoSets.put(sProp, dsStats);
+				}
+				else{
+					lDsXfer.add(new QdsXferInfo(dsStats, bBinary, nSigDigit, nSecDigit, nPlane,
+				                               sSource, sProp));
+					++nStatsPlanes;
+				}
 			}
 		}
-		if(nStatsPlanes > 0) xferPrimary.sSource = sSource;
+		if(!bDas23 && (nStatsPlanes > 0)) xferPrimary.sSource = sSource;
 		return 1 + nStatsPlanes;
 	}
 	
@@ -794,7 +819,7 @@ public class QdsToD2sStream {
 		
 		if(bDas23) elPkt.setAttribute("streamBy", "Xslice");
 		
-		Element elPlane;
+		Element elComp;
 		int nProps;
 		int nYs = 0;
 		int nYscans = 0;
@@ -811,44 +836,47 @@ public class QdsToD2sStream {
 			String sUnits = "";
 			if(units != null) sUnits = units.toString();
 						
-			switch(xfer.nPlane){
+			switch(xfer.nComponent){
 			
-			case XREF_PLANE:
-				elPlane = doc.createElement(X_REF);
-				elPlane.setAttribute("units", sUnits);
-				if(sName != null) elPlane.setAttribute(JOINID, sName);
+			case XREF_EL:
+				elComp = doc.createElement(X_REF);
+				elComp.setAttribute("units", sUnits);
+				if(sName != null) elComp.setAttribute(JOINID, sName);
 				
 				nProps = addSimpleProps(elProps, xfer.qds, "x");
 				break;
 			
-			case Y_PLANE:
-				elPlane = doc.createElement(Y);
-				elPlane.setAttribute("units", sUnits);
+			case Y_EL:
+				elComp = doc.createElement(Y);
+				elComp.setAttribute("units", sUnits);
 				if(sName == null) sName = String.format("Y_%d", nYs);
-				elPlane.setAttribute(JOINID, sName);
+				elComp.setAttribute(JOINID, sName);
+				if(bDas23) _addCoSets(elComp, xfer, sName);
 				
 				nProps = addSimpleProps(elProps, xfer.qds, "y");
 				++nYs;
 				break;
 			
-			case Z_PLANE:
-				elPlane = doc.createElement(Z);
-				elPlane.setAttribute("units", sUnits);
+			case Z_EL:
+				elComp = doc.createElement(Z);
+				elComp.setAttribute("units", sUnits);
 				if(sName == null) sName = String.format("Z_%d", nZs);
-				elPlane.setAttribute(JOINID, sName);
+				elComp.setAttribute(JOINID, sName);
+				if(bDas23) _addCoSets(elComp, xfer, sName);
 				
 				nProps = addSimpleProps(elProps, xfer.qds, "z");
 				++nZs;
 				break;
 			
-			case YSCAN_PLANE:
-				elPlane = doc.createElement(Z_SCAN);
-				if(bDas23) elPlane.setAttribute("units", sUnits);
-				else elPlane.setAttribute("zUnits", sUnits);
+			case YSCAN_EL:
+				elComp = doc.createElement(Z_SCAN);
+				if(bDas23) elComp.setAttribute("units", sUnits);
+				else elComp.setAttribute("zUnits", sUnits);
 				
 				if(sName == null) 
 					sName = String.format("%s_%d", (bDas23 ?  "multiZ" : "YScan"), nYscans);
-				elPlane.setAttribute(JOINID, sName);
+				elComp.setAttribute(JOINID, sName);
+				if(bDas23) _addCoSets(elComp, xfer, sName);
 				
 				//Extra stuff for YScans
 				if(dsYTags == null){
@@ -856,9 +884,9 @@ public class QdsToD2sStream {
 					return null;
 				}
 				if(bDas23)
-					elPlane.setAttribute(SHAPE, String.format("*;%d",dsYTags.length()));
+					elComp.setAttribute(SHAPE, String.format("*;%d",dsYTags.length()));
 				else
-					elPlane.setAttribute(SHAPE, String.format("%d",dsYTags.length()));
+					elComp.setAttribute(SHAPE, String.format("%d",dsYTags.length()));
 				
 				units  = (Units)dsYTags.property(QDataSet.UNITS);
 				sUnits = "";
@@ -871,24 +899,24 @@ public class QdsToD2sStream {
 				}
 				if(bDas23){
 					if(yts.sYTags != null){
-						valueListChild(elPlane, Yoffsets, sUnits, yts.sYTags);
+						valueListChild(elComp, Yoffsets, sUnits, yts.sYTags);
 					}
 					else {
-						Element elOffsets = elPlane.getOwnerDocument().createElement(Yoffsets);
+						Element elOffsets = elComp.getOwnerDocument().createElement(Yoffsets);
 						elOffsets.setAttribute("units", sUnits);
 						elOffsets.setAttribute(Offset0, yts.sYTagMin);
 						elOffsets.setAttribute(Delta, yts.sYTagInterval);
-						elPlane.appendChild(elOffsets);
+						elComp.appendChild(elOffsets);
 					}			
 				}
 				else{
-					elPlane.setAttribute("yUnits", sUnits);
+					elComp.setAttribute("yUnits", sUnits);
 					if(yts.sYTags != null){
-						elPlane.setAttribute(Yoffsets, yts.sYTags);
+						elComp.setAttribute(Yoffsets, yts.sYTags);
 					}
 					else{
-						elPlane.setAttribute(Delta, yts.sYTagInterval);
-						elPlane.setAttribute(Offset0, yts.sYTagMin);
+						elComp.setAttribute(Delta, yts.sYTagInterval);
+						elComp.setAttribute(Offset0, yts.sYTagMin);
 					}
 				}
 				
@@ -902,7 +930,7 @@ public class QdsToD2sStream {
 			}
 			
 			// Common stuff here
-			elPlane.setAttribute(FORMAT, xfer.sType);
+			elComp.setAttribute(FORMAT, xfer.sType);
 			
 			// Linking stats planes and averages planes if source is given
 			if(xfer.sSource != null){
@@ -915,8 +943,8 @@ public class QdsToD2sStream {
 					++nProps;
 				}
 			}
-			if(nProps > 0) elPlane.appendChild(elProps);
-			elPkt.appendChild(elPlane);
+			if(nProps > 0) elComp.appendChild(elProps);
+			elPkt.appendChild(elComp);
 		}
 		
 		doc.appendChild(elPkt);
@@ -1004,6 +1032,31 @@ public class QdsToD2sStream {
 		elPlane.appendChild(el);
 	}
 	
+	// Returns number of planes added
+	int _addCoSets(Element elComp, QdsXferInfo xfer, String sPrimaryName){
+		int nPlanes = 0;
+		for(String sProp: aStdPlaneProps){
+			if(!xfer.dCoSets.containsKey(sProp)) continue;
+			
+			QDataSet ds = xfer.dCoSets.get(sProp);
+			
+			Element elPlane = elComp.getOwnerDocument().createElement("coset");
+			elPlane.setAttribute("purpose", sProp);
+			String sName = (String)ds.property(QDataSet.NAME);
+			if(sName == null) sName = sPrimaryName +"_"+sProp;
+			elPlane.setAttribute(JOINID, sName);
+			
+			Units units  = (Units)xfer.qds.property(QDataSet.UNITS);
+			String sUnits = "";
+			if(units != null) sUnits = units.toString();
+			elPlane.setAttribute("units", sUnits);
+			elComp.appendChild(elPlane);
+			++nPlanes;
+		}
+		if(nPlanes > 0) elComp.setAttribute("cosets", Integer.toString(nPlanes));
+		return nPlanes;
+	}
+	
 	// Send Bundle data
 	private void writeData(int iPktId, PacketXferInfo pktXfer, OutputStream out) 
 		throws IOException {
@@ -1044,12 +1097,28 @@ public class QdsToD2sStream {
 				qi = pktXfer.lDsXfer.get(iDs);
 				
 				switch(qi.qds.rank()){
-				case 1: qi.transtype.write(qi.qds.value(iPkt), buffer); break;
+				case 1: 
+					qi.transtype.write(qi.qds.value(iPkt), buffer); 
+					for(String sProp: aStdPlaneProps){
+						if(qi.dCoSets.containsKey(sProp)){
+							QDataSet coset = qi.dCoSets.get(sProp);
+							qi.transtype.write(coset.value(iPkt), buffer);
+						}
+					}
+					break;
 				case 2: 
 					// Checked when making packet header that the data are a qube
 					// since that's all das2 streams support, hence length(0) below.
 					for(int iVal = 0; iVal < qi.qds.length(0); ++iVal)
 						qi.transtype.write(qi.qds.value(iPkt, iVal), buffer);
+					
+					for(String sProp: aStdPlaneProps){
+						if(qi.dCoSets.containsKey(sProp)){
+							QDataSet coset = qi.dCoSets.get(sProp);
+							for(int iVal = 0; iVal < coset.length(0); ++iVal)
+								qi.transtype.write(coset.value(iPkt, iVal), buffer);
+						}
+					}
 					break;
 				default:
 					assert(false);
