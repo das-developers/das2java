@@ -20,6 +20,7 @@ import org.das2.graph.DasRow;
 import org.das2.graph.DasSliceController;
 import org.das2.qds.DDataSet;
 import org.das2.qds.QDataSet;
+import org.das2.qds.ops.Ops;
 import static org.das2.qds.ops.Ops.dataset;
 
 
@@ -61,9 +62,11 @@ public class DasSliceControllerDemo {
         
         getContentPane().add(canvas, BorderLayout.CENTER );
      
-        int[] intArr = new int[]{1,2,3,4,5};
+        //int[] intArr = new int[]{5, 4, 3, 2, 1};
+        int[] intArr = new int[]{1, 2, 3, 4, 5};
+       
         QDataSet qds = dataset(intArr, Units.seconds);
-                
+        Ops.putProperty(qds, QDataSet.MONOTONIC, true);
         
         DasSliceController sliceCont = new DasSliceController(qds);
         DataRangeSelectionListener rangeListener = new DataRangeSelectionListener() {

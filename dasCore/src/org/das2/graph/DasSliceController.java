@@ -36,8 +36,9 @@ public class DasSliceController extends DasCanvasComponent {
     // Rank 1 Dataset;
     QDataSet qds;
     
-    // The values stored in the left and right data cells
+    // DatumRange containing the valid max and min of the QDataSet
     DatumRange validDatumRange;
+    // The current range displayed
     DatumRange currentDatumRange;
     
     // How much to increase or decrease the data values 
@@ -51,25 +52,25 @@ public class DasSliceController extends DasCanvasComponent {
         LEFT, CENTER, RIGHT, NONE
     }
     
-    MouseArea mouseArea = MouseArea.NONE;
+    private MouseArea mouseArea = MouseArea.NONE;
     
     // Stores point where the mouse is pressed and is used
     // to determine how much a data value should change 
     // when the mouse is released.
-    Point mousePressPt;
+    private Point mousePressPt;
     
     // Used to keep an area highlighted if a mouse drag
     // exits frame, but to stop highlighting if mouse exit
     // wasn't during a drag.
-    boolean mouseIsDragging;
+    private boolean mouseIsDragging;
   
     
     // Interactive area for changing left data value
-    Rectangle leftRect; 
+    private Rectangle leftRect = new Rectangle(); 
     // Interactive area for changing right data value
-    Rectangle rightRect;
+    private Rectangle rightRect = new Rectangle();
     // Interactive area for changing both data values at the same time
-    Rectangle centerRect;
+    private Rectangle centerRect = new Rectangle();
     
     // Portion of entire width used for a data cell
     private float widthFactor = 4.0f / 9.0f;
@@ -171,17 +172,33 @@ public class DasSliceController extends DasCanvasComponent {
     public DasSliceController(QDataSet qds){
         super();
         this.qds = qds;
-        this.validDatumRange = new DatumRange(
-            Datum.create(qds.value(0), (Units) qds.property(QDataSet.UNITS)),
-            Datum.create(qds.value(qds.length() - 1), (Units) qds.property(QDataSet.UNITS)) );
+        if(qds.rank() != 1){
+            throw new IllegalArgumentException("Dataset is not rank 1." +
+                    "Slice the data in the dimension you want "+ 
+                    "before calling DasSliceController().");
+        }
+        
+        if(!DataSetUtil.isMonotonic(qds)){
+            throw new IllegalArgumentException("Dataset is not monotonic.");
+        }
+        
+        // Check if increasing or decreasing and set valid range accordingly
+        if( qds.value(0) > qds.value(qds.length() - 1)){
+            this.validDatumRange = new DatumRange(
+                Datum.create(qds.value(qds.length() - 1), (Units) qds.property(QDataSet.UNITS)),
+                Datum.create(qds.value(0), (Units) qds.property(QDataSet.UNITS)) );
+        } else{
+            
+            this.validDatumRange = new DatumRange(
+                Datum.create(qds.value(0), (Units) qds.property(QDataSet.UNITS)),
+                Datum.create(qds.value(qds.length() - 1), (Units) qds.property(QDataSet.UNITS)) );
+        }
         
         this.currentDatumRange = this.validDatumRange;
         
         datumLeftChange = Datum.create(0, (Units) qds.property(QDataSet.UNITS));
         datumRightChange = Datum.create(0, (Units) qds.property(QDataSet.UNITS));
-        leftRect = new Rectangle();
-        rightRect = new Rectangle();
-        centerRect = new Rectangle();
+        
         MouseAdapter ma=  getMouseAdapter();
         addMouseListener( ma );
         addMouseMotionListener( ma );
@@ -209,32 +226,8 @@ public class DasSliceController extends DasCanvasComponent {
                 Point currentPoint = e.getPoint();
                 int xDist = currentPoint.x - mousePressPt.x;
                 Datum xDatumDist = Datum.create(xDist, (Units) qds.property(QDataSet.UNITS));
-                switch (mouseArea) {
-                    case LEFT:
-                        //ensure data left never gets larger than data right
-                        if( currentDatumRange.min().add(xDatumDist).
-                                    ge(currentDatumRange.max())  ){ 
-                             datumLeftChange = 
-                                     currentDatumRange.max().subtract(currentDatumRange.min());    
-                        }else{
-                            datumLeftChange = xDatumDist;
-                        }   break;
-                    case RIGHT:
-                        //ensure data right never drops below data left
-                        if( currentDatumRange.max().add(xDatumDist).
-                                    le(currentDatumRange.min())  ){ 
-                             datumRightChange = 
-                                     currentDatumRange.min().subtract(currentDatumRange.max());    
-                        }else{
-                            datumRightChange = xDatumDist;
-                        }   break;
-                    case CENTER:
-                        datumLeftChange = xDatumDist;
-                        datumRightChange = xDatumDist;
-                        break;
-                    default:
-                        break;
-                }
+                updateValues(xDatumDist);
+                
             }
             
             @Override
@@ -251,8 +244,7 @@ public class DasSliceController extends DasCanvasComponent {
                     mouseArea = MouseArea.NONE;
                     update();
                 }
-                
-                
+             
                 DataRangeSelectionEvent dataRangeEvent = new DataRangeSelectionEvent(
                         this, currentDatumRange.min(), currentDatumRange.max());
 
@@ -279,15 +271,19 @@ public class DasSliceController extends DasCanvasComponent {
                 Point eP = e.getPoint();
                 if(leftRect.contains(eP)){
                     mouseArea = MouseArea.LEFT;
+//                    System.err.println("left");
                     update();
                 } else if(rightRect.contains(eP)){
                     mouseArea = MouseArea.RIGHT;
+//                    System.err.println("right");
                     update();
                 } else if(centerRect.contains(eP)){
                     mouseArea = MouseArea.CENTER;
+//                    System.err.println("center");
                     update();
                 } else{
                     mouseArea = MouseArea.NONE;
+//                    System.err.println("none");
                     update();
                 }
                 
@@ -296,6 +292,62 @@ public class DasSliceController extends DasCanvasComponent {
         }; 
     }
     
+    private void updateValues(Datum xDatumDist){
+        switch (mouseArea) {
+            case LEFT:
+                // Ensure data left never gets larger than data right
+                if( currentDatumRange.min().add(xDatumDist).
+                            ge(currentDatumRange.max())  ){ 
+                    
+                    datumLeftChange = 
+                            currentDatumRange.max().subtract(currentDatumRange.min());   
+                    
+                }
+                // Ensure data left never drops below valid min
+                else if(currentDatumRange.min().add(xDatumDist).
+                            le(validDatumRange.min())){
+                    
+                    datumLeftChange = 
+                            validDatumRange.min().subtract(currentDatumRange.min());
+                
+                }else{
+                    datumLeftChange = xDatumDist;
+                }   break;
+            case RIGHT:
+                //ensure data right never drops below data left
+                if( currentDatumRange.max().add(xDatumDist).
+                            le(currentDatumRange.min())  ){ 
+                    
+                    datumRightChange = 
+                            currentDatumRange.min().subtract(currentDatumRange.max()); 
+                    
+                }
+                // Ensure data right never increases above valid max
+                else if(currentDatumRange.max().add(xDatumDist).
+                            ge(validDatumRange.max())){
+                    
+                    datumRightChange = 
+                            validDatumRange.max().subtract(currentDatumRange.max());
+                
+                }else{
+                    datumRightChange = xDatumDist;
+                }   break;
+            case CENTER:
+                // Ensure currentDatumRange.max - currentDatumRange.min stays constant
+                // while not allowing either side to change outside of valid range.
+                if(currentDatumRange.max().add(xDatumDist).ge(validDatumRange.max())){
+                    xDatumDist = validDatumRange.max().subtract(currentDatumRange.max());
+                }else if(currentDatumRange.min().add(xDatumDist).
+                        le(validDatumRange.min())){
+                    xDatumDist = validDatumRange.min().subtract(currentDatumRange.min());
+                }
+                datumLeftChange = xDatumDist;
+                datumRightChange = xDatumDist;
+                break;
+            default:
+                break;
+        }
+    }
     
     /** Registers DataRangeSelectionListener to receive events.
      * @param listener The listener to register.
