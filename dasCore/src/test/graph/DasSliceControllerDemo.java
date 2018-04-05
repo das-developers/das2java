@@ -6,6 +6,8 @@
 package test.graph;
 
 import java.awt.BorderLayout;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import org.das2.datum.Datum;
@@ -66,16 +68,16 @@ public class DasSliceControllerDemo {
         Ops.putProperty(qds, QDataSet.UNITS, Units.eV);
 
         DasSliceController sliceCont = new DasSliceController(qds);
-        DataRangeSelectionListener rangeListener = new DataRangeSelectionListener() {
+        
+        PropertyChangeListener sliceRangeListener = new PropertyChangeListener() {
             @Override
-            public void dataRangeSelected(DataRangeSelectionEvent e) {
-               
-                System.err.println("Got the Data Range event");
-                System.err.println("Max = " + e.getMaximum());
-                System.err.println("Min = " + e.getMinimum());
+            public void propertyChange(PropertyChangeEvent evt) {
+                System.err.println("got property change event");
+                System.err.println("Range = " + evt.getNewValue());
             }
         };
-        sliceCont.addDataRangeSelectionListener(rangeListener);
+        
+        sliceCont.addPropertyChangeListener(DasSliceController.PROP_CURRENTDATUMRANGE, sliceRangeListener);
         canvas.add(sliceCont,new DasRow(canvas, 0, 1),new DasColumn(canvas, 0, 1));
         
     }

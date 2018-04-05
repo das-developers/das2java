@@ -6,12 +6,14 @@
 package org.das2.graph;
 
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+//import javafx.scene.Cursor;
 import javax.swing.event.EventListenerList;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
@@ -31,22 +33,60 @@ public class DasSliceController extends DasCanvasComponent {
 
     
     /** Objects to receive event firing */
-    private EventListenerList eListenerList = new EventListenerList();
+    //private EventListenerList eListenerList = new EventListenerList();
    
     /** The Rank 1 slice Dataset */
     QDataSet qds;
     
     /** DatumRange containing the valid max and min of the QDataSet */
-    DatumRange validDatumRange;
+    private DatumRange validDatumRange;   
+
+    public DatumRange getValidDatumRange() {
+        return validDatumRange;
+    }
+    
+    public void setValidDatumRange(DatumRange validDatumRange) {
+        this.validDatumRange = validDatumRange;
+    }
+
     /** The current range displayed */
-    DatumRange currentDatumRange;
+    private DatumRange currentDatumRange = null;
+
+    public static final String PROP_CURRENTDATUMRANGE = "currentDatumRange";
+
+    public DatumRange getCurrentDatumRange() {
+        return currentDatumRange;
+    }
+
+    public void setCurrentDatumRange(DatumRange currentDatumRange) {
+        DatumRange oldCurrentDatumRange = this.currentDatumRange;
+        this.currentDatumRange = currentDatumRange;
+        firePropertyChange(PROP_CURRENTDATUMRANGE, oldCurrentDatumRange, currentDatumRange);
+    }
+    
     
     /** Amount to change currentDatumRange.min() on a click and drag */
-    Datum datumLeftDragVal;
+    private Datum datumLeftDragVal = null;
+
+    public Datum getDatumLeftDragVal() {
+        return datumLeftDragVal;
+    }
+
+    public void setDatumLeftDragVal(Datum datumLeftDragVal) {
+        this.datumLeftDragVal = datumLeftDragVal;
+    }
+
     /** Amount to change currentDatumRange.max() on a click and drag */
-    Datum datumRightDragVal;
+    private Datum datumRightDragVal = null;
     
-    
+    public Datum getDatumRightDragVal() {
+        return datumRightDragVal;
+    }
+
+    public void setDatumRightDragVal(Datum datumRightDragVal) {
+        this.datumRightDragVal = datumRightDragVal;
+    }
+
     /* Possible areas the mouse cursor can be */
     enum MouseArea {
         LEFT, CENTER, RIGHT, NONE
@@ -54,6 +94,9 @@ public class DasSliceController extends DasCanvasComponent {
     
     /* Used to highlight area mouse is in */
     private MouseArea mouseArea = MouseArea.NONE;
+    
+    private Cursor handCursor = new Cursor(Cursor.HAND_CURSOR);
+    private Cursor defaultCursor = new Cursor(Cursor.DEFAULT_CURSOR);
     
     /** 
      * Stores point where the mouse is pressed and is used
@@ -212,12 +255,12 @@ public class DasSliceController extends DasCanvasComponent {
         
     }
 
-    
     private MouseAdapter getMouseAdapter() { 
         return new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
+                System.err.println("Current cursor is " + getCursor().getName());
             }
 
             @Override
@@ -236,6 +279,7 @@ public class DasSliceController extends DasCanvasComponent {
                 double xDist = currentPoint.x - mousePressPt.x;
                 xDist = factorOfXDist(xDist);
                 Datum xDatumDist = Datum.create(xDist, (Units) qds.property(QDataSet.UNITS));
+                
                 updateValues(xDatumDist);
                 
             }
@@ -245,12 +289,13 @@ public class DasSliceController extends DasCanvasComponent {
                 super.mouseReleased(e);
                 mouseIsDragging = false;
                 // Update currentRange with final drag value
-                currentDatumRange = new DatumRange(
+                setCurrentDatumRange(new DatumRange(
                         currentDatumRange.min().add(datumLeftDragVal),
-                        currentDatumRange.max().add(datumRightDragVal)  );
+                        currentDatumRange.max().add(datumRightDragVal)  ));
+                
                 // Reset drag vals
-                datumLeftDragVal = Datum.create(0, (Units) qds.property(QDataSet.UNITS));
-                datumRightDragVal = Datum.create(0, (Units) qds.property(QDataSet.UNITS));
+                setDatumLeftDragVal(Datum.create(0, (Units) qds.property(QDataSet.UNITS) ));
+                setDatumRightDragVal(Datum.create(0, (Units) qds.property(QDataSet.UNITS)));
                 
                 // Stop highlighting if release is outside bounds
                 if(!getBounds().contains(e.getPoint())){
@@ -259,17 +304,18 @@ public class DasSliceController extends DasCanvasComponent {
                 }
              
                 // Fire event for current range on mouse release
-                DataRangeSelectionEvent dataRangeEvent = new DataRangeSelectionEvent(
-                        this, currentDatumRange.min(), currentDatumRange.max());
-
-                fireDataRangeSelectionListenerDataRangeSelected(dataRangeEvent);
+//                DataRangeSelectionEvent dataRangeEvent = new DataRangeSelectionEvent(
+//                        this, currentDatumRange.min(), currentDatumRange.max());
+//
+//                fireDataRangeSelectionListenerDataRangeSelected(dataRangeEvent);
             }
             
             @Override
             public void mouseEntered(MouseEvent e){
                 super.mouseEntered(e);
-                
+                DasSliceController.this.setCursor(handCursor);
             }
+            
             @Override
             public void mouseExited(MouseEvent e) {
                 super.mouseExited(e); 
@@ -295,6 +341,7 @@ public class DasSliceController extends DasCanvasComponent {
                     update();
                 } else if(centerRect.contains(eP)){
                     mouseArea = MouseArea.CENTER;
+                      
 //                    System.err.println("center");
                     update();
                 } else{
@@ -303,6 +350,7 @@ public class DasSliceController extends DasCanvasComponent {
                     update();
                 }
             } 
+
         }; 
     }
     
@@ -325,42 +373,33 @@ public class DasSliceController extends DasCanvasComponent {
     private void updateValues(Datum xDatumDist){
         switch (mouseArea) {
             case LEFT:
-                // Ensure data left never gets larger than data right
-                if( currentDatumRange.min().add(xDatumDist).
-                            ge(currentDatumRange.max())  ){ 
-                    
-                    datumLeftDragVal = 
-                            currentDatumRange.max().subtract(currentDatumRange.min());   
-                    
-                }
-                // Ensure data left never drops below valid min
-                else if(currentDatumRange.min().add(xDatumDist).
-                            le(validDatumRange.min())){
-                    
-                    datumLeftDragVal = 
-                            validDatumRange.min().subtract(currentDatumRange.min());
                 
+                if( currentDatumRange.min().add(xDatumDist). // Ensure data left never 
+                            ge(currentDatumRange.max())  ){  // gets larger than data right
+                    
+                    setDatumLeftDragVal(currentDatumRange.max().subtract(currentDatumRange.min()));
+                 
+                }else if(currentDatumRange.min().add(xDatumDist).  // Ensure data left never
+                            le(validDatumRange.min())){            // drops below valid min
+                    
+                    setDatumLeftDragVal(validDatumRange.min().subtract(currentDatumRange.min()));
+                   
                 }else{
-                    datumLeftDragVal = xDatumDist;
+                    setDatumLeftDragVal(xDatumDist);
                 }   break;
             case RIGHT:
-                //ensure data right never drops below data left
-                if( currentDatumRange.max().add(xDatumDist).
-                            le(currentDatumRange.min())  ){ 
+                if( currentDatumRange.max().add(xDatumDist). // Ensure data right never
+                            le(currentDatumRange.min())  ){  // dropw below data left
                     
-                    datumRightDragVal = 
-                            currentDatumRange.min().subtract(currentDatumRange.max()); 
+                    setDatumRightDragVal(currentDatumRange.min().subtract(currentDatumRange.max()));
+                        
+                }else if(currentDatumRange.max().add(xDatumDist). // Ensure data right never
+                            ge(validDatumRange.max())){          // increases above valid max
                     
-                }
-                // Ensure data right never increases above valid max
-                else if(currentDatumRange.max().add(xDatumDist).
-                            ge(validDatumRange.max())){
-                    
-                    datumRightDragVal = 
-                            validDatumRange.max().subtract(currentDatumRange.max());
-                
+                    setDatumRightDragVal(validDatumRange.max().subtract(currentDatumRange.max()));
+                            
                 }else{
-                    datumRightDragVal = xDatumDist;
+                    setDatumRightDragVal(xDatumDist);
                 }   break;
             case CENTER:
                 // Ensure currentDatumRange.max - currentDatumRange.min stays constant
@@ -371,42 +410,42 @@ public class DasSliceController extends DasCanvasComponent {
                         le(validDatumRange.min())){
                     xDatumDist = validDatumRange.min().subtract(currentDatumRange.min());
                 }
-                datumLeftDragVal = xDatumDist;
-                datumRightDragVal = xDatumDist;
+                setDatumLeftDragVal(xDatumDist);
+                setDatumRightDragVal(xDatumDist);
                 break;
             default:
                 break;
         }
     }
     
-    /** Registers DataRangeSelectionListener to receive events.
-     * @param listener The listener to register.
-     */
-    public void addDataRangeSelectionListener(DataRangeSelectionListener listener){
-        eListenerList.add(org.das2.event.DataRangeSelectionListener.class, listener);
-    }
-    
-    
-    /** Removes DataRangeSelectionListener from the list of listeners.
-     * @param listener The listener to remove.
-     */
-    public void removeDataRangeSelectionListener(DataRangeSelectionListener listener){
-        eListenerList.remove(org.das2.event.DataRangeSelectionListener.class, listener);
-    }
-    
-     /** Notifies all registered listeners about the event.
-     *
-     * @param event The event to be fired
-     */
-    private void fireDataRangeSelectionListenerDataRangeSelected(DataRangeSelectionEvent event){
-        Object[] listeners;
-        listeners = eListenerList.getListenerList();
-        for (int i = listeners.length-2; i>=0; i-=2) {
-            if (listeners[i]==org.das2.event.DataRangeSelectionListener.class) {
-                ((org.das2.event.DataRangeSelectionListener)listeners[i+1]).dataRangeSelected(event);
-            }
-        }
-    }
+//    /** Registers DataRangeSelectionListener to receive events.
+//     * @param listener The listener to register.
+//     */
+//    public void addDataRangeSelectionListener(DataRangeSelectionListener listener){
+//        eListenerList.add(org.das2.event.DataRangeSelectionListener.class, listener);
+//    }
+//    
+//    
+//    /** Removes DataRangeSelectionListener from the list of listeners.
+//     * @param listener The listener to remove.
+//     */
+//    public void removeDataRangeSelectionListener(DataRangeSelectionListener listener){
+//        eListenerList.remove(org.das2.event.DataRangeSelectionListener.class, listener);
+//    }
+//    
+//     /** Notifies all registered listeners about the event.
+//     *
+//     * @param event The event to be fired
+//     */
+//    private void fireDataRangeSelectionListenerDataRangeSelected(DataRangeSelectionEvent event){
+//        Object[] listeners;
+//        listeners = eListenerList.getListenerList();
+//        for (int i = listeners.length-2; i>=0; i-=2) {
+//            if (listeners[i]==org.das2.event.DataRangeSelectionListener.class) {
+//                ((org.das2.event.DataRangeSelectionListener)listeners[i+1]).dataRangeSelected(event);
+//            }
+//        }
+//    }
 }
 
 
