@@ -35,6 +35,7 @@ import java.awt.Stroke;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.GeneralPath;
+import java.awt.geom.Line2D;
 import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -1471,15 +1472,19 @@ public class SeriesRenderer extends Renderer {
         QDataSet vds = null;
         boolean yaxisUnitsOkay;
         boolean xaxisUnitsOkay;
-
+        
+        Units yunits;
+        
         QDataSet xds = SemanticOps.xtagsDataSet(dataSet);
         xaxisUnitsOkay = SemanticOps.getUnits(xds).isConvertibleTo(xAxis.getUnits() );
         if ( !SemanticOps.isTableDataSet(dataSet) ) {
             vds= ytagsDataSet(ds);
-            yaxisUnitsOkay = SemanticOps.getUnits(vds).isConvertibleTo(yAxis.getUnits()); // Ha!  QDataSet makes the code the same
+            yunits= SemanticOps.getUnits(vds);
+            yaxisUnitsOkay = yunits.isConvertibleTo(yAxis.getUnits()); // Ha!  QDataSet makes the code the same
 
         } else {
             tds = (QDataSet) dataSet;
+            yunits= SemanticOps.getUnits(tds);
             yaxisUnitsOkay = SemanticOps.getUnits(tds).isConvertibleTo(yAxis.getUnits());
         }
 
@@ -1618,6 +1623,49 @@ public class SeriesRenderer extends Renderer {
                 
             }
         }
+        
+        // Kludge where we peek in the METADATA to see if there is LIMITS_WARN_MIN and other flags.  These are still experimental,
+        // and would become part of QDataSet.
+        Map<String,Object> meta;
+        if ( vds!=null ) {
+            meta= (Map<String,Object>) vds.property(QDataSet.METADATA);
+        } else {
+            meta= (Map<String,Object>) dataSet.property(QDataSet.METADATA);
+        }
+        if ( meta!=null ) {
+            Double d;
+            DasColumn col= getParent().getColumn();
+            d= (Double) getKey( meta, "LIMITS_WARN_MIN", Double.class );
+            if ( d!=null ) {
+                double iy= yAxis.transform( d, yunits );
+                Line2D.Double l= new Line2D.Double( col.getDMinimum(), iy, col.getDMaximum(), iy );
+                graphics.setColor( Color.RED );
+                graphics.draw(l);
+            }
+            d= (Double) getKey( meta, "LIMITS_WARN_MAX", Double.class );
+            if ( d!=null ) {
+                double iy= yAxis.transform( d, yunits );
+                Line2D.Double l= new Line2D.Double( col.getDMinimum(), iy, col.getDMaximum(), iy );
+                graphics.setColor( Color.RED );
+                graphics.draw(l);
+            }
+            d= (Double) getKey( meta, "LIMITS_NOMINAL_MIN", Double.class );
+            if ( d!=null ) {
+                double iy= yAxis.transform( d, yunits );
+                Line2D.Double l= new Line2D.Double( col.getDMinimum(), iy, col.getDMaximum(), iy );
+                graphics.setColor( Color.YELLOW );
+                graphics.draw(l);
+            }
+            d= (Double) getKey( meta, "LIMITS_NOMINAL_MAX", Double.class );
+            if ( d!=null ) {
+                double iy= yAxis.transform( d, yunits );
+                Line2D.Double l= new Line2D.Double( col.getDMinimum(), iy, col.getDMaximum(), iy );
+                graphics.setColor( Color.YELLOW );
+                graphics.draw(l);
+            }
+                
+            System.err.println(meta);
+        }
         mon.finished();
         
         long milli = System.currentTimeMillis();
@@ -1665,6 +1713,15 @@ public class SeriesRenderer extends Renderer {
         graphics.dispose();
     }
 
+    private static Object getKey( Map<String,Object> meta, String key, Class type ) {
+        Object o= meta.get(key);
+        if ( o==null || !type.isInstance(o) ) {
+            return null;
+        } else {
+            return o;
+        }
+    }
+    
     /**
      * reduce the dataset by coalescing points in the same location.
      * @param xAxis the current xaxis
