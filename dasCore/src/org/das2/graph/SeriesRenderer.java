@@ -153,6 +153,28 @@ public class SeriesRenderer extends Renderer {
     PsymRenderElement psymsElement = new PsymRenderElement();
     
     /**
+     * if true and the dataset contains limits information (warning range, nominal range), show these ranges.
+     */
+    private boolean showLimits = true;
+
+    public static final String PROP_SHOWLIMITS = "showLimits";
+
+    public boolean isShowLimits() {
+        return showLimits;
+    }
+
+    /**
+     * if the dataset contains metadata describing nominal and warning ranges, display them.  Currently
+     * this is found in CDF metadata, but should become part of QDataSet.
+     * @param showLimits 
+     */
+    public void setShowLimits(boolean showLimits) {
+        boolean oldShowLimits = this.showLimits;
+        this.showLimits = showLimits;
+        propertyChangeSupport.firePropertyChange(PROP_SHOWLIMITS, oldShowLimits, showLimits);
+    }
+
+    /**
      * the selectionArea, which can be null.
      */
     Shape selectionArea; 
@@ -1632,39 +1654,40 @@ public class SeriesRenderer extends Renderer {
         } else {
             meta= (Map<String,Object>) dataSet.property(QDataSet.METADATA);
         }
-        if ( meta!=null ) {
+        if ( meta!=null && showLimits ) {
             Double d;
             DasColumn col= getParent().getColumn();
+            Graphics2D graphics1= (Graphics2D)graphics.create();
             d= (Double) getKey( meta, "LIMITS_WARN_MIN", Double.class );
             if ( d!=null ) {
                 double iy= yAxis.transform( d, yunits );
                 Line2D.Double l= new Line2D.Double( col.getDMinimum(), iy, col.getDMaximum(), iy );
-                graphics.setColor( Color.RED );
-                graphics.draw(l);
+                graphics1.setColor( Color.RED );
+                graphics1.draw(l);
             }
             d= (Double) getKey( meta, "LIMITS_WARN_MAX", Double.class );
             if ( d!=null ) {
                 double iy= yAxis.transform( d, yunits );
                 Line2D.Double l= new Line2D.Double( col.getDMinimum(), iy, col.getDMaximum(), iy );
-                graphics.setColor( Color.RED );
-                graphics.draw(l);
+                graphics1.setColor( Color.RED );
+                graphics1.draw(l);
             }
             d= (Double) getKey( meta, "LIMITS_NOMINAL_MIN", Double.class );
             if ( d!=null ) {
                 double iy= yAxis.transform( d, yunits );
                 Line2D.Double l= new Line2D.Double( col.getDMinimum(), iy, col.getDMaximum(), iy );
-                graphics.setColor( Color.YELLOW );
-                graphics.draw(l);
+                graphics1.setColor( Color.YELLOW );
+                graphics1.setStroke( PsymConnector.DOTS.getStroke(1.0f) );
+                graphics1.draw(l);
             }
             d= (Double) getKey( meta, "LIMITS_NOMINAL_MAX", Double.class );
             if ( d!=null ) {
                 double iy= yAxis.transform( d, yunits );
                 Line2D.Double l= new Line2D.Double( col.getDMinimum(), iy, col.getDMaximum(), iy );
-                graphics.setColor( Color.YELLOW );
-                graphics.draw(l);
+                graphics1.setColor( Color.YELLOW );
+                graphics1.setStroke( PsymConnector.DOTS.getStroke(1.0f) );
+                graphics1.draw(l);
             }
-                
-            System.err.println(meta);
         }
         mon.finished();
         
