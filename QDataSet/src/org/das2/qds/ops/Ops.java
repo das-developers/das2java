@@ -109,7 +109,7 @@ public final class Ops {
      */
     private Ops() {    
     }
-    
+        
     /**
      * UnaryOps are one-argument operations, such as sin, abs, and sqrt
      */
@@ -7302,7 +7302,26 @@ public final class Ops {
         DataSetUtil.copyDimensionProperties( realPart, result1 );
         return result1;
     }
-    
+
+    /**
+     * special function needed by the RPW Group at U. Iowa, which reassigns timetags so the small waveform 
+     * packets are visible.
+     * @param ds rank 2 waveform
+     * @return 
+     * @see Schemes#rank2Waveform() 
+     */
+    public static QDataSet expandWaveform( QDataSet ds ) {
+        if ( !Schemes.isRank2Waveform(ds) ) throw new IllegalArgumentException("dataset must be a rank 2 waveform");
+        QDataSet deltaT= (QDataSet)ds.property(QDataSet.DEPEND_1);
+        QDataSet baseT= (QDataSet)ds.property(QDataSet.DEPEND_0);
+        QDataSet cadence= Ops.reduceMin( Ops.diff(baseT), 0 );
+        QDataSet extent= Ops.extent(deltaT);
+        QDataSet qf= Ops.multiply( Ops.divide( cadence, ( DataSetUtil.asDatumRange(extent).width() ) ), 0.95 );
+        deltaT= Ops.multiply( deltaT, qf );
+        ds= Ops.link( baseT, deltaT, ds );
+        return ds;
+    }
+
     /**
      * scipy chirp function, used for testing.
      * @param t Times at which to evaluate the waveform.
