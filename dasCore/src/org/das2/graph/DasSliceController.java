@@ -31,10 +31,6 @@ import org.das2.qds.DataSetUtil;
  */
 public class DasSliceController extends DasCanvasComponent {
 
-    
-    /** Objects to receive event firing */
-    //private EventListenerList eListenerList = new EventListenerList();
-   
     /** The Rank 1 slice Dataset */
     QDataSet qds;
     
@@ -94,10 +90,7 @@ public class DasSliceController extends DasCanvasComponent {
     
     /* Used to highlight area mouse is in */
     private MouseArea mouseArea = MouseArea.NONE;
-    
-    private Cursor handCursor = new Cursor(Cursor.HAND_CURSOR);
-    private Cursor defaultCursor = new Cursor(Cursor.DEFAULT_CURSOR);
-    
+   
     /** 
      * Stores point where the mouse is pressed and is used
      * to determine how much a data value should change 
@@ -255,6 +248,8 @@ public class DasSliceController extends DasCanvasComponent {
         
     }
 
+    
+    
     private MouseAdapter getMouseAdapter() { 
         return new MouseAdapter() {
             @Override
@@ -303,17 +298,12 @@ public class DasSliceController extends DasCanvasComponent {
                     update();
                 }
              
-                // Fire event for current range on mouse release
-//                DataRangeSelectionEvent dataRangeEvent = new DataRangeSelectionEvent(
-//                        this, currentDatumRange.min(), currentDatumRange.max());
-//
-//                fireDataRangeSelectionListenerDataRangeSelected(dataRangeEvent);
             }
             
             @Override
             public void mouseEntered(MouseEvent e){
                 super.mouseEntered(e);
-                DasSliceController.this.setCursor(handCursor);
+               
             }
             
             @Override
@@ -417,35 +407,7 @@ public class DasSliceController extends DasCanvasComponent {
                 break;
         }
     }
-    
-//    /** Registers DataRangeSelectionListener to receive events.
-//     * @param listener The listener to register.
-//     */
-//    public void addDataRangeSelectionListener(DataRangeSelectionListener listener){
-//        eListenerList.add(org.das2.event.DataRangeSelectionListener.class, listener);
-//    }
-//    
-//    
-//    /** Removes DataRangeSelectionListener from the list of listeners.
-//     * @param listener The listener to remove.
-//     */
-//    public void removeDataRangeSelectionListener(DataRangeSelectionListener listener){
-//        eListenerList.remove(org.das2.event.DataRangeSelectionListener.class, listener);
-//    }
-//    
-//     /** Notifies all registered listeners about the event.
-//     *
-//     * @param event The event to be fired
-//     */
-//    private void fireDataRangeSelectionListenerDataRangeSelected(DataRangeSelectionEvent event){
-//        Object[] listeners;
-//        listeners = eListenerList.getListenerList();
-//        for (int i = listeners.length-2; i>=0; i-=2) {
-//            if (listeners[i]==org.das2.event.DataRangeSelectionListener.class) {
-//                ((org.das2.event.DataRangeSelectionListener)listeners[i+1]).dataRangeSelected(event);
-//            }
-//        }
-//    }
+
 }
 
 
