@@ -1649,40 +1649,37 @@ public class SeriesRenderer extends Renderer {
         // Kludge where we peek in the METADATA to see if there is LIMITS_WARN_MIN and other flags.  These are still experimental,
         // and would become part of QDataSet.
         Map<String,Object> meta;
-        if ( vds!=null ) {
-            meta= (Map<String,Object>) vds.property(QDataSet.METADATA);
-        } else {
-            meta= (Map<String,Object>) dataSet.property(QDataSet.METADATA);
-        }
+        meta= (Map<String,Object>) this.ds.property(QDataSet.METADATA);
+
         if ( meta!=null && showLimits ) {
-            Double d;
+            Number d;
             DasColumn col= getParent().getColumn();
             Graphics2D graphics1= (Graphics2D)graphics.create();
-            d= (Double) getKey( meta, "LIMITS_WARN_MIN", Double.class );
+            d= (Number) getKey( meta, "LIMITS_WARN_MIN", Number.class );
             if ( d!=null ) {
-                double iy= yAxis.transform( d, yunits );
+                double iy= yAxis.transform( d.doubleValue(), yunits );
                 Line2D.Double l= new Line2D.Double( col.getDMinimum(), iy, col.getDMaximum(), iy );
                 graphics1.setColor( Color.RED );
                 graphics1.draw(l);
             }
-            d= (Double) getKey( meta, "LIMITS_WARN_MAX", Double.class );
+            d= (Number) getKey( meta, "LIMITS_WARN_MAX", Number.class );
             if ( d!=null ) {
-                double iy= yAxis.transform( d, yunits );
+                double iy= yAxis.transform( d.doubleValue(), yunits );
                 Line2D.Double l= new Line2D.Double( col.getDMinimum(), iy, col.getDMaximum(), iy );
                 graphics1.setColor( Color.RED );
                 graphics1.draw(l);
             }
-            d= (Double) getKey( meta, "LIMITS_NOMINAL_MIN", Double.class );
+            d= (Number) getKey( meta, "LIMITS_NOMINAL_MIN", Number.class );
             if ( d!=null ) {
-                double iy= yAxis.transform( d, yunits );
+                double iy= yAxis.transform( d.doubleValue(), yunits );
                 Line2D.Double l= new Line2D.Double( col.getDMinimum(), iy, col.getDMaximum(), iy );
                 graphics1.setColor( Color.YELLOW );
                 graphics1.setStroke( PsymConnector.DOTS.getStroke(1.0f) );
                 graphics1.draw(l);
             }
-            d= (Double) getKey( meta, "LIMITS_NOMINAL_MAX", Double.class );
+            d= (Number) getKey( meta, "LIMITS_NOMINAL_MAX", Number.class );
             if ( d!=null ) {
-                double iy= yAxis.transform( d, yunits );
+                double iy= yAxis.transform( d.doubleValue(), yunits );
                 Line2D.Double l= new Line2D.Double( col.getDMinimum(), iy, col.getDMaximum(), iy );
                 graphics1.setColor( Color.YELLOW );
                 graphics1.setStroke( PsymConnector.DASHES.getStroke(1.0f) );
