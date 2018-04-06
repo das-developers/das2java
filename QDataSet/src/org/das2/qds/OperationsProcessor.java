@@ -494,6 +494,8 @@ public class OperationsProcessor {
                     } else {
                         fillDs= Ops.fft(fillDs); //TODO: this doesn't seem right.
                     }
+                } else if ( cmd.equals("|expandWaveform") ) {
+                    fillDs= Ops.expandWaveform(fillDs);
                 } else if ( cmd.equals("|hilbertEnvelope") ) {
                     QDataSet h= Ops.hilbertSciPy(fillDs);
                     fillDs= Ops.magnitude(h);
