@@ -154,7 +154,20 @@ public class LengthDragRenderer extends LabelDragRenderer {
                     }
 
                 } else if ( !yaxis.isLog() && xaxis.isLog() ) {
-                    fit = "n/a";
+                    NumberFormat nf= new DecimalFormat("0.00");
+                    Units u = rise.getUnits();
+                    double drise = y1.subtract(y0).doubleValue(u);
+                    double drun = Math.log10(x1.divide(x0).doubleValue(Units.dimensionless));
+                    String sslope = nf.format(drise / drun);
+                    String su;
+                    if ( u.isConvertibleTo(Units.seconds) ) {
+                        su= UnitsUtil.divideToString( rise, Units.dimensionless.createDatum(drun) );
+                    } else if ( u==Units.dimensionless ) {
+                        su= sslope;
+                    } else {
+                        su= sslope + "("+u+")";
+                    }
+                    fit = "y=" + "Log( x / " + x1 + " )*" + su + " + " + y1; 
                 } else {
                     NumberFormat nf= new DecimalFormat("0.00");
                     String dx= "( x - ("+x1+") )";
