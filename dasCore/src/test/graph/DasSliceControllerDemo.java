@@ -63,13 +63,17 @@ public class DasSliceControllerDemo {
         getContentPane().add(canvas, BorderLayout.CENTER );
         
         QDataSet qds = Ops.findgen(100);
-        Ops.putProperty(qds, QDataSet.UNITS, Units.eV);
+        Ops.putProperty(qds, QDataSet.UNITS, Units.seconds);
 
+        //DatumRange dr = new DatumRange("100 to 300 MeV");
+        
+        //DasSliceController sliceCont = new DasSliceController(dr);
         DasSliceController sliceCont = new DasSliceController(qds);
         
         PropertyChangeListener sliceRangeListener = new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
+                
                 System.err.println("got property change event");
                 System.err.println("Range = " + evt.getNewValue());
             }

@@ -60,7 +60,6 @@ public class DasSliceController extends DasCanvasComponent {
         firePropertyChange(PROP_CURRENTDATUMRANGE, oldCurrentDatumRange, currentDatumRange);
     }
     
-    
     /** Amount to change currentDatumRange.min() on a click and drag */
     private Datum datumLeftDragVal = null;
 
@@ -168,8 +167,7 @@ public class DasSliceController extends DasCanvasComponent {
             
     @Override
     protected void paintComponent(Graphics g) {
-        super.paintComponent(g); //To change body of generated methods, choose Tools | Templates.
-
+        
         setRects();
 
         g.fillRect(leftRect.x, leftRect.y, leftRect.width, leftRect.height);
@@ -254,19 +252,19 @@ public class DasSliceController extends DasCanvasComponent {
         return new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                super.mouseClicked(e);
+                
                 System.err.println("Current cursor is " + getCursor().getName());
             }
 
             @Override
             public void mousePressed(MouseEvent e) {
-                super.mousePressed(e);
+                
                 mousePressPt = e.getPoint(); 
             }
             
             @Override
             public void mouseDragged(MouseEvent e) {
-                super.mouseDragged(e); 
+                
                 mouseIsDragging = true;
                 Point currentPoint = e.getPoint();
                 
@@ -281,7 +279,7 @@ public class DasSliceController extends DasCanvasComponent {
             
             @Override
             public void mouseReleased(MouseEvent e) {
-                super.mouseReleased(e);
+                
                 mouseIsDragging = false;
                 // Update currentRange with final drag value
                 setCurrentDatumRange(new DatumRange(
@@ -298,17 +296,22 @@ public class DasSliceController extends DasCanvasComponent {
                     update();
                 }
              
+                // Fire event for current range on mouse release
+                DataRangeSelectionEvent dataRangeEvent = new DataRangeSelectionEvent(
+                        this, currentDatumRange.min(), currentDatumRange.max());
+
+                fireDataRangeSelectionListenerDataRangeSelected(dataRangeEvent);
             }
             
             @Override
             public void mouseEntered(MouseEvent e){
-                super.mouseEntered(e);
+               
                
             }
             
             @Override
             public void mouseExited(MouseEvent e) {
-                super.mouseExited(e); 
+                
                 if(!mouseIsDragging){
                     mouseArea = MouseArea.NONE;
                     update();
@@ -317,7 +320,7 @@ public class DasSliceController extends DasCanvasComponent {
             }
             @Override
             public void mouseMoved(MouseEvent e) {
-                super.mouseMoved(e); 
+               
                 Point eP = e.getPoint();
                 
                 // Update mouse area for highlighting
@@ -408,6 +411,34 @@ public class DasSliceController extends DasCanvasComponent {
         }
     }
 
+    /** Registers DataRangeSelectionListener to receive events.
+     * @param listener The listener to register.
+     */
+    public void addDataRangeSelectionListener(DataRangeSelectionListener listener){
+        listenerList.add(org.das2.event.DataRangeSelectionListener.class, listener);
+}
+
+
+    /** Removes DataRangeSelectionListener from the list of listeners.
+     * @param listener The listener to remove.
+     */
+    public void removeDataRangeSelectionListener(DataRangeSelectionListener listener){
+        listenerList.remove(org.das2.event.DataRangeSelectionListener.class, listener);
+    }
+    
+     /** Notifies all registered listeners about the event.
+     *
+     * @param event The event to be fired
+     */
+    private void fireDataRangeSelectionListenerDataRangeSelected(DataRangeSelectionEvent event){
+        Object[] listeners;
+        listeners = listenerList.getListenerList();
+        for (int i = listeners.length-2; i>=0; i-=2) {
+            if (listeners[i]==org.das2.event.DataRangeSelectionListener.class) {
+                ((org.das2.event.DataRangeSelectionListener)listeners[i+1]).dataRangeSelected(event);
+            }
+        }
+    }
 }
 
 
