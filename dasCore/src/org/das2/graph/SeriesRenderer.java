@@ -171,6 +171,7 @@ public class SeriesRenderer extends Renderer {
     public void setShowLimits(boolean showLimits) {
         boolean oldShowLimits = this.showLimits;
         this.showLimits = showLimits;
+        updateCacheImage();
         propertyChangeSupport.firePropertyChange(PROP_SHOWLIMITS, oldShowLimits, showLimits);
     }
 
