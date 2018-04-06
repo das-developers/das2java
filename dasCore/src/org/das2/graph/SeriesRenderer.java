@@ -1657,21 +1657,21 @@ public class SeriesRenderer extends Renderer {
             Number d;
             DasColumn col= getParent().getColumn();
             Graphics2D graphics1= (Graphics2D)graphics.create();
-            d= (Number) getKey( meta, "LIMITS_WARN_MIN", Number.class );
+            d= getKey( meta, "LIMITS_WARN_MIN", Number.class );
             if ( d!=null ) {
                 double iy= yAxis.transform( d.doubleValue(), yunits );
                 Line2D.Double l= new Line2D.Double( col.getDMinimum(), iy, col.getDMaximum(), iy );
                 graphics1.setColor( Color.RED );
                 graphics1.draw(l);
             }
-            d= (Number) getKey( meta, "LIMITS_WARN_MAX", Number.class );
+            d= getKey( meta, "LIMITS_WARN_MAX", Number.class );
             if ( d!=null ) {
                 double iy= yAxis.transform( d.doubleValue(), yunits );
                 Line2D.Double l= new Line2D.Double( col.getDMinimum(), iy, col.getDMaximum(), iy );
                 graphics1.setColor( Color.RED );
                 graphics1.draw(l);
             }
-            d= (Number) getKey( meta, "LIMITS_NOMINAL_MIN", Number.class );
+            d= getKey( meta, "LIMITS_NOMINAL_MIN", Number.class );
             if ( d!=null ) {
                 double iy= yAxis.transform( d.doubleValue(), yunits );
                 Line2D.Double l= new Line2D.Double( col.getDMinimum(), iy, col.getDMaximum(), iy );
@@ -1679,7 +1679,7 @@ public class SeriesRenderer extends Renderer {
                 graphics1.setStroke( PsymConnector.DOTS.getStroke(1.0f) );
                 graphics1.draw(l);
             }
-            d= (Number) getKey( meta, "LIMITS_NOMINAL_MAX", Number.class );
+            d= getKey( meta, "LIMITS_NOMINAL_MAX", Number.class );
             if ( d!=null ) {
                 double iy= yAxis.transform( d.doubleValue(), yunits );
                 Line2D.Double l= new Line2D.Double( col.getDMinimum(), iy, col.getDMaximum(), iy );
@@ -1735,12 +1735,12 @@ public class SeriesRenderer extends Renderer {
         graphics.dispose();
     }
 
-    private static Object getKey( Map<String,Object> meta, String key, Class type ) {
+    private static <T> T getKey( Map<String,Object> meta, String key, Class<T> type ) {
         Object o= meta.get(key);
         if ( o==null || !type.isInstance(o) ) {
             return null;
         } else {
-            return o;
+            return type.cast(o);
         }
     }
     
