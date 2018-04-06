@@ -609,6 +609,7 @@ public class SeriesRenderer extends Renderer {
                     QDataSet p2= Ops.subtract( vds, deltaMinusY );
                     QDataSet w1= Ops.valid(p2);
                     QDataSet w2= Ops.valid(p1);
+                    if ( firstIndex==-1 ) return; // test140/7822
                     for (int i = firstIndex; i < lastIndex; i++) {
                         double ix = xAxis.transform( xds.value(i), xunits );
                         if ( w1.value(i)>0 && w2.value(i)>0 ) {
