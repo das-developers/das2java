@@ -747,6 +747,22 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
             doIncrementPaintCountTimer= true;
         }
     }
+    
+//    See https://sourceforge.net/p/autoplot/bugs/1672/#0a1a, where the following code was used to identify who was triggering the repaint.
+//    public void repaint() {
+//        super.repaint();
+//    }
+//
+//    @Override
+//    public void repaint(Rectangle r) {
+//        super.repaint(r); //To change body of generated methods, choose Tools | Templates.
+//    }
+//
+//    @Override
+//    public void repaint(long tm, int x, int y, int width, int height) {
+//        super.repaint(tm, x, y, width, height); //To change body of generated methods, choose Tools | Templates.
+//    }
+//    
 
     /** 
      * Prints the canvas, scaling and possibly rotating it to improve fit.
