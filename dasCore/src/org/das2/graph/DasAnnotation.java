@@ -942,7 +942,11 @@ public class DasAnnotation extends DasCanvasComponent {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             logger.finer("plot change, resizing");
-            resize();
+            if ( evt.getPropertyName().equals("paintingForPrint") ) {
+                logger.finer("plot change is trivial, ignoring");
+            } else {
+                resize();
+            }
         }
     };
             
