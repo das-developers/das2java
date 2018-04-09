@@ -41,34 +41,36 @@ public class DasSliceControllerDemo {
         }
         return contentPane;
     }
+    
+    DasSliceController sliceCont;
 
     public JFrame showFrame() {
         JFrame frame= new JFrame( "Slice Demo");
         frame.getContentPane().add(getContentPane());
         frame.pack();
-        frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
+        //frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
         frame.setVisible(true);
-        frame.setSize(800, 100);
+        //frame.setSize(800, 800);
         return frame;
     }
     
-    DasSliceControllerDemo(){
+    public DasSliceControllerDemo(){
         int width = 500;
-        int height = 50;
+        int height = 100;
         
-        getContentPane().setLayout(new BorderLayout());
+        //getContentPane().setLayout(new BorderLayout());
 
         DasCanvas canvas = new DasCanvas(width, height);
         
-        getContentPane().add(canvas, BorderLayout.CENTER );
+        getContentPane().add(canvas);//, BorderLayout.CENTER );
         
         QDataSet qds = Ops.findgen(100);
         Ops.putProperty(qds, QDataSet.UNITS, Units.seconds);
 
         //DatumRange dr = new DatumRange("100 to 300 MeV");
         
-        //DasSliceController sliceCont = new DasSliceController(dr);
-        DasSliceController sliceCont = new DasSliceController(qds);
+       
+       sliceCont = new DasSliceController(qds);
         
         PropertyChangeListener sliceRangeListener = new PropertyChangeListener() {
             @Override
@@ -83,6 +85,13 @@ public class DasSliceControllerDemo {
         canvas.add(sliceCont,new DasRow(canvas, 0, 1),new DasColumn(canvas, 0, 1));
         
     }
+    
+    public DasSliceController getDasSliceController() {
+         return sliceCont;
+     }
+
+    
+     
     public static void main( String[] args ) {
         new DasSliceControllerDemo().showFrame();
     }

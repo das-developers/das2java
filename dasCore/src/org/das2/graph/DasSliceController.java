@@ -33,7 +33,7 @@ public class DasSliceController extends DasCanvasComponent {
 
     /** The Rank 1 slice Dataset */
     QDataSet qds;
-    
+   
     /** DatumRange containing the valid max and min of the QDataSet */
     private DatumRange validDatumRange;   
 
@@ -170,8 +170,8 @@ public class DasSliceController extends DasCanvasComponent {
         
         setRects();
 
-        g.fillRect(leftRect.x, leftRect.y, leftRect.width, leftRect.height);
-        g.fillRect(rightRect.x, rightRect.y, rightRect.width, rightRect.height);
+        g.drawRect(leftRect.x, leftRect.y, leftRect.width, leftRect.height);
+        g.drawRect(rightRect.x, rightRect.y, rightRect.width, rightRect.height);
         
         g.setColor(Color.BLACK);
        
@@ -209,6 +209,10 @@ public class DasSliceController extends DasCanvasComponent {
     }
     
 
+    public DasSliceController(){
+        super();
+    }
+    
     public DasSliceController(QDataSet qds){
         
         super();
@@ -240,7 +244,7 @@ public class DasSliceController extends DasCanvasComponent {
         datumLeftDragVal = Datum.create(0, (Units) qds.property(QDataSet.UNITS));
         datumRightDragVal = Datum.create(0, (Units) qds.property(QDataSet.UNITS));
         
-        MouseAdapter ma=  getMouseAdapter();
+        MouseAdapter ma =  getMouseAdapter();
         addMouseListener( ma );
         addMouseMotionListener( ma );
         
@@ -250,15 +254,14 @@ public class DasSliceController extends DasCanvasComponent {
     
     private MouseAdapter getMouseAdapter() { 
         return new MouseAdapter() {
+            
             @Override
             public void mouseClicked(MouseEvent e) {
-                
-                System.err.println("Current cursor is " + getCursor().getName());
+               
             }
 
             @Override
-            public void mousePressed(MouseEvent e) {
-                
+            public void mousePressed(MouseEvent e) { 
                 mousePressPt = e.getPoint(); 
             }
             
@@ -306,7 +309,6 @@ public class DasSliceController extends DasCanvasComponent {
             @Override
             public void mouseEntered(MouseEvent e){
                
-               
             }
             
             @Override
@@ -326,20 +328,20 @@ public class DasSliceController extends DasCanvasComponent {
                 // Update mouse area for highlighting
                 if(leftRect.contains(eP)){
                     mouseArea = MouseArea.LEFT;
-//                    System.err.println("left");
+                    //System.err.println("left");
                     update();
                 } else if(rightRect.contains(eP)){
                     mouseArea = MouseArea.RIGHT;
-//                    System.err.println("right");
+                    //System.err.println("right");
                     update();
                 } else if(centerRect.contains(eP)){
                     mouseArea = MouseArea.CENTER;
                       
-//                    System.err.println("center");
+                   // System.err.println("center");
                     update();
                 } else{
                     mouseArea = MouseArea.NONE;
-//                    System.err.println("none");
+                   // System.err.println("none");
                     update();
                 }
             } 
