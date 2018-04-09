@@ -86,6 +86,9 @@ public class LabelDragRenderer implements DragRenderer {
         g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
         
         if ( parent==null ) return null;
+        if ( parent.getCanvas()==null ) {
+            return null;
+        }
         
         Dimension d= parent.getCanvas().getSize();
         
