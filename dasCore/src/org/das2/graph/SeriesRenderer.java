@@ -34,6 +34,7 @@ import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.geom.Area;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
 import java.awt.geom.PathIterator;
@@ -1108,9 +1109,6 @@ public class SeriesRenderer extends Renderer {
             x = xds.value(index);
             y = vds.value(index);
             
-            if ( !below ) y= Math.max( y, yref );
-            if ( !above ) y= Math.min( y, yref );
-
             // first point //
             fx = xAxis.transform(x, xUnits);
             fy = yAxis.transform(y, yUnits);
@@ -1120,11 +1118,9 @@ public class SeriesRenderer extends Renderer {
                 fillPath.moveTo(fx1-1, fyref); // doesn't line up, -1 is fudge
                 fillPath.lineTo(fx1-1, fy);
                 fillPath.lineTo(fx, fy);
-
             } else {
                 fillPath.moveTo(fx, fyref);
                 fillPath.lineTo(fx, fy);
-
             }
 
             x0 = x;
@@ -1140,9 +1136,6 @@ public class SeriesRenderer extends Renderer {
                     x = xds.value(index);
                     y = vds.value(index);
 
-                    if ( !below ) y= Math.max( y, yref );
-                    if ( !above ) y= Math.min( y, yref );
-                    
                     final boolean isValid = wds.value( index )>0 && xUnits.isValid(x);
 
                     fx = xAxis.transform(x, xUnits);
@@ -1202,6 +1195,22 @@ public class SeriesRenderer extends Renderer {
                 fillPath.lineTo(fx1, fyref);
             } else {
                 fillPath.lineTo(fx0, fyref);
+            }
+            
+            if ( !above ) {
+                Area a= new Area(fillPath);
+                Rectangle2D.Double rect= new Rectangle2D.Double( 0, fyref, getParent().getColumn().getDMaximum(), getParent().getRow().getHeight() ); 
+                a.intersect( new Area( rect ) );
+                GeneralPath p= new GeneralPath(a);
+                fillPath= p;
+            } 
+            
+            if ( !below ) {
+                Area a= new Area(fillPath);
+                Rectangle2D.Double rect= new Rectangle2D.Double( 0, 0, getParent().getColumn().getDMaximum(), fyref ); 
+                a.intersect( new Area( rect ) );
+                GeneralPath p= new GeneralPath(a);
+                fillPath= p;
             }
 
             this.fillToRefPath1 = fillPath;
