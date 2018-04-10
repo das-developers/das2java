@@ -48,14 +48,14 @@ public class DasSliceControllerDemo {
         JFrame frame= new JFrame( "Slice Demo");
         frame.getContentPane().add(getContentPane());
         frame.pack();
-        //frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
+        frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
         frame.setVisible(true);
-        //frame.setSize(800, 800);
+        frame.setSize(800, 800);
         return frame;
     }
     
     public DasSliceControllerDemo(){
-        int width = 500;
+        int width = 700;
         int height = 100;
         
         //getContentPane().setLayout(new BorderLayout());
@@ -71,7 +71,12 @@ public class DasSliceControllerDemo {
         
        
        sliceCont = new DasSliceController(qds);
-        
+       
+       DasRow row = new DasRow(canvas, 0.1, 1);
+       sliceCont.setRow(row);
+       DasColumn col = new DasColumn(canvas, 0, 1);
+       sliceCont.setColumn(col);
+       
         PropertyChangeListener sliceRangeListener = new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
@@ -82,7 +87,7 @@ public class DasSliceControllerDemo {
         };
         
         sliceCont.addPropertyChangeListener(DasSliceController.PROP_CURRENTDATUMRANGE, sliceRangeListener);
-        canvas.add(sliceCont,new DasRow(canvas, 0, 1),new DasColumn(canvas, 0, 1));
+        canvas.add(sliceCont);
         
     }
     

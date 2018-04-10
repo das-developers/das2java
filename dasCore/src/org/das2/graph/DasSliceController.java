@@ -29,6 +29,8 @@ import org.das2.qds.DataSetUtil;
  *
  * @author leiffert
  */
+
+
 public class DasSliceController extends DasCanvasComponent {
 
     /** The Rank 1 slice Dataset */
@@ -82,6 +84,11 @@ public class DasSliceController extends DasCanvasComponent {
         this.datumRightDragVal = datumRightDragVal;
     }
 
+    
+    Cursor resizeCursor = new Cursor(Cursor.E_RESIZE_CURSOR);
+    Cursor handCursor = new Cursor(Cursor.HAND_CURSOR);
+    Cursor defaultCursor = new Cursor(Cursor.DEFAULT_CURSOR);
+    
     /* Possible areas the mouse cursor can be */
     enum MouseArea {
         LEFT, CENTER, RIGHT, NONE
@@ -89,7 +96,53 @@ public class DasSliceController extends DasCanvasComponent {
     
     /* Used to highlight area mouse is in */
     private MouseArea mouseArea = MouseArea.NONE;
-   
+
+    public MouseArea getMouseArea() {
+        return mouseArea;
+    }
+
+    protected void setMouseArea(MouseArea mouseArea) {
+        if(this.mouseArea == mouseArea){ return; }
+        else{
+            switch(mouseArea){
+                case LEFT:
+                    getCanvas().getGlassPane().setCursor(resizeCursor);
+                    update();
+                    break;
+                case RIGHT:
+                    getCanvas().getGlassPane().setCursor(resizeCursor);
+                    update();
+                    break;
+                case CENTER:
+                    getCanvas().getGlassPane().setCursor(handCursor);
+                    update();
+                    break;
+                case NONE:
+                    getCanvas().getGlassPane().setCursor(defaultCursor);
+                    update();
+                    break;
+                default:
+                    break;
+                    
+            }
+        }
+        this.mouseArea = mouseArea;
+    }
+    
+    protected void setMouseArea(Point pt){
+     // Update mouse area for highlighting
+        if(leftRect.contains(pt)){
+            setMouseArea(MouseArea.LEFT);
+        } else if(rightRect.contains(pt)){
+            setMouseArea(MouseArea.RIGHT);
+        } else if(centerRect.contains(pt)){
+            setMouseArea(MouseArea.CENTER);
+        } else{
+            setMouseArea(MouseArea.NONE);
+        }
+    } 
+    
+    
     /** 
      * Stores point where the mouse is pressed and is used
      * to determine how much a data value should change 
@@ -147,13 +200,15 @@ public class DasSliceController extends DasCanvasComponent {
         colMidPt = colMin + (colWidth / 2);
         
         rowMin = getRow().getDMinimum() ;
+//        System.err.println("rowMin = " + rowMin);
         rowMax = getRow().getDMaximum() ;
+//        System.err.println("rowMax = " + rowMax);
         rowWidth = rowMax - rowMin;
         rowMidPt = rowMin + (rowWidth / 2);
         
         dataCellWidth = (int) (colWidth * widthFactor);
         dataCellHeight = rowWidth;
-        
+//        System.err.println("row width = " + dataCellHeight);
         colLeftCellBegin = colMin;
         colLeftCellEnd = colLeftCellBegin + dataCellWidth;
         
@@ -169,7 +224,7 @@ public class DasSliceController extends DasCanvasComponent {
     protected void paintComponent(Graphics g) {
         
         setRects();
-
+        g.setColor(Color.gray);
         g.drawRect(leftRect.x, leftRect.y, leftRect.width, leftRect.height);
         g.drawRect(rightRect.x, rightRect.y, rightRect.width, rightRect.height);
         
@@ -205,7 +260,9 @@ public class DasSliceController extends DasCanvasComponent {
 
     @Override
     public Rectangle getBounds() {
+        
         return DasDevicePosition.toRectangle( getRow(), getColumn() );
+        
     }
     
 
@@ -295,8 +352,7 @@ public class DasSliceController extends DasCanvasComponent {
                 
                 // Stop highlighting if release is outside bounds
                 if(!getBounds().contains(e.getPoint())){
-                    mouseArea = MouseArea.NONE;
-                    update();
+                    setMouseArea(MouseArea.NONE);
                 }
              
                 // Fire event for current range on mouse release
@@ -324,26 +380,8 @@ public class DasSliceController extends DasCanvasComponent {
             public void mouseMoved(MouseEvent e) {
                
                 Point eP = e.getPoint();
-                
-                // Update mouse area for highlighting
-                if(leftRect.contains(eP)){
-                    mouseArea = MouseArea.LEFT;
-                    //System.err.println("left");
-                    update();
-                } else if(rightRect.contains(eP)){
-                    mouseArea = MouseArea.RIGHT;
-                    //System.err.println("right");
-                    update();
-                } else if(centerRect.contains(eP)){
-                    mouseArea = MouseArea.CENTER;
-                      
-                   // System.err.println("center");
-                    update();
-                } else{
-                    mouseArea = MouseArea.NONE;
-                   // System.err.println("none");
-                    update();
-                }
+                setMouseArea(eP);
+               
             } 
 
         }; 
