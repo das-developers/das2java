@@ -24,6 +24,7 @@ import org.das2.datum.Units;
 import org.das2.qds.ops.*;
 import org.das2.qds.DataSetOps;
 import org.das2.qds.DataSetUtil;
+import org.das2.qds.SemanticOps;
 
 /**
  *
@@ -292,7 +293,7 @@ public class DasSliceController extends DasCanvasComponent {
         } else{
             
             this.validDatumRange = new DatumRange(
-                Datum.create(qds.value(0), (Units) qds.property(QDataSet.UNITS)),
+                Datum.create(qds.value(0), SemanticOps.getUnits(qds) ),
                 Datum.create(qds.value(qds.length() - 1), (Units) qds.property(QDataSet.UNITS)) );
         }
         
