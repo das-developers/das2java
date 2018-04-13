@@ -5,27 +5,14 @@
  */
 package org.das2.graph;
 
-import java.awt.Color;
 import java.awt.Cursor;
-import java.awt.Font;
 import java.awt.Graphics;
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
-//import javafx.scene.Cursor;
-import javax.swing.event.EventListenerList;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
-import org.das2.event.DataRangeSelectionEvent;
-import org.das2.event.DataRangeSelectionListener;
-import org.das2.qds.QDataSet;
-import org.das2.datum.Units;
-import org.das2.event.RangeLabelMouseModule;
-import org.das2.qds.ops.*;
-import org.das2.qds.DataSetOps;
-import org.das2.qds.DataSetUtil;
 
 /**
  *
