@@ -12,7 +12,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import org.das2.datum.Datum;
-import org.das2.datum.DatumRange;
+import org.das2.datum.Units;
+import org.das2.qds.QDataSet;
 
 /**
  *
@@ -20,369 +21,135 @@ import org.das2.datum.DatumRange;
  */
 
  public class DasSliceController extends DasCanvasComponent {
-     
-     
-    DatumRange validDatumRange;
 
-    public DatumRange getValidDatumRange() {
-        return validDatumRange;
-    }
-
-    public void setValidDatumRange(DatumRange validDatumRange) {
-        this.validDatumRange = validDatumRange;
-    }
-
-    
-    boolean inSingleMode;
-    public boolean isInSingleMode() {
-        return inSingleMode;
-    }
-
-    public void setInSingleMode() {
-        if(getLeftDatum().equals(getRightDatum())){
-            inSingleMode = true;
-            setRightDatumWidth(0);
-            setDatumSeparatorWidth(0);
-            resetAddRightDatumBoxWidth();
-        }else{
-            inSingleMode = false;
-            setRightDatumWidth(getLeftDatumWidth());
-            resetDatumSeparatorWidth();
-            setAddRightDatumBoxWidth(0);
-        }
-        repaint();
-    }
-     
-    Datum leftDatum;
-    public Datum getLeftDatum() {
-        return leftDatum;
-    }
-
-    public void setLeftDatum(Datum leftDatum) {
-        if(isInSingleMode()){
-            if(leftDatum.ge(getValidDatumRange().max())){
-                this.leftDatum = getValidDatumRange().max();
-                setRightDatum(leftDatum);
-            }else if(leftDatum.le(getValidDatumRange().min())){
-                this.leftDatum = getValidDatumRange().min();
-                setRightDatum(leftDatum);
-            }
-            this.leftDatum = leftDatum;
-        }else{
-            if(leftDatum.le(getValidDatumRange().min())){
-                this.leftDatum = getValidDatumRange().min();
-            }else if(leftDatum.ge(getRightDatum())){
-                setLeftDatum(getRightDatum());
-                setInSingleMode();
-            }else{
-                this.leftDatum = leftDatum;
-            }
-        }
-    }
-
-    Datum rightDatum;
-    public Datum getRightDatum() {
-        return rightDatum;
-    }
-
-    public void setRightDatum(Datum rightDatum) {
-        if(!inSingleMode){
-            if(rightDatum.ge(getValidDatumRange().max())){
-                this.rightDatum = getValidDatumRange().max();
-            }else if(rightDatum.le(getLeftDatum())){
-                this.rightDatum = getLeftDatum();
-                setInSingleMode();
-            }else{
-                this.rightDatum = rightDatum;
-            }
-        }else{
-            if(!rightDatum.equals(getLeftDatum())){
-                throw new IllegalStateException("Trying to set right datum != left datum while in single mode.");
-            }else{
-                this.rightDatum = rightDatum;
-            }
-        }
-    }
-    
-    Cursor resizeCursorRight = new Cursor(Cursor.E_RESIZE_CURSOR);
-    Cursor resizeCursorLeft = new Cursor(Cursor.W_RESIZE_CURSOR);
+    Cursor resizeCursor = new Cursor(Cursor.E_RESIZE_CURSOR);
     Cursor handCursor = new Cursor(Cursor.HAND_CURSOR);
     Cursor defaultCursor = new Cursor(Cursor.DEFAULT_CURSOR);
     Cursor moveCursor = new Cursor(Cursor.MOVE_CURSOR);
 
-    public DasSliceController(DatumRange inputRange){
-        validDatumRange = inputRange;
-        leftDatum = inputRange.min();
-        rightDatum = inputRange.max();
-        if(leftDatum.equals(rightDatum)){
-            inSingleMode = true;
+    class TextRect {
+
+        double spacingFactor = 1.5;
+        String text;
+        Rectangle rect;
+
+        public TextRect(String text, Rectangle rect) {
+            this.text = text;
+            this.rect = rect;
         }
-        MouseAdapter ma =  getMouseAdapter();
-        addMouseListener( ma );
-        addMouseMotionListener( ma );
-        repaint();
+
     }
 
-    public DasSliceController(DatumRange inputRange, double cadence){
-        this(inputRange);
-        this.cadence = cadence;
-    }
+    class DatumRect extends TextRect {
 
-    int colMin;
-    int colMax;
-    int rowMin;
-    int rowMax;
-    int height;
-    int width;
-    double spacingFactor = 1.5;
+        private Datum datum;
 
-     
-    double cadence;
-    
-    public double getCadence() {
-        return cadence;
-    }
-
-    public void setCadence(double cadence) {
-        if( cadence == 0){
-            setScanWidth(0);
-        }else{
-            resetScanWidth();
+        public void setDatum(Datum d) {
+            this.datum = d;
+            this.text = d.toString();
         }
-        this.cadence = cadence;
-    }
-     
-     int scanWidth = 100;
-     public int getScanWidth(){
-         return this.scanWidth;
-     }
-     public void setScanWidth(int newScanWidth){
-         this.scanWidth = newScanWidth;
-     }
-     private void resetScanWidth(){
-         scanWidth = 100;
-     }
-    
-    String rightScanString = "scan >>";
-    Rectangle rightScanRect= new Rectangle();
-    
-    public Rectangle getRightScanRect() {
-        return rightScanRect;
-    }
 
-    private void setRightScanRect() {
-         
-        this.rightScanRect.setBounds(colMax - scanWidth, colMin, scanWidth, height);
-    }
-    
-    int addRightDatumBoxWidth = 25;
-     
-    public int getAddRightDatumBoxWidth(){
-        return addRightDatumBoxWidth;
-    }
-
-    private void setAddRightDatumBoxWidth(int newWidth){
-        this.addRightDatumBoxWidth = newWidth;
-    }
-
-    private void resetAddRightDatumBoxWidth(){
-        this.addRightDatumBoxWidth = 25;
-     }
-     
-    Rectangle addRightDatumBtnRect= new Rectangle();
-
-    public Rectangle getAddRightDatumBtnRect() {
-        return addRightDatumBtnRect;
-    }
-
-    private void setAddRightDatumBtnRect() {
-        this.addRightDatumBtnRect.setBounds(getRightScanRect().x - getAddRightDatumBoxWidth(), colMin, getAddRightDatumBoxWidth(), height);
-    }
-    
-    
-    int rightDatumWidth;
-    public int getRightDatumWidth(){
-        return rightDatumWidth;
-    }
-    private void setRightDatumWidth(int width){
-        this.rightDatumWidth = width;
-    }
-    
-    Rectangle rightDatumRect= new Rectangle();
-    public Rectangle getRightDatumRect() {
-        return rightDatumRect;
-    }
-
-    public void setRightDatumRect() {
-        rightDatumRect.setBounds(getRightScanRect().x - rightDatumWidth, colMin, rightDatumWidth, height);
-    }
-     
-    int datumSeparatorWidth = 30;
-    public int getDatumSeparatorWidth(){
-        return this.datumSeparatorWidth;
-    }
-    private void setDatumSeparatorWidth(int width){
-        this.datumSeparatorWidth = width;
-    }
-    private void resetDatumSeparatorWidth(){
-        this.datumSeparatorWidth = 30;
-    }
-    
-    Rectangle datumSeparatorRect= new Rectangle();
-    public Rectangle getDatumSeparatorRect() {
-        return datumSeparatorRect;
-    }
-
-    private void setDatumSeparatorRect() {
-       
-        this.datumSeparatorRect.setBounds(rightDatumRect.x - getDatumSeparatorWidth(), colMin, getDatumSeparatorWidth(), height);
-    }
-     
-    int leftDatumWidth;
-    public int getLeftDatumWidth(){
-        return this.leftDatumWidth;
-    }
-    
-    private void setLeftDatumWidth(int width){
-        this.leftDatumWidth = width;
-    }
-    
-    Rectangle leftDatumRect= new Rectangle(); 
-    public Rectangle getLeftDatumRect() {
-        return leftDatumRect;
-    }
-
-    public void setLeftDatumRect() {
-        this.leftDatumRect.setBounds(datumSeparatorRect.x - leftDatumWidth, colMin, leftDatumWidth, height);
-    }
-    
-    String leftScanString = "<< scan";
-    Rectangle leftScanRect= new Rectangle();
-    public Rectangle getLeftScanRect() {
-        return leftScanRect;
-    }
-
-    private void setLeftScanRect() {
-        this.leftScanRect.setBounds(leftDatumRect.x - scanWidth, colMin, scanWidth, height);
-    }
-    
-     @Override
-     protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
-        setupRects(g);
-         
-        drawRect(g, getRightScanRect());
-        drawString(g, getRightScanRect(), rightScanString);
-        drawRect(g, getAddRightDatumBtnRect());
-        drawRect(g, getRightDatumRect());
-        drawRect(g, getDatumSeparatorRect());
-        if(!inSingleMode){
-            drawString(g, getRightDatumRect(), getRightDatum().toString());
-            drawString(g, getDatumSeparatorRect(), " to ");
-        }else{
-            drawString(g, getAddRightDatumBtnRect(), "+");
+        public DatumRect(Datum d, Rectangle r) {
+            super(d.toString(), r);
+            this.datum = d;
         }
-        
-        drawRect(g, getLeftDatumRect());
-        drawString(g, getLeftDatumRect(), getLeftDatum().toString());
-        drawRect(g, getLeftScanRect());
-        drawString(g, getLeftScanRect(), leftScanString);
+    }
+    /**
+     * The Rank 1 slice Dataset
+     */
+    QDataSet qds;
 
-     }
-     
-     void setupRects(Graphics g){
-         setInSingleMode();
-         colMin = getColumn().getDMinimum();
-         colMax = getColumn().getDMaximum();
-         
-         
-         rowMin = getRow().getDMinimum();
-         rowMax = getRow().getDMaximum();
-         
-         height = rowMax - rowMin;
-         width = colMax - colMin;
-         
-         
-         setLeftDatumWidth((int) (spacingFactor * getStringWidth(g, getLeftDatum().toString())));
-         
-         if(!inSingleMode){
-             setRightDatumWidth((int) (spacingFactor * getStringWidth(g, getRightDatum().toString())));
-         }
-         
-         setAllRects();
-         
-     }
-     
-     private void setAllRects(){
-         setRightScanRect();
-         setAddRightDatumBtnRect();
-         setRightDatumRect();
-         setDatumSeparatorRect();
-         setLeftDatumRect();
-         setLeftScanRect();
-     }
-     
-     
-     public int getStringWidth(Graphics g, String s){
-         return g.getFontMetrics().stringWidth(s);
-     }
-     
-     private void drawRect(Graphics g, Rectangle r){
-         g.drawRect(r.x, r.y, r.width, r.height);
-     }
-     private void drawString(Graphics g, Rectangle r, String s){
-         g.drawString(s, r.x + (int)(0.25 * r.width), r.y + r.height / 2);
-     }
-     
-     private MouseAdapter getMouseAdapter() { 
-         return new MouseAdapter() {
-             
-             @Override
-             public void mouseClicked(MouseEvent e) {
-                
-             }
- 
-             @Override
-             public void mousePressed(MouseEvent e) { 
-                 
-             }
-             
-             @Override
-             public void mouseDragged(MouseEvent e) {
-                
-                 
-             }
-             
-             @Override
-             public void mouseReleased(MouseEvent e) {
-                 
-             }
-             
-             @Override
-             public void mouseEntered(MouseEvent e){
-                
-             }
-             
-             @Override
-             public void mouseExited(MouseEvent e) {
-             
-                 
-             }
-             @Override
-             public void mouseMoved(MouseEvent e) {
-             
-             }
-             
-             @Override
-             public void mouseWheelMoved(MouseWheelEvent e){
-             }
- 
-         }; 
-     }
- }
+    DatumRect lDatumRect;
+    DatumRect rDatumRect;
+    TextRect addRDatum = new TextRect("+", new Rectangle());
+
+    int scanWidth = 100;
+    TextRect rScan = new TextRect("scan>>", new Rectangle());
+    TextRect lScan = new TextRect("<<scan", new Rectangle());
+
+    public DasSliceController(QDataSet qds) {
+        if (qds.rank() != 1) {
+            throw new IllegalArgumentException("Dataset is not rank 1."
+                    + "Slice the data in the dimension you want "
+                    + "before calling DasSliceController().");
+        }
+        this.qds = qds;
+        lDatumRect = new DatumRect(Datum.create(qds.value(0), (Units) qds.property(QDataSet.UNITS)), new Rectangle());
+        rDatumRect = new DatumRect(Datum.create(qds.value(0), (Units) qds.property(QDataSet.UNITS)), new Rectangle());
+
+        MouseAdapter ma = getMouseAdapter();
+        addMouseMotionListener(ma);
+        addMouseListener(ma);
+
+    }
+
+    private void layoutRects(Graphics g) {
+        int colMin = getColumn().getDMinimum();
+        int colMax = getColumn().getDMaximum();
+        int rowMin = getRow().getDMinimum();
+        int rowMax = getRow().getDMaximum();
+        int width = colMax - colMin;
+        int height = rowMax - rowMin;
+
+        rScan.rect.setBounds(colMax - scanWidth, colMin, scanWidth, height);
+
+        if (lDatumRect.datum.equals(rDatumRect.datum)) {
+
+        }
+    }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        layoutRects(g);
+    }
+
+    private MouseAdapter getMouseAdapter() {
+        return new MouseAdapter() {
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseDragged(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseMoved(MouseEvent e) {
+
+            }
+            @Override
+            public void mouseWheelMoved(MouseWheelEvent e){
+            
+            }
+
+        };
+    }
+}
 // 
-//     /** The Rank 1 slice Dataset */
-//     QDataSet qds;
+
 //    
 //     /** DatumRange containing the valid max and min of the QDataSet */
 //     private DatumRange validDatumRange;   
@@ -627,11 +394,7 @@ import org.das2.datum.DatumRange;
 //         
 //         super();
 //         this.qds = qds;
-//         if(qds.rank() != 1){
-//             throw new IllegalArgumentException("Dataset is not rank 1." +
-//                     "Slice the data in the dimension you want "+ 
-//                     "before calling DasSliceController().");
-//         }
+
 //         
 //         if(!DataSetUtil.isMonotonic(qds)){
 //             throw new IllegalArgumentException("Dataset is not monotonic.");
