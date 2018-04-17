@@ -6,8 +6,10 @@
 package test.graph;
 
 import java.awt.BorderLayout;
+import java.text.ParseException;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import org.das2.datum.DatumRange;
 import org.das2.datum.Units;
 import org.das2.graph.DasCanvas;
 import org.das2.graph.DasColumn;
@@ -45,7 +47,7 @@ public class DasSliceControllerDemo {
         return frame;
     }
     
-    public DasSliceControllerDemo(){
+    public DasSliceControllerDemo() throws ParseException{
         int width = 1000;
         int height = 100;
         
@@ -55,17 +57,27 @@ public class DasSliceControllerDemo {
         
         getContentPane().add(canvas, BorderLayout.CENTER );
         
-        QDataSet qds = Ops.findgen(100);
-        Ops.putProperty(qds, QDataSet.UNITS, Units.seconds);
+        QDataSet qds = Ops.timegen("2009-08-08T11:22:12.123", "0.2 sec", 1000);
+//        Ops.putProperty(qds, QDataSet.UNITS, Units.seconds);
 
         sliceCont = new DasSliceController(qds);
         //DatumRange dr = new DatumRange("100 to 300 MeV");
         
+//       sliceCont = new DasSliceController(
+//       new DatumRange(Datum.create(1.0, Units.MeV), Datum.create(1.0, Units.MeV)), 0.0);
        
 //       sliceCont = new DasSliceController(new DatumRange(Datum.create(1.0, Units.MeV), Datum.create(1.0, Units.MeV)), 0.0);
        
 //       DasRow row = new DasRow(canvas, 0.1, 0.9);
 //       DasColumn col = new DasColumn(canvas, 0.1, 0.9);
+
+
+//    DatumRect lDatumRect;
+//    DatumRect rDatumRect;
+//    TextRect addRDatum = new TextRect("+", new Rectangle());
+//    TextRect toTextRect = new TextRect("to", new Rectangle());
+//    TextRect rScan = new TextRect("scan>>", new Rectangle());
+//    TextRect lScan = new TextRect("<<scan", new Rectangle());
        
        DasRow row = new DasRow(canvas, 0, 1);
        DasColumn col = new DasColumn(canvas, 0, 1);
@@ -93,7 +105,7 @@ public class DasSliceControllerDemo {
 
     
      
-    public static void main( String[] args ) {
+    public static void main( String[] args ) throws ParseException {
         new DasSliceControllerDemo().showFrame();
     }
 }
