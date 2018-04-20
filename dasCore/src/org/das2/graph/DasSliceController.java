@@ -1,8 +1,4 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package org.das2.graph;
 
 import java.awt.Color;
@@ -13,13 +9,11 @@ import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
-import java.text.ParseException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.datum.Datum;
 import org.das2.datum.Units;
 import org.das2.qds.QDataSet;
-import org.das2.qds.ops.Ops;
 import org.das2.util.GrannyTextRenderer;
 
 /**
@@ -103,6 +97,9 @@ import org.das2.util.GrannyTextRenderer;
         }
     }
     
+    public boolean isIndexed(){return true;}
+    public void setIndexed(boolean b){}
+    
     /**
      * The Rank 1 slice Dataset
      */
@@ -150,6 +147,7 @@ import org.das2.util.GrannyTextRenderer;
         rDatumRect.cursor = eResizeCursor;
         MouseAdapter ma = getMouseAdapter();
         addMouseMotionListener(ma);
+        addMouseWheelListener(ma);
         addMouseListener(ma);
         setRecAry();
 
@@ -157,6 +155,7 @@ import org.das2.util.GrannyTextRenderer;
 
     @Override
     protected void paintComponent(Graphics g) {
+        g.setFont(g.getFont().deriveFont(g.getFont().getSize() * 2.5f));
         if(changeLayout){
             setRecAry();
             setLayoutParams();
@@ -246,7 +245,6 @@ import org.das2.util.GrannyTextRenderer;
             g.fillRect(mouseRect.rect.x, mouseRect.rect.y, mouseRect.rect.width, mouseRect.rect.height);
             g.setColor(Color.black);
         }
-        
     }
 
     private void drawRect(Graphics g, Rectangle r){
@@ -309,9 +307,8 @@ import org.das2.util.GrannyTextRenderer;
             }
             @Override
             public void mouseWheelMoved(MouseWheelEvent e){
-            
+                wheelRotated(e.getWheelRotation());
             }
-
         };
     }
     boolean isDragging;
@@ -322,6 +319,7 @@ import org.das2.util.GrannyTextRenderer;
         for(TextRect tr: recAry){
             if(tr != null && tr.rect.contains(x, y)){
                 trBuf = tr;
+                break;
             }
         }
         if(mouseRect != trBuf && mouseRect != null){
@@ -427,7 +425,22 @@ import org.das2.util.GrannyTextRenderer;
         }
     }
     
-   
+    private void wheelRotated(int amt){
+        if(mouseRect == lDatumRect || mouseRect == toTextRect || mouseRect == rDatumRect){
+            if(lDatumRect.getIndex() == rDatumRect.getIndex()){
+                rDatumRect.setIndex(rDatumRect.getIndex() + amt);
+                lDatumRect.setIndex(lDatumRect.getIndex() + amt);
+                repaint();
+            }else if(lDatumRect.getIndex() - amt < rDatumRect.getIndex() &&
+                     rDatumRect.getIndex() + amt > lDatumRect.getIndex()){
+
+                rDatumRect.setIndex(rDatumRect.getIndex() + amt);
+                lDatumRect.setIndex(lDatumRect.getIndex() - amt);
+                repaint();
+                
+            }
+        }
+    }
 }
 // 
 
