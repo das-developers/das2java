@@ -1327,7 +1327,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
      * returns the position of the last mouse press.  This is a hack so that
      * the mouse position can be obtained to get the context of the press.
      * The result point is in the parent's coordinate system.
-     * @return the position of the mouse press.
+     * @return the position of the mouse press, or null if a press has not been received.
      * @see #getMousePressPositionOnCanvas() 
      */
     public Point getMousePressPosition() {
@@ -1335,15 +1335,18 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
     }
     
     /**
-     * return the position of the last mouse press, in the canvas coordinate 
-     * frame.
-     * @return the position of the mouse press in the canvas coordinate frame.
+     * return the position of the last mouse press, in the canvas coordinate frame.
+     * @return the position of the mouse press in the canvas coordinate frame, or null if a press has not been received.
      * @see #getMousePressPosition() 
      */
     public Point getMousePressPositionOnCanvas() {
-        Point r= this.pressPosition.getLocation(); // get a copy
-        r.translate( this.parent.getX(), this.parent.getY() );
-        return r;
+        if ( this.pressPosition==null ) {
+            return null;
+        } else {
+            Point r= this.pressPosition.getLocation(); // get a copy
+            r.translate( this.parent.getX(), this.parent.getY() );
+            return r;
+        }
     }
 
     private void performMove(MouseEvent e) {
