@@ -1348,6 +1348,21 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
             return r;
         }
     }
+    
+    /**
+     * set the mouse press position, so that it is a bean property and one
+     * DasMouseInputAdapter can delegate to another.
+     * @param p 
+     */
+    public void setMousePressPositionOnCanvas( Point p ) {
+        if ( p!=null ) {
+            Point r= p.getLocation();
+            r.translate( -this.parent.getX(), -this.parent.getY() );            
+            this.pressPosition= r;
+        } else {
+            this.pressPosition= null;
+        }
+    }
 
     private void performMove(MouseEvent e) {
         Point moveEnd = e.getPoint();
