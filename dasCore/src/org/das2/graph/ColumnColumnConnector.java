@@ -22,16 +22,16 @@ import org.das2.datum.Units;
  * draws lines connecting two DasPlots, one on top of the other, typically used
  * to show a zoom in above of a context below.
  */
-public class ColumnColumnConnector extends DasCanvasComponent {
+public final class ColumnColumnConnector extends DasCanvasComponent {
     
     public static final String PROP_FILL_COLOR = "fillColor";
     public static final String PROP_FILL = "fill";
     public static final String PROP_BOTTOM_CURTAIN = "bottomCurtain";
     public static final String PROP_CURTAIN_OPACITY_PERCENT = "curtainOpacityPercent";
         
-    private DasRow topRow;
+    private final DasRow topRow;
     
-    private DasPlot topPlot;
+    private final DasPlot topPlot;
     private final DasPlot bottomPlot;
 
     /**
@@ -39,7 +39,7 @@ public class ColumnColumnConnector extends DasCanvasComponent {
      */
     private boolean bottomCurtainDrawn= true;
 
-    public ColumnColumnConnector( DasCanvas parent, DasPlot topPlot, DasRow topRow, DasPlot bottomPlot ) {
+    public ColumnColumnConnector( final DasCanvas parent, DasPlot topPlot, DasRow topRow, final DasPlot bottomPlot ) {
         super( );
         putClientProperty( JLayeredPane.LAYER_PROPERTY, DasCanvas.AXIS_LAYER );
         this.topPlot= topPlot;
@@ -71,20 +71,19 @@ public class ColumnColumnConnector extends DasCanvasComponent {
 
             addMouseListener(new MouseInputAdapter() {
 
-            @Override
-            public void mousePressed(MouseEvent e) {
-                //if (e.getButton() == MouseEvent.BUTTON3) {
-
-                DasPlot bot= ColumnColumnConnector.this.bottomPlot;
-                int ir = bot.findRendererAt(getX() + e.getX(), getY() + e.getY());
-                Renderer r = null;
-                if ( ir>-1 ) {
-                    r= (Renderer) bot.getRenderer(ir);
+                @Override
+                public void mousePressed(MouseEvent e) {
+                    Point p= new Point( getX() + e.getX(), getY() + e.getY() );
+                    bottomPlot.getDasMouseInputAdapter().setMousePressPositionOnCanvas(p);
+                    DasPlot bot= ColumnColumnConnector.this.bottomPlot;
+                    int ir = bot.findRendererAt(getX() + e.getX(), getY() + e.getY());
+                    Renderer r = null;
+                    if ( ir>-1 ) {
+                        r= (Renderer) bot.getRenderer(ir);
+                    }
+                    bot.setFocusRenderer(r);
                 }
-                bot.setFocusRenderer(r);
-            //}
-            }
-        });
+            });
 
         }
     }
@@ -308,7 +307,7 @@ public class ColumnColumnConnector extends DasCanvasComponent {
         g.draw( gp );
         
         if ( bottomCurtain && topPlot.getYAxis().getUnits().isConvertibleTo( bottomPlot.getYAxis().getUnits() ) ) {
-            
+        
             DatumRange drtop= topPlot.getYAxis().getDatumRange();
             DatumRange yaxisRange= bottomPlot.getYAxis().getDatumRange();
 
@@ -355,6 +354,7 @@ public class ColumnColumnConnector extends DasCanvasComponent {
 
     private PropertyChangeListener createPropertyChangeListener() {
         return new PropertyChangeListener() {
+            @Override
             public void propertyChange(java.beans.PropertyChangeEvent propertyChangeEvent) {
                 bottomCurtainDrawn= topPlot.getXAxis().getUnits().isConvertibleTo( bottomPlot.getXAxis().getUnits() );
                 markDirty();
@@ -371,7 +371,7 @@ public class ColumnColumnConnector extends DasCanvasComponent {
     /**
      * Utility field used by bound properties.
      */
-    private java.beans.PropertyChangeSupport propertyChangeSupport =  new java.beans.PropertyChangeSupport(this);
+    private final java.beans.PropertyChangeSupport propertyChangeSupport =  new java.beans.PropertyChangeSupport(this);
     
     /**
      * Adds a PropertyChangeListener to the listener list.
