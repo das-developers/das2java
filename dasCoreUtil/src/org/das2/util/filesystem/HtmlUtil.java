@@ -186,7 +186,8 @@ public class HtmlUtil {
      * Note this does not explicitly close the connections
      * to the server, and Java may not know to release the resources.  
      * TODO: fix this by wrapping the input stream and closing the connection
-     * when the stream is closed.
+     * when the stream is closed.  This was done in Autoplot's DataSetURI.downloadResourceAsTempFile
+     * @see org.autoplot.datasource.DataSetURI#downloadResourceAsTempFile
      * 
      * @param url
      * @return input stream
