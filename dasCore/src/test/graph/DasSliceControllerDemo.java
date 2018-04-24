@@ -9,6 +9,7 @@ import java.awt.BorderLayout;
 import java.text.ParseException;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
 import org.das2.datum.Units;
 import org.das2.graph.DasCanvas;
@@ -60,11 +61,10 @@ public class DasSliceControllerDemo {
         QDataSet qds = Ops.timegen("2009-08-08T11:22:12.123", "0.2 sec", 1000);
 //        Ops.putProperty(qds, QDataSet.UNITS, Units.seconds);
 
-        sliceCont = new DasSliceController(qds);
+//        sliceCont = new DasSliceController(qds);
         //DatumRange dr = new DatumRange("100 to 300 MeV");
         
-//       sliceCont = new DasSliceController(
-//       new DatumRange(Datum.create(1.0, Units.MeV), Datum.create(1.0, Units.MeV)), 0.0);
+       sliceCont = new DasSliceController(Datum.create(1.0, Units.MeV), Datum.create(1.0, Units.MeV));
        
 //       sliceCont = new DasSliceController(new DatumRange(Datum.create(1.0, Units.MeV), Datum.create(1.0, Units.MeV)), 0.0);
        

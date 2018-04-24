@@ -12,6 +12,7 @@ import java.awt.event.MouseWheelEvent;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.datum.Datum;
+import org.das2.datum.DatumRange;
 import org.das2.datum.Units;
 import org.das2.qds.QDataSet;
 import org.das2.util.GrannyTextRenderer;
@@ -23,15 +24,30 @@ import org.das2.util.GrannyTextRenderer;
 
  public class DasSliceController extends DasCanvasComponent {
 
-    Cursor eResizeCursor = new Cursor(Cursor.E_RESIZE_CURSOR);
-    Cursor wResizeCursor = new Cursor(Cursor.W_RESIZE_CURSOR);
-    Cursor handCursor = new Cursor(Cursor.HAND_CURSOR);
-    Cursor defaultCursor = new Cursor(Cursor.DEFAULT_CURSOR);
-    Cursor moveCursor = new Cursor(Cursor.MOVE_CURSOR);
+    private boolean inDebugMode = true;
+    
+    private Datum lDatum;
 
+    public Datum getlDatum() {
+        return lDatum;
+    }
+
+    public void setlDatum(Datum lDatum) {
+        this.lDatum = lDatum;
+    }
+    
+    private Datum rDatum;
+
+    public Datum getrDatum() {
+        return rDatum;
+    }
+
+    public void setrDatum(Datum rDatum) {
+        this.rDatum = rDatum;
+    }
+    
     class TextRect {
 
-        
         String text;
         
         double lRatio;
@@ -41,7 +57,7 @@ import org.das2.util.GrannyTextRenderer;
             return (int) ((rRatio - lRatio) * width);
         }
         
-        Cursor cursor = defaultCursor;
+        Cursor cursor = new Cursor(Cursor.DEFAULT_CURSOR);
         
         Rectangle rect;
         
@@ -52,132 +68,63 @@ import org.das2.util.GrannyTextRenderer;
         public TextRect(String text, Rectangle rect) {
             this.text = text;
             this.rect = rect;
+        }
+        
+        public TextRect(String text, Rectangle rect, Cursor c) {
+            this(text, rect);
+            this.cursor = c;
+        }
+        
+        private void paint(GrannyTextRenderer gtr, Graphics g) throws Exception{
+        
+            gtr.setString(g, this.text);
+            int txtWidth = (int) Math.ceil(gtr.getWidth());
+            int sparePixels = this.getWidth() - txtWidth;
+            if(sparePixels < 0){
+                throw new Exception(" Rectangle is too small for text. ");
+            }
+            sparePixels = sparePixels / 2;
+            gtr.draw(g, this.rect.x + sparePixels , height / 2);
+            
+            
+            if(inDebugMode){
+                g.drawRect(this.rect.x, this.rect.y, this.rect.width, this.rect.height);
+                if(mouseRect == this){
+                    g.setColor(new Color(.5f, .5f, 0, .2f));
+                    g.fillRect(mouseRect.rect.x, mouseRect.rect.y, mouseRect.rect.width, mouseRect.rect.height);
+                    g.setColor(Color.black);
+                }
+            }
             
         }
-        
-    }
-
-    class DatumRect extends TextRect {
-
-        
-        QDataSet qds;
-        Datum datum;
-
-        private int index;
-        
-        public int getIndex(){ return this.index;}
-        
-        public void setIndex(int newIndex){
-            try {
-                setDatum(Datum.create(qds.value(newIndex), (Units) qds.property(QDataSet.UNITS)));
-                this.index = newIndex;
-                
-            } catch (Exception e) {
-                System.err.println("Figure out how to catch and fix exceptions.");
-            }
-        }
-//        int maxIndex;
-//        int minIndex;
-        
-        public void setDatum(Datum d) {
-            this.datum = d;
-            this.text = d.toString();
-//            repaint(this.rect);
-        }
-
-        public DatumRect(Datum d, Rectangle r) {
-            super(d.toString(), r);
-            this.datum = d;
-        }
-        
-        public DatumRect(QDataSet qds, int index, Rectangle r){
-            this(Datum.create(qds.value(index), (Units) qds.property(QDataSet.UNITS)), r );
-            this.qds = qds;
-            this.index = index;
-        }
     }
     
-    public boolean isIndexed(){return true;}
-    public void setIndexed(boolean b){}
+    private TextRect lDatumRect;
+    private TextRect rDatumRect;
+    private TextRect addRDatum  = new TextRect("+", new Rectangle());
+    private TextRect toTextRect = new TextRect("to", new Rectangle());
+    private TextRect rScan = new TextRect("scan>>", new Rectangle());
+    private TextRect lScan = new TextRect("<<scan", new Rectangle());
     
-    /**
-     * The Rank 1 slice Dataset
-     */
-    QDataSet qds;
-
-    DatumRect lDatumRect;
-    DatumRect rDatumRect;
-    TextRect addRDatum = new TextRect("+", new Rectangle());
-    TextRect toTextRect = new TextRect("to", new Rectangle());
-    TextRect rScan = new TextRect("scan>>", new Rectangle());
-    TextRect lScan = new TextRect("<<scan", new Rectangle());
-    
-    TextRect[] recAry = new TextRect[5];
-    
-    public void setRecAry(){
-        
-        if(lDatumRect.datum.equals(rDatumRect.datum)){
-            recAry[0] = lScan;
-            recAry[1] = lDatumRect;
-            recAry[2] = addRDatum;
-            recAry[3] = rScan;
-            recAry[4] = null;
-        } else{
-            recAry[0] = lScan;
-            recAry[1] = lDatumRect;
-            recAry[2] = toTextRect;
-            recAry[3] = rDatumRect;
-            recAry[4] = rScan;
-         }
-    }
-    
-    public DasSliceController(QDataSet qds) {
-        if (qds.rank() != 1) {
-            throw new IllegalArgumentException("Dataset is not rank 1."
-                    + "Slice the data in the dimension you want "
-                    + "before calling DasSliceController().");
-        }
-        this.qds = qds;
-        lDatumRect = new DatumRect(qds, 0, new Rectangle());
-        rDatumRect = new DatumRect(qds, 0, new Rectangle());
-//        lDatumRect = new DatumRect(Datum.create(qds.value(0), (Units) qds.property(QDataSet.UNITS)), new Rectangle());
-//        rDatumRect = new DatumRect(Datum.create(qds.value(1), (Units) qds.property(QDataSet.UNITS)), new Rectangle());
-
-        lDatumRect.cursor = wResizeCursor;
-        rDatumRect.cursor = eResizeCursor;
+    public DasSliceController(Datum lDatum, Datum rDatum){
+        this.lDatum = lDatum;
+        this.rDatum = rDatum;
+        lDatumRect = new TextRect(lDatum.toString(), new Rectangle(), new Cursor(Cursor.W_RESIZE_CURSOR));
+        rDatumRect = new TextRect(rDatum.toString(), new Rectangle(), new Cursor(Cursor.E_RESIZE_CURSOR));
         MouseAdapter ma = getMouseAdapter();
         addMouseMotionListener(ma);
         addMouseWheelListener(ma);
         addMouseListener(ma);
-        setRecAry();
-
-    }
-
-    @Override
-    protected void paintComponent(Graphics g) {
-        g.setFont(g.getFont().deriveFont(g.getFont().getSize() * 2.5f));
-        if(changeLayout){
-            setRecAry();
-            setLayoutParams();
-            setLayoutRatios();
-        }
-        
-        try {
-            paintLayout(g);
-
-        } catch (Exception ex) {
-            Logger.getLogger(DasSliceController.class.getName()).log(Level.SEVERE, null, ex);
-        }
     }
     
-    int colMin;
-    int colMax;
-    int rowMin;
-    int rowMax;
-    int width ;
-    int height;
+    private int colMin;
+    private int colMax;
+    private int rowMin;
+    private int rowMax;
+    private int width ;
+    private int height;
     
-    private void setLayoutParams() {
+    private void setSizingParams() {
         colMin = getColumn().getDMinimum();
         colMax = getColumn().getDMaximum();
         rowMin = getRow().getDMinimum();
@@ -187,7 +134,7 @@ import org.das2.util.GrannyTextRenderer;
     }
     
     private void setLayoutRatios(){
-        if(lDatumRect.datum.equals(rDatumRect.datum)){
+        if(lDatum.equals(rDatum)){
             lScan.lRatio = 0;
             lScan.rRatio = 0.15;
             lScan.setRect();
@@ -220,66 +167,89 @@ import org.das2.util.GrannyTextRenderer;
         }
     }
     
-    private void paintLayout(Graphics g) throws Exception{
-        GrannyTextRenderer gtr = new GrannyTextRenderer();
-        for(TextRect tr : recAry){
-            if(tr == null){continue;}
-            paintRectAndText(gtr, g, tr);
-        }
-
-    }
+    private TextRect[] layoutAry = new TextRect[5];
     
-    private void paintRectAndText(GrannyTextRenderer gtr, Graphics g, TextRect tr) throws Exception{
+    private void setlayoutAry(){
         
-        gtr.setString(g, tr.text);
-        int txtWidth = (int) Math.ceil(gtr.getWidth());
-        int sparePixels = tr.getWidth() - txtWidth;
-        if(sparePixels < 0){
-            throw new Exception(" Rectangle is too small for text. ");
-        }
-        sparePixels = sparePixels / 2;
-        gtr.draw(g, tr.rect.x + sparePixels , height / 2);
-        drawRect(g, tr.rect);
-        if(mouseRect != null){
-            g.setColor(new Color(.5f, .5f, 0, .2f));
-            g.fillRect(mouseRect.rect.x, mouseRect.rect.y, mouseRect.rect.width, mouseRect.rect.height);
-            g.setColor(Color.black);
-        }
-    }
-
-    private void drawRect(Graphics g, Rectangle r){
-        g.drawRect(r.x, r.y, r.width, r.height);
+        if(lDatum.equals(rDatum)){
+            layoutAry[0] = lScan;
+            layoutAry[1] = lDatumRect;
+            layoutAry[2] = addRDatum;
+            layoutAry[3] = rScan;
+            layoutAry[4] = null;
+        } else{
+            layoutAry[0] = lScan;
+            layoutAry[1] = lDatumRect;
+            layoutAry[2] = toTextRect;
+            layoutAry[3] = rDatumRect;
+            layoutAry[4] = rScan;
+         }
     }
     
+    @Override
+    protected void paintComponent(Graphics g) {
+        
+        float fontMultiplier  = 2f;
+        g.setFont(g.getFont().deriveFont(g.getFont().getSize() * fontMultiplier));
+        
+        setSizingParams();
+        setLayoutRatios();
+        setlayoutAry();
+        
+        GrannyTextRenderer gtr = new GrannyTextRenderer();
+        for(TextRect tr : layoutAry){
+            if(tr == null){continue;}
+            try {
+                tr.paint(gtr, g);
+            } catch (Exception ex) {
+                Logger.getLogger(DasSliceController.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+ 
+    }
+    
+    
+    private TextRect mouseRect;
+    private void setMouseRect(int x, int y){
+        TextRect trBuf = null;
+        for(TextRect tr: layoutAry){
+            if(tr != null && tr.rect.contains(x, y)){
+                trBuf = tr;
+                break;
+            }
+        }
+        if(mouseRect != trBuf && mouseRect != null){
+            repaint(mouseRect.rect);
+        }
+        mouseRect = trBuf;
+        if(mouseRect != null){
+            getCanvas().getGlassPane().setCursor(mouseRect.cursor);
+            repaint(mouseRect.rect);
+        }
+    }
+    private boolean isDragging;
     private MouseAdapter getMouseAdapter() {
         return new MouseAdapter() {
 
             @Override
             public void mouseClicked(MouseEvent e) {
-                
-                mouseClick();
                 setMouseRect(e.getX(), e.getY());
-                repaint(mouseRect.rect);
-
-                
+                repaint(mouseRect.rect); 
             }
 
             @Override
             public void mousePressed(MouseEvent e) {
                 isDragging = true;
-                setMousePressedParams(e.getPoint());
-      
             }
 
             @Override
             public void mouseDragged(MouseEvent e) {
-                updateValuesViaDrag(e.getPoint());
+//                updateValuesViaDrag(e.getPoint());
             }
 
             @Override
             public void mouseReleased(MouseEvent e) {
                 isDragging = false;
-                changeLayout = true;
                 repaint(mouseRect.rect);
                 setMouseRect(e.getX(), e.getY());
                 repaint();
@@ -307,140 +277,144 @@ import org.das2.util.GrannyTextRenderer;
             }
             @Override
             public void mouseWheelMoved(MouseWheelEvent e){
-                wheelRotated(e.getWheelRotation());
+//                wheelRotated(e.getWheelRotation());
             }
         };
     }
-    boolean isDragging;
-    boolean changeLayout = true;
-    TextRect mouseRect;
-    public void setMouseRect(int x, int y){
-        TextRect trBuf = null;
-        for(TextRect tr: recAry){
-            if(tr != null && tr.rect.contains(x, y)){
-                trBuf = tr;
-                break;
-            }
-        }
-        if(mouseRect != trBuf && mouseRect != null){
-            repaint(mouseRect.rect);
-        }
-        mouseRect = trBuf;
-        if(mouseRect != null){
-            getCanvas().getGlassPane().setCursor(mouseRect.cursor);
-            repaint(mouseRect.rect);
-        }
-    }
     
-    private void mouseClick(){
-        
-        if(mouseRect == addRDatum){
-            rDatumRect.setIndex(rDatumRect.getIndex() +2);
-            repaint();
-        }else if(mouseRect == lScan){
-            if(lDatumRect.getIndex() == rDatumRect.getIndex()){
-                if(lDatumRect.getIndex() > 0){
-                    rDatumRect.setIndex(rDatumRect.getIndex() - 1);
-                    lDatumRect.setIndex(lDatumRect.getIndex() - 1);
-                }
-                
-            }else{
-                int width = rDatumRect.getIndex() - lDatumRect.getIndex();
-                int lToZero = lDatumRect.getIndex();
-                if(lToZero < width){
-                    rDatumRect.setIndex(rDatumRect.getIndex() - lToZero);
-                    lDatumRect.setIndex(0);
-                }else{
-                    rDatumRect.setIndex(rDatumRect.getIndex() - width);
-                    lDatumRect.setIndex(lDatumRect.getIndex() - width);
-                }
-            }
-        }else if(mouseRect == rScan){
-            if(lDatumRect.getIndex() == rDatumRect.getIndex()){
-                if(rDatumRect.getIndex() < qds.length() - 1){
-                    rDatumRect.setIndex(rDatumRect.getIndex() + 1);
-                    lDatumRect.setIndex(lDatumRect.getIndex() + 1);
-                }
-                
-            }else{
-                int width = rDatumRect.getIndex() - lDatumRect.getIndex();
-                int rToMax = qds.length() - 1 - rDatumRect.getIndex();
-                if(width > rToMax){
-                    rDatumRect.setIndex(qds.length( ) - 1);
-                    lDatumRect.setIndex(lDatumRect.getIndex() + rToMax);
-                }else{
-                    rDatumRect.setIndex(rDatumRect.getIndex() + width);
-                    lDatumRect.setIndex(lDatumRect.getIndex() + width);
-                }
-            }
-        }
-    }
-    Point mousePressedPoint;
-    int pressIndex;
-    TextRect mousePressedRect;
-    private void setMousePressedParams(Point p){
-        isDragging = true;
-        mousePressedPoint = p;
-        mousePressedRect = null;
-        for(TextRect tr: recAry){
-            if(tr != null && tr.rect.contains(p)){
-                mousePressedRect = tr;
-                break;
-            }
-        }
-        if(mousePressedRect instanceof DatumRect){
-            pressIndex = ((DatumRect) mousePressedRect).getIndex();
-        }
-    }
     
-    private void updateValuesViaDrag(Point p){
-        int dragX = p.x - mousePressedPoint.x;
-        int dragY = p.y - mousePressedPoint.y;
-        int newIndex = pressIndex + dragX / 100;
-        if(mousePressedRect == lDatumRect){
-            if(lDatumRect.index == rDatumRect.index && changeLayout){
-                rDatumRect.setIndex(newIndex);
-                lDatumRect.setIndex(newIndex);
+//    public DasSliceController(QDataSet qds) {
+//        if (qds.rank() != 1) {
+//            throw new IllegalArgumentException("Dataset is not rank 1."
+//                    + "Slice the data in the dimension you want "
+//                    + "before calling DasSliceController().");
+//        }
+//        this.qds = qds;
+//        lDatumRect = new DatumRect(qds, 0, new Rectangle());
+//        rDatumRect = new DatumRect(qds, 0, new Rectangle());
+////        lDatumRect = new DatumRect(Datum.create(qds.value(0), (Units) qds.property(QDataSet.UNITS)), new Rectangle());
+////        rDatumRect = new DatumRect(Datum.create(qds.value(1), (Units) qds.property(QDataSet.UNITS)), new Rectangle());
+//
+//        lDatumRect.cursor = wResizeCursor;
+//        rDatumRect.cursor = eResizeCursor;
+//        MouseAdapter ma = getMouseAdapter();
+//        addMouseMotionListener(ma);
+//        addMouseWheelListener(ma);
+//        addMouseListener(ma);
+//        setRecAry();
+//
+//    }
+    
+    
+//    private void mouseClick(){
+//        
+//        if(mouseRect == addRDatum){
+//            rDatumRect.setIndex(rDatumRect.getIndex() +2);
+//            repaint();
+//        }else if(mouseRect == lScan){
+//            if(lDatumRect.getIndex() == rDatumRect.getIndex()){
+//                if(lDatumRect.getIndex() > 0){
+//                    rDatumRect.setIndex(rDatumRect.getIndex() - 1);
+//                    lDatumRect.setIndex(lDatumRect.getIndex() - 1);
+//                }
+//                
+//            }else{
+//                int width = rDatumRect.getIndex() - lDatumRect.getIndex();
+//                int lToZero = lDatumRect.getIndex();
+//                if(lToZero < width){
+//                    rDatumRect.setIndex(rDatumRect.getIndex() - lToZero);
+//                    lDatumRect.setIndex(0);
+//                }else{
+//                    rDatumRect.setIndex(rDatumRect.getIndex() - width);
+//                    lDatumRect.setIndex(lDatumRect.getIndex() - width);
+//                }
+//            }
+//        }else if(mouseRect == rScan){
+//            if(lDatumRect.getIndex() == rDatumRect.getIndex()){
+//                if(rDatumRect.getIndex() < qds.length() - 1){
+//                    rDatumRect.setIndex(rDatumRect.getIndex() + 1);
+//                    lDatumRect.setIndex(lDatumRect.getIndex() + 1);
+//                }
+//                
+//            }else{
+//                int width = rDatumRect.getIndex() - lDatumRect.getIndex();
+//                int rToMax = qds.length() - 1 - rDatumRect.getIndex();
+//                if(width > rToMax){
+//                    rDatumRect.setIndex(qds.length( ) - 1);
+//                    lDatumRect.setIndex(lDatumRect.getIndex() + rToMax);
+//                }else{
+//                    rDatumRect.setIndex(rDatumRect.getIndex() + width);
+//                    lDatumRect.setIndex(lDatumRect.getIndex() + width);
+//                }
+//            }
+//        }
+//    }
+//    Point mousePressedPoint;
+//    int pressIndex;
+//    TextRect mousePressedRect;
+//    private void setMousePressedParams(Point p){
+//        isDragging = true;
+//        mousePressedPoint = p;
+//        mousePressedRect = null;
+//        for(TextRect tr: layoutAry){
+//            if(tr != null && tr.rect.contains(p)){
+//                mousePressedRect = tr;
+//                break;
+//            }
+//        }
+//        if(mousePressedRect instanceof DatumRect){
+//            pressIndex = ((DatumRect) mousePressedRect).getIndex();
+//        }
+//    }
+//    
+//    private void updateValuesViaDrag(Point p){
+//        int dragX = p.x - mousePressedPoint.x;
+//        int dragY = p.y - mousePressedPoint.y;
+//        int newIndex = pressIndex + dragX / 100;
+//        if(mousePressedRect == lDatumRect){
+//            if(lDatumRect.index == rDatumRect.index && changeLayout){
+//                rDatumRect.setIndex(newIndex);
+//                lDatumRect.setIndex(newIndex);
+////                repaint();
+//            } else{
+//                if(newIndex >= rDatumRect.getIndex()){
+//                    changeLayout = false;
+//                    lDatumRect.setIndex(rDatumRect.getIndex());
+////                    repaint();
+//                }else if(newIndex <= 0){
+//                    lDatumRect.setIndex(0);
+//                } else{
+//                    lDatumRect.setIndex(newIndex);
+//                }
+//            }
+//        } else if(mousePressedRect == rDatumRect){
+//           if(newIndex <= lDatumRect.getIndex()){
+//               changeLayout = false;
+//               rDatumRect.setIndex(lDatumRect.getIndex());
+//           }else if(newIndex >= qds.length() - 1){
+//               rDatumRect.setIndex(qds.length() - 1);
+//           }else{
+//               rDatumRect.setIndex(newIndex);
+//           }
+//        }
+//    }
+//    
+//    private void wheelRotated(int amt){
+//        if(mouseRect == lDatumRect || mouseRect == toTextRect || mouseRect == rDatumRect){
+//            if(lDatumRect.getIndex() == rDatumRect.getIndex()){
+//                rDatumRect.setIndex(rDatumRect.getIndex() + amt);
+//                lDatumRect.setIndex(lDatumRect.getIndex() + amt);
 //                repaint();
-            } else{
-                if(newIndex >= rDatumRect.getIndex()){
-                    changeLayout = false;
-                    lDatumRect.setIndex(rDatumRect.getIndex());
-//                    repaint();
-                }else if(newIndex <= 0){
-                    lDatumRect.setIndex(0);
-                } else{
-                    lDatumRect.setIndex(newIndex);
-                }
-            }
-        } else if(mousePressedRect == rDatumRect){
-           if(newIndex <= lDatumRect.getIndex()){
-               changeLayout = false;
-               rDatumRect.setIndex(lDatumRect.getIndex());
-           }else if(newIndex >= qds.length() - 1){
-               rDatumRect.setIndex(qds.length() - 1);
-           }else{
-               rDatumRect.setIndex(newIndex);
-           }
-        }
-    }
-    
-    private void wheelRotated(int amt){
-        if(mouseRect == lDatumRect || mouseRect == toTextRect || mouseRect == rDatumRect){
-            if(lDatumRect.getIndex() == rDatumRect.getIndex()){
-                rDatumRect.setIndex(rDatumRect.getIndex() + amt);
-                lDatumRect.setIndex(lDatumRect.getIndex() + amt);
-                repaint();
-            }else if(lDatumRect.getIndex() - amt < rDatumRect.getIndex() &&
-                     rDatumRect.getIndex() + amt > lDatumRect.getIndex()){
-
-                rDatumRect.setIndex(rDatumRect.getIndex() + amt);
-                lDatumRect.setIndex(lDatumRect.getIndex() - amt);
-                repaint();
-                
-            }
-        }
-    }
+//            }else if(lDatumRect.getIndex() - amt < rDatumRect.getIndex() &&
+//                     rDatumRect.getIndex() + amt > lDatumRect.getIndex()){
+//
+//                rDatumRect.setIndex(rDatumRect.getIndex() + amt);
+//                lDatumRect.setIndex(lDatumRect.getIndex() - amt);
+//                repaint();
+//                
+//            }
+//        }
+//    }
 }
 // 
 
