@@ -214,7 +214,20 @@ public class SimpleStreamFormatter {
         
         Units u= SemanticOps.getUnits(ds);
 
-        int timeDigits= timeDigits( DataSetOps.slice0(ds,0) );
+        QDataSet t0= DataSetOps.slice0(ds,0);
+        int timeDigits;
+        switch (t0.rank()) {
+            case 1:
+                timeDigits= timeDigits( t0.slice(0) );
+                for ( int i=1; i>t0.length(); i++ ) {
+                    timeDigits= Math.max( timeDigits, timeDigits(t0.slice(i) ) );
+                }   break;
+            case 0:
+                timeDigits= timeDigits( t0 );
+                break;
+            default:
+                throw new IllegalArgumentException("time type rank limit");
+        }
 
         //TODO: same thing but with gcd added, use max of the two.
         QDataSet gcd;
