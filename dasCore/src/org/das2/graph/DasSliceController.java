@@ -25,27 +25,47 @@ import org.das2.util.GrannyTextRenderer;
  public class DasSliceController extends DasCanvasComponent {
 
     private boolean inDebugMode = false;
-    
+    //     public static final String PROP_CURRENTDATUMRANGE = "currentDatumRange";
+// 
+//     public DatumRange getCurrentDatumRange() {
+//         return currentDatumRange;
+//     }
+// 
+//     public void setCurrentDatumRange(DatumRange currentDatumRange) {
+//         DatumRange oldCurrentDatumRange = this.currentDatumRange;
+//         this.currentDatumRange = currentDatumRange;
+//         firePropertyChange(PROP_CURRENTDATUMRANGE, oldCurrentDatumRange, currentDatumRange);
+//     }
     private Datum lDatum;
-
+    public static final String PROP_LDATUM = "lDatum";
     public Datum getlDatum() {
         return lDatum;
     }
 
     public void setlDatum(Datum lDatum) {
+        Datum oldLDatum = this.lDatum;
+        if(oldLDatum.equals(lDatum)){
+            return;
+        }
         this.lDatum = lDatum;
         lDatumRect.text = this.lDatum.toString();
+        firePropertyChange(PROP_LDATUM, oldLDatum, lDatum);
     }
     
     private Datum rDatum;
-
+    public static final String PROP_RDATUM = "rDatum";
     public Datum getrDatum() {
         return rDatum;
     }
 
     public void setrDatum(Datum rDatum) {
+        Datum oldRDatum = this.rDatum;
+        if(oldRDatum.equals(rDatum)){
+            return;
+        }
         this.rDatum = rDatum;
         rDatumRect.text = this.rDatum.toString();
+        firePropertyChange(PROP_RDATUM, oldRDatum, rDatum);
     }
     
     class TextRect {
@@ -102,7 +122,6 @@ import org.das2.util.GrannyTextRenderer;
                     g.setColor(Color.black);
                 }
             }
-            
         }
     }
     
@@ -342,7 +361,6 @@ import org.das2.util.GrannyTextRenderer;
         System.err.println("ScanRight clicked");
         if(lDatum.equals(rDatum)){
             Datum singleScanDatum = Datum.create(1.0, lDatum.getUnits());
-            //Also increment rDatum so the layout doesn't change.
             setrDatum(rDatum.add(singleScanDatum));
             setlDatum(lDatum.add(singleScanDatum));
         } else{

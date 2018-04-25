@@ -6,6 +6,8 @@
 package test.graph;
 
 import java.awt.BorderLayout;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.text.ParseException;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -59,25 +61,9 @@ public class DasSliceControllerDemo {
         getContentPane().add(canvas, BorderLayout.CENTER );
         
         QDataSet qds = Ops.timegen("2009-08-08T11:22:12.123", "0.2 sec", 1000);
-//        Ops.putProperty(qds, QDataSet.UNITS, Units.seconds);
 
-//        sliceCont = new DasSliceController(qds);
-        //DatumRange dr = new DatumRange("100 to 300 MeV");
-        
        sliceCont = new DasSliceController(Datum.create(1.0, Units.MeV), Datum.create(1.0, Units.MeV));
-       
-//       sliceCont = new DasSliceController(new DatumRange(Datum.create(1.0, Units.MeV), Datum.create(1.0, Units.MeV)), 0.0);
-       
-//       DasRow row = new DasRow(canvas, 0.1, 0.9);
-//       DasColumn col = new DasColumn(canvas, 0.1, 0.9);
 
-
-//    DatumRect lDatumRect;
-//    DatumRect rDatumRect;
-//    TextRect addRDatum = new TextRect("+", new Rectangle());
-//    TextRect toTextRect = new TextRect("to", new Rectangle());
-//    TextRect rScan = new TextRect("scan>>", new Rectangle());
-//    TextRect lScan = new TextRect("<<scan", new Rectangle());
        
        DasRow row = new DasRow(canvas, 0, 1);
        DasColumn col = new DasColumn(canvas, 0, 1);
@@ -85,16 +71,18 @@ public class DasSliceControllerDemo {
        sliceCont.setRow(row);
        sliceCont.setColumn(col);
        
-//        PropertyChangeListener sliceRangeListener = new PropertyChangeListener() {
-//            @Override
-//            public void propertyChange(PropertyChangeEvent evt) {
-//                
-//                System.err.println("got property change event");
-//                System.err.println("Range = " + evt.getNewValue());
-//            }
-//        };
+        PropertyChangeListener sliceRangeListener = new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                
+                System.err.println("got property change event " + evt.getPropertyName() );
+                System.err.println("Value = " + evt.getNewValue());
+            }
+
+        };
         
-//        sliceCont.addPropertyChangeListener(DasSliceController.PROP_CURRENTDATUMRANGE, sliceRangeListener);
+        sliceCont.addPropertyChangeListener(DasSliceController.PROP_LDATUM, sliceRangeListener);
+        sliceCont.addPropertyChangeListener(DasSliceController.PROP_RDATUM, sliceRangeListener);
         canvas.add(sliceCont);
         
     }
