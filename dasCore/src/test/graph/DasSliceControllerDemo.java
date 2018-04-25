@@ -53,7 +53,7 @@ public class DasSliceControllerDemo {
         int height = 100;
         
         getContentPane().setLayout(new BorderLayout());
-
+ 
         DasCanvas canvas = new DasCanvas(width, height);
         
         getContentPane().add(canvas, BorderLayout.CENTER );

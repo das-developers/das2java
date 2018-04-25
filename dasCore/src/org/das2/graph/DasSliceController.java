@@ -34,6 +34,7 @@ import org.das2.util.GrannyTextRenderer;
 
     public void setlDatum(Datum lDatum) {
         this.lDatum = lDatum;
+        lDatumRect.text = this.lDatum.toString();
     }
     
     private Datum rDatum;
@@ -44,10 +45,10 @@ import org.das2.util.GrannyTextRenderer;
 
     public void setrDatum(Datum rDatum) {
         this.rDatum = rDatum;
+        lDatumRect.text = this.lDatum.toString();
     }
     
     class TextRect {
-
         String text;
         
         double lRatio;
@@ -64,12 +65,13 @@ import org.das2.util.GrannyTextRenderer;
         protected void setRect(){
             this.rect.setBounds((int) (lRatio * width), colMin, getWidth(), height);
         }
+        
+        boolean isShowing;
 
         public TextRect(String text, Rectangle rect) {
             this.text = text;
             this.rect = rect;
         }
-        
         public TextRect(String text, Rectangle rect, Cursor c) {
             this(text, rect);
             this.cursor = c;
@@ -228,23 +230,42 @@ import org.das2.util.GrannyTextRenderer;
         }
     }
     private boolean isDragging;
+    private Point pressedPoint;
+    private Datum lDatumUpdating;
+    private Datum rDatumUpdating;
     private MouseAdapter getMouseAdapter() {
         return new MouseAdapter() {
 
             @Override
             public void mouseClicked(MouseEvent e) {
                 setMouseRect(e.getX(), e.getY());
+                if(mouseRect == lScan)
+                    scanLeft();
+                else if(mouseRect == rScan)
+                    scanRight();
+                else if(mouseRect == addRDatum)
+                    addRDatum();
                 repaint(mouseRect.rect); 
             }
 
             @Override
             public void mousePressed(MouseEvent e) {
-                isDragging = true;
+                setMouseRect(e.getX(), e.getY());
+                pressedPoint = new Point(e.getX(), e.getY());
+                if(mouseRect == lDatumRect)  {
+                    isDragging = true;
+                    lDatumUpdating = lDatum;
+                }
+                if(mouseRect == rDatumRect){
+                    isDragging = true;
+                    rDatumUpdating = rDatum;
+                }
             }
 
             @Override
             public void mouseDragged(MouseEvent e) {
-//                updateValuesViaDrag(e.getPoint());
+                int xDrag = e.getX() - pressedPoint.x;
+                int yDrag = e.getY() - pressedPoint.y;
             }
 
             @Override
@@ -282,6 +303,28 @@ import org.das2.util.GrannyTextRenderer;
         };
     }
     
+    private void scanLeft(){
+        System.err.println("ScanLeft clicked");
+        if(lDatum.equals(rDatum)){
+            Datum singleScanDatum = Datum.create(1.0, lDatum.getUnits());
+            //Also increment rDatum so the layout doesn't change.
+            setrDatum(rDatum.subtract(singleScanDatum));
+            setlDatum(lDatum.subtract(singleScanDatum));
+//            repaint();
+        } else{
+            Datum datumWidth = getrDatum().subtract(getlDatum());
+            setlDatum(getrDatum());
+            setrDatum(getrDatum().subtract(datumWidth));
+        }
+    }
+    
+    private void scanRight(){
+        System.err.println("ScanRight clicked");
+    }
+    
+    private void addRDatum(){
+        System.err.println("AddRDatum clicked");
+    }
     
 //    public DasSliceController(QDataSet qds) {
 //        if (qds.rank() != 1) {
