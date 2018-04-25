@@ -24,6 +24,7 @@ import org.das2.qds.DataSetUtil;
 import org.das2.qds.JoinDataSet;
 import org.das2.qds.MutablePropertyDataSet;
 import org.das2.qds.QDataSet;
+import org.das2.qds.SemanticOps;
 import org.das2.qds.ops.Ops;
 import org.das2.qds.util.DataSetBuilder;
 import org.w3c.dom.Element;
@@ -427,6 +428,8 @@ public class QDataSetStreamHandler implements StreamHandler {
                 if ( dep0ds==null ) {
                     logger.log(Level.WARNING, "unable to resolve property DEPENDNAME_{0}=\"{1}\"", new Object[]{i, s});
                 } else if (dep0ds.rank() == 1) {
+                    result.putProperty("DEPEND_" + i, dep0ds);
+                } else if (dep0ds.rank()==2 && SemanticOps.isBins(dep0ds) ){
                     result.putProperty("DEPEND_" + i, dep0ds);
                 } else if (i > 0 && dep0ds.rank() == 2) {
                     result.putProperty("DEPEND_" + i, dep0ds);
