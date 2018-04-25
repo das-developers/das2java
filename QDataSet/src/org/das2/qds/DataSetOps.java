@@ -1501,7 +1501,11 @@ public class DataSetOps {
                 QDataSet dep0= (QDataSet) bundleDs.property( QDataSet.DEPEND_0 );
                 String dependName= (String)r.property(QDataSet.DEPENDNAME_0);
                 if ( dependName!=null ) {
-                    dep0= unbundle( bundleDs, dependName );
+                    try {
+                        dep0= unbundle( bundleDs, dependName );
+                    } catch ( IllegalArgumentException ex ) {
+                        
+                    }
                 }
                 if ( dep0!=null && r.property(QDataSet.DEPEND_0)==null ) {
                     MutablePropertyDataSet rc= new DataSetWrapper(r);
