@@ -396,6 +396,9 @@ public class SimpleStreamFormatter {
             prop= null;
             Object value = e.getValue();
             if (value instanceof QDataSet) {
+                if ( name.equals(QDataSet.BUNDLE_1) && props.containsKey(QDataSet.BINS_1) && props.get(QDataSet.BINS_1).equals(QDataSet.VALUE_BINS_MIN_MAX) )  {
+                    continue;  // Kludge Du Jour.
+                }
                 QDataSet qds = (QDataSet) value;
                 String sliceName= (String) qds.property(QDataSet.NAME);
                 // kludge to avoid formatting slice name, which is intended for help humans.
