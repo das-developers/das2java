@@ -845,8 +845,15 @@ public final class SemanticOps {
                     }
                 }
             } else {
-                xinside= xrange==null ? null :
-                Ops.and( Ops.ge( xds, DataSetUtil.asDataSet(xrange.min()) ), Ops.le(  xds, DataSetUtil.asDataSet(xrange.max()) ) );
+                if ( xds.rank()==2 && SemanticOps.isBins(xds) ) {
+                    QDataSet xmin= Ops.slice1( xds, 0 );
+                    QDataSet xmax= Ops.slice1( xds, 1 );
+                    xinside= xrange==null ? null :
+                        Ops.and( Ops.ge( xmax, DataSetUtil.asDataSet(xrange.min()) ), Ops.le(  xmin, DataSetUtil.asDataSet(xrange.max()) ) );                
+                } else {
+                    xinside= xrange==null ? null :
+                        Ops.and( Ops.ge( xds, DataSetUtil.asDataSet(xrange.min()) ), Ops.le(  xds, DataSetUtil.asDataSet(xrange.max()) ) );
+                }
             }
             QDataSet yinside= yrange==null ? null :
                 Ops.and( Ops.ge( yds, DataSetUtil.asDataSet(yrange.min()) ), Ops.le(  yds, DataSetUtil.asDataSet(yrange.max()) ) );
