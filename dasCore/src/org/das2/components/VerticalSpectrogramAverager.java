@@ -48,7 +48,10 @@ import org.das2.event.DataRangeSelectionEvent;
 import org.das2.event.DataRangeSelectionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -75,6 +78,9 @@ public class VerticalSpectrogramAverager implements DataRangeSelectionListener {
     protected Datum value;
     private SeriesRenderer renderer;
     private Color markColor = new Color(230,230,230);
+    
+    JPanel buttonPanel;
+    List<Action> additionalActions= new ArrayList<>();
     
     protected VerticalSpectrogramAverager( DasPlot parent, DasAxis sourceXAxis, DasAxis sourceZAxis ) {
         this.sourceZAxis= sourceZAxis;
@@ -108,9 +114,25 @@ public class VerticalSpectrogramAverager implements DataRangeSelectionListener {
             }
         } );
     }
+    
+    /**
+     * add a button
+     * @param a the action for the button.
+     */
+    public void addAction( Action a ) {
+        additionalActions.add(a);
+        if ( buttonPanel!=null ) {
+            JButton b= new JButton(a);
+            buttonPanel.add(b,0);
+        }
+    }    
 
     protected void setDataSet( QDataSet ds ) {
        renderer.setDataSet(ds);
+    }
+    
+    public QDataSet getDataSet() {
+        return renderer.getDataSet();
     }
 
     
@@ -173,10 +195,16 @@ public class VerticalSpectrogramAverager implements DataRangeSelectionListener {
         
         JPanel content = new JPanel(new BorderLayout());
         
-        JPanel buttonPanel = new JPanel();
+        buttonPanel = new JPanel();
         BoxLayout buttonLayout = new BoxLayout(buttonPanel, BoxLayout.X_AXIS);
         buttonPanel.setLayout(buttonLayout);
-
+        
+        if ( additionalActions!=null && additionalActions.size()>0 ) {
+            for ( Action a: additionalActions ) {
+                buttonPanel.add( new JButton(a) );
+            }
+        }
+        
         buttonPanel.add(Box.createHorizontalGlue());
 
         JButton printButton= new JButton( new AbstractAction("Print...") {

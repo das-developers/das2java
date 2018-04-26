@@ -87,6 +87,22 @@ public class HorizontalDragRangeSelectorMouseModule extends MouseModule {
         listenerList.remove(org.das2.event.DataRangeSelectionListener.class, listener);
     }
     
+    /**
+     * allow a peek at the listener.
+     * @param index 
+     * @return  the listener at the index.
+     */
+    public DataRangeSelectionListener getDataRangeSelectionListener( int index ) {
+        return (DataRangeSelectionListener)(listenerList.getListenerList()[index*2+1]);
+    }
+    
+    /**
+     * allow a peek at the listeners.
+     * @return  the number of listeners.
+     */
+    public int getDataRangeSelectionListenerCount(){
+        return listenerList.getListenerCount();
+    }
     
     /** Notifies all registered listeners about the event.
      *
