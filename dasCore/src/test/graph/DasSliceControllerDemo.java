@@ -64,7 +64,6 @@ public class DasSliceControllerDemo {
 
        sliceCont = new DasSliceController(Datum.create(1.0, Units.MeV), Datum.create(1.0, Units.MeV));
 
-       
        DasRow row = new DasRow(canvas, 0, 1);
        DasColumn col = new DasColumn(canvas, 0, 1);
        
