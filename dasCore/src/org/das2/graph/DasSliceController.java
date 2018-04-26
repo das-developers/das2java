@@ -36,13 +36,28 @@ public class DasSliceController extends DasCanvasComponent {
         if (oldLDatum.equals(lDatum)) {
             return;
         }
-//        if(lDatum.gt(rDatum)){
-//            this.lDatum = rDatum;
-//        }else{
-        this.lDatum = lDatum;
-//        }
+        if(lDatum.gt(rDatum)){
+            this.lDatum = rDatum;
+        }else{
+            this.lDatum = lDatum;
+        }
         lDatumRect.text = this.lDatum.toString();
         firePropertyChange(PROP_LDATUM, oldLDatum, lDatum);
+    }
+    
+    private boolean checklDatum(Datum oldLDatum, Datum newLDatum){
+        if(oldLDatum.equals(newLDatum)){
+            return false;
+        }
+        if(oldLDatum.equals(rDatum)){
+            rDatum = newLDatum;
+            this.lDatum = newLDatum;
+            return true;
+        }else if(newLDatum.gt(rDatum)){
+            
+            return false;
+        }
+        return false;
     }
 
     private Datum rDatum;
@@ -57,11 +72,11 @@ public class DasSliceController extends DasCanvasComponent {
         if (oldRDatum.equals(rDatum)) {
             return;
         }
-//        if(rDatum.lt(lDatum)){
-//            this.rDatum = lDatum;
-//        }else{
-        this.rDatum = rDatum;
-//        }
+        if(rDatum.lt(lDatum)){
+            this.rDatum = lDatum;
+        }else{
+            this.rDatum = rDatum;
+        }
         rDatumRect.text = this.rDatum.toString();
         firePropertyChange(PROP_RDATUM, oldRDatum, rDatum);
     }
