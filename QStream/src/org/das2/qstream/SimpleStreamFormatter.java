@@ -22,6 +22,7 @@ import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import org.das2.datum.Datum;
 import org.das2.datum.EnumerationUnits;
 import org.das2.datum.TimeLocationUnits;
 import org.das2.datum.TimeUtil;
@@ -525,8 +526,53 @@ public class SimpleStreamFormatter {
 
             int planeCount = pd.planes.size();
 
-            for (int i = 0; i < packetCount; i++) {
+            Units[] checkEnumerationUnits= new Units[planeCount];
+            Map<Integer,String> enumerations= new HashMap<>(); // these are the ones we've described.
+            for (int iplane = 0; iplane < planeCount; iplane++) {
+                PlaneDescriptor plane = pd.planes.get(iplane);
+                TransferType tt = plane.getType();
+                QDataSet planeds = plane.getDs();
+                Units u= (Units) planeds.property(QDataSet.UNITS);
+                if ( u!=null && u instanceof EnumerationUnits ) {
+                    checkEnumerationUnits[iplane]= u;
+                } else {
+                    checkEnumerationUnits[iplane]= null;
+                }
+            }
 
+            
+            for (int i = 0; i < packetCount; i++) {
+                for (int iplane = 0; iplane < planeCount; iplane++) {
+                    if ( checkEnumerationUnits[iplane]!=null ) {
+                        PlaneDescriptor plane = pd.planes.get(iplane);
+                        TransferType tt = plane.getType();
+                        QDataSet planeds = plane.getDs();
+                        boolean haveSeen= false;
+                        double v=-1;
+                        if (planeds.rank() == 1) {
+                            v= planeds.value(i);
+                        } else if (planeds.rank() == 2) {
+                            throw new IllegalArgumentException("not supported rank 2 enumeration units");
+                        } else {
+                            throw new IllegalArgumentException("not supported rank N enumeration units");
+                        }      
+                        int iv= (int)v;
+                        if ( !enumerations.keySet().contains( iv ) ) {
+                            byte[] bytes;
+                            EnumerationUnits eu= (EnumerationUnits)checkEnumerationUnits[iplane];
+                            Datum d= eu.createDatum(iv);
+                            int c= eu.getColor( d );
+                            String label= d.toString();
+                            String ss= String.format( "<enumerationUnit name=\"%s\"  value=\"%d\" color=\"0x%06x\" label=\"%s\" />\n",
+                                eu.getId(), iv, c, label );
+                            bytes= ss.getBytes( "UTF-8" );
+                            channel.write( ByteBuffer.wrap( String.format( "[xx]%06d", bytes.length ).getBytes("UTF-8") ) );
+                            channel.write( ByteBuffer.wrap( bytes ) );
+                            enumerations.put( iv, label);
+                            
+                        }                            
+                    }
+                }
                 for (int iplane = 0; iplane < planeCount; iplane++) {
 
                     PlaneDescriptor plane = pd.planes.get(iplane);
