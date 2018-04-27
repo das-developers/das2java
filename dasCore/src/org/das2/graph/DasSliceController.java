@@ -14,6 +14,7 @@ import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
 import org.das2.datum.Units;
 import org.das2.qds.QDataSet;
+import java.beans.PropertyVetoException;
 import org.das2.util.GrannyTextRenderer;
 
 /**
@@ -33,9 +34,7 @@ public class DasSliceController extends DasCanvasComponent {
 
     public void setlDatum(Datum lDatum) {
         Datum oldLDatum = this.lDatum;
-        if (oldLDatum.equals(lDatum)) {
-            return;
-        }
+        
         if(lDatum.gt(rDatum)){
             this.lDatum = rDatum;
         }else{
@@ -43,9 +42,10 @@ public class DasSliceController extends DasCanvasComponent {
         }
         lDatumRect.text = this.lDatum.toString();
         firePropertyChange(PROP_LDATUM, oldLDatum, lDatum);
+        repaint();
     }
     
-    private boolean checklDatum(Datum oldLDatum, Datum newLDatum){
+    private boolean checklDatum(Datum oldLDatum, Datum newLDatum) throws PropertyVetoException{
         if(oldLDatum.equals(newLDatum)){
             return false;
         }
@@ -54,8 +54,8 @@ public class DasSliceController extends DasCanvasComponent {
             this.lDatum = newLDatum;
             return true;
         }else if(newLDatum.gt(rDatum)){
+//            throw new PropertyVetoException("lDatum cannot be set to a value greater than rDatum.", evt);
             
-            return false;
         }
         return false;
     }
@@ -69,9 +69,7 @@ public class DasSliceController extends DasCanvasComponent {
 
     public void setrDatum(Datum rDatum) {
         Datum oldRDatum = this.rDatum;
-        if (oldRDatum.equals(rDatum)) {
-            return;
-        }
+        
         if(rDatum.lt(lDatum)){
             this.rDatum = lDatum;
         }else{
@@ -79,6 +77,7 @@ public class DasSliceController extends DasCanvasComponent {
         }
         rDatumRect.text = this.rDatum.toString();
         firePropertyChange(PROP_RDATUM, oldRDatum, rDatum);
+        repaint();
     }
 
     class TextRect {
@@ -304,12 +303,18 @@ public class DasSliceController extends DasCanvasComponent {
             public void mousePressed(MouseEvent e) {
                 setMouseRect(e.getX(), e.getY());
                 pressedPoint = new Point(e.getX(), e.getY());
-                
-                if (mouseRect == lDatumRect || mouseRect == rDatumRect) {
-                    isDragging = true;
-                    lDatumUpdating = lDatum;
-                    rDatumUpdating = rDatum;
+                if(e.getButton() == 1){
+                    if (mouseRect == lDatumRect || mouseRect == rDatumRect) {
+                        isDragging = true;
+                        lDatumUpdating = lDatum;
+                        rDatumUpdating = rDatum;
+                    }
+                } else if(e.getButton() == 2){
+                    if(mouseRect == lDatumRect || mouseRect == rDatumRect || mouseRect == toTextRect){
+                        
+                    }
                 }
+                
             }
 
             @Override
@@ -329,8 +334,10 @@ public class DasSliceController extends DasCanvasComponent {
             @Override
             public void mouseReleased(MouseEvent e) {
                 if (isDragging) {
-                    setlDatum(lDatumUpdating);
-                    setrDatum(rDatumUpdating);
+                    rDatum = rDatumUpdating;
+                    lDatum = lDatumUpdating;
+                    setrDatum(rDatum);
+                    setlDatum(lDatum);
                     isDragging = false;
                 }
 
@@ -372,12 +379,14 @@ public class DasSliceController extends DasCanvasComponent {
     }
 
     private void scanLeft() {
-        System.err.println("ScanLeft clicked");
+//        System.err.println("ScanLeft clicked");
         if (lDatum.equals(rDatum)) {
             Datum singleScanDatum = Datum.create(1.0, lDatum.getUnits());
             //Also increment rDatum so the layout doesn't change.
-            setrDatum(rDatum.subtract(singleScanDatum));
-            setlDatum(lDatum.subtract(singleScanDatum));
+            rDatum = rDatum.subtract(singleScanDatum);
+            lDatum = lDatum.subtract(singleScanDatum);
+            setrDatum(rDatum);
+            setlDatum(lDatum);
         } else {
             Datum datumWidth = getrDatum().subtract(getlDatum());
             setrDatum(getlDatum());
@@ -386,7 +395,7 @@ public class DasSliceController extends DasCanvasComponent {
     }
 
     private void scanRight() {
-        System.err.println("ScanRight clicked");
+//        System.err.println("ScanRight clicked");
         if (lDatum.equals(rDatum)) {
             Datum singleScanDatum = Datum.create(1.0, lDatum.getUnits());
             setrDatum(rDatum.add(singleScanDatum));
@@ -399,13 +408,13 @@ public class DasSliceController extends DasCanvasComponent {
     }
 
     private void addRDatum() {
-        System.err.println("AddRDatum clicked");
+//        System.err.println("AddRDatum clicked");
         Datum distFromLDatum = Datum.create(1, lDatum.getUnits());
         setrDatum(getlDatum().add(distFromLDatum));
     }
 
     private void lDatumDrag(int xTotalDrag) {
-        System.err.println("lDatumDragging, total dist = " + xTotalDrag);
+//        System.err.println("lDatumDragging, total dist = " + xTotalDrag);
         Datum dragDatum = Datum.create(xTotalDrag, lDatum.getUnits());
         if (lDatum.equals(rDatum)) {
             lDatumUpdating = lDatum.add(dragDatum);
@@ -424,7 +433,7 @@ public class DasSliceController extends DasCanvasComponent {
     }
 
     private void rDatumDrag(int xTotalDrag) {
-        System.err.println("rDatumDragging, total dist = " + xTotalDrag);
+//        System.err.println("rDatumDragging, total dist = " + xTotalDrag);
         Datum dragDatum = Datum.create(xTotalDrag, lDatum.getUnits());
         rDatumUpdating = rDatum.add(dragDatum);
         if (rDatumUpdating.lt(lDatum)) {
@@ -436,11 +445,13 @@ public class DasSliceController extends DasCanvasComponent {
     }
 
     private void wheelRotation(int amount) {
-        System.err.println("Wheel rotation amount = " + amount);
+//        System.err.println("Wheel rotation amount = " + amount);
         Datum datumAmount = Datum.create(amount, lDatum.getUnits());
         if (lDatum.equals(rDatum)) {
-            setrDatum(rDatum.add(datumAmount));
-            setlDatum(lDatum.add(datumAmount));
+            rDatum = rDatum.add(datumAmount);
+            lDatum = lDatum.add(datumAmount);
+            setrDatum(rDatum);
+            setlDatum(lDatum);
         } else {
             if (amount > 0) {
                 setrDatum(rDatum.add(datumAmount));
