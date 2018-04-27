@@ -34,6 +34,7 @@ public class EnumerationUnitsSerializeDelegate implements SerializeDelegate {
             String s= e.getValue().toString();
             if ( s.trim().length()==0 ) useSemiSpaceDelimiters= true; // we need an alternate delimiter, because confusion with delimiters.  Note space delimiters are easier to read anyway.
         }
+        if ( false ) {
         for ( Entry<Integer,Datum> e: values.entrySet() ) {
             Integer i= e.getKey();
             String s= e.getValue().toString();
@@ -43,6 +44,7 @@ public class EnumerationUnitsSerializeDelegate implements SerializeDelegate {
                 buf.append("").append(i).append(":").append(s);
                 if ( i<values.size() ) buf.append( useSemiSpaceDelimiters ? "; " : "::");
             }
+        }
         }
         buf.append("]");
         return buf.toString();
