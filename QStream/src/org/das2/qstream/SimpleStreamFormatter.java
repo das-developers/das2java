@@ -547,7 +547,6 @@ public class SimpleStreamFormatter {
                         PlaneDescriptor plane = pd.planes.get(iplane);
                         TransferType tt = plane.getType();
                         QDataSet planeds = plane.getDs();
-                        boolean haveSeen= false;
                         double v=-1;
                         if (planeds.rank() == 1) {
                             v= planeds.value(i);
