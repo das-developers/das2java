@@ -28,6 +28,7 @@ import org.das2.datum.TimeLocationUnits;
 import org.das2.datum.TimeUtil;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
+import org.das2.qds.DataSetIterator;
 import org.das2.qds.DataSetOps;
 import org.das2.qds.DataSetUtil;
 import org.das2.qds.QDataSet;
@@ -69,7 +70,7 @@ public class SimpleStreamFormatter {
         Element packet = document.createElement("packet");
         return packet;
     }
-    Map<QDataSet, String> names = new HashMap<QDataSet, String>();
+    Map<QDataSet, String> names = new HashMap<>();
 
     private void doValuesElement(QDataSet ds, PacketDescriptor pd, PlaneDescriptor planeDescriptor, Document document, Element qdatasetElement) throws DOMException {
         Object sunits= ds.property(QDataSet.UNITS);
@@ -94,7 +95,7 @@ public class SimpleStreamFormatter {
             }
         }
         
-        if (!pd.isValuesInDescriptor()) {
+        if (!pd.isValuesInDescriptor()) { //TODO: I don't think this branch is ever used.
             if (asciiTypes) {
                 double min = Double.POSITIVE_INFINITY;
                 double max = Double.NEGATIVE_INFINITY;
@@ -169,6 +170,22 @@ public class SimpleStreamFormatter {
                 qdatasetElement.appendChild(values);
             }
         } else {
+            if ( UnitsUtil.isNominalMeasurement(u) ) {
+                DataSetIterator it= new QubeDataSetIterator(ds);
+                assert u!=null;
+                EnumerationUnits eu= (EnumerationUnits)u;
+                while ( it.hasNext() ) {
+                    it.next();
+                    int i= (int)it.getValue(ds);
+                    Datum ed= eu.createDatum(i);
+                    Element enumerationUnit= document.createElement("enumerationUnit");
+                    enumerationUnit.setAttribute("name", eu.getId() );
+                    enumerationUnit.setAttribute("value", String.valueOf(i) );
+                    enumerationUnit.setAttribute("color", String.format("0x%06x", eu.getColor( ed ) ) );
+                    enumerationUnit.setAttribute("label", ed.toString() );
+                    qdatasetElement.appendChild(enumerationUnit);
+                }
+            }
             Element values = doValues(document, pd, planeDescriptor, ds);
             qdatasetElement.appendChild(values);
         }
