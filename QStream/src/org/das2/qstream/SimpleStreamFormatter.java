@@ -472,6 +472,8 @@ public class SimpleStreamFormatter {
 
         String name = nameFor(ds);
         streamElement.setAttribute("dataset_id", name);
+        // version 1.1 changes how nominal data is encoded.
+        streamElement.setAttribute("version", "1.1");
         if (asciiTypes == false) {
             streamElement.setAttribute("byte_order", isBigEndian ? "big_endian" : "little_endian");
         }
