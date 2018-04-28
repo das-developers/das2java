@@ -574,6 +574,20 @@ public class StreamTool {
                     }
                 }
                 
+                NodeList oen= (NodeList) xpath.evaluate("enumerationUnit", n, XPathConstants.NODESET );
+                for ( int ii=0; ii<oen.getLength(); ii++ ) {
+                    Node nn= oen.item(ii);
+                    //units = (Units) Units.getByName( nn.getAttributes().getNamedItem("name").getNodeValue() );
+                    if ( units instanceof EnumerationUnits ) {
+                        EnumerationUnits eu= (EnumerationUnits)units;
+                        int value= Integer.decode( nn.getAttributes().getNamedItem("value").getNodeValue() );
+                        int icolor= Integer.decode( nn.getAttributes().getNamedItem("color").getNodeValue() );
+                        String label= nn.getAttributes().getNamedItem("label").getNodeValue();
+                        eu.createDatum( value, label, icolor );
+                    }
+                }
+                planeDescriptor.setUnits(units);
+                
                 if ( sbundles!=null ) {
                     planeDescriptor.setBundles(sbundles);
                     planeDescriptor.setType(new AsciiTransferType( 10, true )); // kludge because we need something

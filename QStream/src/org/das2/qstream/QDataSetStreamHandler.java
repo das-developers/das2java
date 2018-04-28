@@ -17,6 +17,8 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import javax.xml.xpath.XPathFactoryConfigurationException;
+import org.das2.datum.Datum;
+import org.das2.datum.EnumerationUnits;
 import org.das2.qds.ArrayDataSet;
 import org.das2.qds.BundleDataSet;
 import org.das2.qds.DDataSet;
@@ -297,6 +299,7 @@ public class QDataSetStreamHandler implements StreamHandler {
                         int index=-1;
                         if (vn.hasAttribute("values")) {  // TODO: consider "inline"
                             inlineDs = doInLine(vn);
+                            inlineDs.putProperty( QDataSet.UNITS, planes.get(i).getUnits() );
                             isInline = true;
                             if ( vn.hasAttribute("index") ) {
                                 index= Integer.parseInt( vn.getAttribute("index") );
@@ -394,7 +397,18 @@ public class QDataSetStreamHandler implements StreamHandler {
                 
                 NodeList odims = (NodeList) xpath.evaluate("properties[not(@index)]/property", n, XPathConstants.NODESET);
                 doProps(odims, builder);
-
+                
+                if ( planes.get(i).getUnits() instanceof EnumerationUnits && builder!=null ) {
+                    EnumerationUnits eu= (EnumerationUnits) planes.get(i).getUnits();
+                    EnumerationUnits eun= (EnumerationUnits) builder.getProperties().get(QDataSet.UNITS);
+                    if ( eu!=null && eun!=null ) {
+                        for ( Entry<Integer,Datum> es: eu.getValues().entrySet() ) {
+                            Datum d= es.getValue();
+                            eun.createDatum( (int)d.doubleValue(eu), d.toString(), eu.getColor(d) );
+                        }
+                    }
+                }
+                
                 odims = (NodeList) xpath.evaluate("properties[@index]/property", n, XPathConstants.NODESET);
                 doPropsIndex(odims, joinDataSets.get(name));
 
