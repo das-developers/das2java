@@ -5,6 +5,7 @@
 package org.das2.qstream;
 
 import java.util.Arrays;
+import org.das2.datum.Units;
 import org.das2.qds.QDataSet;
 import org.das2.qds.util.DataSetBuilder;
 import org.w3c.dom.Element;
@@ -22,6 +23,7 @@ public class PlaneDescriptor implements Cloneable {
     private int[] qube;
     private int elements;// for each record
     private QDataSet ds;// builder when we are reading in.
+    private Units units; // store the units here, to support NominalUnits and to avoid name clashes when "default" is used for the name.
     private DataSetBuilder builder;// dataset that we are writing out.
     private String name;// builder when we are reading in.
 
@@ -79,6 +81,14 @@ public class PlaneDescriptor implements Cloneable {
 
     public void setDs(QDataSet ds) {
         this.ds = ds;
+    }
+
+    public Units getUnits() {
+        return units;
+    }
+
+    public void setUnits(Units units) {
+        this.units = units;
     }
 
     public DataSetBuilder getBuilder() {
