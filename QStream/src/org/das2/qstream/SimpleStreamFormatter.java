@@ -171,19 +171,24 @@ public class SimpleStreamFormatter {
             }
         } else {
             if ( UnitsUtil.isNominalMeasurement(u) ) {
+                Map<Integer,String> enumerations= new HashMap<>();
                 DataSetIterator it= new QubeDataSetIterator(ds);
                 assert u!=null;
                 EnumerationUnits eu= (EnumerationUnits)u;
                 while ( it.hasNext() ) {
                     it.next();
                     int i= (int)it.getValue(ds);
-                    Datum ed= eu.createDatum(i);
-                    Element enumerationUnit= document.createElement("enumerationUnit");
-                    enumerationUnit.setAttribute("name", eu.getId() );
-                    enumerationUnit.setAttribute("value", String.valueOf(i) );
-                    enumerationUnit.setAttribute("color", String.format("0x%06x", eu.getColor( ed ) ) );
-                    enumerationUnit.setAttribute("label", ed.toString() );
-                    qdatasetElement.appendChild(enumerationUnit);
+                    if ( !enumerations.containsKey(i) ) {
+                        Datum ed= eu.createDatum(i);
+                        String sed= ed.toString();
+                        Element enumerationUnit= document.createElement("enumerationUnit");
+                        enumerationUnit.setAttribute("name", eu.getId() );
+                        enumerationUnit.setAttribute("value", String.valueOf(i) );
+                        enumerationUnit.setAttribute("color", String.format("0x%06x", eu.getColor( ed ) ) );
+                        enumerationUnit.setAttribute("label", sed );
+                        qdatasetElement.appendChild(enumerationUnit);
+                        enumerations.put(i,sed);
+                    }
                 }
             }
             Element values = doValues(document, pd, planeDescriptor, ds);
@@ -575,7 +580,7 @@ public class SimpleStreamFormatter {
                             throw new IllegalArgumentException("not supported rank N enumeration units");
                         }      
                         int iv= (int)v;
-                        if ( !enumerations.keySet().contains( iv ) ) {
+                        if ( !enumerations.containsKey(iv) ) {
                             byte[] bytes;
                             EnumerationUnits eu= (EnumerationUnits)checkEnumerationUnits[iplane];
                             Datum d= eu.createDatum(iv);
