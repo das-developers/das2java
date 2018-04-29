@@ -353,7 +353,7 @@ public class BundleStreamFormatter {
             for ( int j=0; j<ds.length(0); j++ ) {
                 if ( units[j] instanceof EnumerationUnits ) {
                     int iv= (int)ds.value(i,j);
-                    if ( !enumerations.keySet().contains( iv ) ) {
+                    if ( !enumerations.containsKey( iv ) ) {
                         EnumerationUnits eu= (EnumerationUnits)units[j];
                         Datum d= eu.createDatum(iv);
                         int c= eu.getColor( d );
