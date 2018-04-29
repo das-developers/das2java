@@ -170,7 +170,7 @@ public class SimpleStreamFormatter {
                 qdatasetElement.appendChild(values);
             }
         } else {
-            if ( UnitsUtil.isNominalMeasurement(u) ) {
+            if ( UnitsUtil.isNominalMeasurement(u) && pd.isValuesInDescriptor()) {
                 Map<Integer,String> enumerations= new HashMap<>();
                 DataSetIterator it= new QubeDataSetIterator(ds);
                 assert u!=null;
