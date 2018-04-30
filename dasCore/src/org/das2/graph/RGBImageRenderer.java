@@ -1,6 +1,7 @@
 
 package org.das2.graph;
 
+import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
@@ -394,11 +395,19 @@ public class RGBImageRenderer extends Renderer {
 
     @Override
     public Icon getListIcon() {
+        logger.fine("enter RGBImageRenderer getListIcon");
         BufferedImage result= new BufferedImage(16,16,BufferedImage.TYPE_INT_RGB);
         
         Graphics2D g= (Graphics2D) result.getGraphics();
         
-        g.drawImage( image, 0,0, 16,16, null ); // TODO: preserve aspect ratio, pick representative region. 
+        if ( image==null ) {
+            g.setColor( Color.WHITE );
+            g.fillRect( 0, 0, 15,15);
+            g.setColor( Color.BLACK );
+            g.drawRect( 0, 0, 15,15 );
+        } else {
+            g.drawImage( image, 0,0, 16,16, null ); // TODO: preserve aspect ratio, pick representative region. 
+        }
         return new ImageIcon( result );
     }
     
