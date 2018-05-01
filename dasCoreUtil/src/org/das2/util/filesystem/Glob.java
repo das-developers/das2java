@@ -111,6 +111,18 @@ public class Glob {
     }
     
     /**
+     * converts regex into a glob, as best it can.
+     * @param regex regular expression like "foo.*\\.dat"
+     * @return a glob like "foo*.dat"
+     */
+    public static String getGlobFromRegex( String regex ) {
+        String glob= regex;
+        glob= glob.replaceAll("\\.\\*","*");
+        glob= glob.replaceAll("\\\\.",".");
+        return glob;
+    }
+    
+    /**
      * unglob the glob into an array of the matching FileObjects.
      * See sftp://papco.org/home/jbf/ct/autoplot/script/demos/filesystem/unGlobDemo.jy
      * @param fs the filesystem
