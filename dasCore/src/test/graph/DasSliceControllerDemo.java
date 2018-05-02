@@ -75,11 +75,12 @@ public class DasSliceControllerDemo {
             public void propertyChange(PropertyChangeEvent evt) {
                 
                 System.err.println("got property change event " + evt.getPropertyName() );
-                System.err.println("Value = " + evt.getNewValue());
+                System.err.println("Old value = " + evt.getOldValue() + " New Value = " + evt.getNewValue());
             }
 
         };
         
+        sliceCont.addPropertyChangeListener(DasSliceController.PROP_DATUMRANGE, sliceRangeListener);
         sliceCont.addPropertyChangeListener(DasSliceController.PROP_LDATUM, sliceRangeListener);
         sliceCont.addPropertyChangeListener(DasSliceController.PROP_RDATUM, sliceRangeListener);
         canvas.add(sliceCont);

@@ -35,8 +35,21 @@ public class DasSliceController extends DasCanvasComponent {
     
     public void setDatumRange(DatumRange dr){
         DatumRange oldDR = this.datumRange;
+        if(!lDatum.equals(dr.min()) || !rDatum.equals(dr.max())){
+            Datum oldLDatum = lDatum;
+            Datum oldRDatum = rDatum;
+            lDatum = dr.min();
+            rDatum = dr.max();
+            lDatumRect.text = lDatum.toString();
+            rDatumRect.text = rDatum.toString();
+//            setlDatum(lDatum);
+//            setrDatum(rDatum);
+            firePropertyChange(PROP_LDATUM, oldLDatum, lDatum);
+            firePropertyChange(PROP_RDATUM, oldRDatum, rDatum);
+        }
         this.datumRange = dr;
         firePropertyChange(PROP_DATUMRANGE, oldDR, dr);
+        repaint();
     }
     
     private Datum lDatum;
@@ -55,7 +68,8 @@ public class DasSliceController extends DasCanvasComponent {
             this.lDatum = lDatum;
         }
         lDatumRect.text = this.lDatum.toString();
-        firePropertyChange(PROP_LDATUM, oldLDatum, lDatum);
+        firePropertyChange(PROP_LDATUM, oldLDatum, this.lDatum);
+        setDatumRange(new DatumRange(this.lDatum, this.rDatum));
         repaint();
     }
     
@@ -90,7 +104,8 @@ public class DasSliceController extends DasCanvasComponent {
             this.rDatum = rDatum;
         }
         rDatumRect.text = this.rDatum.toString();
-        firePropertyChange(PROP_RDATUM, oldRDatum, rDatum);
+        firePropertyChange(PROP_RDATUM, oldRDatum, this.rDatum);
+        setDatumRange(new DatumRange(this.lDatum, this.rDatum));
         repaint();
     }
 
@@ -163,6 +178,7 @@ public class DasSliceController extends DasCanvasComponent {
     public DasSliceController(Datum lDatum, Datum rDatum) {
         this.lDatum = lDatum;
         this.rDatum = rDatum;
+        this.datumRange = new DatumRange(lDatum, rDatum);
         lDatumRect = new TextRect(lDatum.toString(), new Rectangle(), new Cursor(Cursor.W_RESIZE_CURSOR));
         lDatumRect.isShowing = true;
         rDatumRect = new TextRect(rDatum.toString(), new Rectangle(), new Cursor(Cursor.E_RESIZE_CURSOR));
@@ -176,7 +192,6 @@ public class DasSliceController extends DasCanvasComponent {
     
     public DasSliceController(DatumRange dr){
         this(dr.min(), dr.max());
-        this.datumRange = dr;
     }
 
     private int colMin;
@@ -294,7 +309,9 @@ public class DasSliceController extends DasCanvasComponent {
             repaint(mouseRect.rect);
         }
     }
-    private boolean isDragging;
+    private boolean isDragging = false;
+    private boolean lDrag = false;
+    private boolean rDrag = false;
     private Point pressedPoint;
     private Datum lDatumUpdating;
     private Datum rDatumUpdating;
@@ -353,10 +370,22 @@ public class DasSliceController extends DasCanvasComponent {
             @Override
             public void mouseReleased(MouseEvent e) {
                 if (isDragging) {
+                    Datum oldRDatum = rDatum;
+                    Datum oldLDatum = lDatum;
                     rDatum = rDatumUpdating;
                     lDatum = lDatumUpdating;
                     setrDatum(rDatum);
                     setlDatum(lDatum);
+                    if(lDrag){
+                        firePropertyChange(PROP_LDATUM, oldLDatum, lDatum);
+                        lDrag = false;
+                    }
+                    if(rDrag){
+                        firePropertyChange(PROP_RDATUM, oldRDatum, rDatum);
+                        rDrag = false;
+                    }
+                    
+                    setDatumRange(new DatumRange(lDatum, rDatum));
                     isDragging = false;
                 }
 
@@ -372,7 +401,7 @@ public class DasSliceController extends DasCanvasComponent {
             @Override
             public void mouseExited(MouseEvent e) {
                 if (!isDragging) {
-                    if (mouseRect != lDatumRect && mouseRect != toTextRect && mouseRect != rDatumRect) {
+                    if (mouseRect != lDatumRect && mouseRect != toTextRect && mouseRect != rDatumRect && mouseRect != null) {
                         mouseRect.isShowing = false;
                     }
                     mouseRect = null;
@@ -406,13 +435,19 @@ public class DasSliceController extends DasCanvasComponent {
             Datum oldRDatum = rDatum;
             rDatum = rDatum.subtract(singleScanDatum);
             lDatum = lDatum.subtract(singleScanDatum);
+            // Sets the text, but won't fire the event because I manually set the
+            // values, so the setter doesn't think they changed.
             setrDatum(rDatum);
             setlDatum(lDatum);
+            
+            firePropertyChange(PROP_LDATUM, oldLDatum, lDatum);
+            
             setDatumRange(new DatumRange(lDatum, rDatum));
         } else {
             Datum datumWidth = getrDatum().subtract(getlDatum());
-            setrDatum(getlDatum());
-            setlDatum(getlDatum().subtract(datumWidth));
+//            setrDatum(getlDatum());
+//            setlDatum(getlDatum().subtract(datumWidth));
+            setDatumRange(new DatumRange(getlDatum().subtract(datumWidth), getlDatum()));
         }
     }
 
@@ -420,12 +455,23 @@ public class DasSliceController extends DasCanvasComponent {
 //        System.err.println("ScanRight clicked");
         if (lDatum.equals(rDatum)) {
             Datum singleScanDatum = Datum.create(1.0, lDatum.getUnits());
-            setrDatum(rDatum.add(singleScanDatum));
-            setlDatum(lDatum.add(singleScanDatum));
+            Datum oldLDatum = lDatum;
+            Datum oldRDatum = rDatum;
+            rDatum = rDatum.add(singleScanDatum);
+            lDatum = lDatum.add(singleScanDatum);
+            // Sets the text, but won't fire the event because I manually set the
+            // values, so the setter doesn't think they changed.
+            setrDatum(rDatum);
+            setlDatum(lDatum);
+            
+            firePropertyChange(PROP_LDATUM, oldLDatum, lDatum);
+            setDatumRange(new DatumRange(lDatum, rDatum));
+            
         } else {
             Datum datumWidth = getrDatum().subtract(getlDatum());
-            setlDatum(getrDatum());
-            setrDatum(getrDatum().add(datumWidth));
+//            setlDatum(getrDatum());
+//            setrDatum(getrDatum().add(datumWidth));
+            setDatumRange(new DatumRange(getrDatum(), getrDatum().add(datumWidth)));
         }
     }
 
@@ -433,12 +479,16 @@ public class DasSliceController extends DasCanvasComponent {
 //        System.err.println("AddRDatum clicked");
         Datum distFromLDatum = Datum.create(1, lDatum.getUnits());
         setrDatum(getlDatum().add(distFromLDatum));
+        setDatumRange(new DatumRange(lDatum, rDatum));
     }
 
     private void lDatumDrag(int xTotalDrag) {
+        lDrag = true;
 //        System.err.println("lDatumDragging, total dist = " + xTotalDrag);
         Datum dragDatum = Datum.create(xTotalDrag, lDatum.getUnits());
         if (lDatum.equals(rDatum)) {
+            // Going to manually set everything so events aren't fired until 
+            // dragging is complete
             lDatumUpdating = lDatum.add(dragDatum);
             lDatumRect.text = lDatumUpdating.toString();
             rDatumUpdating = lDatumUpdating;
@@ -450,11 +500,11 @@ public class DasSliceController extends DasCanvasComponent {
             } else {
                 lDatumRect.text = lDatumUpdating.toString();
             }
-
         }
     }
 
     private void rDatumDrag(int xTotalDrag) {
+        rDrag = true;
 //        System.err.println("rDatumDragging, total dist = " + xTotalDrag);
         Datum dragDatum = Datum.create(xTotalDrag, lDatum.getUnits());
         rDatumUpdating = rDatum.add(dragDatum);
