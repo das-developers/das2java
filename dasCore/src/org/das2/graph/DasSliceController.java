@@ -25,6 +25,20 @@ public class DasSliceController extends DasCanvasComponent {
 
     private boolean inDebugMode = false;
 
+    
+    private DatumRange datumRange;
+    public static final String PROP_DATUMRANGE = "datumRange";
+    
+    public DatumRange getDatumRange(){
+        return datumRange;
+    }
+    
+    public void setDatumRange(DatumRange dr){
+        DatumRange oldDR = this.datumRange;
+        this.datumRange = dr;
+        firePropertyChange(PROP_DATUMRANGE, oldDR, dr);
+    }
+    
     private Datum lDatum;
     public static final String PROP_LDATUM = "lDatum";
 
@@ -158,6 +172,11 @@ public class DasSliceController extends DasCanvasComponent {
         addMouseMotionListener(ma);
         addMouseWheelListener(ma);
         addMouseListener(ma);
+    }
+    
+    public DasSliceController(DatumRange dr){
+        this(dr.min(), dr.max());
+        this.datumRange = dr;
     }
 
     private int colMin;
@@ -383,10 +402,13 @@ public class DasSliceController extends DasCanvasComponent {
         if (lDatum.equals(rDatum)) {
             Datum singleScanDatum = Datum.create(1.0, lDatum.getUnits());
             //Also increment rDatum so the layout doesn't change.
+            Datum oldLDatum = lDatum;
+            Datum oldRDatum = rDatum;
             rDatum = rDatum.subtract(singleScanDatum);
             lDatum = lDatum.subtract(singleScanDatum);
             setrDatum(rDatum);
             setlDatum(lDatum);
+            setDatumRange(new DatumRange(lDatum, rDatum));
         } else {
             Datum datumWidth = getrDatum().subtract(getlDatum());
             setrDatum(getlDatum());
@@ -442,6 +464,7 @@ public class DasSliceController extends DasCanvasComponent {
         } else {
             rDatumRect.text = rDatumUpdating.toString();
         }
+        
     }
 
     private void wheelRotation(int amount) {
