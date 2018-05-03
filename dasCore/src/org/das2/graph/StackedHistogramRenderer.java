@@ -83,10 +83,12 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
     Image plotImage;
     DatumRange imageXRange, imageYRange;
     
-    final static Color GREY_PEAKS_COLOR= Color.lightGray.brighter();
+    final static Color GREY_PEAKS_COLOR = Color.lightGray.brighter();
+	 final static Color BLUE_PEAKS_COLOR = Color.BLUE;
+	 final static Color RED_PEAKS_COLOR = Color.RED;
 
     public enum PeaksIndicator {
-        NoPeaks, GrayPeaks, BlackPeaks, MaxDots, PeakLine,
+        NoPeaks, GrayPeaks, BlackPeaks, MaxDots, PeakLine, BluePeaks, RedPeaks
     }
     
     protected class RebinListener implements PropertyChangeListener {
@@ -417,18 +419,35 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
                             if (peakValue <= zAxisMax) {
                                 int yMax= (int)zAxis.transform( peakValue, zunits, yBase, yBaseTop );
                                 yMax= (y0-yMax)>(0) ? yMax : (y0);
-                                if (peaksIndicator==PeaksIndicator.MaxDots) {
-                                    g.drawLine(x0,yMax,x0,yMax);
-                                } else if ( peaksIndicator==PeaksIndicator.PeakLine ) {
-                                    // do nothing
-                                } else if ( peaksIndicator==PeaksIndicator.GrayPeaks ) {
-                                    g.setColor(Color.gray);
-                                    g.drawLine(x0,yMax,x0,y0);
-                                    g.setColor(BAR_COLOR);
-                                } else if ( peaksIndicator==PeaksIndicator.BlackPeaks ) {
-                                    g.setColor(BAR_COLOR);
-                                    g.drawLine(x0,yMax,x0,y0);
-                                }
+                                if (null!=peaksIndicator) switch(peaksIndicator){
+										 case MaxDots:
+											 g.drawLine(x0,yMax,x0,yMax);
+											 break;
+										 // do nothing
+										 case PeakLine:
+											 break;
+										 case GrayPeaks:
+											 g.setColor(Color.gray);
+											 g.drawLine(x0,yMax,x0,y0);
+											 g.setColor(BAR_COLOR);
+											 break;
+										 case BlackPeaks:
+											 g.setColor(BAR_COLOR);
+											 g.drawLine(x0,yMax,x0,y0);
+											 break;
+										 case BluePeaks:
+											 g.setColor(BLUE_PEAKS_COLOR);
+											 g.drawLine(x0,yMax,x0,y0);
+											 g.setColor(BAR_COLOR);
+											 break;
+										 case RedPeaks:
+											 g.setColor(RED_PEAKS_COLOR);
+											 g.drawLine(x0,yMax,x0,y0);
+											 g.setColor(BAR_COLOR);
+											 break;
+										 default:
+											 break;
+										 }
                             }
                         }
                         if ( zz>=zAxisMin ) g.drawLine(x0, yAvg, x0, yAvg+yHeight );
