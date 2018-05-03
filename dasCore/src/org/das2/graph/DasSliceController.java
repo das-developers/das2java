@@ -266,7 +266,7 @@ public class DasSliceController extends DasCanvasComponent {
     @Override
     protected void paintComponent(Graphics g) {
 
-        float fontMultiplier = 2f;
+        float fontMultiplier = 1f;
         g.setFont(g.getFont().deriveFont(g.getFont().getSize() * fontMultiplier));
 
         setSizingParams();
