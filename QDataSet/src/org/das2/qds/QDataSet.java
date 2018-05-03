@@ -157,9 +157,10 @@ public interface QDataSet {
      * fa_k0_tms_20040224_v01.cdf?O+_en had 48 energy channels, was marked as time_series but wouldn't render because
      * view code limited to 12.
      *
-     * Seth's file vap+cdfj:file:///home/jbf/ct/hudson/data.backup/cdf/lanl/rbspa_pre_ect-mageisHIGH-sp-L1_20130213_v1.0.0.cdf?Count_Rate_elec
+     * Seth's file vap+cdf:file:///home/jbf/ct/hudson/data.backup/cdf/lanl/rbspa_pre_ect-mageisHIGH-sp-L1_20130213_v1.0.0.cdf?Count_Rate_elec
+     * RBSP/Hope has 72 channels.
      */
-    public final static int MAX_UNIT_BUNDLE_COUNT=50;
+    public final static int MAX_UNIT_BUNDLE_COUNT=96;
 
     /**
      * the highest rank supported by the library.   Arbitrary high rank datasets are supported through
