@@ -300,7 +300,7 @@ public final class AutoHistogram {
         if (wds == null) {
             wds = DataSetUtil.weightsDataSet(ds);
         }
-
+        
 //        QDataSet context1;
         // try to get an extent of the data depend0.
 //        QDataSet dep0= (QDataSet) ds.property( QDataSet.DEPEND_0 );
