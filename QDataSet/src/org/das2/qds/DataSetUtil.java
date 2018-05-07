@@ -1237,13 +1237,38 @@ public class DataSetUtil {
      * @return the greatest common divisor.
      */
     public static QDataSet gcd( QDataSet ds, QDataSet limit ) {
+        if ( ds.rank()!=1 ) {
+            throw new IllegalArgumentException("dataset must be rank 1");
+        }
+        if ( limit.rank()!=0 || limit.value()<=0 ) {
+            throw new IllegalArgumentException("limit must be rank 0 and positive");
+        }
+        if ( !SemanticOps.getUnits(ds).isConvertibleTo(SemanticOps.getUnits(limit) ) ) {
+            throw new IllegalArgumentException("limit must be in the same units as ds");
+        }
         QDataSet ds1= validPoints(ds);
         if ( ds1.length()==0 ) throw new IllegalArgumentException("no valid points");
         //if ( ds1.length()==1 ) return  DataSetOps.slice0( ds, 0 );
         if ( ds1.length()==1 ) return ds.slice( 0 );
         //QDataSet guess= DataSetOps.slice0( ds, 1 );
-        QDataSet guess= ds.slice( 1 );
-        return gcd( ds, guess, limit );
+        int i0= 1;
+        QDataSet guess= ds.slice( i0 );
+        while ( Ops.lt(guess,limit).value()>0 && i0<(ds.length()-1) ) {
+            i0++;
+            guess= ds.slice( i0 );
+        }
+        //try {
+            return gcd( ds, guess, limit );
+//        } catch ( IndexOutOfBoundsException ex ) {
+//            System.err.println("# demo bug in gcd");
+//            System.err.println("limit="+limit);
+//            System.err.println("ds=["+ds.value(0)+",");
+//            for ( int i=0; i<ds.length(); i++ ) {
+//                System.err.println("    "+ds.value(i)+",");
+//            }
+//            System.err.println("   ]");
+//            throw ex;
+//        }
     }
 
     /**
