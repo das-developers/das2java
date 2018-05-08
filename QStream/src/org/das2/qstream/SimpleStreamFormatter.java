@@ -256,7 +256,12 @@ public class SimpleStreamFormatter {
         QDataSet gcd;
         try {
             QDataSet diffs= Ops.subtract( ds, DataSetOps.slice0(ds,0) );
-            gcd= DataSetUtil.gcd( diffs, DataSetUtil.asDataSet( 1, Units.picoseconds ) );
+            try {
+                gcd= DataSetUtil.gcd( diffs, DataSetUtil.asDataSet( 1, Units.picoseconds ) );
+            } catch ( IndexOutOfBoundsException ex ) {
+                diffs= Ops.diff( ds );
+                gcd= DataSetUtil.gcd( diffs, DataSetUtil.asDataSet( 1, Units.picoseconds ) );
+            }
         } catch ( IllegalArgumentException ex ) {
             logger.log( Level.FINE, ex.getMessage(), ex );
             gcd= null;
