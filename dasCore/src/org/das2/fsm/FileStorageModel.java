@@ -216,7 +216,7 @@ public class FileStorageModel {
                     while ( j>=0 && result==null ) {
                         String ff= names[i].equals("") ? files1[ j ] : names[i]+"/"+files1[ j ];
                         if ( ff.endsWith("/") ) ff=ff.substring(0,ff.length()-1);
-                        //try {
+                        try {
                             HashMap<String,String> extra= new HashMap();
                             DatumRange tr= getDatumRangeFor( ff, extra );
                             boolean versionOk= true;
@@ -232,9 +232,9 @@ public class FileStorageModel {
                                     result= ff;
                                 }
                             }
-                        //} catch ( ParseException ex ) {
-                        // 
-                        //}
+                        } catch ( IllegalArgumentException ex ) {
+                            logger.log( Level.FINER, null, ex );
+                        }
                         if ( result==null ) j--;
                     }
                 }
@@ -568,8 +568,7 @@ public class FileStorageModel {
                         logger.log( Level.FINER, "  add {0}", ff);
                     }
                 } catch ( IllegalArgumentException e ) {
-                    //logger.log( Level.WARNING, "", e ); // this just means file doesn't match template.
-                    //System.err.println("ignoring file "+ff +" because of error when parsing as "+template);
+                    logger.log( Level.FINER, "  skip {0} because it does not parse properly", ff ); // this just means file doesn't match template.
                 }
                 monitor.setTaskProgress( i*10 + j * 10 / files1.length );
             }
