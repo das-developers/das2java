@@ -11706,14 +11706,14 @@ public final class Ops {
      */
     public static String guessName( QDataSet ds, String deft ) {
         String label= (String) ds.property( QDataSet.NAME );
-        if ( label==null ) {
+        if ( label==null || label.length()==0 ) {
             label= (String) ds.property( QDataSet.LABEL );
             if ( label!=null ) label= safeName( label );
         }
         if ( label==null ) {
             return deft==null ? null : safeName(deft);
         } else {
-            return label;
+            return safeName(label);
         }
     }
 
