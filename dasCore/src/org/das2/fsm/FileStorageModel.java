@@ -319,14 +319,14 @@ public class FileStorageModel {
                     timeParser.parse( filename.substring(0,filename.length()-3), extra );
                     return timeParser.getTimeRange();
                 } else {
-                    throw new IllegalArgumentException( "file name ("+filename+") doesn't match model specification ("+regex+")");
+                    throw new IllegalArgumentException( "file name \""+filename+"\" doesn't match model specification ("+template+")");
                 }
             }
         } catch ( ParseException e ) {
-            IllegalArgumentException e2=new IllegalArgumentException( "file name ("+filename+") doesn't match model specification ("+regex+"), parse error in field",e);
+            IllegalArgumentException e2=new IllegalArgumentException( "file name \""+filename+"\" doesn't match model specification ("+template+"), parse error in field",e);
             throw e2;
         } catch ( NumberFormatException e ) {
-            IllegalArgumentException e2=new IllegalArgumentException( "file name ("+filename+") doesn't match model specification ("+regex+"), parse error in field",e);
+            IllegalArgumentException e2=new IllegalArgumentException( "file name \""+filename+"\" doesn't match model specification ("+template+"), parse error in field",e);
             throw e2;
         }
     }
