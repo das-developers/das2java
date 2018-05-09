@@ -95,8 +95,8 @@ public class DasSliceControllerDemo {
         };
         
         sliceCont.addPropertyChangeListener(DasSliceController.PROP_DATUMRANGE, sliceRangeListener);
-        sliceCont.addPropertyChangeListener(DasSliceController.PROP_LDATUM, sliceRangeListener);
-        sliceCont.addPropertyChangeListener(DasSliceController.PROP_RDATUM, sliceRangeListener);
+//        sliceCont.addPropertyChangeListener(DasSliceController.PROP_LDATUM, sliceRangeListener);
+//        sliceCont.addPropertyChangeListener(DasSliceController.PROP_RDATUM, sliceRangeListener);
         canvas.add(sliceCont);
         
       
@@ -108,7 +108,7 @@ public class DasSliceControllerDemo {
         rend = new SpectrogramRenderer(null, cb);
         rend.setRebinner( SpectrogramRenderer.RebinnerEnum.binAverage );
         
-        qds = Ops.ripples(100,20,30);
+        qds = Ops.ripples(1000,20,30);
         
         rend.setDataSet( qds.slice(1) );
         
@@ -144,7 +144,7 @@ public class DasSliceControllerDemo {
 //        System.err.println("rIndex length = " + rIndex.length());
         int lowIndex = (int) lIndex.value();
         int upIndex = (int) rIndex.value();
-        QDataSet trimmedQds = qds.trim(lowIndex, upIndex+1);
+        QDataSet trimmedQds = qds.trim(lowIndex, upIndex + 1);
         trimmedQds = collapse0(trimmedQds);
         System.err.println("trimmed ds rank = " + trimmedQds.rank());
         rend.setDataSet(trimmedQds);
