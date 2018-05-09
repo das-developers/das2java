@@ -11706,7 +11706,11 @@ public final class Ops {
      */
     public static String guessName( QDataSet ds, String deft ) {
         String label= (String) ds.property( QDataSet.NAME );
-        if ( label==null || label.length()==0 ) {
+        if ( label!=null && label.length()==0 ) { 
+            logger.log(Level.WARNING, "dataset has zero-length name: {0}", ds);
+            label=null;
+        }
+        if ( label==null ) {
             label= (String) ds.property( QDataSet.LABEL );
             if ( label!=null ) label= safeName( label );
         }
