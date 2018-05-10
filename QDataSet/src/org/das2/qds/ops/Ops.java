@@ -9926,15 +9926,29 @@ public final class Ops {
 //        return true;
 //    }
 //    
+    
     /**
      * 1-D median filter with a boxcar of the given size.  The first size/2
      * elements, and the last size/2 elements are copied from the input.
-     * @param ds rank 1 dataset.  Future implementations may support higher rank data.
+     * @param ds rank 1 or rank 2 dataset.  Future implementations may support higher rank data.
      * @param size the boxcar size
-     * @return rank 1 dataset.
+     * @return rank 1 or rank 2 dataset.
+     * @see #smooth(org.das2.qds.QDataSet, int) 
      */
     public static QDataSet medianFilter( QDataSet ds, int size ) {
-        if ( ds.rank()!=1 ) throw new IllegalArgumentException("only rank 1 supported");
+        if ( ds.rank()==2 ) {
+            ArrayDataSet res= ArrayDataSet.copy(ds);
+            for ( int j=0; j<ds.length(0); j++ ) {
+                QDataSet in1= Ops.slice1(ds,j);
+                QDataSet r= where(valid(in1)); // note rank 2 supports fill.
+                in1= applyIndex(in1,r);
+                QDataSet d1= medianFilter( in1, size );
+                for ( int i=0; i<in1.length(); i++ ) {
+                   res.putValue((int)r.value(i),j,d1.value(i));
+                }
+            }
+            return res;
+        }
         if ( Ops.reduceMin( Ops.valid(ds), 0 ).value()==0 ) throw new IllegalArgumentException("fill data is not supported");
         if ( size>ds.length()/2 ) throw new IllegalArgumentException("size cannot be greater than ds.length()/2");
         if ( size<3 ) throw new IllegalArgumentException("size cannot be less than 3");
