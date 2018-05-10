@@ -10,6 +10,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.das2.components.DatumEditor;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
 import org.das2.util.GrannyTextRenderer;
@@ -32,80 +33,12 @@ public class DasSliceController extends DasCanvasComponent {
     
     public void setDatumRange(DatumRange dr){
         DatumRange oldDR = this.datumRange;
-//        if(!lDatum.equals(dr.min()) || !rDatum.equals(dr.max())){
-//            Datum oldLDatum = lDatum;
-//            Datum oldRDatum = rDatum;
-//            lDatum = dr.min();
-//            rDatum = dr.max();
-//            lDatumRect.text = lDatum.toString();
-//            rDatumRect.text = rDatum.toString();
-//            firePropertyChange(PROP_LDATUM, oldLDatum, lDatum);
-//            firePropertyChange(PROP_RDATUM, oldRDatum, rDatum);
-//        }
         this.datumRange = dr;
         lDatumRect.text = this.datumRange.min().toString();
         rDatumRect.text = this.datumRange.max().toString();
         firePropertyChange(PROP_DATUMRANGE, oldDR, dr);
-//        repaint();
     }
-    
-//    private Datum lDatum;
-//    public static final String PROP_LDATUM = "lDatum";
-//
-//    public Datum getlDatum() {
-//        return lDatum;
-//    }
-//
-//    public void setlDatum(Datum lDatum) {
-//        Datum oldLDatum = this.lDatum;
-//        
-//        if(lDatum.gt(rDatum)){
-//            this.lDatum = rDatum;
-//        }else{
-//            this.lDatum = lDatum;
-//        }
-//        lDatumRect.text = this.lDatum.toString();
-//        firePropertyChange(PROP_LDATUM, oldLDatum, this.lDatum);
-//        setDatumRange(new DatumRange(this.lDatum, this.rDatum));
-//        repaint();
-//    }
-//    
-//    private boolean checklDatum(Datum oldLDatum, Datum newLDatum) throws PropertyVetoException{
-//        if(oldLDatum.equals(newLDatum)){
-//            return false;
-//        }
-//        if(oldLDatum.equals(rDatum)){
-//            rDatum = newLDatum;
-//            this.lDatum = newLDatum;
-//            return true;
-//        }else if(newLDatum.gt(rDatum)){
-////            throw new PropertyVetoException("lDatum cannot be set to a value greater than rDatum.", evt);
-//            
-//        }
-//        return false;
-//    }
-//
-//    private Datum rDatum;
-//    public static final String PROP_RDATUM = "rDatum";
-//
-//    public Datum getrDatum() {
-//        return rDatum;
-//    }
-//
-//    public void setrDatum(Datum rDatum) {
-//        Datum oldRDatum = this.rDatum;
-//        
-//        if(rDatum.lt(lDatum)){
-//            this.rDatum = lDatum;
-//        }else{
-//            this.rDatum = rDatum;
-//        }
-//        rDatumRect.text = this.rDatum.toString();
-//        firePropertyChange(PROP_RDATUM, oldRDatum, this.rDatum);
-//        setDatumRange(new DatumRange(this.lDatum, this.rDatum));
-//        repaint();
-//    }
-
+ 
     class TextRect {
 
         String text;
@@ -173,8 +106,7 @@ public class DasSliceController extends DasCanvasComponent {
     private TextRect lScan = new TextRect("<<scan", new Rectangle());
 
     public DasSliceController(Datum lDatum, Datum rDatum) {
-//        this.lDatum = lDatum;
-//        this.rDatum = rDatum;
+
         this.datumRange = new DatumRange(lDatum, rDatum);
         lDatumRect = new TextRect(lDatum.toString(), new Rectangle(), new Cursor(Cursor.W_RESIZE_CURSOR));
         lDatumRect.isShowing = true;
@@ -208,7 +140,7 @@ public class DasSliceController extends DasCanvasComponent {
     }
 
     private void setLayoutRatios() {
-//        if (lDatum.equals(rDatum)) {
+
         if (datumRange.min().equals(datumRange.max()) && !startedDragAsRange) {
             lScan.lRatio = 0;
             lScan.rRatio = 0.15;
@@ -246,7 +178,6 @@ public class DasSliceController extends DasCanvasComponent {
 
     private void setlayoutAry() {
 
-//        if (lDatum.equals(rDatum)) {
         if (datumRange.min().equals(datumRange.max()) && !startedDragAsRange) {
             layoutAry[0] = lScan;
             layoutAry[1] = lDatumRect;
@@ -310,13 +241,10 @@ public class DasSliceController extends DasCanvasComponent {
     }
     private boolean isDragging = false;
     private boolean startedDragAsRange = false;
-//    private boolean lDrag = false;
-//    private boolean rDrag = false;
-//    private Point pressedPoint;
+    
+    // While dragging the event.getButton always returns 0... So keep track of it here
+    private int buttonPress = 0;
     private Point lastPoint;
-//    private Datum lDatumUpdating;
-//    private Datum rDatumUpdating;
-//    private DatumRange datumRangeUpdating;
     
     private MouseAdapter getMouseAdapter() {
         return new MouseAdapter() {
@@ -340,9 +268,9 @@ public class DasSliceController extends DasCanvasComponent {
             @Override
             public void mousePressed(MouseEvent e) {
                 setMouseRect(e.getX(), e.getY());
-//                pressedPoint = new Point(e.getX(), e.getY());
                 lastPoint = e.getPoint();
                 if(e.getButton() == 1){
+                    buttonPress = 1;
                     if (mouseRect == lDatumRect || mouseRect == rDatumRect) {
                         isDragging = true;
                         if(!datumRange.min().equals(datumRange.max())){
@@ -350,14 +278,18 @@ public class DasSliceController extends DasCanvasComponent {
                         }else{
                             startedDragAsRange = false;
                         }
-//                        lDatumUpdating = lDatum;
-//                        rDatumUpdating = rDatum;
-//                        datumRangeUpdating = new DatumRange(datumRange.min(), datumRange.max());
-                        
                     }
                 } else if(e.getButton() == 2){
+                    buttonPress = 2;
                     if(mouseRect == lDatumRect || mouseRect == rDatumRect || mouseRect == toTextRect){
-                        
+                        isDragging = true;
+                        getCanvas().getGlassPane().setCursor(new Cursor(Cursor.MOVE_CURSOR));
+                        System.err.println("middle button pressed");
+                        if(!datumRange.min().equals(datumRange.max())){
+                            startedDragAsRange = true;
+                        }else{
+                            startedDragAsRange = false;
+                        }
                     }
                 }
                 
@@ -366,49 +298,33 @@ public class DasSliceController extends DasCanvasComponent {
             @Override
             public void mouseDragged(MouseEvent e) {
                 
-//                int xDrag = e.getX() - pressedPoint.x;
-//                int yDrag = e.getY() - pressedPoint.y;
-
-                
                 int xDrag = e.getX() - lastPoint.x;
                 lastPoint = e.getPoint();
+                System.err.println("Button dragging is " + e.getButton());
                 
                 // mouseRect isn't updated during drag so its value is 
                 // whatever it was on mousePress
-                if (mouseRect == lDatumRect) {
-                    lDatumDrag(xDrag);
+                if(buttonPress == 1){
+//                    System.err.println(" left clickckckc");
+                    if (mouseRect == lDatumRect) {
+                        lDatumDrag(xDrag);
                     
-                } else if (mouseRect == rDatumRect) {
-                    rDatumDrag(xDrag);
+                    } else if (mouseRect == rDatumRect) {
+                        rDatumDrag(xDrag);
+                    }
+                }else if(buttonPress == 2){
+                    if(mouseRect == lDatumRect || mouseRect == rDatumRect || mouseRect == toTextRect){
+                        middleButtonDrag(xDrag);
+                    }
                 }
+                
               
             }
 
             @Override
             public void mouseReleased(MouseEvent e) {
                 if (isDragging) {
-//                    Datum oldRDatum = rDatum;
-//                    Datum oldLDatum = lDatum;
-//                    DatumRange oldDatumRange = datumRange;
-                    
-//                    rDatum = rDatumUpdating;
-//                    lDatum = lDatumUpdating;
-//                    datumRange = datumRangeUpdating;
-                    
-//                    setrDatum(rDatum);
-//                    setlDatum(lDatum);
                     setDatumRange(datumRange);
-                    
-//                    if(lDrag){
-//                        firePropertyChange(PROP_LDATUM, oldLDatum, lDatum);
-//                        lDrag = false;
-//                    }
-//                    if(rDrag){
-//                        firePropertyChange(PROP_RDATUM, oldRDatum, rDatum);
-//                        rDrag = false;
-//                    }
-                    
-//                    setDatumRange(new DatumRange(lDatum, rDatum));
                     isDragging = false;
                     startedDragAsRange = false;
                 }
@@ -452,80 +368,37 @@ public class DasSliceController extends DasCanvasComponent {
 
     private void scanLeft() {
 //        System.err.println("ScanLeft clicked");
-//        if (lDatum.equals(rDatum)) {
         if (datumRange.min().equals(datumRange.max())) {
-//            Datum singleScanDatum = Datum.create(1.0, lDatum.getUnits());
             Datum singleScanDatum = Datum.create(1.0, datumRange.getUnits());
-            //Also increment rDatum so the layout doesn't change.
-//            Datum oldLDatum = lDatum;
-//            Datum oldRDatum = rDatum;
-//            DatumRange oldDatumRange = datumRange;
+
             setDatumRange(new DatumRange(datumRange.min().subtract(singleScanDatum), 
                                         datumRange.max().subtract(singleScanDatum)));
-            
-//            rDatum = rDatum.subtract(singleScanDatum);
-//            lDatum = lDatum.subtract(singleScanDatum);
-            // Sets the text, but won't fire the event because I manually set the
-            // values, so the setter doesn't think they changed.
-//            setrDatum(rDatum);
-//            setlDatum(lDatum);
-            
-//            firePropertyChange(PROP_LDATUM, oldLDatum, lDatum);
-            
-//            setDatumRange(new DatumRange(lDatum, rDatum));
         } else {
-//            Datum datumWidth = getrDatum().subtract(getlDatum());
-//            setrDatum(getlDatum());
-//            setlDatum(getlDatum().subtract(datumWidth));
-//            setDatumRange(new DatumRange(getlDatum().subtract(datumWidth), getlDatum()));
             setDatumRange(datumRange.previous());
         }
     }
 
     private void scanRight() {
 //        System.err.println("ScanRight clicked");
-//        if (lDatum.equals(rDatum)) {
         if (datumRange.min().equals(datumRange.max())) {
-//            Datum singleScanDatum = Datum.create(1.0, lDatum.getUnits());
             Datum singleScanDatum = Datum.create(1.0, datumRange.getUnits());
-//            Datum oldLDatum = lDatum;
-//            Datum oldRDatum = rDatum;
-//            rDatum = rDatum.add(singleScanDatum);
-//            lDatum = lDatum.add(singleScanDatum);
-            // Sets the text, but won't fire the event because I manually set the
-            // values, so the setter doesn't think they changed.
-//            setrDatum(rDatum);
-//            setlDatum(lDatum);
-//            
-//            firePropertyChange(PROP_LDATUM, oldLDatum, lDatum);
-//            setDatumRange(new DatumRange(lDatum, rDatum));
             setDatumRange(new DatumRange(datumRange.min().add(singleScanDatum), 
                                         datumRange.max().add(singleScanDatum)));
             
         } else {
-//            Datum datumWidth = getrDatum().subtract(getlDatum());
-//            setlDatum(getrDatum());
-//            setrDatum(getrDatum().add(datumWidth));
-//            setDatumRange(new DatumRange(getrDatum(), getrDatum().add(datumWidth)));
             setDatumRange(datumRange.next());
         }
     }
 
     private void addRDatum() {
 //        System.err.println("AddRDatum clicked");
-//        Datum distFromLDatum = Datum.create(1, lDatum.getUnits());
         Datum distFromLDatum = Datum.create(1, datumRange.getUnits());
-//        setrDatum(getlDatum().add(distFromLDatum));
-//        setDatumRange(new DatumRange(lDatum, rDatum));
         setDatumRange(new DatumRange(datumRange.min(), datumRange.min().add(distFromLDatum)));
     }
 
     private void lDatumDrag(int xTotalDrag) {
-//        lDrag = true;
 //        System.err.println("lDatumDragging, total dist = " + xTotalDrag);
-//        Datum dragDatum = Datum.create(xTotalDrag, lDatum.getUnits());
         Datum dragDatum = Datum.create(xTotalDrag, datumRange.getUnits());
-//        if (lDatum.equals(rDatum)) {
         if (datumRange.min().equals(datumRange.max())) {
             
             // Make sure layout won't collapse to a single datum range
@@ -539,82 +412,49 @@ public class DasSliceController extends DasCanvasComponent {
                     return;
                 }
             }
-            // Going to manually set everything so events aren't fired until 
-            // dragging is complete
-//            lDatumUpdating = lDatum.add(dragDatum);
-//            lDatumRect.text = lDatumUpdating.toString();
-//            rDatumUpdating = lDatumUpdating;
-//            datumRangeUpdating = new DatumRange(datumRange.min().add(dragDatum), datumRange.min().add(dragDatum));
             setDatumRange(new DatumRange(datumRange.min().add(dragDatum), datumRange.min().add(dragDatum)));
             
         } else {
-//            lDatumUpdating = lDatum.add(dragDatum);
-//            if (lDatumUpdating.gt(rDatum)) {
-//                lDatumUpdating = rDatum;
-//                lDatumRect.text = rDatum.toString();
-//            } else {
-//                lDatumRect.text = lDatumUpdating.toString();
-//            }
+
             Datum newLDatum = datumRange.min().add(dragDatum);
             // If left value exceeds right value make it stop at right value.
             if(newLDatum.gt(datumRange.max())){
-//                datumRangeUpdating = new DatumRange(datumRange.max(), datumRange.max());
                 setDatumRange(new DatumRange(datumRange.max(), datumRange.max()));
             }else{
-//                datumRangeUpdating = new DatumRange(newLDatum, datumRange.max());
                 setDatumRange(new DatumRange(newLDatum, datumRange.max()));
             }
         }
     }
 
     private void rDatumDrag(int xTotalDrag) {
-//        rDrag = true;
 //        System.err.println("rDatumDragging, total dist = " + xTotalDrag);
-//        Datum dragDatum = Datum.create(xTotalDrag, lDatum.getUnits());
         Datum dragDatum = Datum.create(xTotalDrag, datumRange.getUnits());
-//        rDatumUpdating = rDatum.add(dragDatum);
         Datum newRDatum = datumRange.max().add(dragDatum);
         
-//        if (rDatumUpdating.lt(lDatum)) {
         if (newRDatum.lt(datumRange.min())) {
-//            rDatumUpdating = lDatum;
-//            rDatumRect.text = lDatum.toString();
-//            datumRangeUpdating = new DatumRange(datumRange.min(), datumRange.min());
             setDatumRange(new DatumRange(datumRange.min(), datumRange.min()));
         } else {
-//            rDatumRect.text = rDatumUpdating.toString();
-//            datumRangeUpdating = new DatumRange(datumRange.min(), newRDatum);
             setDatumRange(new DatumRange(datumRange.min(), newRDatum));
         }
         
     }
+    
+    private void middleButtonDrag(int xDrag){
+        Datum dragDatum = Datum.create(xDrag, datumRange.getUnits());
+        setDatumRange(new DatumRange(datumRange.min().add(dragDatum), datumRange.max().add(dragDatum)));
+    }
 
     private void wheelRotation(int amount) {
 //        System.err.println("Wheel rotation amount = " + amount);
-//        Datum datumAmount = Datum.create(amount, lDatum.getUnits());
         Datum datumAmount = Datum.create(amount, datumRange.getUnits());
-//        if (lDatum.equals(rDatum)) {
         if (datumRange.min().equals(datumRange.max())) {
-//            rDatum = rDatum.add(datumAmount);
-//            lDatum = lDatum.add(datumAmount);
-            
-//            setrDatum(rDatum);
-//            setlDatum(lDatum);
             setDatumRange(new DatumRange(datumRange.min().add(datumAmount), datumRange.min().add(datumAmount)));
         } else {
             if (amount > 0) {
-//                setrDatum(rDatum.add(datumAmount));
-//                setlDatum(lDatum.subtract(datumAmount));
                 setDatumRange(new DatumRange(datumRange.min().subtract(datumAmount), datumRange.max().add(datumAmount)));
             } else if (amount < 0) {
                 // Allow narrowing of range only via scroll, but never allow 
                 // left and right datum to meet.  
-//                if (rDatum.add(datumAmount).gt(lDatum.subtract(datumAmount))
-//                        || lDatum.subtract(datumAmount).lt(rDatum.add(datumAmount))) {
-//
-//                    setrDatum(rDatum.add(datumAmount));
-//                    setlDatum(lDatum.subtract(datumAmount));
-//                }
                 if(datumRange.max().add(datumAmount).gt(datumRange.min().subtract(datumAmount))
                         || datumRange.min().subtract(datumAmount).lt(datumRange.max().add(datumAmount))){
                     setDatumRange(new DatumRange(datumRange.min().subtract(datumAmount), datumRange.max().add(datumAmount)));
@@ -622,585 +462,4 @@ public class DasSliceController extends DasCanvasComponent {
             }
         }
     }
-
-//    public DasSliceController(QDataSet qds) {
-//        if (qds.rank() != 1) {
-//            throw new IllegalArgumentException("Dataset is not rank 1."
-//                    + "Slice the data in the dimension you want "
-//                    + "before calling DasSliceController().");
-//        }
-//        this.qds = qds;
-//        lDatumRect = new DatumRect(qds, 0, new Rectangle());
-//        rDatumRect = new DatumRect(qds, 0, new Rectangle());
-////        lDatumRect = new DatumRect(Datum.create(qds.value(0), (Units) qds.property(QDataSet.UNITS)), new Rectangle());
-////        rDatumRect = new DatumRect(Datum.create(qds.value(1), (Units) qds.property(QDataSet.UNITS)), new Rectangle());
-//
-//        lDatumRect.cursor = wResizeCursor;
-//        rDatumRect.cursor = eResizeCursor;
-//        MouseAdapter ma = getMouseAdapter();
-//        addMouseMotionListener(ma);
-//        addMouseWheelListener(ma);
-//        addMouseListener(ma);
-//        setRecAry();
-//
-//    }
-//    private void mouseClick(){
-//        
-//        if(mouseRect == addRDatum){
-//            rDatumRect.setIndex(rDatumRect.getIndex() +2);
-//            repaint();
-//        }else if(mouseRect == lScan){
-//            if(lDatumRect.getIndex() == rDatumRect.getIndex()){
-//                if(lDatumRect.getIndex() > 0){
-//                    rDatumRect.setIndex(rDatumRect.getIndex() - 1);
-//                    lDatumRect.setIndex(lDatumRect.getIndex() - 1);
-//                }
-//                
-//            }else{
-//                int width = rDatumRect.getIndex() - lDatumRect.getIndex();
-//                int lToZero = lDatumRect.getIndex();
-//                if(lToZero < width){
-//                    rDatumRect.setIndex(rDatumRect.getIndex() - lToZero);
-//                    lDatumRect.setIndex(0);
-//                }else{
-//                    rDatumRect.setIndex(rDatumRect.getIndex() - width);
-//                    lDatumRect.setIndex(lDatumRect.getIndex() - width);
-//                }
-//            }
-//        }else if(mouseRect == rScan){
-//            if(lDatumRect.getIndex() == rDatumRect.getIndex()){
-//                if(rDatumRect.getIndex() < qds.length() - 1){
-//                    rDatumRect.setIndex(rDatumRect.getIndex() + 1);
-//                    lDatumRect.setIndex(lDatumRect.getIndex() + 1);
-//                }
-//                
-//            }else{
-//                int width = rDatumRect.getIndex() - lDatumRect.getIndex();
-//                int rToMax = qds.length() - 1 - rDatumRect.getIndex();
-//                if(width > rToMax){
-//                    rDatumRect.setIndex(qds.length( ) - 1);
-//                    lDatumRect.setIndex(lDatumRect.getIndex() + rToMax);
-//                }else{
-//                    rDatumRect.setIndex(rDatumRect.getIndex() + width);
-//                    lDatumRect.setIndex(lDatumRect.getIndex() + width);
-//                }
-//            }
-//        }
-//    }
-//    Point mousePressedPoint;
-//    int pressIndex;
-//    TextRect mousePressedRect;
-//    private void setMousePressedParams(Point p){
-//        isDragging = true;
-//        mousePressedPoint = p;
-//        mousePressedRect = null;
-//        for(TextRect tr: layoutAry){
-//            if(tr != null && tr.rect.contains(p)){
-//                mousePressedRect = tr;
-//                break;
-//            }
-//        }
-//        if(mousePressedRect instanceof DatumRect){
-//            pressIndex = ((DatumRect) mousePressedRect).getIndex();
-//        }
-//    }
-//    
-//    private void updateValuesViaDrag(Point p){
-//        int dragX = p.x - mousePressedPoint.x;
-//        int dragY = p.y - mousePressedPoint.y;
-//        int newIndex = pressIndex + dragX / 100;
-//        if(mousePressedRect == lDatumRect){
-//            if(lDatumRect.index == rDatumRect.index && changeLayout){
-//                rDatumRect.setIndex(newIndex);
-//                lDatumRect.setIndex(newIndex);
-////                repaint();
-//            } else{
-//                if(newIndex >= rDatumRect.getIndex()){
-//                    changeLayout = false;
-//                    lDatumRect.setIndex(rDatumRect.getIndex());
-////                    repaint();
-//                }else if(newIndex <= 0){
-//                    lDatumRect.setIndex(0);
-//                } else{
-//                    lDatumRect.setIndex(newIndex);
-//                }
-//            }
-//        } else if(mousePressedRect == rDatumRect){
-//           if(newIndex <= lDatumRect.getIndex()){
-//               changeLayout = false;
-//               rDatumRect.setIndex(lDatumRect.getIndex());
-//           }else if(newIndex >= qds.length() - 1){
-//               rDatumRect.setIndex(qds.length() - 1);
-//           }else{
-//               rDatumRect.setIndex(newIndex);
-//           }
-//        }
-//    }
-//    
-//    private void wheelRotated(int amt){
-//        if(mouseRect == lDatumRect || mouseRect == toTextRect || mouseRect == rDatumRect){
-//            if(lDatumRect.getIndex() == rDatumRect.getIndex()){
-//                rDatumRect.setIndex(rDatumRect.getIndex() + amt);
-//                lDatumRect.setIndex(lDatumRect.getIndex() + amt);
-//                repaint();
-//            }else if(lDatumRect.getIndex() - amt < rDatumRect.getIndex() &&
-//                     rDatumRect.getIndex() + amt > lDatumRect.getIndex()){
-//
-//                rDatumRect.setIndex(rDatumRect.getIndex() + amt);
-//                lDatumRect.setIndex(lDatumRect.getIndex() - amt);
-//                repaint();
-//                
-//            }
-//        }
-//    }
 }
-// 
-
-//    
-//     /** DatumRange containing the valid max and min of the QDataSet */
-//     private DatumRange validDatumRange;   
-// 
-//     public DatumRange getValidDatumRange() {
-//         return validDatumRange;
-//     }
-//     
-//     public void setValidDatumRange(DatumRange validDatumRange) {
-//         this.validDatumRange = validDatumRange;
-//     }
-// 
-//     /** The current range displayed */
-//     private DatumRange currentDatumRange = null;
-// 
-//     public static final String PROP_CURRENTDATUMRANGE = "currentDatumRange";
-// 
-//     public DatumRange getCurrentDatumRange() {
-//         return currentDatumRange;
-//     }
-// 
-//     public void setCurrentDatumRange(DatumRange currentDatumRange) {
-//         DatumRange oldCurrentDatumRange = this.currentDatumRange;
-//         this.currentDatumRange = currentDatumRange;
-//         firePropertyChange(PROP_CURRENTDATUMRANGE, oldCurrentDatumRange, currentDatumRange);
-//     }
-//     
-//     /** Amount to change currentDatumRange.min() on a click and drag */
-//     private Datum datumLeftDragVal = null;
-// 
-//     public Datum getDatumLeftDragVal() {
-//         return datumLeftDragVal;
-//     }
-// 
-//     public void setDatumLeftDragVal(Datum datumLeftDragVal) {
-//         this.datumLeftDragVal = datumLeftDragVal;
-//     }
-// 
-//     /** Amount to change currentDatumRange.max() on a click and drag */
-//     private Datum datumRightDragVal = null;
-//     
-//     public Datum getDatumRightDragVal() {
-//         return datumRightDragVal;
-//     }
-// 
-//     public void setDatumRightDragVal(Datum datumRightDragVal) {
-//         this.datumRightDragVal = datumRightDragVal;
-//     }
-// 
-//     
-//     Cursor resizeCursor = new Cursor(Cursor.E_RESIZE_CURSOR);
-//     Cursor handCursor = new Cursor(Cursor.HAND_CURSOR);
-//     Cursor defaultCursor = new Cursor(Cursor.DEFAULT_CURSOR);
-//     Cursor moveCursor = new Cursor(Cursor.MOVE_CURSOR);
-//     
-//     /* Possible areas the mouse cursor can be */
-//     enum MouseArea {
-//         LEFT, CENTER, RIGHT, NONE
-//     }
-//     
-//     /* Used to highlight area mouse is in */
-//     private MouseArea mouseArea = MouseArea.NONE;
-// 
-//     public MouseArea getMouseArea() {
-//         return mouseArea;
-//     }
-// 
-//     protected void setMouseArea(MouseArea mouseArea) {
-//         if(this.mouseArea == mouseArea){ return; }
-//         else{
-//             switch(mouseArea){
-//                 case LEFT:
-//                     getCanvas().getGlassPane().setCursor(handCursor);
-//                     update();
-//                     break;
-//                 case RIGHT:
-//                     getCanvas().getGlassPane().setCursor(handCursor);
-//                     update();
-//                     break;
-//                 case CENTER:
-//                     getCanvas().getGlassPane().setCursor(moveCursor);
-//                     update();
-//                     break;
-//                 case NONE:
-//                     getCanvas().getGlassPane().setCursor(defaultCursor);
-//                     update();
-//                     break;
-//                 default:
-//                     break;
-//                     
-//             }
-//         }
-//         this.mouseArea = mouseArea;
-//     }
-//     
-//     protected void setMouseArea(Point pt){
-//      // Update mouse area for highlighting
-//         if(leftRect.contains(pt)){
-//             setMouseArea(MouseArea.LEFT);
-//         } else if(rightRect.contains(pt)){
-//             setMouseArea(MouseArea.RIGHT);
-//         } else if(centerRect.contains(pt)){
-//             setMouseArea(MouseArea.CENTER);
-//         } else{
-//             setMouseArea(MouseArea.NONE);
-//         }
-//     } 
-//     
-//     
-//     /** 
-//      * Stores point where the mouse is pressed and is used
-//      * to determine how much a data value should change 
-//      * when the mouse is released.
-//      */
-//     private Point mousePressPt;
-//     
-//     /**
-//      * Used to keep an area highlighted if a mouse drag
-//      * exits frame, but to stop highlighting if mouse exit
-//      * wasn't during a drag.
-//      */
-//     private boolean mouseIsDragging;
-//   
-//     
-//     /** Interactive area for changing left data value */
-//     private Rectangle leftRect = new Rectangle(); 
-//     /** Interactive area for changing right data value */
-//     private Rectangle rightRect = new Rectangle();
-//     /** Interactive area for changing both data values at the same time */
-//     private Rectangle centerRect = new Rectangle();
-//     
-//     /** Portion of entire width used for leftRect and rightRect */
-//     private float widthFactor = 4.0f / 9.0f;
-//     
-//     
-//     /* ****** USEFUL PAINT PARAMS ****** */
-//     private int colMin;
-//     private int colMax; 
-//     private int colWidth;
-//     private int colMidPt;
-//     
-//     private int rowMin;  
-//     private int rowMax; 
-//     private int rowWidth;
-//     private int rowMidPt; 
-//     
-//     private int dataCellWidth;
-//     private int dataCellHeight;
-//     
-//     private int colLeftCellBegin;
-//     private int colLeftCellEnd;
-//     
-//     private int colRightCellBegin;
-//     private int colRightCellEnd;
-//     /* *************************** */
-//     
-//     
-//     /** Updates all the useful paint params */
-//     private void setRects(){
-//         
-//         colMin = getColumn().getDMinimum() ;
-//         colMax = getColumn().getDMaximum() ;
-// //                colMin = 100; colMax = 900;
-// //                colMin = 0; colMax = 1000;
-// //        System.err.println("ColMin = " + colMin);
-// //        System.err.println("ColMax = " + colMax);
-// 
-//         colWidth = colMax - colMin;
-//         colMidPt = colMin + (colWidth / 2);
-//         
-//         rowMin = getRow().getDMinimum() ;
-//         rowMax = getRow().getDMaximum() ;
-// //                rowMin = 10; rowMax = 90;
-// //                rowMin = 0; rowMax = 100;
-// //        System.err.println("rowMin = " + rowMin);
-// //        System.err.println("rowMax = " + rowMax);
-// 
-//         rowWidth = rowMax - rowMin;
-//         rowMidPt = rowMin + (rowWidth / 2);
-//         
-//         dataCellWidth = (int) (colWidth * widthFactor);
-//         dataCellHeight = rowWidth;
-// //        System.err.println("row width = " + dataCellHeight);
-//         colLeftCellBegin = colMin;
-//         colLeftCellEnd = colLeftCellBegin + dataCellWidth;
-//         
-//         colRightCellEnd  = colMax;
-//         colRightCellBegin = colRightCellEnd - dataCellWidth;
-//         
-//         leftRect.setBounds(colMin, rowMin, dataCellWidth, dataCellHeight);
-//         rightRect.setBounds(colRightCellBegin, rowMin, dataCellWidth, dataCellHeight);
-//         centerRect.setBounds(colLeftCellEnd, rowMin, colRightCellBegin - colLeftCellEnd, dataCellHeight);
-//     }
-//             
-//     @Override
-//     protected void paintComponent(Graphics g) {
-//         
-//         setRects();
-//         g.setColor(Color.gray);
-//         g.drawRect(leftRect.x, leftRect.y, leftRect.width, leftRect.height);
-//         g.drawRect(rightRect.x, rightRect.y, rightRect.width, rightRect.height);
-//         
-//         g.setColor(Color.BLACK);
-//        
-//         g.setFont(g.getFont().deriveFont(g.getFont().getSize() * 2.5f));
-//         
-//         // Write data values
-//         g.drawString((currentDatumRange.min().plus(datumLeftDragVal)).toString(), 
-//                 leftRect.x + leftRect.width / 5, rowMidPt + g.getFont().getSize() / 4);
-//         g.drawString((currentDatumRange.max().plus(datumRightDragVal)).toString(), 
-//                 rightRect.x + rightRect.width / 5, rowMidPt + g.getFont().getSize() / 4);
-//         
-//         g.setColor(new Color(.5f, .5f, 0, .5f));
-//         
-//         // highlight area the mouse is in
-//         switch (this.mouseArea){
-//             case LEFT:
-//                 g.fillRect(leftRect.x, leftRect.y, leftRect.width, leftRect.height);
-//                 break;
-//             case CENTER:
-//                 g.fillRect(centerRect.x, centerRect.y, centerRect.width, centerRect.height);
-//                 break;   
-//             case RIGHT:
-//                 g.fillRect(rightRect.x, rightRect.y, rightRect.width, rightRect.height);
-//                 break;  
-//             case NONE:
-//                 break;
-//             default:
-//                 break;
-//         }
-//     }
-// 
-//     @Override
-//     public Rectangle getBounds() {
-//         
-//         return DasDevicePosition.toRectangle( getRow(), getColumn() );
-//         
-//     }
-//    
-//     
-//     public DasSliceController(QDataSet qds){
-//         
-//         super();
-//         this.qds = qds;
-//         
-//         if(!DataSetUtil.isMonotonic(qds)){
-//             throw new IllegalArgumentException("Dataset is not monotonic.");
-//         }
-//         
-//         // Check if increasing or decreasing and set valid range accordingly
-//         if( qds.value(0) > qds.value(qds.length() - 1)){
-//             this.validDatumRange = new DatumRange(
-//                 Datum.create(qds.value(qds.length() - 1), (Units) qds.property(QDataSet.UNITS)),
-//                 Datum.create(qds.value(0), (Units) qds.property(QDataSet.UNITS)) );
-//         } else{
-//             
-//             this.validDatumRange = new DatumRange(
-//                 Datum.create(qds.value(0), (Units) qds.property(QDataSet.UNITS)),
-//                 Datum.create(qds.value(qds.length() - 1), (Units) qds.property(QDataSet.UNITS)) );
-//         }
-//         
-//         this.currentDatumRange = this.validDatumRange;
-//         
-//         datumLeftDragVal = Datum.create(0, (Units) qds.property(QDataSet.UNITS));
-//         datumRightDragVal = Datum.create(0, (Units) qds.property(QDataSet.UNITS));
-//         
-//         MouseAdapter ma =  getMouseAdapter();
-//         addMouseListener( ma );
-//         addMouseMotionListener( ma );
-//         
-//     }
-// 
-//     
-//     
-//     private MouseAdapter getMouseAdapter() { 
-//         return new MouseAdapter() {
-//             
-//             @Override
-//             public void mouseClicked(MouseEvent e) {
-//                
-//             }
-// 
-//             @Override
-//             public void mousePressed(MouseEvent e) { 
-//                 mousePressPt = e.getPoint(); 
-//             }
-//             
-//             @Override
-//             public void mouseDragged(MouseEvent e) {
-//                 
-//                 mouseIsDragging = true;
-//                 Point currentPoint = e.getPoint();
-//                 
-//                 // Create Datum based on distance dragged to manipulate the current range
-//                 double xDist = currentPoint.x - mousePressPt.x;
-//                 xDist = factorOfXDist(xDist);
-//                 Datum xDatumDist = Datum.create(xDist, (Units) qds.property(QDataSet.UNITS));
-//                 
-//                 updateValues(xDatumDist);
-//                 
-//             }
-//             
-//             @Override
-//             public void mouseReleased(MouseEvent e) {
-//                 
-//                 mouseIsDragging = false;
-//                 // Update currentRange with final drag value
-//                 setCurrentDatumRange(new DatumRange(
-//                         currentDatumRange.min().add(datumLeftDragVal),
-//                         currentDatumRange.max().add(datumRightDragVal)  ));
-//                 
-//                 // Reset drag vals
-//                 setDatumLeftDragVal(Datum.create(0, (Units) qds.property(QDataSet.UNITS) ));
-//                 setDatumRightDragVal(Datum.create(0, (Units) qds.property(QDataSet.UNITS)));
-//                 
-//                 // Stop highlighting if release is outside bounds
-//                 if(!getBounds().contains(e.getPoint())){
-//                     setMouseArea(MouseArea.NONE);
-//                 }
-//              
-//                 // Fire event for current range on mouse release
-//                 DataRangeSelectionEvent dataRangeEvent = new DataRangeSelectionEvent(
-//                         this, currentDatumRange.min(), currentDatumRange.max());
-// 
-//                 fireDataRangeSelectionListenerDataRangeSelected(dataRangeEvent);
-//             }
-//             
-//             @Override
-//             public void mouseEntered(MouseEvent e){
-//                
-//             }
-//             
-//             @Override
-//             public void mouseExited(MouseEvent e) {
-//                 
-//                 if(!mouseIsDragging){
-//                     mouseArea = MouseArea.NONE;
-//                     update();
-//                 }
-//                 
-//             }
-//             @Override
-//             public void mouseMoved(MouseEvent e) {
-//                
-//                 Point eP = e.getPoint();
-//                 setMouseArea(eP);
-//                
-//             } 
-// 
-//         }; 
-//     }
-//     
-//     /**
-//      * Get some factor of xDist
-//      * @param xDist the distance from initial point
-//      * @return factored distance
-//      */
-//     private double factorOfXDist(double xDist){
-//         return Math.pow(xDist / 100, 3) ;
-//     }
-//     
-//     /**
-//      * Updates current range during a mouse drag, making sure not to allow 
-//      * bounds to exceed the valid ranges
-//      * 
-//      * @param xDatumDist datum corresponding to how far the mouse pointer is
-//      *          from its starting point during a drag
-//      */
-//     private void updateValues(Datum xDatumDist){
-//         switch (mouseArea) {
-//             case LEFT:
-//                 
-//                 if( currentDatumRange.min().add(xDatumDist). // Ensure data left never 
-//                             ge(currentDatumRange.max())  ){  // gets larger than data right
-//                     
-//                     setDatumLeftDragVal(currentDatumRange.max().subtract(currentDatumRange.min()));
-//                  
-//                 }else if(currentDatumRange.min().add(xDatumDist).  // Ensure data left never
-//                             le(validDatumRange.min())){            // drops below valid min
-//                     
-//                     setDatumLeftDragVal(validDatumRange.min().subtract(currentDatumRange.min()));
-//                    
-//                 }else{
-//                     setDatumLeftDragVal(xDatumDist);
-//                 }   break;
-//             case RIGHT:
-//                 if( currentDatumRange.max().add(xDatumDist). // Ensure data right never
-//                             le(currentDatumRange.min())  ){  // dropw below data left
-//                     
-//                     setDatumRightDragVal(currentDatumRange.min().subtract(currentDatumRange.max()));
-//                         
-//                 }else if(currentDatumRange.max().add(xDatumDist). // Ensure data right never
-//                             ge(validDatumRange.max())){          // increases above valid max
-//                     
-//                     setDatumRightDragVal(validDatumRange.max().subtract(currentDatumRange.max()));
-//                             
-//                 }else{
-//                     setDatumRightDragVal(xDatumDist);
-//                 }   break;
-//             case CENTER:
-//                 // Ensure currentDatumRange.max - currentDatumRange.min stays constant
-//                 // while not allowing either side to change outside of valid range.
-//                 if(currentDatumRange.max().add(xDatumDist).ge(validDatumRange.max())){
-//                     xDatumDist = validDatumRange.max().subtract(currentDatumRange.max());
-//                 }else if(currentDatumRange.min().add(xDatumDist).
-//                         le(validDatumRange.min())){
-//                     xDatumDist = validDatumRange.min().subtract(currentDatumRange.min());
-//                 }
-//                 setDatumLeftDragVal(xDatumDist);
-//                 setDatumRightDragVal(xDatumDist);
-//                 break;
-//             default:
-//                 break;
-//         }
-//     }
-// 
-//     /** Registers DataRangeSelectionListener to receive events.
-//      * @param listener The listener to register.
-//      */
-//     public void addDataRangeSelectionListener(DataRangeSelectionListener listener){
-//         listenerList.add(org.das2.event.DataRangeSelectionListener.class, listener);
-// }
-// 
-// 
-//     /** Removes DataRangeSelectionListener from the list of listeners.
-//      * @param listener The listener to remove.
-//      */
-//     public void removeDataRangeSelectionListener(DataRangeSelectionListener listener){
-//         listenerList.remove(org.das2.event.DataRangeSelectionListener.class, listener);
-//     }
-//     
-//      /** Notifies all registered listeners about the event.
-//      *
-//      * @param event The event to be fired
-//      */
-//     private void fireDataRangeSelectionListenerDataRangeSelected(DataRangeSelectionEvent event){
-//         Object[] listeners;
-//         listeners = listenerList.getListenerList();
-//         for (int i = listeners.length-2; i>=0; i-=2) {
-//             if (listeners[i]==org.das2.event.DataRangeSelectionListener.class) {
-//                 ((org.das2.event.DataRangeSelectionListener)listeners[i+1]).dataRangeSelected(event);
-//             }
-//         }
-//     }
-// }
-// 
-// 
-// 
