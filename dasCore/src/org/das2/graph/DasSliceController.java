@@ -10,7 +10,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.das2.components.DatumEditor;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
 import org.das2.util.GrannyTextRenderer;
@@ -21,9 +20,8 @@ import org.das2.util.GrannyTextRenderer;
  */
 public class DasSliceController extends DasCanvasComponent {
 
-    private boolean inDebugMode = false;
+    private boolean inDebugMode = true;
 
-    
     private DatumRange datumRange;
     public static final String PROP_DATUMRANGE = "datumRange";
     
@@ -81,7 +79,7 @@ public class DasSliceController extends DasCanvasComponent {
             }
             sparePixels = sparePixels / 2;
             if (isShowing) {
-                gtr.draw(g, this.rect.x + sparePixels, height / 2);
+                gtr.draw(g, this.rect.x + sparePixels, this.rect.y + this.rect.height / 2);
 //                g.drawRect(this.rect.x, this.rect.y, this.rect.width, this.rect.height);
 //                if(this.text.equals("scan>>") || this.text.equals("<<scan")){
 //                    g.drawRect(this.rect.x, height / 2 - (int) gtr.getHeight(), this.rect.width, (int) gtr.getHeight());
@@ -147,7 +145,6 @@ public class DasSliceController extends DasCanvasComponent {
 
     private void setLayoutRatios(boolean inSingle) {
 
-//        if (datumRange.min().equals(datumRange.max()) && !startedDragAsRange) {
         if(inSingle){
             lScan.lRatio = 0;
             lScan.rRatio = 0.15;
@@ -185,7 +182,6 @@ public class DasSliceController extends DasCanvasComponent {
 
     private void setlayoutAry(boolean inSingle) {
 
-//        if (datumRange.min().equals(datumRange.max()) && !startedDragAsRange) {
         if(inSingle){
             layoutAry[0] = lScan;
             layoutAry[1] = lDatumRect;
@@ -270,7 +266,7 @@ public class DasSliceController extends DasCanvasComponent {
     private boolean isDragging = false;
     private boolean startedDragAsRange = false;
     
-    // While dragging the event.getButton always returns 0... So keep track of it here
+    // While dragging the event.getButton() always returns 0... So keep track of it here
     private int buttonPress = 0;
     private Point lastPoint;
     
@@ -300,7 +296,7 @@ public class DasSliceController extends DasCanvasComponent {
                     buttonPress = 1;
                     if (mouseRect == lDatumRect || mouseRect == rDatumRect) {
                         isDragging = true;
-                        if(!datumRange.min().equals(datumRange.max())){
+                        if(!inSingleMode){
                             startedDragAsRange = true;
                         }else{
                             startedDragAsRange = false;
@@ -312,7 +308,8 @@ public class DasSliceController extends DasCanvasComponent {
                         isDragging = true;
                         getCanvas().getGlassPane().setCursor(new Cursor(Cursor.MOVE_CURSOR));
                         System.err.println("middle button pressed");
-                        if(!datumRange.min().equals(datumRange.max())){
+//                        if(!datumRange.min().equals(datumRange.max())){
+                        if(!inSingleMode){
                             startedDragAsRange = true;
                         }else{
                             startedDragAsRange = false;
@@ -394,7 +391,7 @@ public class DasSliceController extends DasCanvasComponent {
 
     private void scanLeft() {
 //        System.err.println("ScanLeft clicked");
-        if (datumRange.min().equals(datumRange.max())) {
+        if (inSingleMode) {
             Datum singleScanDatum = Datum.create(1.0, datumRange.getUnits());
 
             setDatumRange(new DatumRange(datumRange.min().subtract(singleScanDatum), 
@@ -406,7 +403,7 @@ public class DasSliceController extends DasCanvasComponent {
 
     private void scanRight() {
 //        System.err.println("ScanRight clicked");
-        if (datumRange.min().equals(datumRange.max())) {
+        if (inSingleMode) {
             Datum singleScanDatum = Datum.create(1.0, datumRange.getUnits());
             setDatumRange(new DatumRange(datumRange.min().add(singleScanDatum), 
                                         datumRange.max().add(singleScanDatum)));
@@ -423,10 +420,10 @@ public class DasSliceController extends DasCanvasComponent {
         resetInSingleMode();
     }
 
-    private void lDatumDrag(int xTotalDrag) {
+    private void lDatumDrag(int xDrag) {
 //        System.err.println("lDatumDragging, total dist = " + xTotalDrag);
-        Datum dragDatum = Datum.create(xTotalDrag, datumRange.getUnits());
-        if (datumRange.min().equals(datumRange.max())) {
+        Datum dragDatum = Datum.create(xDrag, datumRange.getUnits());
+        if (inSingleMode) {
             
             // Make sure layout won't collapse to a single datum range
             // during drag. If a single datum range is a result of a drag
@@ -453,9 +450,9 @@ public class DasSliceController extends DasCanvasComponent {
         }
     }
 
-    private void rDatumDrag(int xTotalDrag) {
+    private void rDatumDrag(int xDrag) {
 //        System.err.println("rDatumDragging, total dist = " + xTotalDrag);
-        Datum dragDatum = Datum.create(xTotalDrag, datumRange.getUnits());
+        Datum dragDatum = Datum.create(xDrag, datumRange.getUnits());
         Datum newRDatum = datumRange.max().add(dragDatum);
         
         if (newRDatum.lt(datumRange.min())) {
@@ -463,7 +460,6 @@ public class DasSliceController extends DasCanvasComponent {
         } else {
             setDatumRange(new DatumRange(datumRange.min(), newRDatum));
         }
-        
     }
     
     private void middleButtonDrag(int xDrag){
@@ -474,7 +470,7 @@ public class DasSliceController extends DasCanvasComponent {
     private void wheelRotation(int amount) {
 //        System.err.println("Wheel rotation amount = " + amount);
         Datum datumAmount = Datum.create(amount, datumRange.getUnits());
-        if (datumRange.min().equals(datumRange.max())) {
+        if (inSingleMode) {
             setDatumRange(new DatumRange(datumRange.min().add(datumAmount), datumRange.min().add(datumAmount)));
         } else {
             if (amount > 0) {
