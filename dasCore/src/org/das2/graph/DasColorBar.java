@@ -525,6 +525,11 @@ public class DasColorBar extends DasAxis {
         public static int[] makeColorTable( int [] index, int[] red, int[] green, int[] blue, int ncolor, int bottom, int top ) {
             // index should go from 0-255.
             // truncate when ncolor>COLORTABLE_SIZE
+            
+            if ( top>255 )  throw new IllegalArgumentException("top can be no more than 255");
+            if ( bottom<0 ) throw new IllegalArgumentException("bottom can be no less than 0");
+            if ( bottom>top ) throw new IllegalArgumentException("bottom must be less than top");
+                
             int[] colorTable = new int[ncolor];
             
             int ii= 0;
