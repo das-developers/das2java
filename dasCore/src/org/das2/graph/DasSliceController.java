@@ -37,6 +37,7 @@ public class DasSliceController extends DasCanvasComponent {
         lDatumRect.text = this.datumRange.min().toString();
         rDatumRect.text = this.datumRange.max().toString();
         firePropertyChange(PROP_DATUMRANGE, oldDR, dr);
+        repaint();
     }
  
     class TextRect {
@@ -97,6 +98,8 @@ public class DasSliceController extends DasCanvasComponent {
             }
         }
     }
+    
+    
 
     private TextRect lDatumRect;
     private TextRect rDatumRect;
@@ -113,6 +116,9 @@ public class DasSliceController extends DasCanvasComponent {
         rDatumRect = new TextRect(rDatum.toString(), new Rectangle(), new Cursor(Cursor.E_RESIZE_CURSOR));
         rDatumRect.isShowing = true;
         toTextRect.isShowing = true;
+        if(this.datumRange.min().equals(this.datumRange.max())){
+            inSingleMode = true;
+        }
         MouseAdapter ma = getMouseAdapter();
         addMouseMotionListener(ma);
         addMouseWheelListener(ma);
@@ -139,9 +145,10 @@ public class DasSliceController extends DasCanvasComponent {
         height = rowMax - rowMin;
     }
 
-    private void setLayoutRatios() {
+    private void setLayoutRatios(boolean inSingle) {
 
-        if (datumRange.min().equals(datumRange.max()) && !startedDragAsRange) {
+//        if (datumRange.min().equals(datumRange.max()) && !startedDragAsRange) {
+        if(inSingle){
             lScan.lRatio = 0;
             lScan.rRatio = 0.15;
             lScan.setRect();
@@ -176,9 +183,10 @@ public class DasSliceController extends DasCanvasComponent {
 
     private TextRect[] layoutAry = new TextRect[5];
 
-    private void setlayoutAry() {
+    private void setlayoutAry(boolean inSingle) {
 
-        if (datumRange.min().equals(datumRange.max()) && !startedDragAsRange) {
+//        if (datumRange.min().equals(datumRange.max()) && !startedDragAsRange) {
+        if(inSingle){
             layoutAry[0] = lScan;
             layoutAry[1] = lDatumRect;
             layoutAry[2] = addRDatum;
@@ -192,6 +200,25 @@ public class DasSliceController extends DasCanvasComponent {
             layoutAry[4] = rScan;
         }
     }
+    
+    private boolean inSingleMode;
+    
+    public void setInSingleMode(boolean inSingle){
+        
+        this.inSingleMode = inSingle;
+        setSizingParams();
+        setlayoutAry(inSingle);
+        setLayoutRatios(inSingle);
+      
+    }
+    
+    public void resetInSingleMode(){
+        if(datumRange.min().equals(datumRange.max())){
+            setInSingleMode(true);
+        }else{
+            setInSingleMode(false);
+        }
+    }
 
     @Override
     protected void paintComponent(Graphics g) {
@@ -199,9 +226,10 @@ public class DasSliceController extends DasCanvasComponent {
         float fontMultiplier = 1f;
         g.setFont(g.getFont().deriveFont(g.getFont().getSize() * fontMultiplier));
 
+//        resetInSingleMode();
         setSizingParams();
-        setLayoutRatios();
-        setlayoutAry();
+        setLayoutRatios(this.inSingleMode);
+        setlayoutAry(this.inSingleMode);
 
         GrannyTextRenderer gtr = new GrannyTextRenderer();
         for (TextRect tr : layoutAry) {
@@ -262,7 +290,6 @@ public class DasSliceController extends DasCanvasComponent {
                         addRDatum();
                     }
                 }
-
             }
 
             @Override
@@ -318,7 +345,6 @@ public class DasSliceController extends DasCanvasComponent {
                     }
                 }
                 
-              
             }
 
             @Override
@@ -328,7 +354,7 @@ public class DasSliceController extends DasCanvasComponent {
                     isDragging = false;
                     startedDragAsRange = false;
                 }
-
+                resetInSingleMode();
                 setMouseRect(e.getX(), e.getY());
                 repaint();
             }
@@ -394,6 +420,7 @@ public class DasSliceController extends DasCanvasComponent {
 //        System.err.println("AddRDatum clicked");
         Datum distFromLDatum = Datum.create(1, datumRange.getUnits());
         setDatumRange(new DatumRange(datumRange.min(), datumRange.min().add(distFromLDatum)));
+        resetInSingleMode();
     }
 
     private void lDatumDrag(int xTotalDrag) {
