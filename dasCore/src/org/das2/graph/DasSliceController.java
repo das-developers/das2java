@@ -10,8 +10,11 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import static javax.swing.JLayeredPane.LAYER_PROPERTY;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
+import org.das2.datum.Units;
+import static org.das2.graph.DasCanvas.AXIS_LAYER;
 import org.das2.util.GrannyTextRenderer;
 
 /**
@@ -46,7 +49,7 @@ public class DasSliceController extends DasCanvasComponent {
         double rRatio;
 
         private int getWidth() {
-            return (int) ((rRatio - lRatio) * width);
+            return (int) ((rRatio - lRatio) * layoutWidth);
         }
 
         Cursor cursor = new Cursor(Cursor.DEFAULT_CURSOR);
@@ -54,7 +57,8 @@ public class DasSliceController extends DasCanvasComponent {
         Rectangle rect;
 
         protected void setRect() {
-            this.rect.setBounds((int) (lRatio * width), colMin, getWidth(), height);
+            // Relative to canvas origin
+            this.rect.setBounds((int) (lRatio * layoutWidth) + colMin, rowMin , getWidth(), layoutHeight);
         }
 
         boolean isShowing = false;
@@ -87,7 +91,7 @@ public class DasSliceController extends DasCanvasComponent {
             }
 
             if (inDebugMode) {
-                g.drawRect(this.rect.x, this.rect.y, this.rect.width, this.rect.height);
+                g.drawRect(this.rect.x, this.rect.y, this.rect.width, this.rect.height -1);
                 if (mouseRect == this) {
                     g.setColor(new Color(.5f, .5f, 0, .2f));
                     g.fillRect(mouseRect.rect.x, mouseRect.rect.y, mouseRect.rect.width, mouseRect.rect.height);
@@ -121,26 +125,30 @@ public class DasSliceController extends DasCanvasComponent {
         addMouseMotionListener(ma);
         addMouseWheelListener(ma);
         addMouseListener(ma);
+        putClientProperty(LAYER_PROPERTY, AXIS_LAYER);
     }
     
     public DasSliceController(DatumRange dr){
         this(dr.min(), dr.max());
+    }
+    public DasSliceController(){
+        this(Datum.create(0, Units.dimensionless), Datum.create(10, Units.dimensionless));
     }
 
     private int colMin;
     private int colMax;
     private int rowMin;
     private int rowMax;
-    private int width;
-    private int height;
+    private int layoutWidth;
+    private int layoutHeight;
 
     private void setSizingParams() {
         colMin = getColumn().getDMinimum();
         colMax = getColumn().getDMaximum();
         rowMin = getRow().getDMinimum();
         rowMax = getRow().getDMaximum();
-        width = colMax - colMin;
-        height = rowMax - rowMin;
+        layoutWidth = colMax - colMin;
+        layoutHeight = rowMax - rowMin;
     }
 
     private void setLayoutRatios(boolean inSingle) {
@@ -218,7 +226,17 @@ public class DasSliceController extends DasCanvasComponent {
 
     @Override
     protected void paintComponent(Graphics g) {
-
+        
+        if(inDebugMode){
+            Color cColor = g.getColor();
+            g.setColor(Color.MAGENTA);
+            g.fillRect(0, 0, getWidth(), getHeight());
+            g.setColor(cColor);
+        }
+        
+        // Drawing coordinates should be relative to canvas origin
+        g.translate(-getX(), -getY());
+        
         float fontMultiplier = 1f;
         g.setFont(g.getFont().deriveFont(g.getFont().getSize() * fontMultiplier));
 
@@ -243,6 +261,9 @@ public class DasSliceController extends DasCanvasComponent {
     private TextRect mouseRect;
 
     private void setMouseRect(int x, int y) {
+        //Relative to canvas origin
+        x += colMin;
+        y += rowMin;
         TextRect trBuf = null;
         for (TextRect tr : layoutAry) {
             if (tr != null && tr.rect.contains(x, y)) {
@@ -255,12 +276,12 @@ public class DasSliceController extends DasCanvasComponent {
             if (mouseRect != lDatumRect && mouseRect != rDatumRect && mouseRect != toTextRect) {
                 mouseRect.isShowing = false;
             }
-            repaint(mouseRect.rect);
+            repaint();
         }
         mouseRect = trBuf;
         if (mouseRect != null) {
             getCanvas().getGlassPane().setCursor(mouseRect.cursor);
-            repaint(mouseRect.rect);
+            repaint();
         }
     }
     private boolean isDragging = false;
@@ -324,7 +345,7 @@ public class DasSliceController extends DasCanvasComponent {
                 
                 int xDrag = e.getX() - lastPoint.x;
                 lastPoint = e.getPoint();
-                System.err.println("Button dragging is " + e.getButton());
+//                System.err.println("Button dragging is " + e.getButton());
                 
                 // mouseRect isn't updated during drag so its value is 
                 // whatever it was on mousePress
