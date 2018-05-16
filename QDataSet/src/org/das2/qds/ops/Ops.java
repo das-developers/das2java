@@ -11443,7 +11443,7 @@ public final class Ops {
             return link( x, y, z1 );
 
         } else {
-            ArrayDataSet zds = ArrayDataSet.copy(z);
+            MutablePropertyDataSet zds = DataSetOps.makePropertiesMutable(z);
             if (x != null || zds.property(QDataSet.DEPEND_0)!=null ) {
                 zds.putProperty(QDataSet.DEPEND_0, x);
             }
