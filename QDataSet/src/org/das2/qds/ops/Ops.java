@@ -9595,10 +9595,14 @@ public final class Ops {
             }
             case 2: {
                 ArrayDataSet result= ArrayDataSet.copy(ds);
-                for ( int j=0; j<ds.length(0); j++ ) {
-                    QDataSet result1= BinAverage.boxcar( slice1(ds,j), size );
-                    for ( int i=0; i<ds.length(); i++ ) {
-                        result.putValue( i,j, result1.value(i) );
+                if ( SemanticOps.isRank2Waveform(ds) ) {
+                    throw new IllegalArgumentException("rank 2 waveform is not supported, use flattenWaveform first.");
+                } else {
+                    for ( int j=0; j<ds.length(0); j++ ) {
+                        QDataSet result1= BinAverage.boxcar( slice1(ds,j), size );
+                        for ( int i=0; i<ds.length(); i++ ) {
+                            result.putValue( i,j, result1.value(i) );
+                        }
                     }
                 }
                 return result;
