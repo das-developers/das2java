@@ -1,6 +1,7 @@
 package org.das2.graph;
 
 import java.awt.Color;
+import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Graphics;
 import java.awt.Point;
@@ -23,7 +24,7 @@ import org.das2.util.GrannyTextRenderer;
  */
 public class DasSliceController extends DasCanvasComponent {
 
-    private boolean inDebugMode = true;
+    private boolean inDebugMode = false;
 
     private DatumRange datumRange;
     public static final String PROP_DATUMRANGE = "datumRange";
@@ -40,6 +41,23 @@ public class DasSliceController extends DasCanvasComponent {
         firePropertyChange(PROP_DATUMRANGE, oldDR, dr);
         repaint();
     }
+    
+    private String dsLabel;
+
+    public String getDsLabel() {
+        return dsLabel;
+    }
+
+    public void setDsLabel(String dsLabel) {
+        this.dsLabel = dsLabel;
+        if(inSingleMode){
+            dsLabelRect.text = dsLabel + " at ";
+        }else{
+            dsLabelRect.text = dsLabel + " averaged over ";
+        }
+        
+    }
+    
  
     class TextRect {
 
@@ -48,8 +66,22 @@ public class DasSliceController extends DasCanvasComponent {
         double lRatio;
         double rRatio;
 
-        private int getWidth() {
+        private int getWidthFromRatio() {
             return (int) ((rRatio - lRatio) * layoutWidth);
+        }
+        
+        int lPixel;
+        int rPixel;
+        
+        private int getPixelWidth(){
+            return rPixel - lPixel;
+        }
+        
+        int tPixel;
+        int bPixel;
+        
+        private int getPixelHeight(){
+            return bPixel - tPixel;
         }
 
         Cursor cursor = new Cursor(Cursor.DEFAULT_CURSOR);
@@ -58,7 +90,9 @@ public class DasSliceController extends DasCanvasComponent {
 
         protected void setRect() {
             // Relative to canvas origin
-            this.rect.setBounds((int) (lRatio * layoutWidth) + colMin, rowMin , getWidth(), layoutHeight);
+//            this.rect.setBounds((int) (lRatio * layoutWidth) + colMin, rowMin , getWidthFromRatio(), layoutHeight);
+            // Relative to canvas origin
+            this.rect.setBounds(lPixel + colMin, rowMin , getPixelWidth(), layoutHeight);
         }
 
         boolean isShowing = false;
@@ -76,14 +110,15 @@ public class DasSliceController extends DasCanvasComponent {
         private void paint(GrannyTextRenderer gtr, Graphics g) throws Exception {
 
             gtr.setString(g, this.text);
-            int txtWidth = (int) Math.ceil(gtr.getWidth());
-            int sparePixels = this.getWidth() - txtWidth;
-            if (sparePixels < 0) {
-                throw new Exception(" Rectangle is too small for text. ");
-            }
-            sparePixels = sparePixels / 2;
+//            int txtWidth = (int) Math.ceil(gtr.getWidth());
+//            int sparePixels = this.getWidthFromRatio() - txtWidth;
+//            if (sparePixels < 0) {
+//                throw new Exception(" Rectangle is too small for text. ");
+//            }
+//            sparePixels = sparePixels / 2;
             if (isShowing) {
-                gtr.draw(g, this.rect.x + sparePixels, this.rect.y + this.rect.height / 2);
+//                gtr.draw(g, this.rect.x + sparePixels, this.rect.y + this.rect.height / 2);
+                gtr.draw(g, this.rect.x , this.rect.y + this.rect.height / 2);
 //                g.drawRect(this.rect.x, this.rect.y, this.rect.width, this.rect.height);
 //                if(this.text.equals("scan>>") || this.text.equals("<<scan")){
 //                    g.drawRect(this.rect.x, height / 2 - (int) gtr.getHeight(), this.rect.width, (int) gtr.getHeight());
@@ -103,12 +138,13 @@ public class DasSliceController extends DasCanvasComponent {
     
     
 
+    private TextRect dsLabelRect = new TextRect(" Data: ", new Rectangle());
     private TextRect lDatumRect;
     private TextRect rDatumRect;
-    private TextRect addRDatum = new TextRect("+", new Rectangle());
-    private TextRect toTextRect = new TextRect("to", new Rectangle());
-    private TextRect rScan = new TextRect("scan>>", new Rectangle());
-    private TextRect lScan = new TextRect("<<scan", new Rectangle());
+    private TextRect addRDatum = new TextRect(" + ", new Rectangle());
+    private TextRect toTextRect = new TextRect(" to ", new Rectangle());
+    private TextRect rScan = new TextRect(" scan>> ", new Rectangle());
+    private TextRect lScan = new TextRect(" <<scan ", new Rectangle());
 
     public DasSliceController(Datum lDatum, Datum rDatum) {
 
@@ -118,6 +154,7 @@ public class DasSliceController extends DasCanvasComponent {
         rDatumRect = new TextRect(rDatum.toString(), new Rectangle(), new Cursor(Cursor.E_RESIZE_CURSOR));
         rDatumRect.isShowing = true;
         toTextRect.isShowing = true;
+        dsLabelRect.isShowing = true;
         if(this.datumRange.min().equals(this.datumRange.max())){
             inSingleMode = true;
         }
@@ -149,6 +186,117 @@ public class DasSliceController extends DasCanvasComponent {
         rowMax = getRow().getDMaximum();
         layoutWidth = colMax - colMin;
         layoutHeight = rowMax - rowMin;
+    }
+    
+    private int floatRight = 0;
+
+    public int getFloatRight() {
+        return floatRight;
+    }
+
+    public void setFloatRight(int floatRight) {
+        this.floatRight = floatRight;
+        repaint();
+    }
+    
+    private int floatDown = 0;
+    public int getFloatDown(){
+        return floatDown;
+    }
+    
+    public void setFloatDown(int fDown){
+        this.floatDown = fDown;
+        repaint();
+    }
+    
+    private void setLayout(boolean inSingle, GrannyTextRenderer gtr, Graphics g){
+    
+        if(inSingle){
+            
+            gtr.setString(g, lScan.text);
+            int width = (int) gtr.getWidth();
+            int height = (int) gtr.getHeight();
+            lScan.lPixel = floatRight;
+            // The plus 1 is safety from the cast to int on width
+            lScan.rPixel = lScan.lPixel + width + 1;
+            lScan.setRect();
+            
+            gtr.setString(g, dsLabelRect.text);
+            width = (int) gtr.getWidth();
+            height = (int) gtr.getHeight();
+            dsLabelRect.lPixel = lScan.rPixel;
+            dsLabelRect.rPixel = dsLabelRect.lPixel + width + 1;
+            dsLabelRect.setRect();
+            
+//            gtr.setString(g, datumRange.min().getFormatter().format(datumRange.min(), datumRange.getUnits()) + datumRange.getUnits());
+            gtr.setString(g, lDatumRect.text);
+            width = (int) gtr.getWidth();
+            height = (int) gtr.getHeight();
+            lDatumRect.lPixel = dsLabelRect.rPixel;
+            lDatumRect.rPixel = lDatumRect.lPixel + width + 1;
+            lDatumRect.setRect();
+            
+            gtr.setString(g, addRDatum.text);
+            width = (int) gtr.getWidth();
+            height = (int) gtr.getHeight();
+            addRDatum.lPixel = lDatumRect.rPixel;
+            addRDatum.rPixel = addRDatum.lPixel + width + 1;
+            addRDatum.setRect();
+            
+            gtr.setString(g, rScan.text);
+            width = (int) gtr.getWidth();
+            height = (int) gtr.getHeight();
+            rScan.lPixel = addRDatum.rPixel;
+            rScan.rPixel = rScan.lPixel + width + 1;
+            rScan.setRect();
+                 
+        }else{
+            gtr.setString(g, lScan.text);
+            int width = (int) gtr.getWidth();
+            int height = (int) gtr.getHeight();
+            lScan.lPixel = floatRight;
+            // The plus 1 is safety from the cast to int on width
+            lScan.rPixel = lScan.lPixel + width + 1;
+            lScan.setRect();
+            
+            gtr.setString(g, dsLabelRect.text);
+            width = (int) gtr.getWidth();
+            height = (int) gtr.getHeight();
+            dsLabelRect.lPixel = lScan.rPixel;
+            dsLabelRect.rPixel = dsLabelRect.lPixel + width + 1;
+            dsLabelRect.setRect();
+            
+//            gtr.setString(g, datumRange.min().getFormatter().format(datumRange.min(), datumRange.getUnits()));
+            gtr.setString(g, lDatumRect.text);
+            width = (int) gtr.getWidth();
+            height = (int) gtr.getHeight();
+            lDatumRect.lPixel = dsLabelRect.rPixel;
+            lDatumRect.rPixel = lDatumRect.lPixel + width + 1;
+            lDatumRect.setRect();
+            
+            gtr.setString(g, toTextRect.text);
+            width = (int) gtr.getWidth();
+            height = (int) gtr.getHeight();
+            toTextRect.lPixel = lDatumRect.rPixel;
+            toTextRect.rPixel = toTextRect.lPixel + width + 1;
+            toTextRect.setRect();
+            
+//            gtr.setString(g, datumRange.max().getFormatter().format(datumRange.max(), datumRange.getUnits()) + datumRange.getUnits());
+            gtr.setString(g, rDatumRect.text);
+            width = (int) gtr.getWidth();
+            height = (int) gtr.getHeight();
+            rDatumRect.lPixel = toTextRect.rPixel;
+            rDatumRect.rPixel = rDatumRect.lPixel + width + 1;
+            rDatumRect.setRect();
+            
+            gtr.setString(g, rScan.text);
+            width = (int) gtr.getWidth();
+            height = (int) gtr.getHeight();
+            rScan.lPixel = rDatumRect.rPixel;
+            rScan.rPixel = rScan.lPixel + width + 1;
+            rScan.setRect();
+                    
+        }
     }
 
     private void setLayoutRatios(boolean inSingle) {
@@ -186,22 +334,24 @@ public class DasSliceController extends DasCanvasComponent {
         }
     }
 
-    private TextRect[] layoutAry = new TextRect[5];
+    private TextRect[] layoutAry = new TextRect[6];
 
     private void setlayoutAry(boolean inSingle) {
 
         if(inSingle){
             layoutAry[0] = lScan;
-            layoutAry[1] = lDatumRect;
-            layoutAry[2] = addRDatum;
-            layoutAry[3] = rScan;
-            layoutAry[4] = null;
+            layoutAry[1] = dsLabelRect;
+            layoutAry[2] = lDatumRect;
+            layoutAry[3] = addRDatum;
+            layoutAry[4] = rScan;
+            layoutAry[5] = null;
         } else {
             layoutAry[0] = lScan;
-            layoutAry[1] = lDatumRect;
-            layoutAry[2] = toTextRect;
-            layoutAry[3] = rDatumRect;
-            layoutAry[4] = rScan;
+            layoutAry[1] = dsLabelRect;
+            layoutAry[2] = lDatumRect;
+            layoutAry[3] = toTextRect;
+            layoutAry[4] = rDatumRect;
+            layoutAry[5] = rScan;
         }
     }
     
@@ -210,10 +360,12 @@ public class DasSliceController extends DasCanvasComponent {
     public void setInSingleMode(boolean inSingle){
         
         this.inSingleMode = inSingle;
+        setDsLabel(dsLabel);
         setSizingParams();
         setlayoutAry(inSingle);
-        setLayoutRatios(inSingle);
-      
+        repaint();
+//        setLayoutRatios(inSingle);
+        
     }
     
     public void resetInSingleMode(){
@@ -240,12 +392,14 @@ public class DasSliceController extends DasCanvasComponent {
         float fontMultiplier = 1f;
         g.setFont(g.getFont().deriveFont(g.getFont().getSize() * fontMultiplier));
 
-//        resetInSingleMode();
-        setSizingParams();
-        setLayoutRatios(this.inSingleMode);
-        setlayoutAry(this.inSingleMode);
 
         GrannyTextRenderer gtr = new GrannyTextRenderer();
+        setSizingParams();
+//        setLayoutRatios(this.inSingleMode);
+        setLayout(this.inSingleMode, gtr, g);
+        setlayoutAry(this.inSingleMode);
+
+        
         for (TextRect tr : layoutAry) {
             if (tr == null) {
                 continue;
@@ -273,7 +427,7 @@ public class DasSliceController extends DasCanvasComponent {
             }
         }
         if (mouseRect != trBuf && mouseRect != null) {
-            if (mouseRect != lDatumRect && mouseRect != rDatumRect && mouseRect != toTextRect) {
+            if (mouseRect != lDatumRect && mouseRect != rDatumRect && mouseRect != toTextRect && mouseRect != dsLabelRect) {
                 mouseRect.isShowing = false;
             }
             repaint();
@@ -290,6 +444,7 @@ public class DasSliceController extends DasCanvasComponent {
     // While dragging the event.getButton() always returns 0... So keep track of it here
     private int buttonPress = 0;
     private Point lastPoint;
+    private Point pressedPoint;
     
     private MouseAdapter getMouseAdapter() {
         return new MouseAdapter() {
@@ -312,6 +467,7 @@ public class DasSliceController extends DasCanvasComponent {
             @Override
             public void mousePressed(MouseEvent e) {
                 setMouseRect(e.getX(), e.getY());
+                pressedPoint = e.getPoint();
                 lastPoint = e.getPoint();
                 if(e.getButton() == 1){
                     buttonPress = 1;
@@ -343,7 +499,9 @@ public class DasSliceController extends DasCanvasComponent {
             @Override
             public void mouseDragged(MouseEvent e) {
                 
-                int xDrag = e.getX() - lastPoint.x;
+                int xUpdatingDrag = e.getX() - lastPoint.x;
+                int xTotalDrag = e.getX() - pressedPoint.x;
+                
                 lastPoint = e.getPoint();
 //                System.err.println("Button dragging is " + e.getButton());
                 
@@ -352,14 +510,14 @@ public class DasSliceController extends DasCanvasComponent {
                 if(buttonPress == 1){
 //                    System.err.println(" left clickckckc");
                     if (mouseRect == lDatumRect) {
-                        lDatumDrag(xDrag);
-                    
+                        lDatumDrag(xUpdatingDrag);
+                        
                     } else if (mouseRect == rDatumRect) {
-                        rDatumDrag(xDrag);
+                        rDatumDrag(xUpdatingDrag);
                     }
                 }else if(buttonPress == 2){
                     if(mouseRect == lDatumRect || mouseRect == rDatumRect || mouseRect == toTextRect){
-                        middleButtonDrag(xDrag);
+                        middleButtonDrag(xUpdatingDrag);
                     }
                 }
                 
@@ -385,7 +543,7 @@ public class DasSliceController extends DasCanvasComponent {
             @Override
             public void mouseExited(MouseEvent e) {
                 if (!isDragging) {
-                    if (mouseRect != lDatumRect && mouseRect != toTextRect && mouseRect != rDatumRect && mouseRect != null) {
+                    if (mouseRect != lDatumRect && mouseRect != toTextRect && mouseRect != rDatumRect && mouseRect != dsLabelRect && mouseRect != null) {
                         mouseRect.isShowing = false;
                     }
                     mouseRect = null;
