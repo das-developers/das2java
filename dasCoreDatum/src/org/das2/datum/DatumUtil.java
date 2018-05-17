@@ -543,6 +543,12 @@ public final class DatumUtil {
             if (score > bestScore) {
                 bestScore = score;
                 bestDatum = dd;
+            } else if ( score==bestScore ) {
+                if ( conversion == Units.getCanonicalUnit( conversion ) ) {
+                    bestScore = score;
+                    bestDatum = dd;
+                }
+                //System.err.println(" units: "+conversion );
             }
         }
         return bestDatum;
