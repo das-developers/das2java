@@ -50,8 +50,27 @@ public class DasSliceController extends DasCanvasComponent {
         repaint();
     }
     
+    
+    private String wordsAfterLabelSingleDatum = " at ";
+    public void setWordsAfterLabelSingleDatum(String newWords){
+        this.wordsAfterLabelSingleDatum = newWords;
+        setDsLabel(dsLabel);
+    }
+    
+    public String getWordsAfterLabelSingleDatum(){
+        return wordsAfterLabelSingleDatum;
+    }
+    
+    private String wordsAfterLabelDatumRange = " average over ";
+    public void setWordsAfterLabelDatumRange(String newWords){
+        wordsAfterLabelDatumRange = newWords;
+        setDsLabel(dsLabel);
+    }
+    public String getWordsAfterLabelDatumRange(){
+        return wordsAfterLabelDatumRange;
+    }
+    
     private String dsLabel;
-
     public String getDsLabel() {
         return dsLabel;
     }
@@ -59,11 +78,11 @@ public class DasSliceController extends DasCanvasComponent {
     public void setDsLabel(String dsLabel) {
         this.dsLabel = dsLabel;
         if(inSingleMode){
-            dsLabelRect.text = " " + dsLabel + " at ";
+            dsLabelRect.text = " " + dsLabel + wordsAfterLabelSingleDatum;
         }else{
-            dsLabelRect.text = " " + dsLabel + " average over ";
+            dsLabelRect.text = " " + dsLabel + wordsAfterLabelDatumRange ;
         }
-        
+        repaint();
     }
     
  
