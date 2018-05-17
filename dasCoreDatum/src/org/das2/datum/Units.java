@@ -68,6 +68,27 @@ public abstract class Units {
      * 
      */
     public static final Units rgbColor= new NumberUnits("rgbColor","256*256*red+256*green+blue");
+
+    /**
+     * return the preferred unit to use when there are multiple representations
+     * of the same unit (having convertion UnitsConverter.IDENTITY.
+     * @param units
+     * @return the preferred unit
+     */
+    public static Units getCanonicalUnit(Units units) {
+        String s= units.getId();
+        switch ( s ) {
+            case "msec": return Units.milliseconds;
+            case "Degrees": return Units.degrees;
+            case "deg": return Units.degrees;
+            case "sec": return Units.seconds;
+            case "nanoseconds": return Units.ns;
+            case "\u00B5s": return Units.microseconds;
+            case "\u03BCs": return Units.microseconds;
+            case "ev": return Units.eV;
+        }
+        return units;
+    }
     
     /**
      * this is left in in case legacy code needs to see the conversion from dB to dimensionless offset.
