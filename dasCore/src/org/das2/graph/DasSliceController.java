@@ -294,10 +294,13 @@ public class DasSliceController extends DasCanvasComponent {
     
     private void setLayout(boolean inSingle, GrannyTextRenderer gtr){
     
+        
+        int totalWidth = 0;
         if(inSingle){
             
             gtr.setString(getFont(), lScan.text);
             int width = (int) gtr.getWidth();
+            totalWidth += width;
             int height = (int) gtr.getHeight();
             lScan.lPixel = floatRight - width;
             // The plus 1 is safety from the cast to int on width
@@ -306,6 +309,7 @@ public class DasSliceController extends DasCanvasComponent {
             
             gtr.setString(getFont(), dsLabelRect.text);
             width = (int) gtr.getWidth();
+            totalWidth += width;
             // Find the largest height so all the text rects are the same height
             height = (int) gtr.getHeight() > height ? (int) gtr.getHeight() : height;
             dsLabelRect.lPixel = lScan.rPixel;
@@ -315,6 +319,7 @@ public class DasSliceController extends DasCanvasComponent {
 //            gtr.setString(g, datumRange.min().getFormatter().format(datumRange.min(), datumRange.getUnits()) + datumRange.getUnits());
             gtr.setString(getFont(), lDatumRect.text);
             width = (int) gtr.getWidth();
+            totalWidth += width;
             height = (int) gtr.getHeight() > height ? (int) gtr.getHeight() : height;
             lDatumRect.lPixel = dsLabelRect.rPixel;
             lDatumRect.rPixel = lDatumRect.lPixel + width + 1;
@@ -322,6 +327,7 @@ public class DasSliceController extends DasCanvasComponent {
             
             gtr.setString(getFont(), addRDatum.text);
             width = (int) gtr.getWidth();
+            totalWidth += width;
             height = (int) gtr.getHeight() > height ? (int) gtr.getHeight() : height;
             addRDatum.lPixel = lDatumRect.rPixel;
             addRDatum.rPixel = addRDatum.lPixel + width + 1;
@@ -332,6 +338,35 @@ public class DasSliceController extends DasCanvasComponent {
             height = (int) gtr.getHeight() > height ? (int) gtr.getHeight() : height;
             rScan.lPixel = addRDatum.rPixel;
             rScan.rPixel = rScan.lPixel + width + 1;
+            
+            
+            int xOffset = 0;
+            switch(this.alignment){
+                case LEFT:
+                    xOffset = 0;
+                    break;
+                case CENTER:
+                    xOffset = (colMax - colMin - totalWidth) / 2;
+                    break;
+                case RIGHT:
+                    xOffset = (colMax - colMin - totalWidth);
+                    break;
+                default:
+                    xOffset = 0;
+                    break;
+                    
+            }
+            
+            lScan.lPixel += xOffset;
+            lScan.rPixel += xOffset;
+            dsLabelRect.lPixel += xOffset;
+            dsLabelRect.rPixel += xOffset;
+            lDatumRect.lPixel += xOffset;
+            lDatumRect.rPixel += xOffset;
+            addRDatum.lPixel += xOffset;
+            addRDatum.rPixel += xOffset;
+            rScan.lPixel += xOffset;
+            rScan.rPixel += xOffset;
             
             height *= 2; // Characters like 'g' would get cut off.
             
@@ -358,7 +393,7 @@ public class DasSliceController extends DasCanvasComponent {
                  
         }else{
             
-            int totalWidth = 0;
+            
             gtr.setString(getFont(), lScan.text);
             int width = (int) gtr.getWidth();
             int height = (int) gtr.getHeight();
@@ -407,10 +442,25 @@ public class DasSliceController extends DasCanvasComponent {
             rScan.lPixel = rDatumRect.rPixel;
             rScan.rPixel = rScan.lPixel + width + 1;
             
-            
+            int xOffset = 0;
+            switch(this.alignment){
+                case LEFT:
+                    xOffset = 0;
+                    break;
+                case CENTER:
+                    xOffset = (colMax - colMin - totalWidth) / 2;
+                    break;
+                case RIGHT:
+                    xOffset = (colMax - colMin - totalWidth);
+                    break;
+                default:
+                    xOffset = 0;
+                    break;
+                    
+            }
 //            int xOffset = colMax - colMin - totalWidth;
 //            int xOffset = (colMax - colMin -totalWidth) / 2;
-            int xOffset = 0;
+//            int xOffset = 0;
             lScan.lPixel += xOffset;
             lScan.rPixel += xOffset;
             dsLabelRect.lPixel += xOffset;
