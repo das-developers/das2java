@@ -32,7 +32,6 @@ public class DasSliceController extends DasCanvasComponent {
     
     public static enum Alignment {
         LEFT, RIGHT, CENTER;
- 
     }
     
     private Alignment alignment = Alignment.CENTER;
@@ -43,7 +42,25 @@ public class DasSliceController extends DasCanvasComponent {
 
     public void setAlignment(Alignment alignment) {
         this.alignment = alignment;
+        update();
+//        repaint();
     }
+    
+    public static enum VerticalAlignment{
+        TOP, BOTTOM
+    }
+    
+    private VerticalAlignment verticalAlignment = VerticalAlignment.TOP;
+    
+    public VerticalAlignment getVerticalAlignment(){
+        return this.verticalAlignment;
+    }
+    
+    public void setVerticalAlignment(VerticalAlignment va){
+        this.verticalAlignment = va;
+        update();
+    }
+    
     
     
     public void setInDebugMode(boolean inDebug){
@@ -68,7 +85,7 @@ public class DasSliceController extends DasCanvasComponent {
         rDatumRect.text = this.datumRange.max().toString();
         firePropertyChange(PROP_DATUMRANGE, oldDR, dr);
         update();
-        repaint();
+//        repaint();
     }
     
     
@@ -119,7 +136,8 @@ public class DasSliceController extends DasCanvasComponent {
         repaint();
     }
     
- 
+    
+    
     class TextRect {
 
         String text;
@@ -153,7 +171,8 @@ public class DasSliceController extends DasCanvasComponent {
 
         protected void setRect() {
             // Relative to canvas origin
-            this.rect.setBounds(lPixel + colMin, rowMax -  ( bPixel - tPixel) - roomForAnimation , getPixelWidth(), getPixelHeight());
+//            this.rect.setBounds(lPixel + colMin, rowMax -  ( bPixel - tPixel) - roomForAnimation , getPixelWidth(), getPixelHeight());
+            this.rect.setBounds(lPixel + colMin, rowMin - getPixelHeight() - (int) getEmSize(), getPixelWidth(), getPixelHeight() );
         }
 
         boolean isShowing = false;
@@ -180,7 +199,10 @@ public class DasSliceController extends DasCanvasComponent {
             if (isShowing) {
                 
 //                gtr.draw(g, this.rect.x + sparePixels, this.rect.y + this.rect.height / 2);
-                gtr.draw(g, this.rect.x , this.rect.y + (2 * this.rect.height / 3 ) ); // This seems to center the text nicely
+                if(verticalAlignment == VerticalAlignment.TOP){
+                    gtr.draw(g, this.rect.x, rowMin - (int) (2 * getEmSize()));
+                }
+//                gtr.draw(g, this.rect.x , this.rect.y + (2 * this.rect.height / 3 ) ); // This seems to center the text nicely
 //                g.drawRect(this.rect.x, this.rect.y, this.rect.width, this.rect.height);
 //                if(this.text.equals(" scan>> ") || this.text.equals(" <<scan ")){
                 if(this == addRDatum || this == lScan || this == rScan){
@@ -474,7 +496,7 @@ public class DasSliceController extends DasCanvasComponent {
             rScan.lPixel += xOffset;
             rScan.rPixel += xOffset;
             
-            height *= 2; // Characters like 'g' would get cut off.
+            height *= 2; 
             
             lScan.tPixel = floatDown;
             lScan.bPixel = lScan.tPixel + height + 1;
@@ -857,15 +879,17 @@ public class DasSliceController extends DasCanvasComponent {
     }
     
     private void paintAnimation(Graphics g){
-        TextRect lRectForAnim = lScan;
+        TextRect lRectForAnim = dsLabelRect;
         TextRect rRectForAnim = rScan;
         int ovalWidth = 4;
         int ovalHeight = 4;
-        int startX = lRectForAnim.rect.x + lRectForAnim.rect.width / 2;
-        int startY = lRectForAnim.rect.y + lRectForAnim.rect.height  + roomForAnimation / 2;
+        int startX = lRectForAnim.rect.x;
+//        int startY = lRectForAnim.rect.y + lRectForAnim.rect.height  + roomForAnimation / 2;
+        int startY = rowMin - (7 * (int) getEmSize() / 4);
         g.drawOval(startX, startY, ovalWidth, ovalHeight);
-        int endX = rRectForAnim.rect.x + rRectForAnim.rect.width / 2;
-        int endY = rRectForAnim.rect.y + rRectForAnim.rect.height + roomForAnimation / 2;
+        int endX = rRectForAnim.rect.x;
+//        int endY = rRectForAnim.rect.y + rRectForAnim.rect.height + roomForAnimation / 2;
+        int endY = rowMin - (7 * (int) getEmSize() / 4);
         g.drawOval(endX, endY, ovalWidth, ovalHeight);
         // divide by two to put line in center of ovals
         g.drawLine(startX +ovalWidth / 2, startY + ovalHeight / 2, endX + ovalWidth / 2, endY + ovalHeight / 2); 
@@ -882,7 +906,7 @@ public class DasSliceController extends DasCanvasComponent {
         int rDatumLineX = (int) (rDist * pixPerData);
         rDatumLineX += (startX + ovalWidth / 2);
         
-        g.drawLine(lDatumLineX, endY - roomForAnimation / 3, lDatumLineX, endY + roomForAnimation / 3);
+        g.drawLine(lDatumLineX, endY + ovalHeight / 2 - (int) getEmSize() / 4, lDatumLineX, endY - ovalHeight / 2 + (int)getEmSize() / 4);
         g.drawLine(rDatumLineX, endY - roomForAnimation / 3, rDatumLineX, endY + roomForAnimation / 3);
         
         Color curCol = g.getColor();
@@ -891,39 +915,4 @@ public class DasSliceController extends DasCanvasComponent {
         g.setColor(curCol);
     }
     
-    
-//    private void setLayoutRatios(boolean inSingle) {
-//
-//        if(inSingle){
-//            lScan.lRatio = 0;
-//            lScan.rRatio = 0.15;
-//            lScan.setRect();
-//            lDatumRect.lRatio = 0.15;
-//            lDatumRect.rRatio = 0.75;
-//            lDatumRect.setRect();
-//            addRDatum.lRatio = 0.75;
-//            addRDatum.rRatio = 0.85;
-//            addRDatum.setRect();
-//            rScan.lRatio = 0.85;
-//            rScan.rRatio = 1;
-//            rScan.setRect();
-//
-//        } else {
-//            lScan.lRatio = 0;
-//            lScan.rRatio = 0.1;
-//            lScan.setRect();
-//            lDatumRect.lRatio = 0.1;
-//            lDatumRect.rRatio = 0.45;
-//            lDatumRect.setRect();
-//            toTextRect.lRatio = 0.45;
-//            toTextRect.rRatio = 0.55;
-//            toTextRect.setRect();
-//            rDatumRect.lRatio = 0.55;
-//            rDatumRect.rRatio = 0.9;
-//            rDatumRect.setRect();
-//            rScan.lRatio = 0.9;
-//            rScan.rRatio = 1;
-//            rScan.setRect();
-//        }
-//    }
 }
