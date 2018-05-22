@@ -50,12 +50,15 @@ public class NearestNeighborTableDataSet implements TableDataSet {
             
         } else {
 			  
-			  // Cascade getting the interpolation widths
-			  Datum xTagWidth = (Datum)m_override.get(DataSet.PROPERTY_X_TAG_WIDTH);
-			  if(xTagWidth == null)
-					xTagWidth= (Datum)source.getProperty(DataSet.PROPERTY_X_TAG_WIDTH);
+			  // Cascade getting the interpolation widths.  If the given or calculated
+			  // x-tag width is greater than the over-ride width, use that
+			  Datum xTagWidth= (Datum)source.getProperty(DataSet.PROPERTY_X_TAG_WIDTH);
 			  
 			  if ( xTagWidth==null ) xTagWidth= DataSetUtil.guessXTagWidth(source);
+			  
+			  Datum xOverRideWidth = (Datum)m_override.get(DataSet.PROPERTY_X_TAG_WIDTH);
+			  if(xTagWidth == null || xTagWidth.compareTo(xOverRideWidth) < 0)
+				  xTagWidth =  xOverRideWidth;
 			  
 			  Datum yTagWidth = (Datum)m_override.get(DataSet.PROPERTY_Y_TAG_WIDTH);
 			  if(yTagWidth == null)

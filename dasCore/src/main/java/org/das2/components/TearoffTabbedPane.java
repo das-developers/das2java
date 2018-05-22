@@ -63,7 +63,7 @@ public class TearoffTabbedPane extends JTabbedPane {
 
     private final static Logger logger= Logger.getLogger( TearoffTabbedPane.class.getCanonicalName() );
 
-    HashMap<Component, TabDesc> tabs = new HashMap<Component, TabDesc>();
+    HashMap<Component, TabDesc> tabs = new HashMap<>();
     int lastSelected; /* keep track of selected index before context menu */
 
     private static void copyInputMap(JFrame parent, JFrame babySitter) {
@@ -136,6 +136,7 @@ public class TearoffTabbedPane extends JTabbedPane {
     private MouseMotionListener getMouseMotionListener() {
         return new MouseMotionListener() {
 
+				@Override
             public void mouseDragged(MouseEvent e) {
                 if (selectedTab == -1) {
                     return;
@@ -168,6 +169,7 @@ public class TearoffTabbedPane extends JTabbedPane {
                 }
             }
 
+				@Override
             public void mouseMoved(MouseEvent e) {
             }
         };
@@ -195,6 +197,7 @@ public class TearoffTabbedPane extends JTabbedPane {
             {
                 dockMenu.add(new JMenuItem(new AbstractAction("dock") {
 
+						  @Override
                     public void actionPerformed(ActionEvent event) {
                         TabDesc desc = null;
 
@@ -221,6 +224,7 @@ public class TearoffTabbedPane extends JTabbedPane {
                 }));
             }
 
+				@Override
             public void mousePressed(MouseEvent event) {
                 selectedTab = TearoffTabbedPane.this.indexAtLocation(event.getX(), event.getY());
                 if (event.isPopupTrigger()) {
@@ -253,12 +257,14 @@ public class TearoffTabbedPane extends JTabbedPane {
             {
                 tearOffMenu.add(new JMenuItem(new AbstractAction("undock") {
 
+						  @Override
                     public void actionPerformed(ActionEvent event) {
                         TearoffTabbedPane.this.tearOffIntoFrame(selectedTab);
                     }
                 }));
                 tearOffMenu.add(new JMenuItem(new AbstractAction("slide right") {
 
+						  @Override
                     public void actionPerformed(ActionEvent event) {
                         TearoffTabbedPane.this.slideRight(selectedTab);
                     }
@@ -270,6 +276,7 @@ public class TearoffTabbedPane extends JTabbedPane {
             {
                 dockMenu.add(new JMenuItem(new AbstractAction("show") {
 
+						  @Override
                     public void actionPerformed(ActionEvent event) {
                         TabDesc desc = null;
                         Component babyComponent = null;
@@ -297,6 +304,7 @@ public class TearoffTabbedPane extends JTabbedPane {
                 }));
                 dockMenu.add(new JMenuItem(new AbstractAction("dock") {
 
+						  @Override
                     public void actionPerformed(ActionEvent event) {
                         TabDesc desc = null;
                         Component babyComponent = null;
@@ -326,6 +334,7 @@ public class TearoffTabbedPane extends JTabbedPane {
                 }));
             }
 
+				@Override
             public void mousePressed(MouseEvent event) {
                 selectedTab = TearoffTabbedPane.this.indexAtLocation(event.getX(), event.getY());
                 if (event.isPopupTrigger()) {
@@ -394,6 +403,7 @@ public class TearoffTabbedPane extends JTabbedPane {
             Component activeComponent;
             long activeComponentTime=0;
 
+				@Override
             public void componentResized(ComponentEvent e) {
                 long t= System.currentTimeMillis();
                 if ( ( t-activeComponentTime ) > 100 ) {
@@ -405,6 +415,7 @@ public class TearoffTabbedPane extends JTabbedPane {
                 }
             }
 
+				@Override
             public void componentMoved(ComponentEvent e) {
                 long t= System.currentTimeMillis();
                 if ( ( t-activeComponentTime ) > 100 ) {
@@ -416,9 +427,11 @@ public class TearoffTabbedPane extends JTabbedPane {
                 }
             }
 
+				@Override
             public void componentShown(ComponentEvent e) {
             }
 
+				@Override
             public void componentHidden(ComponentEvent e) {
             }
         };
@@ -550,6 +563,7 @@ public class TearoffTabbedPane extends JTabbedPane {
         babySitter.setIconImage( parent.getIconImage() );
         final WindowStateListener listener = new WindowStateListener() {
 
+				@Override
             public void windowStateChanged(WindowEvent e) {
                 babySitter.setExtendedState(parent.getExtendedState());
             }
@@ -560,6 +574,7 @@ public class TearoffTabbedPane extends JTabbedPane {
         babySitter.setLocation(p);
         babySitter.addWindowListener(new WindowAdapter() {
 
+				@Override
             public void windowClosing(WindowEvent e) {
                 parent.removeWindowStateListener(listener);
                 dock(c);
@@ -591,30 +606,37 @@ public class TearoffTabbedPane extends JTabbedPane {
         setSelectedIndex(selectedIndex);
     }
 
+	 @Override
     public void addTab(String title, Icon icon, Component component) {
         super.addTab(title, icon, component);
         TabDesc td = new TabDesc(title, icon, component, null, indexOfComponent(component));
         tabs.put(component, td);
     }
 
+	 @Override
     public void addTab(String title, Component component) {
         super.addTab(title, component);
         TabDesc td = new TabDesc(title, null, component, null, indexOfComponent(component));
         tabs.put(component, td);
     }
 
+	 @Override
     public void insertTab(String title, Icon icon, Component component, String tip, int index) {
         super.insertTab(title, icon, component, tip, index);
         TabDesc td = new TabDesc(title, icon, component, tip, index);
         tabs.put(component, td);
     }
 
+	 @Override
     public void addTab(String title, Icon icon, Component component, String tip) {
         super.addTab(title, icon, component, tip);
         TabDesc td = new TabDesc(title, icon, component, tip, indexOfComponent(component));
         tabs.put(component, td);
     }
 
+	 // This implementation looks backwords.  It looks like an implementation of
+	 // getComponentByIndex, not getTabComponentByIndex
+	 
     private Component getTabComponentByIndex(int index) {
         for (Component key : tabs.keySet()) {
             TabDesc td = tabs.get(key);
@@ -635,6 +657,7 @@ public class TearoffTabbedPane extends JTabbedPane {
         return null;
     }
 
+	 @Override
     public void removeTabAt(int index) {
         Component c = getTabComponentByIndex(index);
         super.removeTabAt(index);
@@ -653,6 +676,7 @@ public class TearoffTabbedPane extends JTabbedPane {
         
     }
 
+	 @Override
     public void setSelectedIndex(int index) {
         if (index != getSelectedIndex()) {
             lastSelected = getSelectedIndex();

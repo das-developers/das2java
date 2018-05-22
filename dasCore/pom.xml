@@ -36,7 +36,6 @@
               </execution>
             </executions>
           </plugin>
-			<!--
 	      <plugin>
            <groupId>org.apache.maven.plugins</groupId>
            <artifactId>maven-javadoc-plugin</artifactId>
@@ -52,9 +51,22 @@
                </configuration>
              </execution>
            </executions>
-         </plugin>		
-			-->
-       </plugins>
+         </plugin>	
+			<plugin>
+           <groupId>org.apache.maven.plugins</groupId>
+           <artifactId>maven-source-plugin</artifactId>
+			  <version>3.0.1</version>
+           <executions>
+             <execution>
+               <id>attach-sources</id>
+               <goals>
+                 <goal>jar</goal>
+               </goals>
+             </execution>
+           </executions>
+       </plugin>
+	 </plugins>
+	 
     </build>
     <repositories>
     <repository>
@@ -63,7 +75,17 @@
       <layout>default</layout>
       <name>Repository for library Library[swing-layout]</name>
     </repository>
+	
+	 
+	 <repository>
+		<releases><enabled>true</enabled></releases>
+		<snapshots><enabled>false</enabled></snapshots>
+		<id>org.das2.releases</id>
+		<name>Das2 Releases</name>
+		<url>http://das2.org/maven2/releases</url>
+	</repository>
   </repositories>
+  
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
@@ -101,4 +123,25 @@
       <version>1.5</version>
     </dependency>
   </dependencies>
+  
+  <distributionManagement>
+	 <!-- General Releases, mvn build tool will download these components only
+         once for a particular version without manual cleanup of the local .m2 
+	      area 
+	 -->
+    <repository>
+      <id>org.das2.releases</id>
+      <name>Das2 Public Component Repository</name>
+      <url>file:///opt/project/das2/repositories/maven2/releases</url>
+    </repository>
+	 
+	 <!-- Snapshots,  mvn will check every build to see if components here are
+	      newer. -->
+	 <snapshotRepository>
+	   <id>org.das2.snapshots</id>
+      <name>Das2 Daily Build Component Repository</name>
+      <url>file:///opt/project/das2/repositories/maven2/snapshots</url>
+	 </snapshotRepository>
+  </distributionManagement>
+  
 </project>
