@@ -124,30 +124,41 @@ public class DasSliceController extends DasCanvasComponent {
     }
     
     
-    // Number of pixels left below the the text rects for animation. 
-    private int roomForAnimation = 10;
-
-    public int getRoomForAnimation() {
-        return roomForAnimation;
-    }
-
-    public void setRoomForAnimation(int roomForAnimation) {
-        this.roomForAnimation = roomForAnimation;
-        repaint();
+//    // Number of pixels left below the the text rects for animation. 
+//    private int roomForAnimation = 10;
+//
+//    public int getRoomForAnimation() {
+//        return roomForAnimation;
+//    }
+//
+//    public void setRoomForAnimation(int roomForAnimation) {
+//        this.roomForAnimation = roomForAnimation;
+//        repaint();
+//    }
+    
+    
+    private int offsetFromPlot = 0;
+    
+    public int getOffsetFromPlot(){
+        return offsetFromPlot;
     }
     
+    public void setOffsetFromPlot(int newOffset){
+        this.offsetFromPlot = newOffset;
+        update();
+    }
     
     
     class TextRect {
 
         String text;
 
-        double lRatio;
-        double rRatio;
-
-        private int getWidthFromRatio() {
-            return (int) ((rRatio - lRatio) * layoutWidth);
-        }
+//        double lRatio;
+//        double rRatio;
+//
+//        private int getWidthFromRatio() {
+//            return (int) ((rRatio - lRatio) * layoutWidth);
+//        }
         
         int lPixel;
         int rPixel;
@@ -156,23 +167,22 @@ public class DasSliceController extends DasCanvasComponent {
             return rPixel - lPixel;
         }
         
-        int tPixel;
-        int bPixel;
-        
-        private int getPixelHeight(){
-            return bPixel - tPixel;
-        }
+//        int tPixel;
+//        int bPixel;
+//        
+//        private int getPixelHeight(){
+//            return bPixel - tPixel;
+//        }
 
         Cursor cursor = new Cursor(Cursor.DEFAULT_CURSOR);
 
-        
-        
         Rectangle rect;
 
         protected void setRect() {
             // Relative to canvas origin
 //            this.rect.setBounds(lPixel + colMin, rowMax -  ( bPixel - tPixel) - roomForAnimation , getPixelWidth(), getPixelHeight());
-            this.rect.setBounds(lPixel + colMin, rowMin - getPixelHeight() - (int) getEmSize(), getPixelWidth(), getPixelHeight() );
+//            this.rect.setBounds(lPixel + colMin, rowMin - getPixelHeight() - (int) getEmSize(), getPixelWidth(), getPixelHeight() );
+            this.rect.setBounds(lPixel + colMin, rowMin - (int) (2 * getEmSize()) - offsetFromPlot, getPixelWidth(), (int) (2 * getEmSize() ));
         }
 
         boolean isShowing = false;
@@ -200,7 +210,7 @@ public class DasSliceController extends DasCanvasComponent {
                 
 //                gtr.draw(g, this.rect.x + sparePixels, this.rect.y + this.rect.height / 2);
                 if(verticalAlignment == VerticalAlignment.TOP){
-                    gtr.draw(g, this.rect.x, rowMin - (int) (2 * getEmSize()));
+                    gtr.draw(g, this.rect.x, rowMin - (int) ( getEmSize()) - offsetFromPlot);
                 }
 //                gtr.draw(g, this.rect.x , this.rect.y + (2 * this.rect.height / 3 ) ); // This seems to center the text nicely
 //                g.drawRect(this.rect.x, this.rect.y, this.rect.width, this.rect.height);
@@ -292,28 +302,28 @@ public class DasSliceController extends DasCanvasComponent {
         layoutWidth = colMax - colMin;
         layoutHeight = rowMax - rowMin;
     }
-    
-    private int floatRight = 0;
-
-    public int getFloatRight() {
-        return floatRight;
-    }
-
-    public void setFloatRight(int floatRight) {
-        this.floatRight = floatRight;
-        repaint();
-    }
-    
-    private int floatDown = 0;
-    public int getFloatDown(){
-        return floatDown;
-    }
-    
-    public void setFloatDown(int fDown){
-        this.floatDown = fDown;
-        repaint();
-    }
-    
+//    
+//    private int floatRight = 0;
+//
+//    public int getFloatRight() {
+//        return floatRight;
+//    }
+//
+//    public void setFloatRight(int floatRight) {
+//        this.floatRight = floatRight;
+//        repaint();
+//    }
+//    
+//    private int floatDown = 0;
+//    public int getFloatDown(){
+//        return floatDown;
+//    }
+//    
+//    public void setFloatDown(int fDown){
+//        this.floatDown = fDown;
+//        repaint();
+//    }
+//    
     private void setLayout(boolean inSingle, GrannyTextRenderer gtr){
     
         
@@ -323,8 +333,9 @@ public class DasSliceController extends DasCanvasComponent {
             gtr.setString(getFont(), lScan.text);
             int width = (int) gtr.getWidth();
             totalWidth += width;
-            int height = (int) gtr.getHeight();
-            lScan.lPixel = floatRight - width;
+//            int height = (int) gtr.getHeight();
+//            lScan.lPixel = floatRight - width;
+            lScan.lPixel =  - width;
             // The plus 1 is safety from the cast to int on width
             lScan.rPixel = lScan.lPixel + width + 1;
             
@@ -333,7 +344,7 @@ public class DasSliceController extends DasCanvasComponent {
             width = (int) gtr.getWidth();
             totalWidth += width;
             // Find the largest height so all the text rects are the same height
-            height = (int) gtr.getHeight() > height ? (int) gtr.getHeight() : height;
+//            height = (int) gtr.getHeight() > height ? (int) gtr.getHeight() : height;
             dsLabelRect.lPixel = lScan.rPixel;
             dsLabelRect.rPixel = dsLabelRect.lPixel + width + 1;
             
@@ -342,7 +353,7 @@ public class DasSliceController extends DasCanvasComponent {
             gtr.setString(getFont(), lDatumRect.text);
             width = (int) gtr.getWidth();
             totalWidth += width;
-            height = (int) gtr.getHeight() > height ? (int) gtr.getHeight() : height;
+//            height = (int) gtr.getHeight() > height ? (int) gtr.getHeight() : height;
             lDatumRect.lPixel = dsLabelRect.rPixel;
             lDatumRect.rPixel = lDatumRect.lPixel + width + 1;
             
@@ -350,14 +361,14 @@ public class DasSliceController extends DasCanvasComponent {
             gtr.setString(getFont(), addRDatum.text);
             width = (int) gtr.getWidth();
             totalWidth += width;
-            height = (int) gtr.getHeight() > height ? (int) gtr.getHeight() : height;
+//            height = (int) gtr.getHeight() > height ? (int) gtr.getHeight() : height;
             addRDatum.lPixel = lDatumRect.rPixel;
             addRDatum.rPixel = addRDatum.lPixel + width + 1;
             
             
             gtr.setString(getFont(), rScan.text);
             width = (int) gtr.getWidth();
-            height = (int) gtr.getHeight() > height ? (int) gtr.getHeight() : height;
+//            height = (int) gtr.getHeight() > height ? (int) gtr.getHeight() : height;
             rScan.lPixel = addRDatum.rPixel;
             rScan.rPixel = rScan.lPixel + width + 1;
             
@@ -390,27 +401,27 @@ public class DasSliceController extends DasCanvasComponent {
             rScan.lPixel += xOffset;
             rScan.rPixel += xOffset;
             
-            height *= 2; // Characters like 'g' would get cut off.
+//            height *= 2; // Characters like 'g' would get cut off.
             
             // Setting top and bottom pixels after largest height was found
-            lScan.tPixel = floatDown;
-            lScan.bPixel = lScan.tPixel + height + 1;
+//            lScan.tPixel = floatDown;
+//            lScan.bPixel = lScan.tPixel + height + 1;
             lScan.setRect();
             
-            dsLabelRect.tPixel = floatDown;
-            dsLabelRect.bPixel = dsLabelRect.tPixel + height + 1;
+//            dsLabelRect.tPixel = floatDown;
+//            dsLabelRect.bPixel = dsLabelRect.tPixel + height + 1;
             dsLabelRect.setRect();
             
-            lDatumRect.tPixel = floatDown;
-            lDatumRect.bPixel = lDatumRect.tPixel + height + 1;
+//            lDatumRect.tPixel = floatDown;
+//            lDatumRect.bPixel = lDatumRect.tPixel + height + 1;
             lDatumRect.setRect();
             
-            addRDatum.tPixel = floatDown;
-            addRDatum.bPixel = addRDatum.tPixel + height + 1;
+//            addRDatum.tPixel = floatDown;
+//            addRDatum.bPixel = addRDatum.tPixel + height + 1;
             addRDatum.setRect();
             
-            rScan.tPixel = floatDown;
-            rScan.bPixel = rScan.tPixel + height + 1;
+//            rScan.tPixel = floatDown;
+//            rScan.bPixel = rScan.tPixel + height + 1;
             rScan.setRect();
                  
         }else{
@@ -418,8 +429,9 @@ public class DasSliceController extends DasCanvasComponent {
             
             gtr.setString(getFont(), lScan.text);
             int width = (int) gtr.getWidth();
-            int height = (int) gtr.getHeight();
-            lScan.lPixel = floatRight - width;
+//            int height = (int) gtr.getHeight();
+//            lScan.lPixel = floatRight - width;
+            lScan.lPixel =  - width;
             // The plus 1 is safety from the cast to int on width
             lScan.rPixel = lScan.lPixel + width + 1;
             
@@ -427,8 +439,9 @@ public class DasSliceController extends DasCanvasComponent {
             gtr.setString(getFont(), dsLabelRect.text);
             width = (int) gtr.getWidth();
             totalWidth += width;
-            height = (int) gtr.getHeight() > height ? (int) gtr.getHeight() : height;
-            dsLabelRect.lPixel = floatRight;
+//            height = (int) gtr.getHeight() > height ? (int) gtr.getHeight() : height;
+//            dsLabelRect.lPixel = floatRight;
+            dsLabelRect.lPixel = 0;
             dsLabelRect.rPixel = dsLabelRect.lPixel + width + 1;
             
             
@@ -436,7 +449,7 @@ public class DasSliceController extends DasCanvasComponent {
             gtr.setString(getFont(), lDatumRect.text);
             width = (int) gtr.getWidth();
             totalWidth += width;
-            height = (int) gtr.getHeight() > height ? (int) gtr.getHeight() : height;
+//            height = (int) gtr.getHeight() > height ? (int) gtr.getHeight() : height;
             lDatumRect.lPixel = dsLabelRect.rPixel;
             lDatumRect.rPixel = lDatumRect.lPixel + width + 1;
             
@@ -444,7 +457,7 @@ public class DasSliceController extends DasCanvasComponent {
             gtr.setString(getFont(), toTextRect.text);
             width = (int) gtr.getWidth();
             totalWidth += width;
-            height = (int) gtr.getHeight() > height ? (int) gtr.getHeight() : height;
+//            height = (int) gtr.getHeight() > height ? (int) gtr.getHeight() : height;
             toTextRect.lPixel = lDatumRect.rPixel;
             toTextRect.rPixel = toTextRect.lPixel + width + 1;
             
@@ -453,14 +466,14 @@ public class DasSliceController extends DasCanvasComponent {
             gtr.setString(getFont(), rDatumRect.text);
             width = (int) gtr.getWidth();
             totalWidth += width;
-            height = (int) gtr.getHeight() > height ? (int) gtr.getHeight() : height;
+//            height = (int) gtr.getHeight() > height ? (int) gtr.getHeight() : height;
             rDatumRect.lPixel = toTextRect.rPixel;
             rDatumRect.rPixel = rDatumRect.lPixel + width + 1;
             
             
             gtr.setString(getFont(), rScan.text);
             width = (int) gtr.getWidth();
-            height = (int) gtr.getHeight() > height ? (int) gtr.getHeight() : height;
+//            height = (int) gtr.getHeight() > height ? (int) gtr.getHeight() : height;
             rScan.lPixel = rDatumRect.rPixel;
             rScan.rPixel = rScan.lPixel + width + 1;
             
@@ -496,30 +509,30 @@ public class DasSliceController extends DasCanvasComponent {
             rScan.lPixel += xOffset;
             rScan.rPixel += xOffset;
             
-            height *= 2; 
+//            height *= 2; 
             
-            lScan.tPixel = floatDown;
-            lScan.bPixel = lScan.tPixel + height + 1;
+//            lScan.tPixel = floatDown;
+//            lScan.bPixel = lScan.tPixel + height + 1;
             lScan.setRect();
             
-            dsLabelRect.tPixel = floatDown;
-            dsLabelRect.bPixel = dsLabelRect.tPixel + height + 1;
+//            dsLabelRect.tPixel = floatDown;
+//            dsLabelRect.bPixel = dsLabelRect.tPixel + height + 1;
             dsLabelRect.setRect();
             
-            lDatumRect.tPixel = floatDown;
-            lDatumRect.bPixel = lDatumRect.tPixel + height + 1;
+//            lDatumRect.tPixel = floatDown;
+//            lDatumRect.bPixel = lDatumRect.tPixel + height + 1;
             lDatumRect.setRect();
             
-            toTextRect.tPixel = floatDown;
-            toTextRect.bPixel = toTextRect.tPixel + height + 1;
+//            toTextRect.tPixel = floatDown;
+//            toTextRect.bPixel = toTextRect.tPixel + height + 1;
             toTextRect.setRect();
             
-            rDatumRect.tPixel = floatDown;
-            rDatumRect.bPixel = rDatumRect.tPixel + height + 1;
+//            rDatumRect.tPixel = floatDown;
+//            rDatumRect.bPixel = rDatumRect.tPixel + height + 1;
             rDatumRect.setRect();
             
-            rScan.tPixel = floatDown;
-            rScan.bPixel = rScan.tPixel + height + 1;
+//            rScan.tPixel = floatDown;
+//            rScan.bPixel = rScan.tPixel + height + 1;
             rScan.setRect();
                     
         }
@@ -606,7 +619,7 @@ public class DasSliceController extends DasCanvasComponent {
         
         //Paint the animation
         if(showAnimation){
-            paintAnimation(g);
+            paintBoxAnimation(g);
         }
         
     }
@@ -878,21 +891,20 @@ public class DasSliceController extends DasCanvasComponent {
         this.validRange = validRange;
     }
     
-    private void paintAnimation(Graphics g){
+    private void paintBoxAnimation(Graphics g){
+        
         TextRect lRectForAnim = dsLabelRect;
         TextRect rRectForAnim = rScan;
-        int ovalWidth = 4;
-        int ovalHeight = 4;
+        
+        int ovalSize = 4;
+        int halfOvalSize = ovalSize / 2; // Useful to put stuff at center of oval.
         int startX = lRectForAnim.rect.x;
-//        int startY = lRectForAnim.rect.y + lRectForAnim.rect.height  + roomForAnimation / 2;
-        int startY = rowMin - (7 * (int) getEmSize() / 4);
-        g.drawOval(startX, startY, ovalWidth, ovalHeight);
         int endX = rRectForAnim.rect.x;
-//        int endY = rRectForAnim.rect.y + rRectForAnim.rect.height + roomForAnimation / 2;
-        int endY = rowMin - (7 * (int) getEmSize() / 4);
-        g.drawOval(endX, endY, ovalWidth, ovalHeight);
-        // divide by two to put line in center of ovals
-        g.drawLine(startX +ovalWidth / 2, startY + ovalHeight / 2, endX + ovalWidth / 2, endY + ovalHeight / 2); 
+        int textBaseLine = lRectForAnim.rect.y + (int) getEmSize();
+
+        g.drawOval(startX, textBaseLine, ovalSize, ovalSize);
+        g.drawOval(endX, textBaseLine, ovalSize, ovalSize);
+        g.drawLine(startX + halfOvalSize, textBaseLine + halfOvalSize, endX + halfOvalSize, textBaseLine + halfOvalSize); 
         
         int width = endX - startX;
         double dataWidth = validRange.width().value();
@@ -900,19 +912,20 @@ public class DasSliceController extends DasCanvasComponent {
         
         double lDist =  datumRange.min().value() - validRange.min().value();
         int lDatumLineX = (int) ( lDist * pixPerData);
-        lDatumLineX += (startX + ovalWidth / 2);
+        lDatumLineX += (startX + halfOvalSize);
         
         double rDist = datumRange.max().value() - validRange.min().value();
         int rDatumLineX = (int) (rDist * pixPerData);
-        rDatumLineX += (startX + ovalWidth / 2);
+        rDatumLineX += (startX + halfOvalSize);
         
-        g.drawLine(lDatumLineX, endY + ovalHeight / 2 - (int) getEmSize() / 4, lDatumLineX, endY - ovalHeight / 2 + (int)getEmSize() / 4);
-        g.drawLine(rDatumLineX, endY - roomForAnimation / 3, rDatumLineX, endY + roomForAnimation / 3);
+        int datIndicatorHeight = (int) (getEmSize() / 4 );
+        
+        g.drawLine(lDatumLineX, textBaseLine + halfOvalSize, lDatumLineX, textBaseLine + halfOvalSize + datIndicatorHeight);
+        g.drawLine(rDatumLineX, textBaseLine + halfOvalSize, rDatumLineX, textBaseLine + halfOvalSize + datIndicatorHeight);
         
         Color curCol = g.getColor();
         g.setColor(Color.gray);
-        g.fillRect(lDatumLineX, endY - roomForAnimation / 4, (rDatumLineX - lDatumLineX), roomForAnimation / 2);
+        g.fillRect(lDatumLineX, textBaseLine + halfOvalSize, (rDatumLineX - lDatumLineX), datIndicatorHeight);
         g.setColor(curCol);
     }
-    
 }
