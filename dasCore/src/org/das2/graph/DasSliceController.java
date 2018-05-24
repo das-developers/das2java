@@ -61,8 +61,6 @@ public class DasSliceController extends DasCanvasComponent {
         update();
     }
     
-    
-    
     public void setInDebugMode(boolean inDebug){
         this.inDebugMode = inDebug;
     }
@@ -237,7 +235,7 @@ public class DasSliceController extends DasCanvasComponent {
     private TextRect lDatumRect;
     private TextRect rDatumRect;
     private TextRect addRDatum = new TextRect(" + ", new Rectangle());
-    private TextRect toTextRect = new TextRect(" to ", new Rectangle());
+    private TextRect toTextRect = new TextRect(" to ", new Rectangle(), new Cursor(Cursor.MOVE_CURSOR));
     private TextRect rScan = new TextRect(" scan>> ", new Rectangle());
     private TextRect lScan = new TextRect(" <<scan ", new Rectangle());
 
@@ -291,16 +289,16 @@ public class DasSliceController extends DasCanvasComponent {
     private int colMax;
     private int rowMin;
     private int rowMax;
-    private int layoutWidth;
-    private int layoutHeight;
+//    private int layoutWidth;
+//    private int layoutHeight;
 
     private void setSizingParams() {
         colMin = getColumn().getDMinimum();
         colMax = getColumn().getDMaximum();
         rowMin = getRow().getDMinimum();
         rowMax = getRow().getDMaximum();
-        layoutWidth = colMax - colMin;
-        layoutHeight = rowMax - rowMin;
+//        layoutWidth = colMax - colMin;
+//        layoutHeight = rowMax - rowMin;
     }
 //    
 //    private int floatRight = 0;
@@ -619,7 +617,22 @@ public class DasSliceController extends DasCanvasComponent {
         
         //Paint the animation
         if(showAnimation){
-            paintBoxAnimation(g);
+            switch(animationMode){
+                case(LEFT_ANIMATION):
+                    leftDatumClickAnimation(g);
+                    break;
+                case(RIGHT_ANIMATION):
+                    rightDatumClickAnimation(g);
+                    break;
+                case(CENTER_ANIMATION):
+                    centerAnimation(g);
+                    break;
+                default:
+                    System.err.println("Animation not set to valid state");
+                    break;
+                    
+            }
+//            centerAnimation(g);
         }
         
     }
@@ -659,6 +672,11 @@ public class DasSliceController extends DasCanvasComponent {
     private Point pressedPoint;
     
     private boolean showAnimation = false;
+    private static final int LEFT_ANIMATION = 0;
+    private static final int CENTER_ANIMATION = 1;
+    private static final int RIGHT_ANIMATION = 2;
+    private int animationMode;
+    
     
     private MouseAdapter getMouseAdapter() {
         return new MouseAdapter() {
@@ -685,7 +703,7 @@ public class DasSliceController extends DasCanvasComponent {
                 lastPoint = e.getPoint();
                 if(e.getButton() == 1){
                     buttonPress = 1;
-                    if (mouseRect == lDatumRect || mouseRect == rDatumRect) {
+                    if (mouseRect == lDatumRect || mouseRect == rDatumRect || mouseRect == toTextRect) {
                         isDragging = true;
                         if(!inSingleMode){
                             startedDragAsRange = true;
@@ -724,13 +742,22 @@ public class DasSliceController extends DasCanvasComponent {
                 if(buttonPress == 1){
 //                    System.err.println(" left clickckckc");
                     if (mouseRect == lDatumRect) {
+                        showAnimation = true;
+//                        animationMode = LEFT_ANIMATION;
                         lDatumDrag(xUpdatingDrag);
-                        
                     } else if (mouseRect == rDatumRect) {
+                        showAnimation = true;
+//                        animationMode = RIGHT_ANIMATION;
                         rDatumDrag(xUpdatingDrag);
+                    } else if (mouseRect == toTextRect){
+                        showAnimation = true;
+//                        animationMode = CENTER_ANIMATION;
+                        middleButtonDrag(xUpdatingDrag);
                     }
+                    
                 }else if(buttonPress == 2){
                     if(mouseRect == lDatumRect || mouseRect == rDatumRect || mouseRect == toTextRect){
+                        animationMode = CENTER_ANIMATION;
                         middleButtonDrag(xUpdatingDrag);
                     }
                 }
@@ -743,7 +770,7 @@ public class DasSliceController extends DasCanvasComponent {
                     setDatumRange(datumRange);
                     isDragging = false;
                     startedDragAsRange = false;
-                    
+                    showAnimation = false;
                 }
                 resetInSingleMode();
                 setMouseRect(e.getX(), e.getY());
@@ -752,7 +779,7 @@ public class DasSliceController extends DasCanvasComponent {
 
             @Override
             public void mouseEntered(MouseEvent e) {
-                showAnimation = true;
+//                setMouseRect(e.getX(), e.getY());
             }
 
             @Override
@@ -816,10 +843,11 @@ public class DasSliceController extends DasCanvasComponent {
     }
 
     private void lDatumDrag(int xDrag) {
+        showAnimation = true;
 //        System.err.println("lDatumDragging, total dist = " + xTotalDrag);
         Datum dragDatum = Datum.create(xDrag, datumRange.getUnits());
         if (inSingleMode) {
-            
+            animationMode = CENTER_ANIMATION;
             // Make sure layout won't collapse to a single datum range
             // during drag. If a single datum range is a result of a drag
             // it can be reversed as long a the mouse isn't released.
@@ -834,7 +862,7 @@ public class DasSliceController extends DasCanvasComponent {
             setDatumRange(new DatumRange(datumRange.min().add(dragDatum), datumRange.min().add(dragDatum)));
             
         } else {
-
+            animationMode = LEFT_ANIMATION;
             Datum newLDatum = datumRange.min().add(dragDatum);
             // If left value exceeds right value make it stop at right value.
             if(newLDatum.gt(datumRange.max())){
@@ -846,6 +874,8 @@ public class DasSliceController extends DasCanvasComponent {
     }
 
     private void rDatumDrag(int xDrag) {
+        showAnimation = true;
+        animationMode = RIGHT_ANIMATION;
 //        System.err.println("rDatumDragging, total dist = " + xTotalDrag);
         Datum dragDatum = Datum.create(xDrag, datumRange.getUnits());
         Datum newRDatum = datumRange.max().add(dragDatum);
@@ -858,6 +888,8 @@ public class DasSliceController extends DasCanvasComponent {
     }
     
     private void middleButtonDrag(int xDrag){
+        showAnimation = true;
+        animationMode = CENTER_ANIMATION;
         Datum dragDatum = Datum.create(xDrag, datumRange.getUnits());
         setDatumRange(new DatumRange(datumRange.min().add(dragDatum), datumRange.max().add(dragDatum)));
     }
@@ -891,17 +923,20 @@ public class DasSliceController extends DasCanvasComponent {
         this.validRange = validRange;
     }
     
-    private void paintBoxAnimation(Graphics g){
+    
+    private int ovalSize = 4;
+    private int halfOvalSize = ovalSize / 2;
+    
+    private void centerAnimation(Graphics g){
         
         TextRect lRectForAnim = dsLabelRect;
         TextRect rRectForAnim = rScan;
         
-        int ovalSize = 4;
-        int halfOvalSize = ovalSize / 2; // Useful to put stuff at center of oval.
+        int textBaseLine = lDatumRect.rect.y + (int) getEmSize();
+        
         int startX = lRectForAnim.rect.x;
         int endX = rRectForAnim.rect.x;
-        int textBaseLine = lRectForAnim.rect.y + (int) getEmSize();
-
+        
         g.drawOval(startX, textBaseLine, ovalSize, ovalSize);
         g.drawOval(endX, textBaseLine, ovalSize, ovalSize);
         g.drawLine(startX + halfOvalSize, textBaseLine + halfOvalSize, endX + halfOvalSize, textBaseLine + halfOvalSize); 
@@ -927,5 +962,32 @@ public class DasSliceController extends DasCanvasComponent {
         g.setColor(Color.gray);
         g.fillRect(lDatumLineX, textBaseLine + halfOvalSize, (rDatumLineX - lDatumLineX), datIndicatorHeight);
         g.setColor(curCol);
+    }
+    
+    private void leftDatumClickAnimation(Graphics g){
+
+        int ovalPositionX = rDatumRect.rect.x + rDatumRect.rect.width / 2;
+        int textBaseLine = lDatumRect.rect.y + (int) getEmSize();
+        
+        g.drawOval(ovalPositionX, textBaseLine, ovalSize, ovalSize);
+        // relative to canvas origin
+        int mouseX = lastPoint.x + getX();
+        g.drawLine(ovalPositionX + halfOvalSize, textBaseLine + halfOvalSize, mouseX, textBaseLine + halfOvalSize);
+    
+        int datIndicatorHeight = (int) (getEmSize() / 4 );
+        g.drawLine(mouseX, textBaseLine + halfOvalSize, mouseX, textBaseLine + halfOvalSize + datIndicatorHeight);
+    }
+    
+    private void rightDatumClickAnimation(Graphics g){
+
+        int ovalPositionX = lDatumRect.rect.x + lDatumRect.rect.width / 2;
+        int textBaseLine = lDatumRect.rect.y + (int) getEmSize();
+        g.drawOval(ovalPositionX, textBaseLine, ovalSize, ovalSize);
+        // relative to canvas origin
+        int mouseX = lastPoint.x + getX();
+        g.drawLine(ovalPositionX + halfOvalSize, textBaseLine + halfOvalSize, mouseX, textBaseLine + halfOvalSize);
+        
+        int datIndicatorHeight = (int) (getEmSize() / 4 );
+        g.drawLine(mouseX, textBaseLine + halfOvalSize, mouseX, textBaseLine + halfOvalSize + datIndicatorHeight);
     }
 }
