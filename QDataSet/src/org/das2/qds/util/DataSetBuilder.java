@@ -383,6 +383,28 @@ public class DataSetBuilder {
     }
     
     /**
+     * insert a value into the builder, parsing the string with the units.
+     * @param index0 The index to insert the data, or if -1, ignore and nextRecord() should be used.
+     * @param s the a string representation of the value parse and insert.
+     * @throws java.text.ParseException
+     * @since 2018-05-28
+     * @see Ops#dataset(java.lang.Object) for the logic interpreting Strings.
+     */
+    public void putValue( int index0, String s ) throws ParseException {
+        checkStreamIndex(index0);
+        if ( u==null ) {
+            QDataSet ds1= Ops.dataset(s);
+            Units units= SemanticOps.getUnits(ds1);
+            u= units;
+        }
+        if ( u instanceof EnumerationUnits ) {
+            current.putValue( this.index, ((EnumerationUnits)u).createDatum(s).doubleValue(u) );            
+        } else {
+            current.putValue( this.index, u.parse(s).doubleValue(u) );
+        }
+    }
+    
+    /**
      * insert a value into the builder, parsing the string with the column units.
      * @param index0 The index to insert the data, or if -1, ignore and nextRecord() should be used.
      * @param index1 the second index
@@ -517,7 +539,7 @@ public class DataSetBuilder {
      */
     public void nextRecord( QDataSet v ) {
         if ( this.rank()!=1 ) {
-            throw new IllegalArgumentException("must be rank 1");
+            throw new IllegalArgumentException("builder must be rank 1, it is rank "+this.rank);
         }
         if ( v.rank()!=0 ) {
             throw new IllegalArgumentException("argument must be rank 0");
@@ -532,10 +554,23 @@ public class DataSetBuilder {
      */
     public void nextRecord( double v ) {
         if ( this.rank()!=1 ) {
-            throw new IllegalArgumentException("must be rank 1");
+            throw new IllegalArgumentException("builder must be rank 1, it is rank "+this.rank);
         }
         putValue( -1, v );
         nextRecord();
+    }
+    
+    /**
+     * add the string to the rank 1 builder, which will be parsed internally.
+     * @param s 
+     * @throws IllegalArgumentException if the string cannot be parsed.
+     */
+    public void nextRecord( String s ) {
+        try {
+            putValue( -1, s );
+        } catch (ParseException ex) {
+            throw new IllegalArgumentException(ex);
+        }
     }
     
     /**
@@ -544,7 +579,7 @@ public class DataSetBuilder {
      */
     public void nextRecord( Datum v ) {
         if ( this.rank()!=1 ) {
-            throw new IllegalArgumentException("rank 1");
+            throw new IllegalArgumentException("builder must be rank 1, it is rank "+this.rank);
         }
         putValue( -1, v );
         nextRecord();
@@ -667,6 +702,9 @@ public class DataSetBuilder {
      * @param o the value
      */
     public void putProperty( String string, Object o ) {
+        if ( string.equals(QDataSet.UNITS) ) {
+            this.u= (Units)o;
+        }
         properties.put( string, o );
     }
     
