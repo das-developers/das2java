@@ -7325,14 +7325,19 @@ public final class Ops {
         return ds;
     }
 
+    public static QDataSet expandToFillGaps( QDataSet ds ) {
+        return expandToFillGaps( ds, -1 );
+    }
+    
     /**
      * Special function by the RPW Group at U. Iowa, which reassigns timetags so the small waveform 
      * packets are visible, or bursty spectrograms are more easily viewed.
      * @param ds
+     * @param factor duty cycle factor (0.5=50% duty cycle)
      * @return 
      * @see #expandWaveform(org.das2.qds.QDataSet) 
      */
-    public static QDataSet expandToFillGaps( QDataSet ds ) {
+    public static QDataSet expandToFillGaps( QDataSet ds, double factor ) {
         if ( Schemes.isRank2Waveform(ds) ) {
             return expandWaveform(ds);
         } else if ( ds.rank()==2 ) {
@@ -7345,11 +7350,11 @@ public final class Ops {
                 return ds;
             } else {
                 Datum cadenceMax= Ops.datum( Ops.reduceMin( Ops.applyIndex( dts, r ), 0 ) );
-                int nburst= ds.length(0);
+                double nburst= factor>0 ? factor : r.value(0) / ds.length(0);
                 logger.log(Level.FINE, "expandToFillGaps: {0} {1}", new Object[]{cadenceMin, cadenceMax});
                 DataSetBuilder tb= new DataSetBuilder(1,ds.length());
                 tb.setUnits((Units)ttags.property(QDataSet.UNITS));
-                double stepFactor= cadenceMax.divide(cadenceMin).value() / nburst * 0.60;
+                double stepFactor= cadenceMax.divide(cadenceMin).value() / nburst;
                 Units toffUnits= ((Units)ttags.property(QDataSet.UNITS)).getOffsetUnits();
                 int basei= 0;
                 Datum baset= Ops.datum( ttags.slice(0) );
