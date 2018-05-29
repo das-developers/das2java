@@ -7309,9 +7309,12 @@ public final class Ops {
      * @param ds rank 2 waveform
      * @return 
      * @see Schemes#rank2Waveform() 
+     * @see #expandToFillGaps(org.das2.qds.QDataSet) 
      */
     public static QDataSet expandWaveform( QDataSet ds ) {
-        if ( !Schemes.isRank2Waveform(ds) ) throw new IllegalArgumentException("dataset must be a rank 2 waveform");
+        if ( !Schemes.isRank2Waveform(ds) ) {
+            throw new IllegalArgumentException("dataset must be a rank 2 waveform");
+        }
         QDataSet deltaT= (QDataSet)ds.property(QDataSet.DEPEND_1);
         QDataSet baseT= (QDataSet)ds.property(QDataSet.DEPEND_0);
         QDataSet cadence= Ops.reduceMin( Ops.diff(baseT), 0 );
@@ -7322,6 +7325,52 @@ public final class Ops {
         return ds;
     }
 
+    /**
+     * Special function by the RPW Group at U. Iowa, which reassigns timetags so the small waveform 
+     * packets are visible, or bursty spectrograms are more easily viewed.
+     * @param ds
+     * @return 
+     * @see #expandWaveform(org.das2.qds.QDataSet) 
+     */
+    public static QDataSet expandToFillGaps( QDataSet ds ) {
+        if ( Schemes.isRank2Waveform(ds) ) {
+            return expandWaveform(ds);
+        } else if ( ds.rank()==2 ) {
+            QDataSet ttags= (QDataSet)ds.property(QDataSet.DEPEND_0);
+            QDataSet dts= Ops.diff(ttags);
+            Datum cadenceMin= Ops.datum( Ops.reduceMin( dts, 0 ) );
+            Datum twiceCadenceMin= cadenceMin.multiply(2);
+            QDataSet r= Ops.where( Ops.gt( dts, twiceCadenceMin ) );
+            if ( r.length()<1 ) {
+                return ds;
+            } else {
+                Datum cadenceMax= Ops.datum( Ops.reduceMin( Ops.applyIndex( dts, r ), 0 ) );
+                int nburst= ds.length(0);
+                logger.log(Level.FINE, "expandToFillGaps: {0} {1}", new Object[]{cadenceMin, cadenceMax});
+                DataSetBuilder tb= new DataSetBuilder(1,ds.length());
+                tb.setUnits((Units)ttags.property(QDataSet.UNITS));
+                double stepFactor= cadenceMax.divide(cadenceMin).value() / nburst * 0.60;
+                Units toffUnits= ((Units)ttags.property(QDataSet.UNITS)).getOffsetUnits();
+                int basei= 0;
+                Datum baset= Ops.datum( ttags.slice(0) );
+                tb.putValue( 0, baset );
+                for ( int i=1; i<ttags.length(); i++ ) {
+                    if ( Ops.datum(dts.slice(i-1)).lt(twiceCadenceMin) ) {
+                        tb.putValue( i, baset.add( ( ttags.value(i)-ttags.value(basei) ) * stepFactor, toffUnits ) );
+                    } else {
+                        baset= Ops.datum( ttags.slice(i) );
+                        basei= i;
+                        tb.putValue( i, baset );                
+                    }
+                }
+                QDataSet newTTags= tb.getDataSet();
+                return link( newTTags, ds );
+            }
+        } else {
+            throw new IllegalArgumentException("data must be rank 2 spectrogram or waveform");
+        }
+    }
+    
     /**
      * scipy chirp function, used for testing.
      * @param t Times at which to evaluate the waveform.
