@@ -566,11 +566,15 @@ public class DataSetBuilder {
      * @throws IllegalArgumentException if the string cannot be parsed.
      */
     public void nextRecord( String s ) {
+        if ( this.rank()!=1 ) {
+            throw new IllegalArgumentException("builder must be rank 1, it is rank "+this.rank);
+        }
         try {
             putValue( -1, s );
         } catch (ParseException ex) {
             throw new IllegalArgumentException(ex);
         }
+        nextRecord();
     }
     
     /**
