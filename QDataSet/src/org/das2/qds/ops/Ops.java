@@ -3017,7 +3017,41 @@ public final class Ops {
         QDataSet result= linspace( min, max, len0 );
         return putProperty( result, QDataSet.UNITS, u );
     }
-
+    
+    /**
+     * return a rank 1 dataset with <tt>len0</tt> logarithmically-spaced values, the first
+     * is min and the last is max. 
+     * @param min double
+     * @param max double
+     * @param len0 number of elements in the result
+     * @return rank 1 dataset of logarithmically spaced data.
+     */
+    public static QDataSet logspace(double min, double max, int len0) {
+        if (len0 < 1) {
+            return DDataSet.wrap(new double[]{max});
+        } else {
+            return pow( 10, linspace( Math.log10(min), Math.log10(max), len0 ) );
+        }
+    }
+    
+    /**
+     * return a rank 1 dataset with <tt>len0</tt> logarithmically-spaced values, the first
+     * is min and the last is max. 
+     * @param omin rank 0 dataset
+     * @param omax rank 0 dataset
+     * @param len0 number of elements in the result
+     * @return rank 1 dataset of logarithmically spaced data.
+     */
+    public static QDataSet logspace( Object omin, Object omax, int len0) {
+        QDataSet dsmin= dataset(omin);
+        QDataSet dsmax= dataset(omax);
+        Units u= SemanticOps.getUnits(dsmin);
+        double min= dsmin.value();
+        double max= convertUnitsTo( dsmax, u ).value();
+        QDataSet result= pow( 10, linspace( Math.log10(min), Math.log10(max), len0 ) );
+        return putProperty( result, QDataSet.UNITS, u );
+    }
+    
     /**
      * returns rank 1 dataset with value
      * @param val fill the dataset with this value.
