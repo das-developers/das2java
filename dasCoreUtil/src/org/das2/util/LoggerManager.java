@@ -587,7 +587,11 @@ public final class LoggerManager {
      * @param source comment on the source
      */
     public static void logPropertyChangeEvent( PropertyChangeEvent e, String source ) {
-        getLogger("gui").log(Level.FINE, "PropertyChange {0}={1} {2}", new Object[]{e.getPropertyName(), e.getNewValue(), source});
+        if ( e.getPropertyName().equals("paintingForPrint") ) {
+            getLogger("gui").log(Level.FINER, "PropertyChange {0}={1} {2}", new Object[]{e.getPropertyName(), e.getNewValue(), source});
+        } else {
+            getLogger("gui").log(Level.FINE, "PropertyChange {0}={1} {2}", new Object[]{e.getPropertyName(), e.getNewValue(), source});
+        }
     }
             
 //    
