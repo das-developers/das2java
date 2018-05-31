@@ -214,7 +214,7 @@ public class DasSliceController extends DasCanvasComponent {
 //                g.drawRect(this.rect.x, this.rect.y, this.rect.width, this.rect.height);
 //                if(this.text.equals(" scan>> ") || this.text.equals(" <<scan ")){
                 if(this == addRDatum || this == lScan || this == rScan){
-                    g.drawRect(this.rect.x, this.rect.y, this.rect.width, this.rect.height);
+                    g.drawRect(this.rect.x, this.rect.y, this.rect.width - 1, this.rect.height - (int)(0.6 * getEmSize()));
                 }
             }
 
@@ -755,7 +755,7 @@ public class DasSliceController extends DasCanvasComponent {
                         middleButtonDrag(xUpdatingDrag);
                     }
                     
-                }else if(buttonPress == 2){
+                } else if(buttonPress == 2){
                     if(mouseRect == lDatumRect || mouseRect == rDatumRect || mouseRect == toTextRect){
                         animationMode = CENTER_ANIMATION;
                         middleButtonDrag(xUpdatingDrag);
@@ -862,7 +862,8 @@ public class DasSliceController extends DasCanvasComponent {
             setDatumRange(new DatumRange(datumRange.min().add(dragDatum), datumRange.min().add(dragDatum)));
             
         } else {
-            animationMode = LEFT_ANIMATION;
+//            animationMode = LEFT_ANIMATION;
+            animationMode = CENTER_ANIMATION;
             Datum newLDatum = datumRange.min().add(dragDatum);
             // If left value exceeds right value make it stop at right value.
             if(newLDatum.gt(datumRange.max())){
@@ -875,7 +876,8 @@ public class DasSliceController extends DasCanvasComponent {
 
     private void rDatumDrag(int xDrag) {
         showAnimation = true;
-        animationMode = RIGHT_ANIMATION;
+//        animationMode = RIGHT_ANIMATION;
+        animationMode = CENTER_ANIMATION;
 //        System.err.println("rDatumDragging, total dist = " + xTotalDrag);
         Datum dragDatum = Datum.create(xDrag, datumRange.getUnits());
         Datum newRDatum = datumRange.max().add(dragDatum);
