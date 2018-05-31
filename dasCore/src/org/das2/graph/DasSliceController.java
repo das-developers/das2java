@@ -78,6 +78,16 @@ public class DasSliceController extends DasCanvasComponent {
     
     public void setDatumRange(DatumRange dr){
         DatumRange oldDR = this.datumRange;
+        
+        // Try to keep Datum range within valid range. 
+        if(this.validRange != null){
+            if(dr.min().lt(validRange.min())){
+                dr = new DatumRange(validRange.min(), dr.max());
+            }
+            if(dr.max().gt(validRange.max())){
+                dr = new DatumRange(dr.min(), validRange.max());
+            }
+        }
         this.datumRange = dr;
         lDatumRect.text = this.datumRange.min().toString();
         rDatumRect.text = this.datumRange.max().toString();
