@@ -350,6 +350,7 @@ public class EnumerationUnits extends Units {
     
     @Override
     public String toString() {
+        //return this.getId() + "(ordinal "+Integer.toHexString(this.hashCode())+")";
         return this.getId() + "(ordinal)";
     }
 }
