@@ -252,6 +252,7 @@ public class StreamTool {
         private final byte[] four = new byte[4];
         private final StreamHandler handler;
         private final Map descriptors = new HashMap();
+        private final Map<String,Units> units= new HashMap<>();
         private StreamDescriptor sd;
 
         /**
@@ -446,10 +447,11 @@ public class StreamTool {
     /**
      * this is code buried down in QDataSetStreamHandler, which was doing a lot of the interpretation that could
      * be done without knowing about QDataSet.
+     * @param struct struct containing stream data, such as the units.
      * @param pd 
      * @throws StreamException
      */
-    public static void interpretPlanes( PacketDescriptor pd ) throws StreamException {
+    private static void interpretPlanes( ReadStreamStructure struct, PacketDescriptor pd ) throws StreamException {
         try {
             Element e = pd.getDomElement();
 
@@ -571,6 +573,7 @@ public class StreamTool {
                             logger.log(Level.SEVERE, ex.getMessage(), ex);
                         }
                         logger.log( Level.FINER, "units found: {0}", units);
+                        struct.units.put( units.getId(), units );
                     }
                 }
                 
@@ -683,7 +686,7 @@ public class StreamTool {
                             throw new StreamException( "packet descriptor id must be an integer from 1-99");
                         }
                         ((PacketDescriptor)pd).setPacketId( id );
-                        StreamTool.interpretPlanes((PacketDescriptor)pd);
+                        StreamTool.interpretPlanes(struct,(PacketDescriptor)pd);
                         
                         if ( struct.sd==null ) {
                             throw new StreamException("Stream must start with a StreamDescriptor (for now)");
@@ -696,7 +699,7 @@ public class StreamTool {
                         struct.handler.packetDescriptor( (PacketDescriptor) pd );
                     } else if ( pd instanceof EnumerationUnitDescriptor ) {
                         EnumerationUnitDescriptor eud= (EnumerationUnitDescriptor)pd;
-                        EnumerationUnits eu= EnumerationUnits.create(eud.getName());
+                        EnumerationUnits eu= (EnumerationUnits)struct.units.get(eud.getName());
                         eu.createDatum( (int)eud.getValue(), eud.getLabel() );
                     } else if (root.getTagName().equals("exception")) {
                         throw exception(root);

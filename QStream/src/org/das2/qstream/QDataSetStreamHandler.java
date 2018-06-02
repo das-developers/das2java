@@ -54,6 +54,9 @@ public class QDataSetStreamHandler implements StreamHandler {
     XPath xpath = factory.newXPath();
     String dsname;
     boolean readPackets = true;
+    
+    // each enumeration units need to be parsed within the context of the stream, not the entire session.
+    EnumerationUnitsSerializeDelegate enumerationUnitsSerializeDelegate= new EnumerationUnitsSerializeDelegate();
 
     public QDataSetStreamHandler() {
         builders = new HashMap<>();
@@ -536,6 +539,7 @@ public class QDataSetStreamHandler implements StreamHandler {
 
     @Override
     public void streamComment(StreamComment se) throws StreamException {
+        System.err.println("here comment");
     }
 
     @Override
@@ -714,7 +718,7 @@ public class QDataSetStreamHandler implements StreamHandler {
         return this.readPackets;
     }
 
-    private static void doProps(NodeList odims, DataSetBuilder builder) {
+    private void doProps(NodeList odims, DataSetBuilder builder) {
         for (int j = 0; j < odims.getLength(); j++) {
             Element n2 = (Element) odims.item(j);
             String pname = n2.getAttribute("name");
@@ -757,7 +761,11 @@ public class QDataSetStreamHandler implements StreamHandler {
                     if (evalue != null && delegate instanceof XMLSerializeDelegate) {
                         oval = ((XMLSerializeDelegate) delegate).xmlParse(evalue);
                     } else {
-                        oval = delegate.parse(stype, svalue);
+                        if ( stype.equals("enumerationUnit") ) {
+                            oval= enumerationUnitsSerializeDelegate.parse( stype, svalue );
+                        } else {
+                            oval = delegate.parse(stype, svalue);
+                        }
                     }
                     builder.putProperty(pname, oval);
                 } catch (ParseException ex) {

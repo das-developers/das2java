@@ -5,6 +5,7 @@
 
 package org.das2.qstream;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
@@ -21,6 +22,10 @@ import org.das2.datum.Units;
  */
 public class EnumerationUnitsSerializeDelegate implements SerializeDelegate {
     protected static final Logger logger= Logger.getLogger("qstream");
+    
+    public EnumerationUnitsSerializeDelegate() {
+        System.err.println("instanciate EUSD");
+    }
     
     @Override
     public String format(Object o) {
@@ -49,6 +54,8 @@ public class EnumerationUnitsSerializeDelegate implements SerializeDelegate {
         buf.append("]");
         return buf.toString();
     }
+    
+    private final Map<String,EnumerationUnits> contextEnumerationUnits= new HashMap<>();
 
     @Override
     public Object parse( String typeId, String s ) {
@@ -59,11 +66,10 @@ public class EnumerationUnitsSerializeDelegate implements SerializeDelegate {
         } else {
             String id= m.group(1);
             EnumerationUnits u;
-            try {
-                u= (EnumerationUnits) Units.getByName(s); //TODO: why???
-            } catch ( IllegalArgumentException ex ) {
-                u= new EnumerationUnits(id);   // getByName always fails, and then this is invoked, creating multiple units with the same name.  This happens to work, but it's not clean...
-                // http://www-pw.physics.uiowa.edu/~jbf/autoplot/data/qds/agg/demoEventsInlineEnumeration.vap  shows why this needs to be cleaned up.
+            u= contextEnumerationUnits.get(s); 
+            if ( u==null ) {
+                u= new EnumerationUnits(id);
+                contextEnumerationUnits.put( s, u );
             }
             String values= m.group(3);
             String[] ss;
