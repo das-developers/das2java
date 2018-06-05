@@ -2628,7 +2628,7 @@ public class DataSetUtil {
                 } else if ( Schemes.isXYScatter(dep) ) {
                     // okay
                 } else {
-                    problems.add( "DEPEND_0 is greater than rank 1 and is not bins dataset.");
+                    problems.add( "DEPEND_0 should have only one index or must be a bins ([n,2]) dataset.");
                 }
             }
             if (ds.rank() > 1 && ds.length() > 0) {
