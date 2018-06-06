@@ -209,7 +209,7 @@ public class EnumerationUnits extends Units {
         if ( d!=null ) {
             return d;
         } else {
-            throw new IllegalArgumentException("No Datum exists for this ordinal: " + value);
+            throw new IllegalArgumentException("No Datum exists for this ordinal: " + value + "  hashcode="+this.hashCode() );
         }
     }
 
