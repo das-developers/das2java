@@ -18,7 +18,7 @@ public class EnumerationUnitsSerializeDelegate implements SerializeDelegate {
     protected static final Logger logger= Logger.getLogger("qstream");
     
     public EnumerationUnitsSerializeDelegate() {
-        
+        logger.log(Level.FINE, "create EUSD {0}", this.hashCode());
     }
     
     @Override
@@ -65,6 +65,7 @@ public class EnumerationUnitsSerializeDelegate implements SerializeDelegate {
                 u= new EnumerationUnits(id);
                 contextEnumerationUnits.put( s, u );
             }
+            logger.log(Level.FINER, "creating nominal datum {0} {1}", new Object[]{u, u.hashCode()});
             String values= m.group(3);
             String[] ss;
             if ( values==null ) {

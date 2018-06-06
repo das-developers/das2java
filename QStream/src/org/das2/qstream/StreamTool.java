@@ -78,7 +78,7 @@ public class StreamTool {
     /** Creates a new instance of StreamTool */
     public StreamTool() {
     }
-
+    
     public static class DelimeterNotFoundException extends Exception {
     }
 
@@ -560,7 +560,16 @@ public class StreamTool {
                         sunits= nn.getAttributes().getNamedItem("value").getNodeValue();
                         stype= nn.getAttributes().getNamedItem("type").getNodeValue();
                         if ( stype.equals("unit") ) stype= "units"; // http://apps-pw.physics.uiowa.edu/hudson/job/autoplot-test501/ test 20 of 114.
-                        SerializeDelegate delegate = SerializeRegistry.getByName(stype);
+                        SerializeDelegate delegate;
+                        if ( stype.equals("enumerationUnit") ) {
+                            if ( struct.handler instanceof QDataSetStreamHandler ) { // tiny tiny kludge to allow each stream to have its own enumeration units.
+                                delegate= ((QDataSetStreamHandler)struct.handler).enumerationUnitsSerializeDelegate;
+                            } else {
+                                delegate= SerializeRegistry.getByName(stype);
+                            }
+                        } else {
+                            delegate= SerializeRegistry.getByName(stype);
+                        }
                         if ( delegate==null ) {
                             throw new StreamException("unable to parse UNITS, because unable to identify parser for "+stype );
                         }
@@ -701,6 +710,7 @@ public class StreamTool {
                         EnumerationUnitDescriptor eud= (EnumerationUnitDescriptor)pd;
                         EnumerationUnits eu= (EnumerationUnits)struct.units.get(eud.getName());
                         eu.createDatum( (int)eud.getValue(), eud.getLabel() );
+                        logger.log(Level.FINER, "adding nominal datum to {0} {1}: {2}->{3}", new Object[]{eu, eu.hashCode(), eud.getValue(), eud.getLabel()});
                     } else if (root.getTagName().equals("exception")) {
                         throw exception(root);
                     } else if (pd instanceof StreamComment) {
