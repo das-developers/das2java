@@ -14,43 +14,43 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.das2.datum.Datum;
 import org.das2.datum.EnumerationUnits;
-import org.das2.datum.Units;
 
 /**
- *
+ * enumeration units can have an initial set of values declared, and 
+ * each stream has its own delegate.
  * @author jbf
  */
 public class EnumerationUnitsSerializeDelegate implements SerializeDelegate {
     protected static final Logger logger= Logger.getLogger("qstream");
     
     public EnumerationUnitsSerializeDelegate() {
-        System.err.println("instanciate EUSD");
+        
     }
     
     @Override
     public String format(Object o) {
         EnumerationUnits eu= (EnumerationUnits)o;
-        Map<Integer,Datum> values= eu.getValues();
+        //Map<Integer,Datum> values= eu.getValues();
         StringBuilder buf= new StringBuilder();
         buf.append("").append(eu.getId()).append("[");
-        boolean useSemiSpaceDelimiters= false;
-        for ( Entry<Integer,Datum> e: values.entrySet() ) {
-            Integer i= e.getKey();
-            String s= e.getValue().toString();
-            if ( s.trim().length()==0 ) useSemiSpaceDelimiters= true; // we need an alternate delimiter, because confusion with delimiters.  Note space delimiters are easier to read anyway.
-        }
-        if ( false ) {
-        for ( Entry<Integer,Datum> e: values.entrySet() ) {
-            Integer i= e.getKey();
-            String s= e.getValue().toString();
-            s= s.replaceAll("::", ":"); // :: is my delimiter
-            s= s.replaceAll("; ", ";"); // "; " is an alternate delimiter
-            if ( s.length()>0 ) {
-                buf.append("").append(i).append(":").append(s);
-                if ( i<values.size() ) buf.append( useSemiSpaceDelimiters ? "; " : "::");
-            }
-        }
-        }
+        //boolean useSemiSpaceDelimiters= false;
+//        for ( Entry<Integer,Datum> e: values.entrySet() ) {
+//            Integer i= e.getKey();
+//            String s= e.getValue().toString();
+//            if ( s.trim().length()==0 ) useSemiSpaceDelimiters= true; // we need an alternate delimiter, because confusion with delimiters.  Note space delimiters are easier to read anyway.
+//        }
+//        if ( false ) {
+//        for ( Entry<Integer,Datum> e: values.entrySet() ) {
+//            Integer i= e.getKey();
+//            String s= e.getValue().toString();
+//            s= s.replaceAll("::", ":"); // :: is my delimiter
+//            s= s.replaceAll("; ", ";"); // "; " is an alternate delimiter
+//            if ( s.length()>0 ) {
+//                buf.append("").append(i).append(":").append(s);
+//                if ( i<values.size() ) buf.append( useSemiSpaceDelimiters ? "; " : "::");
+//            }
+//        }
+//        }
         buf.append("]");
         return buf.toString();
     }
@@ -79,6 +79,7 @@ public class EnumerationUnitsSerializeDelegate implements SerializeDelegate {
                 ss= values.split("::",-2);
             }
             if ( ss.length==1 ) {
+                assert values!=null;
                 ss= values.split("; ",-2);
             }
             for ( String nv: ss ) {
