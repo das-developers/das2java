@@ -5,7 +5,6 @@
  */
 package test.graph;
 
-import com.sun.corba.se.impl.orbutil.graph.Graph;
 import java.awt.BorderLayout;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -22,7 +21,6 @@ import org.das2.graph.DasColumn;
 import org.das2.graph.DasPlot;
 import org.das2.graph.DasRow;
 import org.das2.graph.DasSliceController;
-import org.das2.graph.GraphUtil;
 import org.das2.graph.SpectrogramRenderer;
 import org.das2.qds.QDataSet;
 import org.das2.qds.ops.Ops;
