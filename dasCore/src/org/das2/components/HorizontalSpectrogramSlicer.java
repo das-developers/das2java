@@ -25,9 +25,6 @@ package org.das2.components;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dialog;
-import java.awt.Frame;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
@@ -62,19 +59,18 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.das2.components.propertyeditor.PropertyEditor;
 import org.das2.datum.InconvertibleUnitsException;
-import org.das2.datum.Units;
 import org.das2.event.MouseModule;
 import org.das2.event.PointSlopeDragRenderer;
 import org.das2.graph.Painter;
 import org.das2.graph.Renderer;
 import org.das2.graph.SpectrogramRenderer;
-import org.das2.util.monitor.ProgressMonitor;
 import org.das2.qds.ArrayDataSet;
 import org.das2.qds.DataSetOps;
 import org.das2.qds.DataSetUtil;
 import org.das2.qds.IDataSet;
 import org.das2.qds.QDataSet;
 import org.das2.qds.SemanticOps;
+import org.das2.qds.ops.Ops;
 import org.das2.qds.util.DataSetBuilder;
 
 
@@ -343,9 +339,10 @@ public class HorizontalSpectrogramSlicer implements DataPointSelectionListener {
         xValue = e.getX();
 
         QDataSet ds = e.getDataSet();
-        if (ds==null || ! SemanticOps.isTableDataSet(ds) )
+        if (ds==null || ! SemanticOps.isTableDataSet(ds) ) {
+            System.err.println("dataset scheme is not supported: "+ds );
             return;
-        
+        }
         QDataSet tds = (QDataSet)ds;
 
         showSlice( tds, xValue, yValue );
@@ -364,7 +361,10 @@ public class HorizontalSpectrogramSlicer implements DataPointSelectionListener {
                 }
             }
         } else {
-            QDataSet bounds = DataSetOps.dependBounds(tds);
+            // QDataSet bounds = DataSetOps.dependBounds(tds);  cannot be used because interpolation might result in waveform-type.
+            QDataSet xrange= Ops.extent( SemanticOps.xtagsDataSet(tds) );
+            QDataSet yrange= Ops.extent( SemanticOps.ytagsDataSet(tds) );
+            QDataSet bounds= Ops.join( xrange, yrange );
             if (DataSetOps.boundsContains(bounds, xValue, yValue)) {
                 tds1 = tds;
             }
