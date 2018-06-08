@@ -360,7 +360,9 @@ public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
                 }
             }
         } else {
-            QDataSet bounds = DataSetOps.dependBounds(tds);
+            QDataSet xrange= Ops.extent( SemanticOps.xtagsDataSet(tds) );
+            QDataSet yrange= Ops.extent( SemanticOps.ytagsDataSet(tds) );
+            QDataSet bounds= Ops.join( xrange, yrange );
             if (DataSetOps.boundsContains(bounds, xValue, yValue)) {
                 tds1 = tds;
             }
