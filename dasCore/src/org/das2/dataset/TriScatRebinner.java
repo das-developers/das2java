@@ -258,6 +258,8 @@ public class TriScatRebinner implements DataSetRebinner {
         LoggerManager.markTime("done interp all pixels");
                 
         org.das2.qds.DataSetUtil.copyDimensionProperties( zz, result );
+        RebinDescriptor.putDepDataSet( ds, result, rebinDescX, rebinDescY );
+        
         if ( !hasFill ) {
             result.putProperty( QDataSet.FILL_VALUE, null );
         }
