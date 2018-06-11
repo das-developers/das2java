@@ -190,7 +190,7 @@ public class DasServer {
         String formData= "server=id";
         InputStream in=null;
         try {
-            URL server= new URL("http",host,port,path+"?"+formData);
+            URL server= new URL(sProto,host,port,path+"?"+formData);
 
             logger.log( Level.FINE, "connecting to {0}", server);
             URLConnection urlConnection = server.openConnection();
@@ -220,7 +220,7 @@ public class DasServer {
         String formData= "server=logo";
         InputStream in=null;
         try {
-            URL server= new URL("http",host,port,path+"?"+formData);
+            URL server= new URL(sProto,host,port,path+"?"+formData);
 
             logger.log( Level.FINE, "connecting to {0}", server);
             URLConnection urlConnection = server.openConnection();
@@ -458,7 +458,7 @@ public class DasServer {
             formData+= "&user="+URLBuddy.encodeUTF8(user);
             formData+= "&passwd="+URLBuddy.encodeUTF8(passCrypt);
 
-            URL server= new URL("http",host,port,path+"?"+formData);
+            URL server= new URL(sProto,host,port,path+"?"+formData);
 
             logger.log( Level.FINE, "connecting to {0}", server);
 
@@ -496,7 +496,7 @@ public class DasServer {
             String formData= "server=groups";
             formData+= "&key="+URLBuddy.encodeUTF8(key.toString());
 
-            URL server= new URL("http",host,port,path+"?"+formData);
+            URL server= new URL(sProto,host,port,path+"?"+formData);
 
             logger.log( Level.FINE, "connecting to {0}", server);
 
@@ -535,7 +535,7 @@ public class DasServer {
             String cryptNewPass= org.das2.util.Crypt.crypt(newPass);
             formData+= "&newPasswd="+URLBuddy.encodeUTF8(cryptNewPass);
 
-            URL server= new URL("http",host,port,path+"?"+formData);
+            URL server= new URL(sProto,host,port,path+"?"+formData);
             logger.log( Level.FINE, "connecting to {0}", server);
 
             InputStream in= server.openStream();
