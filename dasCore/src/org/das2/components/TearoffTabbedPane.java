@@ -127,7 +127,12 @@ public class TearoffTabbedPane extends JTabbedPane {
 
     @Override
     protected void paintComponent(Graphics g) {
-        super.paintComponent(g); //To change body of generated methods, choose Tools | Templates.
+        try {
+            super.paintComponent(g); //To change body of generated methods, choose Tools | Templates.
+        } catch ( ClassCastException ex ) {
+            ex.printStackTrace();
+            System.err.println("See https://sourceforge.net/p/autoplot/bugs/1998/");
+        }
         if ( dropDecorate ) {
             Graphics2D g2= (Graphics2D)g;
             int h= g.getFontMetrics().getHeight();
