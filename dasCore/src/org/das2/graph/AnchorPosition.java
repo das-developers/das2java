@@ -27,7 +27,9 @@ public enum AnchorPosition implements Enumeration {
     OutsideNNW, // top-left label.
     OutsideNNE, // top-right label.
     OutsideNE,  // right-side, upper label.
-    OutsideSE;  // right-side, lower label.
+    OutsideSE,  // right-side, lower label.
+    OutsideNW,  // left-side, upper label.
+    OutsideSW;  // left-side, lower label.
     
     @Override
     public Icon getListIcon() {
@@ -84,6 +86,12 @@ public enum AnchorPosition implements Enumeration {
                 break;
             case OutsideSE:
                 g.fillRect(12,8,5,5);
+                break;
+            case OutsideNW:
+                g.fillRect(0,2,3,5);
+                break;
+            case OutsideSW:
+                g.fillRect(0,8,3,5);
                 break;
             default:
                 g.drawString("?", 0, 14);

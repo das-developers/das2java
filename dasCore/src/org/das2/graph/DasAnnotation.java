@@ -209,6 +209,10 @@ public class DasAnnotation extends DasCanvasComponent {
             dy= -dy;
         } else if ( anchorPosition==AnchorPosition.OutsideSE ) {
             dy= -dy;
+        } else if ( anchorPosition==AnchorPosition.OutsideNW ) {
+            dy= -dy;
+        } else if ( anchorPosition==AnchorPosition.OutsideSW ) {
+            dy= -dy;
         } else if ( anchorPosition==AnchorPosition.SW ) {
             dy= -dy;
         } else if ( anchorPosition==AnchorPosition.SE ) {
@@ -755,6 +759,12 @@ public class DasAnnotation extends DasCanvasComponent {
             r.y = anchor.y + em + yoffset;
         } else if ( anchorPosition==AnchorPosition.OutsideSE ) {
             r.x = anchor.x + anchor.width + em + xoffset;
+            r.y = anchor.y + anchor.height - r.height - yoffset;
+        } else if ( anchorPosition==AnchorPosition.OutsideNW ) {
+            r.x = anchor.x - r.width - xoffset;
+            r.y = anchor.y + em + yoffset;
+        } else if ( anchorPosition==AnchorPosition.OutsideSW ) {
+            r.x = anchor.x - r.width - xoffset;
             r.y = anchor.y + anchor.height - r.height - yoffset;
         } else if ( anchorPosition==AnchorPosition.SW ) {
             r.x = anchor.x + em + xoffset;
