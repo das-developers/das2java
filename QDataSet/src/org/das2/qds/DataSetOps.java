@@ -2079,6 +2079,8 @@ public class DataSetOps {
             case "|medianFilter":
             case "|copy":
             case "|setDepend0Cadence":
+            case "|expandToFillGaps":
+            case "|expandWaveform":
                 return false;
             default:
                 return true;
