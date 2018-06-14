@@ -333,6 +333,16 @@
                         <filter>|setDepend1Cadence('50Hz')</filter>
                         <description>Resets current DEPEND_1 cadence to new cadence (scalar and units)</description>
                     </bookmark>
+                    <bookmark>
+                        <title>expandWaveform</title>
+                        <filter>|expandWaveform()</filter>
+                        <description>assign fake timetags for waveform data points so that gaps are filled.</description>
+                    </bookmark>                    
+                    <bookmark>
+                        <title>expandToFillGaps</title>
+                        <filter>|expandToFillGaps(0.9)</filter>
+                        <description>assign fake timetags to spectral data so that gaps are filled.</description>
+                    </bookmark>                    
                 </bookmark-list>
             </bookmark-folder>
         </bookmark-list>

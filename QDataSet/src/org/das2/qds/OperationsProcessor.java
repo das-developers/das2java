@@ -496,6 +496,12 @@ public class OperationsProcessor {
                     }
                 } else if ( cmd.equals("|expandWaveform") ) {
                     fillDs= Ops.expandWaveform(fillDs);
+                } else if ( cmd.equals("|expandToFillGaps") ) {
+                    if ( s.hasNextDouble() ) {
+                        fillDs= Ops.expandToFillGaps(fillDs,s.nextDouble());
+                    } else {
+                        fillDs= Ops.expandToFillGaps(fillDs);
+                    }
                 } else if ( cmd.equals("|hilbertEnvelope") ) {
                     QDataSet h= Ops.hilbertSciPy(fillDs);
                     fillDs= Ops.magnitude(h);
