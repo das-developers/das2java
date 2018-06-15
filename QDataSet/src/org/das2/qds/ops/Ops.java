@@ -2,6 +2,7 @@
 package org.das2.qds.ops;
 
 import java.awt.Color;
+import java.io.IOException;
 import java.lang.reflect.Array;
 import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
@@ -87,6 +88,7 @@ import org.das2.qds.util.FFTUtil;
 import org.das2.qds.util.LSpec;
 import org.das2.qds.util.LinFit;
 import org.das2.qds.math.Contour;
+import org.das2.qds.util.AsciiFormatter;
 import org.das2.util.ColorUtil;
 
 /**
@@ -7383,19 +7385,30 @@ public final class Ops {
             if ( r.length()<1 ) {
                 return ds;
             } else {
-                Datum cadenceMax= Ops.datum( Ops.reduceMin( Ops.applyIndex( dts, r ), 0 ) );
-                double nburst= factor>0 ? factor : r.value(0) / ds.length(0);
+                int[] startIndexes= new int[r.length()+1];
+                startIndexes[0]= 0;
+                Datum cadenceMax= null; // cadenceMax is the smallest of the big jumps.
+                int count= 0;
+                for ( int i=0; i<r.length(); i++ ) {
+                    startIndexes[i+1]= (int)r.value(i);
+                    Datum cadence= datum( subtract( ttags.slice(startIndexes[i+1]+1), ttags.slice(startIndexes[i]) ) );
+                    if ( cadenceMax==null || cadence.lt(cadenceMax) ) {
+                        cadenceMax= cadence;
+                        count= startIndexes[i+1]+1 - startIndexes[i];
+                    }
+                }
+                assert cadenceMax!=null;
                 logger.log(Level.FINE, "expandToFillGaps: {0} {1}", new Object[]{cadenceMin, cadenceMax});
                 DataSetBuilder tb= new DataSetBuilder(1,ds.length());
                 tb.setUnits((Units)ttags.property(QDataSet.UNITS));
-                double stepFactor= cadenceMax.divide(cadenceMin).value() / nburst;
+                double stepFactor= cadenceMax.divide(cadenceMin).divide(count).value();
                 Units toffUnits= ((Units)ttags.property(QDataSet.UNITS)).getOffsetUnits();
                 int basei= 0;
                 Datum baset= Ops.datum( ttags.slice(0) );
                 tb.putValue( 0, baset );
                 for ( int i=1; i<ttags.length(); i++ ) {
                     if ( Ops.datum(dts.slice(i-1)).lt(twiceCadenceMin) ) {
-                        tb.putValue( i, baset.add( ( ttags.value(i)-ttags.value(basei) ) * stepFactor, toffUnits ) );
+                        tb.putValue( i, baset.add( ( ttags.value(i)-ttags.value(basei) ) * stepFactor * factor, toffUnits ) );
                     } else {
                         baset= Ops.datum( ttags.slice(i) );
                         basei= i;
