@@ -738,61 +738,97 @@ public class DasAnnotation extends DasCanvasComponent {
                     yoffset= 0;
                 }                
             } else {
-                logger.warning("anchorOffset");
+                logger.log(Level.WARNING, "anchorOffset is misformatted: {0}", anchorOffset);
             }
         }
 
-        if ( anchorPosition==AnchorPosition.NW ) {
-            r.x = anchor.x + em + xoffset ;
-            r.y = anchor.y + em + yoffset ;
-        } else if ( anchorPosition==AnchorPosition.N ) {
-            r.x = anchor.x + anchor.width/2 - (int)( r.getWidth() / 2 ) + xoffset ;
-            r.y = anchor.y + em + yoffset ;
-        } else if ( anchorPosition==AnchorPosition.OutsideN ) {
-            r.x = anchor.x + anchor.width/2 - (int)( r.getWidth() / 2 ) + xoffset ;
-            r.y = anchor.y - (int)r.getHeight() - yoffset ;
-        } else if ( anchorPosition==AnchorPosition.NE ) {
-            r.x = anchor.x + anchor.width - r.width - xoffset;
-            r.y = anchor.y + em + yoffset ;
-        } else if ( anchorPosition==AnchorPosition.OutsideNE ) {
-            r.x = anchor.x + anchor.width + em + xoffset;
-            r.y = anchor.y + em + yoffset;
-        } else if ( anchorPosition==AnchorPosition.OutsideSE ) {
-            r.x = anchor.x + anchor.width + em + xoffset;
-            r.y = anchor.y + anchor.height - r.height - yoffset;
-        } else if ( anchorPosition==AnchorPosition.OutsideNW ) {
-            r.x = anchor.x - r.width - xoffset;
-            r.y = anchor.y + em + yoffset;
-        } else if ( anchorPosition==AnchorPosition.OutsideSW ) {
-            r.x = anchor.x - r.width - xoffset;
-            r.y = anchor.y + anchor.height - r.height - yoffset;
-        } else if ( anchorPosition==AnchorPosition.SW ) {
-            r.x = anchor.x + em + xoffset;
-            r.y = anchor.y + anchor.height - r.height - yoffset;
-        } else if ( anchorPosition==AnchorPosition.SE ) {
-            r.x = anchor.x + anchor.width - r.width - xoffset;
-            r.y = anchor.y + anchor.height - r.height - yoffset;
-        } else if ( anchorPosition==AnchorPosition.OutsideNNW ) {
-            r.x = anchor.x + em + xoffset ;
-            r.y = anchor.y - (int)r.getHeight() - yoffset ;
-        } else if ( anchorPosition==AnchorPosition.OutsideNNE ) {
-            r.x = anchor.x + anchor.width - r.width - xoffset;
-            r.y = anchor.y - (int)r.getHeight() - yoffset ;
-        } else if ( anchorPosition==AnchorPosition.Center ) {
-            r.x = anchor.x + anchor.width/2 - (int)( r.getWidth() / 2 ) + xoffset ;
-            r.y = anchor.y + anchor.height/2 - (int)( r.getHeight() / 2 ) - yoffset;
-        } else if ( anchorPosition==AnchorPosition.W ) {
-            r.x = anchor.x + em + xoffset;
-            r.y = anchor.y + anchor.height/2 - (int)( r.getHeight() / 2 ) - yoffset;
-        } else if ( anchorPosition==AnchorPosition.E ) {
-            r.x = anchor.x + anchor.width  - r.width - xoffset;
-            r.y = anchor.y + anchor.height/2 - (int)( r.getHeight() / 2 ) - yoffset;
-        } else if ( anchorPosition==AnchorPosition.OutsideE ) {
-            r.x = anchor.x + anchor.width + em + xoffset;
-            r.y = anchor.y + anchor.height/2 - (int)( r.getHeight() / 2 ) - yoffset;
-        } else if ( anchorPosition==AnchorPosition.S ) {
-            r.x = anchor.x + anchor.width/2 - (int)( r.getWidth() / 2 ) + xoffset ;
-            r.y = anchor.y + anchor.height - r.height - yoffset;
+        if ( null!=anchorPosition ) switch (anchorPosition) {
+            case NW:
+                r.x = anchor.x + em + xoffset ;
+                r.y = anchor.y + em + yoffset ;
+                break;
+            case OutsideN:
+                r.x = anchor.x + anchor.width/2 - (int)( r.getWidth() / 2 ) + xoffset ;
+                r.y = anchor.y - (int)r.getHeight() - yoffset ;
+                break;
+            case OutsideS:
+                r.x = anchor.x + anchor.width/2 - (int)( r.getWidth() / 2 ) + xoffset ;
+                r.y = anchor.y + anchor.height + em + yoffset ;
+                break;
+            case OutsideE:
+                r.x = anchor.x + anchor.width + em + xoffset;
+                r.y = anchor.y + anchor.height/2 - (int)( r.getHeight() / 2 ) - yoffset;
+                break;
+            case OutsideW:
+                r.x = anchor.x - r.width - xoffset;
+                r.y = anchor.y + anchor.height/2 - (int)( r.getHeight() / 2 ) - yoffset;
+                break;
+            case NE:
+                r.x = anchor.x + anchor.width - r.width - xoffset;
+                r.y = anchor.y + em + yoffset ;
+                break;
+            case OutsideNE:
+                r.x = anchor.x + anchor.width + em + xoffset;
+                r.y = anchor.y + em + yoffset;
+                break;
+            case OutsideSE:
+                r.x = anchor.x + anchor.width + em + xoffset;
+                r.y = anchor.y + anchor.height - r.height - yoffset;
+                break;
+            case OutsideNW:
+                r.x = anchor.x - r.width - xoffset;
+                r.y = anchor.y + em + yoffset;
+                break;
+            case OutsideSW:
+                r.x = anchor.x - r.width - xoffset;
+                r.y = anchor.y + anchor.height - r.height - yoffset;
+                break;
+            case SW:
+                r.x = anchor.x + em + xoffset;
+                r.y = anchor.y + anchor.height - r.height - yoffset;
+                break;
+            case SE:
+                r.x = anchor.x + anchor.width - r.width - xoffset;
+                r.y = anchor.y + anchor.height - r.height - yoffset;
+                break;
+            case OutsideNNW:
+                r.x = anchor.x + em + xoffset ;
+                r.y = anchor.y - (int)r.getHeight() - yoffset ;
+                break;
+            case OutsideNNE:
+                r.x = anchor.x + anchor.width - r.width - xoffset;
+                r.y = anchor.y - (int)r.getHeight() - yoffset ;
+                break;
+            case OutsideSSW:
+                r.x = anchor.x + em + xoffset ;
+                r.y = anchor.y + anchor.height + em + yoffset ;
+                break;
+            case OutsideSSE:
+                r.x = anchor.x + anchor.width - r.width - xoffset;
+                r.y = anchor.y + anchor.height + em + yoffset ;
+                break;
+            case Center:
+                r.x = anchor.x + anchor.width/2 - (int)( r.getWidth() / 2 ) + xoffset ;
+                r.y = anchor.y + anchor.height/2 - (int)( r.getHeight() / 2 ) - yoffset;
+                break;
+            case N:
+                r.x = anchor.x + anchor.width/2 - (int)( r.getWidth() / 2 ) + xoffset ;
+                r.y = anchor.y + em + yoffset ;
+                break;
+            case W:
+                r.x = anchor.x + em + xoffset;
+                r.y = anchor.y + anchor.height/2 - (int)( r.getHeight() / 2 ) - yoffset;
+                break;
+            case E:
+                r.x = anchor.x + anchor.width  - r.width - xoffset;
+                r.y = anchor.y + anchor.height/2 - (int)( r.getHeight() / 2 ) - yoffset;
+                break;
+            case S:
+                r.x = anchor.x + anchor.width/2 - (int)( r.getWidth() / 2 ) + xoffset ;
+                r.y = anchor.y + anchor.height - r.height - yoffset;
+                break;
+            default:
+                break;
         }
         
         if ( gtr==null ) {

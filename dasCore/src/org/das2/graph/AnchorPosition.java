@@ -22,10 +22,14 @@ public enum AnchorPosition implements Enumeration {
     E,
     W,
     S,
+    OutsideN,   // titles
     OutsideE,   // right-side
-    OutsideN,   // titles...
+    OutsideW,   // left-side
+    OutsideS,   // bottom
     OutsideNNW, // top-left label.
     OutsideNNE, // top-right label.
+    OutsideSSW, // bottom-left label.
+    OutsideSSE, // bottom-right label.
     OutsideNE,  // right-side, upper label.
     OutsideSE,  // right-side, lower label.
     OutsideNW,  // left-side, upper label.
