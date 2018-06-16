@@ -75,6 +75,7 @@ import org.das2.qds.examples.Schemes;
 import org.das2.qds.ops.Ops;
 import org.das2.qds.util.DataSetBuilder;
 import org.das2.qds.util.Reduction;
+import org.das2.util.monitor.NullProgressMonitor;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -564,7 +565,7 @@ public class SeriesRenderer extends Renderer {
             Rectangle b= lp.getBounds();
             if ( b.height==0 ) b.height=1; // horizontal points
             if ( b.width==0 ) b.width=1; //vertical points            
-            Rectangle canvasRect= getParent().getCanvas().getBounds();
+            Rectangle canvasRect= DasDevicePosition.toRectangle( yAxis.getRow(), xAxis.getColumn() );
             if ( !b.intersects(canvasRect) ) {
                 logger.log(Level.FINE, "all data is off-page" );
                 return 0;
@@ -621,7 +622,7 @@ public class SeriesRenderer extends Renderer {
                         }
                     }
                 } catch ( IllegalArgumentException ex ) {
-                    getParent().postException(SeriesRenderer.this,ex);
+                    if ( getParent()!=null ) getParent().postException(SeriesRenderer.this,ex);
                 }
             }
             
@@ -641,7 +642,7 @@ public class SeriesRenderer extends Renderer {
                         }
                     }
                 } catch ( IllegalArgumentException ex ) {
-                    getParent().postException(SeriesRenderer.this,ex);
+                    if ( getParent()!=null ) getParent().postException(SeriesRenderer.this,ex);
                 }
             }
             
@@ -703,7 +704,8 @@ public class SeriesRenderer extends Renderer {
             Rectangle b= lpath1.getBounds();
             if ( b.height==0 ) b.height=1; // horizontal points
             if ( b.width==0 ) b.width=1; //vertical points
-            Rectangle canvasRect= getParent().getCanvas().getBounds();
+
+            Rectangle canvasRect= DasDevicePosition.toRectangle( yAxis.getRow(), xAxis.getColumn() );
             long t= ( System.currentTimeMillis()-t0  );
             if ( !b.intersects(canvasRect) ) {
                 logger.log(Level.FINE, "all data is off-page ({0}ms)", ( t-t0  ) );
@@ -744,9 +746,6 @@ public class SeriesRenderer extends Renderer {
                 xUnits= xAxis.getUnits();
                 unitsWarning= true;
             }
-
-            DasPlot lparent= getParent();
-            if ( lparent==null ) return;
 
             if ( lastIndex-firstIndex==0 ) {
                 this.path1= null;
@@ -1014,7 +1013,7 @@ public class SeriesRenderer extends Renderer {
             Rectangle b= fillToRefPath1.getBounds();
             if ( b.height==0 ) b.height=1; // horizontal points
             if ( b.width==0 ) b.width=1; //vertical points
-            Rectangle canvasRect= getParent().getCanvas().getBounds();
+            Rectangle canvasRect= DasDevicePosition.toRectangle( yAxis.getRow(), xAxis.getColumn() );
             if ( !b.intersects(canvasRect) ) {
                 logger.log(Level.FINE, "all data is off-page" );
                 return 0;
@@ -1030,7 +1029,7 @@ public class SeriesRenderer extends Renderer {
                 } catch ( InconvertibleUnitsException ex ) {
                     y= yAxis.transform( reference.value(), yAxis.getUnits() );
                 }
-                DasColumn column= getParent().getColumn();
+                DasColumn column= xAxis.getColumn();
                 g.draw( new java.awt.geom.Line2D.Double( (double)column.getDMinimum(), y, (double)column.getDMaximum(), y ) );
             } else {
                 g.setColor(fillColor);
@@ -1350,7 +1349,6 @@ public class SeriesRenderer extends Renderer {
         wds= SemanticOps.weightsDataSet( yds );
 
         DasPlot lparent= getParent();
-        if ( lparent==null ) return;
 
         dslen= xds.length();
         if ( SemanticOps.isMonotonic( xds )) {
@@ -1361,7 +1359,7 @@ public class SeriesRenderer extends Renderer {
             }
             firstIndex_v = DataSetUtil.getPreviousIndex( xds, visibleRange.min());
             lastIndex_v = DataSetUtil.getNextIndex( xds, visibleRange.max()) + 1; // +1 is for exclusive.
-            if (lparent.isOverSize()) {
+            if ( lparent!=null && lparent.isOverSize()) {
                 Rectangle plotBounds = lparent.getUpdateImageBounds();
                 if ( plotBounds!=null ) {
                     visibleRange = xAxis.invTransform( plotBounds.x, plotBounds.x + plotBounds.width );
@@ -1438,19 +1436,20 @@ public class SeriesRenderer extends Renderer {
      * @param g the graphics context.
      * @param xAxis the x axis
      * @param yAxis the y axis
-     * @param mon a progress monitor
+     * @param monitor a progress monitor
      */
     @Override
-    public synchronized void render(Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
+    public synchronized void render(Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor monitor) {
 
+        if ( monitor==null ) monitor= new NullProgressMonitor();
+        
         DasPlot lparent= getParent();
 
         logger.log(Level.FINE, "enter {0}.render: {1}", new Object[]{id, String.valueOf(getDataSet()) });
         logger.log( Level.FINER, "ds: {0},  drawing indeces {1} to {2}", new Object[]{ String.valueOf(this.ds), this.firstIndex, this.lastIndex});
         
-        if ( lparent==null ) return;
         if ( this.ds == null && lastException != null) {
-            lparent.postException(this, lastException);
+            if ( lparent!=null ) lparent.postException(this, lastException);
             return;
         }
 
@@ -1463,42 +1462,44 @@ public class SeriesRenderer extends Renderer {
 
         if (dataSet == null) {
             DasLogger.getLogger(DasLogger.GRAPHICS_LOG).fine("null data set");
-            lparent.postMessage(this, "no data set", DasPlot.INFO, null, null);
+            if ( lparent!=null ) lparent.postMessage(this, "no data set", DasPlot.INFO, null, null);
             return;
         }
 
         if (dataSet.rank() == 0) {
             DasLogger.getLogger(DasLogger.GRAPHICS_LOG).fine("rank 0 data set");
-            lparent.postMessage(this, "rank 0 data set: "+dataSet.toString(), DasPlot.INFO, null, null);
+            if ( lparent!=null ) lparent.postMessage(this, "rank 0 data set: "+dataSet.toString(), DasPlot.INFO, null, null);
             return;
         }
 
         if (dataSet.length() == 0) {
             DasLogger.getLogger(DasLogger.GRAPHICS_LOG).fine("empty data set");
-            lparent.postMessage(this, "empty data set", DasPlot.INFO, null, null);
+            if ( lparent!=null ) lparent.postMessage(this, "empty data set", DasPlot.INFO, null, null);
             return;
         }
         
         if ( dataSet.rank()!=1 && ! ( SemanticOps.isBundle(ds) || SemanticOps.isRank2Waveform(ds) || SemanticOps.isRank3JoinOfRank2Waveform(ds) ) ) {
             DasLogger.getLogger(DasLogger.GRAPHICS_LOG).fine("dataset is not rank 1 or a rank 2 waveform");
-            lparent.postMessage(this, "dataset is not rank 1 or a rank 2 waveform", DasPlot.INFO, null, null);
+            if ( lparent!=null ) lparent.postMessage(this, "dataset is not rank 1 or a rank 2 waveform", DasPlot.INFO, null, null);
             return;
         }
 
         if ( psym== DefaultPlotSymbol.NONE && psymConnector==PsymConnector.NONE ) {
             DasLogger.getLogger(DasLogger.GRAPHICS_LOG).fine("plot symbol and symbol connector are set to none");
-            lparent.postMessage(this, "plot symbol and symbol connector are set to none", DasPlot.INFO, null, null);
+            if ( lparent!=null ) lparent.postMessage(this, "plot symbol and symbol connector are set to none", DasPlot.INFO, null, null);
             return;
         }
 
-        boolean foreBackSameColor= true;
-        if ( !color.equals( lparent.getBackground() ) ) foreBackSameColor= false;
-        if ( fillToReference &&  !color.equals( lparent.getBackground() ) ) foreBackSameColor= false;
-        if ( lparent.getRenderers().length>1 ) foreBackSameColor= false; // weak test but better than nothing.
-        if ( foreBackSameColor ) {
-            DasLogger.getLogger(DasLogger.GRAPHICS_LOG).fine("foreground and background colors are the same");
-            lparent.postMessage(this, "foreground and background colors are the same", DasPlot.INFO, null, null);
-            return;
+        if ( lparent!=null ) {
+            boolean foreBackSameColor= true;
+            if ( !color.equals( lparent.getBackground() ) ) foreBackSameColor= false;
+            if ( fillToReference &&  !color.equals( lparent.getBackground() ) ) foreBackSameColor= false;
+            if ( lparent.getRenderers().length>1 ) foreBackSameColor= false; // weak test but better than nothing.
+            if ( foreBackSameColor ) {
+                DasLogger.getLogger(DasLogger.GRAPHICS_LOG).fine("foreground and background colors are the same");
+                lparent.postMessage(this, "foreground and background colors are the same", DasPlot.INFO, null, null);
+                return;
+            }
         }
         
         QDataSet tds = null;
@@ -1525,10 +1526,10 @@ public class SeriesRenderer extends Renderer {
         if ( !xaxisUnitsOkay && !yaxisUnitsOkay && ( vds!=null && SemanticOps.getUnits(xds)==SemanticOps.getUnits(vds) ) && xAxis.getUnits()==yAxis.getUnits() ) {
              if ( unitsWarning ) {
                 //UnitsUtil.isRatioMeasurement( SemanticOps.getUnits(vds) ) && UnitsUtil.isRatioMeasurement( yAxis.getUnits() )
-                lparent.postMessage( this, "axis units changed from \""+SemanticOps.getUnits(vds) + "\" to \"" + yAxis.getUnits() + "\"", DasPlot.INFO, null, null );
+                if ( lparent!=null ) lparent.postMessage( this, "axis units changed from \""+SemanticOps.getUnits(vds) + "\" to \"" + yAxis.getUnits() + "\"", DasPlot.INFO, null, null );
                 haveReportedUnitProblem= true;
             } else {
-                lparent.postMessage( this, "inconvertible axis units", DasPlot.INFO, null, null );
+                if ( lparent!=null ) lparent.postMessage( this, "inconvertible axis units", DasPlot.INFO, null, null );
                 return;
             }
         }
@@ -1539,11 +1540,11 @@ public class SeriesRenderer extends Renderer {
                     if ( yAxis.getUnits()==Units.dimensionless ) {
                         logger.log(Level.FINE, "data units \"{0}\" plotted on dimensionless axis", SemanticOps.getUnits(vds));
                     } else {
-                        lparent.postMessage( this, "yaxis units changed from \""+SemanticOps.getUnits(vds) + "\" to \"" + yAxis.getUnits() + "\"", DasPlot.INFO, null, null );
+                        if ( lparent!=null ) lparent.postMessage( this, "yaxis units changed from \""+SemanticOps.getUnits(vds) + "\" to \"" + yAxis.getUnits() + "\"", DasPlot.INFO, null, null );
                     }
                 }
             } else {
-                lparent.postMessage( this, "inconvertible yaxis units", DasPlot.INFO, null, null );
+                if ( lparent!=null ) lparent.postMessage( this, "inconvertible yaxis units", DasPlot.INFO, null, null );
                 return;
             }
         }
@@ -1553,10 +1554,10 @@ public class SeriesRenderer extends Renderer {
                 if ( xAxis.getUnits()==Units.dimensionless ) {
                     logger.log(Level.FINE, "data units \"{0}\" plotted on dimensionless axis", SemanticOps.getUnits(xds));
                 } else {
-                    lparent.postMessage( this, "xaxis units changed from \""+SemanticOps.getUnits(xds) + "\" to \"" + xAxis.getUnits() + "\"", DasPlot.INFO, null, null );
+                    if ( lparent!=null ) lparent.postMessage( this, "xaxis units changed from \""+SemanticOps.getUnits(xds) + "\" to \"" + xAxis.getUnits() + "\"", DasPlot.INFO, null, null );
                 }
             } else {
-                lparent.postMessage( this, "inconvertible xaxis units", DasPlot.INFO, null, null );
+                if ( lparent!=null ) lparent.postMessage( this, "inconvertible xaxis units", DasPlot.INFO, null, null );
                 return;
             }
         }
@@ -1566,7 +1567,7 @@ public class SeriesRenderer extends Renderer {
         logger.log(Level.FINER, "rendering points: ds[{0}:{1}]", new Object[]{firstIndex,lastIndex});
         if ( lastIndex == -1 ) {
             if ( messageCount++==0) {
-                lparent.postMessage(SeriesRenderer.this, "need to update first/last", DasPlot.INFO, null, null);
+                if ( lparent!=null ) lparent.postMessage(SeriesRenderer.this, "need to update first/last", DasPlot.INFO, null, null);
             }
             update(); //DANGER: this kludge is not well tested, and may cause problems.  It should be the case that another
                       // update is posted that will resolve this problem, but somehow it's not happening when Autoplot adds a
@@ -1582,10 +1583,12 @@ public class SeriesRenderer extends Renderer {
             t.restart();
         }
 
-        if (lastIndex == firstIndex) {
-            if ( firstValidIndex==lastValidIndex ) {
-                if ( !dataSetReduced ) {
-                    if ( messageCount++==0) lparent.postMessage(SeriesRenderer.this, "dataset contains no valid data", DasPlot.INFO, null, null);
+        if ( lparent!=null ) {
+            if (lastIndex == firstIndex) {
+                if ( firstValidIndex==lastValidIndex ) {
+                    if ( !dataSetReduced ) {
+                        if ( messageCount++==0) lparent.postMessage(SeriesRenderer.this, "dataset contains no valid data", DasPlot.INFO, null, null);
+                    }
                 }
             }
         }
@@ -1598,60 +1601,60 @@ public class SeriesRenderer extends Renderer {
             graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
         }
         
-        mon.started();
+        monitor.started();
         
         if ( SemanticOps.isRank2Waveform(dataSet) ) {
             
             graphics.setColor(color);
             logger.log(Level.FINEST, "drawing psymConnector in {0}", color);
 
-            int connectCount= psymConnectorElement.render(graphics, xAxis, yAxis, dataSet, mon.getSubtaskMonitor("psymConnectorElement.render")); // vds is only to check units
+            int connectCount= psymConnectorElement.render(graphics, xAxis, yAxis, dataSet, monitor.getSubtaskMonitor("psymConnectorElement.render")); // vds is only to check units
             logger.log(Level.FINEST, "connectCount: {0}", connectCount);
 
             int symCount;
             if (psym != DefaultPlotSymbol.NONE) {
 
-                symCount= psymsElement.render(graphics, xAxis, yAxis, dataSet, mon.getSubtaskMonitor("psymsElement.render"));
+                symCount= psymsElement.render(graphics, xAxis, yAxis, dataSet, monitor.getSubtaskMonitor("psymsElement.render"));
                 logger.log(Level.FINEST, "symCount: {0}", symCount);
                 
             }
             
             if ( drawError ) { // error bars show the extent of the waveform
-                errorElement.render(graphics, xAxis, yAxis, dataSet, mon.getSubtaskMonitor("errorElement.render"));
+                errorElement.render(graphics, xAxis, yAxis, dataSet, monitor.getSubtaskMonitor("errorElement.render"));
             }
             
         } else if (tds != null ) {
             graphics.setColor(color);
             logger.log(Level.FINEST, "drawing psymConnector in {0}", color);
 
-            int connectCount= psymConnectorElement.render(graphics, xAxis, yAxis, tds, mon.getSubtaskMonitor("psymConnectorElement.render")); // tds is only to check units
+            int connectCount= psymConnectorElement.render(graphics, xAxis, yAxis, tds, monitor.getSubtaskMonitor("psymConnectorElement.render")); // tds is only to check units
 
             logger.log(Level.FINEST, "connectCount: {0}", connectCount);
             
             if ( drawError ) { // error bars
-                errorElement.render(graphics, xAxis, yAxis, tds, mon.getSubtaskMonitor("errorElement.render"));
+                errorElement.render(graphics, xAxis, yAxis, tds, monitor.getSubtaskMonitor("errorElement.render"));
             }
 
         } else {
 
             if (this.fillToReference) {
-                fillElement.render(graphics, xAxis, yAxis, vds, mon.getSubtaskMonitor("fillElement.render"));
+                fillElement.render(graphics, xAxis, yAxis, vds, monitor.getSubtaskMonitor("fillElement.render"));
             }
 
             graphics.setColor(color);
             logger.log(Level.FINEST, "drawing psymConnector in {0}", color);
 
-            int connectCount= psymConnectorElement.render(graphics, xAxis, yAxis, vds, mon.getSubtaskMonitor("psymConnectorElement.render")); // vds is only to check units
+            int connectCount= psymConnectorElement.render(graphics, xAxis, yAxis, vds, monitor.getSubtaskMonitor("psymConnectorElement.render")); // vds is only to check units
             logger.log(Level.FINEST, "connectCount: {0}", connectCount);
             
             if ( drawError ) { // error bars
-                errorElement.render(graphics, xAxis, yAxis, vds, mon.getSubtaskMonitor("errorElement.render"));
+                errorElement.render(graphics, xAxis, yAxis, vds, monitor.getSubtaskMonitor("errorElement.render"));
             }
 
             int symCount;
             if (psym != DefaultPlotSymbol.NONE) {
 
-                symCount= psymsElement.render(graphics, xAxis, yAxis, vds, mon.getSubtaskMonitor("psymsElement.render"));
+                symCount= psymsElement.render(graphics, xAxis, yAxis, vds, monitor.getSubtaskMonitor("psymsElement.render"));
                 logger.log(Level.FINEST, "symCount: {0}", symCount);
                 
             }
@@ -1697,7 +1700,7 @@ public class SeriesRenderer extends Renderer {
                 graphics1.draw(l);
             }
         }
-        mon.finished();
+        monitor.finished();
         
         long milli = System.currentTimeMillis();
         long renderTime = (milli - timer0);
@@ -1710,34 +1713,35 @@ public class SeriesRenderer extends Renderer {
 
         int ldataSetSizeLimit= getDataSetSizeLimit();
         
-        if (dataSetClipped) {
-            lparent.postMessage(this, "dataset clipped at " + ldataSetSizeLimit + " points", DasPlot.WARNING, null, null);
-        }
+        if ( lparent!=null ) {
+            if (dataSetClipped) {
+                lparent.postMessage(this, "dataset clipped at " + ldataSetSizeLimit + " points", DasPlot.WARNING, null, null);
+            }
+            if (dataSetReduced) {
+                lparent.postMessage(this, "dataset reduced because of size > " + ldataSetSizeLimit + " points", DasPlot.WARNING, null, null);
+            }
 
-        if (dataSetReduced) {
-            lparent.postMessage(this, "dataset reduced because of size > " + ldataSetSizeLimit + " points", DasPlot.WARNING, null, null);
-        }
-
-        if ( !dataSetReduced ) {
-            if ( ( lastIndex_v - firstIndex_v < 2 ) && dataSet.length()>1 ) { //TODO: single point would be helpful for digitizing.
-                if ( messageCount++==0) {
-                    if ( lastIndex_v<2 ) {
-                        if ( firstValidIndex==lastValidIndex ) {
-                            //sftp://papco.org/home/jbf/ct/autoplot/data.backup/examples/d2s/dataOutOfRange.das2Stream
-                            lparent.postMessage(this, "dataset contains no plottable data", DasPlot.INFO, null, null);
+            if ( !dataSetReduced ) {
+                if ( ( lastIndex_v - firstIndex_v < 2 ) && dataSet.length()>1 ) { //TODO: single point would be helpful for digitizing.
+                    if ( messageCount++==0) {
+                        if ( lastIndex_v<2 ) {
+                            if ( firstValidIndex==lastValidIndex ) {
+                                //sftp://papco.org/home/jbf/ct/autoplot/data.backup/examples/d2s/dataOutOfRange.das2Stream
+                                lparent.postMessage(this, "dataset contains no plottable data", DasPlot.INFO, null, null);
+                            } else {
+                                lparent.postMessage(this, "data starts after range", DasPlot.INFO, null, null);
+                            }
+                        } else if ( this.dslen - this.firstIndex_v < 2 ) {
+                            lparent.postMessage(this, "data ends before range", DasPlot.INFO, null, null);
                         } else {
-                            lparent.postMessage(this, "data starts after range", DasPlot.INFO, null, null);
+                            lparent.postMessage(this, "fewer than two points visible", DasPlot.INFO, null, null);
                         }
-                    } else if ( this.dslen - this.firstIndex_v < 2 ) {
-                        lparent.postMessage(this, "data ends before range", DasPlot.INFO, null, null);
-                    } else {
-                        lparent.postMessage(this, "fewer than two points visible", DasPlot.INFO, null, null);
                     }
                 }
-            }
-        } else {
-            if ( ( lastIndex_v - firstIndex_v < 1 ) && dataSet.length()>1 ) { 
-                lparent.postMessage(this, "no data is visible", DasPlot.INFO, null, null);
+            } else {
+                if ( ( lastIndex_v - firstIndex_v < 1 ) && dataSet.length()>1 ) { 
+                    lparent.postMessage(this, "no data is visible", DasPlot.INFO, null, null);
+                }
             }
         }
 
@@ -1816,6 +1820,8 @@ public class SeriesRenderer extends Renderer {
      */
     @Override
     public synchronized void updatePlotImage(DasAxis xAxis, DasAxis yAxis, ProgressMonitor monitor) {
+        
+        if ( monitor==null ) monitor= new NullProgressMonitor();
         
         long t0= System.currentTimeMillis();
         logger.log(Level.FINE, "enter {0}.updatePlotImage: {1}", new Object[]{id, String.valueOf(getDataSet()) });
