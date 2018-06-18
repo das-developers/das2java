@@ -150,7 +150,7 @@ public class Schemes {
     public static boolean isRank3Waveform( QDataSet ds ) {
         if ( ds.rank()!=3 ) return false;
         boolean isWaveform= true;
-        for ( int i=0; i<ds.length(); i++ ) {
+        for ( int i=0; i<ds.length() && isWaveform; i++ ) {
             if ( !isRank2Waveform(ds.slice(i) ) ) isWaveform=false;
         }
         return isWaveform;
