@@ -131,20 +131,6 @@ public class DasSliceController extends DasCanvasComponent {
         repaint();
     }
     
-    
-//    // Number of pixels left below the the text rects for animation. 
-//    private int roomForAnimation = 10;
-//
-//    public int getRoomForAnimation() {
-//        return roomForAnimation;
-//    }
-//
-//    public void setRoomForAnimation(int roomForAnimation) {
-//        this.roomForAnimation = roomForAnimation;
-//        repaint();
-//    }
-    
-    
     private int offsetFromPlot = 0;
     
     public int getOffsetFromPlot(){
@@ -629,10 +615,10 @@ public class DasSliceController extends DasCanvasComponent {
         if(showAnimation){
             switch(animationMode){
                 case(LEFT_ANIMATION):
-                    leftDatumClickAnimation(g);
+//                    leftDatumClickAnimation(g);
                     break;
                 case(RIGHT_ANIMATION):
-                    rightDatumClickAnimation(g);
+//                    rightDatumClickAnimation(g);
                     break;
                 case(CENTER_ANIMATION):
                     centerAnimation(g);
@@ -735,7 +721,6 @@ public class DasSliceController extends DasCanvasComponent {
                         }
                     }
                 }
-                
             }
 
             @Override
@@ -754,7 +739,7 @@ public class DasSliceController extends DasCanvasComponent {
                     if (mouseRect == lDatumRect) {
                         showAnimation = true;
 //                        animationMode = LEFT_ANIMATION;
-                        lDatumDrag(xUpdatingDrag);
+                        lDatumDrag(xUpdatingDrag, xTotalDrag);
                     } else if (mouseRect == rDatumRect) {
                         showAnimation = true;
 //                        animationMode = RIGHT_ANIMATION;
@@ -852,10 +837,11 @@ public class DasSliceController extends DasCanvasComponent {
         resetInSingleMode();
     }
 
-    private void lDatumDrag(int xDrag) {
+    private void lDatumDrag(int xDrag, int xTotalDrag) {
         showAnimation = true;
-//        System.err.println("lDatumDragging, total dist = " + xTotalDrag);
-        Datum dragDatum = Datum.create(xDrag, datumRange.getUnits());
+        System.err.println("lDatumDragging, total dist = " + xTotalDrag);
+//        System.err.println("lDatumDragging, xDrag dist = " + xDrag);
+        Datum dragDatum = Datum.create( xDrag, datumRange.getUnits());
         if (inSingleMode) {
             animationMode = CENTER_ANIMATION;
             // Make sure layout won't collapse to a single datum range
@@ -903,7 +889,14 @@ public class DasSliceController extends DasCanvasComponent {
         showAnimation = true;
         animationMode = CENTER_ANIMATION;
         Datum dragDatum = Datum.create(xDrag, datumRange.getUnits());
-        setDatumRange(new DatumRange(datumRange.min().add(dragDatum), datumRange.max().add(dragDatum)));
+        
+        DatumRange checkRange = new DatumRange(datumRange.min().add(dragDatum), datumRange.max().add(dragDatum));
+        
+        // Incase one side hits boundary the width of the current range stays the same
+        if(checkRange.min().lt(validRange.min()) || checkRange.max().gt(validRange.max())){
+            return;
+        }
+        setDatumRange(checkRange);
     }
 
     private void wheelRotation(int amount) {
@@ -976,30 +969,35 @@ public class DasSliceController extends DasCanvasComponent {
         g.setColor(curCol);
     }
     
-    private void leftDatumClickAnimation(Graphics g){
-
-        int ovalPositionX = rDatumRect.rect.x + rDatumRect.rect.width / 2;
-        int textBaseLine = lDatumRect.rect.y + (int) getEmSize();
-        
-        g.drawOval(ovalPositionX, textBaseLine, ovalSize, ovalSize);
-        // relative to canvas origin
-        int mouseX = lastPoint.x + getX();
-        g.drawLine(ovalPositionX + halfOvalSize, textBaseLine + halfOvalSize, mouseX, textBaseLine + halfOvalSize);
-    
-        int datIndicatorHeight = (int) (getEmSize() / 4 );
-        g.drawLine(mouseX, textBaseLine + halfOvalSize, mouseX, textBaseLine + halfOvalSize + datIndicatorHeight);
+    Datum scaleDragValue(int xDrag, int totalDrag){
+        Datum newDatum = Datum.create(xDrag, datumRange.getUnits());
+        return newDatum;
     }
     
-    private void rightDatumClickAnimation(Graphics g){
-
-        int ovalPositionX = lDatumRect.rect.x + lDatumRect.rect.width / 2;
-        int textBaseLine = lDatumRect.rect.y + (int) getEmSize();
-        g.drawOval(ovalPositionX, textBaseLine, ovalSize, ovalSize);
-        // relative to canvas origin
-        int mouseX = lastPoint.x + getX();
-        g.drawLine(ovalPositionX + halfOvalSize, textBaseLine + halfOvalSize, mouseX, textBaseLine + halfOvalSize);
-        
-        int datIndicatorHeight = (int) (getEmSize() / 4 );
-        g.drawLine(mouseX, textBaseLine + halfOvalSize, mouseX, textBaseLine + halfOvalSize + datIndicatorHeight);
-    }
+//    private void leftDatumClickAnimation(Graphics g){
+//
+//        int ovalPositionX = rDatumRect.rect.x + rDatumRect.rect.width / 2;
+//        int textBaseLine = lDatumRect.rect.y + (int) getEmSize();
+//        
+//        g.drawOval(ovalPositionX, textBaseLine, ovalSize, ovalSize);
+//        // relative to canvas origin
+//        int mouseX = lastPoint.x + getX();
+//        g.drawLine(ovalPositionX + halfOvalSize, textBaseLine + halfOvalSize, mouseX, textBaseLine + halfOvalSize);
+//    
+//        int datIndicatorHeight = (int) (getEmSize() / 4 );
+//        g.drawLine(mouseX, textBaseLine + halfOvalSize, mouseX, textBaseLine + halfOvalSize + datIndicatorHeight);
+//    }
+//    
+//    private void rightDatumClickAnimation(Graphics g){
+//
+//        int ovalPositionX = lDatumRect.rect.x + lDatumRect.rect.width / 2;
+//        int textBaseLine = lDatumRect.rect.y + (int) getEmSize();
+//        g.drawOval(ovalPositionX, textBaseLine, ovalSize, ovalSize);
+//        // relative to canvas origin
+//        int mouseX = lastPoint.x + getX();
+//        g.drawLine(ovalPositionX + halfOvalSize, textBaseLine + halfOvalSize, mouseX, textBaseLine + halfOvalSize);
+//        
+//        int datIndicatorHeight = (int) (getEmSize() / 4 );
+//        g.drawLine(mouseX, textBaseLine + halfOvalSize, mouseX, textBaseLine + halfOvalSize + datIndicatorHeight);
+//    }
 }
