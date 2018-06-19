@@ -2679,12 +2679,14 @@ public class DataSetUtil {
                     //problems.add( "ds.length() doesn't equals BUNDLE_0 length");
                     //TODO: 'http://sarahandjeremy.net/~jbf/autoplot/data/hudson_data/qds/agg/2014-02-25_2day.qds' doesn't validate
                 } else {
-                    QDataSet bds= (QDataSet)obds;
-                    for ( int i=0; i< Math.min(1,bds.length()); i++ ) {
-                        QDataSet bds1= DataSetOps.unbundle(ds,i,true); // assumes rank1, so we have excessive work for rank>1
-                        Object o= bds1.property(QDataSet.DEPEND_1);
-                        if ( o!=null && !(o instanceof QDataSet) ) {
-                            validate( bds1,problems,1) ;
+                    if ( ds.rank()<2 ) {
+                        QDataSet bds= (QDataSet)obds;
+                        for ( int i=0; i< Math.min(1,bds.length()); i++ ) {
+                            QDataSet bds1= DataSetOps.unbundle(ds,i,true); // assumes rank1, so we have excessive work for rank>1
+                            Object o= bds1.property(QDataSet.DEPEND_1);
+                            if ( o!=null && !(o instanceof QDataSet) ) {
+                                validate( bds1,problems,1) ;
+                            }
                         }
                     }
                 }
