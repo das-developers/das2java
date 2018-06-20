@@ -81,12 +81,23 @@ public class DasSliceController extends DasCanvasComponent {
         
         // Try to keep Datum range within valid range. 
         if(this.validRange != null){
-            if(dr.min().lt(validRange.min())){
-                dr = new DatumRange(validRange.min(), dr.max());
+            //I had to include this block because of some rounding error in the range when in single mode.
+            if(inSingleMode){
+                if(dr.min().lt(validRange.min())){
+                    dr = new DatumRange(validRange.min(), validRange.min());
+                }
+                if(dr.max().gt(validRange.max())){
+                    dr = new DatumRange(validRange.max(), validRange.max());
+                }
+            }else{
+                if(dr.min().lt(validRange.min())){
+                    dr = new DatumRange(validRange.min(), dr.max());
             }
-            if(dr.max().gt(validRange.max())){
-                dr = new DatumRange(dr.min(), validRange.max());
+                if(dr.max().gt(validRange.max())){
+                    dr = new DatumRange(dr.min(), validRange.max());
+                }
             }
+            
         }
         this.datumRange = dr;
         lDatumRect.text = this.datumRange.min().toString();
@@ -285,16 +296,16 @@ public class DasSliceController extends DasCanvasComponent {
     private int colMax;
     private int rowMin;
     private int rowMax;
-//    private int layoutWidth;
-//    private int layoutHeight;
+    private int layoutWidth;
+    private int layoutHeight;
 
     private void setSizingParams() {
         colMin = getColumn().getDMinimum();
         colMax = getColumn().getDMaximum();
         rowMin = getRow().getDMinimum();
         rowMax = getRow().getDMaximum();
-//        layoutWidth = colMax - colMin;
-//        layoutHeight = rowMax - rowMin;
+        layoutWidth = colMax - colMin;
+        layoutHeight = rowMax - rowMin;
     }
 //    
 //    private int floatRight = 0;
@@ -309,7 +320,7 @@ public class DasSliceController extends DasCanvasComponent {
 //    }
 //    
 //    private int floatDown = 0;
-//    public int getFloatDown(){
+//    public int getFloatDown(){ 
 //        return floatDown;
 //    }
 //    
@@ -839,9 +850,11 @@ public class DasSliceController extends DasCanvasComponent {
 
     private void lDatumDrag(int xDrag, int xTotalDrag) {
         showAnimation = true;
-        System.err.println("lDatumDragging, total dist = " + xTotalDrag);
+//        System.err.println("lDatumDragging, total dist = " + xTotalDrag);
 //        System.err.println("lDatumDragging, xDrag dist = " + xDrag);
-        Datum dragDatum = Datum.create( xDrag, datumRange.getUnits());
+//        Datum dragDatum = Datum.create( xDrag, datumRange.getUnits());
+        Datum dragDatum = scaleDragValue(xDrag);
+//        System.err.println("Drag datum value = " + dragDatum.value());
         if (inSingleMode) {
             animationMode = CENTER_ANIMATION;
             // Make sure layout won't collapse to a single datum range
@@ -875,7 +888,8 @@ public class DasSliceController extends DasCanvasComponent {
 //        animationMode = RIGHT_ANIMATION;
         animationMode = CENTER_ANIMATION;
 //        System.err.println("rDatumDragging, total dist = " + xTotalDrag);
-        Datum dragDatum = Datum.create(xDrag, datumRange.getUnits());
+//        Datum dragDatum = Datum.create(xDrag, datumRange.getUnits());
+        Datum dragDatum = scaleDragValue(xDrag);
         Datum newRDatum = datumRange.max().add(dragDatum);
         
         if (newRDatum.lt(datumRange.min())) {
@@ -888,7 +902,7 @@ public class DasSliceController extends DasCanvasComponent {
     private void middleButtonDrag(int xDrag){
         showAnimation = true;
         animationMode = CENTER_ANIMATION;
-        Datum dragDatum = Datum.create(xDrag, datumRange.getUnits());
+        Datum dragDatum = scaleDragValue(xDrag);
         
         DatumRange checkRange = new DatumRange(datumRange.min().add(dragDatum), datumRange.max().add(dragDatum));
         
@@ -901,7 +915,7 @@ public class DasSliceController extends DasCanvasComponent {
 
     private void wheelRotation(int amount) {
 //        System.err.println("Wheel rotation amount = " + amount);
-        Datum datumAmount = Datum.create(amount, datumRange.getUnits());
+        Datum datumAmount = scaleDragValue(amount);
         if (inSingleMode) {
             setDatumRange(new DatumRange(datumRange.min().add(datumAmount), datumRange.min().add(datumAmount)));
         } else {
@@ -925,9 +939,12 @@ public class DasSliceController extends DasCanvasComponent {
     }
 
     public void setValidRange(DatumRange validRange) {
+        
         this.validRange = validRange;
+        valuePerPixel = validRange.width().value() / layoutWidth;
     }
     
+    private double valuePerPixel;
     
     private int ovalSize = 4;
     private int halfOvalSize = ovalSize / 2;
@@ -969,8 +986,10 @@ public class DasSliceController extends DasCanvasComponent {
         g.setColor(curCol);
     }
     
-    Datum scaleDragValue(int xDrag, int totalDrag){
-        Datum newDatum = Datum.create(xDrag, datumRange.getUnits());
+    
+    
+    Datum scaleDragValue(int xDrag){
+        Datum newDatum = Datum.create(xDrag * valuePerPixel, datumRange.getUnits());
         return newDatum;
     }
     
