@@ -1860,6 +1860,10 @@ public final class Ops {
      * @see Ops#magnitude(org.das2.qds.QDataSet) magnitude(ds) which preserves the sign.
      */
     public static QDataSet abs(QDataSet ds1) {
+        Units u= (Units) ds1.property(QDataSet.UNITS);
+        if ( u!=null && u instanceof EnumerationUnits ) {
+            throw new IllegalArgumentException("data is from an enumeration, and abs cannot be used.");
+        }
         MutablePropertyDataSet result= applyUnaryOp(ds1, new UnaryOp() {
             @Override
             public double op(double d1) {
