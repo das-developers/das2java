@@ -212,6 +212,14 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
     }
 
     /**
+     * Renderers should use this internally instead of getDataSet() to support
+     * subclasses preprocessing datasets
+     * @return 
+     */
+    protected QDataSet getInternalDataSet(){
+        return getDataSet();
+    }
+    /**
      * return the data for DataSetConsumer, which might be rebinned.
      * @return 
      */
