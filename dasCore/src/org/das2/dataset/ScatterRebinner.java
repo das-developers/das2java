@@ -27,7 +27,7 @@ import org.das2.qds.examples.Schemes;
  */
 public class ScatterRebinner implements DataSetRebinner {
 	
-	private static final Logger logger= LoggerManager.getLogger("das2.data.rebinner");
+	private static final Logger logger = LoggerManager.getLogger("das2.data.rebinner");
 			  
 	
 	@Override
@@ -67,6 +67,11 @@ public class ScatterRebinner implements DataSetRebinner {
 		
 		int nx = rebinDescX.numberOfBins()-1;
 		int ny = rebinDescY.numberOfBins()-1;
+		
+		
+		//Used to keep track when multiple data points fall in the same bin. 
+		int[][] nPointsInBin = new int[nx+1][ny+1];
+		double[][] cumMovingAverage = new double[nx+1][ny+1];
 
 		int xB = 0,yB = 0;
 		
@@ -111,7 +116,10 @@ public class ScatterRebinner implements DataSetRebinner {
 					if(xB == -1 || yB == -1){
 						continue;
 					}
-					result.putValue(xB,yB,(zds.value(i)));
+					// Store cumulative average incase multiple datapoints are in a single bin.
+					cumMovingAverage[xB][yB] = (zds.value(i) + nPointsInBin[xB][yB]*cumMovingAverage[xB][yB]) / (nPointsInBin[xB][yB] + 1);
+					nPointsInBin[xB][yB]++;
+					result.putValue(xB,yB,cumMovingAverage[xB][yB]);
 				}
 				break;
 			case 2:
@@ -146,7 +154,12 @@ public class ScatterRebinner implements DataSetRebinner {
 						if(xB == -1 || yB == -1){
 							continue;
 						}
-						result.putValue(xB,yB,(zds.value(i,j)));
+				
+					// Store cumulative average incase multiple datapoints are in a single bin.
+					cumMovingAverage[xB][yB] = (zds.value(i,j) + nPointsInBin[xB][yB]*cumMovingAverage[xB][yB]) / (nPointsInBin[xB][yB] + 1);
+					nPointsInBin[xB][yB]++;
+					result.putValue(xB,yB,cumMovingAverage[xB][yB]);
+						
 					}
 				}
 				break;
@@ -158,14 +171,27 @@ public class ScatterRebinner implements DataSetRebinner {
 				break;
 		}
 		
+		// The hardBins are used to define a sharp edge rectngle of bins around a datapoint when an area should
+		// have the same value as a datapoint. 
+		// The softRad are used from the dataset property cadence and define the boundary to be interpolated to.
 		int xHardBinPlus = 0, xHardBinMinus = 0, yHardBinPlus = 0, yHardBinMinus = 0, xSoftRad = 0, ySoftRad = 0;
 		Datum xDat = rebinDescX.binWidthDatum();
+		
+		// Used to sort all the distances between points when no cadence property is set. 
 		List<Integer> xCadencesToSort = new ArrayList<>();
+		
+		// Gets an array of widths of all bins 
 		double [] xbinWidths = getBinWidths(rebinDescX);
+		
+		// Once a cadence value is determined, this array is used to store the amount of bins
+		// that cadence value corresponds to.
 		int [] xcadencesInBins = new int[xbinWidths.length];
 	
-        Units xoffsetUnits= xdsUnits.getOffsetUnits();
+      Units xoffsetUnits= xdsUnits.getOffsetUnits();
+		
+		
 		if(xds != null){
+			// Checking for binplus/minus
 			QDataSet xPlus = (QDataSet) xds.property(QDataSet.BIN_PLUS);	
 			if(xPlus != null){
 				xHardBinPlus = (int) (xPlus.value() / xDat.doubleValue( xoffsetUnits ));
@@ -174,11 +200,15 @@ public class ScatterRebinner implements DataSetRebinner {
 			if(xMinus != null){
 				xHardBinMinus = (int) (xMinus.value() / xDat.doubleValue( xoffsetUnits ));
 			} 
+			
+			
 			QDataSet xCad = (QDataSet) xds.property(QDataSet.CADENCE);
 			double xCadenceVal = 0;
 			if(xCad != null){
 				xCadenceVal = xCad.value();
 				if(rebinDescX.isLog){
+					// One cadence value will not work for logrithmic axis so the function 
+					// call below gets an array of cadence values in bins to be used. 
 					xcadencesInBins = getCadenceValues(xbinWidths, xCadenceVal,-1);
 				}else{
 					xcadencesInBins = null;
@@ -186,6 +216,11 @@ public class ScatterRebinner implements DataSetRebinner {
 				}
 				
 			} else{
+				// If no cadence is given, the number of bins between each datapoint is calculated and 
+				// added to a list. The list is sorted and a position in the list is used given by xPosInList.
+				
+				int xPosInList = (int) Math.round(0.95 * xCadencesToSort.size());
+				
 				int currentDataWidthx;
 				for(int i =0; i< xds.length()-1; i++){
 					currentDataWidthx = rebinDescX.whichBin(xds.value(i+1), xdsUnits ) - 
@@ -197,7 +232,7 @@ public class ScatterRebinner implements DataSetRebinner {
 				Collections.sort(xCadencesToSort,Collections.reverseOrder());
 				//xCadencesToSort.sort( (x,y) -> y-x );
 				if(xCadencesToSort.size() >= 1){
-					xCadenceVal = xCadencesToSort.get((int) Math.round(0.95*xCadencesToSort.size()));
+					xCadenceVal = xCadencesToSort.get(xPosInList);
 					logger.log(Level.FINE, " X cadence from sorted list = {0}", xCadenceVal);
 				} else{
 					logger.fine("No Cadences.");
@@ -210,6 +245,9 @@ public class ScatterRebinner implements DataSetRebinner {
 				}
 			}
 		}
+		
+		
+		//Process is the same as X dataset
 		
 		Datum yDat = rebinDescY.binWidthDatum();
 		List<Integer> yCadencesToSort = new ArrayList<>();
@@ -287,6 +325,8 @@ public class ScatterRebinner implements DataSetRebinner {
 		} else{
 			logger.log(Level.FINE, " y Cadence is = {0}", ySoftRad);
 		}
+		
+		
 		
 		
 		result = InterpolateHardAndSoftEdge(xHardBinPlus,xHardBinMinus, yHardBinPlus, yHardBinMinus, xSoftRad, ySoftRad, 
