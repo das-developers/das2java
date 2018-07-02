@@ -1,10 +1,8 @@
 package org.das2.graph;
 
 import java.awt.Color;
-import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
@@ -12,13 +10,12 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.Icon;
 import static javax.swing.JLayeredPane.LAYER_PROPERTY;
-import org.das2.components.propertyeditor.Displayable;
-import org.das2.components.propertyeditor.Enumeration;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
 import org.das2.datum.Units;
+import org.das2.event.DataRangeSelectionEvent;
+import org.das2.event.DataRangeSelectionListener;
 import static org.das2.graph.DasCanvas.AXIS_LAYER;
 import org.das2.util.GrannyTextRenderer;
 
@@ -26,9 +23,9 @@ import org.das2.util.GrannyTextRenderer;
  *
  * @author leiffert
  */
-public class DasSliceController extends DasCanvasComponent {
+public class RangeLabel extends DasCanvasComponent {
 
-    private boolean inDebugMode = true;
+    private boolean inDebugMode = false;
     
     public static enum Alignment {
         LEFT, RIGHT, CENTER;
@@ -100,9 +97,12 @@ public class DasSliceController extends DasCanvasComponent {
             
         }
         this.datumRange = dr;
+
         lDatumRect.text = this.datumRange.min().toString();
         rDatumRect.text = this.datumRange.max().toString();
         firePropertyChange(PROP_DATUMRANGE, oldDR, dr);
+        fireDataRangeSelection();
+        //        setInSingleMode(dr.min() == dr.max());
         update();
 //        repaint();
     }
@@ -133,7 +133,12 @@ public class DasSliceController extends DasCanvasComponent {
     }
 
     public void setDsLabel(String dsLabel) {
-        this.dsLabel = dsLabel;
+        
+        if(dsLabel == null){
+            this.dsLabel = "";
+        }else{
+            this.dsLabel = dsLabel;
+        }
         if(inSingleMode){
             dsLabelRect.text = " " + dsLabel + wordsAfterLabelSingleDatum;
         }else{
@@ -142,13 +147,13 @@ public class DasSliceController extends DasCanvasComponent {
         repaint();
     }
     
-    private int offsetFromPlot = 0;
+    private double offsetFromPlot = 0;
     
-    public int getOffsetFromPlot(){
+    public double getOffsetFromPlot(){
         return offsetFromPlot;
     }
     
-    public void setOffsetFromPlot(int newOffset){
+    public void setOffsetFromPlot(double newOffset){
         this.offsetFromPlot = newOffset;
         update();
     }
@@ -187,7 +192,7 @@ public class DasSliceController extends DasCanvasComponent {
             // Relative to canvas origin
 //            this.rect.setBounds(lPixel + colMin, rowMax -  ( bPixel - tPixel) - roomForAnimation , getPixelWidth(), getPixelHeight());
 //            this.rect.setBounds(lPixel + colMin, rowMin - getPixelHeight() - (int) getEmSize(), getPixelWidth(), getPixelHeight() );
-            this.rect.setBounds(lPixel + colMin, rowMin - (int) (2 * getEmSize()) - offsetFromPlot, getPixelWidth(), (int) (2 * getEmSize() ));
+            this.rect.setBounds(lPixel + colMin, rowMin - (int) (2 * getEmSize()) - (int) (offsetFromPlot*getEmSize()), getPixelWidth(), (int) (2 * getEmSize() ));
         }
 
         boolean isShowing = false;
@@ -215,7 +220,7 @@ public class DasSliceController extends DasCanvasComponent {
                 
 //                gtr.draw(g, this.rect.x + sparePixels, this.rect.y + this.rect.height / 2);
                 if(verticalAlignment == VerticalAlignment.TOP){
-                    gtr.draw(g, this.rect.x, rowMin - (int) ( getEmSize()) - offsetFromPlot);
+                    gtr.draw(g, this.rect.x, rowMin - (int) ( getEmSize()) - (int)(offsetFromPlot * getEmSize()));
                 }
 //                gtr.draw(g, this.rect.x , this.rect.y + (2 * this.rect.height / 3 ) ); // This seems to center the text nicely
 //                g.drawRect(this.rect.x, this.rect.y, this.rect.width, this.rect.height);
@@ -246,7 +251,7 @@ public class DasSliceController extends DasCanvasComponent {
     private TextRect rScan = new TextRect(" scan>> ", new Rectangle());
     private TextRect lScan = new TextRect(" <<scan ", new Rectangle());
 
-    public DasSliceController(Datum lDatum, Datum rDatum) {
+    public RangeLabel(Datum lDatum, Datum rDatum) {
 
         this.datumRange = new DatumRange(lDatum, rDatum);
         lDatumRect = new TextRect(lDatum.toString(), new Rectangle(), new Cursor(Cursor.W_RESIZE_CURSOR));
@@ -263,14 +268,15 @@ public class DasSliceController extends DasCanvasComponent {
         addMouseWheelListener(ma);
         addMouseListener(ma);
         putClientProperty(LAYER_PROPERTY, AXIS_LAYER);
-        
+        setValidRange(this.datumRange);
     }
     
-    public DasSliceController(DatumRange dr){
+    public RangeLabel(DatumRange dr){
         this(dr.min(), dr.max());
     }
-    public DasSliceController(){
+    public RangeLabel(){
         this(Datum.create(0, Units.dimensionless), Datum.create(10, Units.dimensionless));
+        
     }
     
     @Override
@@ -618,7 +624,7 @@ public class DasSliceController extends DasCanvasComponent {
             try {
                 tr.paint(gtr, g);
             } catch (Exception ex) {
-                Logger.getLogger(DasSliceController.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(RangeLabel.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
         
@@ -843,8 +849,9 @@ public class DasSliceController extends DasCanvasComponent {
 
     private void addRDatum() {
 //        System.err.println("AddRDatum clicked");
-        Datum distFromLDatum = Datum.create(1, datumRange.getUnits());
-        setDatumRange(new DatumRange(datumRange.min(), datumRange.min().add(distFromLDatum)));
+        
+        //Datum distFromLDatum = Datum.create(1, datumRange.getUnits());
+        setDatumRange(new DatumRange(datumRange.min(), validRange.max()));
         resetInSingleMode();
     }
 
@@ -938,18 +945,20 @@ public class DasSliceController extends DasCanvasComponent {
         return validRange;
     }
 
-    public void setValidRange(DatumRange validRange) {
+    public final  void setValidRange(DatumRange validRange) {
         
         this.validRange = validRange;
-        valuePerPixel = validRange.width().value() / layoutWidth;
+        
     }
     
-    private double valuePerPixel;
+    
     
     private int ovalSize = 4;
     private int halfOvalSize = ovalSize / 2;
     
     private void centerAnimation(Graphics g){
+        
+        Units units = validRange.getUnits().getOffsetUnits();
         
         TextRect lRectForAnim = dsLabelRect;
         TextRect rRectForAnim = rScan;
@@ -964,14 +973,17 @@ public class DasSliceController extends DasCanvasComponent {
         g.drawLine(startX + halfOvalSize, textBaseLine + halfOvalSize, endX + halfOvalSize, textBaseLine + halfOvalSize); 
         
         int width = endX - startX;
-        double dataWidth = validRange.width().value();
+        double dataWidth = validRange.width().doubleValue(units);
         double pixPerData =  width / dataWidth;
         
-        double lDist =  datumRange.min().value() - validRange.min().value();
+//        double lDist =  datumRange.min().value() - validRange.min().value();
+        double lDist =  datumRange.min().subtract(validRange.min()).doubleValue(units);
+        
         int lDatumLineX = (int) ( lDist * pixPerData);
         lDatumLineX += (startX + halfOvalSize);
         
-        double rDist = datumRange.max().value() - validRange.min().value();
+//        double rDist = datumRange.max().value() - validRange.min().value();
+        double rDist = datumRange.max().subtract(validRange.min()).doubleValue(units);
         int rDatumLineX = (int) (rDist * pixPerData);
         rDatumLineX += (startX + halfOvalSize);
         
@@ -988,9 +1000,22 @@ public class DasSliceController extends DasCanvasComponent {
     
     
     
-    Datum scaleDragValue(int xDrag){
-        Datum newDatum = Datum.create(xDrag * valuePerPixel, datumRange.getUnits());
-        return newDatum;
+    private Datum scaleDragValue(int xDrag){
+        
+        return validRange.width().multiply((double) xDrag / layoutWidth);
+    }
+    
+    public void addDataRangeSelectionListener(DataRangeSelectionListener drsl){
+        listenerList.add(DataRangeSelectionListener.class, drsl);
+    }
+    public void removeDataRangeSelectionListener(DataRangeSelectionListener drsl){
+        listenerList.remove(DataRangeSelectionListener.class, drsl);
+    }
+    private void fireDataRangeSelection(){
+       DataRangeSelectionEvent drse = new DataRangeSelectionEvent(this, datumRange.min(), datumRange.max());
+       for(DataRangeSelectionListener d : listenerList.getListeners(DataRangeSelectionListener.class)){
+           d.dataRangeSelected(drse);
+       }
     }
     
 //    private void leftDatumClickAnimation(Graphics g){
