@@ -1871,6 +1871,7 @@ public final class Ops {
             }
         });
         result.putProperty( QDataSet.LABEL, maybeLabelUnaryOp( ds1, "abs") );
+        result.putProperty( QDataSet.UNITS, u );
         return result;
     }
 
