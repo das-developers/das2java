@@ -308,7 +308,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         parent.postException(this, lastException);
                     }
                 } else {
-                    QDataSet zds= getDataSet();
+                    QDataSet zds= getInternalDataSet();
                     QDataSet xds=null, yds=null;
 
                     if ( zds==null ) {
@@ -336,7 +336,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                             zds= (QDataSet)yds.property( QDataSet.PLANE_0 );
                         }
 
-                        if ( getDataSet().length() == 0 ) {
+                        if ( getInternalDataSet().length() == 0 ) {
                             parent.postMessage(this, "empty data set", DasPlot.INFO, null, null);
 
                         } else {
@@ -364,7 +364,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                 }
             } else {
                 if ( unitsWarning ) {
-                    QDataSet zds= getDataSet();
+                    QDataSet zds= getInternalDataSet();
                     QDataSet xds=null, yds=null;
                     if ( zds==null ) {
                         parent.postMessage(this, "no data set", DasPlot.INFO, null, null);
@@ -428,7 +428,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                     }
                 }
                 if ( validCount==0 ) {
-                    QDataSet bounds= bounds(ds);
+                    QDataSet bounds= bounds(getInternalDataSet());
                     DatumRange xdr= org.das2.qds.DataSetUtil.asDatumRange( bounds.slice(0), true ); 
                     DatumRange ydr= org.das2.qds.DataSetUtil.asDatumRange( bounds.slice(1), true );
                     if ( xAxis.getDatumRange().intersects(xdr) && yAxis.getDatumRange().intersects(ydr) ) {
@@ -563,7 +563,8 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         
         if (lparent==null ) return;
         
-        final QDataSet fds= this.ds; // make a local copy for thread safety.
+//        final QDataSet fds= this.ds; // make a local copy for thread safety.
+        final QDataSet fds= getInternalDataSet(); // make a local copy for thread safety.
         
         QDataSet bounds=null;
         
@@ -980,7 +981,6 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         RebinnerEnum old = this.rebinnerEnum;
         if (old != rebinnerEnum) {
             this.rebinnerEnum = rebinnerEnum;
-            this.raster = null;
             clearPlotImage();
             updateCacheImage();
             propertyChangeSupport.firePropertyChange(PROP_REBINNER, old, rebinnerEnum);
@@ -1024,7 +1024,8 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         }
     }
 
-    private synchronized void clearPlotImage() {
+    protected final synchronized void clearPlotImage() {
+        this.raster = null;
         this.plotImage = null;
     }
     
@@ -1033,7 +1034,6 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         QDataSet oldDs = this.ds;
         DasPlot parent= getParent();
         if (parent != null && oldDs != ds) {
-            this.raster = null;
             // TODO: preserve plotImage until updatePlotImage is done
             clearPlotImage();
         }
