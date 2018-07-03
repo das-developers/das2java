@@ -21,6 +21,7 @@ import org.das2.datum.Units;
 import org.das2.util.LoggerManager;
 import org.das2.qds.ArrayDataSet;
 import org.das2.qds.DDataSet;
+import org.das2.qds.DataSetUtil;
 import org.das2.qds.QDataSet;
 import org.das2.qds.SemanticOps;
 import org.das2.qds.ops.Ops;
@@ -187,6 +188,7 @@ public class DataSetBuilder {
             throw new IllegalArgumentException("index must be -1");
         }
     }
+    
     /**
      * insert a value into the builder.
      * @param index0 The index to insert the data, or if -1, ignore and nextRecord() should be used.
@@ -432,9 +434,12 @@ public class DataSetBuilder {
      * a system call), ignoring dataset geometry.  TODO: since the element count
      * allows for putting multiple records in at once, an index out of bounds may 
      * occur after the last record of current is written.
+     * This should only be used to insert one record (with multiple values) at a time.
+     * Note this does not increment the current index, and nextRecord must be called to move to the next index.
      * @param index0 The index to put the values, or -1 for the current position.
      * @param values rank 1 dataset.
      * @param count the number of elements to copy
+     * @see #nextRecords(org.das2.qds.QDataSet) to insert multiple records at once.
      */
     public void putValues( int index0, QDataSet values, int count ) {
         DDataSet ddvalues;
@@ -461,7 +466,7 @@ public class DataSetBuilder {
     public void nextRecord() {
         index++;
         if ( index == current.length() ) {
-            if ( finished==null ) finished= new ArrayList<DDataSet>(4);
+            if ( finished==null ) finished= new ArrayList<>(4);
             finished.add( current );
             offset += current.length();
             index -= current.length();
@@ -489,6 +494,31 @@ public class DataSetBuilder {
             putValue( -1, i, v1 );
         } 
         nextRecord();        
+    }
+    
+    /**
+     * add each of the records of ds to the builder.  This is somewhat equivalent to:
+     * <pre>
+     * {@code
+     * for d in ds: dsb.nextRecord(d)
+     * }
+     * </pre>
+     * (Note the above only works when ds is rank 1.
+     * Though this is equivalent, this is provided because a future implementation may peek 
+     * at the dataset to transfer data more efficiently.
+     * @param ds dataset with rank N+1, where N is the rank of this builder.
+     */
+    public void nextRecords( QDataSet ds ) {
+        for ( int i=0; i<ds.length(); i++ ) {
+            QDataSet ds1= ds.slice(i);
+            if ( ds1.rank()==0 ) {
+                this.nextRecord(ds1);
+            } else {
+                int count= DataSetUtil.totalLength(ds1);
+                this.putValues( index, ds, count );
+                this.nextRecord();
+            }
+        }
     }
     
     /**
