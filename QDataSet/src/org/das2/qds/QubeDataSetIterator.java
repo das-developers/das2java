@@ -644,6 +644,12 @@ public final class QubeDataSetIterator implements DataSetIterator {
         
         int[] qube1;
         if (isAllIndexLists) {  // a=[1,2,3]; b=[2,3,1]; Z[a,b] is rank 1
+            int len= this.it[0].length();
+            for ( int i=1; i<this.it.length; i++ ) {
+                if ( this.it[i].length()!=len ) {
+                    throw new IllegalArgumentException("all index lists must have the same length.  index 0 has "+len+ " elements and index "+i+ " has "+this.it[i].length()+" elements");
+                }
+            }
             qube1=  new int[] { this.it[0].length() };
         } else {
             qube1 = new int[qqube.size()];
