@@ -1854,7 +1854,8 @@ public final class Ops {
      * element-wise abs.  For vectors, this returns the length of each element.
      * Note Jython conflict needs to be resolved.  Note the result of this
      * will have dimensionless units, and see magnitude for the more abstract
-     * operator.
+     * operator.  
+     * For ratio-type units (Stevens) like "kms", the unit is preserved.
      * @param ds1 the dataset
      * @return dataset with the same geometry
      * @see Ops#magnitude(org.das2.qds.QDataSet) magnitude(ds) which preserves the sign.
@@ -1871,7 +1872,9 @@ public final class Ops {
             }
         });
         result.putProperty( QDataSet.LABEL, maybeLabelUnaryOp( ds1, "abs") );
-        result.putProperty( QDataSet.UNITS, u );
+        if ( u!=null && UnitsUtil.isRatioMeasurement(u) ) {
+            result.putProperty( QDataSet.UNITS, u );
+        }
         return result;
     }
 
