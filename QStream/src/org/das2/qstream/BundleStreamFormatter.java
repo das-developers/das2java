@@ -247,7 +247,7 @@ public class BundleStreamFormatter {
                         if ( (m=(p=Pattern.compile(FORMAT_PATTERN)).matcher(format)).matches() ) {
                             String ssize= m.group(2);
                             if ( ssize==null ) isize= 10; else isize= Integer.parseInt(ssize);
-                            stype= m.group(isize);
+                            stype= m.group(4);
                         } else if ( (m=(p=Pattern.compile(HEX_FORMAT_PATTERN)).matcher(format)).matches() ) {
                             String ssize= m.group(2);
                             if ( ssize==null ) isize= 11; else isize= 3+Integer.parseInt(ssize);
