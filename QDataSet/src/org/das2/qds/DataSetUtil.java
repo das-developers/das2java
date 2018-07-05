@@ -3781,7 +3781,7 @@ public class DataSetUtil {
                     QDataSet bounds=null;
                     if ( yds.rank()>0 ) bounds= SemanticOps.bounds(yds);
                     if ( bounds!=null && bounds.rank()==2 ) {
-                        if ( Math.abs(bounds.value(1,0))<0.0001 || Math.abs(bounds.value(1,1))<0.0001 ) {
+                        if ( Math.abs(bounds.value(1,0))<0.001 || Math.abs(bounds.value(1,1))<0.001 ) {
                             s = String.format( Locale.US, "%9.3e", value ).trim();
                         } else {
                             s = String.format( Locale.US, "%9.3f", value ).trim();
