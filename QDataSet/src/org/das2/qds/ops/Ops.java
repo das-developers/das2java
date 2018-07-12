@@ -8306,6 +8306,16 @@ public final class Ops {
             yrange= putProperty( yrange, QDataSet.UNITS, SemanticOps.getUnits(y) );
         }
             
+        if ( x==null ) throw new NullPointerException("x is null");
+        if ( y==null ) throw new NullPointerException("y is null");
+        
+        if ( xrange.rank()!=1 || xrange.length()!=2 ) {
+            throw new IllegalArgumentException("xrange should be rank 1, two-element dataset");
+        }
+        
+        if ( yrange.rank()!=1 || yrange.length()!=2 ) {
+            throw new IllegalArgumentException("yrange should be rank 1, two-element dataset");
+        }
         double minx= xrange.value(0);
         double miny= yrange.value(0);
         
