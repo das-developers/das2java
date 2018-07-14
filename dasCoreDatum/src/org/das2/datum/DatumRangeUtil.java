@@ -1839,6 +1839,37 @@ public class DatumRangeUtil {
     }
 
     /**
+     * rescale the DatumRange with a specification like "50%,150%" or "0%-1hr,100%+1hr".  The string is spit on the comma
+     * the each is split on the % sign.  This was originally introduced to support CreatePngWalk in Autoplot.
+     * @param dr
+     * @param rescale
+     * @return
+     * @throws ParseException
+     */
+    public static DatumRange rescaleInverse( DatumRange dr, String rescale ) throws ParseException {
+        String[] ss= rescale.split(",");
+        Datum[] rrmin= new Datum[] { Units.percent.createDatum(0), dr.getUnits().getOffsetUnits().createDatum(0.) };
+        Datum[] rrmax= new Datum[] { Units.percent.createDatum(100), dr.getUnits().getOffsetUnits().createDatum(0.) };
+
+        if ( ss[0].trim().length()>0 ) {
+            rrmin= parseRescaleStr( ss[0], rrmin );
+        }
+        if ( ss[1].trim().length()>0 ) {
+            rrmax= parseRescaleStr( ss[1], rrmax );
+        }
+        DatumRange result;
+        result= new DatumRange( dr.min().subtract( rrmin[1] ), dr.max().subtract( rrmax[1] ) );
+        
+        double min= rrmin[0].doubleValue(Units.percent)/100;
+        double max= rrmax[0].doubleValue(Units.percent)/100;
+        
+        result= rescaleInverse(result, min, max );
+        
+        return result;
+        
+    }
+    
+    /**
      * returns DatumRange relative to dr, where 0 is the minimum, and 1 is the maximum.
      * For example rescale(1,2) is scanNext, rescale(-0.5,1.5) is zoomOut.
      * @param dr a DatumRange with nonzero width.
@@ -1874,6 +1905,18 @@ public class DatumRangeUtil {
             throw new RuntimeException("width is zero!");
         }
         return dr.min().add( w.multiply(n) );
+    }
+    
+    /**
+     * inverse of rescale function
+     * @param dr a DatumRange with nonzero width.
+     * @param min the new min normalized with respect to this range.  0. is this range's min, 1 is this range's max
+     * @param max the new max with normalized wrt this range.  0. is this range's min, 1 is this range's max.
+     * @return new DatumRange.
+     */
+    public static DatumRange rescaleInverse( DatumRange dr, double min, double max ) {
+        Datum w= dr.width().divide( max-min );
+        return new DatumRange( dr.min().add(w.multiply(-min) ), dr.min().add(w.multiply(max) ) );
     }
     
     /**
