@@ -180,7 +180,7 @@ public class FileStorageModel {
         
         if ( EventQueue.isDispatchThread() ) {
             logger.info("FileSystem use on the GUI event thread will often cause problems.");
-            new Exception("FileSystem uses event thread stack trace").printStackTrace();
+            //new Exception("FileSystem uses event thread stack trace").printStackTrace();
         }
         
         String result= null;
@@ -196,11 +196,7 @@ public class FileStorageModel {
                     try {
                         fileSystems[i]= FileSystem.create( root.getRootURI().resolve(names[i]), monitor.getSubtaskMonitor("create") ); // 3523492: allow the FS type to change; eg to zip.
                         //fileSystems[i]= root.createFileSystem( names[i] );
-                    } catch ( FileSystem.FileSystemOfflineException e ) {
-                        throw new RuntimeException(e);
-                    } catch (UnknownHostException e) {
-                        throw new RuntimeException(e);
-                    } catch (FileNotFoundException e) {
+                    } catch ( FileSystem.FileSystemOfflineException | UnknownHostException | FileNotFoundException e ) {
                         throw new RuntimeException(e);
                     }
                 }
@@ -324,10 +320,7 @@ public class FileStorageModel {
                     throw new IllegalArgumentException( "file name \""+filename+"\" doesn't match model specification ("+template+")");
                 }
             }
-        } catch ( ParseException e ) {
-            IllegalArgumentException e2=new IllegalArgumentException( "file name \""+filename+"\" doesn't match model specification ("+template+"), parse error in field",e);
-            throw e2;
-        } catch ( NumberFormatException e ) {
+        } catch ( ParseException | NumberFormatException e ) {
             IllegalArgumentException e2=new IllegalArgumentException( "file name \""+filename+"\" doesn't match model specification ("+template+"), parse error in field",e);
             throw e2;
         }
@@ -777,6 +770,14 @@ public class FileStorageModel {
     }
 
     /**
+     * return the root of the filesystem as a string.
+     * @return the root of the filesystem as a string.
+     */
+    public String getRoot() {
+        return root.getRootURI().toString();
+    }
+    
+    /**
      * check to see if "NAME.gz" exists
      * @param name name of uncompressed file
      * @param mon progress monitor (or null)
@@ -930,7 +931,7 @@ public class FileStorageModel {
                     files[i]= f0;                  
                 }
                 fileNameMap.put( files[i], names[i] );
-            } catch ( Exception e ) {
+            } catch ( IOException e ) {
                 throw new RuntimeException(e);
             }
         }
