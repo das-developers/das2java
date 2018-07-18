@@ -169,6 +169,8 @@ public class FileStorageModel {
         
         logger.log(Level.FINE, "get representative from {0} {1} range: {2}", new Object[]{this.getFileSystem(), childRegex, range});
         
+        if ( monitor==null ) monitor= new NullProgressMonitor();
+        
         String listRegex;
 
         FileSystem[] fileSystems;
@@ -379,7 +381,7 @@ public class FileStorageModel {
             throw new IllegalArgumentException("too many intervals would be created, this is limited to about 1000000 intervals.");
         }
         
-        List<String> result= new ArrayList<String>( approxCount );
+        List<String> result= new ArrayList<>( approxCount );
         
         if ( !range.intersects(curr) ) { // Sebastian has a strange case that failed, see 
             curr= curr.next();
@@ -484,20 +486,32 @@ public class FileStorageModel {
         return getNamesFor( targetRange, true, monitor );
     }
 
-
+    /**
+     * return the names in the range, minding version numbers, or all available 
+     * names if the range is null.  This will list directories.
+     * @param targetRange range limit, or null.
+     * @return array of names within the system.
+     * @throws java.io.IOException
+     */
+    public String[] getBestNamesFor( final DatumRange targetRange ) throws IOException {
+        return getNamesFor( targetRange, true, new NullProgressMonitor() );
+    }
 
     /**
      * return the names in the range, maybe with versioning.  This will 
      * list directories.
      * @param targetRange range limit, or null if no constraint used here.
      * @param versioning true means check versions.
-     * @param monitor
+     * @param monitor progress monitor (or null)
      * @return array of names within the system.
      * @throws IOException
      * @see generateNamesFor
      */
     private String[] getNamesFor( final DatumRange targetRange, boolean versioning, ProgressMonitor monitor ) throws IOException {
         logger.log( Level.FINE, "getNamesFor {0}", this.root);
+        
+        if ( monitor==null ) monitor= new NullProgressMonitor();
+        
         String listRegex;
 
         FileSystem[] fileSystems;
@@ -765,12 +779,13 @@ public class FileStorageModel {
     /**
      * check to see if "NAME.gz" exists
      * @param name name of uncompressed file
-     * @param mon progress monitor
+     * @param mon progress monitor (or null)
      * @return null or the uncompressed file.
      * @throws IOException
      */
     private File maybeGetGzFile( String name, ProgressMonitor mon) throws IOException {
         File f0 = null;
+        if ( mon==null ) mon= new NullProgressMonitor();
         FileObject oz = root.getFileObject(name + ".gz"); 
         if (oz.exists()) {
             File fz = oz.getFile(mon);
@@ -818,11 +833,14 @@ public class FileStorageModel {
     /**
      * download the files for each of the given names within the filesystem.
      * @param names array of names within the filesystem
-     * @param monitor monitor for the downloads.
+     * @param monitor monitor for the downloads (or null).
      * @return local files that can be opened.
      * @throws java.io.IOException during the transfer
      */
     public File[] getFilesFor( String [] names, ProgressMonitor monitor ) throws IOException {
+
+        if ( monitor==null ) monitor= new NullProgressMonitor();
+        
         File[] files= new File[names.length];
 
         if ( fileNameMap==null ) fileNameMap= new HashMap();
@@ -848,7 +866,7 @@ public class FileStorageModel {
                     numwarn++;
                 }
                 fileNameMap.put( files[i], names[i] );
-            } catch ( Exception e ) {
+            } catch ( IOException e ) {
                 throw new RuntimeException(e);
             }
         }
@@ -984,9 +1002,10 @@ public class FileStorageModel {
     }
 
     /**
-     * hide the contents of parameters as in
+     * hide the contents of parameters as in<pre>
      *   product_%(o,id=ftp://stevens.lanl.gov/pub/projects/rbsp/autoplot/orbits/rbspa_pp).png -->
      *   product_%(______________________________________________________________________).png
+     * </pre>
      * @param template
      * @return
      */
