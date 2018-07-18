@@ -2358,15 +2358,21 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             }
             
             if ( !(reference.length()==0) ) {
-                Datum dreference;
-                try {
-                    dreference = dataRange.getUnits().parse(reference);
-                    int i= (int)Math.floor( transform(dreference) );
-                    if ( i>DMin && i<DMax ) {
-                        g.drawLine( i, bottomPosition, i, topPosition );
+                String[] rr= reference.split(",",-2);
+                for ( String r: rr ) {
+                    r= r.trim();
+                    if ( r.length()>0 ) {
+                        try {
+                            Datum dreference;
+                            dreference = dataRange.getUnits().parse(r);
+                            int i= (int)Math.floor( transform(dreference) );
+                            if ( i>DMin && i<DMax ) {
+                                g.drawLine( i, bottomPosition, i, topPosition );
+                            }
+                        } catch (ParseException ex) {
+                            logger.log(Level.SEVERE, null, ex);
+                        }
                     }
-                } catch (ParseException ex) {
-                    Logger.getLogger(DasAxis.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
             
@@ -2497,20 +2503,25 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 g.drawLine(rightPosition, DMin, rightPosition, DMax);
             }
             
-                        
             if ( !(reference.length()==0) ) {
-                Datum dreference;
-                try {
-                    dreference = dataRange.getUnits().parse(reference);
-                    int i= (int)Math.floor( transform(dreference) );
-                    if ( i>DMin && i<DMax ) {
-                        g.drawLine( rightPosition, i, leftPosition, i );                    
+                String[] rr= reference.split(",",-2);
+                for ( String r: rr ) {
+                    r= r.trim();
+                    if ( r.length()>0 ) {
+                        Datum dreference;
+                        try {
+                            dreference = dataRange.getUnits().parse(r);
+                            int i= (int)Math.floor( transform(dreference) );
+                            if ( i>DMin && i<DMax ) {
+                                g.drawLine( rightPosition, i, leftPosition, i );  
+                            }
+                        } catch (ParseException ex) {
+                            logger.log(Level.SEVERE, null, ex);
+                        }
                     }
-                } catch (ParseException ex) {
-                    Logger.getLogger(DasAxis.class.getName()).log(Level.SEVERE, null, ex);
                 }
-            }
-            
+            }            
+                                    
             int tickLengthMajor = tickLen;
             int tickLengthMinor = tickLengthMajor / 2;
             int tickLength;
