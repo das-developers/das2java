@@ -184,6 +184,7 @@ public class QDataSetStreamHandler implements StreamHandler {
 
     @Override
     public void streamDescriptor(StreamDescriptor sd) throws StreamException {
+        logger.finer("stream descriptor");
         try {
             Element e = sd.getDomElement();
             dsname = xpath.evaluate("//stream/@dataset_id", e);
@@ -500,6 +501,7 @@ public class QDataSetStreamHandler implements StreamHandler {
 
     @Override
     public void packet(PacketDescriptor pd, ByteBuffer data) throws StreamException {
+        logger.finer("stream packet");
         if (readPackets) {
             for (PlaneDescriptor planeDescriptor : pd.planes) {
                 DataSetBuilder builder = planeDescriptor.getBuilder();
@@ -535,15 +537,17 @@ public class QDataSetStreamHandler implements StreamHandler {
 
     @Override
     public void streamClosed(StreamDescriptor sd) throws StreamException {
+        logger.finer("stream closed");
     }
 
     @Override
     public void streamComment(StreamComment se) throws StreamException {
-        System.err.println("here comment");
+        logger.log(Level.FINER, "stream comment: {0}", se.getMessage());
     }
 
     @Override
     public void streamException(StreamException se) throws StreamException {
+        logger.log(Level.FINER, "stream exception: {0}", se.getMessage());
     }
 
     private DataSetBuilder.DataSetResolver getResolver() {
