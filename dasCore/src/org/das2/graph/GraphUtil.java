@@ -605,15 +605,15 @@ public class GraphUtil {
                     } else if ( atMaxy ) {
                         result.lineTo( ((float)x0)*resn/resd, ((float)exity)*resn/resd );  points++;
                     } else {
-                        throw new RuntimeException("shouldn't get here 1");
+                        throw new RuntimeException("shouldn't get here line608");
                     }
                 } else if ( exity==maxy ) {
                     if ( atMaxy ) {
                         
                     } else if ( atMiny ) {
-                        throw new RuntimeException("shouldn't get here 2");
+                        throw new RuntimeException("shouldn't get here line614");
                     } else {
-                        throw new RuntimeException("shouldn't get here");
+                        throw new RuntimeException("shouldn't get here line616");
                     }
                 } else {
                     result.lineTo( ((float)x0)*resn/resd, ((float)exity)*resn/resd );  points++;
