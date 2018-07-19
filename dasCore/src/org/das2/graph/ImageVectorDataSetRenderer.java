@@ -863,7 +863,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
         if (ds1 == null) {
             return;
         }
-
+        
         QDataSet xds;
         if ( ds.rank()==3 ) {
             xds= SemanticOps.xtagsDataSet( ds.slice(0) );
@@ -930,7 +930,11 @@ public class ImageVectorDataSetRenderer extends Renderer {
                     Datum xmax= xAxis.getDataMaximum();
                     int ixstepLimit;
                     if ( UnitsUtil.isRatiometric(sw.getUnits())) {
-                        ixstepLimit= 1 + (int) (xAxis.transform(xmax) - xAxis.transform(xmax.divide(sw)));
+                        try {
+                            ixstepLimit= 1 + (int) (xAxis.transform(xmax) - xAxis.transform(xmax.divide(sw)));
+                        } catch ( IllegalArgumentException ex ) {
+                            ixstepLimit= 1;
+                        }
                     } else {
                         ixstepLimit= 1 + (int) (xAxis.transform(xmax) - xAxis.transform(xmax.subtract(sw)));
                     }
