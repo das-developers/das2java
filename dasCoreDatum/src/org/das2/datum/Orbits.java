@@ -257,6 +257,31 @@ public class Orbits {
         }
         return null;
     }
+    
+    /**
+     * return the closest orbit on or before datum d.
+     * @param d the datum
+     * @return the id of the closest orbit before, or null.
+     * @see http://jfaden.net/~jbf/autoplot/script/demos/jeremy/onOrBefore.jy
+     */
+    public String getOrbitOnOrBefore( Datum d ) {
+        String best= null;
+        Datum bestDist= null;
+        for ( String s: orbits.keySet() ) {
+            try {
+                Datum possibleBest= getDatumRange(s).min();
+                if ( possibleBest.le(d) ) {
+                    if ( best==null || d.subtract(possibleBest).lt(bestDist) ) {
+                        best= s;
+                        bestDist= d.subtract(possibleBest);
+                    }
+                }
+            } catch (ParseException ex) {
+                logger.log(Level.SEVERE, ex.getMessage(), ex);
+            }
+        }
+        return best;
+    }
 
     /**
      * return the next orbit number, or null if there are no more orbit numbers.
@@ -360,7 +385,7 @@ public class Orbits {
      * the "sc" identifier is a URL.
      *
      * Example files may be on the wiki page http://das2.org/wiki/index.php/Orbits.&lt;SC%gt;,
-     * or on the classpath in /orbits/&lt;SC%gt;.dat  The orbits file will be read by ignoring any line
+     * or on the classpath in /orbits/&lt;SC&gt;.dat  The orbits file will be read by ignoring any line
      * that does not contain three non-space blobs, and either the first two or last two should parse as an
      * ISO8601 string.  The ISO8601 strings must start with 4-digit years, either
      * Note the input can then be html, with a pre section containing the orbits.
