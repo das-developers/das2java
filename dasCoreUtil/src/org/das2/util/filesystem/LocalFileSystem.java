@@ -49,7 +49,9 @@ public class LocalFileSystem extends FileSystem {
             throw new IllegalArgumentException("protocol not file: "+root);
         }
         String surl= root.getPath();
-
+        if ( surl==null ) {
+            throw new URIException("root contains no path: "+root);
+        }
         if ( !surl.endsWith("/") ) surl+="/";
         if ( surl.startsWith("file://") && !surl.startsWith("file:///") ) {
             throw new URIException("Local file URLs should start with file:/ or file:///, but not file:// "+surl);
