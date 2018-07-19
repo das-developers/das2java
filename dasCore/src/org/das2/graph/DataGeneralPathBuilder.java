@@ -87,7 +87,7 @@ public class DataGeneralPathBuilder {
     public void addDataPoint( boolean valid, double x, double y ) {
         pointCount++;
         if ( pointCount==1 ) {
-            logger.fine("here 1");
+            logger.fine("pathBuilder got first point");
         }
         if ( lastx>x ) {
             logger.log(Level.FINE, "data step back: {0} -> {1}", new Object[]{xunits.createDatum(lastx), xunits.createDatum(x)});
