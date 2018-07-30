@@ -3,6 +3,7 @@ package org.das2.graph;
 
 import java.awt.geom.GeneralPath;
 import java.awt.geom.PathIterator;
+import java.text.ParseException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.datum.Datum;
@@ -45,13 +46,21 @@ public class DataGeneralPathBuilder {
     private double cadence=0.0;
     private boolean logStep= false;
     
+    //private Datum checkx= null;
+    
     public DataGeneralPathBuilder( DasAxis xaxis, DasAxis yaxis ) {
         this.gp= new GeneralPath();
+        //this.gp= new GraphUtil.DebuggingGeneralPath();
         this.xaxis= xaxis;
         this.yaxis= yaxis;
         this.xunits= xaxis.getUnits();
         this.yunits= yaxis.getUnits();
         logger.fine( "-----" );
+//        try {
+//            checkx= null; //Units.t2000.parse("2018-02-07T19:00");
+//        } catch (ParseException ex) {
+//            Logger.getLogger(DataGeneralPathBuilder.class.getName()).log(Level.SEVERE, null, ex);
+//        }
     }
 
     /**
@@ -92,9 +101,15 @@ public class DataGeneralPathBuilder {
         if ( lastx>x ) {
             logger.log(Level.FINE, "data step back: {0} -> {1}", new Object[]{xunits.createDatum(lastx), xunits.createDatum(x)});
         }
+        //if ( checkx !=null && x>checkx.doubleValue(xunits) ) {
+        //    System.err.println("here stop at "+xunits.createDatum(x));
+        //}
         if ( this.cadence>0 && pen==PEN_DOWN ) {
             double step= logStep ? Math.log(x/lastx) :  x-lastx ;
             if ( step > this.cadence ) {
+                if ( pendingx!=null ) {
+                    gp.lineTo( xaxis.transform(pendingx), yaxis.transform(pendingy) );
+                }
                 pen= PEN_UP;
             }
         }
@@ -123,6 +138,7 @@ public class DataGeneralPathBuilder {
     }
     
     public GeneralPath getGeneralPath() {
+        //return this.gp.getGeneralPath();
         return gp;
     }
     
