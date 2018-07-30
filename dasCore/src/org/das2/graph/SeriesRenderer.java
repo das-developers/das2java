@@ -603,10 +603,11 @@ public class SeriesRenderer extends Renderer {
             if ( unitsWarning ) yunits= yAxis.getUnits();
             if ( xunitsWarning ) xunits= xAxis.getUnits();
 
-            lp = new GeneralPath();
+            lp = null;
             
             if ( deltaPlusY!=null && deltaMinusY!=null ) {
                 try {
+                    lp = new GeneralPath();
                     QDataSet p1= Ops.add( vds, deltaPlusY );
                     QDataSet p2= Ops.subtract( vds, deltaMinusY );
                     QDataSet w1= Ops.valid(p2);
@@ -628,6 +629,7 @@ public class SeriesRenderer extends Renderer {
             
             if ( deltaPlusX!=null && deltaMinusX!=null ) {
                 try {
+                    if ( lp==null ) lp= new GeneralPath();
                     QDataSet p1= Ops.subtract( xds, deltaMinusX );
                     QDataSet p2= Ops.add( xds, deltaPlusX );
                     QDataSet w1= Ops.valid(p1);
