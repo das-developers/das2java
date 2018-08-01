@@ -515,7 +515,7 @@ public class DataSetBuilder {
                 this.nextRecord(ds1);
             } else {
                 int count= DataSetUtil.totalLength(ds1);
-                this.putValues( index, ds, count );
+                this.putValues( index, ds1, count );
                 this.nextRecord();
             }
         }
