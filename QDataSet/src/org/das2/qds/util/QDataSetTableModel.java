@@ -257,7 +257,11 @@ public class QDataSetTableModel extends AbstractTableModel {
                 return dr.toString();
             } else {
                 Datum d= units[columnIndex].createDatum(this.dep0.value(rowIndex));
-                return df[columnIndex].format( d,units[columnIndex] );
+                try {
+                    return df[columnIndex].format( d,units[columnIndex] );
+                } catch ( IllegalArgumentException ex ) {
+                    return d.toString(); // for example times when format is %5.2f
+                }
             }
         } else {
             if ( this.ds.rank()==1 ) {
