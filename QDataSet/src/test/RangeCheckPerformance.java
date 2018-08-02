@@ -1,3 +1,5 @@
+package test;
+
 
 /**
  * See if it is really worthwhile to not check indeces in QDataSet.
