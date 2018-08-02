@@ -150,10 +150,15 @@ public class BinAverage {
 
         int ibin0 = -1;
         for (int i = 0; i < ds.length(); i++) {
+            
+            QDataSet ds1= ds.slice(i);
+            QDataSet wds1= wds.slice(i);
+            
             ibin0 = DataSetUtil.closest(newTags0, dstags0.value(i), ibin0);
 
-            QDataSet dstags1 = (QDataSet) ds.property(QDataSet.DEPEND_1, i);
-
+            //QDataSet dstags1 = (QDataSet) ds.property(QDataSet.DEPEND_1, i);
+            QDataSet dstags1 = (QDataSet) ds1.property(QDataSet.DEPEND_0);
+            
             if (dstags1 != ibin1CacheDs) {
                 ibins1 = new int[dstags1.length()];
                 Arrays.fill(ibins1, -1);
@@ -165,8 +170,8 @@ public class BinAverage {
 
             for (int j = 0; j < dstags1.length(); j++) {
                 int ibin1 = ibins1[j];
-                double d = ds.value(i, j);
-                double w = wds.value(i, j);
+                double d = ds1.value(j);
+                double w = wds1.value(j);
                 double s = result.value(ibin0, ibin1);
                 result.putValue(ibin0, ibin1, s + w * d);
                 double n = weights.value(ibin0, ibin1);
