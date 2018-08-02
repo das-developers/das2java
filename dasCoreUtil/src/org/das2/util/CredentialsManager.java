@@ -234,8 +234,12 @@ public class CredentialsManager{
 	 */
 	public String getHttpBasicHash(String sLocationId){
 		String sTmp= getHttpBasicHashRaw( sLocationId );
-		String sHash = Base64.encodeBytes( sTmp.getBytes());
-		return sHash;
+                if ( sTmp==null ) {
+                    return null;
+                } else {
+                    String sHash = Base64.encodeBytes( sTmp.getBytes());
+                    return sHash;
+                }
 	}
         
    /** Get credentials in the form of a hashed HTTP Basic authentication string.
