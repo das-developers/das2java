@@ -503,10 +503,10 @@ public class DataSetBuilder {
      * for d in ds: dsb.nextRecord(d)
      * }
      * </pre>
-     * (Note the above only works when ds is rank 1.
+     * (Note the above only works when ds is rank 1.)
      * Though this is equivalent, this is provided because a future implementation may peek 
      * at the dataset to transfer data more efficiently.
-     * @param ds dataset with rank N+1, where N is the rank of this builder.
+     * @param ds dataset with rank N, where N is the rank of this builder.
      */
     public void nextRecords( QDataSet ds ) {
         for ( int i=0; i<ds.length(); i++ ) {
