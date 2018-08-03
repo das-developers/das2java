@@ -514,9 +514,10 @@ public class DataSetBuilder {
             if ( ds1.rank()==0 ) {
                 this.nextRecord(ds1);
             } else {
-                int count= DataSetUtil.totalLength(ds1);
-                this.putValues( index, ds1, count );
-                this.nextRecord();
+                //int count= DataSetUtil.totalLength(ds1);
+                //this.putValues( index, ds1, count );
+                //this.nextRecord();
+                this.nextRecord(ds1);
             }
         }
     }
@@ -565,16 +566,22 @@ public class DataSetBuilder {
     
     /**
      * rank 0 datasets can be used to build the rank 1 datasets
-     * @param v rank 0 dataset
+     * @param v rank 0 or rank 1 dataset
      */
     public void nextRecord( QDataSet v ) {
-        if ( this.rank()!=1 ) {
+        if ( this.rank()>2 ) {
             throw new IllegalArgumentException("builder must be rank 1, it is rank "+this.rank);
         }
-        if ( v.rank()!=0 ) {
-            throw new IllegalArgumentException("argument must be rank 0");
+        if ( v.rank()>1 ) {
+            throw new IllegalArgumentException("argument must be rank 0 or rank 1");
         }
-        putValue( -1, (QDataSet)v );
+        if ( v.rank()==0 ) {
+            putValue( -1, v );
+        } else {
+            for ( int i=0; i<v.length(); i++ ) {
+                putValue( -1, i, v.slice(i) );
+            }
+        }
         nextRecord();
     }
 
