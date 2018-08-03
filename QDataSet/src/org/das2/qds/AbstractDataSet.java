@@ -44,6 +44,16 @@ public abstract class AbstractDataSet implements QDataSet, MutablePropertyDataSe
     }
     
     @Override
+    public String svalue() {
+        Units u= (Units) property(QDataSet.UNITS);
+        if ( u==null ) {
+            return String.valueOf(value());
+        } else {
+            return u.createDatum(value()).toString();
+        }
+    }
+    
+    @Override
     public double value(int i0) {
         throw new IllegalArgumentException("rank error, expected "+rank());
     }

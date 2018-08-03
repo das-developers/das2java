@@ -554,6 +554,13 @@ public interface QDataSet {
     double value();
 
     /**
+     * rank 0 accessor which provides the string value
+     * @throws IllegalArgumentException if the dataset is not rank 0.
+     * @return the value, see the property UNITS to interpret this.
+     */
+    String svalue();
+    
+    /**
      * rank 1 accessor.  
      * @param i the index
      * @return the value, see the property UNITS to interpret this.

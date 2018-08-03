@@ -43,6 +43,11 @@ public final class ConstantDataSet implements QDataSet {
     }
 
     @Override
+    public String svalue() {
+        return String.valueOf(value);
+    }
+
+    @Override
     public double value(int i0) {
         return value;
     }

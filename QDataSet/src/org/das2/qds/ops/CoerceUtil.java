@@ -133,6 +133,15 @@ public class CoerceUtil {
                 return ds2.rank();
             }
 
+            public String svalue() {
+                Units u= (Units) property(QDataSet.UNITS);
+                if ( u==null ) {
+                    return String.valueOf(value());
+                } else {
+                    return u.createDatum(value()).toString();
+                }
+            }
+            
             public double value() {
                 return ds.value();
             }
@@ -217,6 +226,15 @@ public class CoerceUtil {
             public int rank() {
                 return ds2.rank();
             }
+
+            public String svalue() {
+                Units u= (Units) property(QDataSet.UNITS);
+                if ( u==null ) {
+                    return String.valueOf(value());
+                } else {
+                    return u.createDatum(value()).toString();
+                }
+            }            
 
             public double value() {
                 throw new IllegalArgumentException("rank too low");
@@ -308,6 +326,15 @@ public class CoerceUtil {
                 return ds2.rank();
             }
 
+            public String svalue() {
+                Units u= (Units) property(QDataSet.UNITS);
+                if ( u==null ) {
+                    return String.valueOf(value());
+                } else {
+                    return u.createDatum(value()).toString();
+                }
+            }
+            
             public double value() {
                 throw new IllegalArgumentException("rank too low");
             }

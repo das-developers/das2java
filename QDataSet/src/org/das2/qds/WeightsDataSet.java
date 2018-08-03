@@ -86,6 +86,11 @@ public abstract class WeightsDataSet implements QDataSet {
     public abstract double value();
 
     @Override
+    public String svalue() {
+        return String.valueOf(value());
+    }
+    
+    @Override
     public abstract double value(int i);
 
     @Override
