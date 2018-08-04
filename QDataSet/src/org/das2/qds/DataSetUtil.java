@@ -2614,6 +2614,10 @@ public class DataSetUtil {
         if (problems == null) problems = new ArrayList<>();
         QDataSet dep = (QDataSet) ds.property(QDataSet.DEPEND_0);
         if (dep != null) {
+            if ( dep.rank()==0 ) {
+                problems.add("DEPEND_0 is rank 0, where it must be rank 1");
+                return false;
+            }
             if (dep.length() != ds.length()) {
                 problems.add(String.format("DEPEND_%d length is %d while data length is %d.", dimOffset, dep.length(), ds.length()));
             }
