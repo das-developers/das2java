@@ -682,7 +682,7 @@ public class DasAnnotation extends DasCanvasComponent {
                         }                
                         anchorRect.height= y1- anchorRect.y;
                     } else {
-                        if ( xrange.min().getUnits()==Units.dimensionless && xrange.min().value()==0.0 ) {
+                        if ( yrange.min().getUnits()==Units.dimensionless && yrange.min().value()==0.0 ) {
                             logger.fine("unable to convert y units for annotation, transitional state");
                         } else {
                             logger.info("unable to convert y units for annotation");
