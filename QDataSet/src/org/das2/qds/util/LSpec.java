@@ -19,7 +19,8 @@ import org.das2.qds.ops.Ops;
 
 /**
  * Form a rank 2 dataset with L and Time for tags by identifying monotonic sweeps
- * in two rank 1 datasets.
+ * in two rank 1 datasets, and interpolating along the sweep.
+ * 
  * @author jbf
  */
 public class LSpec {
