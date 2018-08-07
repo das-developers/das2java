@@ -4281,9 +4281,9 @@ public final class Ops {
     
     /**
      * return the values which occur in both rank 1 datasets.  Each dataset is sorted.
-     * @param itE a bunch of values
+     * @param itE a bunch of values.
      * @param itB a bunch of values.
-     * @return the set of both 
+     * @return the set of values found in both.
      * @see #eventsConjunction(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      */
     public static int[] dataIntersection( int[] itE, int[] itB ) {
@@ -4300,6 +4300,12 @@ public final class Ops {
         return result;
     }
     
+    /**
+     * return the values which occur in both rank 1 datasets.  Each dataset is sorted.
+     * @param tE a bunch of values.
+     * @param tB a bunch of values.
+     * @return the set of values found in both.
+     */
     public static QDataSet dataIntersection( QDataSet tE, QDataSet tB ) {
         QDataSet lE= sort(tE);
         QDataSet lB= sort(tB);
