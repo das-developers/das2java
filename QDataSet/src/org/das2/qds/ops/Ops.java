@@ -4280,11 +4280,64 @@ public final class Ops {
     }
     
     /**
+     * return the values which occur in both rank 1 datasets.  Each dataset is sorted.
+     * @param itE a bunch of values
+     * @param itB a bunch of values.
+     * @return the set of both 
+     * @see #eventsConjunction(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
+     */
+    public static int[] dataIntersection( int[] itE, int[] itB ) {
+
+        QDataSet tE= dataset( itE );
+        QDataSet tB= dataset( itB );
+        
+        QDataSet dsr= dataIntersection( tE, tB );
+        
+        int[] result= new int[dsr.length()];
+        for ( int i=0; i<result.length; i++ ) {
+            result[i]= (int)dsr.value(i);
+        }
+        return result;
+    }
+    
+    public static QDataSet dataIntersection( QDataSet tE, QDataSet tB ) {
+        QDataSet lE= sort(tE);
+        QDataSet lB= sort(tB);
+        
+        tE= applyIndex( tE, lE );
+        tB= applyIndex( tB, lB );
+        
+        int iE= 0;
+        int iB= 0;
+        
+        DataSetBuilder dsb= new DataSetBuilder(1,100);
+        
+        while ( iE<tE.length() && iB<tB.length() ) {  
+            double e= tE.value(iE);
+            double b= tB.value(iB);
+            if ( e==b ) {
+                dsb.nextRecord( e );
+                iE++;
+                iB++;
+            } else if ( e>b ) {
+                iB++;
+            } else if ( e<b ) {
+                iE++;
+            }
+        }
+        
+        dsb.putProperty( QDataSet.UNITS, tE.property(QDataSet.UNITS) );
+        
+        return dsb.getDataSet();
+    }
+    
+    /**
      * return an events list of when events are found in both events lists.
      * @param tE rank 2 canonical events list
      * @param tB rank 2 canonical events list
      * @return rank 2 canonical events list
      * @see Schemes#eventsList() 
+     * @see #dataIntersection(org.das2.qds.QDataSet, org.das2.qds.QDataSet)    
      */
     public static QDataSet eventsConjunction( QDataSet tE, QDataSet tB ) {
 
