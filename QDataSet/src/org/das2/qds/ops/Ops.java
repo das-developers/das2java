@@ -10523,55 +10523,55 @@ public final class Ops {
      * Note that when one of the dataset's DEPEND_0 is not monotonic, a 
      * monotonic subset of its points will be used.
      * Ordinal units use the nearest neighbor interpolation.
-     * @param targetDs the dataset providing timetags, or the timetags themselves.
-     * @param dss the N datasets to synch up.
+     * @param dsTarget the dataset providing timetags, or the timetags themselves.
+     * @param dsSources the N datasets to synch up.
      * @return a list of N datasets, synchronized
      * @see #synchronizeNN(org.das2.qds.QDataSet, org.das2.qds.QDataSet...) 
      * @see #synchronize(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      */
-    public static List<QDataSet> synchronize( QDataSet targetDs, QDataSet ... dss ) {
-        QDataSet targetTimes= (QDataSet) targetDs.property( QDataSet.DEPEND_0 );
-        if ( targetTimes==null && DataSetUtil.isMonotonic(targetDs) ) targetTimes= targetDs;
+    public static List<QDataSet> synchronize( QDataSet dsTarget, QDataSet ... dsSources ) {
+        QDataSet ttTarget= (QDataSet) dsTarget.property( QDataSet.DEPEND_0 );
+        if ( ttTarget==null && DataSetUtil.isMonotonic(dsTarget) ) ttTarget= dsTarget;
         List<QDataSet> result= new ArrayList<>();
         int iarg=0;
-        for ( QDataSet ds : dss ) {
-            if ( ds==targetDs ) {
-                result.add( ds );
+        for ( QDataSet dsSource : dsSources ) {
+            if ( dsSource==dsTarget ) {
+                result.add( dsSource );
                 continue;
             }
-            QDataSet tt1= (QDataSet)ds.property( QDataSet.DEPEND_0 );
-            if ( tt1==null ) throw new IllegalArgumentException("dataset (number "+(iarg+1) +" of "+dss.length + ") sent to synchronize doesn't have timetags: "+ds );
-            if ( tt1.length()!=ds.length() ) throw new IllegalArgumentException("malformed dataset (number "+(iarg+1) +" of "+dss.length + ") DEPEND_0 length not correct: "+tt1 + " " + ds );
+            QDataSet ttSource= (QDataSet)dsSource.property( QDataSet.DEPEND_0 );
+            if ( ttSource==null ) throw new IllegalArgumentException("dataset (number "+(iarg+1) +" of "+dsSources.length + ") sent to synchronize doesn't have timetags: "+dsSource );
+            if ( ttSource.length()!=dsSource.length() ) throw new IllegalArgumentException("malformed dataset (number "+(iarg+1) +" of "+dsSources.length + ") DEPEND_0 length not correct: "+ttSource + " " + dsSource );
             QDataSet ff;
             try {
-                Ops.extent(tt1);
-                Ops.extent(targetTimes);
-                ff= findex( tt1, targetTimes ); // TODO: cache ff in case tt1 is the same for each dss.
+                Ops.extent(ttSource);
+                Ops.extent(ttTarget);
+                ff= findex( ttSource, ttTarget ); // TODO: cache ff in case tt1 is the same for each dss.
             } catch ( IllegalArgumentException ex ) {  // data is not monotonic
                 logger.log(Level.WARNING, "when calling synchronize, DEPEND_0 was not monotonic for dss argument #{0}, using monotonic subset of points", iarg);
-                QDataSet dsx=Ops.monotonicSubset(ds);
-                logger.log(Level.INFO, "monotonicSubset removes {0} records", (ds.length()-dsx.length()));
-                ds= dsx;
-                tt1= (QDataSet)ds.property( QDataSet.DEPEND_0 );
-                ff= findex( tt1, targetTimes );
+                QDataSet dsx=Ops.monotonicSubset(dsSource);
+                logger.log(Level.INFO, "monotonicSubset removes {0} records", (dsSource.length()-dsx.length()));
+                dsSource= dsx;
+                ttSource= (QDataSet)dsSource.property( QDataSet.DEPEND_0 );
+                ff= findex( ttSource, ttTarget );
             }
-            boolean nn= UnitsUtil.isOrdinalMeasurement( SemanticOps.getUnits(ds) );
+            boolean nn= UnitsUtil.isOrdinalMeasurement( SemanticOps.getUnits(dsSource) );
             if ( nn ) ff= Ops.round(ff);
-            ds= interpolate( ds, ff );
-            QDataSet tlimit= DataSetUtil.guessCadenceNew( tt1, null );
+            dsSource= interpolate( dsSource, ff );
+            QDataSet tlimit= DataSetUtil.guessCadenceNew( ttSource, null );
             if ( tlimit!=null ) {
                 tlimit= Ops.multiply( tlimit, Ops.dataset(1.5) );
-                Number fillValue= (Number) ds.property(QDataSet.FILL_VALUE);
+                Number fillValue= (Number) dsSource.property(QDataSet.FILL_VALUE);
                 if ( fillValue==null ) fillValue= Double.NaN;
-                QDataSet iceil= Ops.lesserOf( Ops.ceil(ff), tt1.length()-1 ); // TODO: rewrite this as stream to save memory.
-                QDataSet tcel= Ops.applyIndex(tt1,iceil);
+                QDataSet iceil= Ops.lesserOf( Ops.ceil(ff), ttSource.length()-1 ); // TODO: rewrite this as stream to save memory.
+                QDataSet tcel= Ops.applyIndex(ttSource,iceil);
                 QDataSet iflr= Ops.greaterOf( Ops.floor(ff), 0 );
-                QDataSet tflr= Ops.applyIndex(tt1,iflr);
+                QDataSet tflr= Ops.applyIndex(ttSource,iflr);
                 QDataSet tdff= Ops.subtract( tcel,tflr );
                 QDataSet r= Ops.where( Ops.gt( tdff, tlimit ) );
-                ds= Ops.putValues( ds, r, fillValue );
+                dsSource= Ops.putValues( dsSource, r, fillValue );
             }
-            result.add( ds );
+            result.add( dsSource );
             iarg++;
         }
         return result;        
