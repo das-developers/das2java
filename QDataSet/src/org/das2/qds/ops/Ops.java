@@ -10490,11 +10490,36 @@ public final class Ops {
     
         QDataSet ttSource= (QDataSet)dsSource.property( QDataSet.DEPEND_0 );
         
-        QDataSet ff= findex( ttSource, ttTarget );
+        QDataSet ff;
+        try {
+            //Ops.extent(ttSource);
+            //Ops.extent(ttTarget);
+            ff= findex( ttSource, ttTarget ); // TODO: cache ff in case tt1 is the same for each dss.
+        } catch ( IllegalArgumentException ex ) {  // data is not monotonic
+            logger.log(Level.WARNING, "when calling synchronize, DEPEND_0 was not monotonic for dsSource, using monotonic subset of points");
+            QDataSet dsx=Ops.monotonicSubset(dsSource);
+            logger.log(Level.INFO, "monotonicSubset removes {0} records", (dsSource.length()-dsx.length()));
+            dsSource= dsx;
+            ttSource= (QDataSet)dsSource.property( QDataSet.DEPEND_0 );
+            ff= findex( ttSource, ttTarget );
+        }
         boolean nn= UnitsUtil.isOrdinalMeasurement( SemanticOps.getUnits(dsSource) );
         if ( nn ) ff= Ops.round(ff);        
         dsSource= interpolate( dsSource, ff );
-
+//        QDataSet tlimit= DataSetUtil.guessCadenceNew( ttSource, null );
+//        tlimit=null; // See sftp://jbf@nudnik.physics.uiowa.edu/home/jbf/project/rbsp/u/kris/20180808/demoBugFindexSynchronizeInline.jy
+//        if ( tlimit!=null ) {
+//            tlimit= Ops.multiply( tlimit, Ops.dataset(1.5) );
+//            Number fillValue= (Number) dsSource.property(QDataSet.FILL_VALUE);
+//            if ( fillValue==null ) fillValue= Double.NaN;
+//            QDataSet iceil= Ops.lesserOf( Ops.ceil(ff), ttSource.length()-1 ); // TODO: rewrite this as stream to save memory.
+//            QDataSet tcel= Ops.applyIndex(ttSource,iceil);
+//            QDataSet iflr= Ops.greaterOf( Ops.floor(ff), 0 );
+//            QDataSet tflr= Ops.applyIndex(ttSource,iflr);
+//            QDataSet tdff= Ops.subtract( tcel,tflr );
+//            QDataSet r= Ops.where( Ops.gt( tdff, tlimit ) );
+//            dsSource= Ops.putValues( dsSource, r, fillValue );
+//        }
         return dsSource;
     }
     
