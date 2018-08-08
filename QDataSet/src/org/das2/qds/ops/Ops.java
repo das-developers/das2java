@@ -10476,24 +10476,26 @@ public final class Ops {
     /**
      * The first dataset's timetags are used to 
      * synchronize the single dataset to common timetags. Presently,
-     * only interpolation is used, but other methods may be introduced soon.
+     * data from dsSource will be interpolated to create data at dsTarget timetag
+     * locations, but other methods may be introduced soon.
      * Ordinal units use the nearest neighbor interpolation.    
-     * @param ds1 the dataset providing timetags, or the timetags themselves.
-     * @param ds the dataset to synch up.
+     * @param dsTarget the dataset providing timetags, or the timetags themselves.
+     * @param dsSource the dataset to synch up.  Its timetags must be monotonically increasing and non-repeating.
      * @return the one dataset, synchronized.
      * @see #synchronize(org.das2.qds.QDataSet, org.das2.qds.QDataSet...) 
      */
-    public static QDataSet synchronizeOne( QDataSet ds1, QDataSet ds ) {
-        QDataSet tt= (QDataSet) ds1.property( QDataSet.DEPEND_0 );
-        if ( tt==null && DataSetUtil.isMonotonic(ds1) ) tt= ds1;
+    public static QDataSet synchronizeOne( QDataSet dsTarget, QDataSet dsSource ) {
+        QDataSet ttTarget= (QDataSet) dsTarget.property( QDataSet.DEPEND_0 );
+        if ( ttTarget==null && DataSetUtil.isMonotonic(dsTarget) ) ttTarget= dsTarget;
     
-        QDataSet tt1= (QDataSet)ds.property( QDataSet.DEPEND_0 );
-        QDataSet ff= findex( tt1, tt );
-        boolean nn= UnitsUtil.isOrdinalMeasurement( SemanticOps.getUnits(ds) );
+        QDataSet ttSource= (QDataSet)dsSource.property( QDataSet.DEPEND_0 );
+        
+        QDataSet ff= findex( ttSource, ttTarget );
+        boolean nn= UnitsUtil.isOrdinalMeasurement( SemanticOps.getUnits(dsSource) );
         if ( nn ) ff= Ops.round(ff);        
-        ds= interpolate( ds, ff );
+        dsSource= interpolate( dsSource, ff );
 
-        return ds;
+        return dsSource;
     }
     
     /**
