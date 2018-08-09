@@ -18,7 +18,7 @@ import org.das2.qds.ops.Ops;
  */
 public class TrimFilterEditorPanel extends AbstractFilterEditorPanel {
 
-    public final static String PROP_REGEX= "\\|trim\\(\\s*(\\S+)\\s*\\,\\s*(\\S+)\\s*\\)";
+    public final static String PROP_REGEX= "\\|trim\\(\\s*(?:(\\d+),)?\\s*([^\\s,]+)\\s*\\,\\s*([^\\s,]+)\\s*\\)";
     public final static String PROP_TRIMI_REGEX= "\\|trim(\\d)\\(\\s*(\\S+)\\s*\\,\\s*(\\S+)\\s*\\)";
 
     private boolean automaticSetting= true;
@@ -64,12 +64,17 @@ public class TrimFilterEditorPanel extends AbstractFilterEditorPanel {
         Pattern p2= Pattern.compile( PROP_TRIMI_REGEX );
         Matcher m2= p2.matcher(filter);
         
-        if ( m.matches() ) {
-            lowerBound.setText(m.group(1));
-            upperBound.setText( m.group(2) );
+        if ( m.matches() && m.group(1)==null ) {
+            lowerBound.setText(m.group(2));
+            upperBound.setText( m.group(3) );
             automaticSetting= false;
             dimensionCB.setSelectedIndex(0);
-            
+        } else if ( m.matches() && m.group(1)!=null ) {
+            lowerBound.setText(m.group(2));
+            upperBound.setText( m.group(3) );
+            automaticSetting= false;
+            dimensionCB.setSelectedIndex(Integer.parseInt(m.group(1)) );
+                
         } else if ( (m2.matches() )) {
             lowerBound.setText(m2.group(2));
             upperBound.setText( m2.group(3) );
@@ -92,8 +97,8 @@ public class TrimFilterEditorPanel extends AbstractFilterEditorPanel {
         String lowerBoundPoint = lowerBound.getText().replaceAll("\\s","");
         if ( dimensionCB.getSelectedIndex()==0 ) {
             return "|trim(" + lowerBoundPoint + "," + upperBoundPoint +  ")";
-        } else if ( dimensionCB.getSelectedIndex()==1 ) {
-            return "|trim" + dimensionCB.getSelectedIndex() + "(" + lowerBoundPoint + "," + upperBoundPoint +  ")";
+//        } else if ( dimensionCB.getSelectedIndex()==1 ) {
+//            return "|trim" + dimensionCB.getSelectedIndex() + "(" + lowerBoundPoint + "," + upperBoundPoint +  ")";
         } else {
             return "|trim(" + dimensionCB.getSelectedIndex() + "," + lowerBoundPoint + "," + upperBoundPoint +  ")";
         }
