@@ -166,7 +166,13 @@ public class FileSystemUtil {
                 String filePath = destDir.getAbsolutePath() + File.separator + entry.getName();
                 if (!entry.isDirectory()) {
                     // if the entry is a file, extracts it
-                    extractFile(zipIn, filePath);
+                    try {
+                        extractFile(zipIn, filePath);
+                    } catch ( FileNotFoundException ex ) {
+                        //https://artifacts.unidata.ucar.edu/repository/unidata-releases/edu/ucar/netcdfAll/4.6.11/netcdfAll-4.6.11.jar'
+                        logger.log(Level.WARNING, "file not found: {0}", entry );
+                        //extractFile(zipIn, filePath);
+                    }
                 } else {
                     // if the entry is a directory, make the directory
                     File dir = new File(filePath);
