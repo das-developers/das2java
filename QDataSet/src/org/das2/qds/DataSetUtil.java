@@ -2799,19 +2799,24 @@ public class DataSetUtil {
      */
     public static QDataSet weightsDataSet(final QDataSet ds) {
         Object o= ds.property(QDataSet.WEIGHTS); // See Ivar's script /home/jbf/project/rbsp/users/ivar/20180129/process-chorus3.jyds
+        QDataSet w= null;
         if ( o!=null ) {
             if ( !(o instanceof QDataSet) ) {
-                logger.log(Level.WARNING, "WEIGHTS_PLANE contained something that was not a qdataset: {0}", o);
-                o= null;
-            } else if ( ds.rank()==0 ) {
-                if ( ((QDataSet)o).rank()!=0 ) {
-                    o= null;
+                logger.log(Level.WARNING, "WEIGHTS contained something that was not a qdataset: {0}", o);
+                w= null;
+            } else {
+                w= (QDataSet)o;
+                if ( ds.rank() != w.rank() ) {
+                    //See https://sourceforge.net/p/autoplot/bugs/2017/
+                    logger.log(Level.WARNING, "WEIGHTS contained qdataset with different rank, ignoring: w={0} ds={1}", new Object[] { w, ds } );
+                    w= null;
+                    
+                } else if ( ((QDataSet)o).length()!=ds.length() ) {
+                    //logger.log(Level.WARNING, "WEIGHTS_PLANE was dataset with the wrong length: {0}", o);
+                    //TODO: this was coming up in  script:sftp://jbf@klunk:/home/jbf/project/rbsp/study/bill/digitizing/newDigitizer/newdigitizer2.jy
+                    //hide it for now...
+                    w=null;
                 }
-            } else if ( ((QDataSet)o).length()!=ds.length() ) {
-                //logger.log(Level.WARNING, "WEIGHTS_PLANE was dataset with the wrong length: {0}", o);
-                //TODO: this was coming up in  script:sftp://jbf@klunk:/home/jbf/project/rbsp/study/bill/digitizing/newDigitizer/newdigitizer2.jy
-                //hide it for now...
-                o=null;
             }
         }
 
@@ -2830,7 +2835,7 @@ public class DataSetUtil {
         }
         
         Number ofill;
-        QDataSet result = (QDataSet) o;
+        QDataSet result = w;
         if ( result!=null ) {
             ofill= (Number)result.property(QDataSet.FILL_VALUE);
             if ( ofill==null ) {
