@@ -1783,7 +1783,12 @@ public class DatumRangeUtil {
                 try { 
                     return parseTimeRange(str);
                 } catch ( ParseException ex2 ) {
-                    throw ex;
+                    // the question now is was it really not a time range, or was it a misformatted datum?
+                    if ( TimeUtil.isValidTime(ss[0]) ) {
+                        throw ex2;
+                    } else {
+                        throw ex;
+                    }
                 }
             }
         }
