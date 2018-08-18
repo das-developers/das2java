@@ -72,8 +72,12 @@ public class ReplicateDataSet extends AbstractDataSet {
         } else if ( name.matches("BUNDLE_\\d" ) ) {
             return source.property("BUNDLE_"+ ( Integer.parseInt(name.substring(7))-1 ) );
         } else {
-            Object o= super.property(name);
-            return o==null ? source.property(name) : o;
+            if ( DataSetUtil.isInheritedProperty(name) ) {
+                Object o= super.property(name);
+                return o==null ? source.property(name) : o;
+            } else {
+                return null;
+            }
         }
     }
 
