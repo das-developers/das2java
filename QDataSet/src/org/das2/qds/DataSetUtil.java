@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.IllegalFormatConversionException;
 import java.util.logging.Level;
 import org.das2.datum.Units;
@@ -594,26 +595,31 @@ public class DataSetUtil {
         return false;
     }
     
+    private static final String[] GLOBAL_PROPERTIES= new String[] {
+        QDataSet.USER_PROPERTIES, QDataSet.NOTES, QDataSet.VERSION, QDataSet.METADATA, QDataSet.METADATA_MODEL, QDataSet.SOURCE, 
+    };
+
     /**
      * properties that describe the dataset itself, rather than those of a dimension
      * or structural properties.
      * @return the properties that describe the dataset itself
      */
     public static String[] globalProperties() {
-        return new String[] {
-            QDataSet.USER_PROPERTIES, QDataSet.NOTES, QDataSet.VERSION, QDataSet.METADATA, QDataSet.METADATA_MODEL, QDataSet.SOURCE, 
-        };
+        return GLOBAL_PROPERTIES;
     }
 
+    
+    private static final String[] CORRELATIVE_PROPERTIES= new String[] {
+        QDataSet.DELTA_MINUS, QDataSet.DELTA_PLUS, QDataSet.BIN_MINUS, QDataSet.BIN_PLUS, QDataSet.WEIGHTS,
+    };
+    
     /**
      * properties that go along with the zeroth index.  These are all QDataSets with dimensions compatible with the datasets.
      * If you trim the dataset, then these must be trimmed as well.
      * @return the properties that go along with the zeroth index
      */
     public static String[] correlativeProperties() {
-        return new String[] {
-            QDataSet.DELTA_MINUS, QDataSet.DELTA_PLUS, QDataSet.BIN_MINUS, QDataSet.BIN_PLUS, QDataSet.WEIGHTS,
-        };
+        return CORRELATIVE_PROPERTIES;
     }
 
 
@@ -652,6 +658,11 @@ public class DataSetUtil {
             default:
                 break;
         }
+        
+        if ( Arrays.asList(CORRELATIVE_PROPERTIES).contains(prop) ) {
+            return false;
+        }
+        
         boolean indexProp= prop.startsWith("PLANE_");
         // note CONTEXT* is inherited.
         //TODO: shouldn't DELTA_PLUS and DELTA_MINUS be on this list?
