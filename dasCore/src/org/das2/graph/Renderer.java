@@ -49,6 +49,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.PrintStream;
 import java.text.ParseException;
 import java.util.Collections;
 import java.util.HashSet;
@@ -1228,6 +1229,50 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
     public synchronized void resetCounters() {
         renderCount=0;
         updateCount=0;
+    }
+    
+    private String recordFile = "";
+
+    private PrintStream recordStream=null;
+    
+    public static final String PROP_RECORDFILE = "recordFile";
+
+    public String getStatsFile() {
+        return recordFile;
+    }
+
+    /**
+     * name of the file where rendering speed is recorded.
+     * @param recordFile 
+     */
+    public void setStatsFile(String recordFile) {
+        String oldRecordFile = this.recordFile;
+        if ( oldRecordFile!=null && !oldRecordFile.equals(recordFile ) ) {
+            if ( recordStream!=null ) {
+                recordStream.close();
+            }
+        }
+        this.recordFile = recordFile;
+        try {
+            resetCounters();
+            recordStream= new PrintStream( recordFile );
+            recordStream.println("updates, renders, numberOfPoints, seconds, type");
+        } catch (FileNotFoundException ex) {            
+            logger.log(Level.SEVERE, null, ex);
+        }
+        propertyChangeSupport.firePropertyChange(PROP_RECORDFILE, oldRecordFile, recordFile);
+    }
+
+    /**
+     * record the stat to a file.
+     * @param numberOfPoints
+     * @param millis milliseconds
+     * @param t 'r' for rendering, 'u' for updatePlotImage
+     */
+    protected void addToStats( int numberOfPoints, long millis, char t ) {
+        if ( recordStream!=null ) {
+            recordStream.format( "%d, %d, %d, %.3f, %c\n", updateCount, renderCount, numberOfPoints, millis/1000., t );
+        }
     }
     
     /**
