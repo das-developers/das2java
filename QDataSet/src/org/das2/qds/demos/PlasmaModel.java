@@ -77,6 +77,8 @@ public class PlasmaModel {
         try {
             PlasmaModelSpec model = new PlasmaModelSpec();
             Random random = new Random(5330);
+            System.err.println("First Random: "+random.nextDouble() );
+            System.err.println("Java version: "+System.getProperty("java.version"));
             Units xunits = Units.us2000;
             Datum start = Units.us2000.parse("2000-017T00:00");
             Datum end = Units.us2000.parse("2000-018T00:00");
