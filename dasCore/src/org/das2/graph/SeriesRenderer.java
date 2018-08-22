@@ -119,6 +119,11 @@ public class SeriesRenderer extends Renderer {
     private int lastIndex=-1;
     
     /**
+     * total number of points plotted
+     */
+    private int numberOfPoints;
+    
+    /**
      * the index of the first point drawn that is visible, nonzero when X is monotonic and we can clip. 
      */
     private int firstIndex_v=-1;
@@ -1708,6 +1713,7 @@ public class SeriesRenderer extends Renderer {
         long renderTime = (milli - timer0);
         double dppms = (lastIndex - firstIndex) / (double) renderTime;
 
+        addToStats( numberOfPoints, renderTime, 'r' );
         setRenderPointsPerMillisecond(dppms);
 
         logger.log(Level.FINE, "render: {0}ms total:{1} fps:{2} pts/ms:{3}", new Object[]{renderTime, milli - lastUpdateMillis, 1000. / (milli - lastUpdateMillis), dppms});
@@ -1936,7 +1942,6 @@ public class SeriesRenderer extends Renderer {
         dataSetClipped = false;  // disabled while experimenting with dataSetReduced.
         dataSetReduced = false;
 
-
         firstIndex= -1;
         lastIndex= -1;
         
@@ -1946,6 +1951,7 @@ public class SeriesRenderer extends Renderer {
             if (vds != null) {
 
                 updateFirstLast(xAxis, yAxis, xds, vds );
+                numberOfPoints= lastIndex-firstIndex+1;
                 if ( Schemes.isBundleDataSet(ds) ) {
                     dataSetReduced= false;
                 }
@@ -2095,6 +2101,8 @@ public class SeriesRenderer extends Renderer {
         long renderTime = (milli - t0);
         double dppms = (lastIndex - firstIndex) / (double) renderTime;
 
+        addToStats( numberOfPoints, renderTime, 'u' );
+        
         logger.log(Level.FINE, "done updatePlotImage ({0}ms)", renderTime );
         
         setUpdatesPointsPerMillisecond(dppms);
