@@ -119,7 +119,6 @@ public class PlasmaModel {
                     }
                     xx.putValue( -1, x );
                     x += xTagWidth;
-                    System.err.println( Units.us2000.createDatum(x));
                 }
                 builder.nextRecord();
                 xx.nextRecord();
