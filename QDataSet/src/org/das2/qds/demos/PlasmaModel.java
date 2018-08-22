@@ -77,7 +77,7 @@ public class PlasmaModel {
         try {
             PlasmaModelSpec model = new PlasmaModelSpec();
             Random random = new Random(5330);
-            System.err.println("First Random: "+random.nextDouble() );
+            //System.err.println("First Random: "+random.nextDouble() ); //TODO: look into bug where this always causes hang in autoplot-test148
             System.err.println("Java version: "+System.getProperty("java.version"));
             Units xunits = Units.us2000;
             Datum start = Units.us2000.parse("2000-017T00:00");
@@ -91,6 +91,7 @@ public class PlasmaModel {
             Random s = new java.util.Random(234567); // repeatable random sequence
 
             double n= 2.0;
+            int irec=0;
             while (x < end.doubleValue(xunits)) {
                 int whichYTags = s.nextInt(yTags.length);
                 int nj;
@@ -113,7 +114,11 @@ public class PlasmaModel {
                 int ncol = s.nextInt(4) + 1;
                 DatumVector ydv = yTags[whichYTags];
                 for (int icol = 0; icol < ncol; icol++) {
-                    n= n * Math.pow(10, ( random.nextDouble()-0.5 )/100 );
+                    double d=  random.nextDouble();
+                    if ( icol==0 && irec==0 ) {
+                        System.err.println("First Random: "+d ); //TODO: see above use at line 80.
+                    }
+                    n= n * Math.pow(10, ( d-0.5 )/100 );
                     model.setDensity( Units.pcm3.createDatum(n) );
                     for (int j = 0; j < nj; j++) {
                         zz[j] = model.counts( ydv.get(j).doubleValue(Units.dimensionless), Units.eV, random );
@@ -121,6 +126,7 @@ public class PlasmaModel {
                     }
                     xx.putValue( -1, x );
                     x += xTagWidth;
+                    irec++;
                 }
                 builder.nextRecord();
                 xx.nextRecord();
@@ -130,7 +136,7 @@ public class PlasmaModel {
             DDataSet yy= DDataSet.wrap(yTags[0].toDoubleArray(Units.dimensionless));
             yy.putProperty(QDataSet.UNITS, Units.eV);
             builder.putProperty( QDataSet.DEPEND_1, yy );
-            
+            System.err.println("Last Random: "+random.nextDouble() ); //TODO: see above use at line 80.
             return builder.getDataSet();
         } catch (ParseException ex) {
             throw new RuntimeException(ex);
