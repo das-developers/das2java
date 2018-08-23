@@ -36,6 +36,7 @@ import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -205,6 +206,15 @@ public class HttpFileSystem extends WebFileSystem {
                     doCheck= false;
                     logger.finer( "Verify Credentials exits with okay");
                     
+                } catch ( SocketTimeoutException ex ) {
+                    logger.finer("Socket timeout");
+                    HtmlUtil.consumeStream( urlc.getErrorStream() );
+                    responseCode= HttpURLConnection.HTTP_GATEWAY_TIMEOUT;
+                    offlineMessage= "socket timeout";
+                    offlineResponseCode= HttpURLConnection.HTTP_GATEWAY_TIMEOUT;
+                    
+                    doCheck= false;
+                        
                 } catch ( IOException ex ) {
                     
                     logger.finer("Error with credentials");
@@ -250,27 +260,29 @@ public class HttpFileSystem extends WebFileSystem {
                     offlineResponseCode= code;
                 }
 
-                if ( responseCode != HttpURLConnection.HTTP_OK && responseCode != HttpURLConnection.HTTP_FORBIDDEN) {
-                    if ( responseCode==HttpURLConnection.HTTP_UNAUTHORIZED ) {
-                        // might be nice to modify URL so that credentials are used.
-                        KeyChain.getDefault().clearUserPassword(root);
-                        if ( userInfo==null ) {
-                            String port=  root.getPort()==-1 ? "" : ( ":" +root.getPort() );
-                            URL rootAuth= new URL( root.getProtocol() + "://" + "user@" + root.getHost() + port + root.getFile() );
-                            try {
-                                URI rootAuthUri= rootAuth.toURI();
-                                rooturi= rootAuthUri;
-                                root= rooturi.toURL();
+                if ( responseCode!=HttpURLConnection.HTTP_GATEWAY_TIMEOUT ) {
+                    if ( responseCode != HttpURLConnection.HTTP_OK && responseCode != HttpURLConnection.HTTP_FORBIDDEN) {
+                        if ( responseCode==HttpURLConnection.HTTP_UNAUTHORIZED ) {
+                            // might be nice to modify URL so that credentials are used.
+                            KeyChain.getDefault().clearUserPassword(root);
+                            if ( userInfo==null ) {
+                                String port=  root.getPort()==-1 ? "" : ( ":" +root.getPort() );
+                                URL rootAuth= new URL( root.getProtocol() + "://" + "user@" + root.getHost() + port + root.getFile() );
+                                try {
+                                    URI rootAuthUri= rootAuth.toURI();
+                                    rooturi= rootAuthUri;
+                                    root= rooturi.toURL();
 
-                            } catch ( URISyntaxException ex ) {
-                                throw new RuntimeException(ex);
+                                } catch ( URISyntaxException ex ) {
+                                    throw new RuntimeException(ex);
+                                }
                             }
+                        } else {
+                            offline= false;
                         }
                     } else {
                         offline= false;
                     }
-                } else {
-                    offline= false;
                 }
 
             }
