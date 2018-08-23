@@ -48,7 +48,6 @@ import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
 import org.das2.datum.DatumVector;
 import org.das2.graph.dnd.TransferableRenderer;
-import org.das2.system.DasLogger;
 import java.awt.image.BufferedImage;
 import javax.swing.event.MouseInputAdapter;
 import javax.swing.*;
@@ -75,6 +74,7 @@ import java.util.logging.Logger;
 import org.das2.DasException;
 import org.das2.dataset.DataSetAdapter;
 import org.das2.datum.DatumRangeUtil;
+import org.das2.datum.LoggerManager;
 import org.das2.event.DasMouseInputAdapter;
 import org.das2.graph.DasAxis.Memento;
 import org.das2.qds.DataSetUtil;
@@ -182,7 +182,7 @@ public class DasPlot extends DasCanvasComponent {
     };
     
     DnDSupport dndSupport;
-    final static Logger logger = DasLogger.getLogger(DasLogger.GRAPHICS_LOG);
+    final static Logger logger = LoggerManager.getLogger("das2.graphics.plot");
     private JMenuItem editRendererMenuItem;
     /**
      * cacheImage is a cached image that all the renderers have drawn on.  This
@@ -649,7 +649,7 @@ public class DasPlot extends DasCanvasComponent {
         }
 
         if ( needRepaintSoon ) {
-            logger.log( Level.FINE, "need to repaint in {0} ms", repaintDelay);
+            logger.log( Level.FINER, "need to repaint in {0} ms", repaintDelay);
             ActionListener animate = new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent ae) {
