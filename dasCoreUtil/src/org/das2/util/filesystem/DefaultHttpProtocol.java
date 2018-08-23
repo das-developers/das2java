@@ -8,6 +8,8 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.file.Files;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -62,7 +64,16 @@ public class DefaultHttpProtocol implements WebProtocol {
     public Map<String, String> getMetadata(WebFileObject fo) throws IOException {
         
         URL ur = new URL( fo.wfs.getRootURL(), urlEncodeSansSlash(fo.pathname).replaceAll("\\+", "%20") );
-        
-        return HttpUtil.getMetadata( ur, null );
+        if ( fo.wfs.offline ) {
+            Map<String,String> result= new HashMap<>();
+            result.put(WebProtocol.META_EXIST, String.valueOf( fo.localFile.exists() ) );
+            result.put(WebProtocol.META_LAST_MODIFIED, String.valueOf( fo.localFile.lastModified() ) );
+            result.put(WebProtocol.META_CONTENT_LENGTH, String.valueOf( fo.localFile.length() ) );
+            result.put(WebProtocol.META_CONTENT_TYPE, Files.probeContentType( fo.localFile.toPath() ) );
+            return result;
+            
+        } else {
+            return HttpUtil.getMetadata( ur, null );
+        }
     }
 }
