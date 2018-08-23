@@ -1255,8 +1255,10 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
         this.recordFile = recordFile;
         try {
             resetCounters();
-            recordStream= new PrintStream( recordFile );
-            recordStream.println("updates, renders, numberOfPoints, seconds, type");
+            if ( recordFile.length()>0 ) {
+                recordStream= new PrintStream( recordFile );
+                recordStream.println("updates, renders, numberOfPoints, seconds, type");
+            }
         } catch (FileNotFoundException ex) {            
             logger.log(Level.SEVERE, null, ex);
         }
