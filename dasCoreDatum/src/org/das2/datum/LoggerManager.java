@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 
 package org.das2.datum;
 
@@ -12,15 +8,15 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 /**
- * Central place that keeps track of loggers.  Note that both org.das.datum 
+ * Central place that keeps track of loggers.  Note that both org.das2.util 
  * and org.das2.datum have this same class, which is there to avoid coupling between the 
  * packages.
  * @author jbf
  */
 public final class LoggerManager {
 
-    private static Set loggers= new HashSet();
-    private static Map<String,Logger> log= new HashMap();
+    private static final Set<String> loggers= new HashSet();
+    private static final Map<String,Logger> log= new HashMap();
 
     /**
      * return the requested logger, but add it to the list of known loggers.
@@ -43,7 +39,7 @@ public final class LoggerManager {
      * return the list of known loggers.
      * @return
      */
-    public static Set getLoggers() {
+    public static Set<String> getLoggers() {
         return loggers;
     }
 }
