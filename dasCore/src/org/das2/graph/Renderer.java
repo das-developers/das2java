@@ -1247,17 +1247,21 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
      */
     public void setStatsFile(String recordFile) {
         String oldRecordFile = this.recordFile;
+        boolean reset= false;
         if ( oldRecordFile!=null && !oldRecordFile.equals(recordFile ) ) {
             if ( recordStream!=null ) {
                 recordStream.close();
             }
+            reset= true;
         }
         this.recordFile = recordFile;
         try {
-            resetCounters();
-            if ( recordFile.length()>0 ) {
-                recordStream= new PrintStream( recordFile );
-                recordStream.println("updates, renders, numberOfPoints, seconds, type");
+            if ( reset ) {
+                resetCounters();
+                if ( recordFile.length()>0 ) {
+                    recordStream= new PrintStream( recordFile );
+                    recordStream.println("updates, renders, numberOfPoints, seconds, type");
+                }
             }
         } catch (FileNotFoundException ex) {            
             logger.log(Level.SEVERE, null, ex);
@@ -1274,6 +1278,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
     protected void addToStats( int numberOfPoints, long millis, char t ) {
         if ( recordStream!=null ) {
             recordStream.format( "%d, %d, %d, %.3f, %c\n", updateCount, renderCount, numberOfPoints, millis/1000., t );
+            recordStream.flush();
         }
     }
     
