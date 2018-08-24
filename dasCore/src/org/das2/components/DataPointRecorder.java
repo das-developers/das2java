@@ -85,6 +85,7 @@ import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.TableColumn;
 import org.das2.DasApplication;
 import org.das2.dataset.DataSetAdapter;
+import org.das2.datum.DatumRangeUtil;
 import org.das2.datum.EnumerationUnits;
 import org.das2.datum.TimeLocationUnits;
 import org.das2.datum.TimeParser;
@@ -559,28 +560,31 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     }
 
     /**
-     * Selects all the points where the first column is within xrange and
-     * the second column is within yrange.  Returns the selected index, or -1 
-     * if no elements are found.
+     * Selects all the points in the GUI where the first column is within xrange and
+     * the second column is within yrange.  Returns the first of the selected 
+     * indices, or -1 if no elements are found.
      * @param xrange the range constraint (non-null).
-     * @param yrange the range constraint (non-null).
-     * @return the selected index, or -1 if no elements are found.
+     * @param yrange the range constraint  or null if no constraint.
+     * @return the first of the selected indices, or -1 if no elements are found.
+     * @see #getSelectedDataSet() 
      */
     public int select( DatumRange xrange, DatumRange yrange ) {
         return select(xrange,yrange,false);
     }
     
     /**
-     * Selects all the points within the DatumRange.  Returns the selected 
-     * index, or -1 if no elements are found.
+     * Selects all the points in the GUI where the first column is within xrange and
+     * the second column is within yrange.  Returns the first of the selected 
+     * indices, or -1 if no elements are found.
      * @param xrange the x range
      * @param yrange the y range or null if no constraint
-     * @param xOrY if true, then match if either yrange or xrange
-     * @return the selected index, or -1 if no elements are found.
+     * @param xOrY if true, then match if either yrange or xrange contains.
+     * @return the first of the selected indices, or -1 if no elements are found.
+     * @see #getSelectedDataSet() 
      */
     public int select(DatumRange xrange, DatumRange yrange, boolean xOrY ) {
         if ( xOrY && yrange==null ) throw new IllegalArgumentException("yrange is null with or condition--this would select all points.");
-        Datum mid= xrange.rescale( 0.5,0.5 ).min();
+        Datum mid= DatumRangeUtil.rescale( xrange, 0.5 );
         synchronized (dataPoints) {
             List<Integer> selectMe = new ArrayList();
             int iclosest= -1;
