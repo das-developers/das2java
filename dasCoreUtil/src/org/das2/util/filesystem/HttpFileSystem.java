@@ -662,7 +662,7 @@ public class HttpFileSystem extends WebFileSystem {
      */
     @Override
     public String[] listDirectory(String directory) throws IOException {
-
+        System.err.println("** listDirectory("+directory+")");
         DirectoryEntry[] cached= listDirectoryFromMemory( directory );
         if ( cached!=null ) {
             return FileSystem.getListing( cached );
