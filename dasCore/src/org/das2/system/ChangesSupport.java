@@ -98,6 +98,12 @@ public class ChangesSupport {
                 return;
             }
         }
+        Integer count= changeCount.get(lockObject);
+        if ( count==null ) {
+            changeCount.put( lockObject, 1 );
+        } else {
+            changeCount.put( lockObject, count+1 );
+        }        
         boolean oldVal = this.isPendingChanges();
         changesPending.put(lockObject, client);
         threads.put( lockObject, Thread.currentThread().toString() );
@@ -130,12 +136,6 @@ public class ChangesSupport {
                 logger.log(Level.INFO, "performingChange by client object is not owner {0}", client );
             }
             registerPendingChange( client, lockObject );
-        }
-        Integer count= changeCount.get(lockObject);
-        if ( count==null ) {
-            changeCount.put( lockObject, 1 );
-        } else {
-            changeCount.put( lockObject, count+1 );
         }
 
         logger.log( Level.FINE, "performingChange {0} by {1}  in {2}", new Object[]{lockObject, client, parent});
@@ -195,7 +195,7 @@ public class ChangesSupport {
     public boolean isPendingChanges( Object lockObject ) {
         return changesPending.containsKey(lockObject);
     }
-    
+
     /**
      * return a map listing the pending changes.  This is a thread-safe
      * read-only copy.
