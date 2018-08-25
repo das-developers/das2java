@@ -173,7 +173,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
     boolean lpaintingForPrint= false;
     
     private static DasCanvas currentCanvas;
-    
+
     /* Canvas actions */
     protected static abstract class CanvasAction extends AbstractAction {
 
@@ -1369,10 +1369,18 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         EventQueueBlocker.clearEventQueue();
         logger.finer("post data-load pending events processed");
 
+        int count=0;
         /** wait for registered pending changes.  TODO: this is cheesy */
         if (stateSupport.isPendingChanges()) {
             logger.finer("waiting for pending changes");
             while (stateSupport.isPendingChanges()) {
+                count++;
+                if ( count==100 ) {
+                    logger.info("stateSupport.pendingChanges:");
+                    for ( Object o: stateSupport.getChangesPending().entrySet() ) {
+                        logger.log(Level.INFO, "  {0}", o);
+                    }
+                }
                 try {
                     Thread.sleep(100); 
                 } catch (InterruptedException ex) {
@@ -2881,6 +2889,16 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
     @Override
     public boolean getScrollableTracksViewportHeight() {
         return fitted;
+    }
+    
+    /**
+     * ask the canvas if the particular change is already pending.
+     * @return true if that particular change is pending.
+     * @see ChangesSupport
+     * @param lockObject an object identifying the change
+     */
+    public boolean isPendingChanges( Object lockObject ) {
+        return stateSupport.isPendingChanges(lockObject);
     }
 
     /**
