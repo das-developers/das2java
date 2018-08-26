@@ -475,7 +475,7 @@ public final class SemanticOps {
             return result;
         } else if ( ds.length()>0 
                 && ds.property(QDataSet.DEPEND_1)==null
-                && ds.property(QDataSet.DEPEND_0,0)!=null ) { // For Juno pktid=91
+                && ds.rank()>1 && ds.property(QDataSet.DEPEND_0,0)!=null ) { // For Juno pktid=91
             if ( DataSetUtil.isQube(ds) ) {
                 return xtagsDataSet( ds.slice(0) );
             } else {
