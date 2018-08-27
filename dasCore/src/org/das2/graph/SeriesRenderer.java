@@ -68,6 +68,7 @@ import org.das2.util.monitor.ProgressMonitor;
 import org.das2.qds.ArrayDataSet;
 import org.das2.qds.DataSetOps;
 import org.das2.qds.DataSetUtil;
+import org.das2.qds.IndexGenDataSet;
 import org.das2.qds.MutablePropertyDataSet;
 import org.das2.qds.QDataSet;
 import org.das2.qds.SemanticOps;
@@ -1239,13 +1240,29 @@ public class SeriesRenderer extends Renderer {
     
     private static final int SIMPLIFY_PATHS_MIN_LIMIT = 1000;
 
+    QDataSet xdsc, ydsc;
+    int firstIndexc, lastIndexc;
+    Datum cadencec;
+    
     /**
      * get the cadence for the data.  TODO: ideally, we wouldn't do this repeatedly.
      */
     private Datum getCadence(QDataSet xds, QDataSet yds, int firstIndex, int lastIndex) {
+        if ( xds==xdsc && yds==ydsc && firstIndex==firstIndexc && lastIndex==lastIndexc ) {
+            if ( cadencec!=null ) {
+                logger.finer("cache hit avoids recalculating cadence");
+                return cadencec;
+            }
+        }
+        logger.finer("cache miss means we must recalculate cadence");
         MutablePropertyDataSet xds1= Ops.copy(xds.trim(firstIndex,lastIndex));
         xds1.putProperty(QDataSet.CADENCE,null);
-        return SemanticOps.guessXTagWidth( xds1, yds.trim(firstIndex,lastIndex) );
+        cadencec= SemanticOps.guessXTagWidth( xds1, yds.trim(firstIndex,lastIndex) );
+        xdsc= xds;
+        ydsc= yds;
+        firstIndexc= firstIndex;
+        lastIndexc= lastIndex;
+        return cadencec;
     }
 
     /**
