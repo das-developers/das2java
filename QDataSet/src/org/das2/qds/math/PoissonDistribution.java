@@ -13,7 +13,7 @@ import java.util.Random;
 /**
  * PoissonDistribution generates numbers from the Poisson distribution.
  * Adapted from stocc.cpp. 
- * Made thread safe, 2018-08-28.
+ * 2018-08-28.  Made thread safe, use in Jython scripts will be broken.
  * 
  * @author Jeremy
  */
@@ -165,6 +165,9 @@ public class PoissonDistribution {
      *
      * For L &lt; 1.E-6 numerical inaccuracy is avoided by direct calculation.
      * For L &gt; 2E9 too big--throws IllegalArgumentException
+     * 
+     * Note this was a static method before 2018-08-28 (v2018a_8), so Jython calls
+     * should be PoissonDistribution().poisson().
      * 
      * @param L the real value
      * @param random a random number source
