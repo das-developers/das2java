@@ -11,14 +11,17 @@ package org.das2.qds.math;
 import java.util.Random;
 
 /**
- *
+ * PoissonDistribution generates numbers from the Poisson distribution.
+ * Adapted from stocc.cpp. 
+ * Made thread safe, 2018-08-28.
+ * 
  * @author Jeremy
  */
 public class PoissonDistribution {
     
-    static Fac fac= new Fac();
+    Fac fac= new Fac();
     
-    private static class Fac {
+    private class Fac {
         final static int FAK_LEN=1024;
         double[] fac_table;
         boolean initialized= false;
@@ -60,9 +63,9 @@ public class PoissonDistribution {
         
     }
     
-    static PoissonInver poissonInver= new PoissonInver();
+    PoissonInver poissonInver= new PoissonInver();
     
-    private static class PoissonInver {
+    private class PoissonInver {
         double p_L_last=-1;  // previous value of L
         double p_f0;         // cache f0( L )
         /**
@@ -99,7 +102,7 @@ public class PoissonDistribution {
         
     }
     
-    static PoissonRatioUniforms poissonRatioUniforms= new PoissonRatioUniforms();
+    PoissonRatioUniforms poissonRatioUniforms= new PoissonRatioUniforms();
     
     /**
      * This subfunction generates a random variate with the poisson
@@ -112,7 +115,7 @@ public class PoissonDistribution {
      * discrete random variates". Journal of Computational and Applied Mathematics,
      * vol. 31, no. 1, 1990, pp. 181-189.
      */
-    static class PoissonRatioUniforms {
+    class PoissonRatioUniforms {
         final double SHAT1 = 2.943035529371538573;    // 8/e
         final double SHAT2 = 0.8989161620588987408;   // 3-sqrt(12/e)
         
@@ -155,15 +158,19 @@ public class PoissonDistribution {
     }
     
     /**
-     * This function generates a random variate with the poisson distribution.
+     * This function generates a random variate with the Poisson distribution.
      *
      * Uses inversion by chop-down method for L &lt; 17, and ratio-of-uniforms
      * method for L &gt;= 17.
      *
      * For L &lt; 1.E-6 numerical inaccuracy is avoided by direct calculation.
      * For L &gt; 2E9 too big--throws IllegalArgumentException
+     * 
+     * @param L the real value
+     * @param random a random number source
+     * @return the integer value.
      */
-    public static int poisson( double L,Random random ) {
+    public int poisson( double L,Random random ) {
         
         
         //------------------------------------------------------------------
@@ -217,15 +224,14 @@ public class PoissonDistribution {
      * The reason for using this method is to avoid the numerical inaccuracies
      * in other methods.
      */
-    private static int PoissonLow( double L, Random random ) {
+    private int PoissonLow( double L, Random random ) {
         double d, r;
         d = Math.sqrt(L);
         if ( random.nextDouble() >= d ) return 0;
         r = random.nextDouble() * d;
         if (r > L * (1.-L)) return 0;
         if (r > 0.5 * L*L * (1.-L)) return 1;
-        return 2;}
-    
-    
+        return 2;
+    }
     
 }
