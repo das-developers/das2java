@@ -1242,29 +1242,27 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         
         if ( lcanvas.isPendingChanges( tcaLock ) ) {
             logger.fine("tcatimer is already pending");
-            return;
         } else {
             lcanvas.registerPendingChange( DasAxis.this, tcaLock );
-        }
-
-        if ( tcaTimer==null ) {
-            tcaTimer= new TickleTimer( 200, new PropertyChangeListener() {
-                @Override
-                public void propertyChange(PropertyChangeEvent evt) {
-		            logger.log( Level.FINER, "mstca, lcanvas={0}", lcanvas);
-                    if ( lcanvas!=null ) {
-                        lcanvas.performingChange( DasAxis.this, tcaLock );
-                    } else {
-                        maybeStartTcaTimer();
-                        return;
+            if ( tcaTimer==null ) {
+                tcaTimer= new TickleTimer( 200, new PropertyChangeListener() {
+                    @Override
+                    public void propertyChange(PropertyChangeEvent evt) {
+                                logger.log( Level.FINER, "mstca, lcanvas={0}", lcanvas);
+                        if ( lcanvas!=null ) {
+                            lcanvas.performingChange( DasAxis.this, tcaLock );
+                        } else {
+                            maybeStartTcaTimer();
+                            return;
+                        }
+                        try {
+                            updateTCASoon();
+                        } finally {
+                            lcanvas.changePerformed( DasAxis.this, tcaLock );
+                        }
                     }
-                    try {
-                        updateTCASoon();
-                    } finally {
-                        lcanvas.changePerformed( DasAxis.this, tcaLock );
-                    }
-                }
-            });
+                });
+            }
         }
         tcaTimer.tickle("startTcaTimer");
         
