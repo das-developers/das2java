@@ -119,6 +119,7 @@ public class SeriesRenderer extends Renderer {
      */
     private int lastIndex=-1;
     
+    private boolean dataIsMonotonic= false;
     /**
      * total number of points plotted
      */
@@ -687,9 +688,11 @@ public class SeriesRenderer extends Renderer {
     private class PsymConnectorRenderElement implements RenderElement {
 
         private GeneralPath path1;
+        private boolean pathWasReduced= true; // true if the path was reduced
    
         @Override
         public int render(Graphics2D g, DasAxis xAxis, DasAxis yAxis, QDataSet vds, ProgressMonitor mon) {
+            if ( pathWasReduced && !dataIsMonotonic ) return 0;
             long t0= System.currentTimeMillis();
             final boolean debug= false;
             if ( debug ) {
@@ -883,10 +886,12 @@ public class SeriesRenderer extends Renderer {
                 int pathLengthApprox= Math.max( 5, 110 * (lastIndex - firstIndex) / 100 );
                 this.path1= new GeneralPath(GeneralPath.WIND_NON_ZERO, pathLengthApprox );
                 int count = GraphUtil.reducePath20140622(pathBuilder.getPathIterator(), path1, 1, 5 );
+                pathWasReduced= true;
                 logger.fine( String.format("reduce path in=%d  out=%d\n", lastIndex-firstIndex, count) );
             } else {
                 //this.path1 = newPath;
                 this.path1 = pathBuilder.getGeneralPath();
+                pathWasReduced= false;
             }
 
             //dumpPath( getParent().getCanvas().getWidth(), getParent().getCanvas().getHeight(), path1 );  // dumps jython script showing problem.
@@ -1360,6 +1365,7 @@ public class SeriesRenderer extends Renderer {
         if ( yds.rank()==3 ) {
            firstIndex= 0;
            lastIndex= xds.length();
+           dataIsMonotonic= false;
            return;
         }
         
@@ -1375,7 +1381,9 @@ public class SeriesRenderer extends Renderer {
         DasPlot lparent= getParent();
 
         dslen= xds.length();
-        if ( SemanticOps.isMonotonic( xds )) {
+        dataIsMonotonic= SemanticOps.isMonotonic( xds );
+        if ( dataIsMonotonic ) {
+            
             DatumRange visibleRange = xAxis.getDatumRange();
             Units xdsu= SemanticOps.getUnits(xds);
             if ( !visibleRange.getUnits().isConvertibleTo( xdsu ) ) {
