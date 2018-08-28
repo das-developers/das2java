@@ -76,7 +76,11 @@ public class PlasmaModel {
         }
     }
 
-    public QDataSet getRank2( int irun ) {
+    /**
+     * return a rank 2 dataset with time as DEPEND_0 and energy as DEPEND_1.
+     * @return 
+     */
+    public QDataSet getRank2( ) {
 
         try {
             PlasmaModelSpec model = new PlasmaModelSpec();
