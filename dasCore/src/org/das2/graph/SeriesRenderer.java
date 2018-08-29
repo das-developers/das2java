@@ -692,7 +692,7 @@ public class SeriesRenderer extends Renderer {
    
         @Override
         public int render(Graphics2D g, DasAxis xAxis, DasAxis yAxis, QDataSet vds, ProgressMonitor mon) {
-            if ( pathWasReduced && !dataIsMonotonic ) return 0;
+            //if ( pathWasReduced && !dataIsMonotonic ) return 0;
             long t0= System.currentTimeMillis();
             final boolean debug= false;
             if ( debug ) {
@@ -705,6 +705,7 @@ public class SeriesRenderer extends Renderer {
                 g.setColor(color0);
             }
             logger.log(Level.FINE, "enter connector render" );
+            logger.log(Level.FINER, "path was reduced: {0}", pathWasReduced);
             if ( vds.rank()!=1 && !SemanticOps.isRank2Waveform(vds) && !SemanticOps.isRank3JoinOfRank2Waveform(vds)) {
                 renderException( g, xAxis, yAxis, new IllegalArgumentException("dataset is not rank 1"));
             }
