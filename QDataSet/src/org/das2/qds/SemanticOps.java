@@ -64,7 +64,8 @@ public final class SemanticOps {
     }
 
     /**
-     * returns the UnitsConverter, or IDENTITY if the converter cannot be found.
+     * returns the UnitsConverter, or IDENTITY if the converter cannot be found
+     * and one of the two units is dimensionless.
      * @param src the dataset from which we get the original units.
      * @param dst the dataset from which we get the destination units.
      * @return the UnitsConverter
