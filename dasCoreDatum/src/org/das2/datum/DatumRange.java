@@ -125,6 +125,7 @@ public class DatumRange implements Comparable, Serializable {
      * lesser point but exclusive of the greater point.
      * @param d the datum
      * @return true if d is in the range, exclusive of max.
+     * @throws IllegalArgumentException if the units cannot be converted.
      */
     public boolean contains( Datum d ) {
         return this.s1.le(d) && d.lt(this.s2);
