@@ -23,6 +23,7 @@ import java.util.regex.Pattern;
 import org.das2.qds.buffer.BufferDataSet;
 import org.das2.datum.DatumRange;
 import org.das2.datum.EnumerationUnits;
+import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
 import org.das2.util.LoggerManager;
 import org.das2.util.monitor.ProgressMonitor;
@@ -2259,11 +2260,13 @@ public class DataSetOps {
     }
 
     /**
-     * return true of the bounds overlaps with the x and y range.
+     * return true of the bounds overlaps with the x and y values.
      * @param bounds bounding box
      * @param xValue the x range
      * @param yValue the y range
      * @return true of the bounds overlap
+     * @throws IllegalArgumentException if the units cannot be converted
+     * @throws IllegalArgumentException if the bounds does not have BINS_0 and BINS_1.
      */
     public static boolean boundsContains(QDataSet bounds, Datum xValue, Datum yValue) {
         if ( bounds.property(QDataSet.BINS_1)==null ) {
@@ -2275,5 +2278,5 @@ public class DataSetOps {
         DatumRange yrange= DataSetUtil.asDatumRange( bounds.slice(1), true );
         return xrange.contains(xValue) && yrange.contains(yValue);
     }
-    
+
 }
