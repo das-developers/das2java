@@ -53,6 +53,8 @@ import org.das2.datum.DatumRange;
 import org.das2.datum.DatumRangeUtil;
 import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.TimeLocationUnits;
+import org.das2.datum.Units;
+import org.das2.datum.UnitsUtil;
 import org.das2.datum.format.DatumFormatter;
 import org.das2.datum.format.TimeDatumFormatter;
 import org.das2.event.DataPointSelectionEvent;
@@ -358,11 +360,29 @@ public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
                 if ( xrange.contains( xValue )) {
                     tdss.add(tds.slice(i));
                 }
+                Units xunits= xrange.getUnits();
+                if ( !xunits.isConvertibleTo(xValue.getUnits()) 
+                    && UnitsUtil.isRatioMeasurement(xunits) 
+                    && ( xunits==Units.dimensionless || xValue.getUnits()==Units.dimensionless ) ) {
+                    xValue= xunits.createDatum(xValue.value());
+                }
             }
         } else {
             QDataSet xrange= Ops.extent( SemanticOps.xtagsDataSet(tds) );
             QDataSet yrange= Ops.extent( SemanticOps.ytagsDataSet(tds) );
             QDataSet bounds= Ops.join( xrange, yrange );
+            Units xunits= SemanticOps.getUnits(xrange);
+            Units yunits= SemanticOps.getUnits(yrange);
+            if ( !xunits.isConvertibleTo(xValue.getUnits()) 
+                && UnitsUtil.isRatioMeasurement(xunits) 
+                && ( xunits==Units.dimensionless || xValue.getUnits()==Units.dimensionless ) ) {
+                xValue= xunits.createDatum(xValue.value());
+            }
+            if ( !yunits.isConvertibleTo(yValue.getUnits()) 
+                && UnitsUtil.isRatioMeasurement(yunits) 
+                && ( yunits==Units.dimensionless || yValue.getUnits()==Units.dimensionless ) ) {
+                yValue= yunits.createDatum(yValue.value());
+            }
             if (DataSetOps.boundsContains(bounds, xValue, yValue)) {
                 tds1 = tds;
             }
@@ -388,7 +408,7 @@ public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
                     }
                 }
                 xx= DataSetUtil.asDatum(xds.slice(ix));
-                jds= org.das2.qds.ops.Ops.concatenate( jds, s1 );
+                jds= org.das2.qds.ops.Ops.append( jds, s1 );
             }
             sliceDataSet= jds;
             

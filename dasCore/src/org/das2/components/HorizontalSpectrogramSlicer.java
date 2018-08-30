@@ -59,6 +59,8 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.das2.components.propertyeditor.PropertyEditor;
 import org.das2.datum.InconvertibleUnitsException;
+import org.das2.datum.Units;
+import org.das2.datum.UnitsUtil;
 import org.das2.event.MouseModule;
 import org.das2.event.PointSlopeDragRenderer;
 import org.das2.graph.Painter;
@@ -359,12 +361,30 @@ public class HorizontalSpectrogramSlicer implements DataPointSelectionListener {
                     tds1 = tds.slice(i);
                     break;
                 }
+                Units xunits= SemanticOps.getUnits(bounds.slice(0));
+                if ( !xunits.isConvertibleTo(xValue.getUnits()) 
+                    && UnitsUtil.isRatioMeasurement(xunits) 
+                    && ( xunits==Units.dimensionless || xValue.getUnits()==Units.dimensionless ) ) {
+                    xValue= xunits.createDatum(xValue.value());
+                }
             }
         } else {
             // QDataSet bounds = DataSetOps.dependBounds(tds);  cannot be used because interpolation might result in waveform-type.
             QDataSet xrange= Ops.extent( SemanticOps.xtagsDataSet(tds) );
             QDataSet yrange= Ops.extent( SemanticOps.ytagsDataSet(tds) );
             QDataSet bounds= Ops.join( xrange, yrange );
+            Units xunits= SemanticOps.getUnits(xrange);
+            Units yunits= SemanticOps.getUnits(yrange);
+            if ( !xunits.isConvertibleTo(xValue.getUnits()) 
+                && UnitsUtil.isRatioMeasurement(xunits) 
+                && ( xunits==Units.dimensionless || xValue.getUnits()==Units.dimensionless ) ) {
+                xValue= xunits.createDatum(xValue.value());
+            }
+            if ( !yunits.isConvertibleTo(yValue.getUnits()) 
+                && UnitsUtil.isRatioMeasurement(yunits) 
+                && ( yunits==Units.dimensionless || yValue.getUnits()==Units.dimensionless ) ) {
+                yValue= yunits.createDatum(yValue.value());
+            }
             if (DataSetOps.boundsContains(bounds, xValue, yValue)) {
                 tds1 = tds;
             }
