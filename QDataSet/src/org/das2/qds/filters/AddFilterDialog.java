@@ -115,9 +115,9 @@ public class AddFilterDialog extends javax.swing.JPanel {
      */
     private TreePath find( DefaultMutableTreeNode root, String s ) {
         @SuppressWarnings("unchecked")
-        Enumeration<DefaultMutableTreeNode> e = root.depthFirstEnumeration();
+        Enumeration<TreeNode> e = root.depthFirstEnumeration();
         while (e.hasMoreElements()) {
-            DefaultMutableTreeNode node = e.nextElement();
+            DefaultMutableTreeNode node = (DefaultMutableTreeNode) e.nextElement();
             if (node.toString().equalsIgnoreCase(s)) {
                 return new TreePath(node.getPath());
             }
