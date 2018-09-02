@@ -627,7 +627,7 @@ public abstract class FileSystem  {
                 return ss;
             case 0:
                 ss= listDirectory( directory, regex.substring(1) );
-                for ( int j=0; j<ss.length; i++ ) {
+                for ( int j=0; j<ss.length; j++ ) {
                     ss[j]= directory + ss[j];
                 }
                 return ss;
