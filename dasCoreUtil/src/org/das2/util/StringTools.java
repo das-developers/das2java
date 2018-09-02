@@ -68,6 +68,6 @@ public class StringTools {
 
     public static void main( String[] args ) {
         String s= "a b c \"d \\\" e\" f";
-        System.err.println( guardedSplit( s, " ", '"' ) );
+        System.err.println( guardedSplit( s, " ", '"' ).length );
     }
 }
