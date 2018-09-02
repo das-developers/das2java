@@ -86,7 +86,7 @@ public enum PropertyType {
                 return Boolean.valueOf(s);
             case INTEGER:
                 try {
-                    return new Integer(s);
+                    return Integer.valueOf(s);
                 } catch (NumberFormatException nfe) {
                     throw new java.text.ParseException(nfe.getMessage(), 0);
                 }
