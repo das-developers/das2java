@@ -290,7 +290,7 @@ public class TableUtil {
             Object o;
             
             Units xunits= SemanticOps.getUnits(xds);
-            Units yunits= SemanticOps.getUnits(yds);
+            //Units yunits= SemanticOps.getUnits(yds);
             Units zunits= SemanticOps.getUnits(tds);
             //properties.put( "xUnits", xunits );
             //properties.put( "yUnits", yunits );
