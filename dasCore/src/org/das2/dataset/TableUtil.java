@@ -285,28 +285,28 @@ public class TableUtil {
             StreamProducer producer = new StreamProducer(out);
             StreamDescriptor sd = new StreamDescriptor();
             
-            Map<String,Object> properties= new LinkedHashMap<>();
+            //Map<String,Object> properties= new LinkedHashMap<>();
             
             Object o;
             
             Units xunits= SemanticOps.getUnits(xds);
             Units yunits= SemanticOps.getUnits(yds);
             Units zunits= SemanticOps.getUnits(tds);
-            properties.put( "xUnits", xunits );
-            properties.put( "yUnits", yunits );
-            properties.put( "zUnits", zunits );
-            o= xds.property(QDataSet.LABEL);
-            properties.put( DataSet.PROPERTY_X_LABEL, o );
-            o= yds.property(QDataSet.LABEL);
-            properties.put( DataSet.PROPERTY_Y_LABEL, o );
-            o= tds.property(QDataSet.LABEL);
-            properties.put( DataSet.PROPERTY_Z_LABEL, o );
+            //properties.put( "xUnits", xunits );
+            //properties.put( "yUnits", yunits );
+            //properties.put( "zUnits", zunits );
+            //String xlabel= (String)xds.property(QDataSet.LABEL);
+            //properties.put( DataSet.PROPERTY_X_LABEL, o );
+            //String ylabel= (String)yds.property(QDataSet.LABEL);
+            //properties.put( DataSet.PROPERTY_Y_LABEL, o );
+            //String zlabel= (String)tds.property(QDataSet.LABEL);
+            //properties.put( DataSet.PROPERTY_Z_LABEL, o );
             
             DataTransferType zTransferType;
             DataTransferType xTransferType;
             
             if ( asciiTransferTypes ) {
-                if ( UnitsUtil.isTimeLocation( SemanticOps.getUnits(xds) ) ) {
+                if ( UnitsUtil.isTimeLocation( xunits ) ) {
                     xTransferType= DataTransferType.getByName("time24");                  
                 } else {
                     xTransferType= DataTransferType.getByName("ascii24");
