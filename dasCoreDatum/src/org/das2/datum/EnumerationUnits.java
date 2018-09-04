@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 import org.das2.datum.format.DatumFormatterFactory;
@@ -294,12 +295,12 @@ public class EnumerationUnits extends Units {
     @Override
     public Datum parse(String s) throws java.text.ParseException {
         Datum result = null;
-        for (Iterator i = objects.keySet().iterator(); i.hasNext();) {
-            Object key = i.next();
+        for ( Entry<Object,Datum> entry: objects.entrySet() ) {
+            Object key = entry.getKey();
             //Object value = objects.get(key);
             if (key.toString().equals(s)) { // if the look the same, they are the same
                 if (result == null) {
-                    result = (Datum) objects.get(key);
+                    result = (Datum) entry.getValue();
                 } else {
                     throw new IllegalStateException("Multiple Objects' string representations match");
                 }

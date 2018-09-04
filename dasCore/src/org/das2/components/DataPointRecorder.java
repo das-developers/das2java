@@ -151,7 +151,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     public static class DataPoint implements Comparable {
 
         Datum[] data;
-        Map planes;
+        private Map<String,Object> planes;
 
         public DataPoint(Datum x1, Datum x2, Map planes) {
             this(new Datum[]{x1, x2}, planes);
@@ -229,9 +229,8 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         public String toString() {
             StringBuilder result = new StringBuilder("" + data[0] + " " + data[1]);
             if (planes != null) {
-                for (Iterator i = planes.keySet().iterator(); i.hasNext();) {
-                    Object key = i.next();
-                    result.append(" ").append(planes.get(key));
+                for ( Entry<String,Object> entry: planes.entrySet() ) {
+                    result.append(" ").append(entry.getValue());
                 }
             }
             return result.toString();
