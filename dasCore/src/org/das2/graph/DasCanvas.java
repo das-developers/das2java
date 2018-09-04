@@ -603,7 +603,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         return Collections.unmodifiableList(devicePositionList);
     }
     private int displayLockCount = 0;
-    private final Object displayLockObject = new String("DISPLAY_LOCK_OBJECT");//findbugs DM_STRING_CTOR okay
+    private final Object displayLockObject = new Object();
 
     /**
      * Lock the display for this canvas.  All Mouse and Key events are captured
