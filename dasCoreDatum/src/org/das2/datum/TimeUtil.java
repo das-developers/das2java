@@ -425,9 +425,9 @@ public final class TimeUtil {
         
         int jd= 2436205 + mjd1958;
 
-        if ( u==Units.cdfTT2000 && sinceMidnight<0.0 ) { //TODO: huh?  this needs review
+        if ( u==Units.cdfTT2000 && sinceMidnight<0.0 ) { //TODO: huh?  this needs review  TODO: document when this happens.
             TimeStruct result= julianToGregorian( jd );
-            boolean isLeap= ( result.month==1 && result.day==1 ) || ( result.month==1 && result.day==1 ); // TODO: still kludgy
+            boolean isLeap= ( result.month==1 && result.day==1 ); // TODO: still kludgy
             if ( isLeap ) {
                 mjd1958= mjd1958-1;
                 jd= 2436205 + mjd1958;
