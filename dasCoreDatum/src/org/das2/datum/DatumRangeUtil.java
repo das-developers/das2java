@@ -1142,7 +1142,7 @@ public class DatumRangeUtil {
                     String[] s= format.split("UNRSV1"+(i+1),-2);
                     format= s[0]+formatCodes[idx]+s[1];
                 }
-                beforeToUnresolved.removeAll(beforeToUnresolved);
+                beforeToUnresolved.clear();
             }
             
             if ( beforeToUnresolved.size()+afterToUnresolved.size() > 0 ) {
