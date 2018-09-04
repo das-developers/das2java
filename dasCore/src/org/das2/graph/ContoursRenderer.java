@@ -470,15 +470,6 @@ public class ContoursRenderer extends Renderer {
     public String getListLabel() {
         return "" + ( getLegendLabel().length()> 0 ? getLegendLabel() +" " : "contours" );
     }
-    
-    private String getFormat( QDataSet zds ) {
-        String form=this.format;
-        
-        if ( form.length()==0 ) {
-            form= "%.2f";
-        }
-        return form;
-    }
 
     @Override
     public synchronized void updatePlotImage(DasAxis xAxis, DasAxis yAxis, ProgressMonitor monitor) throws DasException {
