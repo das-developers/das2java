@@ -268,9 +268,9 @@ public class TableUtil {
     /**
      * Write das2stream directly from QDataSet.
      * @param tds rank 2 table or rank 3 join of tables.
-     * @param out
-     * @param asciiTransferTypes
-     * @param sendStreamDescriptor 
+     * @param out output channel which will receive the stream.
+     * @param asciiTransferTypes if true then use ascii to transfer data.
+     * @param sendStreamDescriptor if true send the stream header, if false don't output it.
      */
     public static void dumpToDas2Stream( QDataSet tds, WritableByteChannel out, boolean asciiTransferTypes, boolean sendStreamDescriptor ) {
         try {
@@ -280,27 +280,12 @@ public class TableUtil {
             }
             
             QDataSet xds= SemanticOps.xtagsDataSet(tds);
-            QDataSet yds= SemanticOps.ytagsDataSet(tds);
             
             StreamProducer producer = new StreamProducer(out);
             StreamDescriptor sd = new StreamDescriptor();
             
-            //Map<String,Object> properties= new LinkedHashMap<>();
-            
-            Object o;
-            
             Units xunits= SemanticOps.getUnits(xds);
-            //Units yunits= SemanticOps.getUnits(yds);
             Units zunits= SemanticOps.getUnits(tds);
-            //properties.put( "xUnits", xunits );
-            //properties.put( "yUnits", yunits );
-            //properties.put( "zUnits", zunits );
-            //String xlabel= (String)xds.property(QDataSet.LABEL);
-            //properties.put( DataSet.PROPERTY_X_LABEL, o );
-            //String ylabel= (String)yds.property(QDataSet.LABEL);
-            //properties.put( DataSet.PROPERTY_Y_LABEL, o );
-            //String zlabel= (String)tds.property(QDataSet.LABEL);
-            //properties.put( DataSet.PROPERTY_Z_LABEL, o );
             
             DataTransferType zTransferType;
             DataTransferType xTransferType;
