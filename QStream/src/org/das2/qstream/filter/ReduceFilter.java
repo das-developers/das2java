@@ -194,10 +194,9 @@ public class ReduceFilter implements StreamHandler {
 
     @Override
     public void streamClosed(StreamDescriptor sd) throws StreamException {
-        Set<String> keys= accum.keySet();
-        Set<PacketDescriptor> unloaded= new HashSet<PacketDescriptor>();
-        for ( String key: keys ) {
-            Accum ac1= accum.get(key);
+        Set<PacketDescriptor> unloaded= new HashSet<>();
+        for ( Entry<String,Accum> entry: accum.entrySet() ) {
+            Accum ac1= entry.getValue();
             if ( unloaded.contains(ac1.pd) ) {
 
             } else {

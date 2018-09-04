@@ -705,9 +705,10 @@ public class DataSetBuilder {
             result.putProperty( QDataSet.FILL_VALUE, fillValue );
         }
         
-        for (String key : properties.keySet()) {
+        for (Entry<String,Object> entry : properties.entrySet()) {
+            String key= entry.getKey();
             if ( key.startsWith("BUNDLE_") && dataSetResolver!=null ) {
-                Object okey= properties.get(key);
+                Object okey= entry.getValue();
                 if ( okey instanceof String ) {
                     okey= dataSetResolver.resolve((String)properties.get(key));
                 } else if ( okey==null ) {
@@ -716,12 +717,12 @@ public class DataSetBuilder {
                 result.putProperty( key, okey );
             } else if ( key.startsWith("WEIGHTS" ) || key.startsWith("DEPEND_")  // The QStream parser stores strings temporarily.
                 || key.startsWith("DELTA_") || key.startsWith("BIN_")) {
-                Object ods= properties.get(key);
+                Object ods= entry.getValue();
                 if ( ods!=null && ods instanceof QDataSet ) {
                     result.putProperty( key, ods );
                 }
             } else {
-                result.putProperty( key, properties.get(key) );
+                result.putProperty( key, entry.getValue() );
             }
         }
         
