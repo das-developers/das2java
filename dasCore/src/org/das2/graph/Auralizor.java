@@ -75,6 +75,11 @@ public class Auralizor {
         QDataSet yrange= Ops.extent(this.ds);
         min= yrange.value(0);
         max= yrange.value(1);        
+        if ( min==max ) {
+            max= Math.abs(min);
+            if ( max==min ) max= max * 10;
+            if ( max==0 ) max = max + 10;
+        }
     }
     
     
