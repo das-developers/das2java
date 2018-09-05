@@ -10,6 +10,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.text.ParseException;
+import java.util.Comparator;
 import java.util.UnknownFormatConversionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -23,6 +25,8 @@ import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
+import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
 import org.das2.datum.EnumerationUnits;
@@ -249,6 +253,71 @@ public class QDataSetTableModel extends AbstractTableModel {
         return colCount;
     }
 
+    /**
+     * return the units of the column.
+     * @param columnIndex
+     * @return 
+     */
+    public Units getColumnUnits( int columnIndex ) {
+        return this.units[columnIndex];
+    }
+    
+    /**
+     * return the sorter to use with any column.
+     * @param tm
+     * @return 
+     */
+    public static TableRowSorter getRowSorter( final TableModel tm ) {
+        return new TableRowSorter(tm) {
+            @Override
+            public Comparator getComparator(int col) {
+                if ( tm instanceof QDataSetTableModel ) { // it is...
+                    QDataSetTableModel qtm= (QDataSetTableModel)tm;
+                    final Units u= qtm.getColumnUnits(col);
+                    if ( u instanceof EnumerationUnits ) {
+                        return super.getComparator(col);
+                    } else {
+                        return new Comparator() {
+                            @Override
+                            public int compare(Object o1, Object o2) {
+                                //wow, all the data has been converted to Strings, wonder why...
+                                Datum d1=null;
+                                Datum d2=null;
+                                if ( o1 instanceof String ) {
+                                    try {
+                                        d1= u.parse((String)o1);
+                                    } catch (ParseException ex) {
+                                        logger.fine("parse exception");
+                                    }
+                                }
+                                if ( o2 instanceof String ) {
+                                    try {
+                                        d2= u.parse((String)o2);
+                                    } catch (ParseException ex) {
+                                        logger.fine("parse exception");
+                                    }
+                                }
+                                if ( d1!=null && d2!=null ) {
+                                    try { 
+                                        return d1.compareTo(d2);
+                                    } catch ( IllegalArgumentException ex ) {
+                                        // this too should not happen.
+                                        return o1.toString().compareTo(o2.toString());
+                                    }
+                                } else {
+                                    // this too should not happen.
+                                    return o1.toString().compareTo(o2.toString());
+                                }
+                            }
+                        };
+                    }
+                }
+                return super.getComparator(col);
+            }
+        };
+    }
+    
+    
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
         if (columnIndex < dep0Offset) {
