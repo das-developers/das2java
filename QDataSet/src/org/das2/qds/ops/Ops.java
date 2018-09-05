@@ -7500,6 +7500,7 @@ public final class Ops {
      */
     public static QDataSet chirp( QDataSet t, Datum df0, Datum dt1, Datum df1 ) {
         Units tu= SemanticOps.getUnits(t);
+        if ( dt1.value()<=0 ) throw new IllegalArgumentException("dt1 must be greater than 0.");
         t= putProperty( copy(t), QDataSet.UNITS, null );
         double f0= df0.value();
         double f1= df1.value();
