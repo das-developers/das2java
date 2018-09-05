@@ -39,6 +39,8 @@ import org.das2.qds.DataSetOps;
 import org.das2.qds.DataSetUtil;
 import org.das2.qds.QDataSet;
 import org.das2.qds.SemanticOps;
+import org.das2.qds.examples.Schemes;
+import org.das2.qds.ops.Ops;
 import test.BundleBinsDemo;
 
 /**
@@ -65,6 +67,9 @@ public class QDataSetTableModel extends AbstractTableModel {
      * @param ds dataset to adapt to a model/
      */
     public QDataSetTableModel( QDataSet ds ) {
+        if ( ds.rank()==1 && SemanticOps.getUnits(ds) instanceof EnumerationUnits ) {
+            ds= Ops.createEvents(ds);
+        }
         this.ds = ds;
         this.wds= DataSetUtil.weightsDataSet(ds);
         this.dep0 = (QDataSet) ds.property(QDataSet.DEPEND_0);
