@@ -355,7 +355,7 @@ public class DisplayDataMouseModule extends MouseModule {
     }
 
     private void setDataSet( QDataSet ds, DatumRange xrange, DatumRange yrange ) {
-        TableModel tm;
+        QDataSetTableModel tm;
 
         if ( ds==null ) {
             showMessageInTable( myEdit, "no dataset" );
@@ -383,7 +383,7 @@ public class DisplayDataMouseModule extends MouseModule {
                 tds=SemanticOps.trim( ds, xrange, null ); // this may cause problems else where...
             }
             tm= new QDataSetTableModel(tds);
-            tcm= ((QDataSetTableModel)tm).getTableColumnModel();
+            tcm= tm.getTableColumnModel();
             if ( dep1!=null && dep1.rank()==2 ) {
                 myEdit.getTableHeader().setToolTipText("Column labels reported are from the first record");
             }
@@ -406,14 +406,12 @@ public class DisplayDataMouseModule extends MouseModule {
         } catch ( RuntimeException ex ) {
             logger.log( Level.SEVERE, ex.getMessage(), ex );
             tm= new QDataSetTableModel(ds);
-            tcm= ((QDataSetTableModel)tm).getTableColumnModel();
+            tcm= tm.getTableColumnModel();
             messageLabel.setText( ex.getMessage() );
         }
         myEdit.setModel(tm);
         myEdit.setColumnModel(tcm);
-        if ( tm instanceof QDataSetTableModel ) {
-            myEdit.setRowSorter( QDataSetTableModel.getRowSorter(tm) );
-        }
+        myEdit.setRowSorter( QDataSetTableModel.getRowSorter(tm) );
         
         
         //myEdit.setColumnModel(new DefaultTableColumnModel() );
