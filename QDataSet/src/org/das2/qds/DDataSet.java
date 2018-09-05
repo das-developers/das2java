@@ -536,6 +536,9 @@ public final class DDataSet extends ArrayDataSet {
         if ( this.rank<1 ) {
             throw new IllegalArgumentException("slice called on rank 0 dataset");
         }
+        if ( this.len0<=i ) {
+            throw new IndexOutOfBoundsException("out of bounds in slice of len0="+this.len0+" dataset: "+i);
+        }
         int nrank = this.rank-1;
         int noff1= i * len1 * len2 * len3;
         int noff2= (i+1) * len1 * len2 * len3;
