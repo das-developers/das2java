@@ -29,7 +29,10 @@ import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
+import java.text.ParseException;
+import java.util.Comparator;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
@@ -53,6 +56,8 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
+import org.das2.datum.Datum;
+import org.das2.datum.EnumerationUnits;
 import org.das2.qds.DataSetUtil;
 import org.das2.qds.QDataSet;
 import org.das2.qds.SemanticOps;
@@ -406,14 +411,16 @@ public class DisplayDataMouseModule extends MouseModule {
         }
         myEdit.setModel(tm);
         myEdit.setColumnModel(tcm);
-        myEdit.setRowSorter( new TableRowSorter<>(tm) );
+        if ( tm instanceof QDataSetTableModel ) {
+            myEdit.setRowSorter( QDataSetTableModel.getRowSorter(tm) );
+        }
         
         
         //myEdit.setColumnModel(new DefaultTableColumnModel() );
         //myEdit.setColumnModel(tcm); // error with rank 1.
 
     }
-
+    
     @Override
     public String getListLabel() {
         return getLabel();
