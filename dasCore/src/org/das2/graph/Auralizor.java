@@ -14,7 +14,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.datum.Units;
 import javax.sound.sampled.*;
-import javax.swing.JButton;
 import javax.swing.JPanel;
 import org.das2.datum.Datum;
 import org.das2.datum.LoggerManager;
@@ -139,7 +138,6 @@ public class Auralizor {
     public void playSound() {
         playing= true;
         
-        QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
         UnitsConverter uc= UnitsConverter.getConverter( SemanticOps.getUnits(dep0).getOffsetUnits(), Units.seconds );
         float sampleRate=   (float) ( 1. / uc.convert( dep0.value(1)-dep0.value(0) )  ) ;
         logger.log(Level.FINE, "sampleRate= {0}", sampleRate);
@@ -162,16 +160,14 @@ public class Auralizor {
         
         line.start();
         
-        int i=currentRecord;
         int ibuf=0;
 
         while ( currentRecord<dep0.length() ) {
             if ( playing==false ) {
                 break;
             }
-            i= currentRecord;
             
-            double d= ds.value(i++);
+            double d= ds.value(currentRecord);
             int b= (int) ( 65536 * ( d - min ) / ( max-min ) ) - 32768;
             try {
                 buffer.putShort( ibuf, (short)b );
@@ -184,8 +180,10 @@ public class Auralizor {
                 line.write(buf, 0, ibuf );
                 ibuf=0;
             }
-            currentRecord= i;
-            setPosition(getPosition());
+            currentRecord++;
+            if ( currentRecord<dep0.length() ) {
+                setPosition(getPosition());
+            }
         }
         line.write(buf, 0, ibuf );
         
