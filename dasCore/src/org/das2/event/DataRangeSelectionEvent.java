@@ -25,6 +25,7 @@ package org.das2.event;
 
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
+import org.das2.datum.Units;
 import org.das2.qds.QDataSet;
 
 /**
@@ -37,6 +38,7 @@ public class DataRangeSelectionEvent extends DasEvent {
        
     Datum min;
     Datum max;
+    DatumRange range;
     
     Datum reference;  // this is where the selection was made at (perpendicular axis)
         
@@ -48,20 +50,29 @@ public class DataRangeSelectionEvent extends DasEvent {
             max=t;
         }        
         this.min= min;
-        this.max= max;        
+        this.max= max;  
+        this.range= new DatumRange(min,max);
         reference= null;
     }
     
+    public DataRangeSelectionEvent(Object source, DatumRange range ) {
+        super(source);
+        this.min= range.min();
+        this.max= range.max();        
+        this.range= range;
+        reference= null;
+    }    
+    
     public Datum getMinimum() {
-        return min;
+        return this.min;
     }
     
     public Datum getMaximum() {
-        return max; 
+        return this.max; 
     }
     
     public DatumRange getDatumRange() {
-        return new DatumRange( min, max );
+        return this.range;
     }
     
     public void setDataSet(QDataSet ds) {
