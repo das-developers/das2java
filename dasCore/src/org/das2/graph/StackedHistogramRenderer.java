@@ -416,7 +416,7 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
                         //yHeight= yHeight < littleRowHeight ? yHeight : littleRowHeight;
                         if ( peaks!=null ) {
                             double peakValue = peaks.value( ibin, j );
-                            if (peakValue <= zAxisMax) {
+                            if (peakValue >= zAxisMin) {
                                 int yMax= (int)zAxis.transform( peakValue, zunits, yBase, yBaseTop );
                                 yMax= (y0-yMax)>(0) ? yMax : (y0);
                                 if (null!=peaksIndicator) switch(peaksIndicator){
@@ -450,7 +450,9 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
 										 }
                             }
                         }
-                        if ( zz>=zAxisMin ) g.drawLine(x0, yAvg, x0, yAvg+yHeight );
+                        if ( zz>=zAxisMin ) {
+                            g.drawLine(x0, yAvg, x0, yAvg+yHeight );
+                        }
                     }
                 }
             }
