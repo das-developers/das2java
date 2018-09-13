@@ -307,10 +307,21 @@ public final class DatumUtil {
     private static final String ZEROS100= "0.00000000000000000000"
             + "0000000000000000000000000000000000000000"
             + "0000000000000000000000000000000000000000";
+    
+    
+    /**
+     * return "0" for 0, "0.0" for 1, "0.00" for 2, and so on.  This can be used
+     * in factory.newFormatter(formatString).
+     * @param count number of decimal places following the decimal.
+     * @return string for newFormatter.
+     * @see DatumFormatterFactory#newFormatter(java.lang.String) 
+     */
     public static String zeros(int count) {
-        if ( count < 0 ) return "0";
-        else if ( count <= 100 ) return ZEROS100.substring(0,count+2);
-        else {
+        if ( count < 1 ) { // new 2018, don't show decimal in 0., several have commented on this over the years.
+            return "0";
+        } else if ( count <= 100 ) {
+            return ZEROS100.substring(0,count+2);
+        } else {
            StringBuffer buff = new StringBuffer(count+2).append("0.");
            for (int index = 0; index < count; index++) {
                 buff.append('0');
