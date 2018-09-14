@@ -363,6 +363,29 @@ public class DasAnnotation extends DasCanvasComponent {
         this.url = url;
         firePropertyChange(PROP_URL, oldUrl, url);
     }
+    
+    /**
+     * the scale for the image, 0.5 is half-size, 2.0 is double.
+     */
+    private double scale = 1.0;
+
+    public static final String PROP_SCALE = "scale";
+
+    public double getScale() {
+        return scale;
+    }
+
+    /**
+     * set the amount to scale the image by, if using URL to point at an image, where 0.5 is half of the
+     * original image size.
+     * @param scale 
+     */
+    public void setScale(double scale) {
+        double oldScale = this.scale;
+        this.scale = scale;
+        firePropertyChange(PROP_SCALE, oldScale, scale);
+        resize();
+    }
 
     @Override
     public void resize() {
@@ -563,7 +586,22 @@ public class DasAnnotation extends DasCanvasComponent {
             if ( gtr!=null ) {
                 gtr.draw(g, r.x+em, r.y + em + (float) gtr.getAscent() );
             } else {
-                g.drawImage( img, r.x+em, r.y+em, this );
+                if ( scale!=1.0 ) {
+                    int newWidth= (int)(img.getWidth()*scale);
+                    int newHeight= (int)(img.getHeight()*scale);
+                    
+                    g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+                    //g.setRenderingHint(RenderingHints.KEY_RENDERING,RenderingHints.VALUE_RENDER_QUALITY);
+                    g.drawImage( img, r.x+em, r.y+em, newWidth, newHeight, this );
+                    
+                    //BufferedImage resized = new BufferedImage(newWidth, newHeight, img.getType());
+                    //Graphics2D g2 = resized.createGraphics();
+                    //g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+                    //g2.drawImage( img, 0, 0, newWidth, newHeight, 0, 0, img.getWidth(), img.getHeight(), null);
+                    //g.drawImage( resized, r.x+em, r.y+em, this );
+                } else {
+                    g.drawImage( img, r.x+em, r.y+em, this );
+                }
             }
         
             g.setColor(fore);
@@ -714,7 +752,7 @@ public class DasAnnotation extends DasCanvasComponent {
             if ( img==null ) {
                 r= new Rectangle( 0, 0, 64, 64 );
             } else {
-                r= new Rectangle( 0, 0, img.getWidth(), img.getHeight() );
+                r= new Rectangle( 0, 0, (int)(img.getWidth() * scale), (int)(img.getHeight()*scale) );
             }
         } else {
             r= gtr.getBounds();
