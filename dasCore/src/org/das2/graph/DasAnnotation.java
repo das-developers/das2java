@@ -590,15 +590,16 @@ public class DasAnnotation extends DasCanvasComponent {
                     int newWidth= (int)(img.getWidth()*scale);
                     int newHeight= (int)(img.getHeight()*scale);
                     
-                    g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-                    //g.setRenderingHint(RenderingHints.KEY_RENDERING,RenderingHints.VALUE_RENDER_QUALITY);
-                    g.drawImage( img, r.x+em, r.y+em, newWidth, newHeight, this );
+                    boolean printing= getCanvas().isPrintingThread();
+                    if ( printing ) {
+                        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+                        g.drawImage( img, r.x+em, r.y+em, newWidth, newHeight, this );        
+                    } else {
+                        BufferedImage resized = org.das2.util.ImageUtil.getScaledInstance( img, (int)Math.sqrt( newWidth*newWidth + newHeight*newHeight ) );
+                        g.drawImage( resized, r.x+em, r.y+em, this );                        
+                    }
                     
-                    //BufferedImage resized = new BufferedImage(newWidth, newHeight, img.getType());
-                    //Graphics2D g2 = resized.createGraphics();
-                    //g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-                    //g2.drawImage( img, 0, 0, newWidth, newHeight, 0, 0, img.getWidth(), img.getHeight(), null);
-                    //g.drawImage( resized, r.x+em, r.y+em, this );
+
                 } else {
                     g.drawImage( img, r.x+em, r.y+em, this );
                 }
