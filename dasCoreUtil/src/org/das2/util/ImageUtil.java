@@ -93,6 +93,9 @@ public class ImageUtil {
     /**
      * Convenience method that returns a scaled instance of the
      * provided {@code BufferedImage}.
+     * 
+     * first from http://today.java.net/pub/a/today/2007/04/03/perils-of-image-getscaledinstance.html
+     * resize taken from http://www.componenthouse.com/article-20
      *
      * @param img the original image to be scaled
      * @param targetWidth the desired width of the scaled instance,
