@@ -212,12 +212,24 @@ public class DasProgressPanel implements ProgressMonitor {
         return this.thePanel;
     }
 
+    /**
+     * return a new progress panel with component indicating status for the component.
+     * @param component the canvas component providing a context for the progress, for example a DasPlot which will load some data.
+     * @param initialMessage initial message for the monitor
+     * @return the new component
+     */
     public static DasProgressPanel createComponentPanel(DasCanvasComponent component, String initialMessage) {
         DasProgressPanel progressPanel = new DasProgressPanel(initialMessage);
         progressPanel.parentComponent = component;
         return progressPanel;
     }
     
+    /**
+     * return a new progress panel with component indicating status for the canvas.
+     * @param canvas the canvas client providing a context for the task.
+     * @param initialMessage initial message for the monitor
+     * @return 
+     */
     public static DasProgressPanel createComponentPanel(DasCanvas canvas, String initialMessage) {
         DasProgressPanel progressPanel = new DasProgressPanel(initialMessage);
         progressPanel.parentCanvas = canvas;
