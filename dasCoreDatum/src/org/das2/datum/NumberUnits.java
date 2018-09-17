@@ -223,7 +223,7 @@ public class NumberUnits extends Units {
                 if ( s.equalsIgnoreCase("fill") ) {
                     return getFillDatum();
                 } else {
-                    ParseException pe = new ParseException(nfe.getMessage(), 0);
+                    ParseException pe = new ParseException("Unable to parse Datum in string: "+ s, 0);
                     pe.initCause(nfe);
                     throw pe;
                 }
