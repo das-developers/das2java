@@ -22,7 +22,6 @@
  */
 package org.das2.dataset;
 
-import java.io.IOException;
 import org.das2.datum.DatumRange;
 import org.das2.datum.Units;
 import org.das2.datum.Datum;
@@ -39,7 +38,7 @@ import org.das2.qds.QDataSet;
 import org.das2.qds.RankZeroDataSet;
 import org.das2.qds.SemanticOps;
 import org.das2.qds.ops.Ops;
-import org.das2.qds.util.AsciiFormatter;
+//import org.das2.qds.util.AsciiFormatter;
 
 /**
  * DataSetRebinner implementing either bi-linear interpolation in blocks of 4 points, or nearest neighbor interpolation by
@@ -72,6 +71,22 @@ public class AverageTableRebinner implements DataSetRebinner {
         }
         return result;
     }
+    
+    private boolean cadenceCheck = true;
+
+    public static final String PROP_CADENCECHECK = "cadenceCheck";
+
+    public boolean isCadenceCheck() {
+        return cadenceCheck;
+    }
+
+    public void setCadenceCheck(boolean cadenceCheck) {
+        boolean oldCadenceCheck = this.cadenceCheck;
+        this.cadenceCheck = cadenceCheck;
+        propertyChangeSupport.firePropertyChange(PROP_CADENCECHECK, oldCadenceCheck, cadenceCheck);
+    }
+
+    
     
     /**
      * rebin the data, using the interpolate control to define the interpolation between measurements.  Data that fall into the
@@ -205,6 +220,9 @@ public class AverageTableRebinner implements DataSetRebinner {
             RankZeroDataSet yTagWidthQ= yTagWidth0;
             Datum yTagWidth = yTagWidthQ==null ? null : DataSetUtil.asDatum( yTagWidthQ );
             if ( yTagWidth!=null && yTagWidth.value()<0 ) yTagWidth= yTagWidth.multiply(-1);
+
+            if ( cadenceCheck==false ) yTagWidth= null;
+            if ( cadenceCheck==false ) xTagWidth= null;
 
             if (ddY != null) {
                 fillInterpolateY(rebinData, rebinWeights, ddY, yTagWidth, interpolateType);
@@ -827,7 +845,7 @@ public class AverageTableRebinner implements DataSetRebinner {
     }
 
     //still used by AveragePeakTableRebinner
-                                       //    final double[][] data, final double[][] weights, RebinDescriptor ddY, Datum yTagWidth, Interpolate interpolateType
+    //    final double[][] data, final double[][] weights, RebinDescriptor ddY, Datum yTagWidth, Interpolate interpolateType
     static void fillInterpolateX(final double[][] data, final double[][] weights, 
         final double[] xTags, double[] xTagMin, double[] xTagMax, 
         final double xSampleWidth, Interpolate interpolateType) {
@@ -880,7 +898,7 @@ public class AverageTableRebinner implements DataSetRebinner {
             if (interpolateType == Interpolate.NearestNeighbor) {
 
                 for (int i = 0; i < nx; i++) {
-                    if ( i1[i] > -1 && i2[i] > -1 && Math.abs(xTagMin[i2[i]] - xTagMax[i1[i]]) <= xSampleWidth * 1.5 ) {
+                    if ( i1[i] > -1 && i2[i] > -1 && ( xSampleWidth==0 || ( Math.abs(xTagMin[i2[i]] - xTagMax[i1[i]]) <= xSampleWidth * 1.5 ) ) ) {
                         int idx;
                         if (i1[i] == -1) {
                             if (i2[i] == -1) {
@@ -1138,10 +1156,14 @@ public class AverageTableRebinner implements DataSetRebinner {
                     ySampleWidths[j]= ( yTagTemp[ il1 ] - yTagTemp[ il0 ] ) + pixelSize;
                 }
             } else {
-                if ( ySampleWidthRatiometric ) {
-                    ySampleWidths[j]= ySampleWidth * ddY.binCenter( j, yTagUnits ) + pixelSize; // THIS IS A GUESS!                    
+                if ( yTagWidth==null ) {
+                    ySampleWidths[j]= -1;
                 } else {
-                    ySampleWidths[j]= ySampleWidth+ pixelSize; // there's a bug where two close measurements can fall into bins where the centers are more than xSampleWidth apart, so add a pixel width fuzz here.
+                    if ( ySampleWidthRatiometric ) {
+                        ySampleWidths[j]= ySampleWidth * ddY.binCenter( j, yTagUnits ) + pixelSize; // THIS IS A GUESS!                    
+                    } else {
+                        ySampleWidths[j]= ySampleWidth+ pixelSize; // there's a bug where two close measurements can fall into bins where the centers are more than xSampleWidth apart, so add a pixel width fuzz here.
+                    }
                 }
             }
         }
@@ -1192,7 +1214,7 @@ public class AverageTableRebinner implements DataSetRebinner {
                 for (int j = 0; j < ny; j++) {
                     boolean doInterp;
                     if ( i1[j]!= -1 && i2[j] != -1) {
-                        boolean doInterpR= ( yTagTemp[i2[j]] - yTagTemp[j] ) < ySampleWidths[j];
+                        boolean doInterpR= yTagWidth==null || ( (yTagTemp[i2[j]] - yTagTemp[j] ) < ySampleWidths[j] );
                         doInterp= doInterpR || ( yTagTemp[j] - yTagTemp[i1[j]] ) < ySampleWidths[j];
                         doInterp= doInterp || ( yTagTemp[i2[j]]-yTagTemp[i1[j]] ) < ySampleWidths[j];
                     } else {
@@ -1231,8 +1253,7 @@ public class AverageTableRebinner implements DataSetRebinner {
                 }
             } else {
                 for (int j = 0; j < ny; j++) { //yunits on sample width
-                    if ((i1[j] != -1) && ((yTagTemp[i2[j]] - yTagTemp[i1[j]]) < ySampleWidths[j] || i2[j] - i1[j] == 2)) { //kludge for bug 000321
-
+                    if ((i1[j] != -1) && ( yTagWidth==null || ( (yTagTemp[i2[j]] - yTagTemp[i1[j]]) < ySampleWidths[j] || i2[j] - i1[j] == 2) ) ) { //kludge for bug 000321
                         a2 = ((yTagTemp[j] - yTagTemp[i1[j]]) / (yTagTemp[i2[j]] - yTagTemp[i1[j]]));
                         a1 = 1. - a2;
                         data[i][j] = data[i][i1[j]] * a1 + data[i][i2[j]] * a2;

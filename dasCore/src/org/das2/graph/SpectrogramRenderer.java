@@ -747,6 +747,9 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         imageYRange = yAxis.getDatumRange();
 
                         DataSetRebinner rebinner = this.rebinnerEnum.getRebinner();
+                        if ( rebinner instanceof AverageTableRebinner ) {
+                            ((AverageTableRebinner)rebinner).setCadenceCheck(this.cadenceCheck);
+                        }
 
                         //long t0;
 
@@ -1065,6 +1068,26 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         this.print300dpi = print300dpi;
     }
 
+    protected boolean cadenceCheck = true;
+    public static final String PROP_CADENCECHECK = "cadenceCheck";
+
+    public boolean isCadenceCheck() {
+        return cadenceCheck;
+    }
+
+    /**
+     * If true, then use a cadence estimate to determine and indicate data gaps.
+     * @param cadenceCheck
+     */
+    public void setCadenceCheck(boolean cadenceCheck) {
+        boolean oldCadenceCheck = this.cadenceCheck;
+        this.cadenceCheck = cadenceCheck;
+        clearPlotImage();
+        updateCacheImage();
+        this.getParent().repaint();
+        propertyChangeSupport.firePropertyChange(PROP_CADENCECHECK, oldCadenceCheck, cadenceCheck);
+    }
+    
     private Shape selectionArea=null;
     /**
      * return the shape or null.
