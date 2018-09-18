@@ -199,7 +199,7 @@ public class DasProgressPanel implements ProgressMonitor {
         showProgressRate = true;
         isCancelled = false;
         running = false;
-        //System.err.println("here create " + label + " " + Integer.toHexString( this.hashCode() )  );
+        //System.err.println("here create \"" + label + "\" " + Integer.toHexString( this.hashCode() ) + " " + Thread.currentThread()  );
     }
 
     /**
@@ -438,7 +438,7 @@ public class DasProgressPanel implements ProgressMonitor {
     
     @Override
     public synchronized void finished() {
-        //System.err.println("here finished " + Integer.toHexString( this.hashCode() )  );
+        //System.err.println("here finished " + Integer.toHexString( this.hashCode() ) + " " + Thread.currentThread() );
         //if ( this.progressMessageString.endsWith("t: 31" ) ) {
         //    System.err.println("*** here finished t31 " + Integer.toHexString( this.hashCode() )  );    
         //}
