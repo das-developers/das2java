@@ -13,6 +13,9 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -351,5 +354,16 @@ public class FileUtil {
         return new String( four );
     }
 
+    /**
+     * read all the bytes in the UTF-8 encoded file into a string.
+     * @param f the file, which presumed to be UTF-8 (or ASCII) encoded.
+     * @return string containing the contents of the file.
+     * @throws java.io.IOException 
+     */
+    public static String readFileToString( File f ) throws IOException {
+        byte[] bb= Files.readAllBytes( Paths.get( f.toURI() ) );
+        return new String( bb, Charset.forName("UTF-8") );
+
+    }
     
 }
