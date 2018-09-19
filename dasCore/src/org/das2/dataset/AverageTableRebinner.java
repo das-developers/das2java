@@ -310,7 +310,7 @@ public class AverageTableRebinner implements DataSetRebinner {
         if ( xds.length()>1 ) {
             Datum d= SemanticOps.guessXTagWidth( xds, tds1 );
             if ( d==null ) {
-                System.err.println("failed to guessXTagWidth");
+                logger.warning("failed to guessXTagWidth");
                 Units xunits= SemanticOps.getUnits(xds).getOffsetUnits();
                 xTagWidth= xunits.createDatum(Double.MAX_VALUE);
                 return xTagWidth;
@@ -472,7 +472,7 @@ public class AverageTableRebinner implements DataSetRebinner {
             if ( yds.rank()==2 ) {
                 int islice= yds.length()/2;
                 if ( yds.length()>0 && yds.length(islice)>0 && yds.value(islice,0)!=yds.value(islice,0) ) {
-                    System.err.println("kludge assumes rank2 yds is repeating values");
+                    logger.warning("kludge assumes rank2 yds is repeating values");
                 }
 
                 yds= yds.slice(islice); //TODO: kludge assumes that all yds slices are repeated.
@@ -1032,9 +1032,6 @@ public class AverageTableRebinner implements DataSetRebinner {
                 for (int iii = ii1; iii < nx; iii++) {
                     i1[iii] = ii1;
                 }
-            }
-            if ( j==ny/2 ) {
-                System.err.println("stop here");
             }
             if ( isNN ) {
                 for (int i = 0; i < nx; i++) {
