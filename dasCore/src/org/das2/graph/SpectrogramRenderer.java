@@ -1084,7 +1084,6 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         this.cadenceCheck = cadenceCheck;
         clearPlotImage();
         updateCacheImage();
-        this.getParent().repaint();
         propertyChangeSupport.firePropertyChange(PROP_CADENCECHECK, oldCadenceCheck, cadenceCheck);
     }
     
