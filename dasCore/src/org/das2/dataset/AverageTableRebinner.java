@@ -222,14 +222,13 @@ public class AverageTableRebinner implements DataSetRebinner {
             if ( yTagWidth!=null && yTagWidth.value()<0 ) yTagWidth= yTagWidth.multiply(-1);
 
             if ( cadenceCheck==false ) yTagWidth= null;
-            if ( cadenceCheck==false ) xTagWidth= null;
 
             if (ddY != null) {
                 fillInterpolateY(rebinData, rebinWeights, ddY, yTagWidth, interpolateType);
             }
             
             if (ddX != null) {
-                fillInterpolateXNew(rebinData, rebinWeights, ddX, xTagWidth, interpolateType);
+                fillInterpolateXNew(rebinData, rebinWeights, ddX, xTagWidth, cadenceCheck, interpolateType);
             }
 
         } else if (enlargePixels) {
@@ -939,11 +938,13 @@ public class AverageTableRebinner implements DataSetRebinner {
      * @param weights 0 means ignore, positive means valid
      * @param ddX
      * @param xTagWidth the nominal cadence between measurements.  This defines acceptably close, and we apply a fudge factor.
+     * @param cadenceCheck check for gaps based on cadence
      * @param interpolateType if NearestNeighbor, then special actions can occur.
      */
-    static void fillInterpolateXNew(final double[][] data, final double[][] weights, 
-        RebinDescriptor ddX, Datum xTagWidth, Interpolate interpolateType) {
+    static void fillInterpolateXNew(final double[][] data, final double[][] weights, RebinDescriptor ddX, Datum xTagWidth, boolean cadenceCheck, Interpolate interpolateType) {
 
+        final boolean noCadenceCheck= !cadenceCheck;
+        
         final int ny = data[0].length;
         final int nx = ddX.numberOfBins();
         final int[] i1 = new int[nx];
@@ -1032,11 +1033,14 @@ public class AverageTableRebinner implements DataSetRebinner {
                     i1[iii] = ii1;
                 }
             }
+            if ( j==ny/2 ) {
+                System.err.println("stop here");
+            }
             if ( isNN ) {
                 for (int i = 0; i < nx; i++) {
                     boolean doInterp; //TODO? Really, this is the name?  I think doGrow is better
                     if ( i1[i]!= -1 && i2[i] != -1) {
-                        boolean doInterpR= ( xTagTemp[i2[i]] - xTagTemp[i] ) < xSampleWidth/2;
+                        boolean doInterpR= noCadenceCheck || ( ( xTagTemp[i2[i]] - xTagTemp[i] ) < xSampleWidth/2 );
                         doInterp= doInterpR || ( xTagTemp[i] - xTagTemp[i1[i]] ) < xSampleWidth/2;
                         //doInterp= doInterp || ( xTagTemp[i2[i]]-xTagTemp[i1[i]] ) < xSampleWidth*2; // strange bit of code that is probably wrong.
                     } else {
@@ -1077,7 +1081,7 @@ public class AverageTableRebinner implements DataSetRebinner {
                 }
             } else {
                 for (int i = 0; i < nx; i++) {
-                    if ((i1[i] != -1) && ((xTagTemp[i2[i]] - xTagTemp[i1[i]]) < xSampleWidth || i2[i] - i1[i] == 2)) { //kludge for bug 000321
+                    if ((i1[i] != -1) && ( noCadenceCheck || (xTagTemp[i2[i]] - xTagTemp[i1[i]]) < xSampleWidth || i2[i] - i1[i] == 2)) { //kludge for bug 000321
                         a2 = ((xTagTemp[i] - xTagTemp[i1[i]]) / (xTagTemp[i2[i]] - xTagTemp[i1[i]]));
                         a1 = 1. - a2;
                         data[i][j] = data[i1[i]][j] * a1 + data[i2[i]][j] * a2;
