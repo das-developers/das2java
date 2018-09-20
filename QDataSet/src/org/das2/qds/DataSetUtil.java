@@ -1232,6 +1232,10 @@ public class DataSetUtil {
             } else {
                 d= peaks.slice( nonZeroPeakIndex );
             }
+            
+            if ( d.value()==0.0 ) {
+                throw new RuntimeException("things have gone wrong again, where d becomes zero");
+            }
 
         } while ( true );
 
