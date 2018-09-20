@@ -1,8 +1,6 @@
 
 package org.das2.qds;
 
-import org.das2.qds.ops.Ops;
-
 /**
  * Abstract class implements values and exampleOutput based on
  * value and exampleInput.
