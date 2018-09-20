@@ -1195,8 +1195,8 @@ public class DataSetUtil {
      * This works on continuous data, however, so limit is used to determine 
      * the fuzz allowed.  TODO: this needs review and is not for production use.
      * @param ds any dataset
-     * @param d first factor for the dataset, error is used to detect non-zero significance.
-     * @param limit the resolution for which data is considered equal, and this
+     * @param d rank 0 dataset, first factor for the dataset, error is used to detect non-zero significance.
+     * @param limit rank 0 dataset, the resolution for which data is considered equal, and this
      * limit should be greater than numerical precision.
      * @throws IllegalArgumentException if there is no valid data.
      * @return the greatest common divisor.
@@ -1211,6 +1211,9 @@ public class DataSetUtil {
             hist= Ops.autoHistogram(r);
 
             peaks= AutoHistogram.peaks(hist);
+            if ( peaks.length()==1 && peaks.slice(0).value()==0. ) { // clearly since we divide everything exactly, this is the GCD.
+                return d;
+            }
 
             // stop is stopping condition tolerance.
             double stop= ( d.property(QDataSet.DELTA_MINUS)!=null ) ?  ((QDataSet)d.property(QDataSet.DELTA_MINUS)).value() : 0.0;
@@ -1220,7 +1223,6 @@ public class DataSetUtil {
             int nonZeroPeakIndex= ( peaks.value(0) - stop < 0.0 ) ? 1 : 0;
             int lastNonZeroPeakIndex= peaks.length()-1;
 
-            
             while ( lastNonZeroPeakIndex>=0 && ( peaks.value(lastNonZeroPeakIndex) > top ) ) {
                 lastNonZeroPeakIndex--;
             }
