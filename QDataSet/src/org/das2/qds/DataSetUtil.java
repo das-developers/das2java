@@ -8,6 +8,7 @@
  */
 package org.das2.qds;
 
+import java.io.IOException;
 import java.lang.reflect.Array;
 import java.text.DecimalFormat;
 import java.text.ParseException;
@@ -44,6 +45,7 @@ import org.das2.datum.format.TimeDatumFormatter;
 import org.das2.util.LoggerManager;
 import org.das2.qds.examples.Schemes;
 import org.das2.qds.ops.Ops;
+import org.das2.qds.util.AsciiFormatter;
 import org.das2.qds.util.AutoHistogram;
 import org.das2.qds.util.DataSetBuilder;
 import org.das2.qds.util.LinFit;
@@ -1210,6 +1212,11 @@ public class DataSetUtil {
             r= Ops.mod( ds, d );
             hist= Ops.autoHistogram(r);
 
+//            try {
+//                new AsciiFormatter().formatToFile( "/tmp/hist.dat", (QDataSet)hist.property( QDataSet.DEPEND_0 ), hist );
+//            } catch (IOException ex) {
+//                Logger.getLogger(DataSetUtil.class.getName()).log(Level.SEVERE, null, ex);
+//            }
             peaks= AutoHistogram.peaks(hist);
             if ( peaks.length()==1 && peaks.slice(0).value()==0. ) { // clearly since we divide everything exactly, this is the GCD.
                 return d;
@@ -1234,8 +1241,10 @@ public class DataSetUtil {
             }
             
             if ( d.value()==0.0 ) {
-                throw new RuntimeException("things have gone wrong again, where d becomes zero");
+                //throw new IllegalArgumentException("things have gone wrong again, where d becomes zero");
+                logger.fine("things have gone wrong again, where d becomes zero");
             }
+            
 
         } while ( true );
 
