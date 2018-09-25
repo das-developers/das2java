@@ -90,14 +90,26 @@ public final class SemanticOps {
     }
 
     /**
-     * return the labels for a dataset where DEPEND_1 is a bundle dimension.
-     * Look for the BUNDLE_1.
-     * @param ds
-     * @return
+     * return the labels for a bundle dataset.  For a rank 2 bundle, this
+     * will be found in BUNDLE_1, or legacy ones may have nominal data for DEPEND_1.
+     * For a rank 1 bundle this will be BUNDLE_0.
+     * @param ds rank 1 or rank 2 bundle.
+     * @return the column names.
      */
     public static String[] getComponentNames(QDataSet ds) {
         int n = ds.length(0);
-        QDataSet bdesc= (QDataSet) ds.property(QDataSet.BUNDLE_1);
+        QDataSet bdesc;
+        switch (ds.rank()) {
+            case 2:
+                bdesc= (QDataSet) ds.property(QDataSet.BUNDLE_1);
+                break;
+            case 1:
+                bdesc= (QDataSet) ds.property(QDataSet.BUNDLE_0);
+                break;
+            default:
+                bdesc= null;
+                break;
+        }
         if ( bdesc!=null && bdesc.rank()==2 ) {
             String[] result= new String[n];
                 for ( int i=0; i<n; i++ ) {
