@@ -2206,12 +2206,14 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             int DMin = getColumn().getDMinimum();
             Font tickLabelFont = getTickLabelFont();
             FontMetrics tickLabelFontMetrics = getFontMetrics(tickLabelFont);
-            int tickLength = tickLabelFont.getSize() * 2 / 3;
-            int tick_label_gap = tickLabelFontMetrics.stringWidth(" ");
+            int tickLength = this.tickLen;
+            int tick_label_gap = this.tickLen/ 2;
+            if ( tick_label_gap<TICK_LABEL_GAP_MIN ) tick_label_gap= TICK_LABEL_GAP_MIN;
+
             int lineHeight = tickLabelFont.getSize() + getLineSpacing();
 
-            int baseLine = position + tickLength + tick_label_gap + tickLabelFont.getSize();
-            int rightEdge = DMin - tickLabelFontMetrics.stringWidth("0000") - tick_label_gap;
+            int baseLine = position + Math.max( 0,tickLength ) + tick_label_gap + tickLabelFont.getSize();
+            int rightEdge = DMin - tickLabelFontMetrics.stringWidth("0000") -  tickLabelFontMetrics.stringWidth(" ");
 
             GrannyTextRenderer idlt = new GrannyTextRenderer();
             /*
@@ -2221,9 +2223,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             idlt.draw(g, (float)leftEdge, (float)baseLine);
              */
 
-
+            
             int width, leftEdge;
-
+                        
             if ( tcaData==null ) {
                 baseLine += lineHeight;
                 idlt.setString( g, "tcaData not available" );
