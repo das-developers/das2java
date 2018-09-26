@@ -769,10 +769,8 @@ public class DataPointRecorderNew extends JPanel {
                 jj.setFileFilter( new FileFilter() {
                     @Override
                     public boolean accept(File pathname) {
-                        if ( pathname==null ) return false; //            rte_1178734273_20140402_133610_wsk, I think this happens on Windows.
                         if ( pathname.isDirectory() ) return true;
-                        String fn= pathname.toString();
-                        if ( fn==null ) return false; // rte_1178734275.  Bill is still seeing this strange error, which I believe happens on Windows.
+                        String fn= pathname.getName();
                         return fn.endsWith(".dat") || fn.endsWith(".txt");
                     }
                     @Override

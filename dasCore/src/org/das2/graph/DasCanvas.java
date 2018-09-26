@@ -186,8 +186,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         return new FileFilter() {
 
             public boolean accept(File f) {
-                if ( f.toString()==null ) return false; //findbugs RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE: This strange case occurred on Windows, around 2012.
-                return f.isDirectory() || f.toString().endsWith(ext);
+                return f.isDirectory() || f.getName().endsWith(ext);
             }
 
             public String getDescription() {

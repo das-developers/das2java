@@ -184,7 +184,6 @@ public class Glob {
         return new FileFilter() {
             @Override
             public boolean accept(File pathname) {
-                if ( pathname.toString()==null ) return false;
                 return pattern.matcher( pathname.getName() ).matches( );
             }
             @Override

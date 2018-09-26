@@ -43,9 +43,7 @@ public enum AnchorPosition implements Enumeration {
         g.fillRect(0,0,16,16);
         g.setColor(Color.GRAY);
         g.drawRect( 2,2,10,10 );
-        if ( null==this ) {
-            g.drawString("?", 0, 14);
-        } else switch (this) {
+        switch (this) {
             case NW:
                 g.fillRect(2,2,5,5);
                 break;
