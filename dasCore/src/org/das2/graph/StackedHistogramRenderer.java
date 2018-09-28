@@ -419,6 +419,7 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
                             if (peakValue >= zAxisMin) {
                                 int yMax= (int)zAxis.transform( peakValue, zunits, yBase, yBaseTop );
                                 yMax= (y0-yMax)>(0) ? yMax : (y0);
+                                yMax= (yMax<yBaseTop) ? yBaseTop : yMax;
                                 if (null!=peaksIndicator) switch(peaksIndicator){
 										 case MaxDots:
 											 g.drawLine(x0,yMax,x0,yMax);
