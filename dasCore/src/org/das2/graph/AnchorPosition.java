@@ -74,6 +74,9 @@ public enum AnchorPosition implements Enumeration {
             case OutsideE:
                 g.fillRect(12,5,5,5);
                 break;
+            case OutsideW:
+                g.fillRect(0,5,3,5);
+                break;
             case OutsideN:
                 g.fillRect(5,-3,5,5);
                 break;
@@ -82,6 +85,12 @@ public enum AnchorPosition implements Enumeration {
                 break;
             case OutsideNNE:
                 g.fillRect(7,-3,6,5);
+                break;
+            case OutsideSSW:
+                g.fillRect(2,12,5,5);
+                break;
+            case OutsideSSE:
+                g.fillRect(7,8,6,5);
                 break;
             case OutsideNE:
                 g.fillRect(12,2,5,5);
@@ -94,6 +103,9 @@ public enum AnchorPosition implements Enumeration {
                 break;
             case OutsideSW:
                 g.fillRect(0,8,3,5);
+                break;
+            case OutsideS:
+                g.fillRect(12,7,5,5);
                 break;
             default:
                 g.drawString("?", 0, 14);
