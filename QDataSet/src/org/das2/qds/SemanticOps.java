@@ -594,6 +594,7 @@ public final class SemanticOps {
         QDataSet result= (QDataSet) DataSetAnnotations.getInstance().getAnnotation( ds, DataSetAnnotations.ANNOTATION_BOUNDS );
         
         if ( result!=null ) {
+            logger.exiting( CLASSNAME, "bounds" );
             return result;
         }
         
