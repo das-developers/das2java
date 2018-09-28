@@ -4,6 +4,7 @@ package org.das2.qds;
 import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.das2.datum.Datum;
@@ -586,12 +587,13 @@ public final class SemanticOps {
      * @return
      */
     public static QDataSet bounds( QDataSet ds ) {
-
         QDataSet result= (QDataSet) DataSetAnnotations.getInstance().getAnnotation( ds, DataSetAnnotations.ANNOTATION_BOUNDS );
         
         if ( result!=null ) {
             return result;
         }
+
+        logger.log(Level.FINE, "enter bounds {0}", ds);
         
         QDataSet xrange;
         QDataSet yrange;
