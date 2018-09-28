@@ -105,6 +105,7 @@ import org.das2.util.ColorUtil;
 public final class Ops {
 
     private static final Logger logger= LoggerManager.getLogger("qdataset.ops");
+    private static final String CLASSNAME = Ops.class.getCanonicalName();
 
     /**
      * this class cannot be instantiated.
@@ -7835,7 +7836,7 @@ public final class Ops {
      */
     public static QDataSet extentSimple( QDataSet ds, QDataSet wds, QDataSet range  ) {
         
-        logger.entering( Ops.class.getCanonicalName(), "extentSimple" );
+        logger.entering(CLASSNAME, "extentSimple" );
         
         int count=0;
         
@@ -7932,7 +7933,7 @@ public final class Ops {
         qresult.putProperty( QDataSet.UNITS, ds.property(QDataSet.UNITS ) );
         if ( result[0]==fill ) qresult.putProperty( QDataSet.FILL_VALUE, fill);
         
-        logger.exiting( Ops.class.getCanonicalName(), "extentSimple" );
+        logger.exiting(CLASSNAME, "extentSimple" );
         
         return qresult;
         
@@ -7948,7 +7949,7 @@ public final class Ops {
      */
     public static QDataSet extent( QDataSet ds, QDataSet wds, QDataSet range ) {
 
-        logger.entering( Ops.class.getCanonicalName(), "extent" );
+        logger.entering(CLASSNAME, "extent" );
         
         QDataSet max = ds;
         QDataSet min = ds;
@@ -8079,7 +8080,7 @@ public final class Ops {
         qresult.putProperty( QDataSet.UNITS, ds.property(QDataSet.UNITS ) );
         if ( result[0]==fill ) qresult.putProperty( QDataSet.FILL_VALUE, fill);
         
-        logger.exiting( Ops.class.getCanonicalName(), "extent" );
+        logger.exiting( CLASSNAME, "extent" );
         
         return qresult;
         
@@ -8112,7 +8113,7 @@ public final class Ops {
      */
     public static QDataSet extentSimple( QDataSet ds, QDataSet range ) {
         
-        logger.entering( Ops.class.getCanonicalName(), "extent445" );
+        logger.entering(CLASSNAME, "extentSimple" );
         
         QDataSet max= ds;
         QDataSet min= ds;
@@ -8219,7 +8220,7 @@ public final class Ops {
         qresult.putProperty( QDataSet.UNITS, ds.property(QDataSet.UNITS ) );
         if ( result[0]==fill ) qresult.putProperty( QDataSet.FILL_VALUE, fill);
 
-        logger.exiting( Ops.class.getCanonicalName(), "extent445" );
+        logger.exiting(CLASSNAME, "extentSimple" );
         
         return qresult;
     }

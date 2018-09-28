@@ -8,7 +8,6 @@
  */
 package org.das2.qds;
 
-import java.io.IOException;
 import java.lang.reflect.Array;
 import java.text.DecimalFormat;
 import java.text.ParseException;
@@ -16,7 +15,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.IllegalFormatConversionException;
 import java.util.logging.Level;
 import org.das2.datum.Units;
@@ -45,7 +43,6 @@ import org.das2.datum.format.TimeDatumFormatter;
 import org.das2.util.LoggerManager;
 import org.das2.qds.examples.Schemes;
 import org.das2.qds.ops.Ops;
-import org.das2.qds.util.AsciiFormatter;
 import org.das2.qds.util.AutoHistogram;
 import org.das2.qds.util.DataSetBuilder;
 import org.das2.qds.util.LinFit;
@@ -64,7 +61,7 @@ public class DataSetUtil {
 
     private static final Logger logger= LoggerManager.getLogger("qdataset.ops");
 
-    private static final String LOGGING_SOURCE_CLASS= "org.das2.qds.DataSetUtil";
+    private static final String CLASSNAME= "org.das2.qds.DataSetUtil";
     
     /**
      * creates a dataset of integers 0,1,2,...,n-1.
@@ -1541,7 +1538,7 @@ public class DataSetUtil {
         
         Logger logger= LoggerManager.getLogger("qdataset.ops.guesscadence");
         
-        logger.entering(LOGGING_SOURCE_CLASS,"guessCadenceNew");
+        logger.entering(CLASSNAME,"guessCadenceNew");
         
         Object o= xds.property( QDataSet.CADENCE );
 //        
@@ -1603,7 +1600,7 @@ public class DataSetUtil {
                     if ( q instanceof RankZeroDataSet ) {
                         return (RankZeroDataSet) q;
                     } else {
-                        logger.exiting(LOGGING_SOURCE_CLASS,"guessCadenceNew");                    
+                        logger.exiting(CLASSNAME,"guessCadenceNew");                    
                         return DRank0DataSet.create(q.value(),qu);
                     }
                 
@@ -1612,7 +1609,7 @@ public class DataSetUtil {
                         logger.log( Level.SEVERE, "averaging CADENCE rank 0: {0}", q);
                         q= Ops.reduceMax( q, 0 );
                     }
-                    logger.exiting(LOGGING_SOURCE_CLASS,"guessCadenceNew");                    
+                    logger.exiting(CLASSNAME,"guessCadenceNew");                    
                     return DRank0DataSet.create( DataSetUtil.asDatum(q) );
                 }
             } else {
@@ -1633,7 +1630,7 @@ public class DataSetUtil {
         }
 
         if ( xds.length()<2 ) {
-            logger.exiting(LOGGING_SOURCE_CLASS,"guessCadenceNew");                    
+            logger.exiting(CLASSNAME,"guessCadenceNew");                    
             return null;
         }
 
@@ -1684,11 +1681,11 @@ public class DataSetUtil {
         
         // don't allow datasets with fill in x to be considered.  
         if ( xHasFill && monoMag==0 ) {
-            logger.exiting(LOGGING_SOURCE_CLASS,"guessCadenceNew");
+            logger.exiting(CLASSNAME,"guessCadenceNew");
             return null;
         }
         if ( monoMag==0 ) {
-            logger.exiting(LOGGING_SOURCE_CLASS,"guessCadenceNew");                    
+            logger.exiting(CLASSNAME,"guessCadenceNew");                    
             return null;
         }
         
@@ -1773,7 +1770,7 @@ public class DataSetUtil {
         long total= (Long)( ((Map<String,Object>)hist.property( QDataSet.USER_PROPERTIES )).get(AutoHistogram.USER_PROP_TOTAL) );
 
         if ( total==0 ) {
-            logger.exiting(LOGGING_SOURCE_CLASS,"guessCadenceNew");
+            logger.exiting(CLASSNAME,"guessCadenceNew");
             return null;
         }
         
@@ -1967,7 +1964,7 @@ public class DataSetUtil {
             }
             logger.log(Level.FINE, "guessCadence({0})->null because of log,skip,not bigSkip", new Object[]{xds});
             if ( bigSkip==0 && skip>0 ) {
-                logger.exiting(LOGGING_SOURCE_CLASS,"guessCadenceNew"); 
+                logger.exiting(CLASSNAME,"guessCadenceNew"); 
                 theResult= null;
                 haveResult= true;
             }
@@ -1996,12 +1993,12 @@ public class DataSetUtil {
                     result.putProperty( QDataSet.UNITS, Units.logERatio );
                     result.putProperty( QDataSet.SCALE_TYPE, "log" );
                     logger.log(Level.FINE, "guessCadence({0})->{1} (log)", new Object[]{xds, result});
-                    logger.exiting(LOGGING_SOURCE_CLASS,"guessCadenceNew");
+                    logger.exiting(CLASSNAME,"guessCadenceNew");
                     theResult= (RankZeroDataSet)result;
                 } else {
                     result.putProperty( QDataSet.UNITS, xunits.getOffsetUnits() );
                     logger.log(Level.FINE, "guessCadence({0})->{1} (linear)", new Object[]{xds, result});
-                    logger.exiting(LOGGING_SOURCE_CLASS,"guessCadenceNew");                    
+                    logger.exiting(CLASSNAME,"guessCadenceNew");                    
                     theResult= (RankZeroDataSet)result;
                 }
             }
@@ -3477,7 +3474,7 @@ public class DataSetUtil {
      * @throws IllegalArgumentException if the dataset is all fill.
      */
     public static int closestIndex( QDataSet ds, Datum datum ) {
-        logger.entering( LOGGING_SOURCE_CLASS, "closestIndex" );
+        logger.entering( CLASSNAME, "closestIndex" );
         if ( ds.rank()!=1 ) {
             if ( ds.rank()==2 && SemanticOps.isBins(ds) ) {
                 ds= Ops.reduceMean(ds,1);
@@ -3505,12 +3502,12 @@ public class DataSetUtil {
                 
         if ( mono ) { // take a millisecond to check for this oft-occurring case.
             if ( wds.value(0)>0. && datum.le( asDatum(ds.slice(0)) ) ) {
-                logger.exiting( LOGGING_SOURCE_CLASS, "closestIndex" );
+                logger.exiting( CLASSNAME, "closestIndex" );
                 return 0;
             }
             int n= ds.length()-1;
             if ( wds.value(n)>0. && datum.ge( asDatum(ds.slice(n)) ) ) {
-                logger.exiting( LOGGING_SOURCE_CLASS, "closestIndex" );
+                logger.exiting( CLASSNAME, "closestIndex" );
                 return n;
             }
         }
@@ -3553,7 +3550,7 @@ public class DataSetUtil {
                 assert r!=null;
                 closest= (int)r.value(closest);
             }
-            logger.exiting( LOGGING_SOURCE_CLASS, "closestIndex" );
+            logger.exiting( CLASSNAME, "closestIndex" );
             return closest;
 
         } else {
@@ -3577,7 +3574,7 @@ public class DataSetUtil {
                 assert r!=null;
                 result= (int)r.value(result);
             }
-            logger.exiting( LOGGING_SOURCE_CLASS, "closestIndex" );
+            logger.exiting( CLASSNAME, "closestIndex" );
             return result;
 
         }
