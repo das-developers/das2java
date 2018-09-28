@@ -722,6 +722,8 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                             }
                         }
                         
+                        logger.finer("all data type and units checks are complete");
+                        
                         RebinDescriptor xRebinDescriptor;
                         xRebinDescriptor = new RebinDescriptor(
                                 xAxis.invTransform(plotImageBounds2.x),
@@ -755,11 +757,10 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
 
                         //t0 = System.currentTimeMillis();
 
-                        logger.log( Level.FINE, "get the bounding box" );
+                        logger.log( Level.FINEST, "get the bounding box" );
                         bounds= bounds(fds);
 
-                        logger.log(Level.FINE, "rebinning to pixel resolution: {0}  {1}", new Object[]{xRebinDescriptor, yRebinDescriptor});
-                        logger.log(Level.FINE, "rebinning to pixel resolution: {0}", plotImageBounds2);
+                        logger.log(Level.FINEST, "rebinning to pixel resolution: {0}", plotImageBounds2);
 
                         Datum start = Datum.create(  bounds.value(0,0), xunits );
                         Datum end = Datum.create( bounds.value(0,1), xunits );
@@ -787,6 +788,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         
                         //t0= System.currentTimeMillis();
                         try {
+                            logger.log(Level.FINEST, "rebinning to pixel resolution: {0}  {1}", new Object[]{xmemento, ymemento});
                             rebinDataSet = (QDataSet) rebinner.rebin( fds, xRebinDescriptor, yRebinDescriptor );
                             rebinDataSet= Ops.putProperty( rebinDataSet, QDataSet.UNITS, zunits );
                         } catch ( RuntimeException ex ) {
@@ -803,7 +805,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         ymemento = lymemento;
                         cmemento = lcmemento;
 
-                        logger.log(Level.FINE, "done rebinning to pixel resolution: {0}  {1}", new Object[]{xmemento, ymemento});
+                        logger.log(Level.FINEST, "done rebinning to pixel resolution" );
 
                         lraster = makePixMap( rebinDataSet, lraster );
 
