@@ -28,7 +28,6 @@ import org.das2.datum.Datum;
 import org.das2.datum.DatumRangeUtil;
 import org.das2.datum.UnitsUtil;
 import org.das2.DasException;
-import org.das2.system.DasLogger;
 import java.util.logging.*;
 import org.das2.datum.UnitsConverter;
 import org.das2.qds.DataSetUtil;
@@ -38,16 +37,16 @@ import org.das2.qds.QDataSet;
 import org.das2.qds.RankZeroDataSet;
 import org.das2.qds.SemanticOps;
 import org.das2.qds.ops.Ops;
-//import org.das2.qds.util.AsciiFormatter;
+import org.das2.util.LoggerManager;
 
 /**
- * DataSetRebinner implementing either bi-linear interpolation in blocks of 4 points, or nearest neighbor interpolation by
+ * DataSetRebinner implementing either bilinear interpolation in blocks of 4 points, or nearest neighbor interpolation by
  * grabbing close points, or no interpolation at all..  Points the land on the same pixel are averaged together.
  * @author  Edward West
  */
 public class AverageTableRebinner implements DataSetRebinner {
 
-    private static final Logger logger = DasLogger.getLogger(DasLogger.DATA_OPERATIONS_LOG);
+    private static final Logger logger = LoggerManager.getLogger("das2.data.rebinner");
     /**
      * Holds value of property interpolate.
      */
