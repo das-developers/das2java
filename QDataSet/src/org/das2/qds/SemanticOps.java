@@ -32,7 +32,8 @@ public final class SemanticOps {
     private SemanticOps() {   
     }
     
-    private static final Logger logger= LoggerManager.getLogger("qdataset");
+    private static final Logger logger= LoggerManager.getLogger("qdataset.ops");
+    private static final String CLASSNAME= SemanticOps.class.getName();
     
     /**
      * returns the units found in the UNITS property of the dataset,
@@ -587,13 +588,14 @@ public final class SemanticOps {
      * @return
      */
     public static QDataSet bounds( QDataSet ds ) {
+        
+        logger.entering( CLASSNAME, "bounds" );
+        
         QDataSet result= (QDataSet) DataSetAnnotations.getInstance().getAnnotation( ds, DataSetAnnotations.ANNOTATION_BOUNDS );
         
         if ( result!=null ) {
             return result;
         }
-
-        logger.log(Level.FINE, "enter bounds {0}", ds);
         
         QDataSet xrange;
         QDataSet yrange;
@@ -629,6 +631,8 @@ public final class SemanticOps {
         jds.putProperty( QDataSet.BINS_1,"min,maxInclusive");
         
         DataSetAnnotations.getInstance().putAnnotation( ds, DataSetAnnotations.ANNOTATION_BOUNDS, jds );
+        
+        logger.exiting( CLASSNAME, "bounds" );
         
         return jds;
 
