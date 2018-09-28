@@ -164,7 +164,8 @@ public class FileUtil {
         if ( !root.canRead() ) {
             throw new IllegalArgumentException("unable to read root: "+root);
         }
-        File[] children = root.listFiles(); // root is known to exist
+        File[] children = root.listFiles(); 
+        if ( children==null ) throw new IllegalArgumentException("should not happen because it is known to exist.");
         for (File children1 : children) {
             if (children1.isDirectory()) {
                 File f = find(children1, name);
@@ -202,7 +203,9 @@ public class FileUtil {
             throw new IllegalArgumentException("unable to read root: "+root);
         }
         int count= 0;
-        File[] children = root.listFiles(); // root is known to exist
+        File[] children = root.listFiles(); 
+        if ( children==null ) throw new IllegalArgumentException("should not happen because it is known to exist.");
+
         for (File children1 : children) {
             if (children1.isDirectory()) {
                 count += find(children1, pattern,result);
@@ -252,7 +255,9 @@ public class FileUtil {
         }
         if (!root.canRead()) return Collections.emptyList();
         if ( matches==null ) matches= new ArrayList();
-        File[] children = root.listFiles(); // root is known to exist.
+        File[] children = root.listFiles(); 
+        if ( children==null ) return Collections.emptyList(); // should not happen because it is known to exist.
+
         for (File children1 : children) {
             if (children1.isDirectory()) {
                 listRecursively(children1, name, matches);
@@ -298,7 +303,8 @@ public class FileUtil {
             File dst1= new File( dst, src.getName() );
             if ( !dst1.exists() && !dst1.mkdir() ) throw new IOException("unable to mkdir " + dst1);
             dst= dst1;
-            File[] files= src.listFiles(); // src is known to exist.
+            File[] files= src.listFiles(); 
+            if ( files==null ) return; // should not happen because it is known to exist.
             for ( File f:files ) {
                 if ( f.isDirectory() ) {
                     dst1= new File( dst, f.getName() );
