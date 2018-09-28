@@ -94,7 +94,7 @@ public class AverageTableRebinner implements DataSetRebinner {
      * @param ds rank 2 table or rank 3 join of tables.  New: rank 2 bundle of (X,Y,Z)
      * @param ddX
      * @param ddY
-     * @return
+     * @return rank 2 table with one row/column per screen pixel.
      * @throws IllegalArgumentException
      * @throws DasException
      */
@@ -140,7 +140,7 @@ public class AverageTableRebinner implements DataSetRebinner {
         
         if ( ddX != null && tds.length() > 0 ) {
             UnitsConverter xc= xunits.getConverter(ddX.getUnits());
-            QDataSet bounds= SemanticOps.bounds(tds);
+            QDataSet bounds= SemanticOps.bounds(ds);
             double start = xc.convert( bounds.value(0,0) );
             double end = xc.convert( bounds.value(0,1) );
             DatumRange dr= DatumRangeUtil.union( ddX.binStop(ddX.numberOfBins()-1),ddX.binStart(0));
