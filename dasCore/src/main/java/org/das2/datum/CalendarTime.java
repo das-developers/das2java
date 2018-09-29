@@ -529,8 +529,8 @@ public class CalendarTime implements Comparable<CalendarTime>{
 	////////////////////////////////////////////////////////////////////////////////////
 	@Override
 	public String toString(){
-		return m_nYear + "/" + m_nMonth + "/" + m_nDom + " " + m_nHour + ":" + m_nMinute + ":" + m_nSecond +
-			    "." + m_nNanoSecond;
+		return String.format("%04d-%02d-%02dT%02d:%02d%02d.%09d", m_nYear, m_nMonth,
+			                  m_nDom, m_nHour, m_nMinute, m_nSecond, m_nNanoSecond);
 	}
 
 	public boolean isLeapYear(){ 	return TimeUtil.isLeapYear(m_nYear); }
