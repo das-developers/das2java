@@ -27,7 +27,12 @@ public class CacheTagSerializeDelegate implements SerializeDelegate {
         String sres= s.substring(i+1);
         String srange= s.substring(0,i);
         
-        return new CacheTag(DatumRangeUtil.parseTimeRange(srange), sres.trim().equals(CacheTag.INTRINSIC) ? null : Units.seconds.parse(sres));
+        try {
+            return new CacheTag(DatumRangeUtil.parseTimeRange(srange), sres.trim().equals(CacheTag.INTRINSIC) ? null : Units.seconds.parse(sres));
+        } catch ( IllegalArgumentException ex ) { // Ivar had "orbit:file:///home/iwc/rbsp/rbspb-half-orbit-periods.txt:273_OUT @ intrinsic"
+            ex.printStackTrace();
+            return null;
+        }
         
     }
 
