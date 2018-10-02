@@ -85,6 +85,13 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         }
     };
     
+    private final ComponentAdapter componentAdapter= new ComponentAdapter() {
+        @Override
+        public void componentResized(ComponentEvent e) {
+            revalidate();
+        }
+    };
+    
     /**
      * create the DasDevicePosition.  Typically the DasRow or DasColumn 
      * constructor is used.
@@ -135,26 +142,29 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         this.dasName = DasApplication.getDefaultApplication().suggestNameFor(this);
         this.propertyChangeDelegate = new DebugPropertyChangeSupport(this);
         if ( parent!=null ) {
-            parent.addPropertyChangeListener( new PropertyChangeListener() {
-                @Override
-                public void propertyChange(PropertyChangeEvent evt) {
-                    revalidate();
-                }
-            } );
+            parent.addPropertyChangeListener( canvasListener );
         } else {
             if (canvas != null) {
-                canvas.addComponentListener(new ComponentAdapter() {
-                    @Override
-                    public void componentResized(ComponentEvent e) {
-                        revalidate();
-                    }
-                });
+                canvas.addComponentListener( componentAdapter );
                 canvas.addPropertyChangeListener( "font", canvasListener );
                 canvas.addDevicePosition(this);
             }
         }
         if ( !isNull ) {
             revalidate();
+        }
+    }
+    
+    /**
+     * remove the listeners so that the DasRow or DasColumn can be garbage collected.
+     */
+    public void removeListeners() {
+        if ( canvas!=null ) {
+            canvas.removeComponentListener( componentAdapter );
+            canvas.removePropertyChangeListener( "font", canvasListener );
+        }
+        if ( parent!=null ) {
+            parent.removePropertyChangeListener( canvasListener );
         }
     }
     
@@ -615,9 +625,13 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
     }
     
     public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
-        propertyChangeDelegate.addPropertyChangeListener(propertyName, listener);
+        propertyChangeDelegate.removePropertyChangeListener(propertyName, listener);
     }
     
+    public void removePropertyChangeListener( PropertyChangeListener listener) {
+        propertyChangeDelegate.removePropertyChangeListener(listener);
+    }
+
     protected void firePropertyChange(String propertyName, boolean oldValue, boolean newValue) {
         firePropertyChange(propertyName,
                 (oldValue ? Boolean.TRUE : Boolean.FALSE),
