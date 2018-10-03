@@ -1537,8 +1537,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
 
         long t0= System.currentTimeMillis();
 
-        String msg = "dasCanvas.getImage(" + width + "," + height + ")";
-        logger.fine(msg);
+        logger.log(Level.FINE, "dasCanvas.getImage({0},{1})", new Object[]{width, height});
 
         prepareForOutput(width, height); //TODO: this requires not event thread, and is inconsistent with if statement five lines down.
 
@@ -1557,9 +1556,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
             };
             try {
                 SwingUtilities.invokeAndWait(run);
-            } catch (InvocationTargetException ex) {
-                application.getExceptionHandler().handle(ex);
-            } catch (InterruptedException ex) {
+            } catch (InvocationTargetException | InterruptedException ex) {
                 application.getExceptionHandler().handle(ex);
             }
         }
