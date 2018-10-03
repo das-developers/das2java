@@ -76,12 +76,19 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
     
     protected EventListenerList listenerList = new EventListenerList();
     
-    private final PropertyChangeListener canvasListener= new PropertyChangeListener() {
+    private final PropertyChangeListener canvasFontListener= new PropertyChangeListener() {
         @Override
         public void propertyChange( PropertyChangeEvent ev ) {
             if ( DasDevicePosition.this.emMinimum!=0 || DasDevicePosition.this.emMaximum!=0 ) {
                 revalidate();
             }
+        }
+    };
+    
+    private final PropertyChangeListener canvasListener= new PropertyChangeListener() {
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            revalidate();
         }
     };
     
@@ -146,8 +153,8 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         } else {
             if (canvas != null) {
                 canvas.addComponentListener( componentAdapter );
-                canvas.addPropertyChangeListener( "font", canvasListener );
-                canvas.addDevicePosition(this);
+                canvas.addPropertyChangeListener( "font", canvasFontListener );
+                canvas.addDevicePosition(this); //TODO: it's interesting that this only happens for the parent devicePosition, not the kids.
             }
         }
         if ( !isNull ) {
@@ -159,12 +166,13 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
      * remove the listeners so that the DasRow or DasColumn can be garbage collected.
      */
     public void removeListeners() {
-        if ( canvas!=null ) {
-            canvas.removeComponentListener( componentAdapter );
-            canvas.removePropertyChangeListener( "font", canvasListener );
-        }
         if ( parent!=null ) {
             parent.removePropertyChangeListener( canvasListener );
+        } else {
+            if ( canvas!=null ) {
+                canvas.removeComponentListener( componentAdapter );
+                canvas.removePropertyChangeListener( "font", canvasFontListener );
+            }
         }
     }
     
