@@ -2413,6 +2413,12 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         }
     }
     
+    /**
+     * remove the device position from the list we keep track of.  Note those
+     * with parent rows and columns should not be registered (or at least existing
+     * code doesn't add it).
+     * @param position 
+     */
     public void removeDasDevicePosition(DasDevicePosition position ) {
         devicePositionList.remove(position);
     }
