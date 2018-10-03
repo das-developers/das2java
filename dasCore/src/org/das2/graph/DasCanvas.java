@@ -473,23 +473,6 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         incrementPaintCountTimer.setRepeats(false);
     }
 
-// See https://sourceforge.net/p/autoplot/bugs/2042/
-//    @Override
-//    public synchronized void addComponentListener(ComponentListener l) {
-//        if ( l.getClass().toString().contains("DasDevicePosition") ) {
-//            System.err.println( "heresTheProblemWithTooManyListeners "+l.toString() );
-//        }
-//        super.addComponentListener(l); //To change body of generated methods, choose Tools | Templates.
-//    }
-//
-//    @Override
-//    public synchronized void removeComponentListener(ComponentListener l) {
-//        if ( l.getClass().toString().contains("DasDevicePosition") ) {
-//            System.err.println( "heresTheProblemWithTooManyListeners "+l.toString() );
-//        }
-//        super.removeComponentListener(l); //To change body of generated methods, choose Tools | Templates.
-//    }
-//    
     /**
      * add a decorator that will be painted on top of all other objects.  
      * Each decorator object should complete painting within 100 milliseconds, and the
