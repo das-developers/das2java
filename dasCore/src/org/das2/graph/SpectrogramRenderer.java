@@ -108,6 +108,8 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     private HorizontalSpectrogramSlicer hSlicer;
     private VerticalSpectrogramAverager vAverager;
     
+    public static final String CONTROL_KEY_REBIN= "rebin";
+
     @Override
     public void setControl(String s) {
         super.setControl(s);
@@ -115,6 +117,10 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         if ( cb!=null ) {
             String t= getControl(CONTROL_KEY_COLOR_TABLE, cb.getType().toString() );
             this.getColorBar().setType( DasColorBar.Type.parse( t ) );
+            t= getControl(CONTROL_KEY_REBIN, getRebinner().toString() );
+            if ( t.equals("triScat") ) {
+                this.setRebinner( SpectrogramRenderer.RebinnerEnum.triScat );
+            }
         }
         update();
     }
@@ -126,6 +132,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         if ( cb!=null ) {
             controls.put( CONTROL_KEY_COLOR_TABLE, getColorBar().getType().toString() );
         }
+        controls.put( CONTROL_KEY_REBIN, getRebinner().toString() );
         return formatControl(controls);
     }
     
