@@ -638,6 +638,7 @@ public final class LoggerManager {
         if ( configfile==null ) {
             System.err.println("no config file, set java property java.util.logging.config.file like so:");
             System.err.println("-Djava.util.logging.config.file=/tmp/logging.properties");
+            return;
         } else {
             File ff= new File( configfile );
             if ( ff.isAbsolute() ) {
