@@ -2174,7 +2174,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         /* End debugging code */
 
         TickVDescriptor tickV1;
-        tickV1= this.tickV; //findbugs IS2_INCONSISTENT_SYNC.  This caused deadlock.  I think accessing tickV once is a correct fix and doesn't need to be synchronized.
+        tickV1= this.tickV; //findbugs IS2_INCONSISTENT_SYNC.  This caused deadlock.  I think accessing tickV once is a correct fix and doesn't need to be synchronized.        
         if (tickV1 == null || tickV1.tickV.getUnits().isConvertibleTo(getUnits())) {
             if (isHorizontal()) {
                 paintHorizontalAxis(g);
@@ -2337,14 +2337,32 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 if ( ticks!=null ) {
                     DatumVector majorTicks = ticks.getMajorTicks();
                     DatumRange x= DatumRangeUtil.union( majorTicks.get(0), majorTicks.get(majorTicks.getLength()-1));
-                    if ( ! x.intersects(this.getDatumRange() ) ) {
+                    boolean recalcTicks= false;
+                    DatumRange thisDatumRange= this.getDatumRange();
+                    if ( x.intersects(thisDatumRange) ) {
+                        if ( x.intersection(thisDatumRange).width().divide( thisDatumRange.width() ).value()<0.3 ) {
+                            recalcTicks= true;
+                        }
+                    } else {
+                        recalcTicks= true;
+                    }
+                    
+                    if ( recalcTicks ) {
                         logger.fine("last ditch effort to get useful ticks that we didn't get before because of thread order");
                         TickVDescriptor ticks2= TickMaster.getInstance().requestTickV(this);
                         if ( ticks2!=null ) ticks= ticks2;
                         majorTicks = ticks.getMajorTicks();
                         x= DatumRangeUtil.union( majorTicks.get(0), majorTicks.get(majorTicks.getLength()-1));
-                        if ( ! x.intersects(this.getDatumRange() ) ) {
+                        if ( x.intersects(thisDatumRange) ) {
+                            if ( x.intersection(thisDatumRange).width().divide( thisDatumRange.width() ).value()<0.3 ) {
+                                recalcTicks= true;
+                            }
+                        } else {
+                            recalcTicks= true;
+                        }
+                        if ( recalcTicks ) {
                             System.err.println("still doesn't fit, see https://sourceforge.net/p/autoplot/bugs/1820/");
+                            ticks2= TickMaster.getInstance().requestTickV(this); // fun grins and debugging.
                         }
                     }
                 } else {
