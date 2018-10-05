@@ -12,8 +12,10 @@ import java.awt.event.FocusEvent;
 import java.awt.event.ItemEvent;
 import java.beans.PropertyChangeEvent;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -615,8 +617,24 @@ public final class LoggerManager {
      * to your code.
      * 
      */
-    public static void readConfiguration() {
+    public static void readConfiguration( ) {
         String configfile= System.getProperty("java.util.logging.config.file");
+        readConfiguration( configfile );
+    }
+    
+    /**
+     * A slightly more transparent logging configuration would provide feedback
+     * about what configuration file it's loading.  This will echo
+     * when the configuration file would be.
+     * 
+     * The idea is when you are completely frustrated with not getting the logger
+     * to behave, you can add:
+     * org.das2.util.LoggerManager.readConfiguration() 
+     * to your code.
+     * 
+     * @param configfile the file to read
+     */
+    public static void readConfiguration(String configfile ) {
         if ( configfile==null ) {
             System.err.println("no config file, set java property java.util.logging.config.file like so:");
             System.err.println("-Djava.util.logging.config.file=/tmp/logging.properties");
@@ -629,8 +647,8 @@ public final class LoggerManager {
                 System.err.println("loading logging configuration from "+ff);
             }
         }
-        try {
-            LogManager.getLogManager().readConfiguration();
+        try ( InputStream in = new FileInputStream(configfile) ) {
+            LogManager.getLogManager().readConfiguration(in);
         } catch ( IOException ex ) {
             ex.printStackTrace();
         }
