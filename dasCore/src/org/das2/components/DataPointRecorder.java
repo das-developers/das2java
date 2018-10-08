@@ -583,7 +583,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
      */
     public int select(DatumRange xrange, DatumRange yrange, boolean xOrY ) {
         if ( xOrY && yrange==null ) throw new IllegalArgumentException("yrange is null with or condition--this would select all points.");
-        Datum mid= DatumRangeUtil.rescale( xrange, 0.5 );
+        Datum mid= xrange.middle();
         synchronized (dataPoints) {
             List<Integer> selectMe = new ArrayList();
             int iclosest= -1;
@@ -617,22 +617,48 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                     }
                 }
             }
-            table.getSelectionModel().clearSelection();
+
             for ( Integer selectMe1 : selectMe ) {
                 int iselect = selectMe1;
                 table.getSelectionModel().addSelectionInterval(iselect, iselect);
             }
 
+            final int fiselect;
             if ( selectMe.size()>0 ) {
-                int iselect= selectMe.get(0);
-                table.scrollRectToVisible(new Rectangle(table.getCellRect( iselect, 0, true)) );
-                return iselect;
+                fiselect= selectMe.get(0);
             } else {
-                return -1;
+                fiselect= -1;
             }
+            
+            final List<Integer> fselectMe= selectMe;
+                
+            Runnable run= new Runnable() {
+                public void run() {
+                    showSelection( fselectMe );
+                }
+            };
+            SwingUtilities.invokeLater(run);
+            return fiselect;
         }
+        
     }
 
+    private int showSelection( List<Integer> selectMe ) {
+        table.getSelectionModel().clearSelection();
+        
+        for ( Integer selectMe1 : selectMe ) {
+            table.getSelectionModel().addSelectionInterval(selectMe1, selectMe1);
+        }
+
+        if ( selectMe.size()>0 ) {
+            int iselect= selectMe.get(0);
+            table.scrollRectToVisible(new Rectangle(table.getCellRect( iselect, 0, true)) );
+            return iselect;
+        } else {
+            return -1;
+        }        
+    }
+    
     public void saveToFile(File file) throws IOException {
         List<DataPoint> dataPoints1;
         synchronized (this.dataPoints) {
