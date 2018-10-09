@@ -798,7 +798,7 @@ public class SeriesRenderer extends Renderer {
                     }
                 }
                 
-                if ( cadenceGapCount>(wds.length()/2) ) {
+                if ( cadenceGapCount>(wds.length()/2) || !cadenceCheck ) {
                     pathBuilder.setCadence( null );
                 } else {
                     pathBuilder.setCadence( sw );
