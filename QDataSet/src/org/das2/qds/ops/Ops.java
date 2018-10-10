@@ -11645,24 +11645,35 @@ public final class Ops {
             } else {
                 throw new IllegalArgumentException( problems.get(0) );
             }
-        } if ( z.rank()==2 && y.rank()==1 && isBundle(z) ) {
+        } 
+        if ( z.rank()==2 && y.rank()==1 && isBundle(z) ) {
             QDataSet z1= DataSetOps.slice1(z,z.length(0)-1);
             return link( x, y, z1 );
-
+        }
+        
+        if ( z.rank()==2 && x.rank()==2 && y.rank()==2 ) {
+            z= flatten(z);
+            z= slice1( z, z.length(0)-1 );
+            y= flatten(y);
+            y= slice1( y, y.length(0)-1 );
+            x= flatten(x);
+            x= slice1( x, x.length(0)-1 );
+            return link( x, y, z );
+                
+        }
+        
+        MutablePropertyDataSet zds = DataSetOps.makePropertiesMutable(z);
+        if (x != null || zds.property(QDataSet.DEPEND_0)!=null ) {
+            zds.putProperty(QDataSet.DEPEND_0, x);
+        }
+        if (y != null || zds.property(QDataSet.DEPEND_1)!=null ) {
+            zds.putProperty(QDataSet.DEPEND_1, y);
+        }
+        List<String> problems= new ArrayList();
+        if ( !DataSetUtil.validate(zds, problems ) ) {
+            throw new IllegalArgumentException( problems.get(0) );
         } else {
-            MutablePropertyDataSet zds = DataSetOps.makePropertiesMutable(z);
-            if (x != null || zds.property(QDataSet.DEPEND_0)!=null ) {
-                zds.putProperty(QDataSet.DEPEND_0, x);
-            }
-            if (y != null || zds.property(QDataSet.DEPEND_1)!=null ) {
-                zds.putProperty(QDataSet.DEPEND_1, y);
-            }
-            List<String> problems= new ArrayList();
-            if ( !DataSetUtil.validate(zds, problems ) ) {
-                throw new IllegalArgumentException( problems.get(0) );
-            } else {
-                return zds;
-            }
+            return zds;
         }
 
     }
