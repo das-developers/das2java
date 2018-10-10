@@ -35,8 +35,14 @@ public class DTWithBigPoints {
 		bigPoints[2] = new Vertex(new Point( 0, 3000));
 		Triangle bigTri = new Triangle(bigPoints[0], bigPoints[1], bigPoints[2]);
 		triangles.add(bigTri);
-		for(Point p: points) 
+        int ipoint=0;
+		for(Point p: points) {
+            ipoint++;
 			addPoint(p);
+            if ( ( ipoint%10000)==0 && ipoint>0 ) {
+                System.err.println("triangulated "+ipoint+" points.");
+            }
+        }
 	}
         
 	public List<Triangle> getTriangles(){ return new ArrayList<Triangle>(triangles); }
