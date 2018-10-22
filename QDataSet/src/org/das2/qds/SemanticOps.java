@@ -757,7 +757,10 @@ public final class SemanticOps {
         if ( rank==3 && isJoin(ds) ) {
             JoinDataSet jds= new JoinDataSet(ds.rank());
             for ( int i=0; i<ds.length(); i++ ) {
-                jds.join( trim( ds.slice(i), xrange, yrange ) );
+                QDataSet t1= trim( ds.slice(i), xrange, yrange );
+                if ( t1.length()>0 ) {
+                    jds.join( t1 );
+                }
             }
             DataSetUtil.putProperties( DataSetUtil.getProperties(ds), jds );
             return jds;
