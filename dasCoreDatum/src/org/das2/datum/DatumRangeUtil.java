@@ -1836,9 +1836,13 @@ public class DatumRangeUtil {
         if ( ss[1].trim().length()>0 ) {
             rrmax= parseRescaleStr( ss[1], rrmax );
         }
-        DatumRange result= rescale( dr, rrmin[0].doubleValue(Units.percent)/100, rrmax[0].doubleValue(Units.percent)/100 );
+        DatumRange result;
+        if ( rrmin[0].doubleValue(Units.percent)==0 && rrmax[0].doubleValue(Units.percent)==100 ) {
+            result= dr;
+        } else {
+            result= rescale( dr, rrmin[0].doubleValue(Units.percent)/100, rrmax[0].doubleValue(Units.percent)/100 );
+        }
         result= new DatumRange( result.min().add( rrmin[1] ), result.max().add( rrmax[1] ) );
-
         return result;
         
     }
