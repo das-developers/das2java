@@ -6349,7 +6349,32 @@ public final class Ops {
     public static WritableDataSet removeValuesLessThan( Object ds, Object v ) {
         return removeValuesLessThan( dataset(ds), dataset(v) );
     }
-        
+    
+    /**
+     * apply the indeces, checking for out-of-bounds values.
+     * @param vv values to return, a rank 1, N-element dataset.
+     * @param ds the indeces.
+     * @param fillValue the value to use when the index is out-of-bounds.
+     * @return data a dataset with the geometry of ds and the units of values.
+     * @see #subset(org.das2.qds.QDataSet, org.das2.qds.QDataSet) which does the same thing.
+     */
+    public static WritableDataSet applyIndex( QDataSet vv, QDataSet ds, Number fillValue ) {
+        QubeDataSetIterator iter= new QubeDataSetIterator(ds);
+        DDataSet result= iter.createEmptyDs();
+        while ( iter.hasNext() ) {
+            iter.next();
+            int idx= (int)( iter.getValue(ds) );
+            try {
+                iter.putValue( result, vv.value(idx) );
+            } catch ( IndexOutOfBoundsException ex ) {
+                iter.putValue( result, fillValue.doubleValue() );
+            }
+        }
+        result.putProperty(QDataSet.UNITS,vv.property(QDataSet.UNITS));
+        result.putProperty(QDataSet.FILL_VALUE, fillValue );
+        return result;
+    }
+    
     /**
      * apply the indeces 
      * @param vv values to return, a rank 1, N-element dataset.
@@ -10666,8 +10691,8 @@ public final class Ops {
                 tlimit= Ops.multiply( tlimit, Ops.dataset(1.5) );
                 Number fillValue= (Number) ds.property(QDataSet.FILL_VALUE);
                 if ( fillValue==null ) fillValue= Double.NaN;
-                QDataSet tcel= Ops.applyIndex(tt1,Ops.ceil(ff));
-                QDataSet tflr= Ops.applyIndex(tt1,Ops.floor(ff));
+                QDataSet tcel= Ops.applyIndex(tt1,Ops.ceil(ff),fillValue);
+                QDataSet tflr= Ops.applyIndex(tt1,Ops.floor(ff),fillValue);
                 QDataSet tdff= Ops.subtract( tcel,tflr );
                 QDataSet r= Ops.where( Ops.gt( tdff, tlimit ) );
                 ds= Ops.putValues( ds, r, fillValue );
