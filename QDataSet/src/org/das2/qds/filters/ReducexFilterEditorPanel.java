@@ -94,11 +94,11 @@ public class ReducexFilterEditorPanel extends AbstractFilterEditorPanel {
                 }
                 unitsCB.setSelectedItem(d.getUnits());
             } catch (ParseException ex) {
-                Pattern p2= Pattern.compile("\\|reducex\\('?(\\d+)\\s*(\\S+)'?\\)");
+                Pattern p2= Pattern.compile("\\|reducex\\('?(\\d+)\\s*(\\S+?)'?\\)");
                 Matcher m2= p2.matcher(filter);
                 if ( m2.matches() ) {
-                    scalarTF.setText(m.group(1));
-                    unitsCB.setSelectedItem(Units.lookupUnits(m.group(2)));
+                    scalarTF.setText(m2.group(1));
+                    unitsCB.setSelectedItem(Units.lookupUnits(m2.group(2)));
                 } else {
                     scalarTF.setText("1");
                     unitsCB.setSelectedItem(Units.hours);
