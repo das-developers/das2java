@@ -75,6 +75,7 @@ public class MapSerializeDelegate implements SerializeDelegate, XMLSerializeDele
             }
             try {
                 SerializeDelegate sd= SerializeRegistry.getByName(stype);
+                if ( sd==null ) throw new ParseException("unrecognized type: "+stype,0);
                 if ( sd instanceof XMLSerializeDelegate ) {
                     Object oval= ((XMLSerializeDelegate)sd).xmlParse(eval);
                     result.put( key, oval );
