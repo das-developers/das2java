@@ -96,14 +96,14 @@ public class Orbits {
                             urls.add( lurl );
                         }   break;
                     case "crres":
-                        urls.add( new URL( "http://www-pw.physics.uiowa.edu/das2/Orbits/crres.dat" ) );
+                        urls.add( new URL( "https://das2.org/Orbits/crres.dat" ) );
                         urls.add( new URL( "ftp://virbo.org/mirror/das2.org/wiki/index.php/Oribts/crres/crres-orbits.dat" ) );
                         break;
                     case "cassini":
                         urls.add( new URL( "http://www-pw.physics.uiowa.edu/~jbf/cassini/cassiniOrbits.txt" ) );
                         break;
                     default:
-                        urls.add( new URL( "http://www-pw.physics.uiowa.edu/das2/Orbits/"+sc+".dat" ) );
+                        urls.add( new URL( "https://das2.org/Orbits/"+sc+".dat" ) );
                         break;
                 }
             }
@@ -122,6 +122,7 @@ public class Orbits {
                 logger.log(Level.FINE, "Orbits trying to connect to {0}", url);
                 connect= url.openConnection();
                 connect.setConnectTimeout(5000);
+                connect= HttpUtil.checkRedirect(connect);
                 in= connect.getInputStream();
                 logger.log(Level.FINE, "  got input stream from {0}", url);
                 sourceUrl= url;
@@ -419,6 +420,7 @@ public class Orbits {
                 if ( source.size()==1 ) orbits.url= source.get(0);
                 missions.put( sc, orbits );
             } catch ( IOException ex ) {
+                getOrbitsFor(sc);
                 throw new IllegalArgumentException( "Unable to read orbits file for "+sc, ex );
             }
             return orbits;
