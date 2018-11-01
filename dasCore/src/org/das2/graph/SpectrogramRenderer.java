@@ -283,13 +283,23 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         }
     }
 
-    private static QDataSet bounds( QDataSet ds ) {
+    private QDataSet boundsCache= null;
+    private QDataSet boundsCacheInput= null;
+    
+    private QDataSet bounds( QDataSet ds ) {
+        if ( ds==boundsCacheInput && boundsCache!=null ) {
+            return boundsCache;
+        } 
         if ( SemanticOps.isRank2Waveform(ds) ) {
             QDataSet xrange= Ops.extentSimple( SemanticOps.xtagsDataSet(ds), null );
             QDataSet yrange= Ops.extentSimple( SemanticOps.ytagsDataSet(ds), null );
-            return Ops.join( xrange, yrange );
+            boundsCacheInput= ds;
+            boundsCache= Ops.join( xrange, yrange );
+            return boundsCache;
         } else {
-            return DataSetOps.dependBoundsSimple(ds);
+            boundsCacheInput= ds;
+            boundsCache= DataSetOps.dependBoundsSimple(ds);
+            return boundsCache;
         }
         
     }
