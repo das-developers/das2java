@@ -723,6 +723,7 @@ public class AverageTableRebinner implements DataSetRebinner {
         Units zunits;
         int nx, ny;
 
+        logger.entering("AverageTableRebinner", "average");
         if ( tds.rank()!=3 ) throw new IllegalArgumentException("rank 3 expected");
 
         zunits = SemanticOps.getUnits( tds );
@@ -768,6 +769,23 @@ public class AverageTableRebinner implements DataSetRebinner {
             }
 
             for (int i = 0; i < tds1.length(); i++) {
+
+                int ibinx;
+
+                if (ddX != null) {
+                    if ( vxds.value(i)>0 ) {
+                        ibinx = ddX.whichBin( xds.value(i), xunits );
+                    } else {
+                        ibinx = -10000;
+                    }
+                } else {
+                    ibinx = i;
+                }
+                
+                if (ibinx < 0 || ibinx > nx) {
+                    continue;
+                }
+
                 if ( yds.rank()==2 ) {
                     for (int j = 0; j < ibiny.length; j++) {
                         if (ddY != null) {
@@ -780,18 +798,6 @@ public class AverageTableRebinner implements DataSetRebinner {
                             ibiny[j] = j;
                         }
                     }
-                }
-
-                int ibinx;
-
-                if (ddX != null) {
-                    if ( vxds.value(i)>0 ) {
-                        ibinx = ddX.whichBin( xds.value(i), xunits );
-                    } else {
-                        ibinx = -10000;
-                    }
-                } else {
-                    ibinx = i;
                 }
 
                 if (ibinx >= 0 && ibinx < nx) {
@@ -827,10 +833,11 @@ public class AverageTableRebinner implements DataSetRebinner {
         }
 
         multiplyWeights( rebinData, rebinWeights, zunits.getFillDouble() );
-
+        logger.exiting("AverageTableRebinner", "average");
     }
 
     private static void multiplyWeights(double[][] data, double[][] weights, double fill) {
+        logger.entering("AverageTableRebinner", "multiplyWeights");
         for (int i = 0; i < data.length; i++) {
             for (int j = 0; j < data[i].length; j++) {
                 if (weights[i][j] > 0.0) {
@@ -840,6 +847,7 @@ public class AverageTableRebinner implements DataSetRebinner {
                 }
             }
         }
+        logger.exiting("AverageTableRebinner", "multiplyWeights");
     }
 
     //still used by AveragePeakTableRebinner
@@ -942,6 +950,8 @@ public class AverageTableRebinner implements DataSetRebinner {
      */
     static void fillInterpolateXNew(final double[][] data, final double[][] weights, RebinDescriptor ddX, Datum xTagWidth, boolean cadenceCheck, Interpolate interpolateType) {
 
+        logger.entering("AverageTableRebinner", "fillInterpolateXNew");
+        
         final boolean noCadenceCheck= !cadenceCheck;
         
         final int ny = data[0].length;
@@ -1086,6 +1096,7 @@ public class AverageTableRebinner implements DataSetRebinner {
                 }
             }
         }
+        logger.exiting("AverageTableRebinner", "fillInterpolateXNew");
     }
 
     /**
@@ -1099,6 +1110,7 @@ public class AverageTableRebinner implements DataSetRebinner {
     static void fillInterpolateY(final double[][] data, final double[][] weights, 
         RebinDescriptor ddY, Datum yTagWidth, Interpolate interpolateType) {
 
+        logger.entering("AverageTableRebinner", "fillInterpolateY");
         final int nx = data.length;
         final int ny = ddY.numberOfBins();
         final int[] i1 = new int[ny];
@@ -1263,6 +1275,7 @@ public class AverageTableRebinner implements DataSetRebinner {
                 }
             }
         }
+        logger.exiting("AverageTableRebinner", "fillInterpolateY");
     }
 
     private void enlargePixels(double[][] rebinData, double[][] rebinWeights) {
