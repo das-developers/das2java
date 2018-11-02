@@ -1232,7 +1232,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     }
     
     private Action getSetUnitsAction() {
-        return new AbstractAction("Reset Units") {
+        return new AbstractAction("Reset Units...") {
             @Override
             public void actionPerformed(ActionEvent e) {
                 editUnits();
@@ -1271,7 +1271,11 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         
         if ( JOptionPane.showConfirmDialog( this, p, "Reset Units", JOptionPane.OK_CANCEL_OPTION )==JOptionPane.OK_OPTION ) {
             for ( i=0; i<unitsArray.length; i++ ) {
-                unitsArray[i]= Units.lookupUnits(cbs[i].getSelectedItem().toString());
+                if ( cbs[i].getSelectedItem()!=null ) {
+                    unitsArray[i]= Units.lookupUnits(cbs[i].getSelectedItem().toString());
+                } else {
+                    logger.finest("ignoring non-selection...");
+                }
             }
             myTableModel.fireTableDataChanged();
             myTableModel.fireTableStructureChanged();
