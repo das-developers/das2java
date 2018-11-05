@@ -49,6 +49,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
+import javax.swing.SwingUtilities;
 import org.das2.DasApplication;
 import org.das2.DasProperties;
 import org.das2.dataset.VectorUtil;
@@ -2573,9 +2574,19 @@ public class SeriesRenderer extends Renderer {
         }
         super.setColorBar(cb);
         if (colorBar != null) {
-            DasPlot parent= getParent();
+            final DasPlot parent= getParent();
             if (parent != null && parent.getCanvas() != null) {
-                parent.getCanvas().add(colorBar);
+                final DasCanvas dasCanvas= parent.getCanvas();
+                Runnable run= new Runnable() {
+                    public void run() {
+                        dasCanvas.add(colorBar);
+                    }
+                };
+                if ( SwingUtilities.isEventDispatchThread() ) {
+                    run.run();
+                } else {
+                    SwingUtilities.invokeLater(run);
+                }
             }
             colorBar.addPropertyChangeListener( colorBarListener );        
         }
