@@ -843,8 +843,13 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
         
         logger.entering( CLASS_NAME, "resetInput", ds );
         
-        this.inputDs= ds;
+        if ( this.inputDs==null && this.inputDs==ds ) {
+            logger.exiting( CLASS_NAME, "resetInput", ds );
+            return;
+        }
         
+        this.inputDs= ds;
+                
         final String filter= getFilter();
         logger.log(Level.FINE, "filter: {0}", filter);
         
