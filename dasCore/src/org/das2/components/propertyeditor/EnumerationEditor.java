@@ -55,10 +55,25 @@ public class EnumerationEditor implements java.beans.PropertyEditor, TableCellEd
         pcSupport = new PropertyChangeSupport(this);
     }
 
-    protected EnumerationEditor(Class c) {
+    /**
+     * create an editor for the class.
+     * @param c 
+     */
+    public EnumerationEditor(Class c) {
+        this();
         setClass(c);
     }
 
+    /**
+     * create an editor for o's class, with o as the initial value.
+     * @param o initial value, like AnchorPosition.NORTH
+     */
+    public EnumerationEditor(Object o) {
+        this();
+        setClass(o.getClass());
+        setValue(o);
+    }
+    
     private void initEditor() {
         if (editor == null) {
             model = new Model();
