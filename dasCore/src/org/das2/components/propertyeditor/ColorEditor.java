@@ -96,6 +96,15 @@ public class ColorEditor extends AbstractCellEditor implements java.beans.Proper
         //System.err.println( String.format( "total time in init ColorEditor: %d", ( System.currentTimeMillis()-t0 ) ));
 
     }
+    
+    /**
+     * create the editor configured with the default.
+     * @param init 
+     */
+    public ColorEditor( Color init ) {
+        this();
+        setValue(init);
+    }
 
     public boolean supportsCustomEditor() { return true; }
     
