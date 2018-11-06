@@ -1030,7 +1030,16 @@ public class DasAnnotation extends DasCanvasComponent {
             if ( evt.getPropertyName().equals("paintingForPrint") ) {
                 logger.finer("plot change is trivial, ignoring");
             } else {
-                resize();
+                Runnable run= new Runnable() {
+                    public void run() {
+                        resize();
+                    }
+                };
+                if ( SwingUtilities.isEventDispatchThread() ) {
+                    run.run();
+                } else {
+                    SwingUtilities.invokeLater(run);
+                }
             }
         }
     };
