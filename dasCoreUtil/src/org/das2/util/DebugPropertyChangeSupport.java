@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 
 package org.das2.util;
 
@@ -11,7 +7,8 @@ import java.beans.PropertyChangeSupport;
 import java.util.Arrays;
 
 /**
- *
+ * PropertyChangeSupport implementation that provides debugging information, 
+ * such as toString.
  * @author jbf
  */
 public class DebugPropertyChangeSupport extends PropertyChangeSupport {
@@ -33,13 +30,13 @@ public class DebugPropertyChangeSupport extends PropertyChangeSupport {
     @Override
     public String toString() {
         PropertyChangeListener[] listeners= getPropertyChangeListeners();
-        StringBuffer result= new StringBuffer(super.toString());
-        for ( int i=0; i<listeners.length; i++ ) {
-            if ( listeners[i] instanceof PropertyChangeListenerProxy ) {
-                PropertyChangeListenerProxy proxy= (PropertyChangeListenerProxy)listeners[i];
-                result.append("\n"+proxy.getListener() + " (property " + proxy.getPropertyName() + ")" );
+        StringBuilder result= new StringBuilder(super.toString());
+        for (PropertyChangeListener listener : listeners) {
+            if (listener instanceof PropertyChangeListenerProxy) {
+                PropertyChangeListenerProxy proxy = (PropertyChangeListenerProxy) listener;
+                result.append("\n").append(proxy.getListener()).append(" (property ").append(proxy.getPropertyName()).append(")");
             } else {
-                result.append("\n"+listeners[i] );
+                result.append("\n").append(listener);
             }
         }
         return result.toString();
