@@ -606,7 +606,7 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
     public void removeUpdateListener(DasUpdateListener l) {
         int n0= listenerList.getListenerCount();
         listenerList.remove(DasUpdateListener.class, l);
-        if ( listenerList.getListenerCount()==n0 ) {
+        if ( n0>0 && listenerList.getListenerCount()==n0 ) {
             logger.fine("nothing was removed...");
         }
     }
@@ -698,7 +698,11 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         //String format="%.1f%%%+.1fem%+dpt";
         //String smin= String.format(format, minimum*100, emMinimum, ptMinimum );
         //String smax= String.format(format, maximum*100, emMaximum, ptMaximum );
-        return getClass().getName() + " " + formatLayoutStr(this, true) + "," +formatLayoutStr(this, false)  + " [dpos=" + getDMinimum() + "," + getDMaximum() + "]";
+        if ( canvas==null && parent==null ) {
+            return getClass().getName() + " unattached";
+        } else {
+            return getClass().getName() + " " + formatLayoutStr(this, true) + "," +formatLayoutStr(this, false)  + " [dpos=" + getDMinimum() + "," + getDMaximum() + "]";
+        }
     }
     
     /**
