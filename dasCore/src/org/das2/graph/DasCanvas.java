@@ -1914,9 +1914,10 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
     @Override
     public void remove(Component comp) {
         super.remove(comp); 
-        if (comp instanceof DasCanvasComponent) {
-            ((DasCanvasComponent) comp).uninstallComponent();
-        }
+        //TODO: I wonder what component required the following code...
+        //if (comp instanceof DasCanvasComponent) {
+        //    ((DasCanvasComponent) comp).uninstallComponent();
+        //}
         repaint();
     }
 
