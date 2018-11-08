@@ -147,6 +147,11 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         this.isWidth = isWidth;
         
         this.dasName = DasApplication.getDefaultApplication().suggestNameFor(this);
+
+        if ( this instanceof DasColumn ) {
+            System.err.println("ADD  "+dasName);
+        }
+        
         this.propertyChangeDelegate = new DebugPropertyChangeSupport(this);
         if ( parent!=null ) {
             parent.addPropertyChangeListener( canvasListener );
@@ -166,6 +171,9 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
      * remove the listeners so that the DasRow or DasColumn can be garbage collected.
      */
     public void removeListeners() {
+        if ( this instanceof DasColumn ) {
+            System.err.println("RM   "+dasName);
+        }
         if ( parent!=null ) {
             parent.removePropertyChangeListener( canvasListener );
         } else {
@@ -698,10 +706,11 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         //String format="%.1f%%%+.1fem%+dpt";
         //String smin= String.format(format, minimum*100, emMinimum, ptMinimum );
         //String smax= String.format(format, maximum*100, emMaximum, ptMaximum );
+        String t= getClass().getSimpleName();
         if ( canvas==null && parent==null ) {
-            return getClass().getName() + " unattached";
+            return t + " " + getDasName() + " unattached";
         } else {
-            return getClass().getName() + " " + formatLayoutStr(this, true) + "," +formatLayoutStr(this, false)  + " [dpos=" + getDMinimum() + "," + getDMaximum() + "]";
+            return t + " " + getDasName() + " " +  formatLayoutStr(this, true) + "," +formatLayoutStr(this, false)  + " [dpos=" + getDMinimum() + "," + getDMaximum() + "]";
         }
     }
     
