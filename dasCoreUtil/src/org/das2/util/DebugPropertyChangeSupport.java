@@ -61,12 +61,13 @@ public class DebugPropertyChangeSupport extends PropertyChangeSupport {
         }
         super.addPropertyChangeListener(propertyName, listener); 
         if ( listener!=null ) {
-            propNames.add( listener.toString()+ " " + propertyName );
-            sources.put( listener.toString()+ " " + propertyName, new Exception().getStackTrace() );
+            String key= listener.toString()+ " " + propertyName;
+            propNames.add( key );
+            sources.put( key, new Exception().getStackTrace() );
             if ( System.currentTimeMillis() - t0 < 50000 ) {
-                birthMilli.put( listener.toString()+ " " + propertyName, 0L );
+                birthMilli.put( key, 0L );
             } else {
-                birthMilli.put( listener.toString()+ " " + propertyName, System.currentTimeMillis() );
+                birthMilli.put( key, System.currentTimeMillis() );
             }
         }
     }
