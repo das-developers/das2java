@@ -99,10 +99,12 @@ public class DebugPropertyChangeSupport extends PropertyChangeSupport {
     private void printOldListeners() {
         long tnow= System.currentTimeMillis();
         for ( Entry<String,Long> e: birthMilli.entrySet() ) {
-            if ( e.getValue()>0 && ( tnow-e.getValue() ) > 60000 ) {
+            if ( e.getValue()>0 && ( tnow-e.getValue() ) > 20000 ) {
                 StackTraceElement[] sts= sources.get(e.getKey());
-                System.err.println("== "+e.getKey()+" ==");
+                System.err.println("== "+e.getKey()+" ("+( tnow-e.getValue() ) +"ms) ==");
+                int i=5;
                 for ( StackTraceElement st: sts ) {
+                    if ( i-- == 0 ) break;
                     System.err.println( st.toString() );
                 }
             } 
