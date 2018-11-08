@@ -148,9 +148,7 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         
         this.dasName = DasApplication.getDefaultApplication().suggestNameFor(this);
 
-        if ( this instanceof DasColumn ) {
-            System.err.println("ADD  "+dasName);
-        }
+        logger.log(Level.FINER, "ADD  {0} {1} {2}", new Object[]{dasName, canvas, parent});
         
         this.propertyChangeDelegate = new DebugPropertyChangeSupport(this);
         if ( parent!=null ) {
@@ -171,9 +169,7 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
      * remove the listeners so that the DasRow or DasColumn can be garbage collected.
      */
     public void removeListeners() {
-        if ( this instanceof DasColumn ) {
-            System.err.println("RM   "+dasName);
-        }
+        logger.log(Level.FINER, "RM   {0}", dasName);
         if ( parent!=null ) {
             parent.removePropertyChangeListener( canvasListener );
         } else {
