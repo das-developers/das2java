@@ -44,9 +44,9 @@ public class DebugPropertyChangeSupport extends PropertyChangeSupport {
         super.addPropertyChangeListener(listener);
         if ( listener!=null ) {
             final String key= listener.toString();
-            if ( key.startsWith("scaleListener") ) {
-                System.err.println("+++ add scaleListener");
-            }
+            //if ( key.startsWith("scaleListener") ) {
+            //    System.err.println("+++ add scaleListener");
+            //}
             propNames.add( key );
             propNamesArray= propNames.toArray( new String[propNames.size()] );
             sources.put( key, new Exception().getStackTrace() );
@@ -84,9 +84,9 @@ public class DebugPropertyChangeSupport extends PropertyChangeSupport {
         super.removePropertyChangeListener(listener);
         if ( listener!=null ) {
             final String key = listener.toString();            
-            if ( key.startsWith("scaleListener") ) {
-                System.err.println("--- rm scaleListener");
-            }
+            //if ( key.startsWith("scaleListener") ) {
+            //    System.err.println("--- rm scaleListener");
+            //}
             propNames.remove(key);
             propNamesArray= propNames.toArray( new String[propNames.size()] );
             sources.remove(key);
@@ -110,18 +110,19 @@ public class DebugPropertyChangeSupport extends PropertyChangeSupport {
     }
     
     private void printOldListeners() {
-        long tnow= System.currentTimeMillis();
-        for ( Entry<String,Long> e: birthMilli.entrySet() ) {
-            if ( e.getValue()>0 && ( tnow-e.getValue() ) > 20000 ) {
-                StackTraceElement[] sts= sources.get(e.getKey());
-                System.err.println("== "+e.getKey()+" ("+( tnow-e.getValue() ) +"ms) ==");
-                int i=5;
-                for ( StackTraceElement st: sts ) {
-                    if ( i-- == 0 ) break;
-                    System.err.println( st.toString() );
-                }
-            } 
-        }
+        return;
+//        long tnow= System.currentTimeMillis();
+//        for ( Entry<String,Long> e: birthMilli.entrySet() ) {
+//            if ( e.getValue()>0 && ( tnow-e.getValue() ) > 20000 ) {
+//                StackTraceElement[] sts= sources.get(e.getKey());
+//                System.err.println("== "+e.getKey()+" ("+( tnow-e.getValue() ) +"ms) ==");
+//                int i=5;
+//                for ( StackTraceElement st: sts ) {
+//                    if ( i-- == 0 ) break;
+//                    System.err.println( st.toString() );
+//                }
+//            } 
+//        }
     }
     
     @Override
