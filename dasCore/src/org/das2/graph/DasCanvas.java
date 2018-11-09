@@ -1902,6 +1902,9 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         super.remove(index);
         if (comp instanceof DasCanvasComponent) {
             ((DasCanvasComponent) comp).uninstallComponent();
+            //We can't remove the repaintListener because multiple DCCs may be using the same column or row.
+            //((DasCanvasComponent) comp).getRow().removePropertyChangeListener(repaintListener);
+            //((DasCanvasComponent) comp).getColumn().removePropertyChangeListener(repaintListener);
         }
     }
 

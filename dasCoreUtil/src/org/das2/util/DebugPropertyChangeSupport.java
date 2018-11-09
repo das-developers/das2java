@@ -26,6 +26,7 @@ public class DebugPropertyChangeSupport extends PropertyChangeSupport {
     public long t= System.currentTimeMillis() - t0;
     
     List<String> propNames= new ArrayList();
+    String[] propNamesArray= new String[0];
     Map<String,StackTraceElement[]> sources= new HashMap<>();
     Map<String,Long> birthMilli= new HashMap<>();
 
@@ -42,12 +43,17 @@ public class DebugPropertyChangeSupport extends PropertyChangeSupport {
         }
         super.addPropertyChangeListener(listener);
         if ( listener!=null ) {
-            propNames.add( listener.toString() );
-            sources.put( listener.toString(), new Exception().getStackTrace() );
+            final String key= listener.toString();
+            if ( key.startsWith("scaleListener") ) {
+                System.err.println("+++ add scaleListener");
+            }
+            propNames.add( key );
+            propNamesArray= propNames.toArray( new String[propNames.size()] );
+            sources.put( key, new Exception().getStackTrace() );
             if ( System.currentTimeMillis() - t0 < 50000 ) {
-                birthMilli.put( listener.toString(), 0L );
+                birthMilli.put( key, 0L );
             } else {
-                birthMilli.put( listener.toString(), System.currentTimeMillis() );
+                birthMilli.put( key, System.currentTimeMillis() );
             }
         }
         
@@ -61,8 +67,9 @@ public class DebugPropertyChangeSupport extends PropertyChangeSupport {
         }
         super.addPropertyChangeListener(propertyName, listener); 
         if ( listener!=null ) {
-            String key= listener.toString()+ " " + propertyName;
+            final String key= listener.toString()+ " " + propertyName;
             propNames.add( key );
+            propNamesArray= propNames.toArray( new String[propNames.size()] );
             sources.put( key, new Exception().getStackTrace() );
             if ( System.currentTimeMillis() - t0 < 50000 ) {
                 birthMilli.put( key, 0L );
@@ -76,9 +83,14 @@ public class DebugPropertyChangeSupport extends PropertyChangeSupport {
     public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
         super.removePropertyChangeListener(listener);
         if ( listener!=null ) {
-            propNames.remove( listener.toString() );
-            sources.remove(listener.toString() );
-            birthMilli.remove(listener.toString() );
+            final String key = listener.toString();            
+            if ( key.startsWith("scaleListener") ) {
+                System.err.println("--- rm scaleListener");
+            }
+            propNames.remove(key);
+            propNamesArray= propNames.toArray( new String[propNames.size()] );
+            sources.remove(key);
+            birthMilli.remove(key);
         }
         printOldListeners();
     }
@@ -88,8 +100,9 @@ public class DebugPropertyChangeSupport extends PropertyChangeSupport {
         super.removePropertyChangeListener(propertyName, listener);
         //TODO: possible bug: sometimes with TSBs listener is null.
         if ( listener!=null ) {
-            String key= listener.toString()+ " " + propertyName;
+            final String key= listener.toString()+ " " + propertyName;
             propNames.remove( key );
+            propNamesArray= propNames.toArray( new String[propNames.size()] );
             sources.remove( key );
             birthMilli.remove( key );
         }
