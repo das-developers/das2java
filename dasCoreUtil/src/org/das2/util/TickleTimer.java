@@ -1,9 +1,4 @@
-/*
- * TickleTimer.java
- *
- * Created on July 28, 2006, 9:23 PM
- *
- */
+
 
 package org.das2.util;
 
