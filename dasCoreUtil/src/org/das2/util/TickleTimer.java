@@ -24,6 +24,7 @@ public class TickleTimer {
     long delay;
     boolean running;
     boolean firing=false; // true when the listener is being invoked.
+    boolean retickle=false; // true when the tickleTimer was tickled while firing.
     List<String> messages;
     
     static final Logger log= org.das2.util.LoggerManager.getLogger("das2.util");
@@ -72,6 +73,10 @@ public class TickleTimer {
                 running= false; //sometimes listeners need to retickle the timer...
                 propertyChangeSupport.firePropertyChange("running",true,false);
                 firing= false;
+                if ( retickle ) {
+                    retickle= false;
+                    tickle("retickle");
+                }
                 messages= new ArrayList<>();
             }
         };
@@ -82,10 +87,11 @@ public class TickleTimer {
     }
 
     public synchronized void tickle( String message ) {
-        if ( firing ) {
-            log.log(Level.FINE, "tickle while firing, which may be result in bugs");
-        }
         tickleTime= System.currentTimeMillis();
+        if ( firing ) {
+            retickle= true;
+            return;
+        }
         if ( !running ) startTimer();
         if ( message!=null ) messages.add(message);
     }
