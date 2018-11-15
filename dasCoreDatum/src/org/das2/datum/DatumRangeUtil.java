@@ -1410,6 +1410,17 @@ public class DatumRangeUtil {
                         for ( int i=0; i<tt.length; i++ ) tt[i]= tt[i] - dt[i];
                         time= TimeUtil.toDatum(tt);
                         snew.append( TimeParser.create(TimeParser.TIMEFORMAT_Z).format(time,null) );
+                    } else if ( s.contains("lastmonth+") ) {
+                        int[] tt= TimeUtil.fromDatum(now);
+                        tt[2]=1;
+                        tt[3]=0;
+                        tt[4]=0;
+                        tt[5]=0;
+                        tt[6]=0;
+                        int[] dt= parseISO8601Duration(s.substring(8));
+                        for ( int i=0; i<tt.length; i++ ) tt[i]= tt[i] + dt[i];
+                        time= TimeUtil.toDatum(tt);
+                        snew.append( TimeParser.create(TimeParser.TIMEFORMAT_Z).format(time,null) );
                     } else if ( s.contains("lastmonth") ) {
                         int[] d= TimeUtil.fromDatum(now);
                         d[2]=1;
@@ -1430,6 +1441,16 @@ public class DatumRangeUtil {
                         for ( int i=0; i<tt.length; i++ ) tt[i]= tt[i] - dt[i];
                         time= TimeUtil.toDatum(tt);
                         snew.append( TimeParser.create(TimeParser.TIMEFORMAT_Z).format(time,null) );
+                    } else if ( s.contains("lastday+") ) {
+                        int[] tt= TimeUtil.fromDatum(now);
+                        tt[3]=0;
+                        tt[4]=0;
+                        tt[5]=0;
+                        tt[6]=0;
+                        int[] dt= parseISO8601Duration(s.substring(8));
+                        for ( int i=0; i<tt.length; i++ ) tt[i]= tt[i] + dt[i];
+                        time= TimeUtil.toDatum(tt);
+                        snew.append( TimeParser.create(TimeParser.TIMEFORMAT_Z).format(time,null) );
                     } else if ( s.contains("lastday") ) {
                         int[] d= TimeUtil.fromDatum(now);
                         d[3]=0;
@@ -1446,6 +1467,15 @@ public class DatumRangeUtil {
                         tt[6]=0;
                         int[] dt= parseISO8601Duration(s.substring(8));
                         for ( int i=0; i<tt.length; i++ ) tt[i]= tt[i] - dt[i];
+                        time= TimeUtil.toDatum(tt);
+                        snew.append( TimeParser.create(TimeParser.TIMEFORMAT_Z).format(time,null) );
+                    } else if ( s.contains("lasthour+") ) {
+                        int[] tt= TimeUtil.fromDatum(now);
+                        tt[4]=0;
+                        tt[5]=0;
+                        tt[6]=0;
+                        int[] dt= parseISO8601Duration(s.substring(8));
+                        for ( int i=0; i<tt.length; i++ ) tt[i]= tt[i] + dt[i];
                         time= TimeUtil.toDatum(tt);
                         snew.append( TimeParser.create(TimeParser.TIMEFORMAT_Z).format(time,null) );
                     } else if ( s.contains("lasthour") ) {
