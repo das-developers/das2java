@@ -1562,7 +1562,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
      * @return an Image
      */
     public Image getImageNonPrint(int width, int height) {
-
+        logger.entering( "DasCanvas", "getImageNonPrint" );
         long t0= System.currentTimeMillis();
         String msg = "dasCanvas.getImageNonPrint(" + width + "," + height + ")";
         logger.fine(msg);
@@ -1590,7 +1590,8 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
             }
         }
 
-        logger.log(Level.FINE, "time to getImageNonPaint: {0}ms", (System.currentTimeMillis() - t0));
+        logger.log(Level.FINEST, "time to getImageNonPaint: {0}ms", (System.currentTimeMillis() - t0));
+        logger.exiting( "DasCanvas", "getImageNonPrint" );
         return image;
     }
 
@@ -1635,6 +1636,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
      * @param image the image
      */
      public void writeToImageImmediatelyNonPrint( Image image ) {
+        logger.entering( "DasCanvas", "writeToImageImmediatelyNonPrint" );
         long t0= System.currentTimeMillis();
         Graphics2D graphics;
         try {
@@ -1661,6 +1663,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
             super.print(g);
 
         logger.log(Level.FINE, "time to writeToImageImmediatelyNonPaint: {0}ms", (System.currentTimeMillis() - t0));
+        logger.exiting( "DasCanvas", "writeToImageImmediatelyNonPrint" );
     }
 
     private transient PropertyChangeListener repaintListener= new PropertyChangeListener() {
