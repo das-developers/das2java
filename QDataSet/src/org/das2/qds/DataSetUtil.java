@@ -2743,6 +2743,48 @@ public class DataSetUtil {
             }
         }
         
+        Object obins= ds.property( QDataSet.BINS_1 );
+        if ( obins!=null && !( obins instanceof String ) ) {
+            throw new IllegalArgumentException("BINS_1 property is not a String");
+        } else {
+            if ( obins!=null ) {
+                if ( obins.equals( QDataSet.VALUE_BINS_MIN_MAX ) ) {
+                    if ( ds.length(0)!=2 ) {
+                        problems.add( "BINS_1 is 'min,max' but length is not 2." );
+                    }
+                    boolean outOfOrder= false;
+                    for ( int i=0; i<ds.length(); i++ ) {
+                        if ( ds.value(i,0)>ds.value(i,1) ) {
+                            outOfOrder= true;
+                        }
+                    }
+                    if ( outOfOrder ) {
+                        problems.add( "BINS_1 is min,max min is greater than max" );
+                    }
+                }
+                if ( obds!=null ) { // 2060: check for constant units in BUNDLE_1
+                    Units cu= (Units)ds.property(QDataSet.UNITS);
+                    if ( cu==null ) cu= Units.dimensionless;
+                    QDataSet bds= (QDataSet)obds;
+                    Units inconsistentUnit= null;
+                    for ( int j=0; j<bds.length(); j++ ) {
+                        Object ou= bds.property( "UNITS", j );
+                        if ( ou==null ) ou= Units.dimensionless;
+                        if ( cu!=((Units)ou) ) {
+                            inconsistentUnit= (Units)ou;
+                        }
+                    }
+                    if ( inconsistentUnit!=null ) {
+                        String su= cu.toString();
+                        if ( su.length()==0 ) su= "dimensionless";
+                        String sinc= inconsistentUnit.toString();
+                        if ( sinc.length()==0 ) sinc= "dimensionless";
+                        problems.add( "UNITS of bins dataset ("+su+") are inconsistent with those found in BUNDLE_1 ("+sinc+")");
+                    }
+                }
+            }
+        }
+        
         if ( ds.property(QDataSet.PLANE_0)!=null ) {
             QDataSet plane0 = (QDataSet) ds.property(QDataSet.PLANE_0);
             if ( plane0!=null ) {
