@@ -1406,10 +1406,12 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         primaryActionButtonMap.clear();
         secondaryActionButtonMap.clear();
         setFeedback(null);
-        this.primaryPopup.removeAll();
+        JPopupMenu jp= this.primaryPopup;
+        if ( jp!=null ) jp.removeAll();
         this.primaryPopup= null;
-        this.secondaryPopup.removeAll();
-        this.secondaryPopup= null;
+        jp= this.secondaryPopup;
+        if ( jp!=null ) jp.removeAll();
+        this.secondaryPopup= null;    
         this.resizeRenderer= null;
         this.mouseMode=null;
         this.secondarySelectedItem= null;
