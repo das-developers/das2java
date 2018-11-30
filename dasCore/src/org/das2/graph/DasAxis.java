@@ -3180,7 +3180,12 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
         if ( font==null ) return bounds;
         FontMetrics fm= getFontMetrics( font );
-        int fontDecent= fm.getDescent();
+        int fontDecent= fm.getMaxDescent();
+        if ( fontDecent<0 ) {
+            fontDecent= 5-fontDecent;
+            logger.finest("negative font descent");
+        }
+        //int fontDecent= Math.abs(fm.getMaxDescent());
         
         DatumVector ticks = ltickV.tickV;
         for (int i = 0; i < labels.length; i++) {
