@@ -2454,7 +2454,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 int titlePositionOffset = getTitlePositionOffset();
                 GrannyTextRenderer gtr = new GrannyTextRenderer();
                 g2.setFont(getLabelFont());
-                if ( dasPlot!=null ) gtr.setAlignment( dasPlot.getMultiLineTextAlignment() );
+                if ( dasPlot!=null ) {
+                    gtr.setAlignment( dasPlot.getMultiLineTextAlignment() );
+                } else {
+                    gtr.setAlignment( 0.5f );
+                }
                 String axislabel1= resolveAxisLabel();
                 gtr.setString(g2, axislabel1);
                 int titleWidth = (int) gtr.getWidth();
@@ -2592,7 +2596,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 int titlePositionOffset = getTitlePositionOffset();
                 GrannyTextRenderer gtr = new GrannyTextRenderer();
                 g2.setFont(getLabelFont());
-                if ( dasPlot!=null ) gtr.setAlignment(dasPlot.getMultiLineTextAlignment());
+                if ( dasPlot!=null ) {
+                    gtr.setAlignment(dasPlot.getMultiLineTextAlignment());
+                } else {
+                    gtr.setAlignment(0.5f);
+                }
                 gtr.setString(g2, resolveAxisLabel() );
                 int titleWidth = (int) gtr.getWidth();
                 int baseline;
