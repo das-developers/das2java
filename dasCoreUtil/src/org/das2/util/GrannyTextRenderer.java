@@ -60,7 +60,7 @@ import java.util.logging.Logger;
  * used like so: &amp;#9742; (&#9742 phone symbol), or symbols like <tt>&amp;Omega;</tt> and <tt>&amp;omega;</tt>
  * 
  * @see java.awt.font.TextLayout, which may do some of the same things.
- * 
+ * @see org.das2.graph.GrannyTextLabeller
  * @author  Edward West
  */
 public class GrannyTextRenderer {
