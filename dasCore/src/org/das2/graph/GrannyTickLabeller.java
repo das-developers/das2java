@@ -12,6 +12,7 @@ import java.awt.geom.*;
  * the tickDescriptor it receives, and then uses the grannyFormat method to
  * get the label.  This object is useful as-is, but provides an easy way to
  * get complex labels (e.g. TCAs) by overriding init and getLabel.
+ * @see GrannyTextRenderer
  */
 public class GrannyTickLabeller implements TickLabeller {
     
