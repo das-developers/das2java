@@ -29,6 +29,7 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.font.TextLayout;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Stack;
@@ -58,6 +59,7 @@ import java.util.logging.Logger;
  * For Greek and math symbols, Unicode characters should be
  * used like so: &amp;#9742; (&#9742 phone symbol), or symbols like <tt>&amp;Omega;</tt> and <tt>&amp;omega;</tt>
  * 
+ * @see java.awt.font.TextLayout, which may do some of the same things.
  * 
  * @author  Edward West
  */
