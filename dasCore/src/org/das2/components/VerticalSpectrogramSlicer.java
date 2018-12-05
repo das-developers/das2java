@@ -25,9 +25,6 @@ package org.das2.components;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dialog;
-import java.awt.Frame;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
@@ -37,6 +34,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Box;
@@ -70,16 +69,17 @@ import org.das2.graph.Painter;
 import org.das2.graph.Renderer;
 import org.das2.graph.SpectrogramRenderer;
 import org.das2.graph.SymbolLineRenderer;
-import org.das2.system.DasLogger;
-import org.das2.util.monitor.ProgressMonitor;
 import org.das2.qds.DataSetOps;
 import org.das2.qds.DataSetUtil;
 import org.das2.qds.QDataSet;
 import org.das2.qds.SemanticOps;
 import org.das2.qds.ops.Ops;
+import org.das2.util.LoggerManager;
 
 
 public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
+    
+    private static final Logger logger= LoggerManager.getLogger("das2.gui.dmia.vslice");
     
     private JDialog popupWindow;
     private final DasPlot parentPlot;
@@ -335,9 +335,11 @@ public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
      */
     @Override
     public void dataPointSelected(DataPointSelectionEvent e) {    
-
+        
         yValue = e.getY();
         xValue = e.getX();
+
+        logger.log(Level.FINER, "dataPointSelected {0} {1}", new Object[] { xValue, yValue } );
 
         QDataSet ds = e.getDataSet();
         if (ds==null || ! SemanticOps.isTableDataSet(ds) )
@@ -427,13 +429,16 @@ public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
         }
         
         if ( sliceDataSet==null ) {
+            logger.fine("sliceDataSet is null");
             return false;
         }
         
-        DasLogger.getLogger(DasLogger.GUI_LOG).finest("setDataSet sliceDataSet");
+        logger.finest("setDataSet sliceDataSet");
         if (!isPopupVisible()) {
             showPopup();
         }
+        logger.log(Level.FINER, "slice window position: {0} {1}", new Object[]{popupWindow.getX(), popupWindow.getY()});
+        
         renderer.setDataSet(sliceDataSet);
         DatumFormatter formatter;
         if (xValue.getUnits() instanceof TimeLocationUnits) {
