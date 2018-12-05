@@ -1991,7 +1991,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             //if ( getCanvas()==null || getCanvas().getHeight()==0 ) return;
             //if ( ( isHorizontal() ? getColumn().getWidth() : getRow().getHeight() ) < 2 ) return; // canvas is not sized yet
             if ( useDomainDivider ) {
-                updateDomainDivider(); //TODO: doesn't consider width of TCAs.
+                if ( lockDomainDivider ) {
+                    logger.finer("domain divider is locked.");
+                } else {
+                    updateDomainDivider(); //TODO: doesn't consider width of TCAs.
+                }
             } else {
                 this.majorTicksDomainDivider= null;
             }
@@ -4756,6 +4760,25 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
         firePropertyChange(PROP_USEDOMAINDIVIDER, oldUseDomainDivider, useDomainDivider);
     }
+    
+    private boolean lockDomainDivider = false;
+
+    public static final String PROP_LOCKDOMAINDIVIDER = "lockDomainDivider";
+
+    public boolean isLockDomainDivider() {
+        return lockDomainDivider;
+    }
+
+    /**
+     * don't allow the domain divider to adjust.
+     * @param lockDomainDivider 
+     */
+    public void setLockDomainDivider(boolean lockDomainDivider) {
+        boolean oldLockDomainDivider = this.lockDomainDivider;
+        this.lockDomainDivider = lockDomainDivider;
+        firePropertyChange(PROP_LOCKDOMAINDIVIDER, oldLockDomainDivider, lockDomainDivider);
+    }
+
 
     /**
      * set the component visible or invisible. The axis bounds are updated.  So in addition to the JComponent visibility, this
