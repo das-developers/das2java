@@ -298,6 +298,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
      * @param e 
      */
     public void setLastException(Exception e) {
+        logger.log(Level.FINE, "Renderer.setLastException {0}: {1}", new Object[] { id, String.valueOf(e) });
         this.lastException = e;
         this.renderException = lastException;
     }
