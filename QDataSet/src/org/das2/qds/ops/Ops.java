@@ -8024,7 +8024,7 @@ public final class Ops {
             result= new double[]{ Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY};
         } else {
             result= new double[]{ range.value(0), range.value(1) };
-            if ( range.value(0)==fill ) System.err.println("range passed into extent contained fill");
+            if ( range.value(0)==fill ) logger.warning("range passed into extent contained fill");
         }
 
         boolean monoCheck;
@@ -8040,6 +8040,12 @@ public final class Ops {
             if ( ds.rank()==1 && monoCheck && n>0 ) {
                 monoCheck= DataSetUtil.isMonotonicQuick(ds);
                 if ( !monoCheck ) logger.log(Level.WARNING, "this data isn''t really monotonic: {0}", ds);
+                if ( monoCheck ) {
+                    while ( wds.value(ilast)==0.0 && ilast>0 ) ilast--;
+                    if ( ilast<ifirst ) {
+                        ilast= ifirst;
+                    }
+                }
             }
         } else {
             monoCheck= false;
