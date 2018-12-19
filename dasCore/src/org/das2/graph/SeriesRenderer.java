@@ -1977,7 +1977,12 @@ public class SeriesRenderer extends Renderer {
         try {
             if (vds != null) {
 
-                updateFirstLast(xAxis, yAxis, xds, vds );
+                try {
+                    updateFirstLast(xAxis, yAxis, xds, vds );
+                } catch ( InconvertibleUnitsException ex ) {
+                    ex.printStackTrace();
+                    return;
+                }
                 numberOfPoints= lastIndex-firstIndex+1;
                 if ( Schemes.isBundleDataSet(ds) ) {
                     dataSetReduced= false;
