@@ -9,6 +9,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -87,7 +88,7 @@ public class Orbits {
                     case "rbspb-pp":
                         String fsc= sc.replace("-","_");
                         urls.add( new URL( "http://www-pw.physics.uiowa.edu/rbsp/orbits/"+fsc ) );
-                        urls.add( new URL( "ftp://stevens.lanl.gov/pub/projects/rbsp/autoplot/orbits/"+fsc ) );
+                        urls.add( new URL( "https://emfisis.physics.uiowa.edu/pub/orbits/"+fsc ) );
                         urls.add( new URL( "ftp://virbo.org/mirror/stevens.lanl.gov/pub/projects/rbsp/autoplot/orbits/"+fsc ) );
                         URL lurl= Orbits.class.getResource("/orbits/"+fsc );
                         if ( lurl==null ) {
@@ -128,10 +129,14 @@ public class Orbits {
                 sourceUrl= url;
                 break;
             } catch ( IOException ex ) {
-                if ( connect!=null && ( connect instanceof HttpURLConnection ) && ((HttpURLConnection)connect).getResponseCode()==401 ) {
-                    logger.info("HTTP connection needs credentials, which must be in the URL.");
+                try {
+                    if ( connect!=null && ( connect instanceof HttpURLConnection ) && ((HttpURLConnection)connect).getResponseCode()==401 ) {
+                        logger.info("HTTP connection needs credentials, which must be in the URL.");
+                    }
+                    logger.log( Level.FINE, ex.getMessage(), ex );
+                } catch ( IOException ex2 ) {
+                    logger.log( Level.FINE, ex.getMessage(), ex2 ); // this can happen when we get the response code.
                 }
-                logger.log( Level.FINE, ex.getMessage(), ex );
                 if ( exfirst==null ) exfirst= ex;
             }
         }
