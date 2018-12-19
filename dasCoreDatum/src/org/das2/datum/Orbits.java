@@ -420,7 +420,6 @@ public class Orbits {
                 if ( source.size()==1 ) orbits.url= source.get(0);
                 missions.put( sc, orbits );
             } catch ( IOException ex ) {
-                getOrbitsFor(sc);
                 throw new IllegalArgumentException( "Unable to read orbits file for "+sc, ex );
             }
             return orbits;
