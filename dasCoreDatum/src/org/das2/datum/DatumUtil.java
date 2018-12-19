@@ -490,7 +490,11 @@ public final class DatumUtil {
         }
         if ( result[1]==null ) {
             result[0]= s;
-            result[1]= "";
+            if ( result[0].length()==8 && result[0].charAt(4)=='-' ) {
+                result[1]= "UTC";
+            } else {
+                result[1]= "";
+            }
         }
         if ( result[0]==null ) {
             result[1]= s;
