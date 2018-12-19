@@ -441,6 +441,74 @@ public final class DatumUtil {
     }
 
     /**
+     * splits the datum into a magnitude part and a unit part.  When times
+     * are detected, "UTC" will be the units part.
+     * Here is a list to test against, and the motivation:
+     * <ul>
+     * <li> 2014-05-29T00:00 ISO8601 times, cannot contain spaces.
+     * <li> 5.e4 Hz          registered known units
+     * <li> 5.6 foos         units from the wild
+     * <li> 5.7 bytes/sec    mix of MKS and units from the wild.
+     * <li> 5.7Hz            no space
+     * <li> 5.7T             no space, contains T.
+     * <li> +5.7E+2Hz        more challenging double.
+     * <li> $57              unit before number
+     * </ul>
+     * Note: units cannot start with E or e then a number or plus or minus.
+     * Datums cannot contain commas, semicolons, or quotes.
+     * NaN is Double.NaN.
+     * 
+     * @param s the string-formatted datum
+     * @return the magnitude and the units, or [null,s] when it is not parseable.
+     */
+    public static String[] datumStringSplit( String s ) {
+        s= s.trim();
+        String[] result= new String[2];
+        char state= 'p'; // prefix units
+        String floatChars= "0123456789eE+-.";
+        for ( int i=0; i<s.length(); i++ ) {
+            char c= s.charAt(i);
+            switch ( state ) {
+                case 'p':
+                    if ( c=='$' ) {
+                        result[1]= s.substring(0,i+1);
+                        result[0]= s.substring(i+1).trim();
+                        return result;
+                    } else {
+                        state= 'm'; // magnitude
+                    }
+                case 'm':
+                    if ( !floatChars.contains(s.substring(i,i+1) ) ) {
+                        result[0]= s.substring(0,i);
+                        result[1]= s.substring(i);
+                        state= 'u'; // unit
+                    }
+                    break;
+                case 'u':
+                    break;
+            }
+        }
+        if ( result[1]==null ) {
+            result[0]= s;
+            result[1]= "";
+        }
+        if ( result[0]==null ) {
+            result[1]= s;
+            return result;
+        }
+        if ( result[0].endsWith("E") || result[0].endsWith("e") ) {
+            int n= result[0].length()-1;
+            result[1]= result[0].substring(n) + result[1];
+            result[0]= result[0].substring(0,n);
+        }
+        if ( result[1].length()>0 && ( result[1].charAt(0)==':' || result[1].charAt(0)=='/' || result[1].charAt(0)=='T' ) ) { // ISO8601 time.
+            result[0]= s;
+            result[1]= "UTC";
+        }
+        return result;
+    }
+    
+    /**
      * Attempts to resolve strings commonly encountered.  This was introduced to create a standard 
      * method for resolving Strings in ASCII files to a Datum.
      * This follows the rules that:
@@ -455,7 +523,8 @@ public final class DatumUtil {
      * <li> 5.6 foos         units from the wild
      * <li> 5.7 bytes/sec    mix of MKS and units from the wild.
      * <li> 5.7Hz            no space
-     * <li> 5.7T             no space, contains T.
+     * <li> 5.7T             no space, (contains T which is also in ISO8601 times)
+     * <li> 5.7eggs          e could be mistaken for exponent.
      * <li> +5.7E+2Hz        more challenging double.
      * <li> $57              unit before number
      * </ul>
@@ -465,9 +534,8 @@ public final class DatumUtil {
      * @see Units#parse(java.lang.String) 
      */
     public static Datum lookupDatum( String s ) throws ParseException {
-        String [] ss= s.trim().split("\\s+");
-        int dashCount= ss[0].split("-",-2).length-1;
-        if ( ss.length==1 && ss[0].contains("T") && ( s.contains(":") || dashCount>2 ) ) {
+        String [] ss= splitDatumString(s);
+        if ( ss[1].equals("UTC") ) {
             try {
                 Datum time= Units.us2000.parse(ss[0]);
                 return time;
@@ -475,22 +543,12 @@ public final class DatumUtil {
                 // guess it wasn't a time.
             }
         }
-        if ( ss.length>1 && "1234567890+=.".indexOf(ss[0].charAt(0))>-1 ) {
-            try {
-                return DatumUtil.parse(s); //TODO: someone is going to want lookupUnits that will allocate new units.
-            } catch (ParseException ex) {
-                Units u= Units.lookupUnits(ss[1]);
-                try {
-                    return u.parse(s);
-                } catch (ParseException ex1) {
-                    logger.log(Level.SEVERE, null, ex1);
-                    throw ex1;
-                }
-            }
-        } else {
-            //TODO: handle $57 +5.7E+2Hz
-            throw new ParseException("unrecognized form, try adding space",0 );
-        }
+        
+        if ( ss[0]==null ) throw new ParseException("magnitude not found",0);
+        
+        Units u= Units.lookupUnits(ss[1]);
+        return u.parse(ss[0]);
+        
     }
     
     /**
