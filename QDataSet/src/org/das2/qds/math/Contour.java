@@ -100,6 +100,8 @@ public class Contour {
 
             MutablePropertyDataSet result= builder.getDataSet();
 
+            if ( result.length()==0 ) return result;
+            
             if ( form==PERFORM_CONTOUR_RETURN_FORM3 ) {
                 QDataSet istep= DataSetOps.unbundle( result, 3 );
                 result= DataSetOps.leafTrim( result, 0, 3 );
