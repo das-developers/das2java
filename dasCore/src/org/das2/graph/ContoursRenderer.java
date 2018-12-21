@@ -124,7 +124,7 @@ public class ContoursRenderer extends Renderer {
             return true;
         }
 
-        if ( vds==null ) {
+        if ( contoursDs==null ) {
             return true;
         }
         
@@ -150,7 +150,7 @@ public class ContoursRenderer extends Renderer {
             lparent.postMessage(this, "dataset rank must be 2", DasPlot.INFO, null, null);
             return;
         }
-        if ( vds.length()==0 ) {
+        if ( contoursDs.length()==0 ) {
             lparent.postMessage(this, "no contours are found", DasPlot.INFO, null, null);
             return;
         }
@@ -251,19 +251,19 @@ public class ContoursRenderer extends Renderer {
         }        
     }
 
-    QDataSet vds; // the contours
+    private QDataSet contoursDs; // the contours
     
     private synchronized void updateContours() {
         QDataSet tds= (QDataSet) getDataSet();
         if ( tds==null ) {
-            vds= null;
+            contoursDs= null;
             return;
         }
         
         if ( tds.rank()==2 && tds.length(0)==3 && tds.property(QDataSet.DEPEND_0)!=null ) {
             // hey it was already done...
             logger.fine("contour was already performed");
-            vds= tds;
+            contoursDs= tds;
             return;
         }
         
@@ -279,7 +279,7 @@ public class ContoursRenderer extends Renderer {
             dcons[i] = c;
         }
         DatumVector dv = DatumVector.newDatumVector(dcons, units );        
-        vds= Contour.contour(tds, DDataSet.wrap(dv.toDoubleArray(units) ) );
+        contoursDs= Contour.contour(tds, DDataSet.wrap(dv.toDoubleArray(units) ) );
     }
     
     private String fontSize = "8pt";
@@ -490,17 +490,17 @@ public class ContoursRenderer extends Renderer {
 
         double d0 = units.getFillDouble();
         
-        if ( vds==null ) {
+        if ( contoursDs==null ) {
             return;
         }
 
-        if ( vds.length()==0 ) {
+        if ( contoursDs.length()==0 ) {
             return;
         }
         
-        QDataSet xds = (QDataSet) DataSetOps.unbundle( vds, 0 );
-        QDataSet yds = (QDataSet) DataSetOps.unbundle( vds, 1 );
-        QDataSet zds=  (QDataSet) DataSetOps.unbundle( vds, 2 );
+        QDataSet xds = (QDataSet) DataSetOps.unbundle(contoursDs, 0 );
+        QDataSet yds = (QDataSet) DataSetOps.unbundle(contoursDs, 1 );
+        QDataSet zds=  (QDataSet) DataSetOps.unbundle(contoursDs, 2 );
         QDataSet ids=  SemanticOps.xtagsDataSet(zds);
 
         Units xunits = xAxis.getUnits();
