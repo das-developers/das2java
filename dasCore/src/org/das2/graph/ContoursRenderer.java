@@ -150,6 +150,11 @@ public class ContoursRenderer extends Renderer {
             lparent.postMessage(this, "dataset rank must be 2", DasPlot.INFO, null, null);
             return;
         }
+        if ( vds.length()==0 ) {
+            lparent.postMessage(this, "no contours are found", DasPlot.INFO, null, null);
+            return;
+        }
+        
         QDataSet _xds= SemanticOps.xtagsDataSet(ds);
         if ( _xds.rank()!=1 ) {
             lparent.postMessage(this, "xtags must be rank 1", DasPlot.INFO, null, null);
@@ -489,6 +494,10 @@ public class ContoursRenderer extends Renderer {
             return;
         }
 
+        if ( vds.length()==0 ) {
+            return;
+        }
+        
         QDataSet xds = (QDataSet) DataSetOps.unbundle( vds, 0 );
         QDataSet yds = (QDataSet) DataSetOps.unbundle( vds, 1 );
         QDataSet zds=  (QDataSet) DataSetOps.unbundle( vds, 2 );
