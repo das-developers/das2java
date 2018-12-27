@@ -32,7 +32,7 @@ import org.das2.util.DebugPropertyChangeSupport;
  * it.
  * @author  Owner
  */
-public class Auralizor {
+public final class Auralizor {
     
     private static final Logger logger= LoggerManager.getLogger("das2.graph");
     
@@ -48,6 +48,8 @@ public class Auralizor {
     
     int currentRecord= 0;
     boolean playing= false;
+    
+    boolean hasListeners= false;
     
     PropertyChangeSupport pcs= new DebugPropertyChangeSupport(this);
     
@@ -114,12 +116,28 @@ public class Auralizor {
             }
         }
     }
+    
+    private boolean scale = true;
+
+    public static final String PROP_SCALE = "scale";
+
+    public boolean isScale() {
+        return scale;
+    }
+
+    public void setScale(boolean scale) {
+        boolean oldScale = this.scale;
+        this.scale = scale;
+        pcs.firePropertyChange(PROP_SCALE, oldScale, scale);
+    }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
+        hasListeners= true;
         pcs.addPropertyChangeListener(listener);
     }
         
     public void addPropertyChangeListener(String propname,PropertyChangeListener listener) {
+        hasListeners= true;
         pcs.addPropertyChangeListener(propname,listener);
     }
 
@@ -168,7 +186,8 @@ public class Auralizor {
             }
             
             double d= ds.value(currentRecord);
-            int b= (int) ( 65536 * ( d - min ) / ( max-min ) ) - 32768;
+            int b= scale ? ( (int) ( 65536 * ( d - min ) / ( max-min ) ) - 32768 ) : (int)d ;
+        
             try {
                 buffer.putShort( ibuf, (short)b );
 
@@ -181,9 +200,13 @@ public class Auralizor {
                 ibuf=0;
             }
             currentRecord++;
-            if ( currentRecord<dep0.length() ) {
-                setPosition(getPosition());
+            
+            if ( hasListeners ) {
+                if ( currentRecord<dep0.length() ) {
+                    setPosition(getPosition());
+                }
             }
+            
         }
         line.write(buf, 0, ibuf );
         
