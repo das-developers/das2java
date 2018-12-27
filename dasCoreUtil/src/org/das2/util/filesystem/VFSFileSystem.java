@@ -59,7 +59,13 @@ public class VFSFileSystem extends org.das2.util.filesystem.FileSystem {
         }
         String subFolderName = "vfsCache/" + root.getScheme() + "/" + userInfo + root.getHost() + root.getPath();
         cacheRoot = new File(settings().getLocalCacheDir(), subFolderName);
-        
+
+        if ( root.getPath().length()<2 ) {
+            logger.warning("This will hang because directory name is needed.");
+        }
+        if ( root.getPort()>-1 ) {
+            logger.warning("Ports are not always supported.");
+        }
         fsRoot = mgr.resolveFile(root.toString());
 
 
