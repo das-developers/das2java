@@ -598,7 +598,7 @@ public final class DatumUtil {
         
         Units[] conversions = dunits.getConvertibleUnits();
         
-        double bestScore = 0.2;
+        double bestScore = 0.0;
         Datum bestDatum = d;
         for (Units conversion : conversions) {
             Datum dd = d.convertTo(conversion);
