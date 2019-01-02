@@ -697,6 +697,7 @@ public abstract class Units {
      * @param s units identifier
      * @return units object 
      * @throws IllegalArgumentException if the unit is not recognized.
+     * @see #lookupUnits(java.lang.String) 
      */
     public static Units getByName(String s) {
         Units units = (Units)unitsMap.get(s);
@@ -807,6 +808,7 @@ public abstract class Units {
      *   "seconds since 2011-12-21T00:00" where it uses lookupTimeUnits.
      * @param sunits string identifier.
      * @return canonical units object.
+     * @see #getByName(java.lang.String) 
      */
     public static synchronized Units lookupUnits(String sunits) {
         Units result;
