@@ -819,6 +819,7 @@ public final class Ops {
      * @param dim zero-based index number.
      * @return rank N-1 dataset.
      * @see #total(org.das2.qds.QDataSet) total(ds) which is an earlier deprecated routine.
+     * @see #reduceSum(org.das2.qds.QDataSet, int) which skips invalid data.
      */
     public static QDataSet total(QDataSet ds, int dim) {
         try {
@@ -921,6 +922,41 @@ public final class Ops {
                 @Override
                 public void initStore(double[] store) {
                     store[0] = Double.NEGATIVE_INFINITY;
+                    store[1] = 0.;
+                }
+                @Override
+                public void normalize(double[] accum) {
+                    // nothing to do
+                }
+            }, new NullProgressMonitor() );
+        } catch ( CancelledOperationException ex ) {
+            throw new RuntimeException(ex);
+        }
+    }    
+    
+    /**
+     * reduce the dataset's rank by reporting the sum of all the valid elements along a dimension.  The property 
+     * "WEIGHTS" will contain the sum of the weights.
+     * Only QUBEs are supported presently.  This is like the function "total," but skips invalid values.
+     * 
+     * @param ds rank N qube dataset.
+     * @param dim zero-based index number.
+     * @return rank N-1 dataset.
+     * @see #total(org.das2.qds.QDataSet, int) 
+     */
+    public static QDataSet reduceSum(QDataSet ds, int dim) {
+        try {
+            return averageGen(ds, dim, new AverageOp() {
+                @Override
+                public void accum(double d1, double w1, double[] accum) {
+                    if (w1 > 0.0) {
+                        accum[0] = accum[0] + d1;
+                        accum[1] = accum[1] + w1;
+                    }
+                }
+                @Override
+                public void initStore(double[] store) {
+                    store[0] = 0.;
                     store[1] = 0.;
                 }
                 @Override
