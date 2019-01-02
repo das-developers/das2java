@@ -716,6 +716,15 @@ public class FileStorageModel {
     }
 
     /**
+     * returns true if the parser has the field.
+     * @param field e.g. "x"
+     * @return true if the parser has the field.
+     */
+    public boolean hasField( String field ) {
+        return timeParser.hasField( field );
+    }
+    
+    /**
      * return the field value for the given name.  For example, if the spec
      * is $Y/$m/$d/$Y$m$d_v$(v,sep).dat and the name matched is 2014/04/04/20140404_v2.3.dat
      * then calling this for the field "v" would result in "2.3"  This should not
