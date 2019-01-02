@@ -231,9 +231,9 @@ public class EventsRenderer extends Renderer {
     }
     
     
-    private class DragRenderer extends LabelDragRenderer {
+    private class EventLabelDragRenderer extends LabelDragRenderer {
         DasPlot parent;
-        DragRenderer( DasPlot parent ) {
+        EventLabelDragRenderer( DasPlot parent ) {
             super( parent );
             this.parent= parent;
             this.setTooltip(true);
@@ -351,7 +351,7 @@ public class EventsRenderer extends Renderer {
     private MouseModule getMouseModule() {
         if ( mouseModule==null ) {
             DasPlot parent= getParent();
-            mouseModule= new MouseModule( parent, new DragRenderer(parent), "Event Lookup" );
+            mouseModule= new MouseModule( parent, new EventLabelDragRenderer(parent), "Event Lookup" );
         }
         return mouseModule;
     }
