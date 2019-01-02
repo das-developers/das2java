@@ -79,7 +79,6 @@ public class TimeParser {
         "am/pm", "RFC-822 numeric time zone", "ignore", "3-char-month-name", "ignore", "ignore" };
     private int[] formatCode_lengths = new int[]{4, 2, 3, 2, 2, 2, 2, 2, 3, 3, 2, 5, -1, 3, -1, -1 };
     private int[] precision =          new int[]{0, 0, 2, 1, 2, 3, 4, 5, 6, 7,-1,-1, -1, 1, -1, -1 };
-    private int[] handlers;
     
     /**
      * set of custom handlers to allow for extension
@@ -87,7 +86,12 @@ public class TimeParser {
     private Map<String,FieldHandler> fieldHandlers;
     
     private Map<String,FieldHandler> fieldHandlersById;
-    
+
+    /**
+     * code for each handler.
+     * @see #fc
+     */
+    private int[] handlers;
     /**
      * positions of each digit, within the string to be parsed.  If position is -1, then we need to
      * compute it along the way.
@@ -101,6 +105,11 @@ public class TimeParser {
     private int[] lengths;
     private int[] shift;  // any shifts to apply to each digit (used typically to make end time inclusive).
     private final String[] delims;
+    
+    /**
+     * the code for each field.
+     * @see #handlers
+     */
     private String[] fc;
     private String[] qualifiers;
     private final String regex;
@@ -121,6 +130,20 @@ public class TimeParser {
      * keep track of the least significant digit in the start time of the format, for when "end" modifier is used.
      */
     private int startLsd;
+
+    /**
+     * return true if the parser has a field.
+     * @param field e.g. "x"
+     * @return true if the parser has a field.
+     */
+    public boolean hasField(String field) {
+        for (String fc1 : fc) {
+            if (field.equals(fc1)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     /**
      * Interface to add custom handlers for strings with unique formats.  For example, the RPWS group had files with
@@ -1466,14 +1489,20 @@ public class TimeParser {
 
                     time.minute -= offset % 100;
                 } else if (handlers[idigit] == 12) { // $(ignore)
-                    //ignore
+                    if ( len>=0 ) {
+                        extra.put( "ignore", timeString.substring(offs, offs + len) );
+                    }
                 } else if (handlers[idigit] == 13) { // month name
                     time.month = TimeUtil.monthNumber(timeString.substring(offs, offs + len));
 
                 } else if (handlers[idigit] == 14) { // "X"
-                    //ignore
+                    if ( len>=0 ) {
+                        extra.put( "X", timeString.substring(offs, offs + len) );
+                    }
                 } else if (handlers[idigit] == 15) { // "x"
-                    //ignore
+                    if ( len>=0 ) {
+                        extra.put( "x", timeString.substring(offs, offs + len) );
+                    }
                 }
             } catch ( NumberFormatException ex ) {
                 throw new ParseException( String.format( "fail to parse digit number %d: %s", idigit, field ), offs );
@@ -2195,7 +2224,7 @@ public class TimeParser {
 
             } else if (handlers[idigit] == 11) {
                 throw new RuntimeException("Time Zones not supported");
-            }
+            } //TODO: $x?
         }
         result.insert(offs, this.delims[ndigits - 1]);
         return result.toString().trim();
