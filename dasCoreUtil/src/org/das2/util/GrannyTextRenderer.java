@@ -91,11 +91,15 @@ public class GrannyTextRenderer {
      */
     public Rectangle getBounds() {
         if ( lineBounds==null ) throw new IllegalArgumentException("string is not set");
-        maybeInitBounds();
-        return new Rectangle(bounds); // defensive copy
+        return new Rectangle( maybeInitBounds() ); // defensive copy
     }
 
-    private void maybeInitBounds() {
+    /**
+     * return the current bounds, possibly initializing.
+     * @return 
+     */
+    private Rectangle maybeInitBounds() {
+        Rectangle bounds= this.bounds;
         if (bounds == null) {
             if ( lineBounds==null ) {
                 bounds = new Rectangle( 0,-12,12,12 );
@@ -110,7 +114,9 @@ public class GrannyTextRenderer {
                     bounds = new Rectangle( 0,-12,12,12 );
                 }
             }
+            this.bounds= bounds;
         }
+        return bounds;
     }
     
     /**
