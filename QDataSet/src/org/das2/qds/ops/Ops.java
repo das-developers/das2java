@@ -939,9 +939,9 @@ public final class Ops {
                     }
                 }
                 @Override
-                public void initStore(double[] store) {
-                    store[0] = Double.NEGATIVE_INFINITY;
-                    store[1] = 0.;
+                public void initStore(double[] accum) {
+                    accum[0] = Double.NEGATIVE_INFINITY;
+                    accum[1] = 0.;
                 }
                 @Override
                 public void normalize(double[] accum) {
@@ -974,9 +974,9 @@ public final class Ops {
                     }
                 }
                 @Override
-                public void initStore(double[] store) {
-                    store[0] = 0.;
-                    store[1] = 0.;
+                public void initStore(double[] accum) {
+                    accum[0] = 0.;
+                    accum[1] = 0.;
                 }
                 @Override
                 public void normalize(double[] accum) {
@@ -1012,9 +1012,9 @@ public final class Ops {
                     }
                 }
                 @Override
-                public void initStore(double[] store) {
-                    store[0] = Double.POSITIVE_INFINITY;
-                    store[1] = 0.;
+                public void initStore(double[] accum) {
+                    accum[0] = Double.POSITIVE_INFINITY;
+                    accum[1] = 0.;
                 }
                 @Override
                 public void normalize(double[] accum) {
@@ -1064,9 +1064,9 @@ public final class Ops {
                 }
             }
             @Override
-            public void initStore(double[] store) {
-                store[0] = 0.;
-                store[1] = 0.;
+            public void initStore(double[] accum) {
+                accum[0] = 0.;
+                accum[1] = 0.;
             }
             @Override
             public void normalize(double[] accum) {
@@ -1101,9 +1101,9 @@ public final class Ops {
                 }
             }
             @Override
-            public void initStore(double[] store) {
+            public void initStore(double[] accum) {
                 b= new DataSetBuilder(1,100);
-                store[1]= 0.0;
+                accum[1]= 0.0;
             }
             @Override
             public void normalize(double[] accum) {
