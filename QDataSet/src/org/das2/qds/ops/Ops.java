@@ -736,21 +736,23 @@ public final class Ops {
     /**
      * reduce the dataset's rank by combining all the elements along a dimension.
      * AverageOp is used to combine measurements.
-     * Only QUBEs are supported presently.
+     * Only QUBEs are supported presently, or dim can the last dimension of a non-qube.
      * It is assumed that when there is just one element, that one element can be returned.
      * 
      * @param ds rank N qube dataset.
      * @param dim zero-based index number.
      * @param AverageOp operation to combine measurements, such as max or mean.
+     * @param mon null or a progress monitor
      * @return rank N-1 qube dataset.
      */
     private static QDataSet averageGen(QDataSet ds, int dim, AverageOp op, ProgressMonitor mon ) throws CancelledOperationException {
         if ( ds==null ) throw new NullPointerException("ds reference is null");        
         int[] qube = DataSetUtil.qubeDims(ds);
-        if ( qube==null ) throw new IllegalArgumentException("dataset is not a qube");
-        if ( dim>=ds.rank() )
-            throw new IllegalArgumentException( String.format( "dimension index (%d) exceeds rank (%d)",
-                    dim, ds.rank() ) );
+        if ( qube==null && dim<(ds.rank()-1) ) 
+            throw new IllegalArgumentException("dataset is not a qube, operations can only be done on the last index");
+        if ( mon==null ) mon= new NullProgressMonitor();
+        if ( dim>=ds.rank() ) 
+            throw new IllegalArgumentException( String.format( "dimension index (%d) exceeds rank (%d)", dim, ds.rank() ) );
         int[] newQube = DataSetOps.removeElement(qube, dim);
         QDataSet wds = DataSetUtil.weightsDataSet(ds);
         DDataSet result = DDataSet.create(newQube);
@@ -759,7 +761,7 @@ public final class Ops {
         
         // optimize for Ivar's case, where average is done over 1 element.  
         // This is just a slice!
-        if ( qube[dim]==1 ) {
+        if ( qube!=null && qube[dim]==1 ) {
             switch (dim) {
                 case 0:
                     return ds.slice(0);
@@ -904,7 +906,7 @@ public final class Ops {
         result.putProperty(QDataSet.FILL_VALUE,fill);
         return result;
     }
-
+    
     /**
      * reduce the dataset's rank by reporting the max of all the elements along a dimension.
      * Only QUBEs are supported presently.
@@ -914,13 +916,26 @@ public final class Ops {
      * @return rank N-1 dataset.
      */
     public static QDataSet reduceMax(QDataSet ds, int dim) {
+        return reduceMax( ds, dim, null );
+    }
+    
+    /**
+     * reduce the dataset's rank by reporting the max of all the elements along a dimension.
+     * Only QUBEs are supported presently.
+     * 
+     * @param ds rank N qube dataset.
+     * @param dim zero-based index number.
+     * @param mon progress monitor 
+     * @return rank N-1 dataset.
+     */
+    public static QDataSet reduceMax(QDataSet ds, int dim, ProgressMonitor mon ) {
         try {
             return averageGen(ds, dim, new AverageOp() {
                 @Override
                 public void accum(double d1, double w1, double[] accum) {
                     if (w1 > 0.0) {
                         accum[0] = Math.max(d1, accum[0]);
-                        accum[1] = w1;
+                        accum[1] += w1;
                     }
                 }
                 @Override
@@ -932,7 +947,7 @@ public final class Ops {
                 public void normalize(double[] accum) {
                     // nothing to do
                 }
-            }, new NullProgressMonitor() );
+            }, mon );
         } catch ( CancelledOperationException ex ) {
             throw new RuntimeException(ex);
         }
@@ -955,7 +970,7 @@ public final class Ops {
                 public void accum(double d1, double w1, double[] accum) {
                     if (w1 > 0.0) {
                         accum[0] = accum[0] + d1;
-                        accum[1] = accum[1] + w1;
+                        accum[1] += w1;
                     }
                 }
                 @Override
@@ -973,22 +988,27 @@ public final class Ops {
         }
     }
 
+    public static QDataSet reduceMin(QDataSet ds, int dim) {
+        return reduceMin( ds, dim, null );
+    }
+    
     /**
      * reduce the dataset's rank by reporting the min of all the elements along a dimension.
      * Only QUBEs are supported presently.
      * 
      * @param ds rank N qube dataset.
      * @param dim zero-based index number.
+     * @param mon progress monitor 
      * @return rank N-1 dataset.
      */
-    public static QDataSet reduceMin(QDataSet ds, int dim) {
+    public static QDataSet reduceMin(QDataSet ds, int dim, ProgressMonitor mon ) {
         try {
             return averageGen(ds, dim, new AverageOp() {
                 @Override
                 public void accum(double d1, double w1, double[] accum) {
                     if (w1 > 0.0) {
                         accum[0] = Math.min(d1, accum[0]);
-                        accum[1] = w1;
+                        accum[1] += w1;
                     }
                 }
                 @Override
@@ -1000,7 +1020,7 @@ public final class Ops {
                 public void normalize(double[] accum) {
                     // nothing to do
                 }
-            }, new NullProgressMonitor() );
+            }, mon );
         } catch ( CancelledOperationException ex ) {
             throw new RuntimeException(ex);
         }        
@@ -1059,8 +1079,8 @@ public final class Ops {
 
     /**
      * reduce the dataset's rank by reporting the median of all the elements along a dimension.
-     * Only QUBEs are supported presently.  Note the weights reported are just 1.0, not the
-     * weight attached to the specific measurement.
+     * Only QUBEs are supported presently.  Note the weights reported are the totals of the data going in to each
+     * median, typically the number of measurements compared (when all weights are 0 or 1).
      * 
      * @param ds rank N qube dataset.
      * @param dim zero-based index number.
@@ -1077,11 +1097,13 @@ public final class Ops {
             public void accum(double d1, double w1, double[] accum) {
                 if ( w1 > 0.0 ) { // because 0 * NaN is NaN...
                     b.nextRecord(d1);
+                    accum[1] += w1;
                 }
             }
             @Override
             public void initStore(double[] store) {
                 b= new DataSetBuilder(1,100);
+                store[1]= 0.0;
             }
             @Override
             public void normalize(double[] accum) {
@@ -1091,7 +1113,6 @@ public final class Ops {
                     accum[1]= 0.0;                    
                 } else {
                     accum[0]= median(all).value();
-                    accum[1]= 1.0;
                 }
             }
         }, mon );
