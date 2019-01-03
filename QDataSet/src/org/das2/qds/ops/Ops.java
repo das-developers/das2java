@@ -19,7 +19,9 @@ import org.das2.qds.math.fft.WaveformToSpectrum;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -28,6 +30,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
+import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.regex.Pattern;
 import org.das2.qds.buffer.BufferDataSet;
 import org.das2.datum.CacheTag;
@@ -1052,6 +1056,47 @@ public final class Ops {
             }
         }, mon );
     }
+
+    /**
+     * reduce the dataset's rank by reporting the median of all the elements along a dimension.
+     * Only QUBEs are supported presently.  Note the weights reported are just 1.0, not the
+     * weight attached to the specific measurement.
+     * 
+     * @param ds rank N qube dataset.
+     * @param dim zero-based index number.
+     * @param mon progress monitor.
+     * @return rank N-1 qube dataset
+     * @throws org.das2.util.monitor.CancelledOperationException
+     */
+    public static QDataSet reduceMedian(QDataSet ds, int dim, ProgressMonitor mon ) throws CancelledOperationException {
+        return averageGen(ds, dim, new AverageOp() {
+            
+            DataSetBuilder b;
+            
+            @Override
+            public void accum(double d1, double w1, double[] accum) {
+                if ( w1 > 0.0 ) { // because 0 * NaN is NaN...
+                    b.nextRecord(d1);
+                }
+            }
+            @Override
+            public void initStore(double[] store) {
+                b= new DataSetBuilder(1,100);
+            }
+            @Override
+            public void normalize(double[] accum) {
+                QDataSet all= b.getDataSet();
+                if ( all.length()==0 ) {
+                    accum[0]= Double.NaN;
+                    accum[1]= 0.0;                    
+                } else {
+                    accum[0]= median(all).value();
+                    accum[1]= 1.0;
+                }
+            }
+        }, mon );
+    }
+    
     
     /**
      * reduce each bin to its center.  If the spacing is
