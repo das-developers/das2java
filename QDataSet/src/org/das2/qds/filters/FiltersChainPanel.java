@@ -841,10 +841,10 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
      */
     public void resetInput( final QDataSet ds ) {
         
-        logger.entering( CLASS_NAME, "resetInput", ds );
+        logger.entering( CLASS_NAME, "resetInput" );
         
         if ( this.inputDs==null && this.inputDs==ds ) {
-            logger.exiting( CLASS_NAME, "resetInput", ds );
+            logger.exiting( CLASS_NAME, "resetInput" );
             return;
         }
         
@@ -870,7 +870,7 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
         };
         
         new Thread( run, "resetInput" ).start();
-        logger.exiting( CLASS_NAME, "resetInput", ds );
+        logger.exiting( CLASS_NAME, "resetInput" );
     }
     
     /**
@@ -880,7 +880,7 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
      */
     @Override
     public void setInput( final QDataSet ds ) {
-        logger.entering( CLASS_NAME, "setInput", ds );
+        logger.entering( CLASS_NAME, "setInput" );
         
         if ( this.inputDs==ds ) {
             logger.fine("already set input...");
@@ -888,7 +888,7 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
         } 
         
         resetInput(ds);
-        logger.exiting( CLASS_NAME, "setInput", ds );
+        logger.exiting( CLASS_NAME, "setInput" );
     }
 
     /**
