@@ -692,7 +692,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                             if ( UnitsUtil.isRatioMeasurement( xunits ) && UnitsUtil.isRatioMeasurement( xAxis.getUnits() ) ) {
                                 unitsWarning= true;
                             } else {
-                                logger.finer("dataset units are incompatable with x axis.");
+                                logger.finer("dataset units are incompatible with x axis.");
                                 plotImage = null;
                                 plotImageBounds= null;
                                 logger.exiting( "org.das2.graph.SpectrogramRenderer", "updatePlotImage" );
@@ -705,7 +705,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                              if ( UnitsUtil.isRatioMeasurement( yunits ) && UnitsUtil.isRatioMeasurement( yAxis.getUnits() ) ) {
                                 unitsWarning= true;
                             } else {
-                                logger.finer("dataset units are incompatable with y axis.");
+                                logger.finer("dataset units are incompatible with y axis.");
                                 plotImage = null;
                                 plotImageBounds= null;
                                 logger.exiting( "org.das2.graph.SpectrogramRenderer", "updatePlotImage" );
