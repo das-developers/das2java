@@ -99,7 +99,7 @@ public class AverageTableRebinner implements DataSetRebinner {
      */
     @Override
     public QDataSet rebin( QDataSet ds, RebinDescriptor ddX, RebinDescriptor ddY ) throws IllegalArgumentException, DasException {
-        logger.entering( "org.das2.dataset.AverageTableRebinner", "rebin" );
+        logger.entering( "AverageTableRebinner", "rebin" );
         if (ds == null) {
             throw new NullPointerException("null data set");
         }
@@ -247,7 +247,7 @@ public class AverageTableRebinner implements DataSetRebinner {
         RebinDescriptor.putDepDataSet( ds, result, ddX, ddY );
         result.putProperty( QDataSet.WEIGHTS, weightResult );
 
-        logger.exiting( "org.das2.dataset.AverageTableRebinner", "rebin" );
+        logger.exiting( "AverageTableRebinner", "rebin" );
         
         return result;
     }
@@ -1180,10 +1180,12 @@ public class AverageTableRebinner implements DataSetRebinner {
             }
         }
         
+        logger.finest("done calculating ySampleWidths");
+        
         for (int i = 0; i < nx; i++) {
             int ii1 = -1;
             int ii2;
-            for (int j = 0; j < ny; j++) {
+            for (int j = 0; j < ny; j++) {  //TODO: there is a subset of data plotted where this will always return the same data.
                 if (weights[i][j] > 0. && ii1 == (j - 1)) { // ho hum another valid point
 
                     i1[j] = -1;
@@ -1225,36 +1227,38 @@ public class AverageTableRebinner implements DataSetRebinner {
             if ( isNN ) {
                 for (int j = 0; j < ny; j++) {
                     boolean doInterp;
-                    if ( i1[j]!= -1 && i2[j] != -1) {
-                        boolean doInterpR= yTagWidth==null || ( (yTagTemp[i2[j]] - yTagTemp[j] ) < ySampleWidths[j] );
-                        doInterp= doInterpR || ( yTagTemp[j] - yTagTemp[i1[j]] ) < ySampleWidths[j];
-                        doInterp= doInterp || ( yTagTemp[i2[j]]-yTagTemp[i1[j]] ) < ySampleWidths[j];
+                    int i1j= i1[j];
+                    int i2j= i2[j];
+                    if ( i1j!= -1 && i2j != -1) {
+                        boolean doInterpR= yTagWidth==null || ( (yTagTemp[i2j] - yTagTemp[j] ) < ySampleWidths[j] );
+                        doInterp= doInterpR || ( yTagTemp[j] - yTagTemp[i1j] ) < ySampleWidths[j];
+                        doInterp= doInterp || ( yTagTemp[i2j]-yTagTemp[i1j] ) < ySampleWidths[j];
                     } else {
                         //kludge for bug 000321
                         if ( ddY.isLog() && !UnitsUtil.isRatiometric(yTagUnits) ) {
                             doInterp= false;
                         } else {
-                            if ( i1[j]==-1 && i2[j]==-1 ) {
+                            if ( i1j==-1 && i2j==-1 ) {
                                 doInterp= false;
-                            } else if ( i1[j]==-1 ) {
-                                doInterp= ( yTagTemp[i2[j]] - yTagTemp[j] ) < ySampleWidths[j]/2;
+                            } else if ( i1j==-1 ) {
+                                doInterp= ( yTagTemp[i2j] - yTagTemp[j] ) < ySampleWidths[j]/2;
                             } else {
-                                doInterp= ( yTagTemp[j] - yTagTemp[i1[j]] ) < ySampleWidths[j]/2;
+                                doInterp= ( yTagTemp[j] - yTagTemp[i1j] ) < ySampleWidths[j]/2;
                             }
                         }
                     }
                     if ( doInterp ) { 
                         int idx;
-                        if (i1[j] == -1) {
-                            idx = i2[j];
-                        } else if (i2[j] == -1) {
-                            idx = i1[j];
+                        if (i1j == -1) {
+                            idx = i2j;
+                        } else if (i2j == -1) {
+                            idx = i1j;
                         } else {
-                            a2 = ((yTagTemp[j] - yTagTemp[i1[j]]) / (yTagTemp[i2[j]] - yTagTemp[i1[j]]));
+                            a2 = ((yTagTemp[j] - yTagTemp[i1j]) / (yTagTemp[i2j] - yTagTemp[i1j]));
                             if (a2 < 0.5) {
-                                idx = i1[j];
+                                idx = i1j;
                             } else {
-                                idx = i2[j];
+                                idx = i2j;
                             }
                         }
                         data[i][j] = data[i][idx];
