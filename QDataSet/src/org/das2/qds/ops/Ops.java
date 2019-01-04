@@ -6079,14 +6079,18 @@ public final class Ops {
                     if ( value instanceof String ) {
                         String svalue= (String)value;
                         value= Boolean.valueOf(svalue);
+                        return value;
                     } else if ( value instanceof Number ) {
                         value= !((Number)value).equals(0);
+                        return value;
                     } else if ( value instanceof QDataSet ) {
                         value= !(((QDataSet)value).value()==0);
+                        return value;
                     } else if (value instanceof Boolean ) {
                         return value;
+                    } else {
+                        throw new IllegalArgumentException("cannot convert to value for "+name+": "+value);
                     }
-                    
                 case DataSetUtil.PROPERTY_TYPE_NUMBER:
                     if ( value instanceof String ) {
                         String svalue= (String)value;
