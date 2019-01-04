@@ -197,7 +197,7 @@ public class WindowManager {
                 }
             }) );
             pc.add( Box.createHorizontalStrut(7) );
-            pc.add( new JButton( new AbstractAction("Okay") {
+            pc.add( new JButton( new AbstractAction("OK") {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     org.das2.util.LoggerManager.logGuiEvent(e);        
