@@ -173,12 +173,13 @@ public class DataSetUtil {
      * @see #isMonotonic(org.das2.qds.QDataSet) 
      */
     public static boolean isMonotonicAndIncreasing(QDataSet ds) {
-        logger.finest("enter isMonotonicAndIncreasing test for "+QDataSet.MONOTONIC);
+        logger.entering( "DataSetUtil", "isMonotonicAndIncreasing");
         if (ds.rank() != 1) { // TODO: support bins dataset rank 2 with BINS_1="min,max"
             return false;
         }
 
         if (ds.length() == 0) {
+            logger.exiting( "DataSetUtil", "isMonotonicAndIncreasing");
             return false;
         }
         if (ds instanceof IndexGenDataSet ) return true;
@@ -191,6 +192,7 @@ public class DataSetUtil {
         }
 
         if ( i==ds.length() ) {
+            logger.exiting( "DataSetUtil", "isMonotonicAndIncreasing");
             return false;
         }
 
@@ -201,10 +203,12 @@ public class DataSetUtil {
             double w = wds.value(i);
             if ( w==0 ) continue;
             if ( d <= last  ) {
+                logger.exiting( "DataSetUtil", "isMonotonicAndIncreasing");
                 return false;
             } 
             last = d;
         }
+        logger.exiting( "DataSetUtil", "isMonotonicAndIncreasing");
         return true;
     }
     
