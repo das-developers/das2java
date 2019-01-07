@@ -11587,6 +11587,7 @@ public final class Ops {
      * then nothing is done to the data.
      * @param ds the dataset
      * @return the dataset, sorted if necessary.
+     * @see DataSetUtil#isMonotonic
      */
     public static QDataSet ensureMonotonic( QDataSet ds ) {
         if ( ds.length()==0 ) return ds;
@@ -11637,6 +11638,7 @@ public final class Ops {
      * @param ds the dataset
      * @return the dataset, sorted if necessary.
      * TODO: It's surprising that monotonic doesn't imply non-repeating, and this really needs to be revisited.
+     * @see DataSetUtil#isMonotonicAndIncreasingQuick
      */
     public static QDataSet ensureMonotonicAndIncreasingWithFill( QDataSet ds ) {
         if ( ds.length()==0 ) return ds;

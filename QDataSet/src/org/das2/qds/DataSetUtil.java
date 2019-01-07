@@ -122,6 +122,7 @@ public class DataSetUtil {
      * @see org.das2.qds.QDataSet#MONOTONIC
      * @see org.das2.qds.ArrayDataSet#monotonicSubset(org.das2.qds.ArrayDataSet) 
      * @see #isMonotonicAndIncreasing(org.das2.qds.QDataSet) 
+     * @see Ops#ensureMonotonic
      */
     public static boolean isMonotonic(QDataSet ds) {
         if (ds.rank() != 1) { // TODO: support bins dataset rank 2 with BINS_1="min,max"
@@ -264,6 +265,7 @@ public class DataSetUtil {
      * @return true if the data does pass quick tests for monotonic increasing.
      * @see #isMonotonicAndIncreasing(org.das2.qds.QDataSet) 
      * @see QDataSet#MONOTONIC
+     * @see Ops#ensureMonotonicAndIncreasingWithFill(org.das2.qds.QDataSet) 
      */
     public static boolean isMonotonicAndIncreasingQuick(QDataSet ds) {
         logger.finest("enter isMonotonicAndIncreasingQuick test for "+QDataSet.MONOTONIC);
