@@ -2,7 +2,6 @@
 package org.das2.qds.ops;
 
 import java.awt.Color;
-import java.io.IOException;
 import java.lang.reflect.Array;
 import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
@@ -19,9 +18,7 @@ import org.das2.qds.math.fft.WaveformToSpectrum;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -30,8 +27,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
-import java.util.SortedMap;
-import java.util.SortedSet;
 import java.util.regex.Pattern;
 import org.das2.qds.buffer.BufferDataSet;
 import org.das2.datum.CacheTag;
@@ -92,7 +87,6 @@ import org.das2.qds.util.FFTUtil;
 import org.das2.qds.util.LSpec;
 import org.das2.qds.util.LinFit;
 import org.das2.qds.math.Contour;
-import org.das2.qds.util.AsciiFormatter;
 import org.das2.util.ColorUtil;
 
 /**
@@ -389,7 +383,7 @@ public final class Ops {
      * @param ds1 a rank N dataset
      * @param ds2 a rank M dataset with compatible geometry
      * @return the element-wise sum of the two datasets.
-     * @see #addGen(org.das2.qds.QDataSet, org.das2.qds.QDataSet, java.util.Map) which shows how units are resolved.
+     * @see #addGen(org.das2.qds.QDataSet, org.das2.qds.QDataSet, java.util.Map) addGen, which shows how units are resolved.
      */
     public static QDataSet add(QDataSet ds1, QDataSet ds2) {
         Map<String,Object> props= new HashMap();
@@ -658,7 +652,7 @@ public final class Ops {
      *
      * @param ds
      * @return the unweighted total of the dataset, or -1e31 if fill was encountered.
-     * @see #total(org.das2.qds.QDataSet, int) which should be used instead.
+     * @see #total(org.das2.qds.QDataSet, int) total, which should be used instead.
      */
     public static double total(QDataSet ds) {
         return total(ds,new NullProgressMonitor());
@@ -672,7 +666,7 @@ public final class Ops {
      * @param ds
      * @param mon progress monitor
      * @return the unweighted total of the dataset, or -1e31 if fill was encountered.
-     * @see #total(org.das2.qds.QDataSet, int, org.das2.util.monitor.ProgressMonitor) which should be used instead.
+     * @see #total(org.das2.qds.QDataSet, int, org.das2.util.monitor.ProgressMonitor) total, which should be used instead.
      */
     public static double total(QDataSet ds,ProgressMonitor mon) {
         double s = 0;
@@ -824,8 +818,8 @@ public final class Ops {
      * @param ds rank N qube dataset.  N=1,2,3,4
      * @param dim zero-based index number.
      * @return rank N-1 dataset.
-     * @see #total(org.das2.qds.QDataSet) total(ds) which is an earlier deprecated routine.
-     * @see #reduceSum(org.das2.qds.QDataSet, int) which skips invalid data.
+     * @see #total(org.das2.qds.QDataSet) total(ds) total, which is an earlier deprecated routine.
+     * @see #reduceSum(org.das2.qds.QDataSet, int) reduceSum, which skips invalid data.
      */
     public static QDataSet total(QDataSet ds, int dim) {
         try {
@@ -1961,7 +1955,7 @@ public final class Ops {
      * For ratio-type units (Stevens) like "kms", the unit is preserved.
      * @param ds1 the dataset
      * @return dataset with the same geometry
-     * @see Ops#magnitude(org.das2.qds.QDataSet) magnitude(ds) which preserves the sign.
+     * @see Ops#magnitude(org.das2.qds.QDataSet) magnitude(ds), which preserves the sign.
      */
     public static QDataSet abs(QDataSet ds1) {
         Units u= (Units) ds1.property(QDataSet.UNITS);
@@ -3342,7 +3336,7 @@ public final class Ops {
      * return new dataset filled with zeros.
      * @param len0
      * @return
-     * @see #fltarr(int) which stores the data in 4-byte floats.
+     * @see #fltarr(int) fltarr, which stores the data in 4-byte floats.
      */
     public static WritableDataSet zeros(int len0) {
         return replicate(0.0, len0);
@@ -5505,7 +5499,7 @@ public final class Ops {
      * @param ds rank N array, N &gt; 0.
      * @param w rank 1 dataset of length l indexing a rank 1 array, or rank 2 ds[l,N] indexing a rank N array.
      * @return rank 1 indeces.
-     * @see #applyIndex(org.das2.qds.QDataSet, org.das2.qds.QDataSet) which does the same thing.
+     * @see #applyIndex(org.das2.qds.QDataSet, org.das2.qds.QDataSet) applyIndex, which does the same thing.
      */
     public static QDataSet subset( QDataSet ds, QDataSet w ) {
         return DataSetOps.applyIndex( ds, 0, w, true);
@@ -5647,7 +5641,7 @@ public final class Ops {
      * @param bounds a rank 1 bounding box, DatumRange, or two-element array.  
      * @return rank N dataset containing non-zero where the condition is true.
      * @see #without(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
-     * @see #where(java.lang.Object) which is often used with this.
+     * @see #where(java.lang.Object) where, which is often used with this.
      * @see #binsWithin(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      */
     public static QDataSet within( Object ds, Object bounds ) {
@@ -5789,7 +5783,7 @@ public final class Ops {
      * @param ds rank 1 dataset, sorted, or mostly sorted.
      * @param sort null, or the rank 1 dataset of indeces
      * @return the indeces of the unique elements.
-     * @see #uniqValues uniqValues which returns the values.
+     * @see #uniqValues uniqValues, which returns the values.
      */
     public static QDataSet uniq( QDataSet ds, QDataSet sort ) {
         if ( ds.rank()>1 ) throw new IllegalArgumentException("ds.rank()>1" );
@@ -5854,7 +5848,7 @@ public final class Ops {
      * renamed uniqValues from uniq to avoid confusion with the IDL command.
      *
      * This needs example code and should not be used for now.  See VirboAutoplot/src/scripts/test/testUniq.jy
-     * @see #uniq which returns the indeces.
+     * @see #uniq uniq, which returns the indeces.
      * @param ds rank 1 dataset, sorted, or mostly sorted.
      * @param sort null, or the rank 1 dataset of indeces
      * @return the subset of the data which is uniq.
@@ -6462,7 +6456,7 @@ public final class Ops {
      * @param ds the indeces.
      * @param fillValue the value to use when the index is out-of-bounds.
      * @return data a dataset with the geometry of ds and the units of values.
-     * @see #subset(org.das2.qds.QDataSet, org.das2.qds.QDataSet) which does the same thing.
+     * @see #subset(org.das2.qds.QDataSet, org.das2.qds.QDataSet) subset, which does the same thing.
      */
     public static WritableDataSet applyIndex( QDataSet vv, QDataSet ds, Number fillValue ) {
         QubeDataSetIterator iter= new QubeDataSetIterator(ds);
@@ -6486,7 +6480,7 @@ public final class Ops {
      * @param vv values to return, a rank 1, N-element dataset.
      * @param ds the indeces.
      * @return data a dataset with the geometry of ds and the units of values.
-     * @see #subset(org.das2.qds.QDataSet, org.das2.qds.QDataSet) which does the same thing.
+     * @see #subset(org.das2.qds.QDataSet, org.das2.qds.QDataSet) subset, which does the same thing.
      */
     public static WritableDataSet applyIndex( QDataSet vv, QDataSet ds ) {
         QubeDataSetIterator iter= new QubeDataSetIterator(ds);
@@ -8932,7 +8926,7 @@ public final class Ops {
      * Paul Ricchiazzi wrote this routine first for IDL as a fast replacement for the interpol routine, but
      * it is useful in other situations as well.
      *
-     * @param uu rank 1 monotonically increasing dataset, containing no fill values.
+     * @param uu rank 1 monotonically increasing dataset, non-repeating, containing no fill values.
      * @param vv rank N dataset with values in the same physical dimension as uu.  Now fill is allowed.
      * @return rank N dataset with the same geometry as vv.  It will have DEPEND_0=vv when vv is rank 1. 
      */
@@ -8943,8 +8937,7 @@ public final class Ops {
         if (!DataSetUtil.isMonotonic(uu)) {
             throw new IllegalArgumentException("u must be monotonic");
         }
-        QDataSet duu= diff(uu);
-        if ( where( eq( duu, 0. ) ).length()>0 ) {
+        if ( !DataSetUtil.isMonotonicAndIncreasingQuick(uu) ) {
             throw new IllegalArgumentException("u must be monotonically increasing and non-repeating");
         }
         DDataSet result = DDataSet.create(DataSetUtil.qubeDims(vv));
@@ -9051,7 +9044,7 @@ public final class Ops {
      * @param vv rank 1 dataset having length L that is the data to be interpolated.
      * @param findex rank N dataset of fractional indeces.  This must be dimensionless, between -0.5 and L-0.5 and is typically calculated by the findex command.
      * @return the result.  
-     * @see #interpolateMod interpolateMod for data like longitude where 259 deg is 2 degrees away from 1 deg
+     * @see #interpolateMod interpolateMod, for data like longitude where 259 deg is 2 degrees away from 1 deg
      */
     public static QDataSet interpolate( QDataSet vv, QDataSet findex ) {
         if ( vv.rank()==2 ) {
@@ -9175,7 +9168,7 @@ public final class Ops {
      * @param findex0 rank N dataset of fractional indeces for the zeroth index.  This must be dimensionless, between -0.5 and L-0.5 and is typically calculated by the findex command.
      * @param findex1 rank N dataset of fractional indeces for the first index.  This must be dimensionless, between -0.5 and L-0.5 and is typically calculated by the findex command.
      * @return rank N dataset 
-     * @see #findex, the 1-D findex command
+     * @see #findex findex, the 1-D findex command
      * @see #interpolateGrid(org.das2.qds.QDataSet, org.das2.qds.QDataSet, org.das2.qds.QDataSet)  
      */
     public static QDataSet interpolate(QDataSet vv, QDataSet findex0, QDataSet findex1) {
@@ -9309,7 +9302,7 @@ public final class Ops {
      * interpolate values from rank 2 dataset vv using fractional indeces
      * in rank N findex, using bilinear interpolation.  See also interpolateGrid.
      *
-     * @see #findex the 1-D findex command
+     * @see #findex findex, the 1-D findex command
      * @param vv object convertible to rank 2 dataset.
      * @param findex0 object convertible to rank N dataset of fractional indeces for the zeroth index.
      * @param findex1 object convertible to rank N dataset of fractional indeces for the first index.
@@ -9328,7 +9321,7 @@ public final class Ops {
      * @param findex1 rank N dataset of fractional indeces for the first index.  This must be dimensionless, between -0.5 and L-0.5 and is typically calculated by the findex command.
      * @param findex2 rank N dataset of fractional indeces for the second index.  This must be dimensionless, between -0.5 and L-0.5 and is typically calculated by the findex command.
      * @return rank N dataset 
-     * @see #findex the 1-D findex command
+     * @see #findex findex, the 1-D findex command
      * @see #interpolateGrid 
      */
     public static QDataSet interpolate( QDataSet vv, QDataSet findex0, QDataSet findex1, QDataSet findex2 ) {
@@ -9641,7 +9634,7 @@ public final class Ops {
      * in rank N findex, using bilinear interpolation.  Here the two rank1
      * indexes form a grid and the result is rank 2.
      *
-     * @see #findex the 1-D findex command
+     * @see #findex findex, the 1-D findex command
      * @param vv rank 2 dataset.
      * @param findex0 rank 1 dataset of fractional indeces for the zeroth index.
      * @param findex1 rank 1 dataset of fractional indeces for the first index.
