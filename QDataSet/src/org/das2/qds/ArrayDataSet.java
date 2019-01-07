@@ -648,6 +648,7 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
      * datasets as well. Note this does not verify that the data is a qube!!!
      * @param ds the data to be copied.
      * @return a copy of the data.
+     * @see #guessBackingStore(org.das2.qds.QDataSet) 
      */
     public static ArrayDataSet copy( QDataSet ds ) {
         //TODO: this should check that the data is a qube.
@@ -671,6 +672,7 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
      * if it cannot be determined.  TODO: Why not long.class?
      * @param ds the dataset
      * @return the backing store class, one of double.class, float.class, int.class, short.class, or byte.class.
+     * @see #copy(org.das2.qds.QDataSet) copy
      */
     public static Class guessBackingStore( QDataSet ds ) {
         if ( ds instanceof BDataSet || ds instanceof ByteDataSet ) {
