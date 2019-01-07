@@ -113,7 +113,14 @@ public class AbstractFilter {
                 source= new FlattenWaveformDataSet(source);
             }
 
-            ArrayDataSet buf= ArrayDataSet.copy(source);
+            ArrayDataSet buf;
+            Class c= ArrayDataSet.guessBackingStore(source);
+            
+            if ( c==float.class || c==double.class ) {
+                buf= ArrayDataSet.copy(source);
+            } else {
+                buf= ArrayDataSet.copy( float.class, source );
+            }
             
                 // apply the filter
                 for (int i = 0; i < source.length(); ++i) {
