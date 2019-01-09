@@ -1172,6 +1172,7 @@ public class GraphUtil {
      */
     public static Line2D shortenLine( Line2D line, double l1, double l2 ) {
         double len= line.getP1().distance( line.getP2() );
+        if ( len==0 ) return line;
         double sx= ( line.getX2() - line.getX1() ) / len;
         double sy= ( line.getY2() - line.getY1() ) / len;
         return new Line2D.Double( line.getX1()+sx*l1, line.getY1()+sy*l1, line.getX2()-sx*l2, line.getY2()-sy*l2 );
