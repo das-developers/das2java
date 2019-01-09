@@ -1151,7 +1151,7 @@ public class GraphUtil {
      * original width and height.
      * @param bounds the original rectangle.
      * @param percent the percent to increase (110% is 10% bigger)
-     * @return return rectangle with same center that is percent/100 of the
+     * @return a rectangle with same center that is percent/100. of the
      * original width and height.
      */
     public static Rectangle shrinkRectangle(Rectangle bounds, int percent ) {
@@ -1163,6 +1163,23 @@ public class GraphUtil {
         return result;
     }
     
+    /** 
+     * return line shorted by so many pixels at each end.
+     * @param line the line
+     * @param l1 number of units to adjust the first point, towards the center
+     * @param l2 number of units to adjust the second point, towards the center
+     * @return the new line
+     */
+    public static Line2D shortenLine( Line2D line, double l1, double l2 ) {
+        double len= line.getP1().distance( line.getP2() );
+        double sx= ( line.getX2() - line.getX1() ) / len;
+        double sy= ( line.getY2() - line.getY1() ) / len;
+        return new Line2D.Double( line.getX1()+sx*l1, line.getY1()+sy*l1, line.getX2()-sx*l2, line.getY2()-sy*l2 );
+    }
+    
+    /**
+     * DebuggingGeneralPath can be used for debugging.
+     */
     public static class DebuggingGeneralPath {
         GeneralPath delegate;
         int count= 0;
