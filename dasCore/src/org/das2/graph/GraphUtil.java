@@ -1179,6 +1179,20 @@ public class GraphUtil {
     }
     
     /**
+     * create a line perpendicular to the line segment <code>line</code>, which
+     * would go through <code>p</code>, and have length <code>abs(len)</code>.
+     * If len is negative, then line.p1,line.p2,p is counter-clockwise.
+     * This is left unimplemented as it's a nice student project.
+     * @param line a line segment.
+     * @param p a point, whose projection is necessarily within the line segment.
+     * @param len the length of the resulting line, or 
+     * @return line colinear with p and having length abs(len).
+     */
+    public static Line2D perpendicularLine( Line2D line, Point p, double len ) {
+        throw new IllegalArgumentException("not implemented.");
+    }
+    
+    /**
      * DebuggingGeneralPath can be used for debugging.
      */
     public static class DebuggingGeneralPath {
