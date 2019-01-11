@@ -5088,8 +5088,8 @@ public final class Ops {
      * 
      * For example, if we have an array of 3 arrays, each having 5 elements, 
      * then [ 3,5 ] is returned.
-     * @param arg0
-     * @return 
+     * @param arg0 an array, or array of arrays, or array of array of arrays, etc.
+     * @return the n dimensions of each index of the array.
      */
     public static int[] getQubeDimsForArray( Object arg0 ) {
         List<Integer> qqube= new ArrayList( );
