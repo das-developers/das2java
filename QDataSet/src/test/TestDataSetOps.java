@@ -104,10 +104,23 @@ public class TestDataSetOps {
         System.err.println( DataSetOps.unbundle(bundle,2) );
     }
 
+    public static void testArrayOfArrayToRank2DataSet() {
+        double[][] a= new double[4][];
+        for ( int i=0; i<4; i++ ) {
+            a[i]= new double[5];
+            for ( int j=i; j<i+5; j++ ) {
+                a[i][j-i]= j;
+            }
+        }
+        QDataSet ds= Ops.dataset(a);
+        System.err.println( ds.value(1,1) );
+    }
+    
     public static void main( String[] args ) {
+        testArrayOfArrayToRank2DataSet();
         //new TestDataSetOps();
         //testSliceIndexProps();
-        testUnbundleRank1();
+        //testUnbundleRank1();
     }
     
 }
