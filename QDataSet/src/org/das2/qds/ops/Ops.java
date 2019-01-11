@@ -5081,6 +5081,36 @@ public final class Ops {
     /** scalar math functions http://sourceforge.net/p/autoplot/bugs/1052/ */
     
     /**
+     * return the length of each index of a n-D array.  In Java these are
+     * arrays of arrays, and no test is made to verify that the array is really
+     * a qube.  This was introduced when it appeared that Python/jpype was
+     * producing arrays without the getClass method.
+     * 
+     * For example, if we have an array of 3 arrays, each having 5 elements, 
+     * then [ 3,5 ] is returned.
+     * @param arg0
+     * @return 
+     */
+    public static int[] getQubeDimsForArray( Object arg0 ) {
+        List<Integer> qqube= new ArrayList( );
+        qqube.add( Array.getLength(arg0) );
+        if ( qqube.get(0)>0 ) {
+            Object slice= Array.get(arg0, 0);
+            try {
+                while ( slice.getClass().isArray() ) {
+                    qqube.add( Array.getLength(slice) );
+                    slice= Array.get( slice, 0 );
+                }
+            } catch ( Exception ex ) {
+                Array.getLength(slice);
+            }
+        }
+        int[] qube= new int[qqube.size()];
+        for ( int i=0; i<qube.length; i++ ) qube[i]= qqube.get(i);
+        return qube;
+    }
+    
+    /**
      * coerce Java objects like arrays Lists and scalars into a QDataSet.  
      * This is introduced to mirror the useful Jython dataset command.  This is a nasty business that
      * is surely going to cause all sorts of problems, so we should do it all in one place.
@@ -5151,17 +5181,7 @@ public final class Ops {
             return q;            
         } else if ( arg0.getClass().isArray() ) { // convert Java array into QDataSet.  Assumes qube.
             //return DataSetUtil.asDataSet(arg0); // I think this is probably a better implementation.
-            List<Integer> qqube= new ArrayList( );
-            qqube.add( Array.getLength(arg0) );
-            if ( qqube.get(0)>0 ) {
-                Object slice= Array.get(arg0, 0);
-                while ( slice.getClass().isArray() ) {
-                    qqube.add( Array.getLength(slice) );
-                    slice= Array.get( slice, 0 );
-                }
-            }
-            int[] qube= new int[qqube.size()];
-            for ( int i=0; i<qube.length; i++ ) qube[i]= qqube.get(i);
+            int[] qube= getQubeDimsForArray(arg0);
             return ArrayDataSet.wrap( arg0, qube, true );
         } else {
             String sarg0= String.valueOf( arg0 );
