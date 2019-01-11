@@ -193,6 +193,7 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
                     result= Array.newInstance( o.getClass().getComponentType(), qube[0]*nelementsUbe );
                 }
                 System.arraycopy( o, 0, result, idx, nelementsUbe );
+                idx+= nelementsUbe;
             }
             return result;
         }
