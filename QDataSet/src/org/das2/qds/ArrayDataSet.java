@@ -173,6 +173,31 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
         throw new IllegalArgumentException("class not supported: "+c);
     }
 
+    
+    public static Object flattenArray( Object array, int[] qube ) {
+        if ( qube==null ) qube= Ops.getQubeDimsForArray(array);
+        if ( !array.getClass().isArray() ) throw new IllegalArgumentException("input must be an array");
+        Class c= array.getClass().getComponentType();
+        if ( c.isArray() && qube.length==1 ) {
+            throw new IllegalArgumentException("input must be 1-D array");
+        } else if ( qube.length==1 ) {
+            return array; //trivial case
+        } else {
+            int[] ube= DataSetOps.removeElement( qube, 0 );
+            int nelementsUbe= DataSetUtil.product(ube);
+            int idx= 0;
+            Object result= null;
+            for ( int i=0; i<qube[0]; i++ ) {
+                Object o= flattenArray( Array.get(array,i ), ube );
+                if ( result==null ) { // we need a first instance to get the type.
+                    result= Array.newInstance( o.getClass().getComponentType(), qube[0]*nelementsUbe );
+                }
+                System.arraycopy( o, 0, result, idx, nelementsUbe );
+            }
+            return result;
+        }
+    }
+    
     /**
      * return the array as ArrayDataSet  The array must be a 1-D array and the
      * dimensions of the result are provided in qube.
@@ -187,7 +212,11 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
         //check type
         if ( !array.getClass().isArray() ) throw new IllegalArgumentException("input must be an array");
         Class c= array.getClass().getComponentType();
-        if ( c.isArray() ) throw new IllegalArgumentException("input must be 1-D array");
+        if ( c.isArray() ) {
+            array= flattenArray( array, qube );
+            c= array.getClass().getComponentType();
+            if ( qube.length>1 ) copy=false; // because we're already copied
+        }
         if ( copy ) {
             arr= Array.newInstance( c, Array.getLength(array) );
             System.arraycopy( array, 0, arr, 0, Array.getLength(array) );
