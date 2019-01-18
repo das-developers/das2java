@@ -19,6 +19,7 @@ import java.util.regex.Pattern;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
 import org.das2.datum.DatumRangeUtil;
+import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.Units;
 import org.das2.system.DasLogger;
 import org.das2.qds.AbstractDataSet;
@@ -330,13 +331,21 @@ public class DataSetAdapter {
             //New properties after 2014-05-28 Das2 Dev meeting
             Datum d = (Datum) hack(dasProps, DataSet.PROPERTY_Y_VALID_MIN, sPlaneID);
             if (d != null) {
-                double val = d.doubleValue(source.getYUnits());
-                properties.put(QDataSet.VALID_MIN, val);
+                try {
+                    double val = d.doubleValue(source.getYUnits());
+                    properties.put(QDataSet.VALID_MIN, val);
+                } catch ( InconvertibleUnitsException ex ) {
+                    logger.info("yValidMin has inconvertible units");
+                }
             }
             d = (Datum) hack(dasProps, DataSet.PROPERTY_Y_VALID_MAX, sPlaneID);
             if (d != null) {
-                double val = d.doubleValue(source.getYUnits());
-                properties.put(QDataSet.VALID_MAX, val);
+                try {
+                    double val = d.doubleValue(source.getYUnits());
+                    properties.put(QDataSet.VALID_MAX, val);
+                } catch ( InconvertibleUnitsException ex ) {
+                    logger.info("yValidMax has inconvertible units");
+                }
             }
 
             properties.put(QDataSet.FILL_VALUE, hack(dasProps, DataSet.PROPERTY_Y_FILL, sPlaneID));
@@ -349,8 +358,12 @@ public class DataSetAdapter {
             //Let Das2 Streams set a Y-Axis range
             DatumRange yRng = (DatumRange) hack(dasProps, DataSet.PROPERTY_Y_RANGE, sPlaneID);
             if (yRng != null) {
-                properties.put(QDataSet.TYPICAL_MIN, yRng.min().value());
-                properties.put(QDataSet.TYPICAL_MAX, yRng.max().value());
+                try {
+                    properties.put(QDataSet.TYPICAL_MIN, yRng.min().doubleValue(source.getYUnits()) ); 
+                    properties.put(QDataSet.TYPICAL_MAX, yRng.max().doubleValue(source.getYUnits()) );
+                } catch ( InconvertibleUnitsException ex ) {
+                    logger.info("yRange has inconvertible units");
+                }
             }
 
             d = (Datum) hack(dasProps, DataSet.PROPERTY_Y_TAG_WIDTH, sPlaneID);
