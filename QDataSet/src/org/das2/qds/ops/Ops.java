@@ -12664,7 +12664,7 @@ public final class Ops {
               
         Units u= SemanticOps.getUnits(xy);
         
-        boolean rescale= false;
+        boolean rescale= true;
         if ( rescale ) {
             // rescale xx,yy,zz so that all are from 0.1 to 0.9.
             QDataSet xx1= Ops.rescale( append(xx,xinterp), dataset(u.createDatum(0.1)), dataset(u.createDatum(0.9)) );
