@@ -255,6 +255,8 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
             result= new NoArgFilterEditorPanel();
         } else if ( f.matches("\\|flattenWaveform\\(.*\\)") ) {
             result= new NoArgFilterEditorPanel();
+        } else if ( f.matches("\\|log10\\(\\)") ) {
+            result= new NoArgFilterEditorPanel();
         } else if ( f.matches("\\|pow\\(.*\\)") ) {
             result= new PowFilterEditorPanel();
         } else if ( f.matches("\\|getProperty\\((.*)\\)") ) {
