@@ -84,6 +84,7 @@ public final class HttpUtil {
                 String acceptEncoding = huc.getRequestProperty("Accept-Encoding");
                 String authorization = huc.getRequestProperty("Authorization");
                 String requestMethod = huc.getRequestMethod();
+                loggerUrl.log(Level.FINE, "redirect to {0}", newUrl);
                 HttpURLConnection newUrlConnection = (HttpURLConnection) new URL(newUrl).openConnection();
                 newUrlConnection.addRequestProperty("Referer", urlConnection.getURL().toString());
                 if (cookie != null) {
