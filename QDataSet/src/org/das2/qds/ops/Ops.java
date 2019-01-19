@@ -10642,6 +10642,13 @@ public final class Ops {
     
         QDataSet ttSource= (QDataSet)dsSource.property( QDataSet.DEPEND_0 );
         
+        if ( ttSource==null ) {
+            if ( SemanticOps.getUnits(dsSource).isConvertibleTo( SemanticOps.getUnits(ttTarget) ) ) {
+                ttSource= dsSource;
+            } else {
+                throw new IllegalArgumentException("dataset sent to synchronizeOne doesn't have timetags: "+dsSource );
+            }
+        }
         QDataSet ff;
         try {
             //Ops.extent(ttSource);
@@ -10717,7 +10724,14 @@ public final class Ops {
                 continue;
             }
             QDataSet ttSource= (QDataSet)dsSource.property( QDataSet.DEPEND_0 );
-            if ( ttSource==null ) throw new IllegalArgumentException("dataset (number "+(iarg+1) +" of "+dsSources.length + ") sent to synchronize doesn't have timetags: "+dsSource );
+            if ( ttSource==null ) { // there's a funny kludge we must do when timetags are sent.
+                if ( SemanticOps.getUnits(dsSource).isConvertibleTo( SemanticOps.getUnits(ttTarget) ) ) {
+                    result.add( ttTarget );
+                    continue;
+                } else {
+                    throw new IllegalArgumentException("dataset (number "+(iarg+1) +" of "+dsSources.length + ") sent to synchronize doesn't have timetags: "+dsSource );
+                }
+            }
             if ( ttSource.length()!=dsSource.length() ) throw new IllegalArgumentException("malformed dataset (number "+(iarg+1) +" of "+dsSources.length + ") DEPEND_0 length not correct: "+ttSource + " " + dsSource );
             QDataSet ff;
             try {
