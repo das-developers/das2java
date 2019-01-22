@@ -373,6 +373,7 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
                                         }
                                     } else if ( plane.rank()==2 ) {
                                         for ( int j=0; j<plane.length(0); j++ ) {
+                                            if ( j>0 ) result.append( "!c" );
                                             String n= Ops.guessName(Ops.slice1(plane,j));
                                             String s= plane.slice(i).slice(j).svalue();
                                             result.append( n ).append( ":" ) .append( s );
