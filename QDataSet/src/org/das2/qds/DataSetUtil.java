@@ -580,7 +580,12 @@ public class DataSetUtil {
                
         if ( name.startsWith("JOIN_") || name.startsWith("BINS_") ) {
             return PROPERTY_TYPE_STRING;
-        } else if ( name.startsWith("DEPEND_") || name.startsWith("BUNDLE_") || name.startsWith("DELTA_") || name.startsWith("BIN_") || name.startsWith("CONTEXT_")) {
+        } else if ( name.startsWith("DEPEND_") 
+                || name.startsWith("BUNDLE_") 
+                || name.startsWith("DELTA_") 
+                || name.startsWith("BIN_") 
+                || name.startsWith("CONTEXT_")
+                || name.startsWith("PLANE_") ) {
             return PROPERTY_TYPE_QDATASET;
         } else {
             return null;
