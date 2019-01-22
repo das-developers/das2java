@@ -523,7 +523,8 @@ public class DataSetUtil {
                 || name.startsWith("BUNDLE_") 
                 || name.startsWith("DELTA_") 
                 || name.startsWith("BIN_") 
-                || name.startsWith("CONTEXT_")) {
+                || name.startsWith("CONTEXT_")
+                || name.startsWith("PLANE_" ) ) {
             return QDataSet.class;
         } else if ( name.equals(QDataSet.START_INDEX) ) {
             return Integer.class;
