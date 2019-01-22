@@ -253,6 +253,9 @@ public class SeriesRenderer extends Renderer {
                 if ( colorByDataSet1==null && ds.rank()==2 ) {
                     colorByDataSet1= DataSetOps.unbundleDefaultDataSet( ds );
                 }
+                if ( colorByDataSet1!=null && colorByDataSet1.rank()!=1 ) {
+                    colorByDataSet1= null;
+                }
             } else {
                 if ( ds.rank()==2 ) {
                     colorByDataSet1= DataSetOps.unbundle( ds, colorByDataSetId );
