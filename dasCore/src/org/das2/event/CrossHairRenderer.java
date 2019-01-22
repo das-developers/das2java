@@ -364,9 +364,22 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
                                     QDataSet plane= (QDataSet) vds.property( "PLANE_"+iplane );
                                     if ( plane==null ) break;
                                     result.append( "!c" );
-                                    result.append( plane.property(QDataSet.NAME) ).append( ":" ) .append( nfz.grannyFormat( SemanticOps.getDatum( plane, plane.value(i) ) ) );
-                                    if (debugging) {
-                                        result.append( " " ).append( plane.toString() );
+                                    if ( plane.rank()==1 ) {
+                                        String n= Ops.guessName(plane);
+                                        String s= plane.slice(i).svalue();
+                                        result.append( n ).append( ":" ) .append( s );
+                                        if (debugging) {
+                                            result.append( " " ).append( plane.toString() );
+                                        }
+                                    } else if ( plane.rank()==2 ) {
+                                        for ( int j=0; j<plane.length(0); j++ ) {
+                                            String n= Ops.guessName(Ops.slice1(plane,j));
+                                            String s= plane.slice(i).slice(j).svalue();
+                                            result.append( n ).append( ":" ) .append( s );
+                                            if (debugging) {
+                                                result.append( " " ).append( plane.toString() );
+                                            }
+                                        }
                                     }
                                 }
 
