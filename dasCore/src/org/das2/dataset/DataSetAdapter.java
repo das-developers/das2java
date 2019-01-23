@@ -329,23 +329,14 @@ public class DataSetAdapter {
             }
             
             //New properties after 2014-05-28 Das2 Dev meeting
-            Datum d = (Datum) hack(dasProps, DataSet.PROPERTY_Y_VALID_MIN, sPlaneID);
-            if (d != null) {
-                try {
-                    double val = d.doubleValue(source.getYUnits());
-                    properties.put(QDataSet.VALID_MIN, val);
-                } catch ( InconvertibleUnitsException ex ) {
-                    logger.info("yValidMin has inconvertible units");
-                }
+            Object obj = hack(dasProps, DataSet.PROPERTY_Y_VALID_MIN, sPlaneID);
+            if (obj != null) {
+                properties.put(QDataSet.VALID_MIN, (Double)obj);
             }
-            d = (Datum) hack(dasProps, DataSet.PROPERTY_Y_VALID_MAX, sPlaneID);
-            if (d != null) {
-                try {
-                    double val = d.doubleValue(source.getYUnits());
-                    properties.put(QDataSet.VALID_MAX, val);
-                } catch ( InconvertibleUnitsException ex ) {
-                    logger.info("yValidMax has inconvertible units");
-                }
+
+				obj = hack(dasProps, DataSet.PROPERTY_Y_VALID_MAX, sPlaneID);
+            if (obj != null) {
+                properties.put(QDataSet.VALID_MAX, (Double)obj);
             }
 
             properties.put(QDataSet.FILL_VALUE, hack(dasProps, DataSet.PROPERTY_Y_FILL, sPlaneID));
@@ -366,7 +357,7 @@ public class DataSetAdapter {
                 }
             }
 
-            d = (Datum) hack(dasProps, DataSet.PROPERTY_Y_TAG_WIDTH, sPlaneID);
+            Datum d = (Datum) hack(dasProps, DataSet.PROPERTY_Y_TAG_WIDTH, sPlaneID);
             if (d != null) {
                 properties.put(QDataSet.CADENCE, DRank0DataSet.create(d));
             }
