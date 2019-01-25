@@ -330,13 +330,21 @@ public class DataSetAdapter {
             
             //New properties after 2014-05-28 Das2 Dev meeting
             Object obj = hack(dasProps, DataSet.PROPERTY_Y_VALID_MIN, sPlaneID);
-            if (obj != null) {
-                properties.put(QDataSet.VALID_MIN, (Double)obj);
+            if ( obj != null ) {
+                if ( obj instanceof Double ) {
+                    properties.put(QDataSet.VALID_MIN, (Double)obj);
+                } else {
+                    logger.warning("property "+DataSet.PROPERTY_Y_VALID_MIN+" should be type Double");
+                }
             }
 
-				obj = hack(dasProps, DataSet.PROPERTY_Y_VALID_MAX, sPlaneID);
-            if (obj != null) {
-                properties.put(QDataSet.VALID_MAX, (Double)obj);
+			obj = hack(dasProps, DataSet.PROPERTY_Y_VALID_MAX, sPlaneID);
+            if ( obj != null ) {
+                if ( obj instanceof Double ) {
+                    properties.put(QDataSet.VALID_MAX, (Double)obj);
+                } else {
+                    logger.warning("property "+DataSet.PROPERTY_Y_VALID_MAX+" should be type Double");
+                }
             }
 
             properties.put(QDataSet.FILL_VALUE, hack(dasProps, DataSet.PROPERTY_Y_FILL, sPlaneID));
