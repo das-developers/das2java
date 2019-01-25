@@ -12,6 +12,7 @@ import org.das2.datum.DatumRange;
 import org.das2.datum.DatumRangeUtil;
 import org.das2.datum.DatumUtil;
 import org.das2.datum.DatumVector;
+import org.das2.qds.DDataSet;
 import org.das2.qds.DataSetUtil;
 import org.das2.qds.QDataSet;
 import org.das2.qds.SemanticOps;
@@ -64,6 +65,30 @@ public class QDataSetStreamHandler implements StreamHandler {
         }
     }
     
+    private Object findProperty( StreamYScanDescriptor sd, String d2sName ) {
+        Object o= sd.getProperty(d2sName);
+        if ( o==null ) {
+            String n= sd.getName();
+            o= streamProperties.get( n + "." + d2sName );
+        }
+        if ( o==null ) {
+            o= streamProperties.get( d2sName );
+        }
+        return o;
+    }
+
+    private Object findProperty( StreamMultiYDescriptor sd, String d2sName ) {
+        Object o= sd.getProperty(d2sName);
+        if ( o==null ) {
+            String n= sd.getName();
+            o= streamProperties.get( n + "." + d2sName );
+        }
+        if ( o==null ) {
+            o= streamProperties.get( d2sName );
+        }
+        return o;
+    }
+    
     @Override
     public void packetDescriptor(PacketDescriptor pd) throws StreamException {
         DataSetBuilder[] lbuilders= new DataSetBuilder[pd.getYCount()];
@@ -77,17 +102,31 @@ public class QDataSetStreamHandler implements StreamHandler {
                 builder= new DataSetBuilder(2,1000,yscan.getNItems());
                 putProperty( builder, QDataSet.UNITS, yscan.getZUnits() );
                 putProperty( builder, QDataSet.NAME, yscan.getName() );
+                putProperty( builder, QDataSet.LABEL, findProperty( yscan, "zLabel" ) ); // any of the following may return null.
+                putProperty( builder, QDataSet.TITLE, findProperty( yscan, "zSummary" ) );
+                putProperty( builder, QDataSet.VALID_MIN, findProperty( yscan, "zValidMin" ) );
+                putProperty( builder, QDataSet.VALID_MAX, findProperty( yscan, "zValidMax" ) );
+                putProperty( builder, QDataSet.FILL_VALUE, findProperty( yscan, "zFill" ) );
+                putProperty( builder, QDataSet.SCALE_TYPE, findProperty( yscan, "zScaleType" ) );
+                DDataSet ytags= DDataSet.wrap( yscan.getYTags() );
+                ytags.putProperty( QDataSet.UNITS, findProperty( yscan, "yUnits" ) );
+                ytags.putProperty( QDataSet.SCALE_TYPE, findProperty( yscan, "yScaleType") );
+                ytags.putProperty( QDataSet.LABEL, findProperty( yscan, "yLabel" ));
+                ytags.putProperty( QDataSet.TITLE, findProperty( yscan, "ySummary" ));
+                putProperty( builder, QDataSet.DEPEND_1, ytags );
                 
             } else if ( sd instanceof StreamMultiYDescriptor ) {
                 StreamMultiYDescriptor multiy= (StreamMultiYDescriptor)sd;
                 builder= new DataSetBuilder(1,1000);
                 putProperty( builder, QDataSet.UNITS, multiy.getUnits() );
                 putProperty( builder, QDataSet.NAME, multiy.getName() );
-                putProperty( builder, QDataSet.LABEL, multiy.getProperty("yLabel") ); // any of the following may return null.
-                putProperty( builder, QDataSet.FORMAT, multiy.getProperty("yFormat") );
-                putProperty( builder, QDataSet.VALID_MIN, multiy.getProperty("yValidMin") );
-                putProperty( builder, QDataSet.VALID_MAX, multiy.getProperty("yValidMax") );
-                putProperty( builder, QDataSet.FILL_VALUE, multiy.getProperty("yFill") );
+                putProperty( builder, QDataSet.LABEL, findProperty( multiy, "yLabel" ) ); // any of the following may return null.
+                putProperty( builder, QDataSet.FORMAT, findProperty( multiy, "yFormat" ) );
+                putProperty( builder, QDataSet.TITLE, findProperty( multiy, "ySummary" ) );
+                putProperty( builder, QDataSet.VALID_MIN, findProperty( multiy, "yValidMin" ) );
+                putProperty( builder, QDataSet.VALID_MAX, findProperty( multiy, "yValidMax" ) );
+                putProperty( builder, QDataSet.SCALE_TYPE, findProperty( multiy, "yScaleType" ) );
+                putProperty( builder, QDataSet.FILL_VALUE, findProperty( multiy, "yFill" ) );
             } else {
                 throw new IllegalArgumentException("not supported: "+sd);
             }
