@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import org.das2.datum.CacheTag;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
 import org.das2.datum.EnumerationUnits;
@@ -967,7 +968,7 @@ public final class SemanticOps {
      * @param prop the property name, e.g. QDataSet.CADENCE
      * @param value the candidate value for the property.
      * @param throwException if true, throw descriptive exception instead of returning false.
-     * @return 
+     * @return true if the property type is okay.
      */
     public static boolean checkPropertyType( String prop, Object value, boolean throwException ) {
         Class typ= propertyTypes.get(prop);
@@ -988,6 +989,30 @@ public final class SemanticOps {
                 }
             } else {
                 return false;
+            }
+        }
+    }
+    
+    /**
+     * return the property type expected for the property.
+     * @param prop
+     * @return QDataSet, String, Number, Units, or CacheTag
+     */
+    public static String getPropertyType( String prop ) {
+        Class c= propertyTypes.get(prop);
+        if ( c==null ) {
+            throw new IllegalArgumentException("Property not recognized: "+prop);
+        } else {
+            if ( c.isAssignableFrom( CacheTag.class ) ) {
+                return "CacheTag";
+            } else if ( c.isAssignableFrom( Number.class ) ) {
+                return "Number";
+            } else if ( c.isAssignableFrom( QDataSet.class ) ) {
+                return "QDataSet";
+            } else if ( c.isAssignableFrom( Units.class ) ) {
+                return "Units";
+            } else {
+                throw new IllegalArgumentException("Property not supported: "+prop);
             }
         }
     }
