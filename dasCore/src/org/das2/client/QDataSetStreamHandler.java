@@ -210,12 +210,12 @@ public class QDataSetStreamHandler implements StreamHandler {
                         ds1= Ops.putProperty( ds1, QDataSet.BIN_MAX, max );
                         ds1= Ops.putProperty( ds1, QDataSet.BUNDLE_1, null );
                     } else if ( name1.equals( prefix + ".min" ) ) {
-                        QDataSet max= Ops.unbundle(ds1,1);
-                        max= Ops.putProperty( max, QDataSet.NAME, name1.replaceAll("\\.","_") );
-                        max= Ops.putProperty( max, QDataSet.BUNDLE_1, null );
-                        max= Ops.link( xds1, max );
+                        QDataSet min= Ops.unbundle(ds1,1);
+                        min= Ops.putProperty( min, QDataSet.NAME, name1.replaceAll("\\.","_") );
+                        min= Ops.putProperty( min, QDataSet.BUNDLE_1, null );
+                        min= Ops.link( xds1, min );
                         ds1= Ops.unbundle(ds1,0);
-                        ds1= Ops.putProperty( ds1, QDataSet.BIN_MIN, max );
+                        ds1= Ops.putProperty( ds1, QDataSet.BIN_MIN, min );
                         ds1= Ops.putProperty( ds1, QDataSet.BUNDLE_1, null );
                     }
                 }
