@@ -12090,6 +12090,17 @@ public final class Ops {
     }
     
     /**
+     * get the label, using the NAME when LABEL is not available.
+     * @param ds the dataset
+     * @return the human-readable label.
+     */
+    public static String guessLabel( QDataSet ds ) {
+        String s= (String) ds.property( QDataSet.LABEL );
+        if ( s==null ) s= guessName(ds);
+        return s;
+    }
+    
+    /**
      * guess a name for the dataset, looking for NAME and then safeName(LABEL).  The
      * result will be a Java-style identifier suitable for the variable.
      * @param ds the dataset
