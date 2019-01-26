@@ -12099,6 +12099,18 @@ public final class Ops {
         if ( s==null ) s= guessName(ds);
         return s;
     }
+
+    /**
+     * get the label, using the NAME when LABEL is not available.
+     * @param ds the dataset
+     * @param deft the default label to use.
+     * @return the human-readable label.
+     */
+    public static String guessLabel( QDataSet ds, String deft ) {
+        String s= (String) ds.property( QDataSet.LABEL );
+        if ( s==null ) s= guessName(ds,deft);
+        return s;
+    }
     
     /**
      * guess a name for the dataset, looking for NAME and then safeName(LABEL).  The
