@@ -114,6 +114,15 @@ public class QDataSetStreamHandler implements StreamHandler {
                 ytags.putProperty( QDataSet.LABEL, findProperty( yscan, "yLabel" ));
                 ytags.putProperty( QDataSet.TITLE, findProperty( yscan, "ySummary" ));
                 putProperty( builder, QDataSet.DEPEND_1, ytags );
+                String checkOperation= (String)yscan.getProperty( "operation" );
+                String checkSource= (String)yscan.getProperty( "source" ); 
+                if ( checkSource!=null && !yscan.getName().equals(checkSource) ) {  // support the new format using the old format.
+                    if ( checkOperation.equals("BIN_MAX") ) {
+                        putProperty( builder, QDataSet.NAME, checkSource + ".max" );
+                    } else if ( checkOperation.equals("BIN_MIN") ) {
+                        putProperty( builder, QDataSet.NAME, checkSource + ".min" );
+                    }
+                }
                 
             } else if ( sd instanceof StreamMultiYDescriptor ) {
                 StreamMultiYDescriptor multiy= (StreamMultiYDescriptor)sd;
@@ -199,6 +208,14 @@ public class QDataSetStreamHandler implements StreamHandler {
                         max= Ops.link( xds1, max );
                         ds1= Ops.unbundle(ds1,0);
                         ds1= Ops.putProperty( ds1, QDataSet.BIN_MAX, max );
+                        ds1= Ops.putProperty( ds1, QDataSet.BUNDLE_1, null );
+                    } else if ( name1.equals( prefix + ".min" ) ) {
+                        QDataSet max= Ops.unbundle(ds1,1);
+                        max= Ops.putProperty( max, QDataSet.NAME, name1.replaceAll("\\.","_") );
+                        max= Ops.putProperty( max, QDataSet.BUNDLE_1, null );
+                        max= Ops.link( xds1, max );
+                        ds1= Ops.unbundle(ds1,0);
+                        ds1= Ops.putProperty( ds1, QDataSet.BIN_MIN, max );
                         ds1= Ops.putProperty( ds1, QDataSet.BUNDLE_1, null );
                     }
                 }
