@@ -109,7 +109,7 @@ public class QDataSetStreamHandler implements StreamHandler {
                 putProperty( builder, QDataSet.FILL_VALUE, findProperty( yscan, "zFill" ) );
                 putProperty( builder, QDataSet.SCALE_TYPE, findProperty( yscan, "zScaleType" ) );
                 DDataSet ytags= DDataSet.wrap( yscan.getYTags() );
-                ytags.putProperty( QDataSet.UNITS, findProperty( yscan, "yUnits" ) );
+                ytags.putProperty( QDataSet.UNITS, yscan.getYUnits() );
                 ytags.putProperty( QDataSet.SCALE_TYPE, findProperty( yscan, "yScaleType") );
                 ytags.putProperty( QDataSet.LABEL, findProperty( yscan, "yLabel" ));
                 ytags.putProperty( QDataSet.TITLE, findProperty( yscan, "ySummary" ));
@@ -188,6 +188,20 @@ public class QDataSetStreamHandler implements StreamHandler {
                 for (DataSetBuilder currentBuilder : currentBuilders) {
                     ds1 = Ops.bundle(ds1, currentBuilder.getDataSet());
                 }
+                if ( currentBuilders.length==2 ) {
+                    // look for bundles.
+                    String prefix= (String)Ops.unbundle(ds1,0).property("NAME");
+                    String name1= (String)Ops.unbundle(ds1,1).property("NAME");
+                    if ( name1.equals( prefix + ".max" ) ) {
+                        QDataSet max= Ops.unbundle(ds1,1);
+                        max= Ops.putProperty( max, QDataSet.NAME, name1.replaceAll("\\.","_") );
+                        max= Ops.putProperty( max, QDataSet.BUNDLE_1, null );
+                        max= Ops.link( xds1, max );
+                        ds1= Ops.unbundle(ds1,0);
+                        ds1= Ops.putProperty( ds1, QDataSet.BIN_MAX, max );
+                        ds1= Ops.putProperty( ds1, QDataSet.BUNDLE_1, null );
+                    }
+                }
             }
             ds= Ops.link( xds1, ds1 );
         } else {
@@ -209,6 +223,11 @@ public class QDataSetStreamHandler implements StreamHandler {
                 logger.log(Level.SEVERE, "unable to use properties for cacheTag", ex);
             }
         }
+        String renderer= (String) streamProperties.get( "renderer" );
+        if ( renderer!=null ) {
+            ds= Ops.putProperty( ds, QDataSet.RENDER_TYPE, renderer );
+        }
+        
         ds= Ops.putProperty( ds, QDataSet.USER_PROPERTIES, streamProperties );
         
         return ds;
