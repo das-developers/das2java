@@ -728,9 +728,9 @@ public final class SemanticOps {
     /**
      * returns the value as a datum.  Note this should be used with reservation,
      * this is not very efficient when the operation is done many times.
-     * @param ds
-     * @param d
-     * @return
+     * @param ds dataset providing the UNITS and VALID_MIN, VALID_MAX and FILL_VALUE.
+     * @param d the double.
+     * @return a datum representing the value.
      */
     public static Datum getDatum( QDataSet ds, double d ) {
         Units u = SemanticOps.getUnits(ds);
@@ -744,8 +744,9 @@ public final class SemanticOps {
     }
 
     /**
-     * return the parts of the dataset within the bounds.
-     * TODO: This clearly has an idea of how the data is going to be visualized, so this needs to be stated so the spec doesn't move.
+     * return the parts of the dataset within the bounds.  This assumes how
+     * the data is visualized, so for example see SemanticOps.xtagsDataSet 
+     * for which dimensions correspond to x and y.
      * @param ds the rank 1 or more dataset, including joins.
      * @param xrange the range or null if no trimming should be done
      * @param yrange the range or null if no trimming should be done
