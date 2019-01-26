@@ -93,7 +93,11 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
         String formatString = nfz.toString();
         String result;
         if (formatString.indexOf('E') == -1) {
-            result = formatString + "00";
+            if (formatString.indexOf('.') == -1) {
+                result = formatString + ".00";
+            } else {
+                result = formatString + "00";
+            }
         } else {
             String[] ss = formatString.split("E");
             if (ss[0].indexOf('.') == -1) {
@@ -194,13 +198,24 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
                 QDataSet plane= (QDataSet) tds.property( "PLANE_"+iplane );
                 if ( plane==null ) break;
                 result.append("!c");
-                result.append( plane.property(QDataSet.NAME) ).append( ":" ).append(  nfz.grannyFormat( SemanticOps.getDatum( plane, plane.value(i,j) ) ) );
+                String s= Ops.guessLabel(plane,"PLANE_"+iplane);
+                if ( plane.rank()==2 ) {
+                    if ( SemanticOps.isBundle(plane) ) {
+                        for ( int k=0; k<plane.length(0); k++ ) {
+                            result.append( s ).append( ": " ).append( plane.slice(i).slice(k).svalue() );
+                        }
+                    } else {
+                        result.append( s ).append( ": " ).append( nfz.grannyFormat( SemanticOps.getDatum( plane, plane.value(i,j) ) ) );
+                    }
+                } else {
+                    result.append( s ).append( ": " ).append( nfz.grannyFormat( SemanticOps.getDatum( plane, plane.value(i) ) ) );
+                }
                 if (debugging) {
                     result.append(" ").append( plane.toString() );
                 }
             }
             if (debugging) {
-                result.append( "!ci:" ).append( i ).append( " j:" ).append( j );
+                result.append( "!ci: " ).append( i ).append( " j: " ).append( j );
             }
         }
         return result.toString();
@@ -365,16 +380,16 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
                                     if ( plane==null ) break;
                                     result.append( "!c" );
                                     if ( plane.rank()==1 ) {
-                                        String n= Ops.guessName(plane);
+                                        String n= Ops.guessLabel(plane,"PLANE_"+iplane);
                                         String s= plane.slice(i).svalue();
                                         result.append( n ).append( ":" ) .append( s );
                                         if (debugging) {
                                             result.append( " " ).append( plane.toString() );
                                         }
-                                    } else if ( plane.rank()==2 ) {
+                                    } else if ( plane.rank()==2 ) { // because the data is rank 1, assume the rank 2 plane is a bundle.  See also getZString, which is used for spectrograms.
                                         for ( int j=0; j<plane.length(0); j++ ) {
                                             if ( j>0 ) result.append( "!c" );
-                                            String n= Ops.guessName(Ops.slice1(plane,j));
+                                            String n= Ops.guessLabel(Ops.slice1(plane,j),"PLANE_"+iplane);
                                             String s= plane.slice(i).slice(j).svalue();
                                             result.append( n ).append( ":" ) .append( s );
                                             if (debugging) {
