@@ -12787,6 +12787,16 @@ public final class Ops {
         
     };
     
+    /**
+     * return the gamma function for numbers greater than 0.  This will 
+     * soon work for any number where gamma has a result (Apache Math v3 is needed for this).
+     * @param n
+     * @return 
+     */
+    public static final double gamma( double n ) {
+        double logGamma= org.apache.commons.math.special.Gamma.logGamma(n);
+        return Math.exp(logGamma);
+    }
     
     /**
      * closest double to &pi; or TAU/2
