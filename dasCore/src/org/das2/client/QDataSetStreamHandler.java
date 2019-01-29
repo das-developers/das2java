@@ -1,16 +1,15 @@
 
 package org.das2.client;
 
-import java.text.ParseException;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.datum.CacheTag;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
-import org.das2.datum.DatumRangeUtil;
-import org.das2.datum.DatumUtil;
 import org.das2.datum.DatumVector;
 import org.das2.qds.DDataSet;
 import org.das2.qds.DataSetUtil;
@@ -47,8 +46,8 @@ public class QDataSetStreamHandler implements StreamHandler {
         
     @Override
     public void streamDescriptor(StreamDescriptor sd) throws StreamException {
-        builders= new HashMap<>();
-        xbuilders= new HashMap<>();
+        builders= new LinkedHashMap<>();
+        xbuilders= new LinkedHashMap<>();
         streamTitle= String.valueOf( sd.getProperty("title") );
         streamProperties= sd.getProperties();
     }
@@ -237,7 +236,50 @@ public class QDataSetStreamHandler implements StreamHandler {
             }
             ds= Ops.link( xds1, ds1 );
         } else {
-            throw new UnsupportedOperationException("not implemented");
+            ds= null;
+            for ( Entry<PacketDescriptor,DataSetBuilder> e: xbuilders.entrySet() ) {
+                currentXBuilder= e.getValue();
+                QDataSet xds1= currentXBuilder.getDataSet();
+                QDataSet ds1;
+                ds1= null;
+                DataSetBuilder[] currentBuilders= builders.get(e.getKey());
+                for (DataSetBuilder currentBuilder : currentBuilders) {
+                    if ( currentBuilders.length==1 ) {
+                        ds1= currentBuilders[0].getDataSet();
+                    } else {
+                        ds1 = Ops.bundle(ds1, currentBuilder.getDataSet());
+                        // look for bundles.
+                        String prefix= (String)Ops.unbundle(ds1,0).property("NAME");
+                        String name1= (String)Ops.unbundle(ds1,1).property("NAME");
+                        if ( name1.equals( prefix + ".max" ) ) {
+                            QDataSet max= Ops.unbundle(ds1,1);
+                            max= Ops.putProperty( max, QDataSet.NAME, name1.replaceAll("\\.","_") );
+                            max= Ops.putProperty( max, QDataSet.BUNDLE_1, null );
+                            max= Ops.link( xds1, max );
+                            ds1= Ops.unbundle(ds1,0);
+                            ds1= Ops.putProperty( ds1, QDataSet.BIN_MAX, max );
+                            ds1= Ops.putProperty( ds1, QDataSet.BUNDLE_1, null );
+                        } else if ( name1.equals( prefix + ".min" ) ) {
+                            QDataSet min= Ops.unbundle(ds1,1);
+                            min= Ops.putProperty( min, QDataSet.NAME, name1.replaceAll("\\.","_") );
+                            min= Ops.putProperty( min, QDataSet.BUNDLE_1, null );
+                            min= Ops.link( xds1, min );
+                            ds1= Ops.unbundle(ds1,0);
+                            ds1= Ops.putProperty( ds1, QDataSet.BIN_MIN, min );
+                            ds1= Ops.putProperty( ds1, QDataSet.BUNDLE_1, null );
+                        }
+                    }
+                    ds1= Ops.link( xds1, ds1 );
+                }
+                ds= Ops.join( ds, ds1 );
+            }
+            
+            if ( ds.length()>0 ) { //TODO: what happens where there are no datasets?
+                ds= Ops.putProperty( ds, QDataSet.SCALE_TYPE, ds.slice(0).property( QDataSet.SCALE_TYPE ) );
+                ds= Ops.putProperty( ds, QDataSet.LABEL, ds.slice(0).property( QDataSet.LABEL ) );
+            }
+            
+            
         }
         ds= Ops.putProperty( ds, QDataSet.TITLE, streamTitle );
         Object oxCacheRange= streamProperties.get( "xCacheRange" );
