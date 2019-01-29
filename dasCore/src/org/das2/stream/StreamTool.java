@@ -316,6 +316,9 @@ public class StreamTool {
             //do nothing
             ;
         }
+        if ( struct.byteOffset==0 && struct.bigBuffer.position()==0 ) {
+            throw new StreamException("Stream is empty");
+        }
         if (struct.bigBuffer.hasRemaining()) {
             throw new StreamException("Reached end of stream before encountering stream descriptor");
         }
