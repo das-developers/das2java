@@ -12799,6 +12799,22 @@ public final class Ops {
     }
     
     /**
+     * return the gamma function for numbers greater than 0.  This will 
+     * soon work for any number where gamma has a result (Apache Math v3 is needed for this).
+     * @param n
+     * @return 
+     */
+    public static final QDataSet gamma( Object n ) {
+        QDataSet nn= dataset(n);
+        WritableDataSet result= zeros(nn.length());
+        for ( int i=0; i<nn.length(); i++ ) {
+            double logGamma= org.apache.commons.math.special.Gamma.logGamma(nn.value(i));
+            result.putValue( i, Math.exp(logGamma) );
+        }
+        return result;
+    }
+    
+    /**
      * closest double to &pi; or TAU/2
      * @see Math#PI
      */
