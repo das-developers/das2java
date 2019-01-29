@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.das2.datum.CacheTag;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
@@ -48,7 +50,7 @@ public class QDataSetStreamHandler implements StreamHandler {
     public void streamDescriptor(StreamDescriptor sd) throws StreamException {
         builders= new LinkedHashMap<>();
         xbuilders= new LinkedHashMap<>();
-        streamTitle= String.valueOf( sd.getProperty("title") );
+        streamTitle= adaptUserProperty( String.valueOf( sd.getProperty("title") ) );
         streamProperties= sd.getProperties();
     }
 
@@ -64,6 +66,22 @@ public class QDataSetStreamHandler implements StreamHandler {
         }
     }
     
+    private final Pattern ptrn = Pattern.compile("(%\\{)(.+?)(\\})");
+    
+    private String adaptUserProperty( String s ) {
+        Matcher m = ptrn.matcher(s);
+        while (m.find()) {
+            // Group indices are not as expected, 0 = entire match, 1 = 1st group, etc.
+            if (!m.group(2).contains("USER_PROPERTIES")) {
+                s = String.format("%sUSER_PROPERTIES.%s%s", s.substring(0, m.end(1)),
+                        s.substring(m.start(2), m.end(2)),
+                        s.substring(m.start(3), s.length()));
+                m = ptrn.matcher(s);
+            }
+        }
+        return s;
+    }
+    
     private Object findProperty( StreamYScanDescriptor sd, String d2sName ) {
         Object o= sd.getProperty(d2sName);
         if ( o==null ) {
@@ -72,6 +90,11 @@ public class QDataSetStreamHandler implements StreamHandler {
         }
         if ( o==null ) {
             o= streamProperties.get( d2sName );
+        }
+        // look for macros which refer to the properties.  These will become
+        // USER_PROPERTIES, and the macro needs to use that name.
+        if ( o instanceof String ) {
+            o= adaptUserProperty((String)o);
         }
         return o;
     }
