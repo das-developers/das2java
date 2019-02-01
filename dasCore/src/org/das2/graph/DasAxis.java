@@ -2408,6 +2408,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             int tickLengthMinor = tickLengthMajor / 2;
             int tickLength;
 
+            if ( ticks==null ) {
+                logger.info("ticks are not ready--custom ticks?");
+                return;
+            }
+            
             String[] labels = tickFormatter(ticks.tickV, getDatumRange());
 
             for (int i = 0; i < ticks.tickV.getLength(); i++) {
