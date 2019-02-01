@@ -486,11 +486,12 @@ public class GrannyTextRenderer {
                                 Graphics2D g4;
                                 if ( draw ) {    
                                     g4= (Graphics2D) g.create( (int)current.x, (int)current.y, 100, 100 );
+                                    g4.setClip(null);
                                 } else {
-                                    g4= (Graphics2D) g.create( (int)current.x, (int)current.y, 100, 100 );
+                                    g4= (Graphics2D) ig.create( (int)current.x, (int)current.y, 100, 100 );
                                 }
-                                g4.setClip(null);
                                 b1= painter.paint( g4, args );
+                                System.err.println("getWidth, "+draw+" " + b1.getWidth());
                                 current.x+= b1.getWidth();
                             }
                         }
