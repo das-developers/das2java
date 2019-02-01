@@ -479,7 +479,7 @@ public class GrannyTextRenderer {
                             String[] pp= p.split("\\;");
                             Painter painter= painters.get(pp[0]);
                             if ( painter==null ) {
-                                logger.log(Level.INFO, "no such painter: {0}", p);
+                                logger.log(Level.INFO, "no such painter: {0}", pp[0] );
                             } else {
                                 String[] args= Arrays.copyOfRange( pp, 1, pp.length );
                                 Rectangle2D b1;
@@ -490,7 +490,16 @@ public class GrannyTextRenderer {
                                 } else {
                                     g4= (Graphics2D) ig.create( (int)current.x, (int)current.y, 100, 100 );
                                 }
-                                b1= painter.paint( g4, args );
+                                try {
+                                    b1= painter.paint( g4, args );
+                                    if ( b1==null ) {
+                                        logger.warning("width not reported, using 16px");
+                                        b1= new Rectangle2D.Float(0,0,16,16);
+                                    }
+                                } catch ( Exception e ) {
+                                    e.printStackTrace();
+                                    b1= new Rectangle2D.Float(0,0,16,16);
+                                }
                                 System.err.println("getWidth, "+draw+" " + b1.getWidth());
                                 current.x+= b1.getWidth();
                             }
