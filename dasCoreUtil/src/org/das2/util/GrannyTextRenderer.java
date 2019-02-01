@@ -23,15 +23,19 @@
 
 package org.das2.util;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
-import java.awt.font.TextLayout;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -55,6 +59,8 @@ import java.util.logging.Logger;
  * !S  save the current position.
  * !K  reduce the font size. (Not in IDL's set.)
  * !!  the exclamation point (!)
+ * !(ext;args) where ext can be:
+ *   !(color;saddleBrown)
  *   </pre>
  * For Greek and math symbols, Unicode characters should be
  * used like so: &amp;#9742; (&#9742 phone symbol), or symbols like <tt>&amp;Omega;</tt> and <tt>&amp;omega;</tt>
@@ -79,6 +85,16 @@ public class GrannyTextRenderer {
     
     public GrannyTextRenderer( ) {
         //setAlignment(CENTER_ALIGNMENT);
+    }
+    
+    public static interface Painter {
+        Rectangle2D paint( Graphics2D g, String[] args );
+    }
+    
+    private Map<String,Painter> painters= new HashMap<>();
+    
+    public void addPainter( String id, Painter p ) {
+        painters.put( id, p );
     }
     
     /**
@@ -303,6 +319,13 @@ public class GrannyTextRenderer {
 //            g.setRenderingHints(hints);
         }
         
+        Color color0;
+        if ( g!=null ) {
+            color0= g.getColor();
+        } else {
+            color0= Color.BLACK;
+        }
+        
         final int NONE  = 0;
         final int SUB_U = 1;
         final int SUB_D = 2;
@@ -431,7 +454,46 @@ public class GrannyTextRenderer {
                     case 'n':
                         current.sub = NONE;
                         current.ei = NONE;
+                        if ( draw && g.getColor()!=color0 ) g.setColor(color0);
                         break;
+                    case '(':  // !(color;saddleBrown)
+                        int i= strl.indexOf(";");
+                        if ( i==-1 ) i= strl.indexOf(")");
+                        String command= strl.substring(2,i);
+                        if ( command.equals("color") ) {
+                            String scolor= i==(strl.length()-1) ? "" : strl.substring(i+1,strl.length()-1);
+                            if ( draw ) {
+                                if ( scolor.length()==0 ) {
+                                    g.setColor(color0);
+                                } else {
+                                    try {
+                                        Color c= ColorUtil.decodeColor(scolor);
+                                        g.setColor(c);
+                                    } catch ( IllegalArgumentException ex ) {
+                                        logger.log(Level.INFO, "could not decode color: {0}", scolor);
+                                    }
+                                }
+                            }
+                        } else if ( command.equals("painter") ) {
+                            String p= i==(strl.length()-1) ? "" : strl.substring(i+1,strl.length()-1);
+                            String[] pp= p.split("\\;");
+                            Painter painter= painters.get(pp[0]);
+                            if ( painter==null ) {
+                                logger.log(Level.INFO, "no such painter: {0}", p);
+                            } else {
+                                String[] args= Arrays.copyOfRange( pp, 1, pp.length );
+                                Rectangle2D b1;
+                                Graphics2D g4;
+                                if ( draw ) {    
+                                    g4= (Graphics2D) g.create( (int)current.x, (int)current.y, 100, 100 );
+                                } else {
+                                    g4= (Graphics2D) g.create( (int)current.x, (int)current.y, 100, 100 );
+                                }
+                                g4.setClip(null);
+                                b1= painter.paint( g4, args );
+                                current.x+= b1.getWidth();
+                            }
+                        }
                     case  '!':
                         break;
                     default:break;
@@ -479,7 +541,7 @@ public class GrannyTextRenderer {
                         break;
                     default:break;
                 }
-                if ( strl.equals("!!") ) strl= "!";
+                if ( strl.equals("!!") ) strl= "!";            
                 if (draw) {
                     g.setFont(font);
                     g.drawString(strl, current.x, y);
@@ -503,14 +565,29 @@ public class GrannyTextRenderer {
         }
     }
     
-    private static String[] buildTokenArray(String str) {
+    public static String[] buildTokenArray(String str) {
         java.util.List<String> vector = new ArrayList();
         int begin;
         int end = 0;
         while(end < str.length()) {
             begin = end;
             if (str.charAt(begin) == '!') {
-                end = begin + 2;
+                if ( str.length()>begin+2 ) {
+                    char p= str.charAt(begin+1);
+                    if ( p=='(') {
+                        int i= str.indexOf(')',begin+2);
+                        if ( i==-1 ) {
+                            logger.info("no closing paren found.");
+                            end= begin+2;
+                        } else {
+                            end= i+1;
+                        }
+                    } else {
+                        end = begin + 2;
+                    }
+                } else {
+                    end = begin + 2;
+                }
                 if ( end>=str.length() ) end= str.length();
             } else {
                 end = str.indexOf('!', begin);
