@@ -21,7 +21,10 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.net.URL;
 import java.text.ParseException;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
@@ -52,6 +55,20 @@ public class DasAnnotation extends DasCanvasComponent {
     GrannyTextRenderer gtr;
     BufferedImage img;
 
+    private Map<String,GrannyTextRenderer.Painter> painters= new HashMap<>();
+    
+    /**
+     * add a painter for the grannyTextRenderer
+     * @param id id for the 
+     * @param p 
+     */
+    public void addPainter( String id, GrannyTextRenderer.Painter p ) {
+        painters.put( id, p );
+        for ( Entry<String,GrannyTextRenderer.Painter> ee: painters.entrySet() ) {
+            if ( gtr!=null ) gtr.addPainter( ee.getKey(), ee.getValue() );
+        }
+    }
+    
     /**
      * point at this thing
      */
@@ -315,6 +332,9 @@ public class DasAnnotation extends DasCanvasComponent {
                 } else {
                     gtr= new GrannyTextRenderer();
                     gtr.setString( this.getGraphics(), getString() );
+                    for ( Entry<String,GrannyTextRenderer.Painter> ee: painters.entrySet() ) {
+                        gtr.addPainter( ee.getKey(), ee.getValue() );
+                    }
                 }
             }
             resize();
