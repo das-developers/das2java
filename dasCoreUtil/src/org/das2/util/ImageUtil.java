@@ -91,6 +91,48 @@ public class ImageUtil {
     }
 
     /**
+     * convenient typical use, returns the biggest scaled instance which would fit in a box.
+     * The returned image will have the same aspect ratio.
+     * @param img image to resize.
+     * @param width the width
+     * @param height the height
+     * @param pad pad the image so that width and height are used.
+     * @return buffered image that is thumbSize across.
+     */
+    public static BufferedImage getScaledInstance( BufferedImage img, int width, int height, boolean pad ) {
+        int w0= img.getWidth();
+        int h0= img.getHeight();
+        int thumbH, thumbW;
+
+        double aspect = 1. * w0 / h0;
+        
+        double inAspect= 1. * width / height;
+        
+        if ( inAspect> aspect ) {
+            thumbH= height;
+            thumbW= (int)( height * aspect );        
+        } else {
+            thumbW= width;
+            thumbH= (int)( 1. * width / aspect  );            
+        }
+        
+        BufferedImage result= getScaledInstance( img, thumbW, thumbH, RenderingHints.VALUE_INTERPOLATION_BILINEAR, true );
+        if ( pad ) {
+            BufferedImage r;
+            if ( inAspect> aspect ) {
+                r= new BufferedImage( width, height, result.getType() );
+                r.getGraphics().drawImage( result, ( width - thumbW ) / 2, 0, null );                
+            } else {
+                r= new BufferedImage( width, height, result.getType() );
+                r.getGraphics().drawImage( result, 0, ( height - thumbH ) / 2, null );
+            }
+            result= r;
+        }
+        return result; 
+        
+    }
+    
+    /**
      * Convenience method that returns a scaled instance of the
      * provided {@code BufferedImage}.
      * 
