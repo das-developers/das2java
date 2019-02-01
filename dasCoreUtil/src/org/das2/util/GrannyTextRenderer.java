@@ -500,7 +500,10 @@ public class GrannyTextRenderer {
                                     e.printStackTrace();
                                     b1= new Rectangle2D.Float(0,0,16,16);
                                 }
-                                System.err.println("getWidth, "+draw+" " + b1.getWidth());
+                                if ( !draw ) {
+                                    boundsl.add( new Rectangle2D.Float( current.x+(float)b1.getX(), current.y+(float)b1.getY(), (float)b1.getWidth(), (float)b1.getHeight() ) );
+                                    lineBounds.add(boundsl);
+                                }
                                 current.x+= b1.getWidth();
                             }
                         }
