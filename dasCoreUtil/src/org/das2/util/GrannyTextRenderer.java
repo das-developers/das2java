@@ -129,9 +129,28 @@ public class GrannyTextRenderer {
      */
     public Rectangle getBounds() {
         if ( lineBounds==null ) throw new IllegalArgumentException("string is not set");
-        return new Rectangle( maybeInitBounds() ); // defensive copy
+        Rectangle r= maybeInitBounds();
+        return new Rectangle( r ); // defensive copy
     }
 
+    private Rectangle calculateBounds( ArrayList<Rectangle> llineBounds ) {
+        Rectangle lbounds;
+        if ( lineBounds==null ) {
+            logger.fine("lineBounds not set");
+            return new Rectangle( 0,-12,12,12 );
+        } else {
+            if ( llineBounds.size()>0 && llineBounds.get(0)!=null ) {
+                lbounds = new Rectangle((Rectangle)llineBounds.get(0));
+                for (int i = 1; i < llineBounds.size(); i++) {
+                    lbounds.add(llineBounds.get(i));
+                }
+            } else {
+                logger.fine("lineBounds size is 0");
+                lbounds = new Rectangle( 0,-12,12,12 );
+            }
+        }
+        return lbounds;
+    }
     /**
      * return the current bounds, possibly initializing.
      * @return 
@@ -139,20 +158,7 @@ public class GrannyTextRenderer {
     private Rectangle maybeInitBounds() {
         Rectangle bounds= this.bounds;
         if (bounds == null) {
-            if ( lineBounds==null ) {
-                bounds = new Rectangle( 0,-12,12,12 );
-            } else {
-                ArrayList<Rectangle> llineBounds= new ArrayList<>(this.lineBounds);
-                if ( llineBounds.size()>0 && llineBounds.get(0)!=null ) {
-                    bounds = new Rectangle((Rectangle)llineBounds.get(0));
-                    for (int i = 1; i < llineBounds.size(); i++) {
-                        bounds.add(llineBounds.get(i));
-                    }
-                } else {
-                    bounds = new Rectangle( 0,-12,12,12 );
-                }
-            }
-            this.bounds= bounds;
+            bounds= calculateBounds(lineBounds);
         }
         return bounds;
     }
@@ -333,8 +339,11 @@ public class GrannyTextRenderer {
         
         logger.entering( "GrannyTextRenderer", "draw", new Object[] { baseFont, ix, iy, draw, str } );
         
+        ArrayList<Rectangle> llineBounds= new ArrayList<>();  // work on a local copy
+        
         Graphics2D g = null;
-        Rectangle boundsl = null;
+        
+        Rectangle boundsl = null; // the current line's bounds.
         
         if (draw) {
             g = (Graphics2D)ig.create();
@@ -431,7 +440,7 @@ public class GrannyTextRenderer {
                         }
                         saveStack.clear();
                         if (!draw) {
-                            lineBounds.add(boundsl);
+                            llineBounds.add(boundsl);
                             boundsl = new Rectangle((int)current.x, (int)current.y, 0, 0);
                         }
                         break;
@@ -485,6 +494,10 @@ public class GrannyTextRenderer {
                         int i= strl.indexOf(";");
                         if ( i==-1 ) i= strl.indexOf(")");
                         String command= strl.substring(2,i);
+                        if ( command.indexOf(',')>-1 ) {
+                            logger.log(Level.INFO, "command cannot contain comma: {0}", command);
+                            break;
+                        }
                         if ( command.equals("color") ) {
                             if ( draw ) {
                                 String scolor= i==(strl.length()-1) ? "" : strl.substring(i+1,strl.length()-1);
@@ -528,8 +541,11 @@ public class GrannyTextRenderer {
                                     b1= new Rectangle2D.Float(0,0,16,16);
                                 }
                                 if ( !draw ) {
-                                    boundsl.add( new Rectangle2D.Float( current.x+(float)b1.getX(), current.y+(float)b1.getY(), (float)b1.getWidth(), (float)b1.getHeight() ) );
-                                    lineBounds.add(boundsl);
+                                    boundsl.add( new Rectangle2D.Float( 
+                                            current.x+(float)b1.getX(), 
+                                            current.y+(float)b1.getY(), 
+                                            (float)b1.getWidth(), 
+                                            (float)b1.getHeight() ) );
                                 }
                                 current.x+= b1.getWidth();
                             }
@@ -599,7 +615,12 @@ public class GrannyTextRenderer {
             }
         } // for (String strl : tokens) {
         if (!draw) {
-            lineBounds.add(boundsl);
+            llineBounds.add(boundsl);
+            this.lineBounds= llineBounds;
+            this.bounds= calculateBounds(llineBounds);
+            if ( str.contains("painter") ) {
+                System.err.println("lineBounds[0]= "+lineBounds.get(0) + " " +str);
+            }
         }
         if (draw) {
             g.dispose();
