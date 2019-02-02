@@ -61,6 +61,7 @@ import java.util.logging.Logger;
  * !!  the exclamation point (!)
  * !(ext;args) where ext can be:
  *   !(color;saddleBrown)
+ *   !(painter;codeId;codeArg1)
  *   </pre>
  * For Greek and math symbols, Unicode characters should be
  * used like so: &amp;#9742; (&#9742 phone symbol), or symbols like <tt>&amp;Omega;</tt> and <tt>&amp;omega;</tt>
@@ -81,7 +82,7 @@ public class GrannyTextRenderer {
     private String[] tokens;
     private float alignment = LEFT_ALIGNMENT;
     
-    private static final Logger logger= LoggerManager.getLogger("das2.graph");
+    private static final Logger logger= LoggerManager.getLogger("das2.graph.text");
     
     public GrannyTextRenderer( ) {
         //setAlignment(CENTER_ALIGNMENT);
@@ -93,10 +94,31 @@ public class GrannyTextRenderer {
     
     private Map<String,Painter> painters= new HashMap<>();
     
+    /**
+     * add a painter for the grannyTextRenderer.  This is done by associating
+     * a Painter code with an id, and the id is used within the annotation string.
+     * @param id id for the painter, where the id is found in the granny text string
+     * @param p the painter code which draws on a graphics context.
+     */    
     public void addPainter( String id, Painter p ) {
         painters.put( id, p );
     }
     
+    /**
+     * remove the painter with the given id.
+     * @param id id for the painter, where the id is found in the granny text string
+     */
+    public void removePainter( String id ) {
+        painters.remove(id);
+    }
+    
+    /**
+     * remove all the painters
+     */
+    public void clearPainters() {
+        painters.clear();
+    }
+        
     /**
      * returns the bounds of the current string.  The lower-left corner of
      * the first character will be roughly (0,0), to be compatible with
@@ -308,6 +330,9 @@ public class GrannyTextRenderer {
      * @throws NullPointerException if c is <code>null</code> AND draw is <code>false</code>.
      */
     private void draw(Graphics ig, Font baseFont, float ix, float iy, boolean draw ) {
+        
+        logger.entering( "GrannyTextRenderer", "draw", new Object[] { baseFont, ix, iy, draw, str } );
+        
         Graphics2D g = null;
         Rectangle boundsl = null;
         
@@ -461,8 +486,8 @@ public class GrannyTextRenderer {
                         if ( i==-1 ) i= strl.indexOf(")");
                         String command= strl.substring(2,i);
                         if ( command.equals("color") ) {
-                            String scolor= i==(strl.length()-1) ? "" : strl.substring(i+1,strl.length()-1);
                             if ( draw ) {
+                                String scolor= i==(strl.length()-1) ? "" : strl.substring(i+1,strl.length()-1);
                                 if ( scolor.length()==0 ) {
                                     g.setColor(color0);
                                 } else {
@@ -474,6 +499,7 @@ public class GrannyTextRenderer {
                                     }
                                 }
                             }
+                            
                         } else if ( command.equals("painter") ) {
                             String p= i==(strl.length()-1) ? "" : strl.substring(i+1,strl.length()-1);
                             String[] pp= p.split("\\;");
@@ -492,6 +518,7 @@ public class GrannyTextRenderer {
                                 }
                                 try {
                                     b1= painter.paint( g4, args );
+                                    g4.dispose();
                                     if ( b1==null ) {
                                         logger.warning("width not reported, using 16px");
                                         b1= new Rectangle2D.Float(0,0,16,16);
@@ -507,6 +534,7 @@ public class GrannyTextRenderer {
                                 current.x+= b1.getWidth();
                             }
                         }
+                        break;
                     case  '!':
                         break;
                     default:break;
@@ -576,6 +604,9 @@ public class GrannyTextRenderer {
         if (draw) {
             g.dispose();
         }
+        
+        logger.exiting( "GrannyTextRenderer", "draw" );
+        
     }
     
     public static String[] buildTokenArray(String str) {
