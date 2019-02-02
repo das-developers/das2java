@@ -482,7 +482,6 @@ public class DasAnnotation extends DasCanvasComponent {
     private Rectangle calcBounds() {
         logger.entering("DasAnnotation", "calcBounds" );
         Rectangle r = (Rectangle)getActiveRegion();
-        System.err.println("activeRegion: "+r);
         if (pointAt != null) {
             Point head = pointAt.getPoint();
             r.add(head);
