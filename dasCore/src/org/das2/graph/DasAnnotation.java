@@ -49,7 +49,7 @@ import org.das2.datum.UnitsUtil;
  */
 public class DasAnnotation extends DasCanvasComponent {
 
-    private static final Logger logger= LoggerManager.getLogger("das.graph.annotation");
+    private static final Logger logger= LoggerManager.getLogger("das2.graph.annotation");
     
     String templateString;
     GrannyTextRenderer gtr;
@@ -58,15 +58,32 @@ public class DasAnnotation extends DasCanvasComponent {
     private Map<String,GrannyTextRenderer.Painter> painters= new HashMap<>();
     
     /**
-     * add a painter for the grannyTextRenderer
-     * @param id id for the 
-     * @param p 
+     * add a painter for the grannyTextRenderer.  This is done by associating
+     * a Painter code with an id, and the id is used within the annotation string.
+     * @param id id for the painter, where the id is found in the granny text string
+     * @param p the painter code which draws on a graphics context.
+     * @see org.das2.util.GrannyTextRenderer#addPainter(java.lang.String, org.das2.util.GrannyTextRenderer.Painter) 
      */
     public void addPainter( String id, GrannyTextRenderer.Painter p ) {
         painters.put( id, p );
         for ( Entry<String,GrannyTextRenderer.Painter> ee: painters.entrySet() ) {
             if ( gtr!=null ) gtr.addPainter( ee.getKey(), ee.getValue() );
         }
+    }
+    
+    /**
+     * remove the painter with the given id.
+     * @param id id for the painter, where the id is found in the granny text string
+     */
+    public void removePainter( String id ) {
+        painters.remove(id);
+    }
+    
+    /**
+     * remove all the painters
+     */
+    public void clearPainters() {
+        painters.clear();
     }
     
     /**
@@ -463,7 +480,9 @@ public class DasAnnotation extends DasCanvasComponent {
      * @return 
      */
     private Rectangle calcBounds() {
+        logger.entering("DasAnnotation", "calcBounds" );
         Rectangle r = (Rectangle)getActiveRegion();
+        System.err.println("activeRegion: "+r);
         if (pointAt != null) {
             Point head = pointAt.getPoint();
             r.add(head);
@@ -490,7 +509,13 @@ public class DasAnnotation extends DasCanvasComponent {
             }
         }
         int s= Math.max( getFont().getSize()/5, 3 );
-        return new Rectangle( r.x-s, r.y-s, r.width+s*2+1, r.height+s*2+1 );
+        Rectangle result= new Rectangle( r.x-s, r.y-s, r.width+s*2+1, r.height+s*2+1 );
+        
+        if ( result.width<30 ){
+            System.err.println("here30");
+        }
+        logger.exiting( "DasAnnotation","calcBounds", result);
+        return result;
     }
 
     @Override
@@ -1046,9 +1071,9 @@ public class DasAnnotation extends DasCanvasComponent {
     PropertyChangeListener plotListener= new PropertyChangeListener() {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            logger.finer("plot change, resizing");
+            logger.finest("plot change, resizing");
             if ( evt.getPropertyName().equals("paintingForPrint") ) {
-                logger.finer("plot change is trivial, ignoring");
+                logger.finest("plot change is trivial, ignoring");
             } else {
                 Runnable run= new Runnable() {
                     public void run() {
@@ -1257,6 +1282,7 @@ public class DasAnnotation extends DasCanvasComponent {
         String oldAnchorOffset = this.anchorOffset;
         this.anchorOffset = anchorOffset;
         firePropertyChange(PROP_ANCHOROFFSET, oldAnchorOffset, anchorOffset);
+        resize();
     }
 
     
