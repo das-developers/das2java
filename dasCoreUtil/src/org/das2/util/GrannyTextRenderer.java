@@ -618,9 +618,6 @@ public class GrannyTextRenderer {
             llineBounds.add(boundsl);
             this.lineBounds= llineBounds;
             this.bounds= calculateBounds(llineBounds);
-            if ( str.contains("painter") ) {
-                System.err.println("lineBounds[0]= "+lineBounds.get(0) + " " +str);
-            }
         }
         if (draw) {
             g.dispose();
