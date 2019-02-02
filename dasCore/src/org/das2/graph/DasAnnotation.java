@@ -511,9 +511,6 @@ public class DasAnnotation extends DasCanvasComponent {
         int s= Math.max( getFont().getSize()/5, 3 );
         Rectangle result= new Rectangle( r.x-s, r.y-s, r.width+s*2+1, r.height+s*2+1 );
         
-        if ( result.width<30 ){
-            System.err.println("here30");
-        }
         logger.exiting( "DasAnnotation","calcBounds", result);
         return result;
     }
