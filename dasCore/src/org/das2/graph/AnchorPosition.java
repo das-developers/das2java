@@ -90,7 +90,7 @@ public enum AnchorPosition implements Enumeration {
                 g.fillRect(2,12,5,5);
                 break;
             case OutsideSSE:
-                g.fillRect(7,8,6,5);
+                g.fillRect(7,12,6,5);
                 break;
             case OutsideNE:
                 g.fillRect(12,2,5,5);
