@@ -37,6 +37,7 @@ public class GitHubFileSystem extends HttpFileSystem {
      */
     protected GitHubFileSystem(URI root, File localRoot) {
         super(root, localRoot);
+        this.protocol= null;
     }
     
     public static GitHubFileSystem createGitHubFileSystem( URI root ) {
