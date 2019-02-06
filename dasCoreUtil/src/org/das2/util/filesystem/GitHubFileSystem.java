@@ -9,9 +9,12 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.util.LoggerManager;
@@ -30,6 +33,33 @@ public class GitHubFileSystem extends HttpFileSystem {
 
     private static final Logger logger= LoggerManager.getLogger("das2.filesystem.wfs.githubfs");
     
+    private class GitHubHttpProtocol implements WebProtocol {
+
+        @Override
+        public InputStream getInputStream(WebFileObject fo, ProgressMonitor mon) throws IOException {
+            URL gitHubURL= gitHubMapFile( root, fo.getNameExt() );
+            return gitHubURL.openStream();
+        }
+
+        @Override
+        public Map<String, String> getMetadata(WebFileObject fo) throws IOException {
+        
+            if ( fo.wfs.offline ) {
+                Map<String,String> result= new HashMap<>();
+                result.put(WebProtocol.META_EXIST, String.valueOf( fo.localFile.exists() ) );
+                result.put(WebProtocol.META_LAST_MODIFIED, String.valueOf( fo.localFile.lastModified() ) );
+                result.put(WebProtocol.META_CONTENT_LENGTH, String.valueOf( fo.localFile.length() ) );
+                result.put(WebProtocol.META_CONTENT_TYPE, Files.probeContentType( fo.localFile.toPath() ) );
+                return result;
+                
+            } else {
+                URL ur= gitHubMapFile( root, fo.getNameExt() );
+                return HttpUtil.getMetadata( ur, null );
+            }
+    
+        }
+        
+    }
     /** 
      * Create a new GitHubFileSystem mirroring the root, a URL pointing to "http" or "https", 
      * in the local folder.
@@ -38,7 +68,7 @@ public class GitHubFileSystem extends HttpFileSystem {
      */
     protected GitHubFileSystem(URI root, File localRoot) {
         super(root, localRoot);
-        this.protocol= null;
+        this.protocol= new GitHubHttpProtocol();
     }
     
     public static GitHubFileSystem createGitHubFileSystem( URI root ) {
@@ -59,9 +89,18 @@ public class GitHubFileSystem extends HttpFileSystem {
     @Override
     public String[] listDirectory(String directory) throws IOException {
         if ( !directory.endsWith("/") ) directory= directory+"/";
+        if ( directory.equals("/") && root.getRawPath().equals("/") ) { // list from cache.
+            File dir= new File( FileSystem.settings().getLocalCacheDir() + "/" + root.getScheme() + "/" + root.getHost() );
+            String[] ss= dir.list();
+            for ( int i=0; i<ss.length; i++ ) {
+                ss[i]= ss[i] + '/';
+            }
+            return ss;
+        }
         InputStream urlStream= null ;
         try {
             URL url= gitHubMapDir( root, directory );
+            String surl= url.toString();
             urlStream = getInputStream(url);
             URL[] listing= HtmlUtil.getDirectoryListing( url, urlStream, false );
             List<String> result= new ArrayList<>();
@@ -78,6 +117,11 @@ public class GitHubFileSystem extends HttpFileSystem {
                                 && !su.contains("return_to=")  ) {
                             result.add( ss );
                         }
+                    }
+                } else if ( su.startsWith(surl) ) {
+                    String sub= su.substring(surl.length());
+                    if ( sub.length()>0 && sub.charAt(0)!='#' && !sub.contains("/") ) {
+                        result.add( sub+"/" );
                     }
                 }
             }
@@ -121,6 +165,13 @@ public class GitHubFileSystem extends HttpFileSystem {
         return result.toString();
     }
     
+    /**
+     * github puts directories for each project under "raw/master".
+     * @param root
+     * @param filename
+     * @return
+     * @throws MalformedURLException 
+     */
     public static URL gitHubMapFile( URI root, String filename ) throws MalformedURLException {
         filename= toCanonicalFilename( filename );            
         // png image "https://github.com/autoplot/app/raw/master/Autoplot/src/resources/badge_ok.png"
@@ -131,14 +182,26 @@ public class GitHubFileSystem extends HttpFileSystem {
         return url;
     }
 
+    /**
+     * github puts directories for each project under "tree/master".
+     * @param root
+     * @param filename
+     * @return
+     * @throws MalformedURLException 
+     */
     public static URL gitHubMapDir( URI root, String filename ) throws MalformedURLException {
         filename= toCanonicalFilename( filename );            
         // png image "https://github.com/autoplot/app/raw/master/Autoplot/src/resources/badge_ok.png"
         String[] path= root.getPath().split("/",-2);
         String spath= path[0] + '/' + path[1] + '/' + path[2] ;
-        String n= root.getScheme() + "://" + root.getHost() + '/' + spath + "/tree/master/" + strjoin( path, "/", 3, -1 ) + filename;
-        URL url= new URL( n );
-        return url;
+        String n;
+        if ( path.length==3 && filename.length()==1 ) {
+            return root.toURL();
+        } else {
+            n= root.getScheme() + "://" + root.getHost() + '/' + spath + "/tree/master/" + strjoin( path, "/", 3, -1 ) + filename;
+            URL url= new URL( n );
+            return url;
+        }
     }
     
     @Override
