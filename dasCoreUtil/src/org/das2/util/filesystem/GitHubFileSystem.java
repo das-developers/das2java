@@ -5,8 +5,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintStream;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.Files;
@@ -138,10 +140,6 @@ public class GitHubFileSystem extends HttpFileSystem {
         
     }
 
-    @Override
-    public FileObject getFileObject(String filename) {
-        return new WebFileObject( this, filename, new Date() );        
-    }
     
     /**
      * this will be replaced in Java 8.
@@ -203,6 +201,39 @@ public class GitHubFileSystem extends HttpFileSystem {
             return url;
         }
     }
+
+    @Override
+    public URI getURI(String filename) {
+        try {
+            return getURL(filename).toURI();
+        } catch (URISyntaxException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    /**
+     * return the URL for the internal filename
+     * @param filename internal filename
+     * @return 
+     */
+    @Override
+    public URL getURL(String filename) {
+        filename = FileSystem.toCanonicalFilename(filename);
+        if ( filename.endsWith("/") ) {
+            try {
+                return gitHubMapDir( root, filename );
+            } catch (MalformedURLException ex) {
+                throw new RuntimeException(ex);
+            }
+        } else {
+            try {
+                return gitHubMapFile( root, filename );
+            } catch (MalformedURLException ex) {
+                throw new RuntimeException(ex);
+            }
+        }
+    }
+    
     
     @Override
     protected void downloadFile(String filename, File targetFile, File partFile, ProgressMonitor monitor) throws IOException {
@@ -214,7 +245,7 @@ public class GitHubFileSystem extends HttpFileSystem {
             URL url= gitHubMapFile( root, filename );
             
             URLConnection urlc = url.openConnection();
-            
+            String etag= urlc.getHeaderField("ETag");
             int i= urlc.getContentLength();
             monitor.setTaskSize( i );
             out= new FileOutputStream( partFile );
@@ -228,6 +259,17 @@ public class GitHubFileSystem extends HttpFileSystem {
             if ( ! partFile.renameTo( targetFile ) ) {
                 throw new IllegalArgumentException("unable to rename "+partFile+" to "+targetFile );
             }
+            File metadir= new File( targetFile.getParentFile(), ".meta");
+            if ( !metadir.exists() ) {
+                if ( !metadir.mkdirs() ) {
+                    logger.warning("unable to make .meta directory");
+                }
+            }
+            File metaFile= new File( metadir, filename );
+            try (PrintStream metaOut = new PrintStream( new FileOutputStream(metaFile) )) {
+                metaOut.println("ETag: "+etag+"\n");
+            }
+            
         } catch ( IOException e ) {
             if ( out!=null ) out.close();
             if ( is!=null ) is.close();
