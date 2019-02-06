@@ -39,7 +39,7 @@ public class DefaultHttpProtocol implements WebProtocol {
      * @param realName
      * @return 
      */
-    private static String urlEncodeSansSlash( String realName ) {
+    protected static String urlEncodeSansSlash( String realName ) {
         String[] ss= realName.split("/",-2);
         for ( int i=0; i<ss.length; i++ ) {
             try {
