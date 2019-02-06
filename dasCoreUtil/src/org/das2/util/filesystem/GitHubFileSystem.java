@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
@@ -60,8 +61,7 @@ public class GitHubFileSystem extends HttpFileSystem {
         if ( !directory.endsWith("/") ) directory= directory+"/";
         InputStream urlStream= null ;
         try {
-            String surl= root.toString() + "tree/master/"+ directory ;
-            URL url= new URL(surl);
+            URL url= gitHubMapDir( root, directory );
             urlStream = getInputStream(url);
             URL[] listing= HtmlUtil.getDirectoryListing( url, urlStream, false );
             List<String> result= new ArrayList<>();
@@ -98,15 +98,57 @@ public class GitHubFileSystem extends HttpFileSystem {
     public FileObject getFileObject(String filename) {
         return new WebFileObject( this, filename, new Date() );        
     }
+    
+    /**
+     * this will be replaced in Java 8.
+     * @param c
+     * @param delim
+     * @param start positive index, or negative from end.
+     * @param end positive index, or negative from end.
+     * @return 
+     */
+    public static String strjoin( String[] c, String delim, int start, int end ) {
+        StringBuilder result = new StringBuilder();
+        if ( start<0 ) start= c.length + start;
+        if ( end<0 ) end= c.length + end;
+        for ( int i=start; i<end; i++ ) {
+            String s= c[i];
+            if (result.length() > 0) {
+                result.append(delim);
+            }
+            result.append(s);
+        }
+        return result.toString();
+    }
+    
+    public static URL gitHubMapFile( URI root, String filename ) throws MalformedURLException {
+        filename= toCanonicalFilename( filename );            
+        // png image "https://github.com/autoplot/app/raw/master/Autoplot/src/resources/badge_ok.png"
+        String[] path= root.getPath().split("/",-2);
+        String spath= path[0] + '/' + path[1] + '/' + path[2] ;
+        String n= root.getScheme() + "://" + root.getHost() + '/' + spath + "/raw/master/" + strjoin( path, "/", 3, -1 ) + filename;
+        URL url= new URL( n );
+        return url;
+    }
 
+    public static URL gitHubMapDir( URI root, String filename ) throws MalformedURLException {
+        filename= toCanonicalFilename( filename );            
+        // png image "https://github.com/autoplot/app/raw/master/Autoplot/src/resources/badge_ok.png"
+        String[] path= root.getPath().split("/",-2);
+        String spath= path[0] + '/' + path[1] + '/' + path[2] ;
+        String n= root.getScheme() + "://" + root.getHost() + '/' + spath + "/tree/master/" + strjoin( path, "/", 3, -1 ) + filename;
+        URL url= new URL( n );
+        return url;
+    }
+    
     @Override
     protected void downloadFile(String filename, File targetFile, File partFile, ProgressMonitor monitor) throws IOException {
+        logger.log(Level.FINE, "downloadFile({0})", filename);
         FileOutputStream out=null;
         InputStream is= null;
         try {
             filename= toCanonicalFilename( filename );
-            String n= root.toASCIIString().replace("github.com", "raw.githubusercontent.com" ) + "master/" + filename.substring(1);
-            URL url= new URL( n );
+            URL url= gitHubMapFile( root, filename );
             
             URLConnection urlc = url.openConnection();
             
@@ -133,6 +175,9 @@ public class GitHubFileSystem extends HttpFileSystem {
         }
     }
     
-    
+    @Override
+    public String toString() {
+        return "githubfs " + root;
+    }
     
 }
