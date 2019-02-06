@@ -555,14 +555,16 @@ public class WebFileObject extends FileObject {
             if ( !wfs.isOffline() ) {
                 try {
                     synchronized ( wfs ) {
-                        DirectoryEntry remoteDate= (DirectoryEntry) wfs.accessCache.doOp( this.getNameExt() );
+                        DirectoryEntry remoteMeta= (DirectoryEntry) wfs.accessCache.doOp( this.getNameExt() );
                         long localFileLastModified = localFile.lastModified();
-                        setLastModified( new Date(remoteDate.modified) );
-                        setSize( remoteDate.size );
-                        if ( remoteDate.modified > localFileLastModified ) {
+                        setLastModified( new Date(remoteMeta.modified) );
+                        setSize( remoteMeta.size );
+                        if ( remoteMeta.modified > localFileLastModified ) {
                             logger.log(Level.FINE, "remote file is newer than local copy of {0}, download.", this.getNameExt());
                             download = true;
-                        } else download = remoteDate.size!= localFile.length();
+                        } else {
+                            download = remoteMeta.size!= localFile.length();
+                        }
                     }
                 } catch ( Exception ex ) {
                     logger.log( Level.WARNING, ex.getMessage(), ex );
