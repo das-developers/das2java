@@ -704,6 +704,11 @@ public abstract class WebFileSystem extends FileSystem {
         return (String[]) result.toArray(new String[result.size()]);
     }
     
+    /**
+     * return the URL for the internal filename
+     * @param filename internal filename
+     * @return 
+     */
     public URL getURL(String filename) {
         filename = FileSystem.toCanonicalFilename(filename);
         try {
@@ -712,7 +717,12 @@ public abstract class WebFileSystem extends FileSystem {
             throw new RuntimeException(ex);
         }
     }
-
+    
+    /**
+     * return the URI for the internal filename
+     * @param filename internal filename
+     * @return 
+     */
     public URI getURI( String filename ) {
         try {
             filename = FileSystem.toCanonicalFilename(filename);
