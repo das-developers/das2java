@@ -40,7 +40,8 @@ public class HttpFileSystemFactory implements FileSystemFactory {
     @Override
     public FileSystem createFileSystem(URI root) throws FileSystemOfflineException, UnknownHostException, FileNotFoundException {
         if ( root.getHost().equals("github.com") ) {
-            return GitHubFileSystem.createGitHubFileSystem(root);
+            WebFileSystem result= GitHubFileSystem.createGitHubFileSystem(root);
+            return result;
         } else {
             HttpFileSystem hfs = HttpFileSystem.createHttpFileSystem(root);
             if (!FileSystemSettings.hasAllPermission()) hfs.setAppletMode(true);
