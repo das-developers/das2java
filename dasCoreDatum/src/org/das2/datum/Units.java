@@ -693,6 +693,8 @@ public abstract class Units {
     
     /**
      * returns a Units object with the given string representation that is stored in the unitsMap.
+     * Unlike lookupUnits, this will not allocate new units but will throw an IllegalArgumentException
+     * if the string is not recognized.
      *
      * @param s units identifier
      * @return units object 
@@ -801,7 +803,8 @@ public abstract class Units {
     }
     
     /**
-     * lookupUnits canonical units object, or allocate one.
+     * lookupUnits canonical units object, or allocate one if the 
+     * unit has not been used already.
      * Examples include:
      *   "nT" where it's already allocated,
      *   "apples" where it allocates a new one, and
