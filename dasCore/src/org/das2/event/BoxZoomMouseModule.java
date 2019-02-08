@@ -35,7 +35,13 @@ public class BoxZoomMouseModule extends BoxRangeSelectorMouseModule {
     boolean constrainProportions= false;
     long t0, tbirth;
     
-    /** Creates a new instance of BoxZoomMouseModule */
+    /** 
+     * Creates a new instance of BoxZoomMouseModule
+     * @param parent component who owns the mouse module
+     * @param consumer is the source context of the data set selection
+     * @param xAxis the plot's xaxis.
+     * @param yAxis the plot's yaxis.
+     */
     public BoxZoomMouseModule( DasCanvasComponent parent, DataSetConsumer consumer, DasAxis xAxis, DasAxis yAxis ) {
         super( parent, consumer, xAxis, yAxis );
         setDragRenderer( new BoxZoomGesturesRenderer(parent) );
