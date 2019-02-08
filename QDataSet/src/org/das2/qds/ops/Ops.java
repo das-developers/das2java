@@ -9058,14 +9058,25 @@ public final class Ops {
      * interpolate values from rank 1 dataset vv using fractional indeces 
      * in rank N findex.  For example, findex=1.5 means interpolate
      * the 1st and 2nd indeces with equal weight, 1.1 means
-     * 90% of the first mixed with 10% of the second.  No extrapolation is
-     * done, data with findex&lt;0 or findex&gt;(vv.length()-1) are assigned the
-     * first or last value.  
-     * Only modest extrapolations where findex&gt;=0.5 and findex&lt;=L-0.5 are allowed.
+     * 90% of the first mixed with 10% of the second.  
+     * Only modest extrapolations where findex&gt;=-0.5 and findex&lt;=L-0.5 are allowed, where L is the number of points.
      * The findex parameter must be dimensionless, to ensure that the caller is not passing in physical data.
      *
      * Note there is no check on CADENCE.
      * Note nothing is done with DEPEND_0, presumably because was already calculated and used for findex.
+     * 
+     * Here is an example use of this in Autoplot's Jython code:
+     * <pre>
+     * {@code
+     *xx= [1,2,3,4]
+     *yy= [2,4,5,4]
+     *xxx= linspace(0,5,100)
+     *yyy= interpolate( yy, findex(xx,xxx) )
+     *
+     *plot( xx, yy, symbolSize=20 )
+     *plot( addPlotElement(0), xxx, yyy )
+     * }
+     * </pre>
      * 
      * @param vv rank 1 dataset having length L that is the data to be interpolated.
      * @param findex rank N dataset of fractional indeces.  This must be dimensionless, between -0.5 and L-0.5 and is typically calculated by the findex command.
