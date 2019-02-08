@@ -236,8 +236,10 @@ public class GitHubFileSystem extends HttpFileSystem {
     
     
     @Override
-    protected void downloadFile(String filename, File targetFile, File partFile, ProgressMonitor monitor) throws IOException {
+    protected Map<String,String> downloadFile(String filename, File targetFile, File partFile, ProgressMonitor monitor) throws IOException {
         logger.log(Level.FINE, "downloadFile({0})", filename);
+        Map<String,String> result= new HashMap<>();
+        
         FileOutputStream out=null;
         InputStream is= null;
         try {
@@ -245,7 +247,8 @@ public class GitHubFileSystem extends HttpFileSystem {
             URL url= gitHubMapFile( root, filename );
             
             URLConnection urlc = url.openConnection();
-            String etag= urlc.getHeaderField("ETag");
+            result= reduceMeta(urlc);
+            
             int i= urlc.getContentLength();
             monitor.setTaskSize( i );
             out= new FileOutputStream( partFile );
@@ -259,16 +262,6 @@ public class GitHubFileSystem extends HttpFileSystem {
             if ( ! partFile.renameTo( targetFile ) ) {
                 throw new IllegalArgumentException("unable to rename "+partFile+" to "+targetFile );
             }
-            File metadir= new File( targetFile.getParentFile(), ".meta");
-            if ( !metadir.exists() ) {
-                if ( !metadir.mkdirs() ) {
-                    logger.warning("unable to make .meta directory");
-                }
-            }
-            File metaFile= new File( metadir, filename );
-            try (PrintStream metaOut = new PrintStream( new FileOutputStream(metaFile) )) {
-                metaOut.println("ETag: "+etag+"\n");
-            }
             
         } catch ( IOException e ) {
             if ( out!=null ) out.close();
@@ -278,6 +271,7 @@ public class GitHubFileSystem extends HttpFileSystem {
             }
             throw e;
         }
+        return result;
     }
     
     @Override

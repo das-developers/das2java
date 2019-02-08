@@ -81,7 +81,7 @@ public class WebFileObject extends FileObject {
     protected synchronized void maybeLoadMetadata() throws IOException {
         if ( metadata==null ) {
             if ( this.wfs.offline ) {
-                if ( FileSystem.settings().isOffline() ) { //bug https://sourceforge.net/tracker/?func=detail&aid=3578171&group_id=199733&atid=970682
+                if ( FileSystem.settings().isOffline() ) { //bug https://sourceforge.net/p/autoplot/bugs/932/
                     metadata= new HashMap();
                     metadata.put( WebProtocol.META_EXIST, isLocal() ? "true" : "false" );
                 } else {
@@ -403,7 +403,7 @@ public class WebFileObject extends FileObject {
         Date remoteDate;
         long remoteLength=0;
 
-        //check readonly cache for file.
+        //check readonly cache for file.  For the Github filesystem, this could be used to verify local modifications.
         if ( this.wfs.getReadOnlyCache()!=null ) {
             File cacheFile= new File( this.wfs.getReadOnlyCache(), this.getNameExt() );
             if ( cacheFile.exists() ) {
@@ -452,7 +452,7 @@ public class WebFileObject extends FileObject {
                     remoteLength=-1;
                 }
             }
-                
+            
         } else {
             if ( this.lastModified().getTime()==0 || this.lastModified().getTime()==Long.MAX_VALUE ) {
                 DirectoryEntry result= wfs.maybeUpdateDirectoryEntry( this.getNameExt(), true ); // trigger load of the modifiedDate
@@ -475,10 +475,24 @@ public class WebFileObject extends FileObject {
 
         if (localFile.exists()) {
             Date localFileLastModified = new Date(localFile.lastModified()); 
-            if (remoteDate.after(localFileLastModified) || ( remoteLength>-1 && remoteLength!=localFile.length() ) ) {
+            if ( this.lastModified().getTime()==0 ) { // force metadata load. 
+                logger.fine("server doesn't provide dates, download unless etag suggests otherwise");
+                download = true;
+            }
+            if ( remoteDate.after(localFileLastModified) || ( remoteLength>-1 && remoteLength!=localFile.length() ) ) {
                 logger.log(Level.FINE, "remote file length is different or is newer than local copy of {0}, download.", this.getNameExt());
                 download = true;
             }
+            
+            // check for ETag.
+            String remoteETag= metadata==null ? null : metadata.get( WebProtocol.META_ETAG );
+            if ( download && remoteETag!=null ) {
+                String localETag= getLocalETag( getLocalFile() );
+                if ( localETag.length()>0 && localETag.equals(remoteETag ) ) {
+                    download= false;
+                }
+            }
+            
         } else {
             download = true;
         }
@@ -499,8 +513,11 @@ public class WebFileObject extends FileObject {
                     FileSystemUtil.maybeMkdirs( localFile.getParentFile() );
                 }
                 File partFile = wfs.getPartFile( localFile );
-                wfs.downloadFile(pathname, localFile, partFile, monitor.getSubtaskMonitor("download file"));
+                Map<String,String> meta= wfs.downloadFile(pathname, localFile, partFile, monitor.getSubtaskMonitor("download file"));
 
+                if ( meta!=null && meta.size()>0 ) {
+                    cacheMeta( getLocalFile(), meta );
+                }
                 if ( !localFile.setLastModified(remoteDate.getTime()) ) {
                     logger.log(Level.FINE, "unable to modify date of {0}", localFile);
                 }
@@ -581,5 +598,63 @@ public class WebFileObject extends FileObject {
 
         return !download;
 
+    }
+
+    /**
+     * lookup the ETag associated with the file or "" if one is not found.  The
+     * etag is found in ".meta/filename.meta"
+     * @param localFile
+     * @return 
+     */
+    private String getLocalETag(File localFile) {
+        File parentFile= localFile.getParentFile();
+        File meta= new File( parentFile, ".meta" );
+        File localFileMeta= new File( meta, localFile.getName()+".meta" );
+        if ( !localFileMeta.exists() ) {
+            return "";
+        } else {
+            try {
+                String etag="";
+                try (BufferedReader r = new BufferedReader( new FileReader(localFileMeta) )) {
+                    String l= r.readLine();
+                    while ( l!=null ) {
+                        if ( l.startsWith("ETag: " ) ) {
+                            etag= l.substring(6).trim();
+                            break;
+                        }
+                        l= r.readLine();
+                    }
+                }
+                return etag;
+            } catch (IOException ex) {
+                logger.log(Level.SEVERE, null, ex);
+                return "";
+            }
+        }
+        
+    }
+    
+    private void cacheMeta( File localFile, Map<String,String> metap ) throws IOException {
+        File parentFile= localFile.getParentFile();
+        File meta= new File( parentFile, ".meta" );
+        if ( !meta.exists() ) {
+            if ( !meta.mkdirs() ) {
+                logger.log(Level.WARNING, "unable to create local directory: {0}", meta);
+                return;
+            }
+        }
+        File localFileMeta= new File( meta, localFile.getName()+".meta" );
+        File localFileMetaTemp= new File( meta, localFile.getName()+".meta.temp" );
+        try (PrintWriter write = new PrintWriter( new FileWriter( localFileMetaTemp ) )) {
+            write.println("ETag: "+metap.get("ETag") );
+        }
+        if ( localFileMeta.exists() ) {
+            if ( !localFileMeta.delete() ) {
+                logger.log(Level.WARNING, "unable to delete metadata file: {0}", localFileMeta);
+            }
+        }
+        if ( !localFileMetaTemp.renameTo(localFileMeta) ) {
+            logger.log(Level.WARNING, "unable to rename metadata file: {0}", localFileMetaTemp);
+        }
     }
 }

@@ -44,6 +44,7 @@ import java.net.URLConnection;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -355,16 +356,32 @@ public class HttpFileSystem extends WebFileSystem {
     }
     
     /**
+     * pull out some of the headers to record ETag and Content_Type.
+     * @param connect
+     * @return 
+     */
+    protected Map<String,String> reduceMeta( URLConnection connect ) {
+        Map<String,String> result= new HashMap<>();
+        result.put( WebProtocol.META_ETAG, connect.getHeaderField( WebProtocol.META_ETAG ) );
+        result.put( WebProtocol.META_CONTENT_TYPE, connect.getHeaderField( WebProtocol.META_CONTENT_TYPE ) );
+        return result;
+    }
+    
+    /**
      * 
      * @param filename identifier for the resource, and should this end in gz, then the stream will probably be unzipped.
      * @param remoteURL the remote URL from which a connection is opened.
      * @param f the local file where the content will be stored.
      * @param partFile a temporary local file.
      * @param monitor a monitor for the download.
+     * @return ETag if available
      * @throws IOException
      * @throws FileNotFoundException 
      */
-    protected void doDownload( String filename, URL remoteURL, File f, File partFile, ProgressMonitor monitor ) throws IOException, FileNotFoundException {
+    private Map<String,String> doDownload( String filename, URL remoteURL, File f, File partFile, ProgressMonitor monitor ) throws IOException, FileNotFoundException {
+        
+        Map<String,String> result;
+        
         URLConnection urlc = remoteURL.openConnection();
         urlc.setConnectTimeout( FileSystem.settings().getConnectTimeoutMs() );
         urlc.setReadTimeout( FileSystem.settings().getReadTimeoutMs() );
@@ -422,7 +439,7 @@ public class HttpFileSystem extends WebFileSystem {
                 long ageMillis= System.currentTimeMillis() - partFile.lastModified(); // TODO: this is where OS-level locking would be nice...
                 if ( ageMillis<FileSystemSettings.allowableExternalIdleMs ) { // if it's been modified less than sixty seconds ago, then wait to see if it goes away, then check again.
                     if ( waitDownloadExternal( f, partFile, monitor ) ) {
-                        return; // success
+                        return Collections.EMPTY_MAP; // success
                     } else {
                         if ( monitor.isCancelled() ) {
                             throw new InterruptedIOException("interrupt while waiting for external process to download "+partFile);
@@ -450,6 +467,7 @@ public class HttpFileSystem extends WebFileSystem {
                     // https://sourceforge.net/p/autoplot/bugs/1229/
                     String contentLocation= urlc.getHeaderField("Content-Location");
                     String contentType= urlc.getHeaderField("Content-Type");
+                    result= reduceMeta( urlc );
 
                     boolean doUnzip= !filename.endsWith(".gz" ) && "application/x-gzip".equals( contentType ) && ( contentLocation==null || contentLocation.endsWith(".gz") );
                     if ( doUnzip ) {
@@ -480,7 +498,7 @@ public class HttpFileSystem extends WebFileSystem {
                                     if ( !partFile.delete() ) {
                                         throw new IllegalArgumentException("unable to delete "+partFile );
                                     }
-                                    return;
+                                    return result;
                                 } else {
                                     logger.finer("another thread must have downloaded different file.");
                                 }
@@ -516,6 +534,7 @@ public class HttpFileSystem extends WebFileSystem {
                 }
             }
         }
+        return Collections.EMPTY_MAP;
     }
     /**
      * 
@@ -523,16 +542,19 @@ public class HttpFileSystem extends WebFileSystem {
      * @param f the target filename where the file is to be download.
      * @param partFile  use this file to stage the download
      * @param monitor  monitor the progress.
+     * @return ETag if available.
      * @throws IOException 
      */
     @Override
-    protected void downloadFile(String filename, File f, File partFile, ProgressMonitor monitor) throws IOException {
+    protected Map<String,String> downloadFile(String filename, File f, File partFile, ProgressMonitor monitor) throws IOException {
 
         Lock lock = getDownloadLock(filename, f, monitor);
-
+        
         if (lock == null) {
-            return;
+            return Collections.EMPTY_MAP;
         }
+            
+        Map<String,String> meta= Collections.EMPTY_MAP;
         
         filename = toCanonicalFilename(filename);
                 
@@ -542,7 +564,7 @@ public class HttpFileSystem extends WebFileSystem {
             URL remoteURL = getURL( filename );
             
             try {
-                doDownload( filename, remoteURL, f, partFile, monitor );
+                meta= doDownload( filename, remoteURL, f, partFile, monitor );
             } catch ( FileNotFoundException ex ) {
                 if ( !filename.endsWith("/") ) {
                     remoteURL= new URL(root.toString() + filename.substring(1) + ".gz" );
@@ -559,6 +581,7 @@ public class HttpFileSystem extends WebFileSystem {
             lock.unlock();
 
         }
+        return meta;
     }
 
     /**

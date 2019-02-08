@@ -37,7 +37,9 @@ import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 
 /**
@@ -139,7 +141,7 @@ public class FTPFileSystem extends WebFileSystem {
     }
     
     @Override
-    protected void downloadFile(String filename, java.io.File targetFile, File partFile, ProgressMonitor monitor ) throws java.io.IOException {
+    protected Map<String,String> downloadFile(String filename, java.io.File targetFile, File partFile, ProgressMonitor monitor ) throws java.io.IOException {
         FileOutputStream out=null;
         InputStream is= null;
         try {
@@ -169,7 +171,7 @@ public class FTPFileSystem extends WebFileSystem {
             }
             throw e;
         }
-        
+        return Collections.EMPTY_MAP;
     }
     
 }

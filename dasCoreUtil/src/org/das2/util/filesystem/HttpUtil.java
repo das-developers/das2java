@@ -26,7 +26,7 @@ import org.das2.util.monitor.CancelledOperationException;
 public final class HttpUtil {
 
     
-    private final static Logger logger= LoggerManager.getLogger( "das2.filesystem" );
+    private final static Logger logger= LoggerManager.getLogger( "das2.filesystem.http.util" );
     
     /**
      * this logger is for opening connections to remote sites.
@@ -143,6 +143,10 @@ public final class HttpUtil {
                 result.put(WebProtocol.META_LAST_MODIFIED, String.valueOf(connect.getLastModified()));
                 result.put(WebProtocol.META_CONTENT_LENGTH, String.valueOf(connect.getContentLength()));
                 result.put(WebProtocol.META_CONTENT_TYPE, connect.getContentType());
+                result.put(WebProtocol.META_ETAG, connect.getHeaderField("ETag") );
+                
+                logger.log(Level.FINE, "URL: {0}", url);
+                logger.log(Level.FINE, "ETag: {0}", connect.getHeaderField("ETag"));
                 //connect.disconnect();
                 theResult = result;
             } else {

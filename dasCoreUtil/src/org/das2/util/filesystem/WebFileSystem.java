@@ -522,9 +522,11 @@ public abstract class WebFileSystem extends FileSystem {
      * @param f the file to where the file is downloaded.
      * @param partfile the temporary file during download.
      * @param monitor progress monitor
+     * @return metadata headers from the load, if any are available.  See WebProtocol.
+     * @see WebProtocol#getMetadata(org.das2.util.filesystem.WebFileObject) 
      * @throws java.io.IOException
      */
-    protected abstract void downloadFile(String filename, File f, File partfile, ProgressMonitor monitor) throws IOException;
+    protected abstract Map<String,String> downloadFile(String filename, File f, File partfile, ProgressMonitor monitor) throws IOException;
 
     /** Get the root of the local file cache
      * @return the root of the local file cache

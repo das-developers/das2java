@@ -19,6 +19,7 @@ public interface WebProtocol {
     public static final String META_LAST_MODIFIED= "LastModified";
     public static final String META_CONTENT_LENGTH= "ContentLength";
     public static final String META_CONTENT_TYPE= "ContentType";
+    public static final String META_ETAG= "ETag";
     
     /**
      * get an inputStream for the resource.  The client using the stream must make sure the stream is closed.
@@ -36,6 +37,7 @@ public interface WebProtocol {
      * <li>WebProtocol.META_LAST_MODIFIED, String.valueOf( fo.localFile.lastModified() )
      * <li>WebProtocol.META_CONTENT_LENGTH, String.valueOf( fo.localFile.length() )
      * <li>WebProtocol.META_CONTENT_TYPE, Files.probeContentType( fo.localFile.toPath() ) )
+     * </ul>
      * @param fo the resource
      * @return
      * @throws IOException 
