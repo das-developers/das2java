@@ -3549,7 +3549,7 @@ public class DataSetUtil {
         }
             
         if ( UnitsUtil.isNominalMeasurement( SemanticOps.getUnits(ds) ) ) {
-            throw new IllegalArgumentException("ds cannot have ordinal units: "+datum );
+            throw new IllegalArgumentException("ds cannot have ordinal units: "+ds );
         }
 
         boolean mono= isMonotonic(ds);
