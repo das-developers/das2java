@@ -24,6 +24,7 @@
 package org.das2.util.filesystem;
 
 import java.io.FileNotFoundException;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.UnknownHostException;
 import org.das2.util.filesystem.FileSystem.FileSystemOfflineException;
@@ -39,7 +40,13 @@ public class HttpFileSystemFactory implements FileSystemFactory {
 
     @Override
     public FileSystem createFileSystem(URI root) throws FileSystemOfflineException, UnknownHostException, FileNotFoundException {
-        if ( root.getHost().equals("github.com") ) {
+        String h;
+        try {
+            h= root.toURL().getHost(); // shows issues: http://demo@host:demo@www-pw.physics.uiowa.edu/~jbf/data/restrictAt/
+        } catch ( MalformedURLException ex ) {
+            h= "";  // handle as before github addition.
+        }
+        if ( h.equals("github.com") ) {
             WebFileSystem result= GitHubFileSystem.createGitHubFileSystem(root);
             return result;
         } else {
