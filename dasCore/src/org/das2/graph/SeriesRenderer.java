@@ -1056,6 +1056,7 @@ public class SeriesRenderer extends Renderer {
             } else {
                 g.setColor(fillColor);
                 g.fill(fillToRefPath1);
+                g.draw(fillToRefPath1);
             }
             return 0;
         }
