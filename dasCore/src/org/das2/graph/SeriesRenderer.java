@@ -1523,7 +1523,7 @@ public class SeriesRenderer extends Renderer {
         if ( psym== DefaultPlotSymbol.NONE && psymConnector==PsymConnector.NONE ) {
             DasLogger.getLogger(DasLogger.GRAPHICS_LOG).fine("plot symbol and symbol connector are set to none");
             if ( lparent!=null ) lparent.postMessage(this, "plot symbol and symbol connector are set to none", DasPlot.INFO, null, null);
-            return;
+            //return;
         }
 
         if ( lparent!=null ) {
