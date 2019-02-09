@@ -3,7 +3,6 @@ package org.das2.graph;
 
 import java.awt.geom.GeneralPath;
 import java.awt.geom.PathIterator;
-import java.text.ParseException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.datum.Datum;
@@ -22,7 +21,7 @@ import org.das2.datum.UnitsUtil;
  * 
  * @author jbf
  */
-public class DataGeneralPathBuilder {
+public final class DataGeneralPathBuilder {
     
     private static final Logger logger= LoggerManager.getLogger("das2.graph.renderer.path");
     
@@ -85,6 +84,25 @@ public class DataGeneralPathBuilder {
                 
             }
         }
+    }
+    
+    /**
+     * return the x cadence used as a double.  This is should interpreted with
+     * the xaxis units and with isCadenceRatiometric.
+     * @return the cadence as a double, or 1e38 if there is no cadence.
+     */
+    public double getCadenceDouble() {
+        return this.cadence==0.0 ? 1e38 : this.cadence;
+    }
+    
+    /**
+     * return true if the spacing in x has been identified as ratiometric 
+     * (linearly spaced on a log axis).  Note this
+     * is for the data, which is not necessarily the x axis setting.
+     * @return true if the data has been marked as ratiometric.
+     */
+    public boolean isCadenceRatiometric() {
+        return this.logStep;
     }
 
     public void addDataPoint( boolean valid, Datum x, Datum y ) {

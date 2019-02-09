@@ -689,6 +689,50 @@ public class SeriesRenderer extends Renderer {
         }
     } 
     
+    private DataGeneralPathBuilder getPathBuilderForData( DasAxis xAxis, DasAxis yAxis, QDataSet xds, QDataSet vds ) {
+        DataGeneralPathBuilder pathBuilder= new DataGeneralPathBuilder(xAxis,yAxis);
+
+        Datum sw = null;
+        try {// TODO: this really shouldn't be here, since we calculate it once.
+            sw= getCadence( xds, vds, firstIndex, lastIndex );
+            // Note it uses a cached value that runs along with the data.
+        } catch ( IllegalArgumentException ex ) {
+            logger.log( Level.WARNING, null, ex );
+        }
+        double xSampleWidth;
+        boolean logStep;
+        if ( sw!=null) {
+            if ( UnitsUtil.isRatiometric(sw.getUnits()) ) {
+                xSampleWidth = sw.doubleValue(Units.logERatio);
+                logStep= true;
+            } else {
+                Units xUnits = SemanticOps.getUnits(xds);
+                xSampleWidth = doubleValue( sw, xUnits.getOffsetUnits() );
+                logStep= false;
+            }
+            //double-check cadence
+            int cadenceGapCount= 0;
+            double xSampleWidthFudge= xSampleWidth*1.20;
+            if ( logStep ) {
+                for ( int i=1; i<xds.length(); i++ ) {
+                    if ( Math.log( xds.value(i) / xds.value(i-1) ) > xSampleWidthFudge ) cadenceGapCount++;
+                }
+            } else {
+                for ( int i=1; i<xds.length(); i++ ) {
+                    if ( xds.value(i)-xds.value(i-1) > xSampleWidthFudge ) cadenceGapCount++;
+                }
+            }
+
+            if ( cadenceGapCount>(vds.length()/2) || !cadenceCheck ) {
+                pathBuilder.setCadence( null );
+            } else {
+                pathBuilder.setCadence( sw );
+            }
+        } 
+        return pathBuilder;
+    }
+    
+    
     private class PsymConnectorRenderElement implements RenderElement {
 
         private GeneralPath path1;
@@ -770,51 +814,11 @@ public class SeriesRenderer extends Renderer {
 
             long t0= System.currentTimeMillis();
             
-            DataGeneralPathBuilder pathBuilder= new DataGeneralPathBuilder(xAxis,yAxis);
-            
-            Datum sw = null;
-            try {// TODO: this really shouldn't be here, since we calculate it once.
-                sw= getCadence( xds, vds, firstIndex, lastIndex );
-                // Note it uses a cached value that runs along with the data.
-            } catch ( IllegalArgumentException ex ) {
-                logger.log( Level.WARNING, null, ex );
-            }
-            double xSampleWidth;
-            boolean logStep;
-            if ( sw!=null) {
-                if ( UnitsUtil.isRatiometric(sw.getUnits()) ) {
-                    xSampleWidth = sw.doubleValue(Units.logERatio);
-                    logStep= true;
-                } else {
-                    xSampleWidth = doubleValue( sw, xUnits.getOffsetUnits() );
-                    logStep= false;
-                }
-                //double-check cadence
-                int cadenceGapCount= 0;
-                double xSampleWidthFudge= xSampleWidth*1.20;
-                if ( logStep ) {
-                    for ( int i=1; i<xds.length(); i++ ) {
-                        if ( Math.log( xds.value(i) / xds.value(i-1) ) > xSampleWidthFudge ) cadenceGapCount++;
-                    }
-                } else {
-                    for ( int i=1; i<xds.length(); i++ ) {
-                        if ( xds.value(i)-xds.value(i-1) > xSampleWidthFudge ) cadenceGapCount++;
-                    }
-                }
-                
-                if ( cadenceGapCount>(wds.length()/2) || !cadenceCheck ) {
-                    pathBuilder.setCadence( null );
-                } else {
-                    pathBuilder.setCadence( sw );
-                }
-            } else {
-                xSampleWidth= 1e37; // something really big
-                logStep= false;
-            }
-          
+            DataGeneralPathBuilder pathBuilder= getPathBuilderForData( xAxis, yAxis, xds, vds);
                 
             /* fuzz the xSampleWidth */
-            double xSampleWidthExact= xSampleWidth;
+            double xSampleWidthExact= pathBuilder.getCadenceDouble();
+            boolean logStep= pathBuilder.isCadenceRatiometric();
             
             double x;
             double y;
@@ -886,7 +890,7 @@ public class SeriesRenderer extends Renderer {
             
             logger.log(Level.FINE, "done create general path ({0}ms)", ( System.currentTimeMillis()-t0  ));
             
-            boolean allowSimplify= (lastIndex-firstIndex)>SIMPLIFY_PATHS_MIN_LIMIT && xSampleWidth<1e37;
+            boolean allowSimplify= (lastIndex-firstIndex)>SIMPLIFY_PATHS_MIN_LIMIT && xSampleWidthExact<1e37;
             if (!histogram && simplifyPaths && allowSimplify && colorByDataSetId.length()==0 ) {
                 int pathLengthApprox= Math.max( 5, 110 * (lastIndex - firstIndex) / 100 );
                 this.path1= new GeneralPath(GeneralPath.WIND_NON_ZERO, pathLengthApprox );
@@ -1204,7 +1208,7 @@ public class SeriesRenderer extends Renderer {
                 } // for ( ; index < ixmax && lastIndex; index++ )
 
             }
-
+            
             if ( histogram ) {
                 //System.err.println("fill: "+index);
                 double fx1 = xAxis.transform( midPointData( xAxis, x0, xUnits, xSampleWidthExact, logStep, 0.5 ), xUnits );
@@ -1255,7 +1259,7 @@ public class SeriesRenderer extends Renderer {
     Datum cadencec;
     
     /**
-     * get the cadence for the data.  TODO: ideally, we wouldn't do this repeatedly.
+     * get the cadence for the data, caching it for a particular input.
      */
     private Datum getCadence(QDataSet xds, QDataSet yds, int firstIndex, int lastIndex) {
         if ( xds==xdsc && yds==ydsc && firstIndex==firstIndexc && lastIndex==lastIndexc ) {
