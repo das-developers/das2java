@@ -814,7 +814,7 @@ public class SeriesRenderer extends Renderer {
 
             long t0= System.currentTimeMillis();
             
-            DataGeneralPathBuilder pathBuilder= getPathBuilderForData( xAxis, yAxis, xds, vds);
+            DataGeneralPathBuilder pathBuilder= getPathBuilderForData( xAxis, yAxis, xds, vds );
                 
             /* fuzz the xSampleWidth */
             double xSampleWidthExact= pathBuilder.getCadenceDouble();
@@ -877,10 +877,10 @@ public class SeriesRenderer extends Renderer {
                         x=  (double) xds.value(index);                
                         double fx1 = midPointData( xAxis, x, xUnits, dx, logStep, -0.5 );
                         fx1= xuc.convert(fx1);
-                        pathBuilder.addDataPoint( true, fx1, y );
+                        pathBuilder.addDataPoint( isValid, fx1, y );
                         double fx2 = midPointData( xAxis, x, xUnits, dx, logStep, +0.5 );
                         fx2= xuc.convert(fx2);
-                        pathBuilder.addDataPoint( true, fx2, y );
+                        pathBuilder.addDataPoint( isValid, fx2, y );
                     } else {
                         pathBuilder.addDataPoint( isValid, x, y );
                     }
@@ -1069,155 +1069,148 @@ public class SeriesRenderer extends Renderer {
             }
 
             QDataSet xds = SemanticOps.xtagsDataSet(dataSet);
-            QDataSet vds;
-            vds = ytagsDataSet( ds );
-
+            QDataSet vds = ytagsDataSet( ds );
+            QDataSet wds = SemanticOps.weightsDataSet(vds);
+            
             Units xUnits = SemanticOps.getUnits(xds);
             Units yUnits = SemanticOps.getUnits(vds);
             if ( unitsWarning ) yUnits= yAxis.getUnits();
             if ( xunitsWarning ) xUnits= xAxis.getUnits();
 
-            QDataSet wds= SemanticOps.weightsDataSet( vds );
-
-            int pathLengthApprox= Math.max( 5, 110 * (lastIndex - firstIndex) / 100 );
-            GeneralPath fillPath = new GeneralPath(GeneralPath.WIND_NON_ZERO, pathLengthApprox );
-
             boolean above= fillDirection.equals("above") || fillDirection.equals("both");
             boolean below= fillDirection.equals("below") || fillDirection.equals("both");
             
-            Datum sw= getCadence( xds, vds, firstIndex, lastIndex );
-            double xSampleWidth;
-            boolean logStep;
-            if ( sw!=null ) {
-                if ( UnitsUtil.isRatiometric(sw.getUnits()) ) {
-                    xSampleWidth = sw.doubleValue(Units.logERatio);
-                    logStep= true;
-                } else {
-                    xSampleWidth = doubleValue( sw, xUnits.getOffsetUnits() );
-                    logStep= false;
-                }
-            } else {
-                xSampleWidth= 1e37;
-                logStep= false;
+            double x, y;
+            
+            //  NEW CODE TO MATCH CONNECTOR CODE
+            Units xaxisUnits= xAxis.getUnits();
+            Units yaxisUnits= yAxis.getUnits();
+            if ( !yUnits.isConvertibleTo(yaxisUnits) ) {
+                yUnits= yAxis.getUnits();
+                unitsWarning= true;
             }
+            if ( !xUnits.isConvertibleTo(xaxisUnits) ) {
+                xUnits= xAxis.getUnits();
+                unitsWarning= true;
+            }
+            
+            DataGeneralPathBuilder pathBuilder= getPathBuilderForData( xAxis, yAxis, xds, vds );
+            double xSampleWidthExact= pathBuilder.getCadenceDouble();
+            boolean logStep= pathBuilder.isCadenceRatiometric();
+            
+            //double y0; /* the last plottable point */
 
-
-            /* fuzz the xSampleWidth */
-            double xSampleWidthExact= xSampleWidth;
-            xSampleWidth = xSampleWidth * 1.20;
-
+            UnitsConverter xuc= xUnits.getConverter(xAxis.getUnits());
+            UnitsConverter yuc= yUnits.getConverter(yAxis.getUnits());
+            
             if (reference == null) {
                 reference = yUnits.createDatum(yAxis.isLog() ? 1.0 : 0.0);
             }
 
             double yref = doubleValue( reference, yUnits );
-
-            double x;
-            double y;
-
-            double x0; /* the last plottable point */
-            //double y0; /* the last plottable point */
-
-            double fyref = yAxis.transform(yref, yUnits);
-            double fx;
-            double fy;
-            double fx0;
-            double fy0;
-
+            
             int index;
 
             index = firstIndex;
-            x = xds.value(index);
-            y = vds.value(index);
-            
-            // first point //
-            fx = xAxis.transform(x, xUnits);
-            fy = yAxis.transform(y, yUnits);
+            x = xuc.convert( (double) xds.value(index) );
+            y = yuc.convert( (double) vds.value(index) );
+
             if (histogram) {
-                double fx1;
-                fx1= xAxis.transform( midPointData( xAxis, x, xUnits, xSampleWidthExact, logStep, -0.5 ), xUnits );
-                fillPath.moveTo(fx1-1, fyref); // doesn't line up, -1 is fudge
-                fillPath.lineTo(fx1-1, fy);
-                fillPath.lineTo(fx, fy);
+                double dx= xSampleWidthExact;
+                x=  (double) xds.value(index);
+                xUnits.createDatum(x);
+                double fx1 = midPointData( xAxis, x, xUnits, dx, logStep, -0.5 );
+                fx1= xuc.convert(fx1);
+                pathBuilder.addDataPoint( true, fx1, yref );
+                pathBuilder.addDataPoint( true, fx1, y );
+                double fx2 = midPointData( xAxis, x, xUnits, dx, logStep, +0.5 );
+                fx2= xuc.convert(fx2);
+                pathBuilder.addDataPoint( true, fx2, y );
             } else {
-                fillPath.moveTo(fx, fyref);
-                fillPath.lineTo(fx, fy);
+                pathBuilder.addDataPoint( true, x, yref );
+                pathBuilder.addDataPoint( true, x, y );
             }
 
-            x0 = x;
-            //y0 = y;
-            fx0 = fx;
-            fy0 = fy;
+            index++;
+            
+            // now loop through all of them. //
+            //boolean ignoreCadence= ! cadenceCheck;
+            boolean isValid;
+            
+            //poes_n17_20041228.cdf?P1_90[0:300] contains fill records between 
+            //each measurement. Test for this.
+            int invalidInterleaveCount= 0;
+            for ( int i=1; i<xds.length(); i++ ) {
+                if ( wds.value(i-1)>0 && wds.value(i)==0 ) invalidInterleaveCount++;
+            }
+            boolean notInvalidInterleave= invalidInterleaveCount<(wds.length()/3);
+            
+            boolean lastIsValid= true; // last state of the valid
+            double lastX=x;
+             
+            double dx= xSampleWidthExact;
+            
+            for (; index < lastIndex; index++) {
 
-            if (psymConnector != PsymConnector.NONE || fillToReference) {
-                // now loop through all of them. //
-                boolean ignoreCadence= ! cadenceCheck;
-                for (; index < lastIndex; index++) {
+                x = xuc.convert( xds.value(index) );
+                y = yuc.convert( vds.value(index) );
 
-                    x = xds.value(index);
-                    y = vds.value(index);
+                isValid = wds.value( index )>0;
 
-                    final boolean isValid = wds.value( index )>0 && xUnits.isValid(x);
-
-                    fx = xAxis.transform(x, xUnits);
-                    fy = yAxis.transform(y, yUnits);
-
-                    if (isValid) {
-                        double step= logStep ? Math.log(x/x0) : x-x0;
-                        if ( ignoreCadence || step < xSampleWidth) {
-                            // draw connect-a-dot between last valid and here
-                            if (histogram) {
-                                //System.err.println("fill: "+index);
-                                Units.cdfTT2000.createDatum(x);
-                                double fx1= xAxis.transform( midPointData( xAxis, x, xUnits, xSampleWidthExact, logStep, -0.5 ), xUnits );
-                                //double fx1 = (fx0 + fx) / 2; //sloppy with ratiometric spacing
-                                fillPath.lineTo(fx1, fy0);
-                                fillPath.lineTo(fx1, fy);
-                                fillPath.lineTo(fx, fy);
-                            } else {
-                                fillPath.lineTo(fx, fy);
+                if ( isValid || notInvalidInterleave ) {
+                    if ( histogram ) {
+                        x=  (double) xds.value(index);                
+                        
+                        double fx1 = midPointData( xAxis, x, xUnits, dx, logStep, -0.5 );
+                        fx1= xuc.convert(fx1);
+                        if ( isValid ) {
+                            if ( !lastIsValid ) {
+                                pathBuilder.addDataPoint( isValid, fx1, yref );
                             }
-
+                            pathBuilder.addDataPoint( isValid, fx1, y );
                         } else {
-                            // introduce break in line
-                            if (histogram) {
-                                //System.err.println("fill: "+index);
-                                double fx1 = xAxis.transform( midPointData( xAxis, x0, xUnits, xSampleWidthExact, logStep, 0.5 ), xUnits );
-                                fillPath.lineTo(fx1, fy0);
-                                fillPath.lineTo(fx1, fyref);
-                                fx1 = xAxis.transform( midPointData( xAxis, x, xUnits, xSampleWidthExact, logStep, -0.5 ), xUnits );
-                                fillPath.moveTo(fx1, fyref);
-                                fillPath.lineTo(fx1, fy);
-                                fillPath.lineTo(fx, fy);
-
-                            } else {
-                                fillPath.lineTo(fx0, fyref);
-                                fillPath.moveTo(fx, fyref);
-                                fillPath.lineTo(fx, fy);
+                            if ( lastIsValid ) {
+                                pathBuilder.addDataPoint( true, fx1, yref );
                             }
-
-                        } // else introduce break in line
-
-                        x0 = x;
-                        //y0 = y;
-                        fx0 = fx;
-                        fy0 = fy;
-
+                        }
+                        
+                        double fx2 = midPointData( xAxis, x, xUnits, dx, logStep, +0.5 );
+                        fx2= xuc.convert(fx2);
+                        pathBuilder.addDataPoint( isValid, fx2, y );
+                        
+                    } else {
+                        if ( isValid ) {
+                            if ( !lastIsValid ) {
+                                pathBuilder.addDataPoint( isValid, x, yref );
+                            }
+                            pathBuilder.addDataPoint( isValid, x, y );
+                        } else {
+                            if ( lastIsValid ) {
+                                pathBuilder.addDataPoint( true, lastX, yref );
+                            }
+                            pathBuilder.addDataPoint( isValid, x, y );
+                        }
+                        
                     }
-
-                } // for ( ; index < ixmax && lastIndex; index++ )
-
-            }
+                }
+                lastIsValid= isValid;
+                lastX= x;
+                
+                                
+            } // for ( ; index < ixmax && lastIndex; index++ )
             
             if ( histogram ) {
-                //System.err.println("fill: "+index);
-                double fx1 = xAxis.transform( midPointData( xAxis, x0, xUnits, xSampleWidthExact, logStep, 0.5 ), xUnits );
-                fillPath.lineTo(fx1, fy0);
-                fillPath.lineTo(fx1, fyref);
+                double fx2 = midPointData( xAxis, x, xUnits, dx, logStep, +0.5 );
+                pathBuilder.addDataPoint( true, fx2, yref );
             } else {
-                fillPath.lineTo(fx0, fyref);
+                pathBuilder.addDataPoint( true, lastX, yref );
             }
             
+            GeneralPath fillPath= pathBuilder.getGeneralPath();
+            
+            //  END, NEW CODE TO MATCH CONNECTOR CODE
+            
+            double fyref= yAxis.transform(yref, yUnits);
             if ( !above ) {
                 Area a= new Area(fillPath);
                 Rectangle2D.Double rect= new Rectangle2D.Double( 0, fyref, getParent().getColumn().getDMaximum(), getParent().getRow().getHeight() ); 
@@ -1236,8 +1229,9 @@ public class SeriesRenderer extends Renderer {
 
             this.fillToRefPath1 = fillPath;
             
-            boolean allowSimplify= (lastIndex-firstIndex)>SIMPLIFY_PATHS_MIN_LIMIT && xSampleWidth<1e37;
+            boolean allowSimplify= (lastIndex-firstIndex)>SIMPLIFY_PATHS_MIN_LIMIT && xSampleWidthExact<1e37;
             if ( !histogram && simplifyPaths && allowSimplify && colorByDataSetId.length()==0 ) {
+                int pathLengthApprox= Math.max( 5, 110 * (lastIndex - firstIndex) / 100 );
                 GeneralPath newPath= new GeneralPath(GeneralPath.WIND_NON_ZERO, pathLengthApprox );
                 int count= GraphUtil.reducePath(fillToRefPath1.getPathIterator(null), newPath );
                 fillToRefPath1= newPath;
