@@ -42,7 +42,8 @@ public final class DataGeneralPathBuilder {
     private Datum pendingy= null;
     
     private double lastx=-Double.MAX_VALUE;
-    private double cadence=0.0;
+    private double cadence=0.0; // this is the cadence used to identify breaks in the data.
+    private double cadenceExact= 1e38; // this is the cadence requested by the client
     private boolean logStep= false;
     
     //private Datum checkx= null;
@@ -70,14 +71,17 @@ public final class DataGeneralPathBuilder {
     public void setCadence(Datum sw) {
         if ( sw==null ) {
             this.cadence= 0.;
+            this.cadenceExact= 1e38;
             this.logStep= false;
         } else {
             if ( UnitsUtil.isRatiometric( sw.getUnits() ) ) {
                 this.cadence= sw.multiply(1.2).doubleValue(Units.logERatio);
+                this.cadenceExact= sw.doubleValue(Units.logERatio);
                 this.logStep= true;
             } else {
                 try {
                     this.cadence= sw.multiply(1.2).doubleValue(xunits.getOffsetUnits());
+                    this.cadenceExact= sw.doubleValue(xunits.getOffsetUnits());
                 } catch ( InconvertibleUnitsException ex ) {
                     this.cadence= sw.multiply(1.2).doubleValue(sw.getUnits());
                 }
@@ -92,7 +96,23 @@ public final class DataGeneralPathBuilder {
      * @return the cadence as a double, or 1e38 if there is no cadence.
      */
     public double getCadenceDouble() {
-        return this.cadence==0.0 ? 1e38 : this.cadence;
+        return this.cadenceExact;
+    }
+    
+    /**
+     * return the units of the xaxis.
+     * @return the units of the xaxis.
+     */
+    public Units getXUnits() {
+        return this.xunits;
+    }
+    
+    /**
+     * return the units of the yaxis.
+     * @return the units of the yaxis.
+     */
+    public Units getYUnits() {
+        return this.yunits;
     }
     
     /**
@@ -105,12 +125,24 @@ public final class DataGeneralPathBuilder {
         return this.logStep;
     }
 
+    /**
+     * add a data point to the curve.
+     * @param valid if invalid, then break the line at this point.
+     * @param x the x value
+     * @param y the y value
+     */    
     public void addDataPoint( boolean valid, Datum x, Datum y ) {
         double xx= x.doubleValue(xunits);
         double yy= y.doubleValue(yunits);
         addDataPoint( valid, xx, yy );
     }
     
+    /**
+     * add a point to the curve, where x and y are the magnitude in data coordinates.
+     * @param valid if invalid, then break the line at this point.
+     * @param x the x value in xaxis units.
+     * @param y the y value in yaxis units.
+     */
     public void addDataPoint( boolean valid, double x, double y ) {
         pointCount++;
         if ( pointCount==1 ) {
@@ -155,11 +187,19 @@ public final class DataGeneralPathBuilder {
         lastx= x;
     }
     
+    /**
+     * get the generalPath for drawing.
+     * @return the generalPath for drawing.
+     */
     public GeneralPath getGeneralPath() {
         //return this.gp.getGeneralPath();
         return gp;
     }
     
+    /**
+     * get the path iterator.
+     * @return the path iterator.
+     */
     public PathIterator getPathIterator() {
         return gp.getPathIterator(null);
     }
