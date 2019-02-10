@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.das2.util.LoggerManager;
 import static org.das2.util.filesystem.FileSystem.loggerUrl;
 import static org.das2.util.filesystem.FileSystem.toCanonicalFilename;
@@ -82,7 +84,30 @@ public class GitHubFileSystem extends HttpFileSystem {
     
     public static GitHubFileSystem createGitHubFileSystem( URI root ) {
         File local;
-
+        
+        String suri= root.toString();
+        Pattern fsp1= Pattern.compile( "(https?://github.com/)(.*)tree/master/(.*)" );
+        Matcher m1= fsp1.matcher( suri );
+        if ( m1.matches() ) {
+            suri= m1.group(1)+m1.group(2)+m1.group(3);
+            try {
+                root= new URI(suri);
+            } catch (URISyntaxException ex) {
+                throw new RuntimeException(ex);
+            }
+        }
+        
+        Pattern fsp2= Pattern.compile( "(https?://github.com/)(.*)blob/master/(.*)" );
+        Matcher m2= fsp2.matcher( suri );
+        if ( m2.matches() ) {
+            suri= m2.group(1)+m2.group(2)+m2.group(3);
+            try {
+                root= new URI(suri);
+            } catch (URISyntaxException ex) {
+                throw new RuntimeException(ex);
+            }
+        }
+        
         if (FileSystemSettings.hasAllPermission()) {
             local = localRoot(root);
             logger.log(Level.FINER, "initializing httpfs {0} at {1}", new Object[]{root, local});
