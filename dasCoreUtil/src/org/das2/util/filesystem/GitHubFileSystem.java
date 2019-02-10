@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -13,7 +12,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +26,16 @@ import org.das2.util.monitor.CancelledOperationException;
 import org.das2.util.monitor.ProgressMonitor;
 
 /**
- *
+ * GitHubFileSystem allows GitHub directories to be mounted directly, even though
+ * it is not a conventional filesystem with files residing in folders.  For example,
+ * the file resource README.md found in https://github.com/autoplot/scripts/ is 
+ * downloaded from https://github.com/autoplot/scripts/blob/master/README.md,
+ * with "blob/master/" added to the URL.  Likewise directory "demos" is found
+ * under "tree/master/".
+ * 
+ * GitHub also introduced a new problem, where dates cannot be used for evaluating
+ * file freshness.  ETags are now supported in WebFileSystem to provide this functionality.
+ * 
  * @author jbf
  */
 public class GitHubFileSystem extends HttpFileSystem {
@@ -132,7 +139,7 @@ public class GitHubFileSystem extends HttpFileSystem {
             throw new IOException("cancel pressed");
         } finally {
             try {
-                urlStream.close();
+                if ( urlStream!=null ) urlStream.close();
             } catch (IOException ex) {
                 logger.log(Level.SEVERE, null, ex);
             }
