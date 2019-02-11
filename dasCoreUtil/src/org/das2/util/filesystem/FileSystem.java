@@ -387,7 +387,12 @@ public abstract class FileSystem  {
 
             } finally {
                 logger.log( Level.FINE,"created new filesystem {0}", root );
-                if ( result!=null ) instances.put(root, result);
+                if ( result!=null ) {
+                    instances.put(root, result);
+                    if ( !result.getRootURI().equals(root) ) {
+                        instances.put( result.getRootURI(), result);
+                    }
+                }
                 blocks.remove(root);
                 logger.log(Level.FINE, "releasing {0}", waitObject); // need to do this in the finally block in case there was an Exception.
                 synchronized( waitObject ) {
