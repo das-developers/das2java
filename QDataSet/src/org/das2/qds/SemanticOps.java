@@ -603,8 +603,9 @@ public final class SemanticOps {
         QDataSet yrange;
 
         if ( ds.rank()==2 ) {
-            if ( ds.property(QDataSet.DEPEND_1)==null && ds.property(QDataSet.BUNDLE_1)!=null && ds.property(QDataSet.BINS_1)==null ) {
-                throw new IllegalArgumentException("scheme not supported: "+ds ); 
+            if ( ds.property(QDataSet.BUNDLE_1)!=null && ds.property(QDataSet.DEPEND_1)==null && ds.property(QDataSet.BINS_1)==null ) {
+                xrange= Ops.extent( SemanticOps.xtagsDataSet(ds), null );
+                yrange= Ops.extent( SemanticOps.ytagsDataSet(ds), null );
             } else {
                 xrange= Ops.extent( SemanticOps.xtagsDataSet(ds), null );
                 yrange= Ops.extent( SemanticOps.ytagsDataSet(ds), null );
