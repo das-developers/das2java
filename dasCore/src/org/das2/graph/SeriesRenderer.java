@@ -1994,7 +1994,14 @@ public class SeriesRenderer extends Renderer {
                 if ( dataSetReduced ) {
                     logger.fine("reducing data that is bigger than dataSetSizeLimit");
 
-                    QDataSet mvds= doDataSetReduce( xAxis, yAxis, vds, 1, 1 );
+                    QDataSet mvds;
+                    try {
+                        mvds= doDataSetReduce( xAxis, yAxis, vds, 1, 1 );
+                    } catch ( InconvertibleUnitsException ex ) {
+                        logger.warning("InconvertibleUnitsException");
+                        ex.printStackTrace();
+                        return;
+                    }
 
                     vds= mvds;
                     xds= SemanticOps.xtagsDataSet(vds);
