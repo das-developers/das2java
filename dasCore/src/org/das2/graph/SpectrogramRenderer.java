@@ -810,6 +810,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                             rebinDataSet= Ops.putProperty( rebinDataSet, QDataSet.UNITS, zunits );
                         } catch ( RuntimeException ex ) {
                             logger.log( Level.WARNING, ex.getMessage(), ex );  //TODO: catch this...  See sftp://jbf@papco.org/home/jbf/ct/autoplot/script/bugs/3237397/gapsTest.jy
+                            ex.printStackTrace();
                             plotImage= null;
                             plotImageBounds= null;
                             lastException= ex;
