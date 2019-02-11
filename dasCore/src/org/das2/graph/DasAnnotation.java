@@ -135,48 +135,12 @@ public class DasAnnotation extends DasCanvasComponent {
             
             @Override
             public void mouseReleased(MouseEvent e) {
-                if ( getAnchorType()==AnchorType.CANVAS ) {
-                    Point p= e.getPoint();
-                    int dx = p.x - p0.x;
-                    int dy = p.y - p0.y;
-                    adjustAnchorOffset( dx, dy );
-                    resize();
-                    repaint();                    
-                } else if ( getAnchorType()==AnchorType.PLOT ) {
-                    Point p= e.getPoint();
-                    int dx = p.x - p0.x;
-                    int dy = p.y - p0.y;
-                    adjustAnchorOffset( dx, dy );
-                    resize();
-                    repaint();
-                } else if ( getAnchorType()==AnchorType.DATA ) {
-                    Point p= e.getPoint();
-                    DasAxis axis;
-                    axis= plot.getXAxis();
-                    DatumRange xrange= getXrange();
-                    if ( axis.isLog() ) {
-                        Datum d= axis.invTransform(p.x).divide(axis.invTransform(p0.x));
-                        xrange= new DatumRange( xrange.min().multiply(d), xrange.max().multiply(d) );
-                    } else {
-                        Datum d= axis.invTransform(p.x).subtract(axis.invTransform(p0.x));
-                        xrange= new DatumRange( xrange.min().add(d), xrange.max().add(d) );
-                    }
-                    setXrange(xrange);
-                    axis= plot.getYAxis();
-                    DatumRange range= getYrange();
-                    if ( axis.isLog() ) {
-                        Datum d= axis.invTransform(p.y).divide(axis.invTransform(p0.y));
-                        range= new DatumRange( range.min().multiply(d), range.max().multiply(d) );
-                    } else {
-                        Datum d= axis.invTransform(p.y).subtract(axis.invTransform(p0.y));
-                        range= new DatumRange( range.min().add(d), range.max().add(d) );
-                    }
-                    setYrange(range);
-                    resize();
-                    repaint();
-                } else {
-                    throw new IllegalArgumentException("not implemented");
-                }
+                Point p= e.getPoint();
+                int dx = p.x - p0.x;
+                int dy = p.y - p0.y;
+                adjustAnchorOffset( dx, dy );
+                resize();
+                repaint();                    
             }
         };
         mm.setLabel("Move Annotation");
