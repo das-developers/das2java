@@ -6430,6 +6430,7 @@ public final class Ops {
      * @return the dataset with the data at the indeces made invalid.
      * @see #putValues(org.das2.qds.QDataSet, org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      * @see #where(org.das2.qds.QDataSet) 
+     * @see #removeIndeces(org.das2.qds.QDataSet, org.das2.qds.QDataSet) which copies the data to remove the indeces.
      */
     public static WritableDataSet removeValues( QDataSet ds, QDataSet indeces ) {
         DataSetUtil.checkListOfIndeces(ds,indeces);
@@ -6553,6 +6554,8 @@ public final class Ops {
      * @param vv a rank 1 dataset
      * @param indeces the indeces to remove.
      * @see https://github.com/autoplot/dev/blob/master/rfe/20190208/demoRemoveIndeces.jy
+     * @see #removeValues(org.das2.qds.QDataSet, org.das2.qds.QDataSet) which inserts fill.
+     * @see #where(org.das2.qds.QDataSet) 
      * @return a dataset with the values removed.
      */
     public static QDataSet removeIndeces( QDataSet vv, QDataSet indeces ) {
