@@ -5542,7 +5542,7 @@ public final class Ops {
      * Note fill values are not included in the list, so it is not necessary that
      * where(A).length + where(not A).length != where( A.or(not(A) ).length
      *
-     * Note this is different from the SciPy where and similar to Matlab find.
+     * Note this is different from the SciPy "where" and similar to Matlab "find."
      * 
      * @param ds of any rank M, M&gt;0.
      * @return a rank 1 or rank 2 dataset with N by M elements, where N is the number
@@ -6462,7 +6462,8 @@ public final class Ops {
      * remove values in the dataset which are less than the value.
      * This is a convenient method for the common case where we want to
      * filter data by values within the data, introduced to support
-     * the data mash up dialog.
+     * the data mash up dialog.  Note that this inserts fill where data is 
+     * to be removed.
      * @param ds rank N dataset
      * @param v the value, a rank 0 scalar or dataset with compatible geometry
      * @return the dataset with these
@@ -6536,6 +6537,68 @@ public final class Ops {
             iter.putValue( result, vv.value(idx) );
         }
         result.putProperty(QDataSet.UNITS,vv.property(QDataSet.UNITS));
+        return result;
+    }
+    
+    /**
+     * remove the data at the indeces from the rank 1 dataset.  This can be
+     * used for example like so:
+     * <pre>
+     * {@code
+     * ds= ripples(20)
+     * ds= removeIndeces( ds, where( valid(ds).eq(0) ) )
+     * print ds.length()
+     * }
+     * </pre>
+     * @param vv a rank 1 dataset
+     * @param indeces the indeces to remove.
+     * @see https://github.com/autoplot/dev/blob/master/rfe/20190208/demoRemoveIndeces.jy
+     * @return a dataset with the values removed.
+     */
+    public static QDataSet removeIndeces( QDataSet vv, QDataSet indeces ) {
+        if ( indeces.length()==0 ) return vv;
+        if ( !DataSetUtil.isMonotonic(indeces) ) {
+            QDataSet s= sort(indeces);
+            indeces= applyIndex( indeces, s );
+        }
+        if ( indeces.value(0) % 1 > 0 ) {
+            throw new IllegalArgumentException("indeces must be counting numbers.");
+        }
+        int currentSkipIndex= 0;
+        int nextSkepIndex= (int)indeces.value(currentSkipIndex);
+        int currentIndex= 0;
+        DataSetBuilder build;
+        switch (vv.rank()) {
+            case 1:
+                build= new DataSetBuilder(1,100*(int)Math.ceil((vv.length()-indeces.length())/100.) );
+                break;
+            case 2:
+                build= new DataSetBuilder(2,100*(int)Math.ceil((vv.length()-indeces.length())/100.),vv.length(0) );
+                break;
+            default:
+                throw new IllegalArgumentException("only rank 1 and rank 2 datasets are supported");
+        }
+        while ( currentIndex<vv.length() ) {
+            if ( currentIndex==nextSkepIndex ) {
+                currentSkipIndex++;
+                if ( currentSkipIndex==indeces.length() ) {
+                    nextSkepIndex= -1;
+                } else {
+                    nextSkepIndex= (int)indeces.value(currentSkipIndex);
+                }
+            } else {
+                build.nextRecord(vv.slice(currentIndex));
+            }
+            currentIndex++;
+        }
+        DDataSet result= build.getDataSet();
+        DataSetUtil.putProperties( DataSetUtil.getProperties(vv), result );
+        
+        QDataSet dep0= (QDataSet) vv.property(QDataSet.DEPEND_0);
+        if ( dep0!=null ) {
+            result.putProperty( QDataSet.DEPEND_0, removeIndeces( dep0, indeces ) );
+        }
+        
         return result;
     }
 
