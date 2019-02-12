@@ -2132,6 +2132,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         g.translate(-getX(), -getY());
         g.setColor(getForeground());
         
+        if ( this.lineThickness.length()>0 && !this.lineThickness.equals("1px") ) {
+            double px= DasDevicePosition.parseLayoutStr( this.lineThickness, getEmSize(), getCanvas().getWidth(), 1. );
+            g.setStroke( new BasicStroke((float)px) );
+        }
+        
         /* Debugging code */
         /* The compiler will optimize it out if DEBUG_GRAPHICS == false */
         if (DEBUG_GRAPHICS) {
@@ -4627,6 +4632,25 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         } catch (ParseException ex) {
             logger.log(Level.SEVERE, ex.getMessage(), ex);
         }
+    }
+
+    private String lineThickness = "1px";
+
+    public static final String PROP_LINETHICKNESS = "lineThickness";
+
+    public String getLineThickness() {
+        return lineThickness;
+    }
+
+    /**
+     * set the thickness of the lines drawn.
+     * @param lineThickness 
+     */
+    public void setLineThickness(String lineThickness) {
+        String oldLineThickness = this.lineThickness;
+        this.lineThickness = lineThickness;
+        firePropertyChange(PROP_LINETHICKNESS, oldLineThickness, lineThickness);
+        repaint();
     }
 
     public static final String PROP_FLIPPED = "flipped";

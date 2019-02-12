@@ -1248,6 +1248,15 @@ public class DasPlot extends DasCanvasComponent {
 
         Graphics2D graphics = (Graphics2D) graphics0.create();
 
+        if ( this.lineThickness.length()>0 && !this.lineThickness.equals("1px") ) {
+            double px= DasDevicePosition.parseLayoutStr( this.lineThickness, getEmSize(), getCanvas().getWidth(), 1. );
+            if ( px>1. ) {
+                graphics.setStroke( new BasicStroke((float)px,BasicStroke.CAP_ROUND,BasicStroke.JOIN_ROUND) );
+            } else {
+                graphics.setStroke( new BasicStroke((float)px) );
+            }
+        }
+                
         Rectangle clip0= graphics.getClipBounds();
         Rectangle plotClip= DasDevicePosition.toRectangle( getRow(), getColumn() );
         plotClip.height+=2;
@@ -2626,6 +2635,25 @@ public class DasPlot extends DasCanvasComponent {
         firePropertyChange(PROP_DRAWGRIDOVER, oldGridOver, gridOver);
     }
 
+    private String lineThickness = "1px";
+
+    public static final String PROP_LINETHICKNESS = "lineThickness";
+
+    public String getLineThickness() {
+        return lineThickness;
+    }
+
+    /**
+     * set the thickness of the lines drawn.
+     * @param lineThickness 
+     */
+    public void setLineThickness(String lineThickness) {
+        String oldLineThickness = this.lineThickness;
+        this.lineThickness = lineThickness;
+        this.repaint();
+        firePropertyChange(PROP_LINETHICKNESS, oldLineThickness, lineThickness);
+    }
+    
     /**
      * if true then the data rendering will be scaled immediately to indicate 
      * axis state changes.
