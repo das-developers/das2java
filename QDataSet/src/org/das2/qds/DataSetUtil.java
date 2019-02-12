@@ -1998,6 +1998,25 @@ public class DataSetUtil {
                     theResult= null;
                     haveResult= true;
                 }
+                
+                try {
+                    // See sftp://jfaden.net/
+                    Units du= SemanticOps.getUnits(diffs);
+                    QDataSet dd= DataSetUtil.gcd( diffs, DataSetUtil.asDataSet(SemanticOps.getUnits(diffs).createDatum(0.1)) );
+                    double ddd= dd.value();
+                    boolean isMultiples= true;
+                    for ( int i=0; i<diffs.length(); i++ ) {
+                        if ( Math.abs( diffs.value(i) % ddd )>0 ) {
+                            isMultiples= false;
+                        }
+                    }
+                    if ( isMultiples ) {
+                        result= DRank0DataSet.create(dd.value());
+                    }
+                } catch ( Exception e ) {
+                    logger.fine("unable to perform gcd test");
+                }
+                
             }
 
             if ( !haveResult ) {
