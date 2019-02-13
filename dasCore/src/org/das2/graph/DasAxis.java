@@ -2110,6 +2110,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         graphics.setClip(null);
         }
          */
+        graphics.setClip(null);
         logger.log(Level.FINEST, "DasAxis clip={0} @ {1},{2}", new Object[]{graphics.getClip(), getX(), getY()});
 //  Here's an effective way to debug axis bounds:
 //        if ( "axis_0".equals( getDasName() ) ) {
@@ -2132,15 +2133,18 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         g.translate(-getX(), -getY());
         g.setColor(getForeground());
         
+        double px= 1.0;
         if ( this.lineThickness.length()>0 && !this.lineThickness.equals("1px") ) {
-            double px= DasDevicePosition.parseLayoutStr( this.lineThickness, getEmSize(), getCanvas().getWidth(), 1. );
-            g.setStroke( new BasicStroke((float)px) );
+            px= DasDevicePosition.parseLayoutStr( this.lineThickness, getEmSize(), getCanvas().getWidth(), 1. );
+            g.setStroke( new BasicStroke((float)px, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND) );
         }
+        int ipx= (int)Math.ceil(px/2);
         
         /* Debugging code */
         /* The compiler will optimize it out if DEBUG_GRAPHICS == false */
         if (DEBUG_GRAPHICS) {
-            g.setStroke(new BasicStroke(3f, BasicStroke.CAP_BUTT, BasicStroke.CAP_BUTT, 1f, new float[]{3f, 3f}, 0f));
+            Stroke stroke0= g.getStroke();
+            g.setStroke(new BasicStroke(1f, BasicStroke.CAP_BUTT, BasicStroke.CAP_BUTT, 1f, new float[]{3f, 3f}, 0f));
             g.setColor(Color.BLUE);
             if (blLabelRect != null) {
                 g.draw(blLabelRect);
@@ -2173,7 +2177,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             if (trTitleRect != null) {
                 g.draw(trTitleRect);
             }
-            g.setStroke(new BasicStroke(1f));
+            g.setStroke( stroke0 );
             g.setColor(DEBUG_COLORS[debugColorIndex]);
             debugColorIndex++;
             if (debugColorIndex >= DEBUG_COLORS.length) {
@@ -2206,7 +2210,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
         Rectangle clip = g.getClipBounds();
         if (clip == null) {
-            clip = new Rectangle(getX(), getY(), getWidth(), getHeight());
+            clip = new Rectangle(getX()-ipx, getY()-ipx, getWidth()+2*ipx, getHeight()+2*ipx);
+        } else {
+            clip = new Rectangle( clip.x-ipx, clip.y-ipx, clip.width+2*ipx, clip.height+2*ipx);
         }
 
         if (drawTca && getOrientation() == BOTTOM && tcaData != null && blLabelRect != null && blLabelRect.intersects(clip)) {
