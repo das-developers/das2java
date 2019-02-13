@@ -1201,6 +1201,8 @@ public class DasPlot extends DasCanvasComponent {
             return;
         }
 
+        graphics0.setClip(null);
+        
         if ( isOpaque() ) {
             Color co= graphics0.getColor();
             graphics0.setColor(getBackground());
@@ -1435,7 +1437,10 @@ public class DasPlot extends DasCanvasComponent {
 
         graphics.setColor(getForeground());
         
-        if ( plotVisible ) graphics.drawRect(x - 1, y - 1, xSize + 1, ySize + 1);
+        if ( plotVisible ) {
+            graphics.setClip(null);
+            graphics.drawRect(x - 1, y - 1, xSize + 1, ySize + 1);
+        }
 
         if ( clip0!=null ) clip0.translate( getX(), getY() );
         graphics.setClip(clip0);
