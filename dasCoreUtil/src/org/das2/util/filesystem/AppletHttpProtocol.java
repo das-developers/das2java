@@ -6,10 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.logging.Level;
 
 /**
@@ -23,7 +20,7 @@ public class AppletHttpProtocol implements WebProtocol {
         HttpURLConnection connect = (HttpURLConnection) fo.wfs.getURL(fo.pathname).openConnection();
         connect.connect();
         int len = connect.getContentLength();
-        FileSystem.loggerUrl.log(Level.FINE, "getInputStream {0}", new Object[] { connect.getURL() } );
+        FileSystem.loggerUrl.log(Level.FINE, "GET {0}", new Object[] { connect.getURL() } );
         DasProgressMonitorInputStream in = new DasProgressMonitorInputStream(connect.getInputStream(), mon);
         if (len != -1)
             in.setStreamLength(len);

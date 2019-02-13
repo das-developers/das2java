@@ -284,7 +284,7 @@ public class GitHubFileSystem extends HttpFileSystem {
             int i= urlc.getContentLength();
             monitor.setTaskSize( i );
             out= new FileOutputStream( partFile );
-            loggerUrl.log(Level.FINE, "getInputStream {0}", new Object[] { urlc.getURL() } );
+            loggerUrl.log(Level.FINE, "GET {0}", new Object[] { urlc.getURL() } );
             is = urlc.getInputStream(); // To download
             monitor.started();
             copyStream(is, out, monitor );
