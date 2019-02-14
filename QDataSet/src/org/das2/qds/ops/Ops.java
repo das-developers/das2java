@@ -9210,7 +9210,7 @@ public final class Ops {
                 it.putValue( result, dfill );
                 hasFill= true;
                 continue;
-            } else if ( noExtrapolate && ff >= n - 0.5 ) { // would extrapolate immodestly
+            } else if ( noExtrapolate && ff > n - 0.5 ) { // would extrapolate immodestly
                 it.putValue( result, dfill );
                 hasFill= true;
                 continue;
