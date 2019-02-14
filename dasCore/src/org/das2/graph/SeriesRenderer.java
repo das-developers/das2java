@@ -815,6 +815,7 @@ public class SeriesRenderer extends Renderer {
             long t0= System.currentTimeMillis();
             
             DataGeneralPathBuilder pathBuilder= getPathBuilderForData( xAxis, yAxis, xds, vds );
+            pathBuilder.setHistogramMode(histogram);
                 
             /* fuzz the xSampleWidth */
             double xSampleWidthExact= pathBuilder.getCadenceDouble();
@@ -836,20 +837,6 @@ public class SeriesRenderer extends Renderer {
 
             pathBuilder.addDataPoint( true, x, y );
 
-            if (histogram) {
-                double dx= xSampleWidthExact;
-                x=  (double) xds.value(index);
-                xUnits.createDatum(x);
-                double fx1 = midPointData( xAxis, x, xUnits, dx, logStep, -0.5 );
-                fx1= xuc.convert(fx1);
-                pathBuilder.addDataPoint( true, fx1, y );
-                double fx2 = midPointData( xAxis, x, xUnits, dx, logStep, +0.5 );
-                fx2= xuc.convert(fx2);
-                pathBuilder.addDataPoint( true, fx2, y );
-            } else {
-                pathBuilder.addDataPoint( true, x, y );
-            }
-
             index++;
 
             // now loop through all of them. //
@@ -863,7 +850,7 @@ public class SeriesRenderer extends Renderer {
                 if ( wds.value(i-1)>0 && wds.value(i)==0 ) invalidInterleaveCount++;
             }
             boolean notInvalidInterleave= invalidInterleaveCount<(wds.length()/3);
-                        
+                                   
             for (; index < lastIndex; index++) {
 
                 x = xuc.convert( xds.value(index) );
@@ -872,18 +859,7 @@ public class SeriesRenderer extends Renderer {
                 isValid = wds.value( index )>0;
 
                 if ( isValid || notInvalidInterleave ) {
-                    if ( histogram ) {
-                        double dx= xSampleWidthExact;
-                        x=  (double) xds.value(index);                
-                        double fx1 = midPointData( xAxis, x, xUnits, dx, logStep, -0.5 );
-                        fx1= xuc.convert(fx1);
-                        pathBuilder.addDataPoint( isValid, fx1, y );
-                        double fx2 = midPointData( xAxis, x, xUnits, dx, logStep, +0.5 );
-                        fx2= xuc.convert(fx2);
-                        pathBuilder.addDataPoint( isValid, fx2, y );
-                    } else {
-                        pathBuilder.addDataPoint( isValid, x, y );
-                    }
+                    pathBuilder.addDataPoint( isValid, x, y );
                 }
                                 
             } // for ( ; index < ixmax && lastIndex; index++ )
@@ -945,6 +921,15 @@ public class SeriesRenderer extends Renderer {
         return fx1;
     }
     
+    private double midPointData( DasAxis axis, double d1, double d2, boolean ratiometric ) {
+        double fx1;
+        if (axis.isLog() && ratiometric ) {
+            fx1 = Math.exp( ( Math.log(d1) + Math.log(d2) ) / 2 );
+        } else {
+            fx1 = ( d1 + d2 ) / 2;
+        }
+        return fx1;
+    }
     
 
 //        /* dumps a jython script which draws the path See https://sourceforge.net/p/autoplot/bugs/1215/ */
@@ -1099,6 +1084,8 @@ public class SeriesRenderer extends Renderer {
             double xSampleWidthExact= pathBuilder.getCadenceDouble();
             boolean logStep= pathBuilder.isCadenceRatiometric();
             
+            pathBuilder.setHistogramMode(histogram);
+            
             //double y0; /* the last plottable point */
 
             UnitsConverter xuc= xUnits.getConverter(xAxis.getUnits());
@@ -1116,21 +1103,8 @@ public class SeriesRenderer extends Renderer {
             x = xuc.convert( (double) xds.value(index) );
             y = yuc.convert( (double) vds.value(index) );
 
-            if (histogram) {
-                double dx= xSampleWidthExact;
-                x=  (double) xds.value(index);
-                xUnits.createDatum(x);
-                double fx1 = midPointData( xAxis, x, xUnits, dx, logStep, -0.5 );
-                fx1= xuc.convert(fx1);
-                pathBuilder.addDataPoint( true, fx1, yref );
-                pathBuilder.addDataPoint( true, fx1, y );
-                double fx2 = midPointData( xAxis, x, xUnits, dx, logStep, +0.5 );
-                fx2= xuc.convert(fx2);
-                pathBuilder.addDataPoint( true, fx2, y );
-            } else {
-                pathBuilder.addDataPoint( true, x, yref );
-                pathBuilder.addDataPoint( true, x, y );
-            }
+            pathBuilder.addDataPoint( true, x, yref );
+            pathBuilder.addDataPoint( true, x, y );
 
             index++;
             
@@ -1159,40 +1133,19 @@ public class SeriesRenderer extends Renderer {
                 isValid = wds.value( index )>0;
 
                 if ( isValid || notInvalidInterleave ) {
-                    if ( histogram ) {
-                        x=  (double) xds.value(index);                
-                        
-                        double fx1 = midPointData( xAxis, x, xUnits, dx, logStep, -0.5 );
-                        fx1= xuc.convert(fx1);
-                        if ( isValid ) {
-                            if ( !lastIsValid ) {
-                                pathBuilder.addDataPoint( isValid, fx1, yref );
-                            }
-                            pathBuilder.addDataPoint( isValid, fx1, y );
-                        } else {
-                            if ( lastIsValid ) {
-                                pathBuilder.addDataPoint( true, fx1, yref );
-                            }
+
+                    if ( isValid ) {
+                        if ( !lastIsValid ) {
+                            pathBuilder.addDataPoint( isValid, x, yref );
                         }
-                        
-                        double fx2 = midPointData( xAxis, x, xUnits, dx, logStep, +0.5 );
-                        fx2= xuc.convert(fx2);
-                        pathBuilder.addDataPoint( isValid, fx2, y );
-                        
+                        pathBuilder.addDataPoint( isValid, x, y );
                     } else {
-                        if ( isValid ) {
-                            if ( !lastIsValid ) {
-                                pathBuilder.addDataPoint( isValid, x, yref );
-                            }
-                            pathBuilder.addDataPoint( isValid, x, y );
-                        } else {
-                            if ( lastIsValid ) {
-                                pathBuilder.addDataPoint( true, lastX, yref );
-                            }
-                            pathBuilder.addDataPoint( isValid, x, y );
+                        if ( lastIsValid ) {
+                            pathBuilder.addDataPoint( true, lastX, yref );
                         }
-                        
+                        pathBuilder.addDataPoint( isValid, x, y );
                     }
+                        
                 }
                 lastIsValid= isValid;
                 lastX= x;
@@ -1200,12 +1153,7 @@ public class SeriesRenderer extends Renderer {
                                 
             } // for ( ; index < ixmax && lastIndex; index++ )
             
-            if ( histogram ) {
-                double fx2 = midPointData( xAxis, x, xUnits, dx, logStep, +0.5 );
-                pathBuilder.addDataPoint( true, fx2, yref );
-            } else {
-                pathBuilder.addDataPoint( true, lastX, yref );
-            }
+            pathBuilder.addDataPoint( true, lastX, yref );
             
             GeneralPath fillPath= pathBuilder.getGeneralPath();
             
