@@ -259,7 +259,9 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
                 replaceMouseModule(preExisting, module);
 
             } else {
-
+                JPopupMenu lprimaryPopup= primaryPopup;
+                JPopupMenu lsecondaryPopup= secondaryPopup;
+                
                 modules.add(module);
 
                 String name = module.getLabel();
@@ -278,23 +280,23 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
                 try {
                     // insert the check box after the separator, and at the end of the actions list.
                     int i= numInserted + 1 + primaryActionButtonMap.size() - 1;
-                    if ( i>primaryPopup.getComponentCount() ) {
-                        i= primaryPopup.getComponentCount();
+                    if ( i>lprimaryPopup.getComponentCount() ) {
+                        i= lprimaryPopup.getComponentCount();
                     }
                     if ( i<0 ) {
                         logger.finer("here is that bug where numInserted is negative...");
                         i= 0;
                     }
-                    primaryPopup.add(primaryNewItem, i );
+                    lprimaryPopup.add(primaryNewItem, i );
                     i= numInsertedSecondary + 1 + secondaryActionButtonMap.size() - 1;
-                    if ( i>secondaryPopup.getComponentCount() ) {
-                        i= secondaryPopup.getComponentCount();
+                    if ( i>lsecondaryPopup.getComponentCount() ) {
+                        i= lsecondaryPopup.getComponentCount();
                     }
                     if ( i<0 ) {
                         logger.finer("here is that bug where numInsertedSecondary is negative...");
                         i= 0;
                     }
-                    secondaryPopup.add(secondaryNewItem, i );
+                    lsecondaryPopup.add(secondaryNewItem, i );
                 } catch ( IllegalArgumentException ex ) {
                     logger.log( Level.SEVERE, ex.getMessage(), ex );
                 }
