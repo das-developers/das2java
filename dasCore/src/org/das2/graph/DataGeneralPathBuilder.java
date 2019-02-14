@@ -42,6 +42,10 @@ public final class DataGeneralPathBuilder {
     private Datum pendingy= null;
     
     private double lastx=-Double.MAX_VALUE;
+    
+    private double lastIX= -Double.MAX_VALUE;
+    private double lastIY= -Double.MAX_VALUE;
+    
     private double cadence=0.0; // this is the cadence used to identify breaks in the data.
     private double cadenceExact= 1e38; // this is the cadence requested by the client
     private boolean logStep= false;
@@ -99,6 +103,18 @@ public final class DataGeneralPathBuilder {
         return this.cadenceExact;
     }
     
+    private boolean histogramMode = false;
+
+    public static final String PROP_HISTOGRAM_MODE = "histogramMode";
+
+    public boolean isHistogramMode() {
+        return histogramMode;
+    }
+
+    public void setHistogramMode(boolean histogramMode) {
+        this.histogramMode = histogramMode;
+    }
+
     /**
      * return the units of the xaxis.
      * @return the units of the xaxis.
@@ -165,7 +181,15 @@ public final class DataGeneralPathBuilder {
         }
         if ( pen==PEN_UP ) {
             if ( valid ) {
-                gp.moveTo( xaxis.transform(x,xunits), yaxis.transform(y,yunits) );
+                if ( histogramMode ) {
+                    double ix= xaxis.transform(x-this.cadenceExact/2,xunits);
+                    double iy= yaxis.transform(y,yunits);
+                    gp.moveTo( ix, iy );
+                    //lastIX= ix;
+                    //lastIY= iy;
+                } else {
+                    gp.moveTo( xaxis.transform(x,xunits), yaxis.transform(y,yunits) );
+                }
                 pen= PEN_DOWN;
                 pendingx= xunits.createDatum(x);
                 pendingy= yunits.createDatum(y);
@@ -174,7 +198,18 @@ public final class DataGeneralPathBuilder {
             }
         } else {
             if ( valid ) {
-                gp.lineTo( xaxis.transform(x,xunits), yaxis.transform(y,yunits) );
+                if ( histogramMode ) {
+                    double ix= xaxis.transform(x,xunits);
+                    double iy= yaxis.transform(y,yunits);
+                    if ( lastIX>-Double.MAX_VALUE ) {
+                        gp.lineTo( (lastIX+ix)/2, lastIY );
+                        gp.lineTo( (lastIX+ix)/2, iy );
+                    }
+                    lastIX= ix;
+                    lastIY= iy;
+                } else {
+                    gp.lineTo( xaxis.transform(x,xunits), yaxis.transform(y,yunits) );
+                }
             } else {
                 if ( pendingx!=null ) {
                     gp.lineTo( xaxis.transform(pendingx), yaxis.transform(pendingy) );
@@ -188,10 +223,17 @@ public final class DataGeneralPathBuilder {
     }
     
     /**
-     * get the generalPath for drawing.
+     * get the generalPath for drawing.  This may affect the
+     * path, when histogramMode is true.
      * @return the generalPath for drawing.
      */
     public GeneralPath getGeneralPath() {
+        if ( histogramMode ) {
+            if ( lastIX>-Double.MAX_VALUE ) {
+                double ix= xaxis.transform(lastx+this.cadenceExact/2,xunits);
+                gp.lineTo( ix, lastIY );
+            }
+        }
         //return this.gp.getGeneralPath();
         return gp;
     }
