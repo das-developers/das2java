@@ -1461,26 +1461,49 @@ public class DataSetUtil {
         if ( yds.rank()!=1 ) throw new IllegalArgumentException("yds must be rank 1");
         QDataSet yds0,yds1;
         QDataSet dy= DataSetUtil.guessCadenceNew( yds, null );
+        Units dyu= SemanticOps.getUnits(dy);
+        
+        QDataSet delta;
+        // check to see that dy is reasonable.
+        if ( dy!=null ) {
+            if ( UnitsUtil.isRatiometric( dyu ) ) {
+                QDataSet diff1= yds.trim(0,yds.length()-1);    
+                QDataSet diff2= yds.trim(1,yds.length());
+                delta= Ops.log( Ops.divide(diff2,diff1) );
+                delta= Ops.putProperty( delta, QDataSet.UNITS, Units.logERatio );
+                delta= Ops.convertUnitsTo( delta, Units.percentIncrease );
+                delta= Ops.interpolate( delta, Ops.linspace( -0.5,diff1.length()-0.5, diff1.length()+1 ) );
+            } else {
+                QDataSet diff1= yds.trim(0,yds.length()-1);
+                QDataSet diff2= yds.trim(1,yds.length());
+                delta= Ops.interpolate( Ops.subtract(diff2,diff1), Ops.linspace( -0.5,diff1.length()-0.5, diff1.length()+1 ) );
+            }
+            QDataSet r= Ops.where( Ops.lt( delta, dy ) );
+            if ( r.length()>yds.length()/2 ) {
+                dy= null;
+            }
+        }
  
         if ( dy==null ) {
             if ( isLogSpacing( yds ) ) {
-                    QDataSet diff1= yds.trim(0,yds.length()-1);    
-                    QDataSet diff2= yds.trim(1,yds.length());
-                    QDataSet delta= Ops.log( Ops.divide(diff2,diff1) );
-                    delta= Ops.putProperty( delta, QDataSet.UNITS, Units.logERatio );
-                    delta= Ops.convertUnitsTo( delta, Units.percentIncrease );
-                    delta= Ops.interpolate( delta, Ops.linspace( -0.5,diff1.length()-0.5, diff1.length()+1 ) );
-                    QDataSet v= Ops.divide( delta,100. );
-                    v= Ops.putProperty( v, QDataSet.UNITS, null );
-                    QDataSet ddy= Ops.sqrt( Ops.add( 1., v ) );
-                    yds0= Ops.divide( yds, ddy );
-                    yds1= Ops.multiply( yds, ddy );
-            } else {
-                    QDataSet diff1= yds.trim(0,yds.length()-1);
-                    QDataSet diff2= yds.trim(1,yds.length());
-                    QDataSet delta= Ops.interpolate( Ops.subtract(diff2,diff1), Ops.linspace( -0.5,diff1.length()-0.5, diff1.length()+1 ) );
-                    yds0= Ops.subtract( yds, delta );
-                    yds1= Ops.add( yds, delta );
+                QDataSet diff1= yds.trim(0,yds.length()-1);    
+                QDataSet diff2= yds.trim(1,yds.length());
+                delta= Ops.log( Ops.divide(diff2,diff1) );
+                delta= Ops.putProperty( delta, QDataSet.UNITS, Units.logERatio );
+                delta= Ops.convertUnitsTo( delta, Units.percentIncrease );
+                delta= Ops.interpolate( delta, Ops.linspace( -0.5,diff1.length()-0.5, diff1.length()+1 ) );
+                QDataSet v= Ops.divide( delta,100. );
+                v= Ops.putProperty( v, QDataSet.UNITS, null );
+                QDataSet ddy= Ops.sqrt( Ops.add( 1., v ) );
+                yds0= Ops.divide( yds, ddy );
+                yds1= Ops.multiply( yds, ddy );
+        } else {
+                QDataSet diff1= yds.trim(0,yds.length()-1);
+                QDataSet diff2= yds.trim(1,yds.length());
+                delta= Ops.interpolate( Ops.subtract(diff2,diff1), Ops.linspace( -0.5,diff1.length()-0.5, diff1.length()+1 ) );
+                delta= Ops.divide( delta, DataSetUtil.asDataSet(2) );
+                yds0= Ops.subtract( yds, delta );
+                yds1= Ops.add( yds, delta );
             }
         } else {
             if ( UnitsUtil.isRatiometric( SemanticOps.getUnits(dy) ) ) {
