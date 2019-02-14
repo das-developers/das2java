@@ -2469,7 +2469,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 g.setColor( c0 );
             }
                     
-            if (!axisLabel.equals("")) {
+            if (!axisLabel.equals("") && isTickLabelsVisible() ) {
                 Graphics2D g2 = (Graphics2D) g.create();
                 int titlePositionOffset = getTitlePositionOffset();
                 GrannyTextRenderer gtr = new GrannyTextRenderer();
@@ -2611,7 +2611,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             }
 
 
-            if (!axisLabel.equals("")) {
+            if (!axisLabel.equals("") && isTickLabelsVisible() ) {
                 Graphics2D g2 = (Graphics2D) g.create();
                 int titlePositionOffset = getTitlePositionOffset();
                 GrannyTextRenderer gtr = new GrannyTextRenderer();
