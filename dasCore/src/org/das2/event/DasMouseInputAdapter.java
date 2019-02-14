@@ -262,7 +262,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
                 JPopupMenu lprimaryPopup= primaryPopup;
                 JPopupMenu lsecondaryPopup= secondaryPopup;
                 
-                if ( primaryPopup==null || secondaryPopup==null ) return;
+                if ( lprimaryPopup==null || lsecondaryPopup==null ) return;
                 
                 modules.add(module);
 
