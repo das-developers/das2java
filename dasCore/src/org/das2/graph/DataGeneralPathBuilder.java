@@ -182,21 +182,27 @@ public final class DataGeneralPathBuilder {
             //System.err.println( String.format( "%5s %8s %8s %8s %8s %8s", "pc", "x", "y", "pendingX", "pendingY", "lastx" ) );
             //System.err.println( String.format( "%5s %8s %8s %8s %8s %8s", "-----", "--------","--------","--------","--------", "--------" ) );
         }
-        //System.err.println( String.format( "%5d %8s %8s %8s %8s %8s", pointCount, x, y, pendingx, pendingy, lastx ) );
+        //System.err.println( String.format( "%5d %8.2f %8.2s %8s %8s %8s", pointCount, x, y, pendingx, pendingy, lastx ) );
         
         if ( lastx>x ) {
             logger.log(Level.FINE, "data step back: {0} -> {1}", new Object[]{xunits.createDatum(lastx), xunits.createDatum(x)});
         }
-        //if ( checkx !=null && x>checkx.doubleValue(xunits) ) {
-        //    System.err.println("here stop at "+xunits.createDatum(x));
-        //}
+        
         if ( this.cadence>0 && pen==PEN_DOWN ) {
             double step= logStep ? Math.log(x/lastx) :  x-lastx ;
             if ( step > this.cadence ) {
                 if ( pendingx!=null ) {
-                    lastDrawnX=xaxis.transform(pendingx);
-                    lastDrawnY=yaxis.transform(pendingy);
-                    gp.lineTo( lastDrawnX, lastDrawnY );
+                    if ( histogramMode ) {
+                        double iulx= xaxis.transform(pendingx.value()+this.cadenceExact/2,xunits); // upper-left corner of peak
+                        double iy= yaxis.transform(pendingy);
+                        lastDrawnX= iulx;
+                        lastDrawnY= iy;
+                        gp.lineTo( lastDrawnX, lastDrawnY );
+                    } else {
+                        lastDrawnX=xaxis.transform(pendingx);
+                        lastDrawnY=yaxis.transform(pendingy);
+                        gp.lineTo( lastDrawnX, lastDrawnY );
+                    }
                 }
                 pen= PEN_UP;
             }
@@ -285,11 +291,7 @@ public final class DataGeneralPathBuilder {
      */
     public GeneralPath getGeneralPath() {
         if ( histogramMode ) {
-            if ( lastIX>-Double.MAX_VALUE ) {
-                lastDrawnX= xaxis.transform(lastx+this.cadenceExact/2,xunits);
-                lastDrawnY= lastIY;
-                gp.lineTo( lastDrawnX, lastDrawnY );
-            }
+            finishThought();
         }
         //return this.gp.getGeneralPath();
         return gp;
@@ -301,6 +303,16 @@ public final class DataGeneralPathBuilder {
      */
     public Point2D getLastDrawnPoint() {
         return new Point2D.Double( lastDrawnX, lastDrawnY );
+    }
+    
+    public void finishThought() {
+        if ( lastIX>-Double.MAX_VALUE ) {
+            lastDrawnX= xaxis.transform(lastx+this.cadenceExact/2,xunits);
+            lastDrawnY= lastIY;
+            gp.lineTo( lastDrawnX, lastDrawnY );
+            pendingx= null;
+            pendingy= null;
+        }
     }
     
     /**
