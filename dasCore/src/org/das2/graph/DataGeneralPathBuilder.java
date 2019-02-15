@@ -1,8 +1,10 @@
 
 package org.das2.graph;
 
+import java.awt.Point;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.PathIterator;
+import java.awt.geom.Point2D;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.datum.Datum;
@@ -45,7 +47,9 @@ public final class DataGeneralPathBuilder {
     
     private double lastIX= -Double.MAX_VALUE; // always the position of the data, not the histogram corners
     private double lastIY= -Double.MAX_VALUE;
-    private double lastDrawnX= -Double.MAX_VALUE;  // used for histogram fill flag
+
+    private double lastDrawnX= -Double.MAX_VALUE;
+    private double lastDrawnY= -Double.MAX_VALUE;
     
     private double cadence=0.0; // this is the cadence used to identify breaks in the data.
     private double cadenceExact= 1e38; // this is the cadence requested by the client
@@ -172,7 +176,11 @@ public final class DataGeneralPathBuilder {
         pointCount++;
         if ( pointCount==1 ) {
             logger.fine("pathBuilder got first point");
+            System.err.println( String.format( "%5s %8s %8s %8s %8s %8s", "pc", "x", "y", "pendingX", "pendingY", "lastx" ) );
+            System.err.println( String.format( "%5s %8s %8s %8s %8s %8s", "-----", "--------","--------","--------","--------", "--------" ) );
         }
+        System.err.println( String.format( "%5d %8s %8s %8s %8s %8s", pointCount, x, y, pendingx, pendingy, lastx ) );
+        
         if ( lastx>x ) {
             logger.log(Level.FINE, "data step back: {0} -> {1}", new Object[]{xunits.createDatum(lastx), xunits.createDatum(x)});
         }
@@ -183,7 +191,9 @@ public final class DataGeneralPathBuilder {
             double step= logStep ? Math.log(x/lastx) :  x-lastx ;
             if ( step > this.cadence ) {
                 if ( pendingx!=null ) {
-                    gp.lineTo( xaxis.transform(pendingx), yaxis.transform(pendingy) );
+                    lastDrawnX=xaxis.transform(pendingx);
+                    lastDrawnY=yaxis.transform(pendingy);
+                    gp.lineTo( lastDrawnX, lastDrawnX );
                 }
                 pen= PEN_UP;
             }
@@ -206,21 +216,26 @@ public final class DataGeneralPathBuilder {
             } else {
                 // nothing needs to be done
             }
-        } else { // pen==PEN_DOWN
+        } else if ( pen==PEN_DOWN ) { 
             if ( valid ) {
                 if ( histogramMode ) {
                     double iy= yaxis.transform(y,yunits);
                     double ix;
                     if ( histogramFillFlag ) {
                         gp.lineTo( lastDrawnX, iy );
+                        lastDrawnY= iy;
                         histogramFillFlag= false;
                         lastIX= xaxis.transform(x,xunits);
                     } else {
                         ix= xaxis.transform(x,xunits);
-                        gp.lineTo( (lastIX+ix)/2, lastIY );
+                        lastDrawnX= (lastIX+ix)/2; 
+                        lastDrawnY= lastIY;
+                        gp.lineTo( lastDrawnX, lastDrawnY );
                         lastDrawnX= (lastIX+ix)/2;
-                        if ( lastIX>-Double.MAX_VALUE ) {    
-                           gp.lineTo( (lastIX+ix)/2, iy );
+                        if ( lastIX>-Double.MAX_VALUE ) {
+                            lastDrawnX= (lastIX+ix)/2;
+                            lastDrawnY= iy;
+                            gp.lineTo( lastDrawnX, lastDrawnY );
                         }
                         lastIX= ix;
                     }
@@ -228,7 +243,9 @@ public final class DataGeneralPathBuilder {
                     pendingx= xunits.createDatum(x);
                     pendingy= yunits.createDatum(y);
                 } else {
-                    gp.lineTo( xaxis.transform(x,xunits), yaxis.transform(y,yunits) );
+                    lastDrawnX= xaxis.transform(x,xunits);
+                    lastDrawnY= yaxis.transform(y,yunits);
+                    gp.lineTo( lastDrawnX, lastDrawnY );
                     pendingx=null;
                     pendingy=null;            
                 }
@@ -237,11 +254,15 @@ public final class DataGeneralPathBuilder {
                     if ( pendingx!=null ) {
                         double iPendingX= xaxis.transform(pendingx);
                         double ix= xaxis.transform(x,xunits);
-                        gp.lineTo( ( iPendingX + ix ) / 2, yaxis.transform(pendingy) );
+                        lastDrawnX= ( iPendingX + ix ) / 2;
+                        lastDrawnY= yaxis.transform(pendingy);
+                        gp.lineTo( lastDrawnX, lastDrawnY );
                     }
                 } else {
                     if ( pendingx!=null ) {
-                        gp.lineTo( xaxis.transform(pendingx), yaxis.transform(pendingy) );
+                        lastDrawnX= xaxis.transform(pendingx);
+                        lastDrawnY= yaxis.transform(pendingy);
+                        gp.lineTo( lastDrawnX, lastDrawnY );
                     }
                 }
                 pen= PEN_UP;
@@ -267,6 +288,14 @@ public final class DataGeneralPathBuilder {
         }
         //return this.gp.getGeneralPath();
         return gp;
+    }
+    
+    /**
+     * this is added so that the fill-to-zero code can add the returns.
+     * @return 
+     */
+    public Point2D getLastDrawnPoint() {
+        return new Point2D.Double( lastDrawnX, lastDrawnY );
     }
     
     /**
