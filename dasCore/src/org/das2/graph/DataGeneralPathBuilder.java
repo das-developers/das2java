@@ -40,6 +40,9 @@ public final class DataGeneralPathBuilder {
     
     private Object pen= PEN_UP;
     
+    /**
+     * this is a point we will draw a connector to, as long as there is a subsequent value.
+     */
     private Datum pendingx= null;
     private Datum pendingy= null;
     
@@ -176,10 +179,10 @@ public final class DataGeneralPathBuilder {
         pointCount++;
         if ( pointCount==1 ) {
             logger.fine("pathBuilder got first point");
-            System.err.println( String.format( "%5s %8s %8s %8s %8s %8s", "pc", "x", "y", "pendingX", "pendingY", "lastx" ) );
-            System.err.println( String.format( "%5s %8s %8s %8s %8s %8s", "-----", "--------","--------","--------","--------", "--------" ) );
+            //System.err.println( String.format( "%5s %8s %8s %8s %8s %8s", "pc", "x", "y", "pendingX", "pendingY", "lastx" ) );
+            //System.err.println( String.format( "%5s %8s %8s %8s %8s %8s", "-----", "--------","--------","--------","--------", "--------" ) );
         }
-        System.err.println( String.format( "%5d %8s %8s %8s %8s %8s", pointCount, x, y, pendingx, pendingy, lastx ) );
+        //System.err.println( String.format( "%5d %8s %8s %8s %8s %8s", pointCount, x, y, pendingx, pendingy, lastx ) );
         
         if ( lastx>x ) {
             logger.log(Level.FINE, "data step back: {0} -> {1}", new Object[]{xunits.createDatum(lastx), xunits.createDatum(x)});
@@ -193,7 +196,7 @@ public final class DataGeneralPathBuilder {
                 if ( pendingx!=null ) {
                     lastDrawnX=xaxis.transform(pendingx);
                     lastDrawnY=yaxis.transform(pendingy);
-                    gp.lineTo( lastDrawnX, lastDrawnX );
+                    gp.lineTo( lastDrawnX, lastDrawnY );
                 }
                 pen= PEN_UP;
             }
@@ -204,7 +207,8 @@ public final class DataGeneralPathBuilder {
                     double iulx= xaxis.transform(x-this.cadenceExact/2,xunits); // upper-left corner of peak
                     double iy= yaxis.transform(y,yunits);
                     lastDrawnX= iulx;
-                    gp.moveTo( iulx, iy );
+                    lastDrawnY= iy;
+                    gp.moveTo( lastDrawnX, lastDrawnY );
                     lastIX= xaxis.transform(x,xunits);
                     lastIY= iy;
                 } else {
@@ -249,7 +253,7 @@ public final class DataGeneralPathBuilder {
                     pendingx=null;
                     pendingy=null;            
                 }
-            } else { // not valid
+            } else if ( !valid ) {  // not valid
                 if ( histogramMode ) {
                     if ( pendingx!=null ) {
                         double iPendingX= xaxis.transform(pendingx);
@@ -282,8 +286,9 @@ public final class DataGeneralPathBuilder {
     public GeneralPath getGeneralPath() {
         if ( histogramMode ) {
             if ( lastIX>-Double.MAX_VALUE ) {
-                double ix= xaxis.transform(lastx+this.cadenceExact/2,xunits);
-                gp.lineTo( ix, lastIY );
+                lastDrawnX= xaxis.transform(lastx+this.cadenceExact/2,xunits);
+                lastDrawnY= lastIY;
+                gp.lineTo( lastDrawnX, lastDrawnY );
             }
         }
         //return this.gp.getGeneralPath();
@@ -296,6 +301,17 @@ public final class DataGeneralPathBuilder {
      */
     public Point2D getLastDrawnPoint() {
         return new Point2D.Double( lastDrawnX, lastDrawnY );
+    }
+    
+    /**
+     * allow client to insert a point.  This is used when trying to implement the fill-to-zero.
+     * @param x pixel position
+     * @param y pixel position
+     */
+    public void lineTo( double x, double y ) {
+        gp.lineTo( x, y );
+        lastDrawnX= x;
+        lastDrawnY= y;
     }
     
     /**
