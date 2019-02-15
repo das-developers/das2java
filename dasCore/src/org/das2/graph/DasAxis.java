@@ -2110,7 +2110,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         graphics.setClip(null);
         }
          */
-        graphics.setClip(null);
+        if ( this.lineThickness.length()>0 && !this.lineThickness.equals("1px") ) {
+            logger.finer("disabling clip for thicker axis");
+            graphics.setClip(null);
+        } 
+        
         logger.log(Level.FINEST, "DasAxis clip={0} @ {1},{2}", new Object[]{graphics.getClip(), getX(), getY()});
 //  Here's an effective way to debug axis bounds:
 //        if ( "axis_0".equals( getDasName() ) ) {
