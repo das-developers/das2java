@@ -1082,7 +1082,7 @@ public class SeriesRenderer extends Renderer {
             
             DataGeneralPathBuilder pathBuilder= getPathBuilderForData( xAxis, yAxis, xds, vds );
             double xSampleWidthExact= pathBuilder.getCadenceDouble();
-            boolean logStep= pathBuilder.isCadenceRatiometric();
+            //boolean logStep= pathBuilder.isCadenceRatiometric();
             
             pathBuilder.setHistogramMode(histogram);
             
@@ -1104,6 +1104,7 @@ public class SeriesRenderer extends Renderer {
             y = yuc.convert( (double) vds.value(index) );
 
             pathBuilder.addDataPoint( true, x, yref );
+            pathBuilder.setHistogramFillFlag();
             pathBuilder.addDataPoint( true, x, y );
 
             index++;
@@ -1153,7 +1154,9 @@ public class SeriesRenderer extends Renderer {
                                 
             } // for ( ; index < ixmax && lastIndex; index++ )
             
-            pathBuilder.addDataPoint( true, lastX, yref );
+            pathBuilder.addDataPoint( true, lastX, y );
+            pathBuilder.setHistogramFillFlag();
+            pathBuilder.addDataPoint( true, -1, yref );
             
             GeneralPath fillPath= pathBuilder.getGeneralPath();
             
