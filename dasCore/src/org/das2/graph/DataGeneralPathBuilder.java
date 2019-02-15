@@ -43,12 +43,14 @@ public final class DataGeneralPathBuilder {
     
     private double lastx=-Double.MAX_VALUE;
     
-    private double lastIX= -Double.MAX_VALUE;
+    private double lastIX= -Double.MAX_VALUE; // always the position of the data, not the histogram corners
     private double lastIY= -Double.MAX_VALUE;
+    private double lastDrawnX= -Double.MAX_VALUE;  // used for histogram fill flag
     
     private double cadence=0.0; // this is the cadence used to identify breaks in the data.
     private double cadenceExact= 1e38; // this is the cadence requested by the client
     private boolean logStep= false;
+    private boolean histogramFillFlag;
     
     //private Datum checkx= null;
     
@@ -154,6 +156,13 @@ public final class DataGeneralPathBuilder {
     }
     
     /**
+     * kludge to tell the builder to subtract a half cadence from the first point
+     */
+    public void setHistogramFillFlag() {
+        histogramFillFlag= true;
+    }
+    
+    /**
      * add a point to the curve, where x and y are the magnitude in data coordinates.
      * @param valid if invalid, then break the line at this point.
      * @param x the x value in xaxis units.
@@ -182,11 +191,12 @@ public final class DataGeneralPathBuilder {
         if ( pen==PEN_UP ) {
             if ( valid ) {
                 if ( histogramMode ) {
-                    double ix= xaxis.transform(x-this.cadenceExact/2,xunits);
+                    double iulx= xaxis.transform(x-this.cadenceExact/2,xunits); // upper-left corner of peak
                     double iy= yaxis.transform(y,yunits);
-                    gp.moveTo( ix, iy );
-                    //lastIX= ix;
-                    //lastIY= iy;
+                    lastDrawnX= iulx;
+                    gp.moveTo( iulx, iy );
+                    lastIX= xaxis.transform(x,xunits);
+                    lastIY= iy;
                 } else {
                     gp.moveTo( xaxis.transform(x,xunits), yaxis.transform(y,yunits) );
                 }
@@ -194,30 +204,51 @@ public final class DataGeneralPathBuilder {
                 pendingx= xunits.createDatum(x);
                 pendingy= yunits.createDatum(y);
             } else {
-                pen= PEN_UP;
+                // nothing needs to be done
             }
-        } else {
+        } else { // pen==PEN_DOWN
             if ( valid ) {
                 if ( histogramMode ) {
-                    double ix= xaxis.transform(x,xunits);
                     double iy= yaxis.transform(y,yunits);
-                    if ( lastIX>-Double.MAX_VALUE ) {
+                    double ix;
+                    if ( histogramFillFlag ) {
+                        gp.lineTo( lastDrawnX, iy );
+                        histogramFillFlag= false;
+                        lastIX= xaxis.transform(x,xunits);
+                    } else {
+                        ix= xaxis.transform(x,xunits);
                         gp.lineTo( (lastIX+ix)/2, lastIY );
-                        gp.lineTo( (lastIX+ix)/2, iy );
+                        lastDrawnX= (lastIX+ix)/2;
+                        if ( lastIX>-Double.MAX_VALUE ) {    
+                           gp.lineTo( (lastIX+ix)/2, iy );
+                        }
+                        lastIX= ix;
                     }
-                    lastIX= ix;
                     lastIY= iy;
+                    pendingx= xunits.createDatum(x);
+                    pendingy= yunits.createDatum(y);
                 } else {
                     gp.lineTo( xaxis.transform(x,xunits), yaxis.transform(y,yunits) );
+                    pendingx=null;
+                    pendingy=null;            
                 }
-            } else {
-                if ( pendingx!=null ) {
-                    gp.lineTo( xaxis.transform(pendingx), yaxis.transform(pendingy) );
+            } else { // not valid
+                if ( histogramMode ) {
+                    if ( pendingx!=null ) {
+                        double iPendingX= xaxis.transform(pendingx);
+                        double ix= xaxis.transform(x,xunits);
+                        gp.lineTo( ( iPendingX + ix ) / 2, yaxis.transform(pendingy) );
+                    }
+                } else {
+                    if ( pendingx!=null ) {
+                        gp.lineTo( xaxis.transform(pendingx), yaxis.transform(pendingy) );
+                    }
                 }
                 pen= PEN_UP;
+                pendingx=null;
+                pendingy=null;            
             }
-            pendingx=null;
-            pendingy=null;            
+            
         }
         lastx= x;
     }
