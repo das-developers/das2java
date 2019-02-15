@@ -193,7 +193,8 @@ public final class DataGeneralPathBuilder {
             if ( step > this.cadence ) {
                 if ( pendingx!=null ) {
                     if ( histogramMode ) {
-                        double iulx= xaxis.transform(pendingx.value()+this.cadenceExact/2,xunits); // upper-left corner of peak
+                        double xtemp= pendingx.doubleValue(xunits);
+                        double iulx= xaxis.transform(xtemp+this.cadenceExact/2,xunits); // upper-left corner of peak
                         double iy= yaxis.transform(pendingy);
                         lastDrawnX= iulx;
                         lastDrawnY= iy;
