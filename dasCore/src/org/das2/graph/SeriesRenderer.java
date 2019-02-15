@@ -1104,6 +1104,9 @@ public class SeriesRenderer extends Renderer {
             y = yuc.convert( (double) vds.value(index) );
 
             pathBuilder.addDataPoint( true, x, yref );
+            Point2D initRef= pathBuilder.getLastDrawnPoint();
+            double ireferenceY= initRef.getY();
+                
             pathBuilder.setHistogramFillFlag();
             pathBuilder.addDataPoint( true, x, y );
 
@@ -1123,9 +1126,7 @@ public class SeriesRenderer extends Renderer {
             
             boolean lastIsValid= true; // last state of the valid
             double lastX=x;
-             
-            double dx= xSampleWidthExact;
-            
+                         
             for (; index < lastIndex; index++) {
 
                 x = xuc.convert( xds.value(index) );
@@ -1133,32 +1134,70 @@ public class SeriesRenderer extends Renderer {
 
                 isValid = wds.value( index )>0;
 
+                if ( Math.abs( x - lastX ) > xSampleWidthExact ) {
+                    pathBuilder.finishThought();
+                    Point2D last= pathBuilder.getLastDrawnPoint();
+                    pathBuilder.lineTo( last.getX(), ireferenceY );
+                    lastIsValid= false;
+                }
+                
                 if ( isValid || notInvalidInterleave ) {
-
-                    if ( isValid ) {
-                        if ( !lastIsValid ) {
-                            pathBuilder.addDataPoint( isValid, x, yref );
-                        }
+                    if ( !lastIsValid ) {
+                        pathBuilder.addDataPoint( isValid, x, yref );
+                        Point2D last= pathBuilder.getLastDrawnPoint();
+                        pathBuilder.lineTo( last.getX(), yAxis.transform( pathBuilder.getYUnits().createDatum(y) ) );
+                        pathBuilder.setHistogramFillFlag();
                         pathBuilder.addDataPoint( isValid, x, y );
                     } else {
-                        if ( lastIsValid ) {
-                            pathBuilder.addDataPoint( true, lastX, yref );
-                        }
                         pathBuilder.addDataPoint( isValid, x, y );
                     }
-                        
                 }
-                lastIsValid= isValid;
+                
+                if ( !isValid ) {
+                    Point2D last= pathBuilder.getLastDrawnPoint();
+                    pathBuilder.lineTo( last.getX(), ireferenceY );
+                    lastIsValid= false;
+                } else {
+                    lastIsValid= true;
+                }
+                
                 lastX= x;
                 
-                                
             } // for ( ; index < ixmax && lastIndex; index++ )
             
-            pathBuilder.addDataPoint( true, lastX, y );
-            pathBuilder.setHistogramFillFlag();
-            pathBuilder.addDataPoint( true, -1, yref );
+//            for (; index < lastIndex; index++) {
+//
+//                x = xuc.convert( xds.value(index) );
+//                y = yuc.convert( vds.value(index) );
+//
+//                isValid = wds.value( index )>0;
+//
+//                if ( isValid || notInvalidInterleave ) {
+//
+//                    if ( isValid ) {
+//                        if ( !lastIsValid ) {
+//                            pathBuilder.addDataPoint( isValid, x, yref );
+//                        }
+//                        pathBuilder.addDataPoint( isValid, x, y );
+//                    } else {
+//                        if ( lastIsValid ) {
+//                            Point2D p= pathBuilder.getLastDrawnPoint();
+//                            pathBuilder.addDataPoint( true, lastX, yref );
+//                            
+//                        }
+//                        pathBuilder.addDataPoint( isValid, x, y );
+//                    }
+//                        
+//                }
+//                lastIsValid= isValid;
+//                lastX= x;
+//                
+//                                
+//            } // for ( ; index < ixmax && lastIndex; index++ )
             
+            // return to the reference line
             GeneralPath fillPath= pathBuilder.getGeneralPath();
+            fillPath.lineTo( pathBuilder.getLastDrawnPoint().getX(), ireferenceY );
             
             //  END, NEW CODE TO MATCH CONNECTOR CODE
             
