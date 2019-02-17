@@ -194,7 +194,12 @@ public final class DataGeneralPathBuilder {
                 if ( pendingx!=null ) {
                     if ( histogramMode ) {
                         double xtemp= pendingx.doubleValue(xunits);
-                        double iulx= xaxis.transform(xtemp+this.cadenceExact/2,xunits); // upper-left corner of peak
+                        double iulx;
+                        if ( logStep ) {
+                            iulx= xaxis.transform(xtemp*(1+this.cadenceExact/2),xunits); // upper-left corner of peak
+                        } else {
+                            iulx= xaxis.transform(xtemp+this.cadenceExact/2,xunits); // upper-left corner of peak
+                        }
                         double iy= yaxis.transform(pendingy);
                         lastDrawnX= iulx;
                         lastDrawnY= iy;
@@ -211,7 +216,12 @@ public final class DataGeneralPathBuilder {
         if ( pen==PEN_UP ) {
             if ( valid ) {
                 if ( histogramMode ) {
-                    double iulx= xaxis.transform(x-this.cadenceExact/2,xunits); // upper-left corner of peak
+                    double iulx;
+                    if ( logStep ) {
+                        iulx= xaxis.transform(x/(1+this.cadenceExact/2),xunits); // upper-left corner of peak
+                    } else {
+                        iulx= xaxis.transform(x-this.cadenceExact/2,xunits); // upper-left corner of peak
+                    }
                     double iy= yaxis.transform(y,yunits);
                     lastDrawnX= iulx;
                     lastDrawnY= iy;
@@ -308,7 +318,11 @@ public final class DataGeneralPathBuilder {
     
     public void finishThought() {
         if ( lastIX>-Double.MAX_VALUE ) {
-            lastDrawnX= xaxis.transform(lastx+this.cadenceExact/2,xunits);
+            if ( logStep ) {
+                lastDrawnX= xaxis.transform(lastx*(1+this.cadenceExact/2),xunits);
+            } else {
+                lastDrawnX= xaxis.transform(lastx+this.cadenceExact/2,xunits);
+            }
             lastDrawnY= lastIY;
             gp.lineTo( lastDrawnX, lastDrawnY );
             pendingx= null;
