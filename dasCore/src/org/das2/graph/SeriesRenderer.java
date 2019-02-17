@@ -1081,6 +1081,8 @@ public class SeriesRenderer extends Renderer {
             }
             
             DataGeneralPathBuilder pathBuilder= getPathBuilderForData( xAxis, yAxis, xds, vds );
+            pathBuilder.setName("fillgp");
+            
             double xSampleWidthExact= pathBuilder.getCadenceDouble();
             //boolean logStep= pathBuilder.isCadenceRatiometric();
             
@@ -1105,7 +1107,7 @@ public class SeriesRenderer extends Renderer {
 
             pathBuilder.addDataPoint( true, x, yref );
             Point2D initRef= pathBuilder.getLastDrawnPoint();
-            double ireferenceY= initRef.getY();
+            double ireferenceY= yAxis.transform( yref, yUnits );
                 
             pathBuilder.setHistogramFillFlag();
             pathBuilder.addDataPoint( true, x, y );
@@ -1134,10 +1136,10 @@ public class SeriesRenderer extends Renderer {
 
                 isValid = wds.value( index )>0;
 
-                if ( Math.abs( x - lastX ) > xSampleWidthExact ) {
+                if ( Math.abs( x - lastX ) > (xSampleWidthExact*1.2) ) {
                     pathBuilder.finishThought();
                     Point2D last= pathBuilder.getLastDrawnPoint();
-                    pathBuilder.lineTo( last.getX(), ireferenceY );
+                    pathBuilder.insertLineTo( last.getX(), ireferenceY );
                     lastIsValid= false;
                 }
                 
@@ -1145,7 +1147,7 @@ public class SeriesRenderer extends Renderer {
                     if ( !lastIsValid ) {
                         pathBuilder.addDataPoint( isValid, x, yref );
                         Point2D last= pathBuilder.getLastDrawnPoint();
-                        pathBuilder.lineTo( last.getX(), yAxis.transform( pathBuilder.getYUnits().createDatum(y) ) );
+                        pathBuilder.insertLineTo( last.getX(), yAxis.transform( pathBuilder.getYUnits().createDatum(y) ) );
                         pathBuilder.setHistogramFillFlag();
                         pathBuilder.addDataPoint( isValid, x, y );
                     } else {
@@ -1155,7 +1157,7 @@ public class SeriesRenderer extends Renderer {
                 
                 if ( !isValid ) {
                     Point2D last= pathBuilder.getLastDrawnPoint();
-                    pathBuilder.lineTo( last.getX(), ireferenceY );
+                    pathBuilder.insertLineTo( last.getX(), ireferenceY );
                     lastIsValid= false;
                 } else {
                     lastIsValid= true;
@@ -1196,8 +1198,9 @@ public class SeriesRenderer extends Renderer {
 //            } // for ( ; index < ixmax && lastIndex; index++ )
             
             // return to the reference line
+            
+            pathBuilder.insertLineTo( pathBuilder.getLastDrawnPoint().getX(), ireferenceY );
             GeneralPath fillPath= pathBuilder.getGeneralPath();
-            fillPath.lineTo( pathBuilder.getLastDrawnPoint().getX(), ireferenceY );
             
             //  END, NEW CODE TO MATCH CONNECTOR CODE
             
