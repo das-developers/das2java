@@ -44,6 +44,8 @@ public class GitHubFileSystem extends HttpFileSystem {
 
     private static final Logger logger= LoggerManager.getLogger("das2.filesystem.wfs.githubfs");
     
+    private static final String branch= "master";
+    
     private class GitHubHttpProtocol implements WebProtocol {
 
         @Override
@@ -86,7 +88,7 @@ public class GitHubFileSystem extends HttpFileSystem {
         File local;
         
         String suri= root.toString();
-        Pattern fsp1= Pattern.compile( "(https?://github.com/)(.*)tree/master/(.*)" );
+        Pattern fsp1= Pattern.compile( "(https?://github.com/)(.*)tree/"+branch+"/(.*)" );
         Matcher m1= fsp1.matcher( suri );
         if ( m1.matches() ) {
             suri= m1.group(1)+m1.group(2)+m1.group(3);
@@ -97,7 +99,7 @@ public class GitHubFileSystem extends HttpFileSystem {
             }
         }
         
-        Pattern fsp2= Pattern.compile( "(https?://github.com/)(.*)blob/master/(.*)" );
+        Pattern fsp2= Pattern.compile( "(https?://github.com/)(.*)blob/"+branch+"/(.*)" );
         Matcher m2= fsp2.matcher( suri );
         if ( m2.matches() ) {
             suri= m2.group(1)+m2.group(2)+m2.group(3);
