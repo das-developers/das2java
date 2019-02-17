@@ -169,6 +169,35 @@ public final class DataGeneralPathBuilder {
         histogramFillFlag= true;
     }
     
+    private String name= "";
+    
+    /**
+     * set the name of this DataGeneralPathBuilder when logging.
+     * 
+     * @param name "" or the name of the general path object in log messages.
+     */
+    public void setName( String name ) {
+        this.name= name;
+        if ( name.length()>0 ) {
+            System.err.println(String.format( "from java.awt.geom import GeneralPath", name ) );
+            System.err.println(String.format( "%s=GeneralPath()", name ) );
+        }
+    }
+    
+    private void lineTo( double x, double y ) {
+        if ( name.length()>0 ) {
+            System.err.println(String.format( "%s.lineTo(%.2f,%.2f)", name, x, y ) );
+        }
+        gp.lineTo( x,y );
+    }
+    
+    private void moveTo( double x, double y ) {
+        if ( name.length()>0 ) {
+           System.err.println(String.format( "%s.moveTo(%.2f,%.2f)", name, x, y ) );
+        }
+        gp.moveTo( x,y );
+    }
+    
     /**
      * add a point to the curve, where x and y are the magnitude in data coordinates.
      * @param valid if invalid, then break the line at this point.
@@ -203,11 +232,11 @@ public final class DataGeneralPathBuilder {
                         double iy= yaxis.transform(pendingy);
                         lastDrawnX= iulx;
                         lastDrawnY= iy;
-                        gp.lineTo( lastDrawnX, lastDrawnY );
+                        lineTo( lastDrawnX, lastDrawnY );
                     } else {
                         lastDrawnX=xaxis.transform(pendingx);
                         lastDrawnY=yaxis.transform(pendingy);
-                        gp.lineTo( lastDrawnX, lastDrawnY );
+                        lineTo( lastDrawnX, lastDrawnY );
                     }
                 }
                 pen= PEN_UP;
@@ -225,11 +254,11 @@ public final class DataGeneralPathBuilder {
                     double iy= yaxis.transform(y,yunits);
                     lastDrawnX= iulx;
                     lastDrawnY= iy;
-                    gp.moveTo( lastDrawnX, lastDrawnY );
+                    moveTo( lastDrawnX, lastDrawnY );
                     lastIX= xaxis.transform(x,xunits);
                     lastIY= iy;
                 } else {
-                    gp.moveTo( xaxis.transform(x,xunits), yaxis.transform(y,yunits) );
+                    moveTo( xaxis.transform(x,xunits), yaxis.transform(y,yunits) );
                 }
                 pen= PEN_DOWN;
                 pendingx= xunits.createDatum(x);
@@ -243,7 +272,7 @@ public final class DataGeneralPathBuilder {
                     double iy= yaxis.transform(y,yunits);
                     double ix;
                     if ( histogramFillFlag ) {
-                        gp.lineTo( lastDrawnX, iy );
+                        lineTo( lastDrawnX, iy );
                         lastDrawnY= iy;
                         histogramFillFlag= false;
                         lastIX= xaxis.transform(x,xunits);
@@ -251,12 +280,12 @@ public final class DataGeneralPathBuilder {
                         ix= xaxis.transform(x,xunits);
                         lastDrawnX= (lastIX+ix)/2; 
                         lastDrawnY= lastIY;
-                        gp.lineTo( lastDrawnX, lastDrawnY );
+                        lineTo( lastDrawnX, lastDrawnY );
                         lastDrawnX= (lastIX+ix)/2;
                         if ( lastIX>-Double.MAX_VALUE ) {
                             lastDrawnX= (lastIX+ix)/2;
                             lastDrawnY= iy;
-                            gp.lineTo( lastDrawnX, lastDrawnY );
+                            lineTo( lastDrawnX, lastDrawnY );
                         }
                         lastIX= ix;
                     }
@@ -266,7 +295,7 @@ public final class DataGeneralPathBuilder {
                 } else {
                     lastDrawnX= xaxis.transform(x,xunits);
                     lastDrawnY= yaxis.transform(y,yunits);
-                    gp.lineTo( lastDrawnX, lastDrawnY );
+                    lineTo( lastDrawnX, lastDrawnY );
                     pendingx=null;
                     pendingy=null;            
                 }
@@ -277,13 +306,13 @@ public final class DataGeneralPathBuilder {
                         double ix= xaxis.transform(x,xunits);
                         lastDrawnX= ( iPendingX + ix ) / 2;
                         lastDrawnY= yaxis.transform(pendingy);
-                        gp.lineTo( lastDrawnX, lastDrawnY );
+                        lineTo( lastDrawnX, lastDrawnY );
                     }
                 } else {
                     if ( pendingx!=null ) {
                         lastDrawnX= xaxis.transform(pendingx);
                         lastDrawnY= yaxis.transform(pendingy);
-                        gp.lineTo( lastDrawnX, lastDrawnY );
+                        lineTo( lastDrawnX, lastDrawnY );
                     }
                 }
                 pen= PEN_UP;
@@ -303,6 +332,14 @@ public final class DataGeneralPathBuilder {
     public GeneralPath getGeneralPath() {
         if ( histogramMode ) {
             finishThought();
+        }
+        
+        if ( name.length()>0 ) {
+            System.err.println("from org.das2.graph import Painter");
+            System.err.println("class MyPainter( Painter ) :");
+            System.err.println("    def paint( self, g ) :");
+            System.err.println("        g.draw( fillgp )");
+            System.err.println("dom.canvases[0].controller.dasCanvas.addTopDecorator( MyPainter() )");
         }
         //return this.gp.getGeneralPath();
         return gp;
@@ -324,7 +361,7 @@ public final class DataGeneralPathBuilder {
                 lastDrawnX= xaxis.transform(lastx+this.cadenceExact/2,xunits);
             }
             lastDrawnY= lastIY;
-            gp.lineTo( lastDrawnX, lastDrawnY );
+            lineTo( lastDrawnX, lastDrawnY );
             pendingx= null;
             pendingy= null;
         }
@@ -335,8 +372,8 @@ public final class DataGeneralPathBuilder {
      * @param x pixel position
      * @param y pixel position
      */
-    public void lineTo( double x, double y ) {
-        gp.lineTo( x, y );
+    public void insertLineTo( double x, double y ) {
+        lineTo( x, y );
         lastDrawnX= x;
         lastDrawnY= y;
     }
