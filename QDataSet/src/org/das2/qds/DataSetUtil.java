@@ -2024,17 +2024,22 @@ public class DataSetUtil {
                 
                 try {
                     // See sftp://jfaden.net/
-                    Units du= SemanticOps.getUnits(diffs);
-                    QDataSet dd= DataSetUtil.gcd( diffs, DataSetUtil.asDataSet(SemanticOps.getUnits(diffs).createDatum(0.1)) );
-                    double ddd= dd.value();
-                    boolean isMultiples= true;
-                    for ( int i=0; i<diffs.length(); i++ ) {
-                        if ( Math.abs( diffs.value(i) % ddd )>0 ) {
-                            isMultiples= false;
+                    if ( !log ) {
+                        Units du= SemanticOps.getUnits(diffs);
+                        QDataSet dd= DataSetUtil.gcd( diffs, DataSetUtil.asDataSet(SemanticOps.getUnits(diffs).createDatum(0.1)) );
+                        double ddd= dd.value();
+                        boolean isMultiples= true;
+                        for ( int i=0; i<diffs.length(); i++ ) {
+                            if ( Math.abs( diffs.value(i) % ddd )>0 ) {
+                                isMultiples= false;
+                            }
+                            if ( ( diffs.value(i) / ddd ) > 100 ) { // test014_004--log spacing.
+                                isMultiples= false;
+                            }
                         }
-                    }
-                    if ( isMultiples ) {
-                        result= DRank0DataSet.create(dd.value());
+                        if ( isMultiples ) {
+                            result= DRank0DataSet.create(dd.value());
+                        }
                     }
                 } catch ( Exception e ) {
                     logger.fine("unable to perform gcd test");
