@@ -329,11 +329,7 @@ public final class DataGeneralPathBuilder {
      * path, when histogramMode is true.
      * @return the generalPath for drawing.
      */
-    public GeneralPath getGeneralPath() {
-        if ( histogramMode ) {
-            finishThought();
-        }
-        
+    public GeneralPath getGeneralPath() {        
         if ( name.length()>0 ) {
             System.err.println("from org.das2.graph import Painter");
             System.err.println("class MyPainter( Painter ) :");
