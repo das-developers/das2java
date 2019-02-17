@@ -866,6 +866,7 @@ public class SeriesRenderer extends Renderer {
             
             logger.log(Level.FINE, "done create general path ({0}ms)", ( System.currentTimeMillis()-t0  ));
             
+            pathBuilder.finishThought();
             boolean allowSimplify= (lastIndex-firstIndex)>SIMPLIFY_PATHS_MIN_LIMIT && xSampleWidthExact<1e37;
             if (!histogram && simplifyPaths && allowSimplify && colorByDataSetId.length()==0 ) {
                 int pathLengthApprox= Math.max( 5, 110 * (lastIndex - firstIndex) / 100 );
@@ -1081,7 +1082,7 @@ public class SeriesRenderer extends Renderer {
             }
             
             DataGeneralPathBuilder pathBuilder= getPathBuilderForData( xAxis, yAxis, xds, vds );
-            //pathBuilder.setName("fillgp"); // for debugging.
+            pathBuilder.setName("fillgp"); // for debugging.
             
             double xSampleWidthExact= pathBuilder.getCadenceDouble();
             //boolean logStep= pathBuilder.isCadenceRatiometric();
@@ -1198,7 +1199,7 @@ public class SeriesRenderer extends Renderer {
 //            } // for ( ; index < ixmax && lastIndex; index++ )
             
             // return to the reference line
-            
+            pathBuilder.finishThought();
             pathBuilder.insertLineTo( pathBuilder.getLastDrawnPoint().getX(), ireferenceY );
             GeneralPath fillPath= pathBuilder.getGeneralPath();
             
