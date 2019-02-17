@@ -1081,7 +1081,7 @@ public class SeriesRenderer extends Renderer {
             }
             
             DataGeneralPathBuilder pathBuilder= getPathBuilderForData( xAxis, yAxis, xds, vds );
-            pathBuilder.setName("fillgp");
+            //pathBuilder.setName("fillgp"); // for debugging.
             
             double xSampleWidthExact= pathBuilder.getCadenceDouble();
             //boolean logStep= pathBuilder.isCadenceRatiometric();
