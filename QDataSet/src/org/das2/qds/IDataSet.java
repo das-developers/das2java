@@ -75,18 +75,19 @@ public final class IDataSet extends ArrayDataSet {
      * @return the array as a QDataSet
      */
     public static IDataSet create(int[] qube) {
-        if (qube.length == 0) {
-            return new IDataSet( 0, 1, 1, 1, 1 );
-        } else if ( qube.length==1 ) {
-            return IDataSet.createRank1(qube[0]);
-        } else if (qube.length == 2) {
-            return IDataSet.createRank2(qube[0], qube[1]);
-        } else if (qube.length == 3) {
-            return IDataSet.createRank3(qube[0], qube[1], qube[2]);
-        } else if (qube.length == 4) {
-            return IDataSet.createRank4(qube[0], qube[1], qube[2], qube[3]);
-        } else {
-            throw new IllegalArgumentException("bad qube");
+        switch (qube.length) {
+            case 0:
+                return new IDataSet( 0, 1, 1, 1, 1 );
+            case 1:
+                return IDataSet.createRank1(qube[0]);
+            case 2:
+                return IDataSet.createRank2(qube[0], qube[1]);
+            case 3:
+                return IDataSet.createRank3(qube[0], qube[1], qube[2]);
+            case 4:
+                return IDataSet.createRank4(qube[0], qube[1], qube[2], qube[3]);
+            default:
+                throw new IllegalArgumentException("bad qube");
         }
     }
     
@@ -98,18 +99,19 @@ public final class IDataSet extends ArrayDataSet {
      * @return the array as a QDataSet
      */
     public static IDataSet wrap( int[] data, int[] qube ) {
-        if (qube.length == 1) {
-            return new IDataSet( 1, qube[0], 1, 1, 1, data );
-        } else if (qube.length == 2) {
-            return new IDataSet( 2, qube[0], qube[1], 1, 1, data );
-        } else if (qube.length == 3) {
-            return new IDataSet( 3, qube[0], qube[1], qube[2], 1, data );
-        } else if (qube.length == 4) {
-            return new IDataSet( 4, qube[0], qube[1], qube[2], qube[3], data);
-        } else if (qube.length == 0 ) {
-            return new IDataSet( 0, 1, 1, 1, 1, data );
-        } else {
-            throw new IllegalArgumentException("bad qube");
+        switch (qube.length) {
+            case 1:
+                return new IDataSet( 1, qube[0], 1, 1, 1, data );
+            case 2:
+                return new IDataSet( 2, qube[0], qube[1], 1, 1, data );
+            case 3:
+                return new IDataSet( 3, qube[0], qube[1], qube[2], 1, data );
+            case 4:
+                return new IDataSet( 4, qube[0], qube[1], qube[2], qube[3], data);
+            case 0:
+                return new IDataSet( 0, 1, 1, 1, 1, data );
+            default:
+                throw new IllegalArgumentException("bad qube");
         }
     }
     
@@ -126,6 +128,21 @@ public final class IDataSet extends ArrayDataSet {
     public static IDataSet wrap( int[] back, int rank, int len0, int len1, int len2 ) {
         return new IDataSet( rank, len0, len1, len2, 1, back );
     }
+    
+    /**
+     * Wraps an array from array of dimension sizes.  The result will have
+     * rank qube.length(). 
+     * @param back the backing array
+     * @param rank the rank
+     * @param len0 length of the dimension
+     * @param len1 length of the dimension
+     * @param len2 length of the dimension
+     * @param len3 length of the dimension
+     * @return the array as a QDataSet
+     */
+    public static IDataSet wrap( int[] back, int rank, int len0, int len1, int len2, int len3 ) {
+        return new IDataSet( rank, len0, len1, len2, len3, back );
+    }    
     
     protected IDataSet( int rank, int len0, int len1, int len2, int len3 ) {
         this( rank, len0, len1, len2, len3, new int[ len0 * len1 * len2 * len3] );

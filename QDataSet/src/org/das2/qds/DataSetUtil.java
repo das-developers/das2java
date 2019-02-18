@@ -2023,7 +2023,6 @@ public class DataSetUtil {
                 }
                 
                 try {
-                    // See sftp://jfaden.net/
                     if ( !log ) {
                         Units du= SemanticOps.getUnits(diffs);
                         QDataSet dd= DataSetUtil.gcd( diffs, DataSetUtil.asDataSet(SemanticOps.getUnits(diffs).createDatum(0.1)) );

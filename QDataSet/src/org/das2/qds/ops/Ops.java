@@ -2932,6 +2932,38 @@ public final class Ops {
     }
 
     /**
+     * create a dataset filled with zeros, stored in 4-byte ints.  
+     * @param len0 the zeroth dimension length
+     * @return rank 1 dataset filled with zeros.
+     * @see #zeros(int) 
+     * @see #dblarr(int) 
+     */
+    public static QDataSet intarr(int len0) {
+        return Ops.replicate(0, len0);
+    }
+
+    /**
+     * create a rank 2 dataset filled with zeros, stored in 4-byte ints.
+     * @param len0 the length of the zeroth dimension.
+     * @param len1 the length of the first dimension.
+     * @return rank 2 dataset filled with zeros.
+     */
+    public static QDataSet intarr(int len0, int len1) {
+        return Ops.replicate(0, len0, len1);
+    }
+
+    /**
+     * create a rank 3 dataset filled with zeros, stored in 4-byte ints.
+     * @param len0 the length of the zeroth dimension.
+     * @param len1 the length of the first dimension.
+     * @param len2 the length of the second dimension.
+     * @return rank 3 dataset filled with zeros.
+     */
+    public static QDataSet intarr(int len0, int len1, int len2) {
+        return Ops.replicate(0, len0, len1, len2);
+    }
+    
+    /**
      * create a rank 1 dataset filled with zeros, stored in 8-byte doubles.
      * @param len0 the length of the zeroth dimension.
      * @return rank 1 dataset filled with zeros.
@@ -3165,6 +3197,103 @@ public final class Ops {
      * @param len0
      * @return
      */
+    public static WritableDataSet replicate(short val, int len0) {
+        int size = len0;
+        short[] back = new short[size];
+        for (int i = 0; i < size; i++) {
+            back[i] = val;
+        }
+        return SDataSet.wrap( back, 1, len0, 1, 1, 1 );
+    }
+
+    /**
+     * returns rank 2 dataset filled with value
+     * @param val fill the dataset with this value.
+     * @param len0
+     * @param len1
+     * @return
+     */
+    public static WritableDataSet replicate(short val, int len0, int len1) {
+        int size = len0 * len1;
+        short[] back = new short[size];
+        for (int i = 0; i < size; i++) {
+            back[i] = val;
+        }
+        return SDataSet.wrap(back, 2, len0, len1, 1, 1 );
+    }
+    
+    /**
+     * returns rank 3 dataset with filled with value.
+     * @param val fill the dataset with this value.
+     * @param len0
+     * @param len1
+     * @param len2
+     * @return
+     */
+    public static WritableDataSet replicate(short val, int len0, int len1, int len2) {
+        int size = len0 * len1 * len2;
+        short[] back = new short[size];
+        for (int i = 0; i < size; i++) {
+            back[i] = val;
+        }
+        return SDataSet.wrap(back, 3, len0, len1, len2, 1);
+    }
+    
+    
+    /**
+     * returns rank 1 dataset with value
+     * @param val fill the dataset with this value.
+     * @param len0
+     * @return
+     */
+    public static WritableDataSet replicate(int val, int len0) {
+        int size = len0;
+        int[] back = new int[size];
+        for (int i = 0; i < size; i++) {
+            back[i] = val;
+        }
+        return IDataSet.wrap( back, 1, len0, 1, 1, 1 );
+    }
+
+    /**
+     * returns rank 2 dataset filled with value
+     * @param val fill the dataset with this value.
+     * @param len0
+     * @param len1
+     * @return
+     */
+    public static WritableDataSet replicate(int val, int len0, int len1) {
+        int size = len0 * len1;
+        int[] back = new int[size];
+        for (int i = 0; i < size; i++) {
+            back[i] = val;
+        }
+        return IDataSet.wrap(back, 2, len0, len1, 1, 1 );
+    }
+    
+    /**
+     * returns rank 3 dataset with filled with value.
+     * @param val fill the dataset with this value.
+     * @param len0
+     * @param len1
+     * @param len2
+     * @return
+     */
+    public static WritableDataSet replicate(int val, int len0, int len1, int len2) {
+        int size = len0 * len1 * len2;
+        int[] back = new int[size];
+        for (int i = 0; i < size; i++) {
+            back[i] = val;
+        }
+        return IDataSet.wrap(back, 3, len0, len1, len2, 1);
+    }
+    
+    /**
+     * returns rank 1 dataset with value
+     * @param val fill the dataset with this value.
+     * @param len0
+     * @return
+     */
     public static WritableDataSet replicate(long val, int len0) {
         int size = len0;
         long[] back = new long[size];
@@ -3189,7 +3318,7 @@ public final class Ops {
         }
         return LDataSet.wrap(back, 2, len0, len1, 1, 1 );
     }
-
+    
     /**
      * returns rank 3 dataset with filled with value.
      * @param val fill the dataset with this value.
