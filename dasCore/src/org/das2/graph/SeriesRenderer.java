@@ -1082,7 +1082,8 @@ public class SeriesRenderer extends Renderer {
             }
             
             DataGeneralPathBuilder pathBuilder= getPathBuilderForData( xAxis, yAxis, xds, vds );
-            //pathBuilder.setName("fillgp"); // for debugging.
+            String pathBuilderName= ""; // "fillgp" for debugging
+            pathBuilder.setName(pathBuilderName); // for debugging.
             
             double xSampleWidthExact= pathBuilder.getCadenceDouble();
             //boolean logStep= pathBuilder.isCadenceRatiometric();
@@ -1107,9 +1108,11 @@ public class SeriesRenderer extends Renderer {
             y = yuc.convert( (double) vds.value(index) );
 
             pathBuilder.addDataPoint( true, x, yref );
-            Point2D initRef= pathBuilder.getLastDrawnPoint();
+
             double ireferenceY= yAxis.transform( yref, yUnits );
                 
+            if ( pathBuilderName.length()>0 ) System.err.println( String.format( "ireferenceY=%.2f", ireferenceY) );
+
             pathBuilder.setHistogramFillFlag();
             pathBuilder.addDataPoint( true, x, y );
 
@@ -1129,9 +1132,12 @@ public class SeriesRenderer extends Renderer {
             
             boolean lastIsValid= true; // last state of the valid
             double lastX=x;
-                         
+            
+            if ( pathBuilderName.length()>0 ) System.err.println("# here invalid");
+            
             for (; index < lastIndex; index++) {
 
+                if ( pathBuilderName.length()>0 ) System.err.println( String.format( "# x=%.2f, y=%.2f",xds.value(index), vds.value(index) ) );
                 x = xuc.convert( xds.value(index) );
                 y = yuc.convert( vds.value(index) );
 
@@ -1139,7 +1145,7 @@ public class SeriesRenderer extends Renderer {
 
                 if ( Math.abs( x - lastX ) > (xSampleWidthExact*1.2) ) {
                     pathBuilder.finishThought();
-                    Point2D last= pathBuilder.getLastDrawnPoint();
+                    Point2D last= pathBuilder.getPenPosition();
                     pathBuilder.insertLineTo( last.getX(), ireferenceY );
                     lastIsValid= false;
                 }
@@ -1147,21 +1153,25 @@ public class SeriesRenderer extends Renderer {
                 if ( isValid || notInvalidInterleave ) {
                     if ( !lastIsValid ) {
                         pathBuilder.addDataPoint( isValid, x, yref );
-                        Point2D last= pathBuilder.getLastDrawnPoint();
-                        pathBuilder.insertLineTo( last.getX(), yAxis.transform( pathBuilder.getYUnits().createDatum(y) ) );
-                        pathBuilder.setHistogramFillFlag();
+                        Point2D last= pathBuilder.getPenPosition();
+                        if ( isValid ) {
+                            pathBuilder.insertLineTo( last.getX(), yAxis.transform( pathBuilder.getYUnits().createDatum(y) ) );
+                            pathBuilder.setHistogramFillFlag();
+                        }
                         pathBuilder.addDataPoint( isValid, x, y );
                     } else {
                         pathBuilder.addDataPoint( isValid, x, y );
                     }
                 }
                 
-                if ( !isValid ) {
-                    Point2D last= pathBuilder.getLastDrawnPoint();
+                if ( !isValid && lastIsValid ) {
+                    Point2D last= pathBuilder.getPenPosition();
                     pathBuilder.insertLineTo( last.getX(), ireferenceY );
                     lastIsValid= false;
                 } else {
-                    lastIsValid= true;
+                    if ( isValid ) {
+                        lastIsValid= true;
+                    }
                 }
                 
                 lastX= x;
@@ -1200,7 +1210,7 @@ public class SeriesRenderer extends Renderer {
             
             // return to the reference line
             pathBuilder.finishThought();
-            pathBuilder.insertLineTo( pathBuilder.getLastDrawnPoint().getX(), ireferenceY );
+            pathBuilder.insertLineTo( pathBuilder.getPenPosition().getX(), ireferenceY );
             GeneralPath fillPath= pathBuilder.getGeneralPath();
             
             //  END, NEW CODE TO MATCH CONNECTOR CODE
