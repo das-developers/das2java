@@ -92,7 +92,7 @@ public class LongDataSet extends BufferDataSet {
 
         @Override
         public long lvalue() {
-            return back.getLong( 0 );
+            return back.getLong( offset() );
         }
 
         @Override
