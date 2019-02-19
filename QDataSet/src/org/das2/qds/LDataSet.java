@@ -462,12 +462,12 @@ public final class LDataSet extends ArrayDataSet {
     }
 
     /**
-     * TODO: this is untested, but is left in to demonstrate how the capability
-     * method should be implemented.  Clients should use this instead of
+     * Clients should use this instead of
      * casting the class to the capability class.
      * @param <T>
-     * @param clazz the class, such as WritableDataSet.class
+     * @param clazz the class, such as WritableDataSet.class or LongReadAccess
      * @return null or the capability if exists, such as WritableDataSet
+     * @see https://github.com/autoplot/dev/blob/master/demos/20190219/demoLongReadAccess.jy
      */
     @Override
     public <T> T capability(Class<T> clazz) {
