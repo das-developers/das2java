@@ -479,6 +479,12 @@ public final class LDataSet extends ArrayDataSet {
             }
         } else if ( clazz==LongReadAccess.class ) {
             return clazz.cast( new LDataSetLongReadAccess() );
+        } else if ( clazz==LongWriteAccess.class ) {
+            if ( isImmutable() ) {
+                return null;
+            } else {
+                return clazz.cast( new LDataSetLongWriteAccess() );
+            }
         } else {
             return super.capability(clazz);
         }
@@ -511,6 +517,35 @@ public final class LDataSet extends ArrayDataSet {
             return back[ i0*len1*len2*len3 + i1*len2*len3 + i2*len3 + i3 ];
         }
         
+    }
+
+    public class LDataSetLongWriteAccess implements LongWriteAccess {
+
+        @Override
+        public void putLValue(long value) {
+            back[0]= value;
+        }
+
+        @Override
+        public void putLValue(int i0, long value) {
+            back[ i0 ]= value;
+        }
+
+        @Override
+        public void putLValue(int i0, int i1, long value) {
+            back[ i0*len1 + i1 ]= value;
+        }
+
+        @Override
+        public void putLValue(int i0, int i1, int i2, long value) {
+            back[ i0*len1*len2 + i1*len2 + i2]= value;
+        }
+
+        @Override
+        public void putLValue(int i0, int i1, int i2, int i3, long value) {
+            back[ i0*len1*len2*len3 + i1*len2*len3 + i2*len3 + i3 ]= value;
+        }
+
     }
 
 }
