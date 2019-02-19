@@ -160,6 +160,7 @@ public final class SDataSet extends ArrayDataSet {
             logger.warning("backing array appears to be too short");
         }       
         if ( rank>1 ) putProperty(QDataSet.QUBE, Boolean.TRUE);
+        putProperty( QDataSet.FORMAT, "%d" );
     }
 
     @Override
