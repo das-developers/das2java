@@ -109,15 +109,16 @@ public final class BundleDataSet extends AbstractDataSet {
                 if ( ds.length()!=len0 ) throw new IllegalArgumentException( String.format( "dataset length (%d) is not consistent with the bundle's length (%d)", ds.length(), len0) );
             }
         }
-        QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
-        QDataSet thisDep0= (QDataSet) super.property( QDataSet.DEPEND_0 );
-        if ( thisDep0==null && dep0!=null ) {   
-            putProperty( QDataSet.DEPEND_0, dep0 );
-        } else if ( thisDep0!=null && dep0!=null ) {
-            if ( thisDep0.length()>0 && !Ops.equivalent( thisDep0, dep0 ) ) {
-                logger.warning("bundled datasets do not have the same timetags");
-            }
-        }
+        // This can't be done carelessly, because test037_breakCounter_2 shows a problem.
+//        QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
+//        QDataSet thisDep0= (QDataSet) super.property( QDataSet.DEPEND_0 );
+//        if ( thisDep0==null && dep0!=null ) {   
+//            putProperty( QDataSet.DEPEND_0, dep0 );
+//        } else if ( thisDep0!=null && dep0!=null ) {
+//            if ( thisDep0.length()>0 && !Ops.equivalent( thisDep0, dep0 ) ) {
+//                logger.warning("bundled datasets do not have the same timetags");
+//            }
+//        }
         datasets.add( ds );
         
     }
