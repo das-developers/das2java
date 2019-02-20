@@ -1,16 +1,11 @@
-/*
- * BundleDataSet.java
- *
- * Copied from JoinDataSet in June 2009
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
 
 package org.das2.qds;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
+import org.das2.datum.LoggerManager;
+import org.das2.qds.ops.Ops;
 
 /**
  * create a higher rank dataset with dim 1 being a bundle dimension.  Each
@@ -20,12 +15,16 @@ import java.util.List;
  * introduced, so this code is suspect.  TODO: review and ensure compatibility
  * with updates to bundle dataset semantics.
  *
- * Modification History:
- *   2012-07-17: allow rank 2 datasets to be bundled.  TODO: really?  code doesn't look like it!
- *   See https://sourceforge.net/p/autoplot/feature-requests/267/
+ * Copied from JoinDataSet in June 2009
+ * Modification History:<ul>
+ * <li> 2012-07-17: allow rank 2 datasets to be bundled.  TODO: really?  code doesn't look like it!
+ * <li> See https://sourceforge.net/p/autoplot/feature-requests/267/
+ * </ul>
  * @author jbf
  */
 public final class BundleDataSet extends AbstractDataSet {
+    
+    private static final Logger logger= LoggerManager.getLogger("qdataset");
     
     List<QDataSet> datasets;
     /**
@@ -70,7 +69,7 @@ public final class BundleDataSet extends AbstractDataSet {
      */
     public BundleDataSet( int rank ) {
         this.rank= rank;
-        datasets= new ArrayList<QDataSet>();
+        datasets= new ArrayList<>();
         if ( rank>=2 ) {
             putProperty( QDataSet.BUNDLE_1, new BundleDescriptor() );
             putProperty( QDataSet.QUBE, Boolean.TRUE );
@@ -109,17 +108,33 @@ public final class BundleDataSet extends AbstractDataSet {
             } else {
                 if ( ds.length()!=len0 ) throw new IllegalArgumentException( String.format( "dataset length (%d) is not consistent with the bundle's length (%d)", ds.length(), len0) );
             }
-        }        
+        }
+        QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
+        QDataSet thisDep0= (QDataSet) super.property( QDataSet.DEPEND_0 );
+        if ( thisDep0==null && dep0!=null ) {   
+            putProperty( QDataSet.DEPEND_0, dep0 );
+        } else if ( thisDep0!=null && dep0!=null ) {
+            if ( thisDep0.length()>0 && !Ops.equivalent( thisDep0, dep0 ) ) {
+                logger.warning("bundled datasets do not have the same timetags");
+            }
+        }
         datasets.add( ds );
+        
     }
 
     /**
-     * allow to simply unbundle the dataset.
+     * allow to simply unbundle the dataset.  If the bundle has DEPEND_0, then
+     * DEPEND_0 may be added to the result.
      * @param i the index.
      * @return the dataset at i.
      */
     public QDataSet unbundle(int i) {
-        return datasets.get(i);
+        QDataSet result= datasets.get(i);
+        QDataSet dep0= (QDataSet) super.property(QDataSet.DEPEND_0);
+        if ( dep0!=null && result.property(QDataSet.DEPEND_0)==null ) {
+            result= Ops.putProperty( result, QDataSet.DEPEND_0, dep0 );
+        }
+        return result;
     }
 
     /**
