@@ -180,7 +180,7 @@ public final class DataGeneralPathBuilder {
         this.name= name;
         if ( name.length()>0 ) {
             System.err.println("# ------");
-            System.err.println(String.format( "from java.awt.geom import GeneralPath", name ) );
+            System.err.println(String.format( "from java.awt.geom import GeneralPath" ) );
             System.err.println(String.format( "%s=GeneralPath()", name ) );
         }
     }
