@@ -101,16 +101,16 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
     public final static Object UINT24= "uint24";
     
     /**
-     * four-bit unsigned ints
+     * four-bit unsigned ints.
      */
     public final static Object NYBBLE= "nybble";
     
     /**
-     * 8 byte signed longs
+     * 8 byte signed longs.
      */
     public final static Object LONG= "long";
     /**
-     * 4 byte signed integers
+     * 4 byte signed integers.
      */
     public final static Object INT= "int";
     /**
@@ -135,7 +135,7 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
      */
     public final static Object BYTE= "byte";
     /**
-     * 1 byte signed byte.
+     * 1 byte unsigned byte.
      */
     public final static Object UBYTE= "ubyte";
     
@@ -169,7 +169,7 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
             return 8;
         } else if (type.equals(INT)) {
             return 4;
-        } else if (type.equals("integer") ) {
+        } else if (type.equals(INTEGER) ) {
             return 4;
         } else if (type.equals(UINT)) {
             return 4;
