@@ -392,7 +392,7 @@ public class QDataSetTableModel extends AbstractTableModel {
             c.setPreferredWidth( ( u!=null && UnitsUtil.isTimeLocation(u) ) ? 150 : 80 );
             c.setMinWidth(  ( u!=null && UnitsUtil.isTimeLocation(u) ) ? 130 : 80 );
             if ( u instanceof EnumerationUnits && ds.length()>0 ) {
-                String s= ds.slice(0).slice(i).toString();
+                String s= ds.slice(0).slice(i-dep0Offset).toString();
                 if ( s.length()>14 ) {
                     c.setPreferredWidth( Math.min( s.length() * 7, 600 ) );
                     //c.setMinWidth( s.length()*4 );
