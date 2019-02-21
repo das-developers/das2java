@@ -2932,6 +2932,72 @@ public final class Ops {
     }
 
     /**
+     * create a dataset filled with zeros, stored in unsigned bytes.  Each
+     * element can contain numbers from 0 to 255.
+     * @param len0 the zeroth dimension length
+     * @return rank 1 dataset filled with zeros.
+     * @see #dblarr(int) 
+     */
+    public static QDataSet bytarr(int len0) {
+        return BufferDataSet.createRank1( BufferDataSet.UBYTE, len0 );
+    }
+
+    /**
+     * create a rank 2 dataset filled with zeros, stored in unsigned bytes.
+     * @param len0 the length of the zeroth dimension.
+     * @param len1 the length of the first dimension.
+     * @return rank 2 dataset filled with zeros.
+     */
+    public static QDataSet bytarr(int len0, int len1) {
+        return BufferDataSet.createRank2( BufferDataSet.UBYTE, len0, len1 );
+    }
+
+    /**
+     * create a rank 3 dataset filled with zeros, stored in unsigned bytes.
+     * @param len0 the length of the zeroth dimension.
+     * @param len1 the length of the first dimension.
+     * @param len2 the length of the second dimension.
+     * @return rank 3 dataset filled with zeros.
+     */
+    public static QDataSet bytarr(int len0, int len1, int len2) {
+        return BufferDataSet.createRank3( BufferDataSet.UBYTE, len0, len1, len2 );
+    }
+    
+    /**
+     * create a dataset filled with zeros, stored in 2-byte signed shorts.
+     * Note that shortarr is equivalent to intarr in IDL, containing integer
+     * values from -32768 to 32767.
+     * @param len0 the zeroth dimension length
+     * @return rank 1 dataset filled with zeros.
+     * @see #zeros(int) 
+     * @see #dblarr(int) 
+     */
+    public static QDataSet shortarr(int len0) {
+        return Ops.replicate((short)0, len0);
+    }
+
+    /**
+     * create a rank 2 dataset filled with zeros, stored in 2-byte shorts.
+     * @param len0 the length of the zeroth dimension.
+     * @param len1 the length of the first dimension.
+     * @return rank 2 dataset filled with zeros.
+     */
+    public static QDataSet shortarr(int len0, int len1) {
+        return Ops.replicate((short)0, len0, len1);
+    }
+
+    /**
+     * create a rank 3 dataset filled with zeros, stored in 2-byte shorts.
+     * @param len0 the length of the zeroth dimension.
+     * @param len1 the length of the first dimension.
+     * @param len2 the length of the second dimension.
+     * @return rank 3 dataset filled with zeros.
+     */
+    public static QDataSet shortarr(int len0, int len1, int len2) {
+        return Ops.replicate((short)0, len0, len1, len2);
+    }
+    
+    /**
      * create a dataset filled with zeros, stored in 4-byte ints.  
      * @param len0 the zeroth dimension length
      * @return rank 1 dataset filled with zeros.
@@ -2969,6 +3035,9 @@ public final class Ops {
      * @return rank 1 dataset filled with zeros.
      * @see #zeros(int) 
      * @see #fltarr(int) 
+     * @see #bytarr(int)
+     * @see #shortarr(int) 
+     * @see #intarr(int) 
      */
     public static QDataSet dblarr(int len0) {
         return Ops.replicate(0., len0);
