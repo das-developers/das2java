@@ -415,7 +415,7 @@ public class WebFileObject extends FileObject {
         if ( isLocal() ) { // isLocal does a careful check of timestamps, and minds the limits on access.
             remoteDate = new Date(localFile.lastModified());
             remoteLength= localFile.length();
-            
+             // TODO: I don't understand this code. jbf
         } else if (wfs instanceof HttpFileSystem && !wfs.isOffline() ) {
             URL url = wfs.getURL(this.getNameExt());
 
