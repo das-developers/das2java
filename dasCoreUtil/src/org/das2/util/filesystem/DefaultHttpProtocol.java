@@ -65,13 +65,16 @@ public class DefaultHttpProtocol implements WebProtocol {
         
         URL ur = new URL( fo.wfs.getRootURL(), urlEncodeSansSlash(fo.pathname).replaceAll("\\+", "%20") );
         if ( fo.wfs.offline ) {
-            Map<String,String> result= new HashMap<>();
-            result.put(WebProtocol.META_EXIST, String.valueOf( fo.localFile.exists() ) );
-            result.put(WebProtocol.META_LAST_MODIFIED, String.valueOf( fo.localFile.lastModified() ) );
-            result.put(WebProtocol.META_CONTENT_LENGTH, String.valueOf( fo.localFile.length() ) );
-            result.put(WebProtocol.META_CONTENT_TYPE, Files.probeContentType( fo.localFile.toPath() ) );
-            return result;
-            
+            if ( fo.wfs.offlineResponseCode==400 ) {
+                return HttpUtil.getMetadata( ur, null ); // For example github, where we can get files we know about.
+            } else {
+                Map<String,String> result= new HashMap<>();
+                result.put(WebProtocol.META_EXIST, String.valueOf( fo.localFile.exists() ) );
+                result.put(WebProtocol.META_LAST_MODIFIED, String.valueOf( fo.localFile.lastModified() ) );
+                result.put(WebProtocol.META_CONTENT_LENGTH, String.valueOf( fo.localFile.length() ) );
+                result.put(WebProtocol.META_CONTENT_TYPE, Files.probeContentType( fo.localFile.toPath() ) );
+                return result;
+            }
         } else {
             return HttpUtil.getMetadata( ur, null );
         }

@@ -200,7 +200,7 @@ public class HttpFileSystem extends WebFileSystem {
                     responseCode= urlc.getResponseCode();
                     
                     logger.log( Level.FINER, "made connection, now consume rest of stream: {0}", urlc );
-                    HtmlUtil.consumeStream( urlc.getInputStream() );
+                    HttpUtil.consumeStream( urlc.getInputStream() );
                     logger.log( Level.FINER, "done consuming and initial connection is complete: {0}" );
                     urlc.disconnect();
                     offline= false;
@@ -209,7 +209,7 @@ public class HttpFileSystem extends WebFileSystem {
                     
                 } catch ( SocketTimeoutException ex ) {
                     logger.finer("Socket timeout");
-                    HtmlUtil.consumeStream( urlc.getErrorStream() );
+                    HttpUtil.consumeStream( urlc.getErrorStream() );
                     responseCode= HttpURLConnection.HTTP_GATEWAY_TIMEOUT;
                     offlineMessage= "socket timeout";
                     offlineResponseCode= HttpURLConnection.HTTP_GATEWAY_TIMEOUT;
@@ -230,13 +230,18 @@ public class HttpFileSystem extends WebFileSystem {
                         msg= ex2.getMessage();
                     }
                     
-                    HtmlUtil.consumeStream( urlc.getErrorStream() );
+                    HttpUtil.consumeStream( urlc.getErrorStream() );
                     
-                    if ( code==404 ) {
+                    if ( code==HttpURLConnection.HTTP_NOT_FOUND ) {
                         logger.log( Level.SEVERE, String.format( "%d: folder not found: %s\n%s", code, root, msg ), ex );
                         throw (FileNotFoundException)ex;
+                    } else if ( code==HttpURLConnection.HTTP_BAD_REQUEST ) { // bad request--used by raw.githubusercontent.com/
+                        // we will use this as a flag to indicate a file could be downloaded.
+                        offlineMessage= "listing results in bad request";
+                        logger.log( Level.SEVERE, String.format( "%d: folder cannot be listed: %s\n%s", code, root, msg ), ex );
+                        doCheck= false;
                         
-                    } else if ( code!=401 ) {
+                    } else if ( code!=HttpURLConnection.HTTP_UNAUTHORIZED ) {
                         // Note this may still be code 403.  We still enter the same branch for now, because the user might be on a network that isn't permitted now.
                         logger.log( Level.SEVERE, String.format( "%d: failed to connect to %s\n%s", code, root, msg ), ex );
                         if ( FileSystem.settings().isAllowOffline() ) {
@@ -257,7 +262,7 @@ public class HttpFileSystem extends WebFileSystem {
                         }
                     }
                     
-                    offlineMessage= msg;
+                    if ( offlineMessage.length()==0 ) offlineMessage= msg;
                     offlineResponseCode= code;
                 }
 
@@ -278,6 +283,8 @@ public class HttpFileSystem extends WebFileSystem {
                                     throw new RuntimeException(ex);
                                 }
                             }
+                        } else if ( responseCode==HttpURLConnection.HTTP_BAD_REQUEST ) {
+                            offline= true; // we can get files we know about already, but listings cannot be done.
                         } else {
                             offline= false;
                         }
@@ -542,7 +549,7 @@ public class HttpFileSystem extends WebFileSystem {
      * @param f the target filename where the file is to be download.
      * @param partFile  use this file to stage the download
      * @param monitor  monitor the progress.
-     * @return ETag if available.
+     * @return metadata containing ETag if available.
      * @throws IOException 
      */
     @Override
