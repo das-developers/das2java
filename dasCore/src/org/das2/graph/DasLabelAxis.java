@@ -375,7 +375,7 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
         int tickLengthMajor = labelFont.getSize() * 2 / 3;
         int tickLength;
 
-        String[] llabels= tickFormatter( labels, getDatumRange() );
+        String[] llabels= tickFormatter( ticks.tickV, getDatumRange() );
         for (int i = 0; i < ticks.tickV.getLength(); i++) {
             Datum datum = ticks.tickV.get(i);
 
