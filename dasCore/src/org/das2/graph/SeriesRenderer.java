@@ -1831,7 +1831,25 @@ public class SeriesRenderer extends Renderer {
             logger.warning("that strange case where Kris saw  rte_1852410924");
             return vds;
         }
-        QDataSet hds= Reduction.histogram2D( vds, mxxx, myyy );
+        QDataSet hds;
+        try {
+            hds = Reduction.histogram2D( vds, mxxx, myyy );
+        } catch ( InconvertibleUnitsException u ) {
+            if ( !SemanticOps.getUnits(myyy).isConvertibleTo(SemanticOps.getUnits(vds) ) ) {
+                if ( SemanticOps.getUnits(myyy)==Units.dimensionless || SemanticOps.getUnits(vds)==Units.dimensionless ) {
+                    myyy.putProperty( QDataSet.UNITS, SemanticOps.getUnits(vds) );
+                }
+            }
+            if ( vds.property(QDataSet.DEPEND_0)!=null ) {
+                Units dsxunits= SemanticOps.getUnits( (QDataSet)vds.property(QDataSet.DEPEND_0));
+                if ( !SemanticOps.getUnits(mxxx).isConvertibleTo(dsxunits) )  {
+                    if ( SemanticOps.getUnits(mxxx)==Units.dimensionless || dsxunits==Units.dimensionless ) {
+                        mxxx.putProperty( QDataSet.UNITS, dsxunits );
+                    }
+                }
+            }
+            hds = Reduction.histogram2D( vds, mxxx, myyy );
+        }
         logger.log( Level.FINEST, "done histogram2D ({0}ms)", ( System.currentTimeMillis()-tt0 ));
         DataSetBuilder buildx= new DataSetBuilder(1,100);
         DataSetBuilder buildy= new DataSetBuilder(1,100);
