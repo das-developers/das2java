@@ -22,8 +22,8 @@ public class SubsetDataSet extends AbstractDataSet {
 
     public SubsetDataSet( QDataSet source ) {
         this.source= source;
-        sorts= new QDataSet[ QDataSet.MAX_RANK ];
-        lens= new int[ QDataSet.MAX_RANK ];
+        sorts= new QDataSet[ source.rank() ];
+        lens= new int[ source.rank() ];
         if ( !DataSetUtil.isQube(source) ) {
             nonQube= true;
         } else { // flatten the qube immediately, because we are seeing this with FFTPower output.
