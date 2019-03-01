@@ -260,7 +260,7 @@ public final class TailBundleDataSet extends AbstractDataSet {
             }
             String ss= DataSetUtil.toString(qube);
             ss= ss.substring(1,ss.length()-1);
-            return "BundleDataSet["+dep0name + ss + "," + datasets.size()+" datasets]";
+            return "TailBundleDataSet["+dep0name + ss + "," + datasets.size()+" datasets]";
         }
     }
 
