@@ -385,7 +385,13 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
             double zAxisMax= zAxis.getDataMaximum().doubleValue(zunits);
             double zAxisMin= zAxis.getDataMinimum().doubleValue(zunits);
             
-            if ( yBase >= row.getDMinimum() && yBaseTop <= row.getDMaximum() ) {
+            boolean visible;
+            if ( yAxis1 instanceof DasLabelAxis ) {
+                visible= yBaseTop >= row.getDMinimum() && yBase <= row.getDMaximum();
+            } else {
+                visible= yBase >= row.getDMinimum() && yBaseTop <= row.getDMaximum();
+            }
+            if ( visible ) {
                 if ( peaksIndicator==PeaksIndicator.PeakLine && peaks!=null ) {
                     GeneralPath p= new GeneralPath();
                     boolean lastWasFill=true;
