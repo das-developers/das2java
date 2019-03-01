@@ -1589,7 +1589,10 @@ public final class Ops {
      */
     public static QDataSet trim( QDataSet ds, QDataSet st, QDataSet en ) {
         if ( st.rank()!=0 || en.rank()!=0 ) {
-            throw new IllegalArgumentException("bounds must be rank 0");
+            if ( st.rank()==1 && st.length()==2 && en.rank()==1 && en.length()==2 ) {
+                return SemanticOps.trim( ds, datumRange(st), datumRange(en) );
+            }
+            throw new IllegalArgumentException("start and end parameters must be both rank 0 or both rank 1");
         }
         if ( ds==null ) {
             throw new NullPointerException("ds is null");
