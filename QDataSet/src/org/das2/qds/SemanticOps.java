@@ -15,6 +15,7 @@ import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
+import org.das2.qds.examples.Schemes;
 import org.das2.util.LoggerManager;
 //import static org.das2.qds.DataSetUtil.isConstant;
 import org.das2.qds.ops.Ops;
@@ -757,16 +758,29 @@ public final class SemanticOps {
         int rank=ds.rank();
         if ( ds.rank()==0 ) return ds;
         if ( xrange==null && yrange==null ) return ds;
-        if ( rank==3 && isJoin(ds) ) {
-            JoinDataSet jds= new JoinDataSet(ds.rank());
-            for ( int i=0; i<ds.length(); i++ ) {
-                QDataSet t1= trim( ds.slice(i), xrange, yrange );
-                if ( t1.length()>0 ) {
-                    jds.join( t1 );
+        if ( rank==3 ) {
+            if ( isJoin(ds) ) {
+                JoinDataSet jds= new JoinDataSet(ds.rank());
+                for ( int i=0; i<ds.length(); i++ ) {
+                    QDataSet t1= trim( ds.slice(i), xrange, yrange );
+                    if ( t1.length()>0 ) {
+                        jds.join( t1 );
+                    }
                 }
+                DataSetUtil.putProperties( DataSetUtil.getProperties(ds), jds );
+                return jds;
+            } else if ( Schemes.isCompositeImage(ds) ) {
+                int[] size= Ops.size(ds);
+                TailBundleDataSet bds= new TailBundleDataSet(3);
+                for ( int i=0; i<size[2]; i++ ) {
+                    QDataSet ch= Ops.slice2(ds,i);
+                    ch= trim( ch, xrange, yrange );
+                    bds.bundle(ch);
+                }
+                return bds;
+            } else {
+                throw new IllegalArgumentException("not supported: "+ds);
             }
-            DataSetUtil.putProperties( DataSetUtil.getProperties(ds), jds );
-            return jds;
         } else if ( rank==2 ) {
             if ( isRank2Waveform(ds) ) {
                 QDataSet xds= SemanticOps.xtagsDataSet(ds);
