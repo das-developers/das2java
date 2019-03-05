@@ -260,6 +260,7 @@ public class DataSetOps {
         DataSetBuilder zbuilder= new DataSetBuilder( 1, 100 );
         boolean dep1rank2= dep1!=null && dep1.rank()==2;
         boolean dep2rank2= dep2!=null && dep2.rank()==2;
+        boolean dep2rank3= dep2!=null && dep2.rank()==3;
         for ( int i=0; i<ds.length(); i++ ) {
             for ( int j=0; j<ds.length(i); j++ ) {
                 for ( int k=0; k<ds.length(i,j); k++ ) {
@@ -270,7 +271,7 @@ public class DataSetOps {
                         ybuilder.nextRecord( dep1rank2 ? dep1.value(i,j) : dep1.value(j) );
                     }
                     if (dep2!=null) {
-                        zbuilder.nextRecord( dep2rank2 ? dep2.value(i,k) : dep2.value(k) );
+                        zbuilder.nextRecord( dep2rank2 ? dep2.value(i,k) : ( dep2rank3 ? dep2.value(i,j,k): dep2.value(k) ) );
                     }
                     builder.nextRecord( ds.value(i,j,k) );
                 }
