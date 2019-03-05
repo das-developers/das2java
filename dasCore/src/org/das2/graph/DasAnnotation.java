@@ -523,7 +523,12 @@ public class DasAnnotation extends DasCanvasComponent {
         if ( gtr!=null ) gtr.setString( g, getString() );
         Rectangle r;
         
-        r= getAnnotationBubbleBounds();
+        try {
+            r= getAnnotationBubbleBounds();
+        } catch ( IllegalArgumentException ex ) {
+            ex.printStackTrace();
+            return;
+        }
         
         if ( anchorPosition==AnchorPosition.N 
             || anchorPosition==AnchorPosition.OutsideN 
@@ -589,7 +594,12 @@ public class DasAnnotation extends DasCanvasComponent {
             g.setColor(ltextColor);
 
             if ( gtr!=null ) {
-                gtr.draw(g, r.x+em, r.y + em + (float) gtr.getAscent() );
+                try {
+                    gtr.draw(g, r.x+em, r.y + em + (float) gtr.getAscent() );
+                } catch ( IllegalArgumentException ex ) {
+                    ex.printStackTrace();
+                    return;
+                }
             } else {
                 if ( scale!=1.0 ) {
                     int newWidth= (int)(img.getWidth()*scale);
