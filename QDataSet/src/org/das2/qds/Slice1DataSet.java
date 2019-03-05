@@ -112,8 +112,15 @@ public class Slice1DataSet extends AbstractDataSet {
 
 
         putProperty( QDataSet.DEPEND_0, ds.property(QDataSet.DEPEND_0) );
-        putProperty( QDataSet.DEPEND_1, ds.property(QDataSet.DEPEND_2) );
-        putProperty( QDataSet.DEPEND_2, ds.property(QDataSet.DEPEND_3) );
+        
+        // rfe670: check for high-rank DEPEND_2.
+        QDataSet dep2= (QDataSet) ds.property(QDataSet.DEPEND_2);
+        if ( dep2!=null && dep2.rank()>2 ) dep2= new Slice1DataSet( dep2, index );
+        putProperty( QDataSet.DEPEND_1, dep2 );
+        
+        QDataSet dep3= (QDataSet) ds.property(QDataSet.DEPEND_3);
+        if ( dep3!=null && dep3.rank()>2 ) dep3= new Slice1DataSet( dep3, index );        
+        putProperty( QDataSet.DEPEND_2, dep3 );
 
         putProperty( QDataSet.BUNDLE_0, ds.property(QDataSet.BUNDLE_0) );
         putProperty( QDataSet.BUNDLE_1, ds.property(QDataSet.BUNDLE_2) );
