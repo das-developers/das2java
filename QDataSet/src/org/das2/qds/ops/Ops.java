@@ -11193,12 +11193,13 @@ public final class Ops {
     }
     
     /**
-     * flatten a rank N dataset, though currently only rank 2 is supported.
+     * flatten a rank N dataset, though currently rank 4 is not supported.
      * The result for rank 2 is an n,3 dataset of [x,y,z], or if there are no tags, just [z].
      * The last index will be the dependent variable, and the first indeces will
      * be the independent variables sorted by dimension.
      * @see org.das2.qds.DataSetOps#flattenRank2(org.das2.qds.QDataSet) 
      * @see #grid(org.das2.qds.QDataSet) 
+     * @see #flattenWaveform(org.das2.qds.QDataSet) 
      * @param ds the rank N dataset (note only Rank 2 is supported for now).
      * @return rank 2 dataset bundle
      */
@@ -11236,6 +11237,8 @@ public final class Ops {
      * Note the new DEPEND_0 may have different units from ds.property(DEPEND_0).
      * @param ds rank 2 waveform with tags for DEPEND_0 and offsets for DEPEND_1
      * @return rank 1 waveform
+     * @see #flatten(org.das2.qds.QDataSet) 
+     * @see DataSetOps#flattenWaveform(org.das2.qds.QDataSet) 
      */
     public static QDataSet flattenWaveform( QDataSet ds ) {
         return DataSetOps.flattenWaveform(ds);
