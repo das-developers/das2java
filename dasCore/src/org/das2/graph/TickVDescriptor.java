@@ -247,6 +247,10 @@ public class TickVDescriptor {
             throw new IllegalArgumentException("min ge max");
         }
         
+        if ( Double.isInfinite( max.doubleValue(max.getUnits()) ) ) {
+            throw new IllegalArgumentException("max is Infinite");
+        }
+        
         TickVDescriptor res = new TickVDescriptor();
 
         res.units = min.getUnits();
