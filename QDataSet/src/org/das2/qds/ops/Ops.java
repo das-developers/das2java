@@ -770,7 +770,7 @@ public final class Ops {
             }
         }
         
-        it1.setMonitor(mon);
+        it1.setMonitor(mon.getSubtaskMonitor("reduce"));
         
         double fill = ((Number) wds.property( WeightsDataSet.PROP_SUGGEST_FILL )).doubleValue();
         double[] store = new double[2];
@@ -802,6 +802,14 @@ public final class Ops {
         result.putProperty(QDataSet.FILL_VALUE,fill);
         result.putProperty(QDataSet.WEIGHTS,wresult);
 
+        for ( int i=dim+1; i<ds.rank(); i++ ) {
+            QDataSet dep= (QDataSet)ds.property( "DEPEND_"+i );
+            if ( dep!=null && dep.rank()>2 ) {
+                dep= reduceMean( dep, dim, mon.getSubtaskMonitor("average DEPEND_"+dim) );
+                result.putProperty( "DEPEND_"+(i-1), dep );
+            }   
+        }
+        
         QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
         if ( dim==0 && dep0!=null && dep0.length()>0 ) {
             QDataSet extent= Ops.extent(dep0);
