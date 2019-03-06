@@ -1981,7 +1981,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     protected void updateTickV() {
         boolean lautoTickV= getAutoTickV();
         DatumRange dr= getDatumRange();
-        if ( !dr.min().isFinite() && !dr.max().isFinite() ) {
+        if ( !dr.min().isFinite() || !dr.max().isFinite() ) {
             logger.info( "range is not finite...");
             return; 
         }
