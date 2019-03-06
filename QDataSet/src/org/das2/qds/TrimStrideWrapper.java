@@ -62,18 +62,24 @@ public class TrimStrideWrapper extends AbstractDataSet {
         this.offset[dim]= sstart;
         this.len[dim]= (int)Math.ceil ( 1.*( sstop - sstart ) / this.stride[dim] );
         QDataSet dep= (QDataSet) ds.property("DEPEND_"+dim);
-        if ( dep!=null && dep.rank()==1 ) {
-            TrimStrideWrapper depw= new TrimStrideWrapper( dep );
-            depw.setTrim( 0, start, stop, stride );
-            putProperty( "DEPEND_"+dim, depw );
-        } else if (  dep!=null && dep.rank()==2 ) {
-            if ( dim==0 ) {
+        if ( dep!=null ) {
+            if ( dep.rank()==1 ) {
                 TrimStrideWrapper depw= new TrimStrideWrapper( dep );
                 depw.setTrim( 0, start, stop, stride );
                 putProperty( "DEPEND_"+dim, depw );
-            } else {
-                TrimStrideWrapper depw= new TrimStrideWrapper( dep ); //TODO: verify this.
-                depw.setTrim( 1, start, stop, stride );
+            } else if ( dep.rank()==2 ) {
+                if ( dim==0 ) {
+                    TrimStrideWrapper depw= new TrimStrideWrapper( dep );
+                    depw.setTrim( 0, start, stop, stride );
+                    putProperty( "DEPEND_"+dim, depw );
+                } else {
+                    TrimStrideWrapper depw= new TrimStrideWrapper( dep ); //TODO: verify this.
+                    depw.setTrim( 1, start, stop, stride );
+                    putProperty( "DEPEND_"+dim, depw );
+                }
+            } else if ( dep.rank()>2 ) {
+                TrimStrideWrapper depw= new TrimStrideWrapper( dep ); 
+                depw.setTrim( dim, start, stop, stride );
                 putProperty( "DEPEND_"+dim, depw );
             }
         }
@@ -82,6 +88,11 @@ public class TrimStrideWrapper extends AbstractDataSet {
             if ( i!=dim ) {
                 QDataSet depi= (QDataSet) ds.property("DEPEND_"+i);
                 if ( depi!=null ) {
+                    if ( depi.rank()>2 ) {
+                        TrimStrideWrapper depw= new TrimStrideWrapper( depi ); //TODO: verify this.
+                        depw.setTrim( dim, start, stop, stride );
+                        depi=  depw ;
+                    }
                     putProperty( "DEPEND_"+i, depi );
                 }
                 depi= (QDataSet) ds.property("BUNDLE_"+i);
