@@ -86,6 +86,29 @@ public class DataSetOps {
             return ArrayDataSet.copy(dataset);
         }
     }
+    
+    /**
+     * slice on the dimension.  This saves from the pain of having this branch
+     * all over the code.
+     * @param ds the rank N data to slice.
+     * @param dimension the dimension to slice, 0 is the first.
+     * @param index the index to slice at.
+     * @return the rank N-1 result.
+     */
+    public static MutablePropertyDataSet slice( QDataSet ds, int dimension, int index ) {
+        switch (dimension ) {
+            case 0:
+                return slice0(ds,index);
+            case 1:
+                return slice1(ds,index);
+            case 2:
+                return slice2(ds,index);
+            case 3:
+                return slice3(ds,index);
+            default:
+                throw new IllegalArgumentException("rank error, must be 0, 1, 2, 3, or 4.");
+        }
+    }
 
     /**
      * slice on the first dimension.  Note the function ds.slice(index) was
@@ -1009,7 +1032,16 @@ public class DataSetOps {
         }
 
         for (int i = 0; i < QDataSet.MAX_RANK-1; i++) {
-            if ( deps.get(i)!=null ) result.put("DEPEND_" + i, deps.get(i));
+            Object odep= (Object)deps.get(i);
+            if ( odep!=null ) {
+                if (odep instanceof QDataSet ) {
+                    QDataSet dep= (QDataSet)odep;
+                    if ( dep.rank()>2 ) { // remove the high rank data, the calling code should deal with it.
+                        odep= null;
+                    }
+                }
+                result.put("DEPEND_" + i, odep);
+            }
             if ( bund.get(i)!=null ) result.put("BUNDLE_" + i, bund.get(i));
             if ( bins.get(i)!=null ) result.put("BINS_" + i, bins.get(i));
         }
