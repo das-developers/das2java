@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.das2.util.filesystem.Glob;
 
@@ -31,6 +33,34 @@ import org.das2.util.filesystem.Glob;
  * @author jbf
  */
 public class FileUtil {
+
+    final static Logger logger= LoggerManager.getLogger("das2.util");
+        
+    /**
+     * returns True if the file contents are equal.
+     * @param file1
+     * @param file2
+     * @return true if the two files have identical 
+     */
+    public static boolean fileCompare(File file1, File file2) {
+        if ( file1.length()!=file2.length() ) {
+            return false;
+        }
+        try (
+            FileInputStream b1= new FileInputStream(file1);
+            FileInputStream b2= new FileInputStream(file2) ) {
+            long l= file1.length();
+            
+            for ( long i=0; i<l; i++ ) {
+                if ( b1.read()!=b2.read() ) {
+                    return false;
+                }
+            }
+        } catch (IOException ex) {
+            logger.log(Level.SEVERE, null, ex);
+        } 
+        return true;
+    }
 
     private FileUtil() {
     }
