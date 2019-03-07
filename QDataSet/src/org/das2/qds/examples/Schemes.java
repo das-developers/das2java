@@ -14,6 +14,7 @@ import org.das2.qds.JoinDataSet;
 import org.das2.qds.MutablePropertyDataSet;
 import org.das2.qds.QDataSet;
 import org.das2.qds.SemanticOps;
+import org.das2.qds.SparseDataSetBuilder;
 import org.das2.qds.WritableDataSet;
 import org.das2.qds.ops.Ops;
 import static org.das2.qds.ops.Ops.PI;
@@ -478,6 +479,84 @@ public class Schemes {
     }
     
     /**
+     * A complexBundleDataSet is a set of datasets which have different rank.  The
+     * rank 2 datasets take multiple columns of the dataset, and rank 3 and 4 datasets
+     * are unrolled to make them rank 2 and the property ELEMENT_DIMENSIONS is used
+     * to re-form them.  This returns an example bundle dataset that bundles timetags, density, velocity, and flux.
+     * Yes, this was coded this twice, not realizing it was already done.  This code
+     * is probably easier to read, so it is left in.
+     * 
+     * @return an example bundle dataset 
+     * @see #complexBundleDataSet() 
+     */
+    public static QDataSet complexBundleDataSet2() {
+        DDataSet data= DDataSet.createRank2( 12, 9 );
+        QDataSet ttags= Ops.linspace( "2019-03-07T00:30Z", "2019-03-07T11:30Z", 12 );
+        QDataSet vel= vectorTimeSeries();
+        QDataSet dens= scalarTimeSeries();
+        QDataSet flux= simpleSpectrogram();
+        for ( int i=0; i<data.length(); i++ ) {
+            data.putValue( i, 0, ttags.value(i) );
+            data.putValue( i, 1, dens.value(i) );
+            data.putValue( i, 2, vel.value(i,0) );
+            data.putValue( i, 3, vel.value(i,1) );
+            data.putValue( i, 4, vel.value(i,2) );
+            data.putValue( i, 5, flux.value(i,0) );
+            data.putValue( i, 6, flux.value(i,1) );
+            data.putValue( i, 7, flux.value(i,2) );
+            data.putValue( i, 8, flux.value(i,3) );
+        }
+        
+        
+        SparseDataSetBuilder sb= new SparseDataSetBuilder(2);
+        sb.setLength(9);
+        
+        sb.putProperty( QDataSet.NAME, 0, "ttags");
+        sb.putProperty( QDataSet.UNITS, 0, ttags.property(QDataSet.UNITS) );
+        sb.putProperty( QDataSet.NAME, 1, "density");
+        sb.putProperty( QDataSet.UNITS, 1, Units.pcm3 );
+        
+        Units vunits= (Units)((QDataSet)vel.property(QDataSet.BUNDLE_1)).property(QDataSet.UNITS,0);
+        sb.putProperty( QDataSet.NAME, 2, "vx" );
+        sb.putProperty( QDataSet.UNITS, 2, vunits );
+        sb.putProperty( QDataSet.NAME, 3, "vy" );
+        sb.putProperty( QDataSet.UNITS, 3, vunits );
+        sb.putProperty( QDataSet.NAME, 4, "vz" );
+        sb.putProperty( QDataSet.UNITS, 4, vunits );
+
+        // a rank 2 dataset "V" can be unbundled to get all three components at once.
+        sb.putProperty( QDataSet.ELEMENT_DIMENSIONS, new int[] { 3 } );
+        sb.putProperty( QDataSet.ELEMENT_NAME, 2, "V" );
+        sb.putProperty( QDataSet.ELEMENT_LABEL, 2, "S/C Velocity" );
+        sb.putProperty( QDataSet.START_INDEX, 2, 2);
+        sb.putProperty( QDataSet.START_INDEX, 3, 2);
+        sb.putProperty( QDataSet.START_INDEX, 4, 2);
+
+        Units funits= Units.lookupUnits( "kg m^2 s^−2 A^−1" );
+        sb.putProperty( QDataSet.NAME, 5, "fl0" );
+        sb.putProperty( QDataSet.UNITS, 5, funits );
+        sb.putProperty( QDataSet.NAME, 6, "fl1" );        
+        sb.putProperty( QDataSet.UNITS, 6, funits );
+        sb.putProperty( QDataSet.NAME, 7, "fl2" );        
+        sb.putProperty( QDataSet.UNITS, 7, funits );
+        sb.putProperty( QDataSet.NAME, 8, "fl3" );        
+        sb.putProperty( QDataSet.UNITS, 8, funits );
+
+        // a rank 2 dataset "flux" can be unbundled to get the spectrogram.
+        sb.putProperty( QDataSet.ELEMENT_DIMENSIONS, 5, new int[] { 4 } );
+        sb.putProperty( QDataSet.ELEMENT_NAME, 5, "Flux" );
+        sb.putProperty( QDataSet.DEPEND_1, 5, Ops.pow( 10, linspace(1.,4.,4) ) );
+        sb.putProperty( QDataSet.START_INDEX, 5, 5);
+        sb.putProperty( QDataSet.START_INDEX, 6, 5);
+        sb.putProperty( QDataSet.START_INDEX, 7, 5);
+        sb.putProperty( QDataSet.START_INDEX, 8, 5);
+        
+        data.putProperty( QDataSet.BUNDLE_1, sb.getDataSet() );
+        
+        return data;
+    }
+    
+    /**
      * return an example bundle dataset that bundles timetags, a rank 1 dataset
      * and a rank 1 dataset.  
      * 
@@ -602,6 +681,7 @@ public class Schemes {
      * return bundle with Time, Density, Speed, and Flux, to demonstrate
      * a bundle of datasets with differing rank.
      * @return bundle with Time, Density, Speed, and Flux
+     * @see #complexBundleDataSet2() 
      */
     public static QDataSet complexBundleDataSet() {
         try {
