@@ -510,8 +510,9 @@ public interface QDataSet {
 
     /**
      * int array, the dimensions of the element.  A rank 0 is implicitly [], 
-     * a rank 1, n by 1, would be [1].  Note before 2016-09-27, high-rate 
-     * bundles were handled with qds.length(i) and qds.value(j).
+     * a rank 1, n by 1, would be [1].  This is similar to the size command, for
+     * one record of the data.
+     * @see org.das2.qds.ops.Ops#size(org.das2.qds.QDataSet) 
      */
     public final static String ELEMENT_DIMENSIONS="ELEMENT_DIMENSIONS";
     
