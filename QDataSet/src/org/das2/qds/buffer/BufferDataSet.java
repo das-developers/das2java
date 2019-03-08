@@ -433,6 +433,25 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
     }
     
     /**
+     * create a dataset backed by the given type.
+     * @param rank the rank of the data
+     * @param type DOUBLE, FLOAT, UINT, etc
+     * @param len0 number of records (ignored for rank 0).
+     * @param size size of each record
+     * @return BufferDataSet of the given type.
+     */
+    public static BufferDataSet create( int rank, Object type, int len0, int[] size ) {
+        switch( rank )  {
+            case 0: return createRank0(type);
+            case 1: return createRank1(type,len0);
+            case 2: return createRank2(type,len0,size[0]);
+            case 3: return createRank3(type,len0,size[0],size[1]);
+            case 4: return createRank4(type,len0,size[0],size[1],size[2]);
+            default: throw new IllegalArgumentException("rank error: "+rank);
+        }
+    }
+    
+    /**
      * create a rank 0 dataset backed by the given type.
      * @param type DOUBLE, FLOAT, UINT, etc
      * @return BufferDataSet of the given type.
