@@ -14,6 +14,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.IllegalFormatConversionException;
 import java.util.logging.Level;
@@ -23,6 +24,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
+import java.util.TreeSet;
 import java.util.logging.Logger;
 import org.das2.datum.CacheTag;
 import org.das2.datum.Datum;
@@ -2067,6 +2069,45 @@ public class DataSetUtil {
         return theResult;
     }
 
+    /**
+     * return the value of the nth biggest item.  This keeps n values in memory.
+     * @param set rank 1 dataset containing comparable data.
+     * @param n the rank.
+     * @return the value at this rank.
+     */
+    public static Datum nthLargest( final QDataSet set, int n ) {
+        
+        TreeSet<Double> ts= new TreeSet<>();
+                
+        int len= set.length();
+        QDataSet wds= weightsDataSet(set);
+        
+        int i=0;
+        while ( ts.size()<n && i<set.length() ) {
+            if ( wds.value(i)>0 ) {
+                ts.add( set.value(i) );
+            }
+            i=i+1;
+        }
+        
+        if ( i==set.length() && ts.size()<n ) {
+            throw new IndexOutOfBoundsException("dataset size ("+set.length()+ ") is smaller than size ("+n+")" );
+        }
+        
+        Double sm= ts.first();
+        for ( ; i<len; i++ ) {
+            if ( wds.value(i)>0 ) {
+                Double dsiv= set.value(i);
+                if ( dsiv>sm ) {
+                    ts.remove(sm);
+                    ts.add(dsiv);
+                    sm= ts.first();
+                }
+            }
+        }
+        return Datum.create( sm, SemanticOps.getUnits(set) );
+    }
+            
     /**
      * use K-means algorithm to find N means in a rank 1 dataset.  
      * @param xds dataset containing data from N normal distributions
