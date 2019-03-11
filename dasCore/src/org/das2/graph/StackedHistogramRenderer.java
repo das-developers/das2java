@@ -57,6 +57,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.das2.dataset.AveragePeakTableRebinner;
 import org.das2.dataset.AverageTableRebinner;
+import org.das2.dataset.NoDataInIntervalException;
 import org.das2.datum.Datum;
 import org.das2.datum.LocationUnits;
 import org.das2.qds.DataSetUtil;
@@ -317,7 +318,14 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
         
         DataSetRebinner rebinner = new Rebinner();
         
-        QDataSet data=  rebinner.rebin(xtysData, xbins, null);
+        QDataSet data;
+        try {
+            data=  rebinner.rebin(xtysData, xbins, null);
+        } catch ( NoDataInIntervalException ex ) {
+            lastException = ex;
+            plotImage = null;
+            data= null;
+        }
         QDataSet peaks= (QDataSet) data.property(QDataSet.BIN_MAX); // can be null for NN.
         if ( peaks==null ) {
             peaks= (QDataSet) data.property(QDataSet.BIN_PLUS);
@@ -511,6 +519,8 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
                 }
 
                 return result;
+            } catch ( NoDataInIntervalException ex ) {
+                throw ex;
             } catch ( Exception e ) {
                 throw new DasException(e);
             }
