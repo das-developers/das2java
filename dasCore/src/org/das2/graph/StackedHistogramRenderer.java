@@ -325,6 +325,7 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
             lastException = ex;
             plotImage = null;
             data= null;
+            return;
         }
         QDataSet peaks= (QDataSet) data.property(QDataSet.BIN_MAX); // can be null for NN.
         if ( peaks==null ) {
