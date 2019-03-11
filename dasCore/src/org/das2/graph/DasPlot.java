@@ -1402,6 +1402,7 @@ public class DasPlot extends DasCanvasComponent {
                                 logger.log(Level.FINE,"calling updatePlotImage again because of memento");
                                 r.updatePlotImage( lxaxis, lyaxis, new NullProgressMonitor());
                             } catch (DasException ex) {
+                                ex.printStackTrace();
                                 logger.log(Level.SEVERE, ex.getMessage(), ex);
                             }
                         } else {
