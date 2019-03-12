@@ -17,6 +17,7 @@ import java.util.Calendar;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.IllegalFormatConversionException;
+import java.util.Iterator;
 import java.util.logging.Level;
 import org.das2.datum.Units;
 import java.util.LinkedHashMap;
@@ -24,6 +25,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Logger;
 import org.das2.datum.CacheTag;
@@ -2072,20 +2075,26 @@ public class DataSetUtil {
     /**
      * return the value of the nth biggest item.  This keeps n values in memory.
      * @param set rank 1 dataset containing comparable data.
-     * @param n the rank.
+     * @param n the number of items to find
      * @return the value at this rank.
      */
-    public static Datum nthLargest( final QDataSet set, int n ) {
+    public static QDataSet nLargest( final QDataSet set, int n ) {
         
-        TreeSet<Double> ts= new TreeSet<>();
+        TreeMap<Double,Integer> ts= new TreeMap<>();
                 
         int len= set.length();
         QDataSet wds= weightsDataSet(set);
-        
+                
         int i=0;
         while ( ts.size()<n && i<set.length() ) {
             if ( wds.value(i)>0 ) {
-                ts.add( set.value(i) );
+                double d= set.value(i);
+                Integer count= ts.get( d );
+                if ( count==null ) {
+                    ts.put( d, 1 );
+                } else {
+                    ts.put( d, count+1 );
+                }
             }
             i=i+1;
         }
@@ -2094,18 +2103,40 @@ public class DataSetUtil {
             throw new IndexOutOfBoundsException("dataset size ("+set.length()+ ") is smaller than size ("+n+")" );
         }
         
-        Double sm= ts.first();
+        Double sm= ts.firstKey();
         for ( ; i<len; i++ ) {
             if ( wds.value(i)>0 ) {
                 Double dsiv= set.value(i);
                 if ( dsiv>sm ) {
-                    ts.remove(sm);
-                    ts.add(dsiv);
-                    sm= ts.first();
+                    Integer count= ts.get(sm);
+                    if ( count==1 ) {
+                        ts.remove(sm);
+                    } else {
+                        ts.put( sm, count-1 );
+                    }
+                    count= ts.get(dsiv);
+                    if ( count==null ) {
+                        ts.put( dsiv, 1 );
+                    } else {
+                        ts.put( dsiv, count+1 );
+                    }
+                    sm= ts.firstKey();
                 }
             }
         }
-        return Datum.create( sm, SemanticOps.getUnits(set) );
+        
+        DDataSet result= DDataSet.createRank1(n);
+        result.putProperty( QDataSet.UNITS, SemanticOps.getUnits(set) );
+        Double[] dd= ts.keySet().toArray( new Double[ts.size()] );
+        Integer[] ii= ts.values().toArray( new Integer[ts.size()] );
+        int index=0;
+        for ( i=0; i<dd.length; i++ ) {
+            for ( int j=0; j<ii[i]; j++ ) {
+                result.putValue( index, dd[i] );
+                index++;
+            }
+        }
+        return result;
     }
             
     /**
