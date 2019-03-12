@@ -2076,7 +2076,7 @@ public class DataSetUtil {
      * return the value of the nth biggest item.  This keeps n values in memory.
      * @param set rank 1 dataset containing comparable data.
      * @param n the number of items to find
-     * @return the value at this rank.
+     * @return the n largest elements, sorted.
      */
     public static QDataSet nLargest( final QDataSet set, int n ) {
         
