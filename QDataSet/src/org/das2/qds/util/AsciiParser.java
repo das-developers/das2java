@@ -1735,6 +1735,7 @@ public class AsciiParser {
      * Repeats are not supported.
      * @param format
      * @return 
+     * @see org.autoplot.metatree.MetadataUtil#normalizeFormatSpecifier
      */
     private static String[] f77FormatToCFormat( String[] format ) {
         String[] ss= new String[format.length+1];
@@ -1772,6 +1773,7 @@ public class AsciiParser {
      * Convert FORTRAN (F77) style format to C-style format specifiers.
      * @param format for example "%5d%5d%9f%s"
      * @return for example "d5,d5,f9,a"
+     * @see org.autoplot.metatree.MetadataUtil#normalizeFormatSpecifier
      */
     public static String getRegexForFormat( String format ) {
         String[] ss= format.split("%");
