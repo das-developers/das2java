@@ -39,6 +39,10 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -98,10 +102,28 @@ public class PropertyEditor extends JComponent {
     private JPopupMenu popupMenu;
     private static final Logger logger = DasLogger.getLogger(DasLogger.GUI_LOG);
 
+    
+    private PropertyChangeListener myPcl= new PropertyChangeListener() {
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            PropertyEditor.this.refresh();
+        }
+    };
+            
     private PropertyEditor(PropertyTreeNodeInterface root, Object bean) {
         this.bean = bean;
         setLayout(new BorderLayout());
         this.bean = bean;
+
+        boolean doListen= false;
+        if ( doListen ) {
+            try {
+                Method m= bean.getClass().getMethod( "addPropertyChangeListener", PropertyChangeListener.class );
+                m.invoke( bean, new Object[] { myPcl } );
+            } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+                logger.log(Level.SEVERE, null, ex);
+            }
+        }
 
         DefaultTreeModel treeModel = new DefaultTreeModel(root, true);
         root.setTreeModel(treeModel);
