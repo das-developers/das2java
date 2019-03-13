@@ -58,8 +58,8 @@ public class SimpleDemo2 {
         DasPlot.addCustomizer( CustomizerKey.of("myc"), new Customizer() {
             @Override
             public void customize(DasPlot plot) {
-                xaxis.getDasMouseInputAdapter().removeMenuItem("Properties");
-                JMenuItem newProps= new JMenuItem("propz");
+                
+                JMenuItem newProps= new JMenuItem("Propertiez");
                 newProps.addActionListener( new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
@@ -68,7 +68,7 @@ public class SimpleDemo2 {
                         newP.showDialog(xaxis);
                     }
                 });
-                xaxis.getDasMouseInputAdapter().addMenuItem( newProps );
+                xaxis.getDasMouseInputAdapter().replaceMenuItem( "Properties", newProps );
             }
         });
         DasPlot plot = new DasPlot( xaxis, yaxis );
