@@ -109,21 +109,42 @@ public class PropertyEditor extends JComponent {
             PropertyEditor.this.refresh();
         }
     };
+           
+    private boolean doListen= false;
             
-    private PropertyEditor(PropertyTreeNodeInterface root, Object bean) {
+    public void setListenForExternalChanges( boolean v ) {
+        if ( v ) {
+            if ( !this.doListen ) {
+                try {
+                    Method m= this.bean.getClass().getMethod( "addPropertyChangeListener", PropertyChangeListener.class );
+                    m.invoke( this.bean, new Object[] { myPcl } ); 
+                } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+                    logger.log(Level.SEVERE, null, ex);
+                }
+            }
+        } else {
+            if ( this.doListen ) {
+                try {
+                    Method m= this.bean.getClass().getMethod( "removePropertyChangeListener", PropertyChangeListener.class );
+                    m.invoke( this.bean, new Object[] { myPcl } ); 
+                } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+                    logger.log(Level.SEVERE, null, ex);
+                }
+            }
+        }
+        this.doListen= v;
+        // Note the irony that the PropertyEditor doesn't fire property changes.  
+        // firePropertyChange( "listenForExternalChanges", oldv, v );
+    }
+    
+    public boolean getListenForExternalChanges( ) {
+        return this.doListen;
+    }
+    
+    private PropertyEditor(PropertyTreeNodeInterface root, Object bean ) {
         this.bean = bean;
         setLayout(new BorderLayout());
         this.bean = bean;
-
-        boolean doListen= false;
-        if ( doListen ) {
-            try {
-                Method m= bean.getClass().getMethod( "addPropertyChangeListener", PropertyChangeListener.class );
-                m.invoke( bean, new Object[] { myPcl } );
-            } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-                logger.log(Level.SEVERE, null, ex);
-            }
-        }
 
         DefaultTreeModel treeModel = new DefaultTreeModel(root, true);
         root.setTreeModel(treeModel);
@@ -385,6 +406,9 @@ public class PropertyEditor extends JComponent {
         if ( dialog!=null ) {
             dialog.setVisible(false);
             dialog.dispose();
+            if ( this.doListen ) {
+                setListenForExternalChanges(false); // remove property change listener.
+            }
         } else {
             logger.info("dialog has not been created");
         }
