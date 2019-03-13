@@ -48,6 +48,12 @@ public interface FilterEditorPanel {
      */
     boolean validateFilter( String filter, QDataSet in );
     
+    /**
+     * If false, then remove options which might break products.
+     * @param expert 
+     */
+    public void setExpertMode( boolean expert );
+    
     public static String PROP_FILTER= "filter";
     
 }

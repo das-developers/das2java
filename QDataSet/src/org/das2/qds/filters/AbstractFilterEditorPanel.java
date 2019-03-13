@@ -4,6 +4,7 @@
  */
 package org.das2.qds.filters;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JPanel;
 import org.das2.util.LoggerManager;
@@ -53,6 +54,10 @@ public abstract class AbstractFilterEditorPanel extends JPanel implements Filter
     @Override
     public boolean validateFilter(String filter, QDataSet in) {
         return true;
+    }
+    
+    public void setExpertMode( boolean expert ) {
+        logger.log(Level.FINE,"setExpertMode");
     }
     
 }

@@ -404,4 +404,11 @@ public class SliceFilterEditorPanel extends AbstractFilterEditorPanel implements
         return true;
     }
 
+    @Override
+    public void setExpertMode(boolean expert) {
+        logger.log(Level.FINE, "sliceFilterEditorPanel setExpertMode({0})", expert);
+        this.sliceDimensionCB.setEnabled(expert);
+    }
+    
+
 }

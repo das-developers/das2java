@@ -64,6 +64,7 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
     private boolean implicitUnbundle= false;
     private final TickleTimer timer;
     private final Timer recalculatingTimer; //AWT thread
+    private boolean expertMode= true;
     
     private static final Logger logger= LoggerManager.getLogger("qdataset.filters");
     private static final String CLASS_NAME = FiltersChainPanel.class.getName();
@@ -400,6 +401,7 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
         if ( r==JOptionPane.OK_OPTION ) {
             String ss= afd.getValue();
             FilterEditorPanel filter1= getEditorFor(ss, null);
+            filter1.setExpertMode( this.expertMode );
             filter1.getPanel().addFocusListener( lostFocusListener );
             addFocusListeners( filter1.getPanel() );
             editors.add( idx, filter1 );
@@ -1028,5 +1030,13 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
         d.setSize(640,480);
         d.setVisible(true);
         System.err.println(ff.getFilter());
+    }
+
+    @Override
+    public void setExpertMode(boolean expert) {
+        for ( FilterEditorPanel p : editors ) {
+            p.setExpertMode(expert);
+        }
+        this.expertMode= expert;
     }
 }
