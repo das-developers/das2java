@@ -6,9 +6,15 @@
 package test.graph;
 
 import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.text.ParseException;
 import javax.swing.JFrame;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import org.das2.components.propertyeditor.PropertyEditor;
+import org.das2.graph.Customizer;
+import org.das2.graph.CustomizerKey;
 import org.das2.graph.DasAxis;
 import org.das2.graph.DasCanvas;
 import org.das2.graph.DasColumn;
@@ -46,9 +52,25 @@ public class SimpleDemo2 {
         QDataSet ds= Ops.link( tds, yds );
 
         // here's some old das2 autoranging, works for this case
-        DasAxis xaxis = GraphUtil.guessXAxis(ds);
+        final DasAxis xaxis = GraphUtil.guessXAxis(ds);
         DasAxis yaxis = GraphUtil.guessYAxis(ds);
 
+        DasPlot.addCustomizer( CustomizerKey.of("myc"), new Customizer() {
+            @Override
+            public void customize(DasPlot plot) {
+                xaxis.getDasMouseInputAdapter().removeMenuItem("Properties");
+                JMenuItem newProps= new JMenuItem("propz");
+                newProps.addActionListener( new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        PropertyEditor newP= new PropertyEditor(xaxis);
+                        newP.setListenForExternalChanges(true);
+                        newP.showDialog(xaxis);
+                    }
+                });
+                xaxis.getDasMouseInputAdapter().addMenuItem( newProps );
+            }
+        });
         DasPlot plot = new DasPlot( xaxis, yaxis );
 
         // here's autoplot as of 2005
