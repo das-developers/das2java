@@ -1216,6 +1216,36 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
     }
 
     /**
+     * provide a way for an alternate implementation to be added at the position
+     * occupied by "label".
+     * @param label the parameter to find, e.h.
+     * @param b 
+     */
+    public synchronized void replaceMenuItem( String label, Component b ) {
+        if (headless) {
+            return;
+        }
+        MenuElement[] ele = primaryPopup.getSubElements();
+        int index = -1;
+        for (int i = 0; i < numInserted; i++) {
+            if (ele[i] instanceof JMenuItem) {
+                if (((JMenuItem) ele[i]).getText().contains(label)) {
+                    index = i;
+                    break;
+                }
+            }
+        }
+        if ( index>-1 ) {
+            primaryPopup.remove(index);
+            primaryPopup.add( b, index );
+        } else {
+            logger.info("unable to find menu item \""+label+"\"");
+            primaryPopup.add( b );
+        }
+        
+    }
+    
+    /**
      * hack to provide way to get rid of "Dump Data".  
      * @param label string to search for.
      */
