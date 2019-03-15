@@ -131,6 +131,29 @@ public class FileStorageModel {
     }
 
     /**
+     * return a child filesystem.  TODO: look into .zip child.
+     * @param root
+     * @param child
+     * @param monitor
+     * @return
+     * @throws org.das2.util.filesystem.FileSystem.FileSystemOfflineException
+     * @throws UnknownHostException
+     * @throws FileNotFoundException 
+     */
+    public static FileSystem getChildFileSystem( FileSystem root, String child, ProgressMonitor monitor ) throws FileSystem.FileSystemOfflineException, UnknownHostException, FileNotFoundException {
+        FileSystem result; 
+        if ( root.getRootURI().getScheme().equals("file") ) {
+            File localRoot= ((LocalFileSystem)root).getLocalRoot();
+            result= FileSystem.create( new File( localRoot, child ).toURI(), monitor.getSubtaskMonitor("create") );
+        } else {
+            result= FileSystem.create( root.getRootURI().resolve( child ), monitor.getSubtaskMonitor("create") ); // 3523492: allow the FS type to change; eg to zip.
+        }
+        return result;
+        //fileSystems[i]= root.createFileSystem( names[i] ); //TODO: look into this.
+        // 3523492: allow the FS type to change; eg to zip.
+    }
+    
+    /**
      * return a random file from the FSM, which can be used to represent a typical file.  For
      * example, we need to look at metadata to see what is available.
      * @param monitor progress monitor in case a file must be downloaded.
@@ -195,13 +218,7 @@ public class FileStorageModel {
                 fileSystems= new FileSystem[names.length];
                 for ( int i=0; i<names.length; i++ ) {
                     try {
-                        if ( root.getRootURI().getScheme().equals("file") ) {
-                            File localRoot= ((LocalFileSystem)root).getLocalRoot();
-                            fileSystems[i]= FileSystem.create( new File( localRoot, names[i] ).toURI(), monitor.getSubtaskMonitor("create") );
-                        } else {
-                            fileSystems[i]= FileSystem.create( root.getRootURI().resolve(names[i]), monitor.getSubtaskMonitor("create") ); // 3523492: allow the FS type to change; eg to zip.
-                        }
-                        //fileSystems[i]= root.createFileSystem( names[i] );
+                        fileSystems[i]= getChildFileSystem( root, names[i], monitor.getSubtaskMonitor("create") );
                     } catch ( FileSystem.FileSystemOfflineException | UnknownHostException | FileNotFoundException e ) {
                         throw new RuntimeException(e);
                     }
@@ -273,7 +290,7 @@ public class FileStorageModel {
                         fileSystems= new FileSystem[names.length];
                         for ( int i=0; i<names.length; i++ ) {
                             try {
-                                fileSystems[i]= FileSystem.create( root.getRootURI().resolve(names[i]), monitor.getSubtaskMonitor("create") ); // 3523492: allow the FS type to change; eg to zip.
+                                fileSystems[i]= getChildFileSystem( root, names[i], monitor.getSubtaskMonitor("create") ); 
                             } catch ( Exception e ) {
                                 throw new RuntimeException(e);
                             }
@@ -523,13 +540,7 @@ public class FileStorageModel {
             fileSystems= new FileSystem[names.length];
             for ( int i=0; i<names.length; i++ ) {
                 try {
-                    URI url;
-                    if ( root instanceof LocalFileSystem ) {
-                        url= new File( ((LocalFileSystem)root).getLocalRoot(), names[i]).toURI();
-                    } else {
-                        url= root.getRootURI().resolve(names[i]);  //TODO: test
-                    }
-                    fileSystems[i]= FileSystem.create( url );
+                    fileSystems[i]= getChildFileSystem( root, names[i], monitor );
                 } catch ( Exception e ) {
                     throw new RuntimeException(e);
                 }
