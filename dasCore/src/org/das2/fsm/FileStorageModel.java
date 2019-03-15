@@ -195,7 +195,12 @@ public class FileStorageModel {
                 fileSystems= new FileSystem[names.length];
                 for ( int i=0; i<names.length; i++ ) {
                     try {
-                        fileSystems[i]= FileSystem.create( root.getRootURI().resolve(names[i]), monitor.getSubtaskMonitor("create") ); // 3523492: allow the FS type to change; eg to zip.
+                        if ( root.getRootURI().getScheme().equals("file") ) {
+                            File localRoot= ((LocalFileSystem)root).getLocalRoot();
+                            fileSystems[i]= FileSystem.create( new File( localRoot, names[i] ).toURI(), monitor.getSubtaskMonitor("create") );
+                        } else {
+                            fileSystems[i]= FileSystem.create( root.getRootURI().resolve(names[i]), monitor.getSubtaskMonitor("create") ); // 3523492: allow the FS type to change; eg to zip.
+                        }
                         //fileSystems[i]= root.createFileSystem( names[i] );
                     } catch ( FileSystem.FileSystemOfflineException | UnknownHostException | FileNotFoundException e ) {
                         throw new RuntimeException(e);
