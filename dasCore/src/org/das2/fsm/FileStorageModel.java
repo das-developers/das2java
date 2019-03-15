@@ -18,6 +18,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.*;
+import org.das2.DasApplication;
 import org.das2.datum.CacheTag;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
@@ -517,7 +518,12 @@ public class FileStorageModel {
             fileSystems= new FileSystem[names.length];
             for ( int i=0; i<names.length; i++ ) {
                 try {
-                    URI url= root.getRootURI().resolve(names[i]);  //TODO: test
+                    URI url;
+                    if ( root instanceof LocalFileSystem ) {
+                        url= new File( ((LocalFileSystem)root).getLocalRoot(), names[i]).toURI();
+                    } else {
+                        url= root.getRootURI().resolve(names[i]);  //TODO: test
+                    }
                     fileSystems[i]= FileSystem.create( url );
                 } catch ( Exception e ) {
                     throw new RuntimeException(e);
