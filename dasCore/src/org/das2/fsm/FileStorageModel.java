@@ -131,11 +131,13 @@ public class FileStorageModel {
     }
 
     /**
-     * return a child filesystem.  TODO: look into .zip child.
+     * return a child filesystem, with special code for LocalFileSystems to support
+     * Windows.  TODO: look into .zip child.
      * @param root
      * @param child
      * @param monitor
-     * @return
+     * @return the FileSystem
+     * @see https://sourceforge.net/p/autoplot/bugs/2132
      * @throws org.das2.util.filesystem.FileSystem.FileSystemOfflineException
      * @throws UnknownHostException
      * @throws FileNotFoundException 
