@@ -532,7 +532,7 @@ public class Schemes {
         sb.putProperty( QDataSet.START_INDEX, 3, 2);
         sb.putProperty( QDataSet.START_INDEX, 4, 2);
 
-        Units funits= Units.lookupUnits( "kg m^2 s^−2 A^−1" );
+        Units funits= Units.lookupUnits( "kg m^2 s^-2 A^-1" );
         sb.putProperty( QDataSet.NAME, 5, "fl0" );
         sb.putProperty( QDataSet.UNITS, 5, funits );
         sb.putProperty( QDataSet.NAME, 6, "fl1" );        
