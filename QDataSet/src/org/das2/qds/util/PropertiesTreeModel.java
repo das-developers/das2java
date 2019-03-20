@@ -12,7 +12,6 @@ import java.util.Map.Entry;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
-import javax.swing.tree.TreeNode;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
 import org.das2.util.DasMath;
