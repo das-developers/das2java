@@ -188,6 +188,17 @@ public class SubsetDataSet extends AbstractDataSet {
                 }
             }
         }
+        
+        // support subset to get a subset of bundled datasets.
+        QDataSet bundle= (QDataSet)property( "BUNDLE_"+idim );
+        if ( bundle==null ) {
+            bundle= (QDataSet) source.property( "BUNDLE"+idim );
+        }
+        if ( bundle!=null ) {
+            SubsetDataSet b= new SubsetDataSet(bundle);
+            b.applyIndex( 0, idx );
+            putProperty( "BUNDLE_"+idim, b );
+        }
     }
 
     @Override
@@ -243,7 +254,7 @@ public class SubsetDataSet extends AbstractDataSet {
     @Override
     public Object property(String name, int i) {
         Object v= properties.get(name);
-        return v!=null ? v : source.property(name, i);
+        return v!=null ? v : source.property(name, ((int)sorts[0].value(i)) );
     }
 
     @Override
