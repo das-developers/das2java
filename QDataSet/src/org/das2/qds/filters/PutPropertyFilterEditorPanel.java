@@ -35,6 +35,14 @@ public class PutPropertyFilterEditorPanel extends AbstractFilterEditorPanel {
                 vv= new String[] { "1e30", "999", "0" };
                 documentationLabel.setText("the largest valid value");
                 break;
+            case "DELTA_MINUS":
+                vv= new String[] { "None" };
+                documentationLabel.setText("use None to remove error bars");
+                break;
+            case "DELTA_PLUS":
+                vv= new String[] { "None" };
+                documentationLabel.setText("use None to remove error bars");
+                break;
             case "FILL_VALUE":
                 vv= new String[] { "0", "-999", "-1e31" };
                 documentationLabel.setText("values that indicate missing measurements");
@@ -71,7 +79,7 @@ public class PutPropertyFilterEditorPanel extends AbstractFilterEditorPanel {
         jLabel1.setText("Put Property");
 
         jComboBox1.setEditable(true);
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "VALID_MIN", "VALID_MAX", "FILL_VALUE", "TITLE", "LABEL", "DEPEND_0", "FORMAT" }));
+        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "VALID_MIN", "VALID_MAX", "FILL_VALUE", "TITLE", "LABEL", "DEPEND_0", "FORMAT", "DELTA_PLUS", "DELTA_MINUS", " " }));
         jComboBox1.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 jComboBox1ItemStateChanged(evt);
