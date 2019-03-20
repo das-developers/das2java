@@ -142,13 +142,8 @@ public class PropertiesTreeModel extends DefaultTreeModel {
     private static class ArrayTreeModel extends DefaultTreeModel {
         ArrayTreeModel( Object root, Object values ) {
             super( new DefaultMutableTreeNode(root) );
-            int i= root.toString().indexOf("[");
-            String name="";
-            if ( i>-1 ) {
-                name= root.toString().substring(0,i);
-            }
             MutableTreeNode mrt= ((MutableTreeNode)getRoot());
-            for ( i=0; i<Array.getLength(values); i++ ){
+            for ( int i=0; i<Array.getLength(values); i++ ){
                 MutableTreeNode nextChild= (MutableTreeNode) new DefaultMutableTreeNode( "["+i + "]=" + Array.get( values, i ) ).getRoot();
                 mrt.insert( nextChild, mrt.getChildCount() );
             }
