@@ -74,6 +74,7 @@ import org.das2.qds.IndexGenDataSet;
 import org.das2.qds.IndexListDataSetIterator;
 import org.das2.qds.SortDataSet;
 import org.das2.qds.SparseDataSet;
+import org.das2.qds.SubsetDataSet;
 import org.das2.qds.TailBundleDataSet;
 import org.das2.qds.TrimStrideWrapper;
 import org.das2.qds.WeightsDataSet;
@@ -6734,7 +6735,7 @@ public final class Ops {
     /**
      * apply the indeces 
      * @param vvo values to return, a rank 1, N-element dataset.
-     * @param ds the indeces.
+     * @param ds the indices.
      * @return data a dataset with the geometry of ds and the units of values.
      */
     public static WritableDataSet applyIndex( Object vvo, QDataSet ds ) {
@@ -6748,6 +6749,20 @@ public final class Ops {
         }
         result.putProperty(QDataSet.UNITS,vv.property(QDataSet.UNITS));
         return result;
+    }
+    
+    /**
+     * apply the indeces to the given dimension.
+     * @param ds
+     * @param dimension
+     * @param indices
+     * @return 
+     * @see SubsetDataSet
+     */
+    public static MutablePropertyDataSet applyIndex( QDataSet ds, int dimension, QDataSet indices ) {
+        SubsetDataSet sds= new SubsetDataSet(ds);
+        sds.applyIndex(dimension,indices);
+        return sds;
     }
     
     /**
