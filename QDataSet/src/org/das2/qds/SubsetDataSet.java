@@ -1,7 +1,14 @@
 package org.das2.qds;
 
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.das2.util.LoggerManager;
 import org.das2.qds.ops.Ops;
 
@@ -20,6 +27,103 @@ public class SubsetDataSet extends AbstractDataSet {
 
     boolean nonQube=false;
 
+    private static List<Integer> indgen( int start, int stop, int stride ) {
+        ArrayList<Integer> result= new ArrayList<>();
+        for ( int i=start; i<stop; i+=stride ) {
+            result.add(i);
+        }
+        return result;
+    } 
+    
+    /**
+     * parse the string spec into a list of indices.  The spec is a 
+     * comma-delineated list containing any combination of:<ul>
+     * <li>index, with negative indices relative to the end.
+     * <li>start:stop, with stop exclusive.
+     * <li>start:stop:stride, incrementing stride elements, including negative.
+     * <li>start-stopInclusive, where the trailing index is also included.
+     * </ul>
+     * If the spec starts with ~, then these indices are removed. For example:<ul>
+     * <li>~5, remove the 5th index.
+     * <li>~15:20, remove the 5 indices starting at 15.
+     * <li>~-1, remove the last index.
+     * </ul>
+     * Note if invert is present, then the indices cannot be reversed.
+     * @param spec
+     * @param dimlen, the amount added to negative indices.
+     * @return the list of integers.
+     * @throws ParseException 
+     */
+    public static int[] parseIndices( String spec, int dimlen ) throws ParseException {
+        Pattern p1= Pattern.compile("\\d+\\-\\d+");
+        Pattern p2= Pattern.compile("(\\-?\\d+)?\\:(\\-?\\d+)?(\\:(\\-?\\d+)?)?");
+        
+        boolean invert= spec.length()>1 && spec.charAt(0)=='~';
+        if ( invert ) {
+            spec= spec.substring(1);
+        }
+        
+        String[] ss= spec.split(",");
+        
+        List<Integer> result= new ArrayList<>();
+        
+        int charPos= 0;
+        for (String s : ss) {
+            Matcher m = p2.matcher(s);
+            if (m.matches()) {
+                int start= m.group(1)==null ? 0 : Integer.parseInt(m.group(1));
+                if ( start<0 ) start+= dimlen;
+                int stop= m.group(2)==null ? dimlen : Integer.parseInt(m.group(2));
+                if ( stop<0 ) stop+= dimlen;
+                int stride= m.group(4)==null ? 1 : Integer.parseInt(m.group(4));
+                List<Integer> ii= indgen( start, stop, stride );
+                result.addAll( ii );
+            } else {
+                m = p1.matcher(s);
+                if (m.matches()) {
+                    List<Integer> ii= indgen( Integer.parseInt(m.group(1)), Integer.parseInt(m.group(2))+1, 1 );
+                    result.addAll( ii );
+                } else {
+                    try {
+                        int ii = Integer.parseInt(s);
+                        if ( ii<0 ) ii+=dimlen;
+                        result.add(ii);
+                    } catch ( NumberFormatException ex ) {
+                        throw new ParseException("unable to parse: "+s,charPos);
+                    }
+                }
+            }
+            charPos+= 1+s.length();
+        }
+        int[] iresult;
+        if ( invert ) {
+            iresult= new int[dimlen-result.size()];
+            Collections.sort(result);
+            int resultIndex= 0;
+            int outputIndex= 0;
+            int ii= result.get(resultIndex);
+            for ( int i=0; i<dimlen; i++ ) {
+                if ( i==ii ) {
+                    resultIndex++;
+                    if ( resultIndex==result.size() ) {
+                        ii= Integer.MAX_VALUE;
+                    } else {
+                        ii= result.get(resultIndex);
+                    }
+                } else {
+                    iresult[outputIndex]= i;
+                    outputIndex++;
+                }
+            }
+        } else {
+            iresult= new int[result.size()];
+            for ( int i=0; i<result.size(); i++ ) {
+                iresult[i]= result.get(i);
+            }
+        }
+        return iresult;
+    }
+    
     public SubsetDataSet( QDataSet source ) {
         this.source= source;
         sorts= new QDataSet[ source.rank() ];
