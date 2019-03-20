@@ -11,6 +11,7 @@ import org.das2.qds.QDataSet;
  * and setFilter, and fire off a property change event when the value is changed,
  * so the GUI can be interactively.
  * @author mmclouth
+ * @see org.das2.qds.OperationsProcessor#sprocess(java.lang.String, org.das2.qds.QDataSet, org.das2.util.monitor.ProgressMonitor) 
  */
 public interface FilterEditorPanel {
     /**

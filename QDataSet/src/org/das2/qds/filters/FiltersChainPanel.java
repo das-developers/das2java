@@ -178,6 +178,8 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
             result= new ButterworthFilterEditorPanel();
         } else if ( f.matches("\\|collapse(\\d)\\(\\)") ) {
             result= new CollapseFilterEditorPanel();
+        } else if ( f.matches( ApplyIndexEditorPanel.PROP_REGEX ) ) {
+            result= new ApplyIndexEditorPanel();
         } else if ( f.matches("\\|contour\\((.*)\\)") ) {
             result= new ContourFilterEditorPanel();
         } else if ( f.matches("\\|detrend\\((.*)\\)") ) {

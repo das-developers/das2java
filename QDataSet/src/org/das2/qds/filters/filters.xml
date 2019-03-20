@@ -44,6 +44,11 @@
                         <description>Average over the first dimension to reduce the dimensionality</description>
                     </bookmark>
                     <bookmark>
+                        <title>Apply Index</title>
+                        <filter>|applyIndex1(0)</filter>
+                        <description>Extract a subset of the data, along an index.</description>
+                    </bookmark>
+                    <bookmark>
                         <title>Contour</title>
                         <filter>|contour(1,5)</filter>
                         <description>Initializes Contour Filter</description>

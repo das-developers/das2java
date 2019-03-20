@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
@@ -26,6 +27,7 @@ import static org.das2.qds.DataSetOps.grid;
 import static org.das2.qds.DataSetOps.slice1;
 import static org.das2.qds.DataSetOps.slice2;
 import static org.das2.qds.DataSetOps.slice3;
+import org.das2.qds.filters.ApplyIndexEditorPanel;
 import org.das2.qds.ops.Ops;
 import org.das2.qds.util.Reduction;
 
@@ -98,6 +100,7 @@ public class OperationsProcessor {
      * @return the dataset after the process string is applied.
      * @see <a href="http://autoplot.org/developer.dataset.filters">http://autoplot.org/developer.dataset.filters</a>
      * @see <a href="http://autoplot.org/developer.panel_rank_reduction">http://autoplot.org/developer.panel_rank_reduction</a>
+     * @see org.das2.qds.filters.FilterEditorPanel
      */
     public static QDataSet sprocess( String c, QDataSet fillDs, ProgressMonitor mon ) throws Exception {
 
@@ -313,7 +316,22 @@ public class OperationsProcessor {
                         QDataSet d0= (QDataSet)arg1;
                         QDataSet d1= (QDataSet)arg2;
                         fillDs= Ops.trim( dim, fillDs, d0, d1 ); 
-                    }	
+                    }
+                } else if ( cmd.startsWith("|applyIndex") && cmd.length()>11 ) {
+                    Pattern p= Pattern.compile( ApplyIndexEditorPanel.PROP_REGEX );
+                    Matcher m= p.matcher(command);
+                    if ( m.matches() ) {
+                        int len;
+                        int idim= Integer.parseInt(m.group(1));
+                        if ( idim==0 ) {
+                            len= fillDs.length();
+                        } else {
+                            len= (Ops.size(fillDs))[idim];
+                        }
+                        int[] idx= SubsetDataSet.parseIndices(m.group(2),len);
+                        fillDs= Ops.applyIndex( fillDs, idim, 
+                                ArrayDataSet.wrap( idx, new int[] { idx.length }, false ) );
+                    }
                 } else if ( cmd.startsWith("|collapse") && cmd.length()>9 ) {
                     int dim= cmd.charAt(9)-'0';
                     if ( s.hasNextInt() ) {
