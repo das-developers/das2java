@@ -139,6 +139,22 @@ public class PropertiesTreeModel extends DefaultTreeModel {
         
     }
     
+    private static class ArrayTreeModel extends DefaultTreeModel {
+        ArrayTreeModel( Object root, Object values ) {
+            super( new DefaultMutableTreeNode(root) );
+            int i= root.toString().indexOf("[");
+            String name="";
+            if ( i>-1 ) {
+                name= root.toString().substring(0,i);
+            }
+            MutableTreeNode mrt= ((MutableTreeNode)getRoot());
+            for ( i=0; i<Array.getLength(values); i++ ){
+                MutableTreeNode nextChild= (MutableTreeNode) new DefaultMutableTreeNode( "["+i + "]=" + Array.get( values, i ) ).getRoot();
+                mrt.insert( nextChild, mrt.getChildCount() );
+            }
+        }
+    }
+    
     private static class MapTreeModel extends DefaultTreeModel {
         MapTreeModel( Object root, Map values ) {
             super( new DefaultMutableTreeNode(root) );
@@ -147,17 +163,8 @@ public class PropertiesTreeModel extends DefaultTreeModel {
                 Entry val= (Entry)o;
                 Object value= val.getValue();
                 if ( value!=null && value.getClass().isArray() ) {
-                    value.getClass().getComponentType();
-                    List list= new ArrayList();
-                    int nn= Math.min( Array.getLength(value), 5 );
-                    for ( int i=0; i<nn; i++ ){
-                        list.add( Array.get( value, i) );
-                    }
-                    if ( Array.getLength(value)>5 ) {
-                        list.add("...");
-                    }
-                    DefaultMutableTreeNode nextChild= new DefaultMutableTreeNode(""+val.getKey()+"="+list);
-                    mrt.insert( nextChild, mrt.getChildCount() );
+                    DefaultTreeModel nextChild= new ArrayTreeModel( val.getKey() + "["+ Array.getLength(value)+"]", value );
+                    mrt.insert(  (MutableTreeNode) nextChild.getRoot(), mrt.getChildCount() );
                 } else if ( value!=null && Map.class.isAssignableFrom( value.getClass() ) ) {
                     MutableTreeNode nextChild= (MutableTreeNode) new MapTreeModel( val.getKey(), (Map)value ).getRoot();
                     mrt.insert( nextChild, mrt.getChildCount() );
