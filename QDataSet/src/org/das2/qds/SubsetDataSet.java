@@ -178,6 +178,14 @@ public class SubsetDataSet extends AbstractDataSet {
             dim.applyIndex(0,idx);
             putProperty("DEPEND_"+idim,dim);
         }
+        for ( int i=idim+1; i<source.rank(); i++ ) { // rfe670: high-rank DEPEND_2
+            dep= (QDataSet)property("DEPEND_"+i);
+            if ( dep!=null && dep.rank()>2 ) {
+                SubsetDataSet dim= new SubsetDataSet( dep );
+                dim.applyIndex(idim,idx);
+                putProperty("DEPEND_"+i,dim);
+            }
+        }
         if ( idim==0 ) { // DEPEND_1-4 can be rank 2, where the 0th dimension corresponds to DEPEND_0.
             for ( int i=1; i<QDataSet.MAX_RANK; i++ ) {
                 QDataSet depi= (QDataSet)source.property("DEPEND_"+i); // note this is not a qube...
