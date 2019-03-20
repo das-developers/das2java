@@ -2,7 +2,6 @@ package org.das2.qds;
 
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
@@ -124,6 +123,11 @@ public class SubsetDataSet extends AbstractDataSet {
         return iresult;
     }
     
+    /**
+     * create a subSetDataSet for the source, which is read for applyIndex calls
+     * which reduce each index.
+     * @param source 
+     */
     public SubsetDataSet( QDataSet source ) {
         this.source= source;
         sorts= new QDataSet[ source.rank() ];
