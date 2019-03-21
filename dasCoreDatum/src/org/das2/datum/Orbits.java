@@ -378,6 +378,30 @@ public class Orbits {
     public String getSpacecraft() {
         return sc;
     }
+    
+    /**
+     * return examples of spacecraft ids which can be used, and a human-readable label
+     * in a linked hash map.  This may fall out-of-sync with the list of IDs which
+     * would work (see https://das2.org/Orbits/), but this should be considered a bug.
+     * @return map from id to description.
+     */
+    public static Map<String,String> getSpacecraftIdExamples() {
+        Map<String,String> names= new LinkedHashMap();
+        names.put( "rbspa-pp",  "RBSP-A (Van Allen Probe A)" );
+        names.put( "rbspb-pp",  "RBSP-B (Van Allen Probe B)" );
+        names.put( "crres",     "CRRES" );
+        names.put( "de1", "Dynamics Explorer");
+        names.put( "cassini",   "Cassini Spacecraft" );
+        names.put( "cassini.perikrone.120min",   "Cassini Spacecraft around perikrone" );
+        names.put( "cassini.perikrone.40min",   "Cassini Spacecraft around perikrone" );
+        names.put( "cassini",   "Cassini Spacecraft" );
+        names.put( "marsx", "marsx" );
+        names.put( "junoPj","Juno at perijove");
+        names.put( "junoEqx","Juno at Eqx");
+        names.put( "junoEntire","Juno (Whole Orbits)");
+        
+        return names;
+    }
 
     /**
      * reset the loaded missions.
