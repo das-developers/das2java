@@ -354,14 +354,14 @@ public class TimeParser {
     public static class SubsecFieldHandler implements TimeParser.FieldHandler {
 
         int places;
-        double factor;
+        double microsecondsFactor;
         String format;
         
         @Override
         public String configure(Map<String, String> args) {
             places= Integer.parseInt( args.get("places") );
-            if ( places>6 ) throw new IllegalArgumentException("only six places allowed.");
-            factor= Math.pow( 10, (6-places) );          // magic number 6 comes from timeWidth.micros
+            if ( places>9 ) throw new IllegalArgumentException("only nine places allowed.");
+            microsecondsFactor= Math.pow( 10, (6-places) );          // magic number 6 comes from timeWidth.micros
             format= "%0"+places+"d";
             return null;
         }
@@ -376,16 +376,17 @@ public class TimeParser {
         @Override
         public void parse(String fieldContent, TimeStruct startTime, TimeStruct timeWidth, Map<String, String> extra) throws ParseException {
             double value= Double.parseDouble(fieldContent);
-            startTime.micros= (int)( value * factor ); //TODO: support nanos!
-            timeWidth.seconds= 0; //legacy TimeStruct supported double seconds.
-            timeWidth.micros= (int)( 1*factor );
+            startTime.micros= (int)( value * microsecondsFactor ); //TODO: support nanos!
+            timeWidth.seconds= 1e-9 * ( value - startTime.micros / microsecondsFactor - startTime.nanos / ( microsecondsFactor * 1000 )); //legacy TimeStruct supported double seconds.
+            timeWidth.micros= (int)( 1*microsecondsFactor );
         }
 
         @Override
         public String format(TimeStruct startTime, TimeStruct timeWidth, int length, Map<String, String> extra) throws IllegalArgumentException {
-            double nn= ( ( startTime.seconds-(int)startTime.seconds ) * ( 1000000/factor ) ) //legacy TimeStruct supported double seconds.
-                    + ( startTime.millis * 1000 / factor ) 
-                    + ( startTime.micros / factor );
+            double nn= ( ( startTime.seconds-(int)startTime.seconds ) * ( 1000000/microsecondsFactor ) ) //legacy TimeStruct supported double seconds.
+                    + ( startTime.millis * 1000 / microsecondsFactor ) 
+                    + ( startTime.micros / microsecondsFactor )
+                    + startTime.nanos / ( microsecondsFactor * 1000 );
             return String.format( format, (int)Math.round(nn) ); 
         }
         
@@ -1360,6 +1361,7 @@ public class TimeParser {
         dst.minute = src.minute;
         dst.seconds = src.seconds;
         dst.micros = src.micros;
+        dst.nanos = src.nanos;
         dst.isLocation= src.isLocation;
     }
     
@@ -1945,8 +1947,8 @@ public class TimeParser {
             timeWidth.day==0 && timeWidth.hour==0 && timeWidth.minute==0 && timeWidth.seconds==0 && timeWidth.millis==0 && timeWidth.micros==0 ) { // special code for years.
             TimeStruct lstopTime = startTime.add(timeWidth);
             lstopTime= TimeUtil.carry(lstopTime);
-            int[] t1= new int[] { startTime.year, startTime.month, startTime.day, startTime.hour, startTime.minute, (int)startTime.seconds, startTime.millis*1000000 + startTime.micros*1000 };
-            int[] t2= new int[] { lstopTime.year, lstopTime.month, lstopTime.day, lstopTime.hour, lstopTime.minute, (int)lstopTime.seconds, lstopTime.millis*1000000 + lstopTime.micros*1000 };
+            int[] t1= new int[] { startTime.year, startTime.month, startTime.day, startTime.hour, startTime.minute, (int)startTime.seconds, startTime.millis*1000000 + startTime.micros*1000 + startTime.nanos };
+            int[] t2= new int[] { lstopTime.year, lstopTime.month, lstopTime.day, lstopTime.hour, lstopTime.minute, (int)lstopTime.seconds, lstopTime.millis*1000000 + lstopTime.micros*1000 + lstopTime.nanos };
             return new MonthDatumRange( t1, t2 );            
         } else if ( orbitDatumRange!=null ) {
             return orbitDatumRange;
@@ -2051,10 +2053,14 @@ public class TimeParser {
      * @param timel the decomposed time. 
      */
     private void normalizeSeconds( TimeStruct timel ) {
-        double dextraMicros= ( 1000000 * ( timel.seconds - (int) timel.seconds ) );
+        double dextraNanos= ( 1000000000 * ( timel.seconds - (int) timel.seconds ) );
         timel.seconds= (int)timel.seconds;
         
-        timel.micros+= Math.round(dextraMicros);
+        timel.nanos+= Math.round(dextraNanos);
+        
+        int micros= (int)( timel.nanos / 1000 );
+        timel.micros+= micros;
+        timel.nanos-= micros*1000;
         
         int millis= (int)( timel.micros / 1000 );
         timel.millis+= millis;
@@ -2279,6 +2285,8 @@ public class TimeParser {
     }
     
     public static void main( String[] aa ) throws Exception {
+        TimeParser tp= TimeParser.create( "$Y-$m-$dT$H:$M:$S.$(subsec,places=9)" );
+        System.err.println( "tpf: " + tp.format( Units.cdfTT2000.parse( "2016-05-05T12:54:54.002232668") ) );
         testTimeParser();
     }
 
