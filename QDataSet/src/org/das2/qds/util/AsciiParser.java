@@ -1421,7 +1421,12 @@ public class AsciiParser {
      * @return string array containing the fields.
      */
     private static String[] split(String string, String regex) {
-        String[] ss = string.trim().split(regex);
+        String[] ss;
+        if ( regex.equals("\\s+") ) {
+            ss= string.trim().split(regex); // do what you did before.
+        } else {
+            ss= string.trim().split(regex);
+        }
         if (string.endsWith(regex)) {
             String[] ss1 = new String[ss.length + 1];
             System.arraycopy(ss, 0, ss1, 0, ss.length);
@@ -1438,8 +1443,8 @@ public class AsciiParser {
      * then column names will be set as well.
      * This has the side effect of turning off property record pattern.
      * Trailing and leading whitespace is ignored.
-     * @param line
-     * @param fieldSep
+     * @param line a record to parse.
+     * @param fieldSep separating regex such as "," or "\t" or "\s+"
      * @param lineNum the line number, 1 is first line.
      * @return
      */
