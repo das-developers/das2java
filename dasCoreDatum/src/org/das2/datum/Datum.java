@@ -37,8 +37,8 @@ import org.das2.datum.format.DatumFormatter;
  */
 public class Datum implements Comparable, Serializable {
     
-    private Units units;
-    private Number value;
+    protected Units units;
+    protected Number value;
     private double resolution;
     private transient DatumFormatter formatter;
 
@@ -63,6 +63,19 @@ public class Datum implements Comparable, Serializable {
             super( new java.lang.Double(value), units, units.getDatumFormatterFactory().defaultFormatter(), resolution );
         }
         
+    }
+    
+    /**
+     * class backing Datums with a long, such as with CDF_TT2000.
+     */
+    public static class Long extends Datum {
+        public Long( long value, Units units ) {
+            super(value, units, 0. );
+        }
+        public long longValue(Units u) {
+            if ( u!=this.units ) throw new IllegalArgumentException("Units must be "+this.units);
+            return this.value.longValue();
+        }
     }
     
     private Datum(Number value, Units units, double resolution ) {
