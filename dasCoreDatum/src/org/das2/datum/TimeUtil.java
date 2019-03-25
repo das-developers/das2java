@@ -22,6 +22,7 @@
 
 package org.das2.datum;
 
+import java.io.IOException;
 import java.util.*;
 
 import java.text.ParseException;
@@ -150,7 +151,12 @@ public final class TimeUtil {
          * additional microseconds since minute boundary
          */
         public int micros;
-        
+
+        /**
+         * additional nanoseconds since minute boundary
+         */
+        public int nanos;
+
         public boolean isLocation= false;
         
         @Override
@@ -161,6 +167,7 @@ public final class TimeUtil {
             } else {
                 int intSeconds= (int)seconds;
                 int nanos= (int)( 1000000000 * ( seconds - intSeconds ) );
+                nanos+=this.nanos;
                 nanos+=micros*1000;
                 nanos+=millis*1000000;
                 return DatumRangeUtil.formatISO8601Duration( new int[] { year,month,day,hour,minute,intSeconds,nanos } ); //TODO: test this.
@@ -178,6 +185,7 @@ public final class TimeUtil {
             result.seconds= this.seconds;
             result.millis= this.millis;
             result.micros= this.micros;
+            result.nanos= this.nanos;
             result.isLocation= this.isLocation;
             return result;
         }
@@ -194,6 +202,7 @@ public final class TimeUtil {
             result.seconds= this.seconds + offset.seconds;
             result.millis= this.millis + offset.millis ;
             result.micros= this.micros + offset.micros ;
+            result.nanos= this.nanos + offset.nanos ;
             
             result.isLocation= this.isLocation || offset.isLocation;
             
@@ -402,14 +411,72 @@ public final class TimeUtil {
         result.isLocation= true;
         return result;
     }
+    
+    /**
+     * splits the time location datum into y,m,d,etc components, using the full
+     * precision of the Long backing the Datum.
+     * @param datum with time location units.
+     * @return TimeStruct containing the time components.
+     */
+    public static TimeStruct toTimeStruct( Datum.Long datum ) {
+        Units u= Units.cdfTT2000;
+        long l= datum.longValue(u);
+        
+        int leapSeconds;
+        try {
+            leapSeconds= LeapSecondsConverter.getLeapSecondCountForTT2000(l);
+        } catch ( IOException ex ) {
+            throw new RuntimeException(ex); // this should not happen.
+        }
+        l= l + 43135816000000L;
+        // 0 is 2000-Jan-01 11:58:55.816000000
+        // -43135816000000 is 2000-Jan-01 00:00:00.000000000
+        long midnight= ( l + (leapSeconds-32)*1000000000L );
+        if ( midnight<0 ) {
+            midnight= midnight / 86400000000000L - 1;
+        } else {
+            midnight= midnight / 86400000000000L;            
+        }
+        
+        int jd= 2451545 + (int)midnight;
+
+        midnight= midnight * 86400000000000L;
+        TimeStruct result= julianToGregorian( jd );
+        
+        long sinceMidnight= l-midnight;
+        
+        long nanoseconds= sinceMidnight;
+
+        int hour = (int)(nanoseconds/3600000000000L);
+        if ( hour>23 ) hour= 23;
+        int minute = (int)((nanoseconds - hour*3600000000000L)/60000000000L);
+        if ( minute>59 ) minute= 59;
+        long justNanoSeconds = nanoseconds - hour*3600000000000L - minute*60000000000L;
+
+        result.doy = dayOfYear(result.month, result.day, result.year);
+        result.hour= hour;
+        result.minute= minute;
+        result.seconds= justNanoSeconds / 1e9;
+
+        result.isLocation= true;
+        
+        return result;
+    }
+
+
 
     /**
-     * splits the time location datum into y,m,d,etc components.  Note that
+     * splits the time location datum into y,m,d,etc components.  Note that if
      * seconds is a double, and micros will be 0.
      * @param datum with time location units.
      * @return TimeStruct containing the time components.
      */
     public static TimeStruct toTimeStruct( Datum datum ) {
+        
+        if ( datum instanceof Datum.Long ) {
+            return toTimeStruct((Datum.Long)datum);
+        }
+        
         Units u= datum.getUnits();
         double d= datum.doubleValue(u);
         
@@ -483,6 +550,7 @@ public final class TimeUtil {
         result.seconds= a.seconds + b.seconds;
         result.millis= a.millis + b.millis;
         result.micros= a.micros + b.micros;
+        result.nanos= a.nanos + b.nanos;
         result.isLocation= a.isLocation || b.isLocation;
         return result;
     }
@@ -498,63 +566,9 @@ public final class TimeUtil {
         result.seconds= a.seconds - b.seconds;
         result.millis= a.millis - b.millis;
         result.micros= a.micros - b.micros;
+        result.nanos= a.nanos - b.nanos;
         return result;
     }
-
-    /**
-     * splits the time location datum into y,m,d,etc components.  Note that
-     * seconds is a double, and micros will be 0.
-     * @param datum with time location units.
-     * @return TimeStruct containing the time components.
-     */
-//    public static TimeStruct toTimeStruct(Datum datum) {
-//        int hour, minute;
-//        int jdOffset=0;
-//        double justNanoSeconds;
-//
-//        Units u= Units.us2000;
-//
-//        double microseconds= datum.doubleValue( Units.us2000 );
-//
-//        if ( microseconds<-6.31152E14 ) {
-//            u= Units.us1980;
-//            microseconds= datum.doubleValue( u );
-//        }
-//
-//        long nanoseconds;
-//        long lns2000= (long)(1000*microseconds);
-//        if (lns2000<0) {
-//            long xx= lns2000 % 86400000000000L;
-//            if (xx==0) {
-//                nanoseconds= 0;
-//            } else {
-//                nanoseconds= 86400000000000L+xx;
-//            }
-//        } else {
-//            nanoseconds= lns2000 % 86400000000000L;
-//        }
-//
-//        long sansNanos= lns2000 - nanoseconds;
-//
-//        int jd= getJulianDay(sansNanos/1000,u);
-//
-//        if ( jd<0 ) {
-//            throw new IllegalArgumentException("julian day is negative.");
-//        }
-//
-//        TimeStruct result= julianToGregorian( jd );
-//
-//        hour = (int)(nanoseconds/3600.0e9);
-//        minute = (int)((nanoseconds - hour*3600.0e9)/60.0e9);
-//        justNanoSeconds = nanoseconds - hour*3600.0e9 - minute*60.0e9;
-//
-//        result.doy = dayOfYear(result.month, result.day, result.year);
-//        result.hour= hour;
-//        result.minute= minute;
-//        result.seconds= justNanoSeconds / 1e9;
-//
-//        return result;
-//    }
     
     /**
      * returns int[] { year, month, day, hour, minute, second, millis, micros }
@@ -581,7 +595,7 @@ public final class TimeUtil {
     public static int[] fromDatum( Datum time ) {
         TimeStruct ts= toTimeStruct( time );
         int seconds= (int)( ts.seconds+0.0000000005 );
-        int nanos= (int)( ( ts.seconds+0.0000000005 - seconds ) * 100000000 );
+        int nanos= (int)( ( ts.seconds+0.0000000005 - seconds ) * 100000000 ) + ts.nanos;
         return new int[] { ts.year, ts.month, ts.day, ts.hour, ts.minute, seconds, nanos };
     }
     
@@ -665,9 +679,12 @@ public final class TimeUtil {
         int nanos= timeArray.length==6 ? 0 : timeArray[6];
         if ( u==Units.cdfTT2000 ) {
             double us2000= ( jd - 2451545 ) * 86400e6; 
-            double tt2000= Units.us2000.convertDoubleTo( Units.cdfTT2000, us2000 );
-            Units.cdfTT2000.createDatum(tt2000);
-            Datum rtt2000= Datum.create( timeArray[3] * 3600.0e9 + timeArray[4] * 60e9 + timeArray[5] * 1e9 + nanos + tt2000, Units.cdfTT2000  );
+            long tt2000= (long) Units.us2000.convertDoubleTo( Units.cdfTT2000, us2000 ); // TODO verify this.
+            Datum rtt2000= new Datum.Long( 
+                    timeArray[3] * 3600000000000L 
+                    + timeArray[4] * 60000000000L 
+                    + timeArray[5] *  1000000000L
+                    + nanos + tt2000, Units.cdfTT2000  );
             return rtt2000;
         } else if ( u!=Units.us2000 ) { // TODO: sub-optimal implementation...
             double us2000= ( jd - 2451545 ) * 86400e6; 
