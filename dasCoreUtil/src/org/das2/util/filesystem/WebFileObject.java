@@ -539,7 +539,7 @@ public class WebFileObject extends FileObject {
                 }
                 throw ex;
             } finally {
-                monitor.finished();
+                if ( !monitor.isFinished() ) monitor.finished();
             }
         }
         
