@@ -61,7 +61,7 @@ public class NumberUnits extends Units {
     
     @Override
     public Datum createDatum( long value ) {
-        return new Datum.Double( value, this );
+        return new Datum.Long( value, this );
     }
     
     @Override
