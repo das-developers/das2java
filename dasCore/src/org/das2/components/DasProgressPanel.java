@@ -213,6 +213,25 @@ public class DasProgressPanel implements ProgressMonitor {
     }
 
     /**
+     * provide convenient code which will center DasProgressMonitors on window.
+     * @param mon the monitor, which may be a DasProgressPanel.
+     * @param window the component about which to center the monitor.
+     */
+    public static void maybeCenter( ProgressMonitor mon, Component window ) {
+        if ( mon instanceof DasProgressPanel ) {
+            Component c= ((DasProgressPanel)mon).getComponent();
+            Window w= SwingUtilities.getWindowAncestor( c );
+            if ( w!=null ) {
+                int x= w.getX();
+                w.setLocationRelativeTo( window );
+                if ( ( w.getX()-x) == 0 ) {
+                    System.err.println("here it didn't move");
+                }
+            }
+        }
+    }
+            
+    /**
      * return a new progress panel with component indicating status for the component.
      * @param component the canvas component providing a context for the progress, for example a DasPlot which will load some data.
      * @param initialMessage initial message for the monitor
