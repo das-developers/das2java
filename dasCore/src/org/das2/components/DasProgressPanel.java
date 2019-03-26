@@ -221,7 +221,9 @@ public class DasProgressPanel implements ProgressMonitor {
      */
     public void setContextComponent( Component window ) {
         this.contextComponent= window;
+        if ( window==null ) return;
         Component c= this.getComponent();
+        if ( c==null ) return;
         Window w= SwingUtilities.getWindowAncestor( c );
         Window monitorWindow= SwingUtilities.getWindowAncestor( window );
         if ( w!=null && w!=monitorWindow ) {
