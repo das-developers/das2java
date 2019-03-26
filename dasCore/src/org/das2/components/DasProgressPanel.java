@@ -59,6 +59,7 @@ import javax.swing.JProgressBar;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import org.das2.graph.DasCanvas;
+import org.das2.util.LoggerManager;
 import org.das2.util.monitor.NullProgressMonitor;
 import org.das2.util.monitor.SubTaskMonitor;
 
@@ -84,7 +85,7 @@ import org.das2.util.monitor.SubTaskMonitor;
  */
 public class DasProgressPanel implements ProgressMonitor {
 
-    private static final Logger logger = DasLogger.getLogger(DasLogger.SYSTEM_LOG);
+    private static final Logger logger = LoggerManager.getLogger("das2.system.monitor");
 
     public static final String MSG_CANCEL_TASK = "cancel task";
     public static final String MSG_TASK_CANNOT_BE_CANCELED = "task cannot be cancelled";
@@ -117,6 +118,7 @@ public class DasProgressPanel implements ProgressMonitor {
     private Thread updateThread;
     private boolean showProgressRate;
     private JPanel thePanel;
+    private Component contextComponent=null;
     private boolean componentsInitialized;
     private DasCanvasComponent parentComponent;
     private DasCanvas parentCanvas;
@@ -187,7 +189,7 @@ public class DasProgressPanel implements ProgressMonitor {
     ImageIcon cancelGrey= new ImageIcon( DasProgressPanel.class.getResource("/images/icons/cancelGrey14.png") );
     
     protected DasProgressPanel(String label) {
-
+        logger.log(Level.FINE, "create monitor: \"{0}\"", label);
         componentsInitialized = false;
         label= abbrevateStringEllipsis( label, LABEL_LEN_LIMIT);
         this.label = label;
@@ -211,6 +213,21 @@ public class DasProgressPanel implements ProgressMonitor {
             initComponents();
         return this.thePanel;
     }
+    
+    /**
+     * set the component where this progress monitor is understood.  This
+     * is typically the DasCanvas.
+     * @param window 
+     */
+    public void setContextComponent( Component window ) {
+        this.contextComponent= window;
+        Component c= this.getComponent();
+        Window w= SwingUtilities.getWindowAncestor( c );
+        if ( w!=null ) {
+            int x= w.getX();
+            w.setLocationRelativeTo( window );
+        }
+    }
 
     /**
      * provide convenient code which will center DasProgressMonitors on window.
@@ -219,15 +236,7 @@ public class DasProgressPanel implements ProgressMonitor {
      */
     public static void maybeCenter( ProgressMonitor mon, Component window ) {
         if ( mon instanceof DasProgressPanel ) {
-            Component c= ((DasProgressPanel)mon).getComponent();
-            Window w= SwingUtilities.getWindowAncestor( c );
-            if ( w!=null ) {
-                int x= w.getX();
-                w.setLocationRelativeTo( window );
-                if ( ( w.getX()-x) == 0 ) {
-                    System.err.println("here it didn't move");
-                }
-            }
+            ((DasProgressPanel)mon).setContextComponent(window);
         }
     }
             
@@ -548,6 +557,7 @@ public class DasProgressPanel implements ProgressMonitor {
 
         long elapsedTimeMs = System.currentTimeMillis() - taskStartedTime;
         if (elapsedTimeMs > hideInitiallyMilliSeconds && !isVisible()) {
+            logger.finer("make hidden monitor visible");
             setVisible(true);
         }
     }
@@ -768,6 +778,9 @@ public class DasProgressPanel implements ProgressMonitor {
                     }
                     if (running) {
                         logger.log(Level.FINE, "hide time={0}", (System.currentTimeMillis() - taskStartedTime));
+                        if ( contextComponent!=null ) {
+                            setContextComponent(contextComponent); // reset the position.
+                        }
                         setVisible(true);
                     }
                 }
