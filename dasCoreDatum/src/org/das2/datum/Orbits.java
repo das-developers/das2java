@@ -516,6 +516,7 @@ public class Orbits {
             startTime.seconds= tsmin.seconds;
             startTime.millis= tsmin.millis;
             startTime.micros= tsmin.micros;
+            startTime.nanos= tsmin.nanos;
 
             timeWidth.year= tsmax.year-tsmin.year;
             timeWidth.month= tsmax.month-tsmin.month;
@@ -526,6 +527,7 @@ public class Orbits {
             timeWidth.seconds= tsmax.seconds-tsmin.seconds;
             timeWidth.millis= tsmax.millis-tsmin.millis;
             timeWidth.micros= tsmax.micros-tsmin.micros;
+            timeWidth.nanos= tsmax.nanos-tsmin.nanos;
 
             orbitDatumRange= new OrbitDatumRange( o.sc,fieldContent.substring(i).trim() );
         }
