@@ -376,9 +376,15 @@ public class TimeParser {
         @Override
         public void parse(String fieldContent, TimeStruct startTime, TimeStruct timeWidth, Map<String, String> extra) throws ParseException {
             double value= Double.parseDouble(fieldContent);
-            startTime.micros= (int)( value * microsecondsFactor ); //TODO: support nanos!
-            timeWidth.seconds= 1e-9 * ( value - startTime.micros / microsecondsFactor - startTime.nanos / ( microsecondsFactor * 1000 )); //legacy TimeStruct supported double seconds.
-            timeWidth.micros= (int)( 1*microsecondsFactor );
+            startTime.micros= (int)( value * microsecondsFactor ); 
+            value= value - startTime.micros / microsecondsFactor;
+            startTime.nanos= (int)( value * microsecondsFactor * 1000 );
+            timeWidth.seconds= 1e-9 * ( value - startTime.nanos / ( microsecondsFactor * 1000 )); //legacy TimeStruct supported double seconds.
+            if ( microsecondsFactor>=1. ) {
+                timeWidth.micros= (int)( 1*microsecondsFactor );
+            } else {
+                timeWidth.nanos= (int)( 1 * microsecondsFactor * 1000 );
+            }
         }
 
         @Override
@@ -2309,6 +2315,7 @@ public class TimeParser {
         testTimeParser1( "$(periodic;offset=2285;start=2000-346;period=P27D)", "2286", "2001-007/P27D");
         testTimeParser1( "$Y-$m-$dT$H:$M:$S.$(subsec,places=6)", "2000-01-01T00:00:00.000001", "2000-001T00:00:00.000001/PT.000001S");
         testTimeParser1( "$Y-$m-$dT$H:$M:$S.$(subsec,places=6)", "2000-01-01T00:00:05.000001", "2000-001T00:00:05.000001/PT.000001S");
+        testTimeParser1( "$Y-$m-$dT$H:$M:$S.$(subsec,places=9)", "2000-01-01T00:00:05.000001001", "2000-001T00:00:05.000001001/PT.000000001S");
         TimeParser tp= TimeParser.create("$Y$m$d_v$v.dat");
         System.err.println( tp.parse("20130618_v4.05.dat").getTimeRange() );
         System.err.println( makeCanonical( "%Y-%m-%dT%H:%M:%S.%{milli}Z" ) );
