@@ -51,6 +51,7 @@ import java.awt.geom.AffineTransform;
 import javax.swing.border.*;
 
 import java.awt.geom.GeneralPath;
+import java.awt.geom.Line2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.*;
@@ -2408,9 +2409,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                         try {
                             Datum dreference;
                             dreference = dataRange.getUnits().parse(r);
-                            int i= (int)Math.floor( transform(dreference) );
-                            if ( i>DMin && i<DMax ) {
-                                g.drawLine( i, bottomPosition, i, topPosition );
+                            float d= (float)transform(dreference);
+                            if ( d>DMin && d<DMax ) {
+                                g.draw( new Line2D.Float( d, bottomPosition, d, topPosition ) );
+                                //g.drawLine( i, bottomPosition, i, topPosition );
                             }
                         } catch (ParseException ex) {
                             logger.log(Level.SEVERE, null, ex);
@@ -2432,17 +2434,20 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
             for (int i = 0; i < ticks.tickV.getLength(); i++) {
                 Datum tick1 = ticks.tickV.get(i);
-                int tickPosition = (int) Math.floor(transform(tick1));
-                if (DMin <= tickPosition && tickPosition <= DMax) {
+                float ftickPosition= (float)transform(tick1);
+                int tickPosition = (int) Math.floor(ftickPosition);
+                if (DMin <= ftickPosition && ftickPosition <= DMax) {
                     tickLength = tickLengthMajor;
-                    if (bottomTicks) {
-                        if ( tickLength!=0 ) g.drawLine(tickPosition, bottomPosition, tickPosition, bottomPosition + tickLength);
+                    if (bottomTicks && tickLength!=0 ) {
+                        g.draw( new Line2D.Float(ftickPosition, bottomPosition, ftickPosition, bottomPosition + tickLength) );
+                        //g.drawLine(tickPosition, bottomPosition, tickPosition, bottomPosition + tickLength);                        
                     }
                     if (bottomTickLabels) {
                         drawLabel(g, tick1, labels[i], i, tickPosition, bottomPosition + Math.max(0,tickLength) );
                     }
-                    if (topTicks) {
-                        if ( tickLength!=0 ) g.drawLine(tickPosition, topPosition, tickPosition, topPosition - tickLength);
+                    if (topTicks && tickLength!=0 ) {
+                        g.draw( new Line2D.Float( ftickPosition, topPosition, ftickPosition, topPosition - tickLength) );
+                        //g.drawLine(tickPosition, topPosition, tickPosition, topPosition - tickLength);
                     }
                     if (topTickLabels) {
                         drawLabel(g, tick1, labels[i], i, tickPosition, topPosition - Math.max(0,tickLength) + 1);
@@ -2452,14 +2457,17 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
             for (int i = 0; i < ticks.minorTickV.getLength(); i++) {
                 Datum tick = ticks.minorTickV.get(i);
-                int tickPosition = (int) Math.floor(transform(tick));
+                float ftickPosition= (float)transform(tick);
+                int tickPosition = (int) Math.floor(ftickPosition);
                 if (DMin <= tickPosition && tickPosition <= DMax) {
                     tickLength = tickLengthMinor;
-                    if (bottomTicks) {
-                        if ( tickLength!=0 ) g.drawLine(tickPosition, bottomPosition, tickPosition, bottomPosition + tickLength);
+                    if (bottomTicks && tickLength!=0 ) {
+                        g.draw( new Line2D.Float( ftickPosition, bottomPosition, ftickPosition, bottomPosition + tickLength ) );
+                        //g.drawLine(tickPosition, bottomPosition, tickPosition, bottomPosition + tickLength);
                     }
-                    if (topTicks) {
-                        if ( tickLength!=0 ) g.drawLine(tickPosition, topPosition, tickPosition, topPosition - tickLength);
+                    if (topTicks && tickLength!=0 ) {
+                        g.draw( new Line2D.Float( ftickPosition, topPosition, ftickPosition, topPosition - tickLength) );
+                        //g.drawLine(tickPosition, topPosition, tickPosition, topPosition - tickLength);
                     }
                 }
             }
@@ -2563,9 +2571,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                         Datum dreference;
                         try {
                             dreference = dataRange.getUnits().parse(r);
-                            int i= (int)Math.floor( transform(dreference) );
-                            if ( i>DMin && i<DMax ) {
-                                g.drawLine( rightPosition, i, leftPosition, i );  
+                            float f= (float)transform(dreference);
+                            if ( f>DMin && f<DMax ) {
+                                g.draw( new Line2D.Float( rightPosition, f, leftPosition, f ) );  
+                                //g.drawLine( rightPosition, i, leftPosition, i );  
                             }
                         } catch (ParseException ex) {
                             logger.log(Level.SEVERE, null, ex);
@@ -2581,18 +2590,21 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             String[] labels = tickFormatter(ticks.tickV, getDatumRange());
             for (int i = 0; i < ticks.tickV.getLength(); i++) {
                 Datum tick1 = ticks.tickV.get(i);
-                int tickPosition = (int) Math.floor(transform(tick1)+0.0001);
+                float ftickPosition= (float)( transform(tick1)+0.0001 );
+                int tickPosition = (int) Math.floor( ftickPosition );
                 if (DMin <= tickPosition && tickPosition <= DMax) {
 
                     tickLength = tickLengthMajor;
-                    if (leftTicks) {
-                        if ( tickLength!=0 ) g.drawLine(leftPosition, tickPosition, leftPosition - tickLength, tickPosition);
+                    if (leftTicks && tickLength!=0 ) {
+                        g.draw( new Line2D.Float( leftPosition, ftickPosition, leftPosition - tickLength, ftickPosition) );
+                        //g.drawLine(leftPosition, tickPosition, leftPosition - tickLength, tickPosition);
                     }
                     if (leftTickLabels) {
                         drawLabel(g, tick1, labels[i], i, leftPosition - Math.max( 0,tickLength ), tickPosition);
                     }
-                    if (rightTicks) {
-                        if ( tickLength!=0 ) g.drawLine(rightPosition, tickPosition, rightPosition + tickLength, tickPosition);
+                    if (rightTicks && tickLength!=0 ) {
+                        g.draw( new Line2D.Float( rightPosition, ftickPosition, rightPosition + tickLength, ftickPosition ) );
+                        //g.drawLine(rightPosition, tickPosition, rightPosition + tickLength, tickPosition);
                     }
                     if (rightTickLabels) {
                         drawLabel(g, tick1, labels[i], i, rightPosition + Math.max( 0,tickLength ), tickPosition);
@@ -2602,14 +2614,17 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
             for (int i = 0; i < ticks.minorTickV.getLength(); i++) {
                 double tick1 = ticks.minorTickV.doubleValue(i, getUnits());
-                int tickPosition = (int) Math.floor(transform(tick1, ticks.units)+0.0001);
-                if (DMin <= tickPosition && tickPosition <= DMax) {
+                float ftickPosition= (float)( transform(tick1, ticks.units)+0.0001 );
+                //int tickPosition = (int) Math.floor( ftickPosition );
+                if (DMin <= ftickPosition && ftickPosition <= DMax) {
                     tickLength = tickLengthMinor;
-                    if (leftTicks) {
-                        if ( tickLength!=0 ) g.drawLine(leftPosition, tickPosition, leftPosition - tickLength, tickPosition);
+                    if (leftTicks && tickLength!=0 ) {
+                        g.draw( new Line2D.Float(leftPosition, ftickPosition, leftPosition - tickLength, ftickPosition) );
+                        //g.drawLine(leftPosition, tickPosition, leftPosition - tickLength, tickPosition);
                     }
-                    if (rightTicks) {
-                        if ( tickLength!=0 ) g.drawLine(rightPosition, tickPosition, rightPosition + tickLength, tickPosition);
+                    if (rightTicks && tickLength!=0 ) {
+                        g.draw( new Line2D.Float(rightPosition, ftickPosition, rightPosition + tickLength, ftickPosition) );
+                        //g.drawLine(rightPosition, tickPosition, rightPosition + tickLength, tickPosition);
                     }
                 }
             }
