@@ -396,7 +396,7 @@ public class Orbits {
         names.put( "cassini.perikrone.40min",   "Cassini Spacecraft around perikrone" );
         names.put( "cassini",   "Cassini Spacecraft" );
         names.put( "marsx", "marsx" );
-        names.put( "junoPj","Juno at perijove");
+        names.put( "junoPJ","Juno at perijove");
         names.put( "junoEqx","Juno at Eqx");
         names.put( "junoEntire","Juno (Whole Orbits)");
         
