@@ -185,7 +185,7 @@ public class DataSetUtil {
         }
 
         if (ds.length() == 0) {
-            logger.exiting( "DataSetUtil", "isMonotonicAndIncreasing");
+            logger.exiting( "DataSetUtil", "isMonotonicAndIncreasing", false );
             return false;
         }
         if (ds instanceof IndexGenDataSet ) return true;
@@ -198,7 +198,7 @@ public class DataSetUtil {
         }
 
         if ( i==ds.length() ) {
-            logger.exiting( "DataSetUtil", "isMonotonicAndIncreasing");
+            logger.exiting( "DataSetUtil", "isMonotonicAndIncreasing", false );
             return false;
         }
 
@@ -209,12 +209,13 @@ public class DataSetUtil {
             double w = wds.value(i);
             if ( w==0 ) continue;
             if ( d <= last  ) {
-                logger.exiting( "DataSetUtil", "isMonotonicAndIncreasing");
+                logger.log(Level.FINER, "non-monotonic point found at {0}", i);
+                logger.exiting( "DataSetUtil", "isMonotonicAndIncreasing", false );
                 return false;
             } 
             last = d;
         }
-        logger.exiting( "DataSetUtil", "isMonotonicAndIncreasing");
+        logger.exiting( "DataSetUtil", "isMonotonicAndIncreasing", true);
         return true;
     }
     
@@ -228,6 +229,7 @@ public class DataSetUtil {
      * @see QDataSet#MONOTONIC
      */
     public static boolean isMonotonicQuick(QDataSet ds) {
+        logger.entering( "DataSetUtil", "isMonotonicQuick" );
         logger.finest("enter isMonotonicQuick test for "+QDataSet.MONOTONIC);
         if (ds instanceof IndexGenDataSet ) return true;
         if (ds.rank() == 1) {
@@ -252,13 +254,16 @@ public class DataSetUtil {
                         break;
                     }
                     if (d < last) {
+                        logger.exiting( "DataSetUtil", "isMonotonicQuick", false );
                         return false;
                     }
                     last = d;
                 }
+                logger.exiting( "DataSetUtil", "isMonotonicQuick", true );
                 return true;
             }
         } else {
+            logger.exiting( "DataSetUtil", "isMonotonicQuick", false );
             return false;
         }
     }
@@ -273,7 +278,9 @@ public class DataSetUtil {
      * @see Ops#ensureMonotonicAndIncreasingWithFill(org.das2.qds.QDataSet) 
      */
     public static boolean isMonotonicAndIncreasingQuick(QDataSet ds) {
-        logger.finest("enter isMonotonicAndIncreasingQuick test for "+QDataSet.MONOTONIC);
+        logger.entering( "DataSetUtil", "isMonotonicAndIncreasingQuick" );
+        // put in reference to MONOTONIC for usage search.
+        logger.finest("enter isMonotonicAndIncreasingQuick test for "+QDataSet.MONOTONIC);  
         if (ds instanceof IndexGenDataSet ) return true;
         if (ds.rank() == 1) {
             if (ds.length() < 100) {
@@ -297,13 +304,16 @@ public class DataSetUtil {
                         break;
                     }
                     if (d <= last) {
+                        logger.exiting( "DataSetUtil", "isMonotonicAndIncreasingQuick", false );
                         return false;
                     }
                     last = d;
                 }
+                logger.exiting( "DataSetUtil", "isMonotonicAndIncreasingQuick", true );
                 return true;
             }
         } else {
+            logger.exiting( "DataSetUtil", "isMonotonicAndIncreasingQuick", false );
             return false;
         }
     }
