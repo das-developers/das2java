@@ -98,7 +98,6 @@ public class Orbits {
                         }   break;
                     case "crres":
                         urls.add( new URL( "https://das2.org/Orbits/crres.dat" ) );
-                        urls.add( new URL( "ftp://virbo.org/mirror/das2.org/wiki/index.php/Oribts/crres/crres-orbits.dat" ) );
                         break;
                     case "cassini":
                         urls.add( new URL( "http://www-pw.physics.uiowa.edu/~jbf/cassini/cassiniOrbits.txt" ) );
