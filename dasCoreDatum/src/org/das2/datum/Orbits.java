@@ -391,7 +391,8 @@ public class Orbits {
         names.put( "crres",     "CRRES" );
         names.put( "de1", "Dynamics Explorer");
         names.put( "cassini",   "Cassini Spacecraft" );
-        names.put( "cassini.perikrone.120min",   "Cassini Spacecraft around perikrone" );
+        names.put( "cassini.perikrone.24hr",    "Cassini Spacecraft around perikrone" );
+        names.put( "cassini.perikrone.120min",  "Cassini Spacecraft around perikrone" );
         names.put( "cassini.perikrone.40min",   "Cassini Spacecraft around perikrone" );
         names.put( "cassini",   "Cassini Spacecraft" );
         names.put( "marsx", "marsx" );
