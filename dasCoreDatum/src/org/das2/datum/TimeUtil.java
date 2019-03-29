@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.util.*;
 
 import java.text.ParseException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.datum.format.TimeDatumFormatter;
 
@@ -35,7 +36,7 @@ import org.das2.datum.format.TimeDatumFormatter;
  */
 public final class TimeUtil {
     
-    private static final Logger logger= LoggerManager.getLogger("das2.datum");
+    private static final Logger logger= LoggerManager.getLogger("das2.datum.timeutil");
 
     private TimeUtil() {
     }
@@ -491,6 +492,7 @@ public final class TimeUtil {
         double sinceMidnight= d-midnight;
         
         int jd= 2436205 + mjd1958;
+        logger.log(Level.FINER, "julian day: {0}", jd );
 
         if ( u==Units.cdfTT2000 && sinceMidnight<0.0 ) { //TODO: huh?  this needs review  TODO: document when this happens.
             TimeStruct result= julianToGregorian( jd );
@@ -503,6 +505,7 @@ public final class TimeUtil {
         }
 
         double nanoseconds= u.getOffsetUnits().convertDoubleTo( Units.nanoseconds, sinceMidnight );
+        logger.log(Level.FINER, "nanoseconds since midnight: {0}", nanoseconds);
 
         if ( jd<0 ) {
             throw new IllegalArgumentException("julian day is negative.");
@@ -516,6 +519,7 @@ public final class TimeUtil {
         if ( nanoseconds>=86400e9 && u!=Units.cdfTT2000 ) {
             jd= jd+1;
             nanoseconds -= 86400e9; // no leap
+            logger.finer("nanoseconds roundoff kludge");
         }
 
         TimeStruct result= julianToGregorian( jd );
