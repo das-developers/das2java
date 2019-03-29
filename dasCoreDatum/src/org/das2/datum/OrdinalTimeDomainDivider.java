@@ -20,7 +20,7 @@ public class OrdinalTimeDomainDivider implements DomainDivider {
      */
     private final static int[] ZEROONE = new int[]{0, 1, 1, 0, 0, 0, 0, 0};
     private final static int[] MODULO = new int[]{10000, 12, 30, 24, 60, 60, 1000, 1000};
-    private static int N_DIGITS = 8;
+    private static final int N_DIGITS = 8;
     private final static List<Integer>[] FACTORS = new List[N_DIGITS];
 
 
@@ -67,7 +67,7 @@ public class OrdinalTimeDomainDivider implements DomainDivider {
      * @return
      */
     private static List<Integer> primeFactors(int N) {
-        List<Integer> result = new ArrayList<Integer>();
+        List<Integer> result = new ArrayList<>();
         while (N % 10 == 0) { // favor tens
             result.add(2);
             result.add(5);
@@ -89,7 +89,7 @@ public class OrdinalTimeDomainDivider implements DomainDivider {
      * @return a list of factors for the digit.
      */
     private static List<Integer> factors(List<Integer> primeFactors) {
-        List<Integer> result = new ArrayList<Integer>();
+        List<Integer> result = new ArrayList<>();
         result.add(1);
         int count = 1;
         int c = (int) Math.pow(2, primeFactors.size());
@@ -113,6 +113,7 @@ public class OrdinalTimeDomainDivider implements DomainDivider {
         return result;
     }
 
+    @Override
     public DomainDivider finerDivider(boolean superset) {
         int newSignificand;
         int newDigit = digit;
@@ -151,6 +152,7 @@ public class OrdinalTimeDomainDivider implements DomainDivider {
         }
     }
 
+    @Override
     public DomainDivider coarserDivider(boolean superset) {
         int newSignificand = 0;
         int newDigit = digit;
@@ -166,8 +168,8 @@ public class OrdinalTimeDomainDivider implements DomainDivider {
         do {
             i = i + 1;
             if (i == factors.size()) {
-                newDigit = digit - 1;
-                newSignificand = 1;
+                //newDigit = digit - 1;
+                //newSignificand = 1;
                 if ( digit==ARR_DAY && superset ) {
                     newDigit = digit - 1;
                     newSignificand = 1;
@@ -197,9 +199,7 @@ public class OrdinalTimeDomainDivider implements DomainDivider {
      */
     private static int[] floor(int[] tarr, int significand, int digit) {
         tarr[digit] = (tarr[digit] - ZEROONE[digit]) / significand * significand + ZEROONE[digit];
-        for (int i = digit + 1; i < N_DIGITS; i++) {
-            tarr[i] = ZEROONE[i];
-        }
+        System.arraycopy(ZEROONE, digit + 1, tarr, digit + 1, N_DIGITS - (digit + 1));
         return tarr;
     }
 
@@ -256,6 +256,7 @@ public class OrdinalTimeDomainDivider implements DomainDivider {
         return tarr;
     }
 
+    @Override
     public DatumVector boundaries(Datum min, Datum max) {
         if ( !min.isFinite() || !max.isFinite() ) {
             System.err.println("min and max must be finite");
@@ -316,6 +317,7 @@ public class OrdinalTimeDomainDivider implements DomainDivider {
         }
     }
 
+    @Override
     public long boundaryCount(Datum min, Datum max) {
         if ( digit==ARR_SECOND && ysDivider!=null ) {
             Datum t= TimeUtil.prevMidnight( min ).convertTo(Units.t2000);
@@ -356,6 +358,7 @@ public class OrdinalTimeDomainDivider implements DomainDivider {
         }
     }
 
+    @Override
     public DatumRange rangeContaining(Datum v) {
         if ( digit==ARR_SECOND && ysDivider!=null ) {
             Datum t= TimeUtil.prevMidnight( v );
@@ -378,6 +381,7 @@ public class OrdinalTimeDomainDivider implements DomainDivider {
         return new DatumRange(dstart, dstop);
     }
 
+    @Override
     public String toString() {
         if ( ysDivider!=null ) {
             return "OTDomainDivider delegate offset to "+ysDivider + " "+ TimeUtil.TimeDigit.fromOrdinal(digit + 1) ;
