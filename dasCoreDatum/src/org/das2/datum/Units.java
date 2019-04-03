@@ -71,7 +71,7 @@ public abstract class Units {
 
     /**
      * return the preferred unit to use when there are multiple representations
-     * of the same unit (having convertion UnitsConverter.IDENTITY.
+     * of the same unit (having conversion UnitsConverter.IDENTITY.
      * @param units
      * @return the preferred unit
      */
@@ -119,6 +119,8 @@ public abstract class Units {
     public static final Units celciusDegrees= new NumberUnits("celcius degrees"); // disambiguate from "deg C" which is the temperature scale
     public static final Units fahrenheitDegrees= new NumberUnits("fahrenheit degrees"); // disambiguate from "deg F" which is the temperature scale
     
+    public static final Units years= new NumberUnits("years");
+    public static final Units days= new NumberUnits("days");
     public static final Units hours= new NumberUnits("hr");
     public static final Units minutes= new NumberUnits("min");
     public static final Units seconds= new NumberUnits("s");
@@ -133,7 +135,6 @@ public abstract class Units {
     public static final Units nanoseconds= new NumberUnits("nanoseconds");
     public static final Units ns= new NumberUnits("ns","nanoseconds");
     public static final Units picoseconds= new NumberUnits("picoseconds");
-    public static final Units days= new NumberUnits("days");
     static {
         seconds.registerConverter(milliseconds, UnitsConverter.MILLI);
         seconds.registerConverter(microseconds, UnitsConverter.MICRO);
@@ -311,11 +312,16 @@ public abstract class Units {
     public static final TimeLocationUnits cdfTT2000= new TimeLocationUnits("cdfTT2000","nanoseconds since 01-Jan-2000, including leap seconds",
             Units.nanoseconds, Basis.since2000 );
 
+    public static final TimeLocationUnits decimalYear= 
+            new TimeLocationUnits("decimalYear","years, plus fractional component when multiplied by year length gives day of year", 
+                    Units.years, Basis.since0000 );
+    
     static {
         ((Units)t2000).registerConverter(us2000, UnitsConverter.MICRO);
         ((Units)us1980).registerConverter(us2000, new UnitsConverter.ScaleOffset(1.0, -631152000000000L ) );
         ((Units)us2000).registerConverter(cdfEpoch, new UnitsConverter.ScaleOffset( 1/1000.,63113904000000L ));
         ((Units)us2000).registerConverter(cdfTT2000, new LeapSecondsConverter( true ) ); 
+        ((Units)us2000).registerConverter(decimalYear, new DecimalYearConverter( true ) );
         ((Units)t2000).registerConverter(t1970, new UnitsConverter.ScaleOffset(1.0, 9.466848e8));
         ((Units)t1970).registerConverter(ms1970, UnitsConverter.MILLI );
         ((Units)t2000).registerConverter(t2010, new UnitsConverter.ScaleOffset(1.0, -3.1561920e+8 ));
