@@ -635,12 +635,16 @@ public class AsciiHeadersParser {
     }
     
     /**
-     * attempt to parse the metadata stored in the header.  The header lines must
+     * attempt to parse the JSON metadata stored in the header.  The header lines must
      * be prefixed with hash (#).  Loosely formatted test is converted into
      * nicely-formatted JSON and then parsed with a JSON parser.  Note the Java
      * JSON parser itself is pretty loose, for example allowing 1-word strings to
-     * go without quotes delimiters.
-     *
+     * go without quotes delimiters.  The scheme for this header is either:<ul>
+     * <li>"rich ascii" or http://autoplot.org/richAscii
+     * <li>"hapi" https://github.com/hapi-server/data-specification/blob/master/hapi-dev/HAPI-data-access-spec-dev.md#info
+     * </ul>
+     * @see http://autoplot.org/richAscii
+     * @see https://github.com/hapi-server/data-specification/blob/master/hapi-dev/HAPI-data-access-spec-dev.md#info
      * @param header the JSON header
      * @param columns identifiers for each column
      * @param columnLabels labels for each column
@@ -959,6 +963,21 @@ public class AsciiHeadersParser {
              Object o= jo.get(key);
              if ( !( o instanceof JSONObject ) ) {
                  logger.log(Level.WARNING, "expected JSONObject for value: {0}", key);
+                 Map<String,Object> userProperties= (Map<String,Object>) bd.property( QDataSet.USER_PROPERTIES );
+                 if ( userProperties==null ) {
+                     userProperties= new LinkedHashMap<>();
+                     bd.putProperty( QDataSet.USER_PROPERTIES, userProperties );
+                 }
+                 if ( o instanceof JSONArray ) {
+                     JSONArray ja= ((JSONArray)o);
+                     String[] arr= new String[ ja.length() ];
+                     for ( int i=0; i<arr.length; i++ ) {
+                         arr[i]= ja.get(i).toString();
+                     }
+                     userProperties.put( key, arr );
+                 } else {
+                     userProperties.put( key, o.toString() ); 
+                 }
 
              } else {
                  String name= Ops.safeName(key);
