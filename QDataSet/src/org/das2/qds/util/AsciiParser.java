@@ -987,7 +987,10 @@ public class AsciiParser {
 
         mon.finished();
 
-        builder.putProperty(QDataSet.USER_PROPERTIES, new HashMap(builder.properties)); // put discovered properties into
+        Object o= builder.properties.get( QDataSet.USER_PROPERTIES );
+        if ( o==null ) {
+            builder.putProperty(QDataSet.USER_PROPERTIES, new HashMap(builder.properties)); // put discovered properties into
+        }
         if ( bundleDescriptor!=null ) { // it shouldn't be null.
             builder.putProperty( QDataSet.BUNDLE_1, bundleDescriptor );
         }
