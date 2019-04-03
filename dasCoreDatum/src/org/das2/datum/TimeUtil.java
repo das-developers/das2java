@@ -479,6 +479,10 @@ public final class TimeUtil {
         }
         
         Units u= datum.getUnits();
+        if ( u==Units.decimalYear ) {
+            datum= datum.convertTo(Units.us2000);
+            u= Units.us2000;
+        }
         double d= datum.doubleValue(u);
         
         int mjd1958= (int)datum.doubleValue( Units.mj1958 );
