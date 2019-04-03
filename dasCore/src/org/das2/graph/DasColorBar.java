@@ -38,7 +38,9 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.swing.ImageIcon;
@@ -292,7 +294,12 @@ public class DasColorBar extends DasAxis {
      * enumeration of the types of colorbars.
      */
     public static final class Type implements Enumeration, Displayable {
-        
+    	/**
+    	 * List of all types in the order in which they are created. Must be
+    	 * instantiated before any individual Type object.
+    	 */
+        private static List<Type> allTypesInOrder = new ArrayList<>();
+     
         /**
          * Rainbow colorbar used by default.  TODO: this is a misnomer, where
          * color_wedge was the type of object in das1, not the instance of the type,
@@ -405,6 +412,7 @@ public class DasColorBar extends DasAxis {
         
         private Type(String desc) {
             this.desc = desc;
+            registerType(this);
         }
         
         /**
@@ -416,6 +424,7 @@ public class DasColorBar extends DasAxis {
         public Type(String desc,int[] colorTable ) {
             this.desc= desc;
             this.colorTable= colorTable;
+            registerType(this);
             extraTypes.put(desc,this);
         }
         
@@ -814,53 +823,31 @@ public class DasColorBar extends DasAxis {
          * @return type like Type.APL_RAINBOW_BLACK0.
          */
         public static Type parse(String s) {
-            switch (s) {
-                case "color_wedge":
-                    return COLOR_WEDGE;
-                case "grayscale":
-                    return GRAYSCALE;
-                case "inverse_grayscale":
-                    return INVERSE_GRAYSCALE;
-                case "blue_black_red":
-                    return BLUE_BLACK_RED_WEDGE;
-                case "blue_white_red":
-                    return BLUE_WHITE_RED_WEDGE;
-                case "apl_rainbow_black0":
-                    return APL_RAINBOW_BLACK0;
-                case "apl_rainbow_white0":
-                    return APL_RAINBOW_WHITE0;
-                case "gsfc_rp_special":
-                    return GSFC_RP_SPECIAL;
-                case "matlab_jet":
-                    return MATLAB_JET;
-                case "matlab_jet_black0":
-                    return MATLAB_JET_BLACK0;
-                case "black_white":
-                    return INVERSE_GRAYSCALE;
-                case "black_red":
-                    return BLACK_RED;
-                case "black_green":
-                    return BLACK_GREEN;
-                case "black_blue":
-                    return BLACK_BLUE;
-                case "white_blue_black":
-                    return WHITE_BLUE_BLACK;
-                case "violet_yellow":
-                    return VIOLET_YELLOW;
-                case "blue_to_orange":
-                    return BLUE_TO_ORANGE;
-                case "scipy_plasma":
-                    return SCIPY_PLASMA;
-                default:
-                    Type r= extraTypes.get(s);
-                    if ( r==null ) {
-                        throw new IllegalArgumentException("undefined DasColorBar.Type identifier: " + s);
-                    } else {
-                        return r;
-                    }
-            }
+        	for (Type t: allTypesInOrder) {
+        		if (t.getListLabel().equalsIgnoreCase(s)) {
+        			return t;
+        		}
+        	}
+            throw new IllegalArgumentException("undefined DasColorBar.Type identifier: " + s);
         }
-        
+
+        /**
+         * return a list of all defined Types, in the order in which they were constructed.
+         * @return list of Type objects.
+         */
+        public static List<Type> getAllTypes() {
+        	return new ArrayList<>(allTypesInOrder);
+        }
+
+        private static void registerType(Type t) {
+        	String s = t.getListLabel();
+        	for (Type type: allTypesInOrder) {
+        		if (s.equalsIgnoreCase(type.getListLabel())) {
+        			throw new IllegalArgumentException("duplicated DasColorBar.Type identifier: " + s);
+        		}
+        	}
+        	allTypesInOrder.add(t);
+        }
     }
     
     /*
