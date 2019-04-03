@@ -1192,6 +1192,15 @@ public class DasPlot extends DasCanvasComponent {
             return f0; // and let someone else deal with it!
         }
     }
+    
+    /**
+     * return the Rectangle where data is drawn, useful for clipping.
+     * @return Rectangle in canvas coordinates.
+     * @see DasDevicePosition#toRectangle(org.das2.graph.DasRow, org.das2.graph.DasColumn) 
+     */
+    public Rectangle getAxisClip() {
+        return DasDevicePosition.toRectangle( getRow(),getColumn() );
+    }
 
     @Override
     protected synchronized void paintComponent(Graphics graphics0) {
