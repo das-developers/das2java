@@ -379,7 +379,9 @@ public class Datum implements Comparable, Serializable {
      * units to this Datum's units or offset units.
      * @return value Datum that is the difference of the two values in this Datum's units.
      */
-    public Datum subtract( double d, Units units ) {  return subtract( new java.lang.Double(d), units ); }    
+    public Datum subtract( double d, Units units ) {  
+        return subtract( new java.lang.Double(d), units ); 
+    }    
     
     private static double relativeErrorMult( double x, double dx, double y, double dy ) {
         return Math.sqrt( dx/x * dx/x + dy/y * dy/y );
@@ -409,14 +411,18 @@ public class Datum implements Comparable, Serializable {
      * @param units the units of the divisor.
      * @return the quotient.
      */
-    public Datum divide( Number a, Units units ) { return getUnits().divide( getValue(), a, units ); }
+    public Datum divide( Number a, Units units ) {
+        return getUnits().divide( getValue(), a, units ); 
+    }
     
     /**
      * divide this by the dimensionless double.
      * @param d the magnitude of the divisor.
      * @return the quotient.
      */
-    public Datum divide( double d ) {  return divide( d, Units.dimensionless ); }
+    public Datum divide( double d ) {  
+        return divide( d, Units.dimensionless ); 
+    }
     
     /**
      * multiply this by the datum <tt>a</tt>.  Currently, only multiplication is only supported
@@ -447,7 +453,9 @@ public class Datum implements Comparable, Serializable {
      * @param units the units of the multiplier.
      * @return the product.
      */
-    public Datum multiply( Number a, Units units ) { return getUnits().multiply( getValue(), a, units ); }
+    public Datum multiply( Number a, Units units ) {
+        return getUnits().multiply( getValue(), a, units );
+    }
     
     /**
      * multiply by a dimensionless number.
@@ -458,7 +466,9 @@ public class Datum implements Comparable, Serializable {
      * @param d the multiplier.
      * @return the product.
      */
-    public Datum multiply( double d ) {  return multiply( new java.lang.Double(d), Units.dimensionless ); }
+    public Datum multiply( double d ) {  
+        return multiply( d, Units.dimensionless );
+    }
     
     /**
      * creates an equivalent datum using a different unit.  For example,<code>
