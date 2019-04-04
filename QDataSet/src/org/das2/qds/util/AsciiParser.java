@@ -1534,6 +1534,19 @@ public class AsciiParser {
     }
 
     /**
+     * provide more control to external codes by providing a way to assert that
+     * an N-column delim parser should be used.
+     * @param fieldCount
+     * @param delim the delimiter pattern, such as "," or "\s+"
+     * @return the DelimParser.
+     */
+    public DelimParser getDelimParser( int fieldCount, String delim ) {
+        DelimParser result= new DelimParser(fieldCount, delim);
+        this.recordParser= result;
+        return result;
+    }
+    
+    /**
      * DelimParser splits the line on a regex (like "," or "\\s+") to create the fields.
      * Trailing and leading whitespace is ignored.
      */
@@ -1549,6 +1562,11 @@ public class AsciiParser {
         public String header=null; // place to store the header.
         boolean showException= true;
 
+        /**
+         * 
+         * @param fieldCount
+         * @param delim the delimiter pattern, such as "," or "\s+"
+         */
         public DelimParser(int fieldCount, String delim) {
             this.fieldCount = fieldCount;
             this.doParseField = new boolean[fieldCount];
