@@ -962,7 +962,6 @@ public class AsciiHeadersParser {
              String key= (String) it.next();
              Object o= jo.get(key);
              if ( !( o instanceof JSONObject ) ) {
-                 logger.log(Level.WARNING, "expected JSONObject for value: {0}", key);
                  Map<String,Object> userProperties= (Map<String,Object>) bd.property( QDataSet.USER_PROPERTIES );
                  if ( userProperties==null ) {
                      userProperties= new LinkedHashMap<>();
