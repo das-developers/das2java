@@ -18,7 +18,7 @@ public final class DecimalYearConverter extends UnitsConverter {
     public DecimalYearConverter( boolean us2000ToDecimalYear ) {
         this.reverse= us2000ToDecimalYear;
         if ( reverse ) {
-            inverse= new LeapSecondsConverter( !reverse );
+            inverse= new DecimalYearConverter( !reverse );
             inverse.inverse= this;
         }
     }
