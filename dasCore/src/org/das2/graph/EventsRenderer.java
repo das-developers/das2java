@@ -317,7 +317,15 @@ public class EventsRenderer extends Renderer {
                             sxmax= sxmaxunits.convertDoubleTo( sxunits, sxmax );
                         }
                         if ( sxmax<sxmin ) {
-                            sb.append( "Error, sxmax<sxmin!c");
+                            String ss;
+                            DatumRange dr= new DatumRange( sxmin, sxmin, sxunits );
+                            try {
+                                Datum sz= zunits.createDatum( msgs.value(i) );
+                                ss= textSpecifier.getText( dr, sz );
+                            } catch ( RuntimeException ex ) {
+                                ss= "" + dr + " fill";
+                            }
+                            sb.append(ss).append( "!c");
                         } else {
                             String ss;
                             DatumRange dr= new DatumRange( sxmin, sxmax, sxunits );
