@@ -828,7 +828,12 @@ public class DasColorBar extends DasAxis {
         			return t;
         		}
         	}
-            throw new IllegalArgumentException("undefined DasColorBar.Type identifier: " + s);
+            switch (s) {
+                case "black_white":
+                    return INVERSE_GRAYSCALE;
+                default:
+                    throw new IllegalArgumentException("undefined DasColorBar.Type identifier: " + s);
+            }
         }
 
         /**
