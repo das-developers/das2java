@@ -312,7 +312,10 @@ public abstract class Units {
     public static final TimeLocationUnits cdfTT2000= new TimeLocationUnits("cdfTT2000","nanoseconds since 01-Jan-2000, including leap seconds",
             Units.nanoseconds, Basis.since2000 );
 
-    public static final TimeLocationUnits decimalYear= 
+    /**
+     * the year plus the fraction into the current year, ((doy-1)/365) for non-leap years.
+     */
+    public static final LocationUnits decimalYear= 
             new TimeLocationUnits("decimalYear","years, plus fractional component when multiplied by year length gives day of year", 
                     Units.years, Basis.since0000 );
     
