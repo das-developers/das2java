@@ -766,6 +766,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         imageYRange = yAxis.getDatumRange();
 
                         DataSetRebinner rebinner = this.rebinnerEnum.getRebinner();
+                        logger.log(Level.FINE, "using Rebinner: {0}", rebinner);
                         if ( rebinner instanceof AverageTableRebinner ) {
                             ((AverageTableRebinner)rebinner).setCadenceCheck(this.cadenceCheck);
                         }
