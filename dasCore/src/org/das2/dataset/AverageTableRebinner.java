@@ -60,7 +60,12 @@ public class AverageTableRebinner implements DataSetRebinner {
     /** Creates a new instance of TableAverageRebinner */
     public AverageTableRebinner() {
     }
-
+    
+    @Override
+    public String toString() {
+        return "averageTableRebinner interpolate="+interpolate+" cadenceCheck="+cadenceCheck + " interpolateType="+interpolateType;
+    }
+    
     private static QDataSet getRank1Tags( QDataSet xds ) {
         QDataSet result;
         if ( xds.rank()==2 && SemanticOps.isBins(xds) ) {

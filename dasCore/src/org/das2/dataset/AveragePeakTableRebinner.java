@@ -25,9 +25,6 @@ package org.das2.dataset;
 
 import java.util.Arrays;
 import org.das2.datum.Units;
-import org.das2.datum.Datum;
-import java.util.HashMap;
-import java.util.Map;
 import org.das2.qds.DDataSet;
 import org.das2.qds.JoinDataSet;
 import org.das2.qds.QDataSet;
@@ -47,6 +44,12 @@ public class AveragePeakTableRebinner implements DataSetRebinner {
     public AveragePeakTableRebinner() {
     }        
     
+    @Override
+    public String toString() {
+        return "averagePeakRebinner";
+    }
+    
+    @Override
     public QDataSet rebin( QDataSet ds, RebinDescriptor ddX, RebinDescriptor ddY) throws IllegalArgumentException {
         
         QDataSet tds;
