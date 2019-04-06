@@ -773,6 +773,7 @@ public class AverageTableRebinner implements DataSetRebinner {
                 }
             }
 
+            double ibinxmax= -999;
             for (int i = 0; i < tds1.length(); i++) {
 
                 int ibinx;
@@ -791,6 +792,10 @@ public class AverageTableRebinner implements DataSetRebinner {
                     continue;
                 }
 
+                if ( ibinx>ibinxmax ) {
+                    ibinxmax= ibinx;
+                }
+                
                 if ( yds.rank()==2 ) {
                     for (int j = 0; j < ibiny.length; j++) {
                         if (ddY != null) {
@@ -835,6 +840,7 @@ public class AverageTableRebinner implements DataSetRebinner {
                     }
                 }
             }
+            logger.log(Level.FINE, "biggest X pixel location seen: {0}", ibinxmax);
         }
 
         multiplyWeights( rebinData, rebinWeights, zunits.getFillDouble() );
