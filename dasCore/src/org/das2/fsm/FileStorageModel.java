@@ -197,8 +197,8 @@ public class FileStorageModel {
     
     /**
      * Return a random file from the FSM, which can be used to represent a typical file.  For
-     * example, we need to look at metadata to see what is available.  This is introduced 
-     * to support discovery, where we just need one file to
+     * example, we need to look at metadata of a given file to see what is available inside.  
+     * This is introduced to support discovery, where we just need one file to
      * get started.  Before, there was code that would list all files, then use
      * just the first one.  This may return a skeleton file, but getFileFor() must
      * return a result.
@@ -214,9 +214,9 @@ public class FileStorageModel {
             
         logger.log(Level.FINE, "get representative from {0} {1} range: {2}", new Object[]{this.getFileSystem(), childRegex, range});
         
-        if ( depth==0 ) {
-            System.err.println("here" );
-        }
+        //if ( depth==2 ) {
+        //    System.err.println("here at depth 2: "+this.toString() );
+        //}
         if ( monitor==null ) monitor= new NullProgressMonitor();
         
         String listRegex;
@@ -257,8 +257,17 @@ public class FileStorageModel {
             while ( result==null ) {
                 for ( int i=fileSystems.length-1; result==null && i>=0; i-- ) {
                     String[] files1= fileSystems[i].listDirectory( "/", listRegex, monitor.getSubtaskMonitor("create") );
+                    //to avoid the case where the latest folder is empty, check n-1 down to 0, then n.
+                    //int n= files1.length;
+                    //String[] resort= new String[n];
+                    //for ( int j=0; j<n-1; j++ ) {
+                    //    resort[j]= files1[n-2-j];
+                    //}
+                    //resort[n-1]= files1[n-1];
+                    //files1= resort;
+                    //for ( int j=0; j<files1.length && result==null; j++ ) {
                     int j= files1.length-1;
-                    while ( j>=0 && result==null ) {
+                    while ( j>=0 && result==null ) {                        
                         String ff= names[i].equals("") ? files1[ j ] : names[i]+"/"+files1[ j ];
                         if ( ff.endsWith("/") ) ff=ff.substring(0,ff.length()-1);
                         try {
