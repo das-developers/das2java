@@ -697,7 +697,7 @@ public class HttpFileSystem extends WebFileSystem {
      */
     @Override
     public String[] listDirectory(String directory) throws IOException {
-        logger.log(Level.FINE, "** listDirectory({0})", directory);
+        logger.log(Level.FINE, "** listDirectory({0}{1})", new Object[]{root, directory});
         DirectoryEntry[] cached= listDirectoryFromMemory( directory );
         if ( cached!=null ) {
             return FileSystem.getListing( cached );
