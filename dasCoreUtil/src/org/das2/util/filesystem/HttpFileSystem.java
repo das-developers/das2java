@@ -117,6 +117,11 @@ public class HttpFileSystem extends WebFileSystem {
             if ( auth==null ) {
                 throw new MalformedURLException("URL does not contain authority, check for ///");
             }
+            
+            if ( rooturi.toString().contains("$Y") ) {
+                logger.fine( "somehow template leaked into FileSystem code.");
+            }
+            
             String[] ss= auth.split("@");
 
             URL root;
