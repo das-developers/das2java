@@ -192,9 +192,31 @@ public class FileStorageModel {
      * @throws java.io.IOException if the file cannot be downloaded.
      */
     public String getRepresentativeFile( ProgressMonitor monitor, String childRegex, DatumRange range ) throws IOException {
-        
+        return getRepresentativeFile( monitor,childRegex,range,0 );
+    }
+    
+    /**
+     * Return a random file from the FSM, which can be used to represent a typical file.  For
+     * example, we need to look at metadata to see what is available.  This is introduced 
+     * to support discovery, where we just need one file to
+     * get started.  Before, there was code that would list all files, then use
+     * just the first one.  This may return a skeleton file, but getFileFor() must
+     * return a result.
+     * This implementation does the same as getNames(), but stops after finding a file.
+     * @param monitor progress monitor in case a file must be downloaded.
+     * @param childRegex the parent must contain a file/folder matching childRegex
+     * @param range hint at the range where we are looking.  
+     * @param depth the recursion depth, useful for debugging.
+     * @return null if no file is found
+     * @throws java.io.IOException if the file cannot be downloaded.
+     */
+    private String getRepresentativeFile( ProgressMonitor monitor, String childRegex, DatumRange range, int depth ) throws IOException {
+            
         logger.log(Level.FINE, "get representative from {0} {1} range: {2}", new Object[]{this.getFileSystem(), childRegex, range});
         
+        if ( depth==0 ) {
+            System.err.println("here" );
+        }
         if ( monitor==null ) monitor= new NullProgressMonitor();
         
         String listRegex;
@@ -214,7 +236,7 @@ public class FileStorageModel {
         try {
             if ( parent!=null ) {
                 parentRegex= getParentRegex(regex);
-                String one= parent.getRepresentativeFile( monitor.getSubtaskMonitor("get representative file"),regex.substring(parentRegex.length()+1), range );
+                String one= parent.getRepresentativeFile( monitor.getSubtaskMonitor("get representative file"),regex.substring(parentRegex.length()+1), range, depth+1 );
                 if ( one==null ) return null;
                 names= new String[] { one }; //parent.getNamesFor(null);
                 fileSystems= new FileSystem[names.length];
@@ -286,7 +308,11 @@ public class FileStorageModel {
                         if ( range!=null && !range.intersects(range1) ) {
                             return null;
                         }
-                        String one= parent.getRepresentativeFile( monitor.getSubtaskMonitor("getRepresentativeFile"),regex.substring(parentRegex.length()+1), range1 );
+                        String one= parent.getRepresentativeFile( 
+                                monitor.getSubtaskMonitor("getRepresentativeFile"),
+                                regex.substring(parentRegex.length()+1), 
+                                range1, 
+                                depth+1 );
                         if ( one==null ) return null;
                         names= new String[] { one }; //parent.getNamesFor(null);
                         fileSystems= new FileSystem[names.length];
