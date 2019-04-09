@@ -296,14 +296,15 @@ public class ArgumentList {
         
         System.err.println(s.toString());
         
-        Set<String> set= names.keySet();
-        Iterator<String> i= set.iterator();
+        Set<Entry<String,String>> sset= names.entrySet();
+        Iterator<Entry<String,String>> i= sset.iterator();
 
         Map<String,String> abbrevsCopy= new HashMap<>(abbrevs);
 
         while ( i.hasNext() ) {
-            String name= i.next();
-            String key= names.get(name);
+            Entry<String,String> e= i.next();
+            String name= e.getKey();
+            String key= e.getValue();
             String abbrev=null;
             for ( Entry<String,String> se: abbrevsCopy.entrySet() ) {
                 if ( se.getValue().equals(name) ) {
@@ -343,12 +344,13 @@ public class ArgumentList {
             System.err.println(s.toString());
         }
         
-        set= abbrevsCopy.keySet();
-        i= set.iterator();
+        sset= abbrevsCopy.entrySet();
+        i= sset.iterator();
         
         while ( i.hasNext() ) {
-            String abbrev= i.next();
-            String key= abbrevs.get(abbrev);
+            Entry<String,String> e= i.next();
+            String abbrev= e.getKey();
+            String key= e.getValue();
             s= new StringBuilder("  ");
             String description= descriptions.get(key);
             if ( !this.UNSPECIFIED.equals(values.get(key) ) ) {
