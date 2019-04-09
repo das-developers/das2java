@@ -131,7 +131,7 @@ public class ApplyIndexEditorPanel extends javax.swing.JPanel implements FilterE
         return "|applyIndex"+dimensionCB.getSelectedIndex()+"("+indicesTF.getSelectedItem()+")";
     }
 
-    public static String PROP_REGEX= "\\|?applyIndex(\\d)\\((\\~?(\\d+|\\,|\\:|\\-)+)\\)";
+    public static final String PROP_REGEX= "\\|?applyIndex(\\d)\\((\\~?(\\d+|\\,|\\:|\\-)+)\\)";
     
     @Override
     public void setFilter(String filter) {
