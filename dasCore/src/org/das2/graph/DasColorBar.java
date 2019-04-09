@@ -39,6 +39,7 @@ import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -423,7 +424,7 @@ public class DasColorBar extends DasAxis {
          */
         public Type(String desc,int[] colorTable ) {
             this.desc= desc;
-            this.colorTable= colorTable;
+            this.colorTable= Arrays.copyOf( colorTable, colorTable.length );
             registerType(this);
             extraTypes.put(desc,this);
         }

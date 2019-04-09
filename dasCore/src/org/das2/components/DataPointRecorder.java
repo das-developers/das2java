@@ -158,7 +158,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         }
 
         public DataPoint(Datum[] data, Map planes) {
-            this.data = data;
+            this.data = Arrays.copyOf(data,data.length);
             this.planes = planes;
         }
 
