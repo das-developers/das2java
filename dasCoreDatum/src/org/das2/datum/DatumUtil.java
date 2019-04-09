@@ -458,6 +458,8 @@ public final class DatumUtil {
      * Datums cannot contain commas, semicolons, or quotes.
      * NaN is Double.NaN.
      * 
+     * TODO: only $ is supported as a prefix.  Others should be considered for
+     * completeness.
      * @param s the string-formatted datum
      * @return the magnitude and the units, or [null,s] when it is not parseable.
      */
