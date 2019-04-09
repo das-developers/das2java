@@ -476,6 +476,7 @@ public final class DatumUtil {
                         return result;
                     } else {
                         state= 'm'; // magnitude
+                        break;
                     }
                 case 'm':
                     if ( !floatChars.contains(s.substring(i,i+1) ) ) {
