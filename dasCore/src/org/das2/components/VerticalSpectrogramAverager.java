@@ -286,13 +286,13 @@ public class VerticalSpectrogramAverager implements DataRangeSelectionListener {
             if ( xtys.rank()==3 ) {
                 QDataSet jds= null;
                 for ( int i=0; i<xtys.length(); i++ ) {
-                    QDataSet rebinned = (QDataSet)rebinner.rebin(xtys.slice(i), ddX, null);
+                    QDataSet rebinned = (QDataSet)rebinner.rebin(xtys.slice(i), ddX, null, null);
                     QDataSet ds1 = rebinned.slice(0);
                     jds= org.das2.qds.ops.Ops.concatenate( jds, ds1 );
                 }
                 renderer.setDataSet(jds);                
             } else {
-                QDataSet rebinned = (QDataSet)rebinner.rebin(xtys, ddX, null);
+                QDataSet rebinned = (QDataSet)rebinner.rebin(xtys, ddX, null, null);
                 QDataSet ds1 = rebinned.slice(0);
                 renderer.setDataSet(ds1);
             }

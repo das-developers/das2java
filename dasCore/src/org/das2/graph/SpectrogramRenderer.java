@@ -807,7 +807,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         //t0= System.currentTimeMillis();
                         try {
                             logger.log(Level.FINEST, "rebinning to pixel resolution: {0}  {1}", new Object[]{xmemento, ymemento});
-                            rebinDataSet = (QDataSet) rebinner.rebin( fds, xRebinDescriptor, yRebinDescriptor );
+                            rebinDataSet = (QDataSet) rebinner.rebin(fds, xRebinDescriptor, yRebinDescriptor, null );
                             rebinDataSet= Ops.putProperty( rebinDataSet, QDataSet.UNITS, zunits );
                         } catch ( RuntimeException ex ) {
                             logger.log( Level.WARNING, ex.getMessage(), ex );  //TODO: catch this...  See sftp://jbf@papco.org/home/jbf/ct/autoplot/script/bugs/3237397/gapsTest.jy

@@ -28,7 +28,7 @@ public class SpectrogramRendererDemoRebinner extends PlotDemo {
     public class MyRebinner implements DataSetRebinner {
 
         @Override
-        public QDataSet rebin(QDataSet ds, RebinDescriptor x, RebinDescriptor y) throws IllegalArgumentException, DasException {
+        public QDataSet rebin(QDataSet ds, RebinDescriptor x, RebinDescriptor y, RebinDescriptor z) throws IllegalArgumentException, DasException {
             WritableDataSet result= Ops.zeros( x.numberOfBins(), y.numberOfBins() );
             for ( int i=0; i<x.numberOfBins(); i++ ) { // checker board
                 for ( int j=0; j<y.numberOfBins(); j++ ) {

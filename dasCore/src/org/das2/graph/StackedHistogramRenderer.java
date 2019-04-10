@@ -320,7 +320,7 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
         
         QDataSet data;
         try {
-            data=  rebinner.rebin(xtysData, xbins, null);
+            data=  rebinner.rebin(xtysData, xbins, null, null);
         } catch ( NoDataInIntervalException ex ) {
             lastException = ex;
             plotImage = null;
@@ -502,7 +502,7 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
         }
         
         @Override
-        public QDataSet rebin(QDataSet ds, RebinDescriptor x, RebinDescriptor y) throws IllegalArgumentException, DasException {
+        public QDataSet rebin(QDataSet ds, RebinDescriptor x, RebinDescriptor y, RebinDescriptor z) throws IllegalArgumentException, DasException {
             QDataSet xds= SemanticOps.xtagsDataSet(ds);
             Datum xwidth= SemanticOps.guessXTagWidth(xds,null);
             if ( xwidth==null ) xwidth= DataSetUtil.asDatum(DataSetUtil.guessCadenceNew(xds,null));
@@ -513,10 +513,10 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
                 QDataSet binPlus= (QDataSet) ds.property(QDataSet.BIN_PLUS);
                 if ( binPlus==null && binMax==null && x.binWidthDatum().lt( xwidth ) ) {
                     logger.log(Level.FINE, "using rebinner {0}", highResRebinner);
-                    result= highResRebinner.rebin( ds, x, y ); //Plasma Wave Group will have to update this
+                    result= highResRebinner.rebin( ds, x, y, z ); //Plasma Wave Group will have to update this
                 } else {
                     logger.log(Level.FINE, "using rebinner {0}", lowResRebinner);
-                    result= lowResRebinner.rebin( ds, x, y ); //Plasma Wave Group will have to update this
+                    result= lowResRebinner.rebin( ds, x, y, z ); //Plasma Wave Group will have to update this
                 }
 
                 return result;

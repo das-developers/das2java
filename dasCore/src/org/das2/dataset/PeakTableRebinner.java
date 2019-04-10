@@ -37,7 +37,8 @@ public class PeakTableRebinner implements DataSetRebinner {
     public PeakTableRebinner() {
     }
     
-    public QDataSet rebin(QDataSet ds, RebinDescriptor ddX, RebinDescriptor ddY) throws IllegalArgumentException {
+    @Override
+    public QDataSet rebin(QDataSet ds, RebinDescriptor ddX, RebinDescriptor ddY, RebinDescriptor ddZ ) throws IllegalArgumentException {
         if (!(ds.rank()==2 )) {
             throw new IllegalArgumentException("dataset must be rank 2");
         }

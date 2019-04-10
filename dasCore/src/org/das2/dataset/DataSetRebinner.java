@@ -37,10 +37,11 @@ public interface DataSetRebinner {
      * @param ds The input dataset, either a rank 2 or rank 3 dataset.  Note this may include rank 1 dataset and rank 2 bundles at some point.
      * @param x describes the column labels.  (Note this may become a QDataSet at some point).
      * @param y describes the row labels.
+     * @param z describes the Z space for the rebinning, in particular log.
      * @return a rank 2 QDataSet with the given rows and columns.
      * @throws IllegalArgumentException
      * @throws DasException
      */
-    QDataSet rebin( QDataSet ds, RebinDescriptor x, RebinDescriptor y ) throws IllegalArgumentException, DasException;
+    QDataSet rebin( QDataSet ds, RebinDescriptor x, RebinDescriptor y, RebinDescriptor z) throws IllegalArgumentException, DasException;
     
 }

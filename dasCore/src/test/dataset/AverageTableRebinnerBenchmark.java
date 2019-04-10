@@ -28,7 +28,7 @@ public class AverageTableRebinnerBenchmark {
         long t0= System.currentTimeMillis();
         long totalMillis=0;
         for ( int j=0; j<30.; j++ ) {
-            rebin.rebin(tds, ddy, ddy);
+            rebin.rebin(tds, ddy, ddy, null);
             long t1= System.currentTimeMillis() - t0;
             System.err.println( t1 );
             totalMillis+= t1;

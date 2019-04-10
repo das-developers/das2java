@@ -50,7 +50,7 @@ public class AveragePeakTableRebinner implements DataSetRebinner {
     }
     
     @Override
-    public QDataSet rebin( QDataSet ds, RebinDescriptor ddX, RebinDescriptor ddY) throws IllegalArgumentException {
+    public QDataSet rebin( QDataSet ds, RebinDescriptor ddX, RebinDescriptor ddY, RebinDescriptor z) throws IllegalArgumentException {
         
         QDataSet tds;
         

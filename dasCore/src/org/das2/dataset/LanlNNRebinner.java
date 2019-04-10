@@ -64,12 +64,13 @@ public class LanlNNRebinner implements DataSetRebinner {
      * @param ds rank 2 table or rank 3 join of tables.
      * @param ddX
      * @param ddY
+     * @param ddZ
      * @return
      * @throws IllegalArgumentException
      * @throws DasException
      */
     @Override
-    public QDataSet rebin( QDataSet ds, RebinDescriptor ddX, RebinDescriptor ddY ) throws IllegalArgumentException, DasException {
+    public QDataSet rebin( QDataSet ds, RebinDescriptor ddX, RebinDescriptor ddY, RebinDescriptor ddZ ) throws IllegalArgumentException, DasException {
         logger.entering("org.das2.dataset.LanlNNRebinner", "rebin");
 
         if (ds == null) {

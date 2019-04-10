@@ -71,15 +71,15 @@ public class TriScatRebinner implements DataSetRebinner {
     }
     
     @Override
-    public QDataSet rebin(QDataSet ds, RebinDescriptor rebinDescX, RebinDescriptor rebinDescY) {
+    public QDataSet rebin(QDataSet ds, RebinDescriptor ddX, RebinDescriptor ddY, RebinDescriptor ddZ ) {
         // throws IllegalArgumentException, DasException {
 
         LoggerManager.resetTimer("triscat rebin");
                 
-        WritableDataSet result = Ops.zeros(rebinDescX.numberOfBins(), rebinDescY.numberOfBins());
+        WritableDataSet result = Ops.zeros(ddX.numberOfBins(), ddY.numberOfBins());
 
-        rebinDescX.setOutOfBoundsAction(RebinDescriptor.MINUSONE);
-        rebinDescY.setOutOfBoundsAction(RebinDescriptor.MINUSONE);
+        ddX.setOutOfBoundsAction(RebinDescriptor.MINUSONE);
+        ddY.setOutOfBoundsAction(RebinDescriptor.MINUSONE);
 
         QDataSet zz;
         
@@ -191,10 +191,10 @@ public class TriScatRebinner implements DataSetRebinner {
         double xlimit= dxlimit.doubleValue(Units.dimensionless); // triangles have been normalized
         double ylimit= dylimit.doubleValue(Units.dimensionless);
         
-        for ( int ix= 0; ix<rebinDescX.numberOfBins(); ix++ ) {
-            for ( int iy= dir==1 ? 0 : rebinDescY.numberOfBins()-1;
-                    dir==1 ? iy<rebinDescY.numberOfBins() : iy>=0; iy+=dir ) { // Boustrophedon back and forth
-                ProGAL.geom2d.Point thePoint= new ProGAL.geom2d.Point( (rebinDescX.binCenter(ix,xunits)-dX[0])/dX[1], (rebinDescY.binCenter(iy,yunits)-dY[0])/dY[1] );
+        for ( int ix= 0; ix<ddX.numberOfBins(); ix++ ) {
+            for ( int iy= dir==1 ? 0 : ddY.numberOfBins()-1;
+                    dir==1 ? iy<ddY.numberOfBins() : iy>=0; iy+=dir ) { // Boustrophedon back and forth
+                ProGAL.geom2d.Point thePoint= new ProGAL.geom2d.Point( (ddX.binCenter(ix,xunits)-dX[0])/dX[1], (ddY.binCenter(iy,yunits)-dY[0])/dY[1] );
                 ProGAL.geom2d.delaunay.Triangle t1= rt.walk( thePoint, null, t );
                 if ( t1!=t ) {
                     Rectangle2D r= getBounds(t1);
@@ -258,7 +258,7 @@ public class TriScatRebinner implements DataSetRebinner {
         LoggerManager.markTime("done interp all pixels");
                 
         org.das2.qds.DataSetUtil.copyDimensionProperties( zz, result );
-        RebinDescriptor.putDepDataSet( ds, result, rebinDescX, rebinDescY );
+        RebinDescriptor.putDepDataSet( ds, result, ddX, ddY );
         
         if ( !hasFill ) {
             result.putProperty( QDataSet.FILL_VALUE, null );

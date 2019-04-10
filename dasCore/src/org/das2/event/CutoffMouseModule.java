@@ -125,7 +125,7 @@ public class CutoffMouseModule extends BoxSelectorMouseModule {
         
         try {
             //TODO: why does rebin throw DasException?
-            tds= (QDataSet)rebinner.rebin( tds, ddx, null );
+            tds= (QDataSet)rebinner.rebin(tds, ddx, null, null );
         } catch ( DasException e ) {
             throw new RuntimeException(e);
         }
@@ -455,7 +455,7 @@ public class CutoffMouseModule extends BoxSelectorMouseModule {
             RebinDescriptor ddx= getRebinDescriptor( range );
             
             try {
-                tds= (QDataSet)rebinner.rebin( tds, ddx, null );
+                tds= (QDataSet)rebinner.rebin(tds, ddx, null, null );
             } catch ( DasException e ) {
                 throw new RuntimeException(e);
             }

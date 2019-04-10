@@ -98,12 +98,13 @@ public class AverageTableRebinner implements DataSetRebinner {
      * @param ds rank 2 table or rank 3 join of tables.  New: rank 2 bundle of (X,Y,Z)
      * @param ddX
      * @param ddY
+     * @param ddZ
      * @return rank 2 table with one row/column per screen pixel.
      * @throws IllegalArgumentException
      * @throws DasException
      */
     @Override
-    public QDataSet rebin( QDataSet ds, RebinDescriptor ddX, RebinDescriptor ddY ) throws IllegalArgumentException, DasException {
+    public QDataSet rebin( QDataSet ds, RebinDescriptor ddX, RebinDescriptor ddY, RebinDescriptor ddZ ) throws IllegalArgumentException, DasException {
         logger.entering( "AverageTableRebinner", "rebin" );
         if (ds == null) {
             throw new NullPointerException("null data set");
