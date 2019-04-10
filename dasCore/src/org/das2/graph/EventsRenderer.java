@@ -575,7 +575,7 @@ public class EventsRenderer extends Renderer {
 
 
     @Override
-    public void render(java.awt.Graphics g1, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
+    public void render(java.awt.Graphics g1, DasAxis xAxis, DasAxis yAxis ) {
         
         GeneralPath sa= new GeneralPath();
 

@@ -97,7 +97,7 @@ public class VerticalSpectrogramAverager implements DataRangeSelectionListener {
         myPlot.addRenderer(renderer);
         myPlot.addRenderer( new Renderer() {
             @Override
-            public void render(Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
+            public void render(Graphics g, DasAxis xAxis, DasAxis yAxis ) {
                 if ( value!=null ) {
                     int ix= (int)myPlot.getXAxis().transform(value);
                     DasRow row= myPlot.getRow();

@@ -28,7 +28,7 @@ import org.das2.qds.QDataSet;
 public class MyRenderer extends Renderer {
 
     @Override
-    public void render(Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
+    public void render(Graphics g, DasAxis xAxis, DasAxis yAxis ) {
         if ( ds==null || ds.rank()!=2 || ds.length(0)!=4 ) {
             getParent().postMessage( this, "dataset not ready or appropriate", Level.INFO, null, null );
             return;

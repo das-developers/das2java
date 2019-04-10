@@ -56,7 +56,7 @@ public class RGBImageRenderer extends Renderer {
     }
     
     @Override
-    public void render(Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
+    public void render(Graphics g, DasAxis xAxis, DasAxis yAxis) {
         QDataSet lds= getDataSet();
         QDataSet dep0;
         QDataSet dep1;

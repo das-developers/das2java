@@ -305,7 +305,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     }
 
     @Override
-    public synchronized void render(Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
+    public synchronized void render(Graphics g, DasAxis xAxis, DasAxis yAxis ) {
         //long t0= System.currentTimeMillis();
 
         logger.entering( "org.das2.graph.SpectrogramRenderer", "render" );

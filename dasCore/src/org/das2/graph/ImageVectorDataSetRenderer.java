@@ -215,7 +215,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
     }
 
     @Override
-    public synchronized void render(java.awt.Graphics g1, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
+    public synchronized void render(java.awt.Graphics g1, DasAxis xAxis, DasAxis yAxis ) {
 
         // logger.entering is just past this check.
         DasPlot parent= getParent();

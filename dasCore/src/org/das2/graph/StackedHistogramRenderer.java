@@ -129,7 +129,7 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
     }    
     
     @Override
-    public void render(Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
+    public void render(Graphics g, DasAxis xAxis, DasAxis yAxis ) {
         
         Graphics2D g2= (Graphics2D)g;
         

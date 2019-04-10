@@ -166,7 +166,7 @@ public class PitchAngleDistributionRenderer extends Renderer {
 
     
     @Override
-    public void render(Graphics g1, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
+    public void render(Graphics g1, DasAxis xAxis, DasAxis yAxis) {
 
         QDataSet tds= (QDataSet)ds;
         DasPlot parent= getParent();

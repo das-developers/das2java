@@ -742,15 +742,13 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
     /** Render is called whenever the image needs to be refreshed or the content
      * has changed.  This operation should occur with an animation-interactive
      * time scale, and an image should be cached when this is not possible.  The graphics
-     * object will have its origin at the upper-left corner of the screen.
+     * object will have its origin at the upper-left corner of the screen.  
      * @param g the graphics context in the canvas reference frame.
      * @param xAxis the axis relating x data coordinates to horizontal pixel coordinates
      * @param yAxis the axis relating y data coordinates to horizontal pixel coordinates
-     * @param mon a monitor for the operation.  Note the render operation should 
-     *    be fast (&lt;300ms).
      */
-    public abstract void render(Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon);
-
+    public abstract void render(Graphics g, DasAxis xAxis, DasAxis yAxis);
+    
     /**
      * Returns true if the render will accept the context for a point.  
      * That is, the renderer affected that point, or nearby points.  This is 

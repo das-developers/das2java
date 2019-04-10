@@ -1476,12 +1476,11 @@ public class SeriesRenderer extends Renderer {
      * @param g the graphics context.
      * @param xAxis the x axis
      * @param yAxis the y axis
-     * @param monitor a progress monitor
      */
     @Override
-    public synchronized void render(Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor monitor) {
+    public synchronized void render(Graphics g, DasAxis xAxis, DasAxis yAxis) {
 
-        if ( monitor==null ) monitor= new NullProgressMonitor();
+        ProgressMonitor monitor= new NullProgressMonitor();
         
         DasPlot lparent= getParent();
 

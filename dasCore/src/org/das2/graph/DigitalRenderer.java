@@ -383,7 +383,7 @@ public class DigitalRenderer extends Renderer {
     }
 
     @Override
-    public void render(Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
+    public void render(Graphics g, DasAxis xAxis, DasAxis yAxis ) {
         
         g.setColor(color);
         DasPlot parent= getParent();
@@ -398,17 +398,17 @@ public class DigitalRenderer extends Renderer {
         }
         try {
             if ( ds.rank()==0 || ( ds.rank()==1 && SemanticOps.isRank1Bundle(ds) ) ) {
-                renderRank0( ds, g, xAxis, yAxis, mon);
+                renderRank0( ds, g, xAxis, yAxis );
             } else if ( SemanticOps.isBins(ds) ) {
-                renderRank0( ds, g, xAxis, yAxis, mon);
+                renderRank0( ds, g, xAxis, yAxis );
             } else if ( UnitsUtil.isOrdinalMeasurement( SemanticOps.getUnits(ds) ) ) {
-                renderRank0( ds, g, xAxis, yAxis, mon);
+                renderRank0( ds, g, xAxis, yAxis );
             } else if ( ! SemanticOps.isTableDataSet(ds) ) {
-                renderRank1( ds, g, xAxis, yAxis, mon, firstIndex, lastIndex );
+                renderRank1( ds, g, xAxis, yAxis, firstIndex, lastIndex );
             } else if ( ds.rank()!=2 ) {
                 parent.postMessage(this, "unable to render rank "+ds.rank()+" data", DasPlot.WARNING, null, null);
             } else {
-                renderRank2( ds, g, xAxis, yAxis, mon);
+                renderRank2( ds, g, xAxis, yAxis);
             }
         } catch ( InconvertibleUnitsException ex ) {
             parent.postMessage(this, "inconvertible units", DasPlot.INFO, null, null);
@@ -503,7 +503,7 @@ public class DigitalRenderer extends Renderer {
         
     }
         
-    private void renderRank0( QDataSet ds, Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
+    private void renderRank0( QDataSet ds, Graphics g, DasAxis xAxis, DasAxis yAxis ) {
         DasPlot parent= getParent();
         
         Font f0= g.getFont();
@@ -613,7 +613,7 @@ public class DigitalRenderer extends Renderer {
      * @param firstIndexx
      * @param lastIndexx
      */
-    private void renderRank1( QDataSet ds, Graphics g1, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon, int firstIndexx, int lastIndexx ) {
+    private void renderRank1( QDataSet ds, Graphics g1, DasAxis xAxis, DasAxis yAxis, int firstIndexx, int lastIndexx ) {
         
         Graphics2D g= (Graphics2D)g1;
         
@@ -748,7 +748,7 @@ public class DigitalRenderer extends Renderer {
         
     }
 
-    private void renderRank2( QDataSet ds, Graphics g1, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
+    private void renderRank2( QDataSet ds, Graphics g1, DasAxis xAxis, DasAxis yAxis ) {
         
         QDataSet ds1;
         if ( firstIndex<lastIndex ) {
@@ -771,7 +771,7 @@ public class DigitalRenderer extends Renderer {
 
         QDataSet fds= DataSetOps.flattenRank2(ds1);
 
-        renderRank1( fds, g1, xAxis, yAxis, mon, 0, fds.length() );
+        renderRank1( fds, g1, xAxis, yAxis, 0, fds.length() );
     }
 
     @Override

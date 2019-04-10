@@ -97,7 +97,7 @@ public class PolarPlotRenderer extends Renderer {
                 }
 
                 try {
-                    render( g, tinyX, tinyY, new NullProgressMonitor() );
+                    render( g, tinyX, tinyY );
                 } catch ( NullPointerException ex ) {
                     ex.printStackTrace();
                     g.drawLine(0,0,64,64);
@@ -328,9 +328,8 @@ public class PolarPlotRenderer extends Renderer {
      * @param g1
      * @param xAxis
      * @param yAxis
-     * @param mon 
      */
-    private void renderRank1( Graphics g1, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
+    private void renderRank1( Graphics g1, DasAxis xAxis, DasAxis yAxis ) {
 
         Graphics2D g= (Graphics2D)g1;
         
@@ -428,7 +427,7 @@ public class PolarPlotRenderer extends Renderer {
 
     }
     
-    private void renderRank2( Graphics2D g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor monitor ) {
+    private void renderRank2( Graphics2D g, DasAxis xAxis, DasAxis yAxis ) {
         
         g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
         QDataSet tds= (QDataSet)ds;
@@ -593,7 +592,7 @@ public class PolarPlotRenderer extends Renderer {
     }
     
     @Override
-    public void render(Graphics g1, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
+    public void render(Graphics g1, DasAxis xAxis, DasAxis yAxis ) {
 
         QDataSet tds= (QDataSet)ds;
         Graphics2D g= (Graphics2D)g1;
@@ -606,13 +605,13 @@ public class PolarPlotRenderer extends Renderer {
         }
 
         if ( tds.rank()==1 ) {
-            renderRank1( g1, xAxis, yAxis, mon );
+            renderRank1( g1, xAxis, yAxis );
             
         } else {
         
             if ( !( SemanticOps.isTableDataSet(tds) ) ) {
                 if ( SemanticOps.isBundle( tds ) ) {
-                    renderRank1( g1, xAxis, yAxis, mon );
+                    renderRank1( g1, xAxis, yAxis );
                     return;
                 } else {
                     parent.postException( this, new IllegalArgumentException("expected Table: " +tds ) );
@@ -629,7 +628,7 @@ public class PolarPlotRenderer extends Renderer {
 
             g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
 
-            renderRank2( g, xAxis, yAxis, mon );
+            renderRank2( g, xAxis, yAxis );
 
         } 
         
