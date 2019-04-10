@@ -747,7 +747,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
      * @param xAxis the axis relating x data coordinates to horizontal pixel coordinates
      * @param yAxis the axis relating y data coordinates to horizontal pixel coordinates
      */
-    public abstract void render(Graphics g, DasAxis xAxis, DasAxis yAxis);
+    public abstract void render(Graphics g, DasAxis xAxis, DasAxis yAxis); 
     
     /**
      * Returns true if the render will accept the context for a point.  
