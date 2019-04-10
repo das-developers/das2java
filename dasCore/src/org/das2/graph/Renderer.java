@@ -497,9 +497,9 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
         if ( ss.length==1 ) {
             ss= c.split(";");
         }
-        for ( int i=0; i<ss.length; i++ ) {
-            if ( ss[i].trim().length()==0 ) continue;
-            String[] ss2= ss[i].split("=",2);
+        for (String s : ss) {
+            if (s.trim().length() == 0) continue;
+            String[] ss2 = s.split("=", 2);
             if ( ss2.length==1 ) {
                 result.put( ss2[0].trim(), "T" ); // true
             } else {
@@ -674,7 +674,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
     
     /**
      * encode the plot symbol as a string, such as:
-     * none, cicles, triangles, cross, ex, star, diamond, box
+     * none, circles, triangles, cross, ex, star, diamond, box
      * @param psym the plot symbol.
      * @return the string encoding.
      */
@@ -812,8 +812,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
      * 
      * @param xAxis the axis relating x data coordinates to horizontal pixel coordinates
      * @param yAxis the axis relating y data coordinates to horizontal pixel coordinates
-     * @param monitor a monitor for the operation.  Note the updatePlotImage operation should 
-     *    be fast (&lt;1000ms).
+     * @param monitor a monitor for the operation.  Note the updatePlotImage operation should be fast (&lt;1000ms).
      * @throws org.das2.DasException
      */
     public void updatePlotImage(DasAxis xAxis, DasAxis yAxis, ProgressMonitor monitor) throws DasException {
