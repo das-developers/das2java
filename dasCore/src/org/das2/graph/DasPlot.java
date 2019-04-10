@@ -738,7 +738,7 @@ public class DasPlot extends DasCanvasComponent {
                 logger.log(Level.FINEST, "rendering #{0}: {1}", new Object[]{i, rend});
                 try {
                     rend.incrementRenderCount();
-                    rend.render(plotGraphics.create(), lxaxis, lyaxis );
+                    rend.render( (Graphics2D)plotGraphics.create(), lxaxis, lyaxis );
                     Painter p= rend.topDecorator;
                     if ( p!=null ) {
                         p.paint((Graphics2D)plotGraphics.create());

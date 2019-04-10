@@ -1478,7 +1478,7 @@ public class SeriesRenderer extends Renderer {
      * @param yAxis the y axis
      */
     @Override
-    public synchronized void render(Graphics g, DasAxis xAxis, DasAxis yAxis) {
+    public synchronized void render(Graphics2D g, DasAxis xAxis, DasAxis yAxis) {
 
         ProgressMonitor monitor= new NullProgressMonitor();
         

@@ -32,7 +32,7 @@ public class PlotSymbolRenderer extends Renderer {
     Image[] coloredPsyms;
     int cmx, cmy;  // center of psym image
 
-    public void render(Graphics g, DasAxis xAxis, DasAxis yAxis ) {
+    public void render(Graphics2D g, DasAxis xAxis, DasAxis yAxis ) {
         VectorDataSet vds = (VectorDataSet) getDataSet();
 
         if (vds == null) {

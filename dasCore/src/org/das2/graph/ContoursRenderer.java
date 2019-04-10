@@ -136,7 +136,7 @@ public class ContoursRenderer extends Renderer {
     }
     
     @Override
-    public synchronized void render(Graphics g1, DasAxis xAxis, DasAxis yAxis) {
+    public synchronized void render(Graphics2D g1, DasAxis xAxis, DasAxis yAxis) {
         
         DasPlot lparent= getParent();
         if ( lparent==null ) return; // ???

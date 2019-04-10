@@ -7,7 +7,6 @@ package org.das2.graph;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontMetrics;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
@@ -383,7 +382,7 @@ public class DigitalRenderer extends Renderer {
     }
 
     @Override
-    public void render(Graphics g, DasAxis xAxis, DasAxis yAxis ) {
+    public void render(Graphics2D g, DasAxis xAxis, DasAxis yAxis ) {
         
         g.setColor(color);
         DasPlot parent= getParent();
@@ -503,7 +502,7 @@ public class DigitalRenderer extends Renderer {
         
     }
         
-    private void renderRank0( QDataSet ds, Graphics g, DasAxis xAxis, DasAxis yAxis ) {
+    private void renderRank0( QDataSet ds, Graphics2D g, DasAxis xAxis, DasAxis yAxis ) {
         DasPlot parent= getParent();
         
         Font f0= g.getFont();
@@ -613,9 +612,7 @@ public class DigitalRenderer extends Renderer {
      * @param firstIndexx
      * @param lastIndexx
      */
-    private void renderRank1( QDataSet ds, Graphics g1, DasAxis xAxis, DasAxis yAxis, int firstIndexx, int lastIndexx ) {
-        
-        Graphics2D g= (Graphics2D)g1;
+    private void renderRank1( QDataSet ds, Graphics2D g, DasAxis xAxis, DasAxis yAxis, int firstIndexx, int lastIndexx ) {
         
         Font f0= g.getFont();
         if ( size>0 ) { // legacy support
@@ -748,7 +745,7 @@ public class DigitalRenderer extends Renderer {
         
     }
 
-    private void renderRank2( QDataSet ds, Graphics g1, DasAxis xAxis, DasAxis yAxis ) {
+    private void renderRank2( QDataSet ds, Graphics2D g1, DasAxis xAxis, DasAxis yAxis ) {
         
         QDataSet ds1;
         if ( firstIndex<lastIndex ) {

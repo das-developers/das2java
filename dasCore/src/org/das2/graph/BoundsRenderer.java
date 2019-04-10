@@ -2,14 +2,12 @@
 package org.das2.graph;
 
 import java.awt.Color;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.GeneralPath;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.das2.qds.QDataSet;
 import org.das2.qds.ops.Ops;
-import org.das2.util.monitor.ProgressMonitor;
 
 /**
  *
@@ -50,7 +48,7 @@ public class BoundsRenderer extends Renderer {
     }
     
     @Override
-    public void render(Graphics g1, DasAxis xAxis, DasAxis yAxis ) {
+    public void render(Graphics2D g1, DasAxis xAxis, DasAxis yAxis ) {
         Graphics2D g= (Graphics2D)g1;
         QDataSet d= this.getDataSet();
         if ( d.rank()!=2 ) expectDs();

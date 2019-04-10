@@ -589,7 +589,7 @@ public final class TickCurveRenderer extends Renderer {
     
     
     @Override
-    public void render(java.awt.Graphics g1, DasAxis xAxis, DasAxis yAxis ) {
+    public void render(java.awt.Graphics2D g1, DasAxis xAxis, DasAxis yAxis ) {
         
         if ( ds==null ) {
             return;

@@ -1,19 +1,14 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package test.graph;
 
 import java.awt.Color;
-import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import org.das2.datum.Units;
 import org.das2.graph.DasAxis;
 import org.das2.graph.Renderer;
-import org.das2.util.monitor.ProgressMonitor;
 import org.das2.qds.QDataSet;
 
 /**
@@ -28,7 +23,7 @@ import org.das2.qds.QDataSet;
 public class MyRenderer extends Renderer {
 
     @Override
-    public void render(Graphics g, DasAxis xAxis, DasAxis yAxis ) {
+    public void render(Graphics2D g, DasAxis xAxis, DasAxis yAxis ) {
         if ( ds==null || ds.rank()!=2 || ds.length(0)!=4 ) {
             getParent().postMessage( this, "dataset not ready or appropriate", Level.INFO, null, null );
             return;

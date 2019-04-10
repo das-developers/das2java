@@ -25,9 +25,7 @@ package org.das2.components;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dialog;
-import java.awt.Frame;
-import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.Point;
@@ -60,7 +58,6 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.das2.graph.Renderer;
 import org.das2.graph.SeriesRenderer;
-import org.das2.util.monitor.ProgressMonitor;
 import org.das2.qds.QDataSet;
 import org.das2.qds.SemanticOps;
 
@@ -97,7 +94,7 @@ public class VerticalSpectrogramAverager implements DataRangeSelectionListener {
         myPlot.addRenderer(renderer);
         myPlot.addRenderer( new Renderer() {
             @Override
-            public void render(Graphics g, DasAxis xAxis, DasAxis yAxis ) {
+            public void render(Graphics2D g, DasAxis xAxis, DasAxis yAxis ) {
                 if ( value!=null ) {
                     int ix= (int)myPlot.getXAxis().transform(value);
                     DasRow row= myPlot.getRow();

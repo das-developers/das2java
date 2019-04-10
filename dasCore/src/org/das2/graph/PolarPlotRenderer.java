@@ -592,7 +592,7 @@ public class PolarPlotRenderer extends Renderer {
     }
     
     @Override
-    public void render(Graphics g1, DasAxis xAxis, DasAxis yAxis ) {
+    public void render(Graphics2D g1, DasAxis xAxis, DasAxis yAxis ) {
 
         QDataSet tds= (QDataSet)ds;
         Graphics2D g= (Graphics2D)g1;
