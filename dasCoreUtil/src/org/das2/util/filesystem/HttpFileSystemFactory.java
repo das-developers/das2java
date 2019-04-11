@@ -49,6 +49,9 @@ public class HttpFileSystemFactory implements FileSystemFactory {
         if ( h.equals("github.com") ) {
             WebFileSystem result= GitHubFileSystem.createGitHubFileSystem(root);
             return result;
+        } else if ( h.equals("git.uiowa.edu") ) {
+            WebFileSystem result= GitHubFileSystem.createGitHubFileSystem(root);
+            return result;
         } else {
             HttpFileSystem hfs = HttpFileSystem.createHttpFileSystem(root);
             if (!FileSystemSettings.hasAllPermission()) hfs.setAppletMode(true);
