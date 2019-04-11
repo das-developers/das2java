@@ -731,7 +731,7 @@ public final class Ops {
     /**
      * reduce the dataset's rank by combining all the elements along a dimension.
      * AverageOp is used to combine measurements.
-     * Only QUBEs are supported presently, or dim can the last dimension of a non-qube.
+     * Only QUBEs are supported presently, or dim can be the last dimension of a non-qube.
      * It is assumed that when there is just one element, that one element can be returned.
      * 
      * @param ds rank N qube dataset.
@@ -748,11 +748,6 @@ public final class Ops {
         if ( mon==null ) mon= new NullProgressMonitor();
         if ( dim>=ds.rank() ) 
             throw new IllegalArgumentException( String.format( "dimension index (%d) exceeds rank (%d)", dim, ds.rank() ) );
-        int[] newQube = DataSetOps.removeElement(qube, dim);
-        QDataSet wds = DataSetUtil.weightsDataSet(ds);
-        DDataSet result = DDataSet.create(newQube);
-        DDataSet wresult= DDataSet.create(newQube);
-        QubeDataSetIterator it1 = new QubeDataSetIterator(result);
         
         // optimize for Ivar's case, where average is done over 1 element.  
         // This is just a slice!
@@ -770,6 +765,31 @@ public final class Ops {
                     break;
             }
         }
+        
+        int[] newQube;
+        if ( qube!=null ) {
+            newQube= DataSetOps.removeElement(qube, dim);
+        } else {
+            switch ( ds.rank() ) {
+                // rank 0 and rank 1 are automatically qubes.
+                case 2:
+                    newQube= new int[] { ds.length() };
+                    break;
+                case 3:
+                    newQube= new int[] { ds.length(), ds.length(0) };
+                    break;
+                case 4:
+                    newQube= new int[] { ds.length(), ds.length(0), ds.length(0,0) };
+                    break;
+                default: 
+                    throw new IllegalArgumentException("implementation error");
+            }
+        }
+        
+        QDataSet wds = DataSetUtil.weightsDataSet(ds);
+        DDataSet result = DDataSet.create(newQube);
+        DDataSet wresult= DDataSet.create(newQube);
+        QubeDataSetIterator it1 = new QubeDataSetIterator(result);
         
         it1.setMonitor(mon.getSubtaskMonitor("reduce"));
         
@@ -2326,7 +2346,7 @@ public final class Ops {
                 return uc.convert(d1-base ) % d2;
             }
         });        
-        if ( u!=null ) result.putProperty( QDataSet.UNITS, u );
+        result.putProperty( QDataSet.UNITS, u );
         return result;
     }
 
@@ -2354,7 +2374,7 @@ public final class Ops {
                 return ( t<0 ) ? t+d2 : t;
             }
         });
-        if ( u!=null ) result.putProperty( QDataSet.UNITS, u );
+        result.putProperty( QDataSet.UNITS, u );
         return result;
     }
 
