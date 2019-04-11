@@ -975,6 +975,7 @@ public final class SemanticOps {
         propertyTypes.put( QDataSet.DELTA_MINUS, QDataSet.class );
         propertyTypes.put( QDataSet.BIN_PLUS, QDataSet.class );
         propertyTypes.put( QDataSet.BIN_MINUS, QDataSet.class );        
+        propertyTypes.put( QDataSet.QUBE, Boolean.class );
     }
     
     /**
@@ -1023,6 +1024,8 @@ public final class SemanticOps {
                 return "CacheTag";
             } else if ( c.isAssignableFrom( Number.class ) ) {
                 return "Number";
+            } else if ( c.isAssignableFrom( Boolean.class ) ) {
+                return "Boolean";
             } else if ( c.isAssignableFrom( QDataSet.class ) ) {
                 return "QDataSet";
             } else if ( c.isAssignableFrom( Units.class ) ) {
