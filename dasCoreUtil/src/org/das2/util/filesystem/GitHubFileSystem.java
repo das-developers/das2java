@@ -88,7 +88,7 @@ public class GitHubFileSystem extends HttpFileSystem {
         File local;
         
         String suri= root.toString();
-        Pattern fsp1= Pattern.compile( "(https?://github.com/)(.*)tree/"+branch+"/(.*)" );
+        Pattern fsp1= Pattern.compile( "(https?://[a-z.]*/)(.*)tree/"+branch+"/(.*)" );
         Matcher m1= fsp1.matcher( suri );
         if ( m1.matches() ) {
             suri= m1.group(1)+m1.group(2)+m1.group(3);
@@ -99,7 +99,7 @@ public class GitHubFileSystem extends HttpFileSystem {
             }
         }
         
-        Pattern fsp2= Pattern.compile( "(https?://github.com/)(.*)blob/"+branch+"/(.*)" );
+        Pattern fsp2= Pattern.compile( "(https?://[a-z.]*/)(.*)blob/"+branch+"/(.*)" );
         Matcher m2= fsp2.matcher( suri );
         if ( m2.matches() ) {
             suri= m2.group(1)+m2.group(2)+m2.group(3);
