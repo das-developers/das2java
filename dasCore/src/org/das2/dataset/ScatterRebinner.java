@@ -63,7 +63,10 @@ public class ScatterRebinner implements DataSetRebinner {
             }
 
         }
-
+        
+        if ( xds==null ) throw new IllegalArgumentException("unable to identify x data set");
+        if ( yds==null ) throw new IllegalArgumentException("unable to identify y data set");
+        
         int nx = ddX.numberOfBins() - 1;
         int ny = ddY.numberOfBins() - 1;
 
@@ -187,58 +190,56 @@ public class ScatterRebinner implements DataSetRebinner {
 
         Units xoffsetUnits = xdsUnits.getOffsetUnits();
 
-        if (xds != null) {
-            // Checking for binplus/minus
-            QDataSet xPlus = (QDataSet) xds.property(QDataSet.BIN_PLUS);
-            if (xPlus != null) {
-                xHardBinPlus = (int) (xPlus.value() / xDat.doubleValue(xoffsetUnits));
-            }
-            QDataSet xMinus = (QDataSet) xds.property(QDataSet.BIN_MINUS);
-            if (xMinus != null) {
-                xHardBinMinus = (int) (xMinus.value() / xDat.doubleValue(xoffsetUnits));
-            }
+        // Checking for binplus/minus
+        QDataSet xPlus = (QDataSet) xds.property(QDataSet.BIN_PLUS);
+        if (xPlus != null) {
+            xHardBinPlus = (int) (xPlus.value() / xDat.doubleValue(xoffsetUnits));
+        }
+        QDataSet xMinus = (QDataSet) xds.property(QDataSet.BIN_MINUS);
+        if (xMinus != null) {
+            xHardBinMinus = (int) (xMinus.value() / xDat.doubleValue(xoffsetUnits));
+        }
 
-            QDataSet xCad = (QDataSet) xds.property(QDataSet.CADENCE);
-            double xCadenceVal = 0;
-            if (xCad != null) {
-                xCadenceVal = xCad.value();
-                if (ddX.isLog) {
-                    // One cadence value will not work for logrithmic axis so the function 
-                    // call below gets an array of cadence values in bins to be used. 
-                    xcadencesInBins = getCadenceValues(xbinWidths, xCadenceVal, -1);
-                } else {
-                    xcadencesInBins = null;
-                    xSoftRad = (int) Math.round(xCadenceVal / xDat.doubleValue(xoffsetUnits));
-                }
-
+        QDataSet xCad = (QDataSet) xds.property(QDataSet.CADENCE);
+        double xCadenceVal = 0;
+        if (xCad != null) {
+            xCadenceVal = xCad.value();
+            if (ddX.isLog) {
+                // One cadence value will not work for logrithmic axis so the function 
+                // call below gets an array of cadence values in bins to be used. 
+                xcadencesInBins = getCadenceValues(xbinWidths, xCadenceVal, -1);
             } else {
-                // If no cadence is given, the number of bins between each datapoint is calculated and 
-                // added to a list. The list is sorted and a position in the list is used given by xPosInList.
+                xcadencesInBins = null;
+                xSoftRad = (int) Math.round(xCadenceVal / xDat.doubleValue(xoffsetUnits));
+            }
 
-                int xPosInList = (int) Math.round(0.95 * xCadencesToSort.size());
+        } else {
+            // If no cadence is given, the number of bins between each datapoint is calculated and 
+            // added to a list. The list is sorted and a position in the list is used given by xPosInList.
 
-                int currentDataWidthx;
-                for (int i = 0; i < xds.length() - 1; i++) {
-                    currentDataWidthx = ddX.whichBin(xds.value(i + 1), xdsUnits)
-                            - ddX.whichBin(xds.value(i), xdsUnits);
-                    if (currentDataWidthx >= 1) {
-                        xCadencesToSort.add(currentDataWidthx);
-                    }
+            int xPosInList = (int) Math.round(0.95 * xCadencesToSort.size());
+
+            int currentDataWidthx;
+            for (int i = 0; i < xds.length() - 1; i++) {
+                currentDataWidthx = ddX.whichBin(xds.value(i + 1), xdsUnits)
+                        - ddX.whichBin(xds.value(i), xdsUnits);
+                if (currentDataWidthx >= 1) {
+                    xCadencesToSort.add(currentDataWidthx);
                 }
-                Collections.sort(xCadencesToSort, Collections.reverseOrder());
-                //xCadencesToSort.sort( (x,y) -> y-x );
-                if (xCadencesToSort.size() >= 1) {
-                    xCadenceVal = xCadencesToSort.get(xPosInList);
-                    logger.log(Level.FINE, " X cadence from sorted list = {0}", xCadenceVal);
-                } else {
-                    logger.fine("No Cadences.");
-                }
-                if (ddX.isLog) {
-                    xcadencesInBins = getCadenceValues(xbinWidths, xCadenceVal, xCadencesToSort.get(0));
-                } else {
-                    xcadencesInBins = null;
-                    xSoftRad = (int) xCadenceVal;
-                }
+            }
+            Collections.sort(xCadencesToSort, Collections.reverseOrder());
+            //xCadencesToSort.sort( (x,y) -> y-x );
+            if (xCadencesToSort.size() >= 1) {
+                xCadenceVal = xCadencesToSort.get(xPosInList);
+                logger.log(Level.FINE, " X cadence from sorted list = {0}", xCadenceVal);
+            } else {
+                logger.fine("No Cadences.");
+            }
+            if (ddX.isLog) {
+                xcadencesInBins = getCadenceValues(xbinWidths, xCadenceVal, xCadencesToSort.get(0));
+            } else {
+                xcadencesInBins = null;
+                xSoftRad = (int) xCadenceVal;
             }
         }
 
@@ -250,62 +251,59 @@ public class ScatterRebinner implements DataSetRebinner {
         int[] ycadencesInBins = new int[ybinWidths.length];
 
         Units yoffsetUnits = ydsUnits.getOffsetUnits();
-        if (yds != null) {
-            QDataSet yPlus = (QDataSet) yds.property(QDataSet.BIN_PLUS);
-            if (yPlus != null) {
-                yHardBinPlus = (int) (yPlus.value() / yDat.doubleValue(yoffsetUnits));
-            }
-            QDataSet yMinus = (QDataSet) yds.property(QDataSet.BIN_MINUS);
-            if (yMinus != null) {
-                yHardBinMinus = (int) (yMinus.value() / yDat.doubleValue(yoffsetUnits));
-            }
-            QDataSet yCad = (QDataSet) yds.property(QDataSet.CADENCE);
-            double yCadenceVal = 0;
-            int yCadenceValueBin = 0;
-            if (yCad != null) {
-                yCadenceVal = yCad.value();
-                if (ddY.isLog) {
-                    ycadencesInBins = getCadenceValues(ybinWidths, yCadenceVal, -1);
-
-                } else {
-                    ycadencesInBins = null;
-                    ySoftRad = (int) Math.round(yCadenceVal / yDat.doubleValue(yoffsetUnits));
-                }
+        QDataSet yPlus = (QDataSet) yds.property(QDataSet.BIN_PLUS);
+        if (yPlus != null) {
+            yHardBinPlus = (int) (yPlus.value() / yDat.doubleValue(yoffsetUnits));
+        }
+        QDataSet yMinus = (QDataSet) yds.property(QDataSet.BIN_MINUS);
+        if (yMinus != null) {
+            yHardBinMinus = (int) (yMinus.value() / yDat.doubleValue(yoffsetUnits));
+        }
+        QDataSet yCad = (QDataSet) yds.property(QDataSet.CADENCE);
+        double yCadenceVal = 0;
+        int yCadenceValueBin = 0;
+        if (yCad != null) {
+            yCadenceVal = yCad.value();
+            if (ddY.isLog) {
+                ycadencesInBins = getCadenceValues(ybinWidths, yCadenceVal, -1);
 
             } else {
-                int currentDataWidthy;
-                for (int i = 0; i < yds.length() - 1; i++) {
-                    currentDataWidthy = ddY.whichBin(yds.value(i + 1), yoffsetUnits)
-                            - ddY.whichBin(yds.value(i), (Units) yoffsetUnits);
-                    if (currentDataWidthy >= 1) {
-                        yCadencesToSort.add(currentDataWidthy);
-                        yCadencesToSortValues.add(yds.value(i + 1) - yds.value(i));
-                    }
-                }
+                ycadencesInBins = null;
+                ySoftRad = (int) Math.round(yCadenceVal / yDat.doubleValue(yoffsetUnits));
+            }
 
-                Collections.sort(yCadencesToSort, Collections.reverseOrder());
-                //yCadencesToSort.sort( (x,y) -> y-x );
-                Collections.sort(yCadencesToSortValues, Collections.reverseOrder());
-                //yCadencesToSortValues.sort( (x,y) -> y.compareTo(x));
-                int yCadSortIndex = 0;
-                if (yCadencesToSortValues.size() >= 1) {
-                    yCadSortIndex = (int) Math.round(0.95 * yCadencesToSortValues.size());
-                    yCadenceVal = yCadencesToSortValues.get(yCadSortIndex);
-                    logger.log(Level.FINE, " Y cadence from sorted list = {0}", yCadenceVal);
-                } else {
-                    logger.fine("No Cadences.");
-                }
-                if (ddY.isLog) {
-                    //QDataSet guessYCad = org.virbo.dataset.DataSetUtil.guessCadence(yds, null);
-                    //yCadenceVal = guessYCad.value();
-                    //logger.fine(" The Guess Cadence Dataset has a value of: " + yCadenceVal);
-                    ycadencesInBins = getCadenceValues(ybinWidths, yCadenceVal, yCadencesToSort.get(yCadSortIndex));
-                } else {
-                    ycadencesInBins = null;
-                    ySoftRad = (int) yCadencesToSort.get(yCadSortIndex);
+        } else {
+            int currentDataWidthy;
+            for (int i = 0; i < yds.length() - 1; i++) {
+                currentDataWidthy = ddY.whichBin(yds.value(i + 1), yoffsetUnits)
+                        - ddY.whichBin(yds.value(i), (Units) yoffsetUnits);
+                if (currentDataWidthy >= 1) {
+                    yCadencesToSort.add(currentDataWidthy);
+                    yCadencesToSortValues.add(yds.value(i + 1) - yds.value(i));
                 }
             }
 
+            Collections.sort(yCadencesToSort, Collections.reverseOrder());
+            //yCadencesToSort.sort( (x,y) -> y-x );
+            Collections.sort(yCadencesToSortValues, Collections.reverseOrder());
+            //yCadencesToSortValues.sort( (x,y) -> y.compareTo(x));
+            int yCadSortIndex = 0;
+            if (yCadencesToSortValues.size() >= 1) {
+                yCadSortIndex = (int) Math.round(0.95 * yCadencesToSortValues.size());
+                yCadenceVal = yCadencesToSortValues.get(yCadSortIndex);
+                logger.log(Level.FINE, " Y cadence from sorted list = {0}", yCadenceVal);
+            } else {
+                logger.fine("No Cadences.");
+            }
+            if (ddY.isLog) {
+                //QDataSet guessYCad = org.virbo.dataset.DataSetUtil.guessCadence(yds, null);
+                //yCadenceVal = guessYCad.value();
+                //logger.fine(" The Guess Cadence Dataset has a value of: " + yCadenceVal);
+                ycadencesInBins = getCadenceValues(ybinWidths, yCadenceVal, yCadencesToSort.get(yCadSortIndex));
+            } else {
+                ycadencesInBins = null;
+                ySoftRad = (int) yCadencesToSort.get(yCadSortIndex);
+            }
         }
 
         if (xcadencesInBins != null) {
