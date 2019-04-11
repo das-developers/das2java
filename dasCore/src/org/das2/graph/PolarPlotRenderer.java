@@ -15,7 +15,6 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.RenderingHints;
 import java.awt.Shape;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Arc2D;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
@@ -23,7 +22,6 @@ import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import org.das2.datum.Units;
-import org.das2.util.monitor.ProgressMonitor;
 import static java.lang.Math.cos;
 import static java.lang.Math.sin;
 import java.util.LinkedHashMap;
@@ -36,13 +34,10 @@ import org.das2.datum.UnitsUtil;
 import org.das2.datum.format.DatumFormatter;
 import org.das2.qds.ArrayDataSet;
 import org.das2.qds.DataSetUtil;
-import org.das2.util.monitor.NullProgressMonitor;
 
 /**
- * Draws a pitch angle distribution, which is a spectrogram wrapped around an origin.  Datasets must
- * be of the form Z[Angle,Radius].  The dataset Angle must be in radians (Units.radians or dimensionless), or 
- * have units Units.degrees.  Note, at one time it would guess the angles dimension, but this was unreliable and was
- * removed.
+ * PolarPlotRenderer is a refactoring of PitchAngleDistributionRenderer
+ * which will also render rank 1 series.
  * 
  * @author jbf
  */
@@ -136,9 +131,10 @@ public class PolarPlotRenderer extends Renderer {
     /**
      * return true if the dataset can be interpreted as radian degrees from 0 to PI or from 0 to 2*PI.
      * @param ds any QDataSet.
+     * @param scrict return null if it's not clear that the units are degrees.
      * @return the multiplier to make the dataset into radians, or null.
      */
-    private static Double isAngleRange( QDataSet ds ) {
+    private static Double isAngleRange( QDataSet ds, boolean strict) {
         Units u= SemanticOps.getUnits(ds);
         if ( u==Units.radians ) return 1.;
         if ( u==Units.deg || u==Units.degrees ) return Math.PI/180;
@@ -151,7 +147,11 @@ public class PolarPlotRenderer extends Renderer {
         } else if ( u==Units.dimensionless && ( delta>Math.PI*160/180 && delta<Math.PI*181/180 || delta>Math.PI*320/180 && delta<Math.PI*362/180 ) ) {
             return 1.;
         } else {
-            return Math.PI/180;
+            if ( strict ) {
+                return null;
+            } else {
+                return Math.PI/180;
+            }
         }
     }
     
@@ -169,8 +169,8 @@ public class PolarPlotRenderer extends Renderer {
             if ( SemanticOps.isBundle(ds) ) return false;
             QDataSet yds= SemanticOps.ytagsDataSet(ds);
             QDataSet xds= SemanticOps.xtagsDataSet(ds);
-            if ( isAngleRange(xds)!=null ) return true;
-            if ( isAngleRange(yds)!=null ) return true;
+            if ( isAngleRange(xds, true)!=null ) return true;
+            if ( isAngleRange(yds, true)!=null ) return true;
             return false;
         } else if ( ds.rank()==1 ) {
             return true;
@@ -260,7 +260,11 @@ public class PolarPlotRenderer extends Renderer {
     
     private static QDataSet doAutorangeRank1(QDataSet rds ) {
         
-        Units yunits= SemanticOps.getUnits(rds);
+        if ( isAngleRange(rds, true)!=null ) {
+            rds= SemanticOps.xtagsDataSet(rds);
+        }
+
+        Units yunits= SemanticOps.getUnits(rds);        
         
         ArrayDataSet xdesc= DDataSet.wrap( new double[] { 0, Ops.extent(rds).value(1) }, yunits );
         ArrayDataSet ydesc= xdesc;
@@ -269,6 +273,7 @@ public class PolarPlotRenderer extends Renderer {
         ydesc= ArrayDataSet.maybeCopy( Ops.rescaleRangeLogLin( ydesc, -1.1, 1.1 ) );
         
         JoinDataSet bds= new JoinDataSet(2);
+        
         bds.join(xdesc);
         bds.join(ydesc);
 
@@ -298,7 +303,7 @@ public class PolarPlotRenderer extends Renderer {
 
         Units yunits= SemanticOps.getUnits(rds);
 
-        if ( isAngleRange(rds)!=null && isAngleRange(ads)==null ) { // swap em
+        if ( isAngleRange(rds, true)!=null && isAngleRange(ads, true)==null ) { // swap em
             rds= SemanticOps.xtagsDataSet(tds);
             //ads= SemanticOps.ytagsDataSet(tds); // not used
         }
@@ -340,14 +345,21 @@ public class PolarPlotRenderer extends Renderer {
         } else {
             ads= SemanticOps.xtagsDataSet(ds);
             rds= SemanticOps.ytagsDataSet(ds); // this is why they are semanticOps.  ytagsDataSet is just used for convenience even though this is not the y values.
+        }  
+        
+        Double angleFactor= isAngleRange(ads, true);
+        if ( angleFactor==null ) {
+            QDataSet t= rds;
+            rds= ads;
+            ads= t;
+            angleFactor= isAngleRange(ads, false);
         }
+        
         QDataSet wds= Ops.copy( SemanticOps.weightsDataSet(rds) );
            
         if ( ads.rank()!=1) throw new IllegalArgumentException("ads should be rank 1");
         if ( rds.rank()!=1) throw new IllegalArgumentException("ads should be rank 1");
         
-        Double angleFactor= isAngleRange(ads);
-
         QDataSet cadence= DataSetUtil.guessCadenceNew( ads, rds );
         
         QDataSet tds= SemanticOps.xtagsDataSet(ads);
@@ -439,13 +451,13 @@ public class PolarPlotRenderer extends Renderer {
 
         Units yunits= SemanticOps.getUnits(rds);
 
-        Double angleFactor= isAngleRange(ads);
-        if ( isAngleRange(rds)!=null && angleFactor==null ) { // swap em
+        Double angleFactor= isAngleRange(ads, false);
+        if ( isAngleRange(rds, false)!=null && angleFactor==null ) { // swap em
             rds= SemanticOps.xtagsDataSet(tds);
             ads= SemanticOps.ytagsDataSet(tds);
             yunits= SemanticOps.getUnits(rds);
             tds= Ops.transpose(tds);            
-            angleFactor= isAngleRange(ads);
+            angleFactor= isAngleRange(ads, false);
         }
         if ( angleFactor==null ) {
             throw new IllegalArgumentException("neither dimension appears to be angles");
