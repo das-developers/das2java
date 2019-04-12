@@ -16,6 +16,7 @@ import java.awt.Image;
 import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.geom.Arc2D;
+import java.awt.geom.Ellipse2D;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
@@ -164,18 +165,19 @@ public class PolarPlotRenderer extends Renderer {
      * @return
      */
     public static boolean acceptsData( QDataSet ds ) {
-        if ( ds.rank()==2 ) {
-            if ( SemanticOps.isTimeSeries(ds) ) return false;
-            if ( SemanticOps.isBundle(ds) ) return false;
-            QDataSet yds= SemanticOps.ytagsDataSet(ds);
-            QDataSet xds= SemanticOps.xtagsDataSet(ds);
-            if ( isAngleRange(xds, true)!=null ) return true;
-            if ( isAngleRange(yds, true)!=null ) return true;
-            return false;
-        } else if ( ds.rank()==1 ) {
-            return true;
-        } else {
-            return false;
+        switch (ds.rank()) {
+            case 2:
+                if ( SemanticOps.isTimeSeries(ds) ) return false;
+                if ( SemanticOps.isBundle(ds) ) return false;
+                QDataSet yds= SemanticOps.ytagsDataSet(ds);
+                QDataSet xds= SemanticOps.xtagsDataSet(ds);
+                if ( isAngleRange(xds, true)!=null ) return true;
+                if ( isAngleRange(yds, true)!=null ) return true;
+                return false;
+            case 1:
+                return true;
+            default:
+                return false;
         }
     }
 
@@ -258,7 +260,7 @@ public class PolarPlotRenderer extends Renderer {
         propertyChangeSupport.firePropertyChange("color", oldColor, color);
     }
     
-    private static QDataSet doAutorangeRank1(QDataSet rds ) {
+    private static QDataSet doAutorangeRank1( QDataSet rds ) {
         
         if ( isAngleRange(rds, true)!=null ) {
             rds= SemanticOps.xtagsDataSet(rds);
@@ -286,7 +288,13 @@ public class PolarPlotRenderer extends Renderer {
             return doAutorangeRank1(tds);
         }
         
-        QDataSet zdesc = Ops.extent( tds );
+        QDataSet zdesc;
+        if ( SemanticOps.isBundle(tds) ) {
+            zdesc= Ops.extent( Ops.unbundle(tds,2) );
+        } else {
+            zdesc= Ops.extent( tds );
+        }
+        
         if ( zdesc.value(0)==zdesc.value(1) ) {
             if ( zdesc.value(0)>0 ) {
                 zdesc= DDataSet.wrap( new double[] { 0, zdesc.value(1) } );
@@ -300,7 +308,7 @@ public class PolarPlotRenderer extends Renderer {
 
         QDataSet ads= SemanticOps.xtagsDataSet(tds);
         QDataSet rds= SemanticOps.ytagsDataSet(tds); // this is why they are semanticOps.  ytagsDataSet is just used for convenience even though this is not the y values.
-
+        
         Units yunits= SemanticOps.getUnits(rds);
 
         if ( isAngleRange(rds, true)!=null && isAngleRange(ads, true)==null ) { // swap em
@@ -338,14 +346,21 @@ public class PolarPlotRenderer extends Renderer {
 
         Graphics2D g= (Graphics2D)g1;
         
-        QDataSet ads,rds;
+        QDataSet ads,rds,cds;
         if ( SemanticOps.isBundle(ds) ) {
             ads= Ops.slice1( ds, 0 );
             rds= Ops.slice1( ds, 1 );
+            if ( ds.length(0)==3 ) {
+                cds= Ops.slice1( ds, 2 );
+            } else {
+                cds= null;
+            }
         } else {
             ads= SemanticOps.xtagsDataSet(ds);
             rds= SemanticOps.ytagsDataSet(ds); // this is why they are semanticOps.  ytagsDataSet is just used for convenience even though this is not the y values.
+            cds= null;
         }  
+        
         
         Double angleFactor= isAngleRange(ads, true);
         if ( angleFactor==null ) {
@@ -358,7 +373,7 @@ public class PolarPlotRenderer extends Renderer {
         QDataSet wds= Ops.copy( SemanticOps.weightsDataSet(rds) );
            
         if ( ads.rank()!=1) throw new IllegalArgumentException("ads should be rank 1");
-        if ( rds.rank()!=1) throw new IllegalArgumentException("ads should be rank 1");
+        if ( rds.rank()!=1) throw new IllegalArgumentException("rds should be rank 1");
         
         QDataSet cadence= DataSetUtil.guessCadenceNew( ads, rds );
         
@@ -386,6 +401,7 @@ public class PolarPlotRenderer extends Renderer {
         
         Units xunits= xAxis.getUnits();
         Units yunits= yAxis.getUnits();
+        Units zunits= SemanticOps.getUnits(cds);
         
         gp.moveTo( xAxis.transform( x, xunits ), yAxis.transform( y, yunits ) );
         
@@ -430,6 +446,23 @@ public class PolarPlotRenderer extends Renderer {
         g.setStroke(new BasicStroke((float)lineWidth));
         g.draw(gp);
         //g.draw(gp.getGeneralPath());
+        
+        if ( cds!=null ) {
+            for ( i=0; i<ads.length(); i++ ) {
+                if ( wds.value(i)>0 ) {
+                    double s= 3.;
+                    x= rds.value(i) * cos( ads.value(i) * angleFactor );
+                    y= rds.value(i) * sin( ads.value(i) * angleFactor );
+                    double dx= xAxis.transform( x, xunits );
+                    double dy= yAxis.transform( y, yunits );
+                    int zz= colorBar.rgbTransform( cds.value(i), zunits );
+                    g.setColor( new Color(zz) );
+                    g.fill( new Ellipse2D.Double( dx-s, dy-s, s*2+1,s*2+1 ) );
+                }
+            }
+            //gp.transform( AffineTransform.getTranslateInstance(Math.random()-0.5,Math.random()-0.5) );
+            //g.draw(gp);
+        }
         
         if ( xAxis!=tinyX ) {
             path= gp;
