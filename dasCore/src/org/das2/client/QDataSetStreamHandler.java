@@ -218,6 +218,10 @@ public class QDataSetStreamHandler implements StreamHandler {
         DataSetBuilder xbuilder= new DataSetBuilder(1,1000);
         xbuilder.putProperty( QDataSet.UNITS, pd.getXDescriptor().getUnits() );
         xbuilder.putProperty( QDataSet.LABEL, streamProperties.get("xLabel") );
+        Object o= streamProperties.get("xTagWidth" );
+        if ( o!=null && o instanceof Datum ) {
+            xbuilder.putProperty( QDataSet.CADENCE, DataSetUtil.asDataSet( (Datum)o ) );
+        }
             
         xbuilders.put( pd, xbuilder );
         this.builders.put( pd, lbuilders );
@@ -368,7 +372,7 @@ public class QDataSetStreamHandler implements StreamHandler {
         if ( renderer!=null ) {
             ds= Ops.putProperty( ds, QDataSet.RENDER_TYPE, renderer );
         }
-        
+                
         ds= Ops.putProperty( ds, QDataSet.USER_PROPERTIES, streamProperties );
         
         return ds;
