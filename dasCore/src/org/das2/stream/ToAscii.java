@@ -53,8 +53,8 @@ public class ToAscii implements StreamHandler {
         PacketDescriptor outpd = (PacketDescriptor)pd.clone();
         outpd.getXDescriptor().setDataTransferType(ascii24);
         for (int i = 0; i < outpd.getYCount(); i++) {
-            if (outpd.getYDescriptor(i) instanceof StreamMultiYDescriptor) {
-                ((StreamMultiYDescriptor)outpd.getYDescriptor(i)).setDataTransferType(ascii10);
+            if (outpd.getYDescriptor(i) instanceof StreamScalarDescriptor) {
+                ((StreamScalarDescriptor)outpd.getYDescriptor(i)).setDataTransferType(ascii10);
             }
             else if (outpd.getYDescriptor(i) instanceof StreamYScanDescriptor) {
                 ((StreamYScanDescriptor)outpd.getYDescriptor(i)).setDataTransferType(ascii10);

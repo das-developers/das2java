@@ -25,7 +25,7 @@ package org.das2.client;
 
 import org.das2.stream.StreamYScanDescriptor;
 import org.das2.stream.StreamComment;
-import org.das2.stream.StreamMultiYDescriptor;
+import org.das2.stream.StreamScalarDescriptor;
 import org.das2.stream.StreamDescriptor;
 import org.das2.stream.StreamException;
 import org.das2.stream.StreamHandler;
@@ -151,7 +151,7 @@ public class DataSetStreamHandler implements StreamHandler {
         logger.finest("got packet descriptor");
         if (delegate == null) {
             SkeletonDescriptor descriptor = pd.getYDescriptor(0);
-            if (descriptor instanceof StreamMultiYDescriptor) {
+            if (descriptor instanceof StreamScalarDescriptor) {
                 logger.fine("using VectorDS delegate");
                 delegate = new VectorDataSetStreamHandler(pd);
             } else if (descriptor instanceof StreamYScanDescriptor) {
@@ -267,14 +267,14 @@ public class DataSetStreamHandler implements StreamHandler {
         private DatumRange validRange=null;
 
         private VectorDataSetStreamHandler(PacketDescriptor pd) throws StreamException {
-            StreamMultiYDescriptor y = (StreamMultiYDescriptor)pd.getYDescriptor(0);
+            StreamScalarDescriptor y = (StreamScalarDescriptor)pd.getYDescriptor(0);
             Datum base = pd.getXDescriptor().getBase();
             Units xUnits = base == null ? pd.getXDescriptor().getUnits() : base.getUnits();
             Units yUnits = y.getUnits();
             builder = new VectorDataSetBuilder(xUnits,yUnits);
             builder.addProperties( Collections.singletonMap( DataSet.PROPERTY_Y_LABEL, y.getProperty("name") ));
             for ( int i=1; i<pd.getYCount(); i++ ) {
-                StreamMultiYDescriptor smyd= (StreamMultiYDescriptor)pd.getYDescriptor(i);
+                StreamScalarDescriptor smyd= (StreamScalarDescriptor)pd.getYDescriptor(i);
                 builder.addProperties( Collections.singletonMap( smyd.getName()+ "." + DataSet.PROPERTY_Y_LABEL, smyd.getName()));
             }
             String srange= (String)y.getProperty("valid_range");
@@ -294,8 +294,8 @@ public class DataSetStreamHandler implements StreamHandler {
             double x = getXWithBase(base, xTag);
             
             for (int i = 0; i < pd.getYCount(); i++) {
-                if (pd.getYDescriptor(i) instanceof StreamMultiYDescriptor) {
-                    StreamMultiYDescriptor my = (StreamMultiYDescriptor)pd.getYDescriptor(i);
+                if (pd.getYDescriptor(i) instanceof StreamScalarDescriptor) {
+                    StreamScalarDescriptor my = (StreamScalarDescriptor)pd.getYDescriptor(i);
                     double y = vectors[i].doubleValue(0, my.getUnits());
                     if ( validRange!=null ) {
                         if ( !validRange.contains( Datum.create( y, my.getUnits() ) ) ) {
@@ -327,7 +327,7 @@ public class DataSetStreamHandler implements StreamHandler {
         public void packetDescriptor(PacketDescriptor pd) throws StreamException {
             logger.log(Level.FINE, "got packet descriptor: {0}", pd);
             for (int i = 1; i < pd.getYCount(); i++) {
-                StreamMultiYDescriptor y = (StreamMultiYDescriptor)pd.getYDescriptor(i);
+                StreamScalarDescriptor y = (StreamScalarDescriptor)pd.getYDescriptor(i);
                 builder.addPlane(y.getName(),y.getUnits());
             }
         }

@@ -45,7 +45,7 @@ import org.das2.dataset.TableDataSetBuilder;
 import org.das2.datum.Units;
 import org.das2.datum.Datum;
 import org.das2.stream.StreamYScanDescriptor;
-import org.das2.stream.StreamMultiYDescriptor;
+import org.das2.stream.StreamScalarDescriptor;
 import org.das2.stream.StreamDescriptor;
 import org.das2.stream.StreamException;
 import org.das2.stream.PacketDescriptor;
@@ -310,8 +310,8 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
             VectorDataSetBuilder builder = new VectorDataSetBuilder(start.getUnits(),Units.dimensionless);   // Units will be set when "" is encountered
             for (Iterator i = sd.getYDescriptors().iterator(); i.hasNext();) {
                 Object o = i.next();
-                if (o instanceof StreamMultiYDescriptor) {
-                    StreamMultiYDescriptor y = (StreamMultiYDescriptor)o;
+                if (o instanceof StreamScalarDescriptor) {
+                    StreamScalarDescriptor y = (StreamScalarDescriptor)o;
                     String name =  y.getName();
                     if (name != null && !name.equals("")) {
                         builder.addPlane(name,y.getUnits());
@@ -323,7 +323,7 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
                     throw new DasIOException("Invalid Stream Header: Non-Y-descriptor encountered");
                 }
             }
-            StreamMultiYDescriptor[] yDescriptors = (StreamMultiYDescriptor[])sd.getYDescriptors().toArray(new StreamMultiYDescriptor[0]);
+            StreamScalarDescriptor[] yDescriptors = (StreamScalarDescriptor[])sd.getYDescriptors().toArray(new StreamScalarDescriptor[0]);
             int planeCount = yDescriptors.length - 1;
             int recordSize = sd.getXDescriptor().getSizeBytes() + yDescriptors[0].getSizeBytes();
             for (int planeIndex = 0; planeIndex < planeCount; planeIndex++) {

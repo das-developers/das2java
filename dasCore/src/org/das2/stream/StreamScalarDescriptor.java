@@ -39,7 +39,11 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-public class StreamMultiYDescriptor implements SkeletonDescriptor, Cloneable {
+/**
+ * This is a rank 1 element of a packet, either a dependent or independent 
+ * parameter.
+ */
+public class StreamScalarDescriptor implements SkeletonDescriptor, Cloneable {
 
     private static Logger logger = LoggerManager.getLogger("das2.d2s.multiy");
     
@@ -50,15 +54,17 @@ public class StreamMultiYDescriptor implements SkeletonDescriptor, Cloneable {
     private Units units = Units.dimensionless;
     private DataTransferType transferType = DataTransferType.SUN_REAL4;
 
-    public StreamMultiYDescriptor(Element element) throws StreamException {
+    public StreamScalarDescriptor(Element element) throws StreamException {
         if (element.getTagName().equals("y")) {
+            processElement(element);
+        } else if (element.getTagName().equals("z")) {
             processElement(element);
         } else {
             processLegacyElement(element);
         }
     }
 
-    private void processElement(Element element) throws StreamException 
+    protected void processElement(Element element) throws StreamException 
 	 {	 
         logger.log(Level.FINE, "processElement {0} name={1}", new Object[]{element, element.getAttribute("name")});
         
@@ -130,7 +136,7 @@ public class StreamMultiYDescriptor implements SkeletonDescriptor, Cloneable {
         transferType = type;
     }
 
-    public StreamMultiYDescriptor() {
+    public StreamScalarDescriptor() {
     }
 
     public Units getUnits() {

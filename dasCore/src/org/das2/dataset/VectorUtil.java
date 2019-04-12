@@ -8,7 +8,7 @@ import org.das2.datum.UnitsUtil;
 import org.das2.datum.TimeUtil;
 import org.das2.stream.StreamProducer;
 import org.das2.stream.DataTransferType;
-import org.das2.stream.StreamMultiYDescriptor;
+import org.das2.stream.StreamScalarDescriptor;
 import org.das2.stream.StreamDescriptor;
 import org.das2.stream.StreamXDescriptor;
 import org.das2.stream.StreamException;
@@ -222,7 +222,7 @@ public class VectorUtil {
             DatumVector[] yValues = new DatumVector[planeIds.length];
             
             for ( int i=0; i<planeIds.length; i++ ) {
-                StreamMultiYDescriptor yDescriptor = new StreamMultiYDescriptor();
+                StreamScalarDescriptor yDescriptor = new StreamScalarDescriptor();
                 yDescriptor.setName(planeIds[i]);
                 yDescriptor.setDataTransferType(yTransferType);
                 yDescriptor.setUnits(((VectorDataSet)vds.getPlanarView(planeIds[i])).getYUnits());

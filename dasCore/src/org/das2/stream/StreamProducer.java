@@ -106,8 +106,8 @@ public class StreamProducer implements StreamHandler {
             SkeletonDescriptor lastY = pd.getYDescriptor(pd.getYCount() - 1);
             if (((lastY instanceof StreamYScanDescriptor
                   && ((StreamYScanDescriptor)lastY).getDataTransferType().isAscii())
-                 || (lastY instanceof StreamMultiYDescriptor
-                     && ((StreamMultiYDescriptor)lastY).getDataTransferType().isAscii()))
+                 || (lastY instanceof StreamScalarDescriptor
+                     && ((StreamScalarDescriptor)lastY).getDataTransferType().isAscii()))
                 && Character.isWhitespace((char)bigBuffer.get(lastChar))) {
                 bigBuffer.put(lastChar, (byte)'\n');
             }

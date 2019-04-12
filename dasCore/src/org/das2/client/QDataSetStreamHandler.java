@@ -25,8 +25,10 @@ import org.das2.stream.StreamComment;
 import org.das2.stream.StreamDescriptor;
 import org.das2.stream.StreamException;
 import org.das2.stream.StreamHandler;
-import org.das2.stream.StreamMultiYDescriptor;
+import org.das2.stream.StreamScalarDescriptor;
+import org.das2.stream.StreamYDescriptor;
 import org.das2.stream.StreamYScanDescriptor;
+import org.das2.stream.StreamZDescriptor;
 import org.das2.util.LoggerManager;
 
 /**
@@ -39,17 +41,21 @@ public class QDataSetStreamHandler implements StreamHandler {
     
     Map<PacketDescriptor,DataSetBuilder> xbuilders;
     Map<PacketDescriptor,DataSetBuilder[]> builders;
+    Map<PacketDescriptor,String> schemes;
     PacketDescriptor currentPd;
     DataSetBuilder[] currentBuilders;
     DataSetBuilder currentXBuilder;
     
     String streamTitle;
     Map streamProperties;
+    
+    private static final String SCHEME_XYZSCATTER= "xyzScatter";
         
     @Override
     public void streamDescriptor(StreamDescriptor sd) throws StreamException {
-        builders= new LinkedHashMap<>();
         xbuilders= new LinkedHashMap<>();
+        builders= new LinkedHashMap<>();
+        schemes= new LinkedHashMap<>();
         streamTitle= adaptUserProperty( String.valueOf( sd.getProperty("title") ) );
         streamProperties= sd.getProperties();
     }
@@ -99,7 +105,7 @@ public class QDataSetStreamHandler implements StreamHandler {
         return o;
     }
 
-    private Object findProperty( StreamMultiYDescriptor sd, String d2sName ) {
+    private Object findProperty( StreamScalarDescriptor sd, String d2sName ) {
         Object o= sd.getProperty(d2sName);
         if ( o==null ) {
             String n= sd.getName();
@@ -114,7 +120,7 @@ public class QDataSetStreamHandler implements StreamHandler {
     @Override
     public void packetDescriptor(PacketDescriptor pd) throws StreamException {
         DataSetBuilder[] lbuilders= new DataSetBuilder[pd.getYCount()];
-        
+        String scheme="";
         for ( int i=0; i<pd.getYCount(); i++ ) {
             SkeletonDescriptor sd= pd.getYDescriptor(i);
             logger.log(Level.FINER, "got packet: {0}", sd);
@@ -156,8 +162,8 @@ public class QDataSetStreamHandler implements StreamHandler {
                     }
                 }
                 
-            } else if ( sd instanceof StreamMultiYDescriptor ) {
-                StreamMultiYDescriptor multiy= (StreamMultiYDescriptor)sd;
+            } else if ( sd instanceof StreamYDescriptor ) {
+                StreamScalarDescriptor multiy= (StreamScalarDescriptor)sd;
                 builder= new DataSetBuilder(1,1000);
                 putProperty( builder, QDataSet.UNITS, multiy.getUnits() );
                 putProperty( builder, QDataSet.NAME, multiy.getName() );
@@ -173,11 +179,37 @@ public class QDataSetStreamHandler implements StreamHandler {
                 }                
                 putProperty( builder, QDataSet.SCALE_TYPE, findProperty( multiy, "yScaleType" ) );
                 putProperty( builder, QDataSet.FILL_VALUE, findProperty( multiy, "yFill" ) );
+
+            } else if ( sd instanceof StreamZDescriptor ) {
+                StreamScalarDescriptor multiy= (StreamScalarDescriptor)sd;
+                builder= new DataSetBuilder(1,1000);
+                putProperty( builder, QDataSet.UNITS, multiy.getUnits() );
+                putProperty( builder, QDataSet.NAME, multiy.getName() );
+                putProperty( builder, QDataSet.LABEL, findProperty( multiy, "zLabel" ) ); // any of the following may return null.
+                putProperty( builder, QDataSet.FORMAT, findProperty( multiy, "zFormat" ) );
+                putProperty( builder, QDataSet.TITLE, findProperty( multiy, "zSummary" ) );
+                putProperty( builder, QDataSet.VALID_MIN, findProperty( multiy, "zValidMin" ) );
+                putProperty( builder, QDataSet.VALID_MAX, findProperty( multiy, "zValidMax" ) );
+                DatumRange zRange= (DatumRange)findProperty( multiy, "zRange" );
+                if ( zRange!=null ) {
+                    putProperty( builder, QDataSet.TYPICAL_MIN, zRange.min().doubleValue( zRange.getUnits() ) );
+                    putProperty( builder, QDataSet.TYPICAL_MAX, zRange.max().doubleValue( zRange.getUnits() ) );
+                }                
+                putProperty( builder, QDataSet.SCALE_TYPE, findProperty( multiy, "zScaleType" ) );
+                putProperty( builder, QDataSet.FILL_VALUE, findProperty( multiy, "zFill" ) );
+                
             } else {
                 throw new IllegalArgumentException("not supported: "+sd);
             }
             lbuilders[i]= builder;
         }
+        
+        if ( pd.getYDescriptor(0) instanceof StreamYDescriptor && pd.getYDescriptor(1) instanceof StreamZDescriptor ) {
+            this.schemes.put( pd, SCHEME_XYZSCATTER );
+        } else {
+            this.schemes.put( pd, "" );
+        }
+        
         
         DataSetBuilder xbuilder= new DataSetBuilder(1,1000);
         xbuilder.putProperty( QDataSet.UNITS, pd.getXDescriptor().getUnits() );
@@ -257,7 +289,15 @@ public class QDataSetStreamHandler implements StreamHandler {
                     }
                 }
             }
-            ds= Ops.link( xds1, ds1 );
+            if ( schemes.entrySet().iterator().next().getValue().equals(SCHEME_XYZSCATTER) ) {
+                assert ds1!=null;
+                ds= Ops.link( xds1, Ops.unbundle(ds1,0), Ops.unbundle(ds1,1) );
+                for ( int i=2; i<ds1.length(0); i++ ) {
+                    ds= Ops.link( xds1, Ops.unbundle(ds1,0), Ops.unbundle(ds1,i) );
+                }
+            } else {
+                ds= Ops.link( xds1, ds1 );
+            }
         } else {
             ds= null;
             for ( Entry<PacketDescriptor,DataSetBuilder> e: xbuilders.entrySet() ) {
@@ -302,8 +342,8 @@ public class QDataSetStreamHandler implements StreamHandler {
                 ds= Ops.putProperty( ds, QDataSet.LABEL, ds.slice(0).property( QDataSet.LABEL ) );
             }
             
-            
         }
+        
         ds= Ops.putProperty( ds, QDataSet.TITLE, streamTitle );
         Object oxCacheRange= streamProperties.get( "xCacheRange" );
         if ( oxCacheRange!=null ) {

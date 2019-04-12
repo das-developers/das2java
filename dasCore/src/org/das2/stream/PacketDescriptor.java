@@ -31,6 +31,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.das2.datum.LoggerManager;
@@ -70,11 +71,14 @@ public class PacketDescriptor implements Cloneable {
             if ( node instanceof Element ) {
                 Element child = (Element)node;
                 String name = child.getTagName();
-                logger.fine( "process element type "+name);
+                logger.log(Level.FINE, "process element type {0}", name);
                 if ( name.equals("x") ) {
                     xDescriptor = new StreamXDescriptor(child);
                 } else if ( name.equals("y") ) {
-                    StreamMultiYDescriptor d = new StreamMultiYDescriptor(child);
+                    StreamScalarDescriptor d = new StreamYDescriptor(child);
+                    addYDescriptor(d);
+                } else if ( name.equals("z") ) {
+                    StreamScalarDescriptor d = new StreamZDescriptor(child);
                     addYDescriptor(d);
                 } else if ( name.equals("yscan") ) {
                     StreamYScanDescriptor d = new StreamYScanDescriptor(child);
@@ -110,7 +114,7 @@ public class PacketDescriptor implements Cloneable {
                     StreamYScanDescriptor d= new StreamYScanDescriptor(child);
                     addYDescriptor(d);
                 } else if ( name.equals("MultiY")) {
-                    StreamMultiYDescriptor d= new StreamMultiYDescriptor(child);
+                    StreamScalarDescriptor d= new StreamScalarDescriptor(child);
                     addYDescriptor(d);
                 }
             }
@@ -142,8 +146,8 @@ public class PacketDescriptor implements Cloneable {
             if ( pp==null && yDescriptors[i] instanceof StreamYScanDescriptor ) {
                 pp= ((StreamYScanDescriptor)yDescriptors[i]).getName();
             }
-            if ( pp==null && yDescriptors[i] instanceof StreamMultiYDescriptor ) {
-                pp= ((StreamMultiYDescriptor)yDescriptors[i]).getName();
+            if ( pp==null && yDescriptors[i] instanceof StreamScalarDescriptor ) {
+                pp= ((StreamScalarDescriptor)yDescriptors[i]).getName();
             }
             if ( names.containsKey(pp) ) {
                 throw new IllegalArgumentException("Das2 Stream Format error: Required Attribute '"+"name"+
@@ -201,8 +205,8 @@ public class PacketDescriptor implements Cloneable {
                 && ((StreamYScanDescriptor)yDescriptors[yCount - 1]).getDataTransferType().isAscii()
                 && Character.isWhitespace((char)output.get(output.position() - 1))) {
             output.put(output.position() - 1, (byte)'\n');
-        } else if (yDescriptors[yCount - 1] instanceof StreamMultiYDescriptor
-                && ((StreamMultiYDescriptor)yDescriptors[yCount - 1]).getDataTransferType().isAscii()
+        } else if (yDescriptors[yCount - 1] instanceof StreamScalarDescriptor
+                && ((StreamScalarDescriptor)yDescriptors[yCount - 1]).getDataTransferType().isAscii()
                 && Character.isWhitespace((char)output.get(output.position() - 1))) {
             output.put(output.position() - 1, (byte)'\n');
         }
@@ -229,13 +233,13 @@ public class PacketDescriptor implements Cloneable {
             yscan.setYCoordinates((double[])dsdf.get("y_coordinate"));
             packetDescriptor.addYDescriptor(yscan);
         } else if (dsdf.get("form").equals("x_multi_y") && dsdf.get("ny") != null) {
-            StreamMultiYDescriptor y = new StreamMultiYDescriptor();
+            StreamScalarDescriptor y = new StreamScalarDescriptor();
             packetDescriptor.addYDescriptor(y);
         } else if (dsdf.get("form").equals("x_multi_y") && dsdf.get("items") != null) {
             List planeList = (List)dsdf.get("plane-list");
-            packetDescriptor.addYDescriptor(new StreamMultiYDescriptor());
+            packetDescriptor.addYDescriptor(new StreamScalarDescriptor());
             for (int index = 0; index < planeList.size(); index++) {
-                StreamMultiYDescriptor y = new StreamMultiYDescriptor();
+                StreamScalarDescriptor y = new StreamScalarDescriptor();
                 y.setName((String)planeList.get(index));
                 packetDescriptor.addYDescriptor(y);
             }

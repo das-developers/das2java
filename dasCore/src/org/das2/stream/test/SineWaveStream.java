@@ -16,7 +16,7 @@ import org.das2.stream.DataTransferType;
 import org.das2.stream.PacketDescriptor;
 import org.das2.stream.StreamDescriptor;
 import org.das2.stream.StreamException;
-import org.das2.stream.StreamMultiYDescriptor;
+import org.das2.stream.StreamScalarDescriptor;
 import org.das2.stream.StreamProducer;
 import org.das2.stream.StreamXDescriptor;
 
@@ -48,7 +48,7 @@ public class SineWaveStream {
             xDescriptor.setDataTransferType(DataTransferType.getByName("ascii24"));
             xDescriptor.setUnits(Units.seconds);
             xDescriptor.setBase(TimeUtil.createValid("2000-001"));
-            StreamMultiYDescriptor y = new StreamMultiYDescriptor();
+            StreamScalarDescriptor y = new StreamScalarDescriptor();
             y.setDataTransferType(DataTransferType.getByName("ascii10"));
             PacketDescriptor pd = new PacketDescriptor();
             pd.setXDescriptor(xDescriptor);

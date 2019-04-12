@@ -90,7 +90,7 @@ public class StreamDescriptor implements SkeletonDescriptor, Cloneable {
                     StreamYScanDescriptor d= new StreamYScanDescriptor(child);
                     yDescriptors.add(d);
                 } else if ( name.equals("MultiY")) {
-                    StreamMultiYDescriptor d= new StreamMultiYDescriptor(child);
+                    StreamScalarDescriptor d= new StreamScalarDescriptor(child);
                     yDescriptors.add(d);
                 }
             }
@@ -112,7 +112,7 @@ public class StreamDescriptor implements SkeletonDescriptor, Cloneable {
         yDescriptors.add(y);
     }
     
-    public void addYMulti(StreamMultiYDescriptor y) {
+    public void addYMulti(StreamScalarDescriptor y) {
         yDescriptors.add(y);
     }
     
