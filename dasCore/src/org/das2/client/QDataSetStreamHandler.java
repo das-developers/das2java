@@ -56,7 +56,12 @@ public class QDataSetStreamHandler implements StreamHandler {
         xbuilders= new LinkedHashMap<>();
         builders= new LinkedHashMap<>();
         schemes= new LinkedHashMap<>();
-        streamTitle= adaptUserProperty( String.valueOf( sd.getProperty("title") ) );
+        String t= (String) sd.getProperty("title");
+        if ( t!=null ) {
+            streamTitle= adaptUserProperty( t );
+        } else {
+            streamTitle= null;
+        }
         streamProperties= sd.getProperties();
     }
 
@@ -120,7 +125,6 @@ public class QDataSetStreamHandler implements StreamHandler {
     @Override
     public void packetDescriptor(PacketDescriptor pd) throws StreamException {
         DataSetBuilder[] lbuilders= new DataSetBuilder[pd.getYCount()];
-        String scheme="";
         for ( int i=0; i<pd.getYCount(); i++ ) {
             SkeletonDescriptor sd= pd.getYDescriptor(i);
             logger.log(Level.FINER, "got packet: {0}", sd);
@@ -204,7 +208,7 @@ public class QDataSetStreamHandler implements StreamHandler {
             lbuilders[i]= builder;
         }
         
-        if ( pd.getYDescriptor(0) instanceof StreamYDescriptor && pd.getYDescriptor(1) instanceof StreamZDescriptor ) {
+        if ( pd.getYCount()==2 && pd.getYDescriptor(0) instanceof StreamYDescriptor && pd.getYDescriptor(1) instanceof StreamZDescriptor ) {
             this.schemes.put( pd, SCHEME_XYZSCATTER );
         } else {
             this.schemes.put( pd, "" );
