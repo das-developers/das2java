@@ -134,26 +134,10 @@ public class PolarPlotRenderer extends Renderer {
      * @param ds any QDataSet.
      * @param scrict return null if it's not clear that the units are degrees.
      * @return the multiplier to make the dataset into radians, or null.
+     * @see Ops#isAngleRange which is a copy of this code.
      */
     private static Double isAngleRange( QDataSet ds, boolean strict) {
-        Units u= SemanticOps.getUnits(ds);
-        if ( u==Units.radians ) return 1.;
-        if ( u==Units.deg || u==Units.degrees ) return Math.PI/180;
-        QDataSet extent= Ops.extent(ds);
-        double delta= extent.value(1)-extent.value(0);
-        if ( u==Units.dimensionless && ( delta>160 && delta<181 || delta>320 && delta<362 ) ) {
-            return Math.PI/180;
-        } else if ( u==Units.hours ) {  // untested.
-            return Math.PI/12;  // TAU/24.
-        } else if ( u==Units.dimensionless && ( delta>Math.PI*160/180 && delta<Math.PI*181/180 || delta>Math.PI*320/180 && delta<Math.PI*362/180 ) ) {
-            return 1.;
-        } else {
-            if ( strict ) {
-                return null;
-            } else {
-                return Math.PI/180;
-            }
-        }
+        return Ops.isAngleRange(ds, strict);
     }
     
     /**
