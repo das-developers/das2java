@@ -244,6 +244,8 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
             result= new NormalizeFilterEditorPanel();            
         } else if ( f.matches("\\|transpose\\(\\)") ) {
             result= new NoArgFilterEditorPanel();
+        } else if ( f.matches("\\|polarToCartesian\\(\\)") ) {
+            result= new NoArgFilterEditorPanel();
         } else if ( f.matches("\\|toDegrees\\(\\)") ) {
             result= new NoArgFilterEditorPanel();
         } else if ( f.matches("\\|toRadians\\(\\)") ) {

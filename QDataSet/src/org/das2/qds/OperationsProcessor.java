@@ -761,6 +761,9 @@ public class OperationsProcessor {
                     //fillDs= fillDs;
                     fillDs= Ops.copy(fillDs);
 
+                } else if ( cmd.equals("|polarToCartesian") ) {
+                    fillDs= Ops.polarToCartesian(fillDs);
+                    
                 } else {
                     if ( !cmd.equals("") ) throw new ParseException( c + " (command not recognized: \""+cmd +"\")", i );
                 }

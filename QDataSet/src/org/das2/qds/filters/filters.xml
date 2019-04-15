@@ -136,12 +136,17 @@
                     <bookmark>
                         <title>Total Over a Dimension</title>
                         <filter>|total1()</filter>
-                        <description>Totals over a dimension to reduce the dimensionality</description>
+                        <description>Totals over a dimension to reduce the dimensionality.</description>
                     </bookmark>
                     <bookmark>
                         <title>Transpose</title>
                         <filter>|transpose()</filter>
-                        <description>Transpose the rank 2 dataset</description>
+                        <description>Transpose the rank 2 dataset.</description>
+                    </bookmark>
+                    <bookmark>
+                        <title>Polar to Cartesian</title>
+                        <filter>|polarToCartesian()</filter>
+                        <description>Rank 2 bundle of [ radius, angle, Z ] is converted to cartesian coordinates.</description>
                     </bookmark>
                     <bookmark>
                         <title>Unbundle</title>
