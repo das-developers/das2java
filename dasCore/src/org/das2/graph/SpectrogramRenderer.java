@@ -753,6 +753,13 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                                 yAxis.invTransform(plotImageBounds2.y),
                                 plotImageBounds2.height,
                                 yAxis.isLog());
+                        
+                        RebinDescriptor zRebinDescriptor = new RebinDescriptor(
+                            lcolorBar.getDataMinimum(), 
+                            lcolorBar.getDataMaximum(), 
+                            lcolorBar.getIndexColorModel().getMapSize(), 
+                            lcolorBar.isLog() 
+                        );
 
                         if ( !xunits.isConvertibleTo(xAxis.getUnits()) ) {
                             xRebinDescriptor= convertUnitsTo(xRebinDescriptor, xunits);
@@ -807,7 +814,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         //t0= System.currentTimeMillis();
                         try {
                             logger.log(Level.FINEST, "rebinning to pixel resolution: {0}  {1}", new Object[]{xmemento, ymemento});
-                            rebinDataSet = (QDataSet) rebinner.rebin(fds, xRebinDescriptor, yRebinDescriptor, null );
+                            rebinDataSet = (QDataSet) rebinner.rebin(fds, xRebinDescriptor, yRebinDescriptor, zRebinDescriptor );
                             rebinDataSet= Ops.putProperty( rebinDataSet, QDataSet.UNITS, zunits );
                         } catch ( RuntimeException ex ) {
                             logger.log( Level.WARNING, ex.getMessage(), ex );  //TODO: catch this...  See sftp://jbf@papco.org/home/jbf/ct/autoplot/script/bugs/3237397/gapsTest.jy
