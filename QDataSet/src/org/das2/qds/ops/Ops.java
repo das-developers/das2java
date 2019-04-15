@@ -4890,6 +4890,15 @@ public final class Ops {
                 }
             }
         }
+        String[] moreNames= new String[] { QDataSet.DEPENDNAME_0, QDataSet.DEPENDNAME_1, QDataSet.CONTEXT_0, QDataSet.CONTEXT_1 };
+        for (String name : moreNames ) {
+            for ( int i=0; i<srcds.length(); i++ ) {
+                Object p= srcds.property(name, i);
+                if ( p!=null ) {
+                    mds.putProperty( name, i, p );
+                }
+            }
+        }
 
     }
     
@@ -4915,7 +4924,7 @@ public final class Ops {
             }
         }
     }
-
+    
     /**
      * Copy the dataset to an ArrayDataSet only if the dataset is not already an ArrayDataSet
      * or BufferDataSet.
@@ -8051,6 +8060,78 @@ public final class Ops {
         d= subtract( modp( add( d,h ), dataset(discont,u) ), h);
         WritableDataSet result= maybeCopy( Ops.append( Ops.join( null, ds.slice(0) ), accum( ds.slice(0), d )  ) );
         DataSetUtil.putProperties( DataSetUtil.getProperties(ds), result );
+        return result;
+    }
+    
+    /**
+     * return true if the dataset can be interpreted as radian degrees from 0 to PI or from 0 to 2*PI.
+     * @param ds any QDataSet.
+     * @param strict return null if it's not clear that the units are degrees.
+     * @return the multiplier to make the dataset into radians, or null.
+     */
+    public static Double isAngleRange( QDataSet ds, boolean strict ) {
+        Units u= SemanticOps.getUnits(ds);
+        if ( u==Units.radians ) return 1.;
+        if ( u==Units.deg || u==Units.degrees ) return Math.PI/180;
+        QDataSet extent= Ops.extent(ds);
+        double delta= extent.value(1)-extent.value(0);
+        if ( u==Units.dimensionless && ( delta>160 && delta<181 || delta>320 && delta<362 ) ) {
+            return Math.PI/180;
+        } else if ( u==Units.hours ) {  // untested.
+            return Math.PI/12;  // TAU/24.
+        } else if ( u==Units.dimensionless && ( delta>Math.PI*160/180 && delta<Math.PI*181/180 || delta>Math.PI*320/180 && delta<Math.PI*362/180 ) ) {
+            return 1.;
+        } else {
+            if ( strict ) {
+                return null;
+            } else {
+                return Math.PI/180;
+            }
+        }
+    }
+    
+    /**
+     * converts a rank 2 bundle of polar data, where ds[:,0] are the radii and ds[:,1] 
+     * are the angles.  Any additional bundled datasets are left alone.
+     * @param ds
+     * @return bundle of X, Y, and remaining data.
+     */
+    public static QDataSet polarToCartesian( QDataSet ds ) {
+        QDataSet rad= slice1(ds,0);
+        Units runits= SemanticOps.getUnits(rad);
+        QDataSet angle= slice1(ds,1);
+        Double mult= isAngleRange( angle, true );
+        if ( mult==null ) {
+            mult= isAngleRange( rad, true );
+            if ( mult!=null ) {
+                logger.fine("assuming first bundled dataset is angle");
+                angle= rad;
+                rad= slice1(ds,1);
+            }
+        }
+        WritableDataSet result= copy(ds);
+        for ( int i=0; i<result.length(); i++ ) {
+            double r= rad.value(i);
+            double x= r * cos(angle.value(i)*mult);
+            double y= r * sin(angle.value(i)*mult);
+            result.putValue( i, 0, x );
+            result.putValue( i, 1, y );
+        }
+        QDataSet b1= (QDataSet)ds.property(QDataSet.BUNDLE_1);
+        if ( b1!=null ) {
+            
+            WritableDataSet wb1= copy(b1);
+            copyIndexedProperties( b1, wb1 );
+            
+            wb1.putProperty( QDataSet.LABEL, 0, "X" );
+            wb1.putProperty( QDataSet.LABEL, 1, "Y" );
+            wb1.putProperty( QDataSet.TITLE, 0, "X" );
+            wb1.putProperty( QDataSet.TITLE, 1, "Y" );
+            wb1.putProperty( QDataSet.UNITS, 0, runits );
+            wb1.putProperty( QDataSet.UNITS, 1, runits );
+            result.putProperty( QDataSet.BUNDLE_1, wb1 );
+        }
+        
         return result;
     }
     
