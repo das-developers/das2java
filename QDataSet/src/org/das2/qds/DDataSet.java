@@ -87,18 +87,19 @@ public final class DDataSet extends ArrayDataSet {
      * @return the array as a QDataSet
      */
     public static DDataSet create(int[] qube) {
-        if ( qube.length==0 ) {
-            return new DDataSet( 0, 1, 1, 1, 1 );
-        } else if ( qube.length == 1 ) {
-            return DDataSet.createRank1(qube[0]);
-        } else if ( qube.length == 2 ) {
-            return DDataSet.createRank2(qube[0], qube[1]);
-        } else if ( qube.length == 3 ) {
-            return DDataSet.createRank3(qube[0], qube[1], qube[2]);
-        } else if ( qube.length == 4 ) {
-            return DDataSet.createRank4(qube[0], qube[1], qube[2], qube[3]);
-        } else {
-            throw new IllegalArgumentException("bad qube");
+        switch (qube.length) {
+            case 0:
+                return new DDataSet( 0, 1, 1, 1, 1 );
+            case 1:
+                return DDataSet.createRank1(qube[0]);
+            case 2:
+                return DDataSet.createRank2(qube[0], qube[1]);
+            case 3:
+                return DDataSet.createRank3(qube[0], qube[1], qube[2]);
+            case 4:
+                return DDataSet.createRank4(qube[0], qube[1], qube[2], qube[3]);
+            default:
+                throw new IllegalArgumentException("bad qube");
         }
     }
 
@@ -117,6 +118,7 @@ public final class DDataSet extends ArrayDataSet {
         result.putProperty( QDataSet.BINS_0, QDataSet.VALUE_BINS_MIN_MAX );
         return result;
     }
+    
     /**
      * Wraps an array from array of dimension sizes.  The result will have
      * rank qube.length().  For rank 0, data is 1-element array.
@@ -125,19 +127,20 @@ public final class DDataSet extends ArrayDataSet {
      * @return the array as a QDataSet
      */
     public static DDataSet wrap( double[] data, int[] qube ) {
-        if (qube.length == 1) {
-            return new DDataSet( 1, qube[0], 1, 1, 1, data );
-        } else if (qube.length == 2) {
-            return new DDataSet( 2, qube[0], qube[1], 1, 1, data );
-        } else if (qube.length == 3) {
-            return new DDataSet( 3, qube[0], qube[1], qube[2], 1, data );
-        } else if (qube.length == 4) {
-            return new DDataSet( 4, qube[0], qube[1], qube[2], qube[3], data);
-        } else if (qube.length == 0 ) {
-            // we support rank 0 with a 1-element array.
-            return new DDataSet( 0, 1, 1, 1, 1, data );
-        } else {
-            throw new IllegalArgumentException("bad qube");
+        switch (qube.length) {
+            case 1:
+                return new DDataSet( 1, qube[0], 1, 1, 1, data );
+            case 2:
+                return new DDataSet( 2, qube[0], qube[1], 1, 1, data );
+            case 3:
+                return new DDataSet( 3, qube[0], qube[1], qube[2], 1, data );
+            case 4:
+                return new DDataSet( 4, qube[0], qube[1], qube[2], qube[3], data);
+            case 0:
+                // we support rank 0 with a 1-element array.
+                return new DDataSet( 0, 1, 1, 1, 1, data );
+            default:
+                throw new IllegalArgumentException("bad qube");
         }
     }
 
