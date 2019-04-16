@@ -16,6 +16,7 @@ import org.das2.qds.JoinDataSet;
 import org.das2.qds.MutablePropertyDataSet;
 import org.das2.qds.QDataSet;
 import org.das2.qds.SemanticOps;
+import org.das2.qds.WritableDataSet;
 import org.das2.qds.ops.Ops;
 
 /**
@@ -538,6 +539,119 @@ public class Reduction {
         return yds;
 
     }
+
+    /**
+     * reduce the buckshot scatter data by laying it out on a 2-D hexgrid and
+     * accumulating the hits to each cell.  This has not been thoroughly verified.
+     * @param ds rank1 Y(X)
+     * @param z null or data to average
+     * @return rank 2 ds containing frequency of occurrence for each bin, with DEPEND_0=xxx and DEPEND_1=yyy.
+     * @see org.das2.qds.ops.Ops#histogram2d(org.das2.qds.QDataSet, org.das2.qds.QDataSet, int[], org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
+     * @throws IllegalArgumentException when the units cannot be converted
+     * @see https://cran.r-project.org/web/packages/hexbin/vignettes/hexagon_binning.pdf
+     * 
+     */
+    public static QDataSet hexbin( QDataSet ds, QDataSet z ) {
+
+        if ( ds.rank()!=1 && !Ops.isBundle(ds) ) {
+            throw new IllegalArgumentException("ds.rank() must be 1");
+        }
+        
+        QDataSet xx= SemanticOps.xtagsDataSet(ds);
+        QDataSet yy= SemanticOps.ytagsDataSet(ds);
+        
+        QDataSet xr= Ops.extent(xx);
+        QDataSet yr= Ops.multiply( Ops.extent(yy), (3/Math.sqrt(3)) );
+        
+        QDataSet xxx= Ops.linspace( xr.value(0), xr.value(1), 100 );
+        QDataSet yyy1= Ops.linspace( yr.value(0), yr.value(1), 100 );
+        double dy= yyy1.value(1)-yyy1.value(0);
+        yyy1= Ops.linspace( yr.value(0)-dy/4, yr.value(1)-dy/4, 100 );
+        QDataSet yyy2= Ops.linspace( yr.value(0)+dy/4, yr.value(1)+dy/4, 100 );
+        
+        double ymin1= yyy1.value(0);
+        double ymin2= yyy2.value(0);
+        double xmin= xxx.value(0);
+        double xspace= xxx.value(1) - xxx.value(0);
+        double yspace= yyy1.value(1) - yyy1.value(0);
+        
+        int nx= xxx.length();
+        int ny= yyy1.length();
+                
+        IDataSet result= IDataSet.createRank2(nx*2,ny);
+        QDataSet ww= SemanticOps.weightsDataSet(yy);
+        
+        UnitsConverter ucx= SemanticOps.getUnitsConverter( xx,xxx );
+        UnitsConverter ucy= SemanticOps.getUnitsConverter( yy,yyy1 );
+        
+        boolean xlog= false;
+        boolean ylog= false;
+        
+        DDataSet S;
+        if ( z==null ) {
+            z= Ops.ones(xx.length());
+            S= null;
+        } else {
+            S= DDataSet.createRank2(nx*2,ny);
+        }
+        
+        for ( int i=0; i<ds.length(); i++ ) {
+            if ( ww.value(i)>0 ) {
+                double x= ucx.convert( xx.value(i) );
+                double y= ucy.convert( yy.value(i) );
+                int ix= (int)( xlog ? (Math.log10(x)-xmin)/xspace : (x-xmin)/xspace );
+                int iy1= (int)( ylog ? (Math.log10(y)-ymin1)/yspace : (y-ymin1)/yspace );
+                int iy2= (int)( ylog ? (Math.log10(y)-ymin2)/yspace : (y-ymin2)/yspace );
+                if ( ix>=0 && ix<nx ) {
+                    if ( iy1>=0 && iy1<ny ) {
+                        if ( iy2>=0 && iy2<ny ) {
+                            double d1= Math.pow(x-xxx.value(ix),2) + Math.pow( y-yyy1.value(iy1), 2 );
+                            double d2= Math.pow(x-(xxx.value(ix)+xspace/2),2) + Math.pow( y-yyy2.value(iy2), 2 );
+                            if ( d1<d2 ) {
+                                result.addValue( ix*2, iy1, 1 );
+                                if ( S!=null ) S.addValue( ix*2, iy1, z.value(i) );
+                            } else {
+                                result.addValue( ix*2+1, iy2, 1 );
+                                if ( S!=null ) S.addValue( ix*2+1, iy2, z.value(i) );
+                            }
+                        } else {
+                            result.addValue( ix*2, iy1, 1 );
+                            if ( S!=null ) S.addValue( ix*2, iy1, z.value(i) );
+                        }
+                    } else if ( iy2>=0 && iy2<ny ) {
+                        result.addValue( ix*2+1, iy2, 1 );
+                        if ( S!=null ) S.addValue( ix*2+1, iy2, z.value(i) );
+                    }
+                }
+            }
+        }
+        
+        WritableDataSet xxxx= Ops.zeros(xxx.length()*2);
+        WritableDataSet yyyy= Ops.zeros(xxx.length()*2,yyy1.length());
+        
+        for ( int i=0; i<xxx.length(); i++ ) {
+            xxxx.putValue( i*2, xxx.value(i) );
+            xxxx.putValue( i*2+1, xxx.value(i)+xspace/2);
+            for ( int j=0; j<yyy1.length(); j++ ) {
+                yyyy.putValue( i*2, j, yyy1.value(j) );
+                yyyy.putValue( i*2+1, j, yyy2.value(j) );
+            }
+        }
+        
+        if ( S!=null ) {
+            MutablePropertyDataSet r= (MutablePropertyDataSet)Ops.divide( S, result );
+            r.putProperty( QDataSet.DEPEND_0, xxxx );
+            r.putProperty( QDataSet.DEPEND_1, yyyy );
+            r.putProperty( QDataSet.WEIGHTS, result );
+            return r;
+        } else {
+            result.putProperty( QDataSet.DEPEND_0, xxxx );
+            result.putProperty( QDataSet.DEPEND_1, yyyy );
+            return result;
+        }
+        
+    }
+    
     
     /**
      * reduce the buckshot scatter data by laying it out on a 2-D grid and
