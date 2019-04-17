@@ -1133,6 +1133,21 @@ public class TearoffTabbedPane extends JTabbedPane {
         return null;
     }
     
+    /**
+     * return the tab contents, the first tab with this name.
+     * @param title
+     * @return the component in this tab.
+     */
+    public Component getTabByTitle( String title ) {
+        for (  Entry<Component,TabDesc> entry : tabs.entrySet() ) {
+            TabDesc td = entry.getValue();
+            if (td.title.equals(title)) {
+                return entry.getKey();
+            }
+        }
+        return null;
+    }
+    
     private TabDesc getTabDescByComponent( Component c ) {
         return tabs.get(c);
     }
