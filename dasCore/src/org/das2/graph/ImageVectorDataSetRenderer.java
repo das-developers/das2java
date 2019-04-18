@@ -925,6 +925,8 @@ public class ImageVectorDataSetRenderer extends Renderer {
                         xcadence= DataSetUtil.asDatum(d);
                     }
                 }
+                logger.log(Level.FINER, "xcadence={0}", xcadence);
+                
                 if ( d!=null ) {
                     Datum sw = DataSetUtil.asDatum( d ); 
                     Datum xmax= xAxis.getDataMaximum();
