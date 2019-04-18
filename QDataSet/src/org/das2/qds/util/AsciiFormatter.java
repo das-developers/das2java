@@ -15,6 +15,7 @@ import org.das2.qds.QDataSet;
  * and should be extended as needed.
  * @author jbf
  */
+
 public class AsciiFormatter {
     
     /**
