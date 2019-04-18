@@ -294,13 +294,9 @@ public class PacketDescriptor implements Cloneable {
         }
     }
     
+    @Override
     public String toString() {
-        StringBuilder result= new StringBuilder( "<packet>\n" );
-        for ( int iplane= 0; iplane<yCount; iplane++ ) {
-            result.append( yDescriptors[iplane].toString() ).append( "\n" );
-        }
-        result.append( "</packet>\n" );
-        return result.toString();
+        return "PacketDescriptor "+this.yCount + " ydescriptors";
     }
     
 }
