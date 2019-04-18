@@ -51,10 +51,13 @@ public class QDataSetStreamHandler implements StreamHandler {
     String streamTitle;
     Map streamProperties;
     
+    QDataSet ds=null;
+    
     private static final String SCHEME_XYZSCATTER= "xyzScatter";
         
     @Override
     public void streamDescriptor(StreamDescriptor sd) throws StreamException {
+        logger.log(Level.FINE, "streamDescriptor: {0}", sd);
         xbuilders= new LinkedHashMap<>();
         builders= new LinkedHashMap<>();
         schemes= new LinkedHashMap<>();
@@ -126,6 +129,51 @@ public class QDataSetStreamHandler implements StreamHandler {
     
     @Override
     public void packetDescriptor(PacketDescriptor pd) throws StreamException {
+        logger.log(Level.FINE, "packetDescriptor: {0}", pd);
+        createBuilders(pd);
+    }
+
+    @Override
+    public void packet(PacketDescriptor pd, Datum xTag, DatumVector[] vectors) throws StreamException {
+        if ( pd!=currentPd ) {
+            if ( currentPd!=null ) {
+                collectDataSet();
+                createBuilders(currentPd);
+            }
+            logger.log(Level.FINE, "packet type changed: {0}", pd.getYDescriptor(0).getSizeBytes());
+            currentXBuilder= xbuilders.get(pd);
+            currentBuilders= builders.get(pd);
+            currentPd= pd;
+        }
+        
+        currentXBuilder.nextRecord(xTag);
+        
+        for ( int i=0; i<pd.getYCount(); i++ ) {
+            if (currentBuilders[i].rank()==1 ) {
+                currentBuilders[i].nextRecord(vectors[i].get(0));
+            } else {
+                currentBuilders[i].nextRecord(vectors[i]);
+            }
+        }
+        
+    }
+
+    @Override
+    public void streamClosed(StreamDescriptor sd) throws StreamException {
+        System.err.println("streamClosed " + currentXBuilder );
+    }
+
+    @Override
+    public void streamException(StreamException se) throws StreamException {
+        System.err.println("streamException ");
+    }
+
+    @Override
+    public void streamComment(StreamComment sc) throws StreamException {
+        System.err.println("streamComment ");
+    }
+    
+    public void createBuilders( PacketDescriptor pd ) {
         DataSetBuilder[] lbuilders= new DataSetBuilder[pd.getYCount()];
         for ( int i=0; i<pd.getYCount(); i++ ) {
             SkeletonDescriptor sd= pd.getYDescriptor(i);
@@ -227,133 +275,49 @@ public class QDataSetStreamHandler implements StreamHandler {
         
         xbuilders.put( pd, xbuilder );
         this.builders.put( pd, lbuilders );
-    }
-
-    @Override
-    public void packet(PacketDescriptor pd, Datum xTag, DatumVector[] vectors) throws StreamException {
-        if ( pd!=currentPd ) {
-            logger.log(Level.FINE, "packet type changed: {0}", pd.getYDescriptor(0).getSizeBytes());
-            currentXBuilder= xbuilders.get(pd);
-            currentBuilders= builders.get(pd);
-            currentPd= pd;
-        }
         
-        currentXBuilder.nextRecord(xTag);
-        
-        for ( int i=0; i<pd.getYCount(); i++ ) {
-            if (currentBuilders[i].rank()==1 ) {
-                currentBuilders[i].nextRecord(vectors[i].get(0));
-            } else {
-                currentBuilders[i].nextRecord(vectors[i]);
-            }
-        }
-        
-    }
-
-    @Override
-    public void streamClosed(StreamDescriptor sd) throws StreamException {
-        System.err.println("streamClosed " + currentXBuilder );
-    }
-
-    @Override
-    public void streamException(StreamException se) throws StreamException {
-        System.err.println("streamException ");
-    }
-
-    @Override
-    public void streamComment(StreamComment sc) throws StreamException {
-        System.err.println("streamComment ");
     }
     
-    public QDataSet getDataSet() {
-        QDataSet ds;
-        if ( xbuilders.size()==1 ) {
-            QDataSet xds1= currentXBuilder.getDataSet();
-            QDataSet ds1;
-            if ( currentBuilders.length==1 ) {
-                ds1= currentBuilders[0].getDataSet();
-            } else {
-                ds1= null;
-                for (DataSetBuilder currentBuilder : currentBuilders) {
-                    ds1 = Ops.bundle(ds1, currentBuilder.getDataSet());
-                }
-                if ( currentBuilders.length==2 ) {
-                    // look for bundles.
-                    String prefix= (String)Ops.unbundle(ds1,0).property("NAME");
-                    String name1= (String)Ops.unbundle(ds1,1).property("NAME");
-                    if ( name1.equals( prefix + ".max" ) ) {
-                        QDataSet max= Ops.unbundle(ds1,1);
-                        max= Ops.putProperty( max, QDataSet.NAME, name1.replaceAll("\\.","_") );
-                        max= Ops.putProperty( max, QDataSet.BUNDLE_1, null );
-                        max= Ops.link( xds1, max );
-                        ds1= Ops.unbundle(ds1,0);
-                        ds1= Ops.putProperty( ds1, QDataSet.BIN_MAX, max );
-                        ds1= Ops.putProperty( ds1, QDataSet.BUNDLE_1, null );
-                    } else if ( name1.equals( prefix + ".min" ) ) {
-                        QDataSet min= Ops.unbundle(ds1,1);
-                        min= Ops.putProperty( min, QDataSet.NAME, name1.replaceAll("\\.","_") );
-                        min= Ops.putProperty( min, QDataSet.BUNDLE_1, null );
-                        min= Ops.link( xds1, min );
-                        ds1= Ops.unbundle(ds1,0);
-                        ds1= Ops.putProperty( ds1, QDataSet.BIN_MIN, min );
-                        ds1= Ops.putProperty( ds1, QDataSet.BUNDLE_1, null );
-                    }
-                }
-            }
-            if ( schemes.entrySet().iterator().next().getValue().equals(SCHEME_XYZSCATTER) ) {
-                assert ds1!=null;
-                ds= Ops.link( xds1, Ops.unbundle(ds1,0), Ops.unbundle(ds1,1) );
-                for ( int i=2; i<ds1.length(0); i++ ) {
-                    ds= Ops.link( xds1, Ops.unbundle(ds1,0), Ops.unbundle(ds1,i) );
-                }
-            } else {
-                ds= Ops.link( xds1, ds1 );
-            }
+    public void collectDataSet( ) {
+        QDataSet xds1= currentXBuilder.getDataSet();
+        QDataSet ds1;
+        if ( currentBuilders.length==1 ) {
+            ds1= currentBuilders[0].getDataSet();
         } else {
-            ds= null;
-            for ( Entry<PacketDescriptor,DataSetBuilder> e: xbuilders.entrySet() ) {
-                currentXBuilder= e.getValue();
-                QDataSet xds1= currentXBuilder.getDataSet();
-                QDataSet ds1;
-                ds1= null;
-                DataSetBuilder[] currentBuilders= builders.get(e.getKey());
-                for (DataSetBuilder currentBuilder : currentBuilders) {
-                    if ( currentBuilders.length==1 ) {
-                        ds1= currentBuilders[0].getDataSet();
-                    } else {
-                        ds1 = Ops.bundle(ds1, currentBuilder.getDataSet());
-                        // look for bundles.
-                        String prefix= (String)Ops.unbundle(ds1,0).property("NAME");
-                        String name1= (String)Ops.unbundle(ds1,1).property("NAME");
-                        if ( name1.equals( prefix + ".max" ) ) {
-                            QDataSet max= Ops.unbundle(ds1,1);
-                            max= Ops.putProperty( max, QDataSet.NAME, name1.replaceAll("\\.","_") );
-                            max= Ops.putProperty( max, QDataSet.BUNDLE_1, null );
-                            max= Ops.link( xds1, max );
-                            ds1= Ops.unbundle(ds1,0);
-                            ds1= Ops.putProperty( ds1, QDataSet.BIN_MAX, max );
-                            ds1= Ops.putProperty( ds1, QDataSet.BUNDLE_1, null );
-                        } else if ( name1.equals( prefix + ".min" ) ) {
-                            QDataSet min= Ops.unbundle(ds1,1);
-                            min= Ops.putProperty( min, QDataSet.NAME, name1.replaceAll("\\.","_") );
-                            min= Ops.putProperty( min, QDataSet.BUNDLE_1, null );
-                            min= Ops.link( xds1, min );
-                            ds1= Ops.unbundle(ds1,0);
-                            ds1= Ops.putProperty( ds1, QDataSet.BIN_MIN, min );
-                            ds1= Ops.putProperty( ds1, QDataSet.BUNDLE_1, null );
-                        }
-                    }
-                    ds1= Ops.link( xds1, ds1 );
+            ds1= null;
+            for (DataSetBuilder currentBuilder : currentBuilders) {
+                ds1 = Ops.bundle(ds1, currentBuilder.getDataSet());
+            }
+            if ( currentBuilders.length==2 ) {
+                // look for bundles.
+                String prefix= (String)Ops.unbundle(ds1,0).property("NAME");
+                String name1= (String)Ops.unbundle(ds1,1).property("NAME");
+                if ( name1.equals( prefix + ".max" ) ) {
+                    QDataSet max= Ops.unbundle(ds1,1);
+                    max= Ops.putProperty( max, QDataSet.NAME, name1.replaceAll("\\.","_") );
+                    max= Ops.putProperty( max, QDataSet.BUNDLE_1, null );
+                    max= Ops.link( xds1, max );
+                    ds1= Ops.unbundle(ds1,0);
+                    ds1= Ops.putProperty( ds1, QDataSet.BIN_MAX, max );
+                    ds1= Ops.putProperty( ds1, QDataSet.BUNDLE_1, null );
+                } else if ( name1.equals( prefix + ".min" ) ) {
+                    QDataSet min= Ops.unbundle(ds1,1);
+                    min= Ops.putProperty( min, QDataSet.NAME, name1.replaceAll("\\.","_") );
+                    min= Ops.putProperty( min, QDataSet.BUNDLE_1, null );
+                    min= Ops.link( xds1, min );
+                    ds1= Ops.unbundle(ds1,0);
+                    ds1= Ops.putProperty( ds1, QDataSet.BIN_MIN, min );
+                    ds1= Ops.putProperty( ds1, QDataSet.BUNDLE_1, null );
                 }
-                ds= Ops.join( ds, ds1 );
             }
-            
-            if ( ds.length()>0 ) { //TODO: what happens where there are no datasets?
-                ds= Ops.putProperty( ds, QDataSet.SCALE_TYPE, ds.slice(0).property( QDataSet.SCALE_TYPE ) );
-                ds= Ops.putProperty( ds, QDataSet.LABEL, ds.slice(0).property( QDataSet.LABEL ) );
-            }
-            
         }
+        ds1= Ops.link( xds1, ds1 );
+        ds= Ops.join( ds, ds1 );
+        
+    }
+        
+    public QDataSet getDataSet() {
+        collectDataSet();
         
         ds= Ops.putProperty( ds, QDataSet.TITLE, streamTitle );
         Object oxCacheRange= streamProperties.get( "xCacheRange" );
