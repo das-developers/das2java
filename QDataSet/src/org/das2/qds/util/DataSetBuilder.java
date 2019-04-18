@@ -16,6 +16,7 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.datum.Datum;
+import org.das2.datum.DatumVector;
 import org.das2.datum.EnumerationUnits;
 import org.das2.datum.Units;
 import org.das2.util.LoggerManager;
@@ -565,6 +566,19 @@ public class DataSetBuilder {
     }
     
     /**
+     * Use the DatumVector to fill the record.  DatumVectors can have just one unit.
+     * @param v 
+     */
+    public void nextRecord( DatumVector v ) {
+        int n= v.getLength();
+        if ( u==null ) u= v.getUnits();
+        for ( int i=0; i<n; i++ ) {
+            putValue( -1, i, v.doubleValue( index, u ) );
+        }
+        nextRecord();
+    }
+    
+    /**
      * rank 0 datasets can be used to build the rank 1 datasets
      * @param v rank 0 or rank 1 dataset
      */
@@ -577,7 +591,7 @@ public class DataSetBuilder {
         }
         if ( v.rank()==0 ) {
             putValue( -1, v );
-        } else {
+        } else {            
             for ( int i=0; i<v.length(); i++ ) {
                 putValue( -1, i, v.slice(i) );
             }
