@@ -25,6 +25,7 @@ import org.das2.util.monitor.ProgressMonitor;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -45,6 +46,7 @@ import org.das2.qds.SemanticOps;
 import org.das2.qds.WeightsDataSet;
 import org.das2.qds.WritableDataSet;
 import org.das2.qds.ops.Ops;
+import org.das2.qds.util.AsciiFormatter;
 
 /**
  * ImageVectorDataSetRenderer
@@ -398,7 +400,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
      */
     private void renderPointsOfRank2Waveform( BufferedImage image, DasAxis xAxis, DasAxis yAxis, QDataSet ds, Rectangle plotImageBounds2) {
 
-        logger.exiting( "org.das2.graph.ImageVectorDataSetRenderer", "renderPointsOfRank2Waveform");
+        logger.entering( "org.das2.graph.ImageVectorDataSetRenderer", "renderPointsOfRank2Waveform");
         
         Graphics2D g = (Graphics2D) image.getGraphics();
 
@@ -444,22 +446,28 @@ public class ImageVectorDataSetRenderer extends Renderer {
             
             int xmin= xAxis.getColumn().getDMinimum()-xAxis.getColumn().getWidth();
             int xmax= xAxis.getColumn().getDMaximum()+xAxis.getColumn().getWidth();
+
+            int xdmin= xAxis.getColumn().getDMinimum();
+            int xdmax= xAxis.getColumn().getDMaximum();
+            int ydmin= yAxis.getRow().getDMinimum();
+            int ydmax= yAxis.getRow().getDMaximum();
             
             for (int i = firstIndex; i < lastIndex; i++) {
                 int nj= ds.length(i);
 
+                int xoffsetsRank= xoffsets.rank();
                 
                 for ( int j=0; j<nj; j++ ) {
                     boolean isValid = wds.value(i,j)>0;
                     if (!isValid) {
                         state = STATE_MOVETO;
                     } else {
-                        int iy = (int) yAxis.transform( ds.value(i,j), dsunits );
+                        int iy = (int) yAxis.transform( ds.value(i,j), dsunits, ydmin, ydmax );
                         int ix;
-                        if ( xoffsets.rank()==1 ) {
-                            ix= (int) xAxis.transform( xds.value(i) + xoffsets.value(j), xunits );
+                        if ( xoffsetsRank==1 ) {
+                            ix= (int) xAxis.transform( xds.value(i) + xoffsets.value(j), xunits, xdmin, xdmax );
                         } else {
-                            ix= (int) xAxis.transform( xds.value(i) + xoffsets.value(i,j), xunits );
+                            ix= (int) xAxis.transform( xds.value(i) + xoffsets.value(i,j), xunits, xdmin, xdmax );
                         }
                         if ( (ix-ix0)*(ix-ix0) > ixstepLimitSq ) state=STATE_MOVETO;
                         switch (state) {
@@ -633,7 +641,8 @@ public class ImageVectorDataSetRenderer extends Renderer {
         return tds;
     }
 
-    private void histogramRank2Waveform( RebinDescriptor ddx, int first0, int last0, int nj, RebinDescriptor ddy, QDataSet vds, Units yunits, FDataSet tds) throws IllegalArgumentException {
+    private static void histogramRank2Waveform( RebinDescriptor ddx, int first0, int last0, int nj, RebinDescriptor ddy, QDataSet vds, Units yunits, FDataSet tds) throws IllegalArgumentException {
+        logger.entering("ImageVectorDataSetRenderer", "histogramRank2Waveform");
         QDataSet xds= (QDataSet) vds.property( QDataSet.DEPEND_0 );
         Units xunits= SemanticOps.getUnits( xds );
         QDataSet wds= SemanticOps.weightsDataSet( vds );
@@ -661,14 +670,16 @@ public class ImageVectorDataSetRenderer extends Renderer {
             logger.fine("wowReduce");
             for (; first0 <= last0; first0++) {
                 int ix = ddx.whichBin( xds.value(first0), xunits );
-                for ( int j=0; j<nj; j++ ) {
-                    boolean isValid = wds.value(first0,j)>0;
-                    if ( isValid ) {
-                        int iy = ddy.whichBin( vds.value(first0,j), yunits );
-                        if (ix != -1 && iy != -1) {
-                            double d = tds.value(ix, iy);
-                            tds.putValue( ix, iy, d+1 );
-                            //tds.addValue( ix, iy, 1 ); this should be faster
+                if ( ix!=-1 ) {
+                    for ( int j=0; j<nj; j++ ) {
+                        boolean isValid = wds.value(first0,j)>0;
+                        if ( isValid ) {
+                            int iy = ddy.whichBin( vds.value(first0,j), yunits );
+                            if (iy != -1) {
+                                double d = tds.value(ix, iy);
+                                tds.putValue( ix, iy, d+1 );
+                                //tds.addValue( ix, iy, 1 ); this should be faster
+                            }
                         }
                     }
                 }
@@ -700,6 +711,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
                 }
             }
         }
+        logger.exiting("ImageVectorDataSetRenderer", "histogramRank2Waveform");
     }
 
     /**
@@ -746,6 +758,13 @@ public class ImageVectorDataSetRenderer extends Renderer {
                     logger.fine("dropping record because it is off screen");
                 }
             }
+            //System.err.println("total: "+ Ops.total(tds) );
+            //
+            //try {
+            //    new AsciiFormatter().formatToFile( "/tmp/ap.txt", tds );
+            //} catch (IOException ex) {
+            //    Logger.getLogger(ImageVectorDataSetRenderer.class.getName()).log(Level.SEVERE, null, ex);
+            //}
             
         } else if ( SemanticOps.isRank2Waveform(ds)) {
             QDataSet xds= SemanticOps.xtagsDataSet(ds);
@@ -959,7 +978,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
                 nj+= ds.length(k,0);
             }
         }
-
+        
         BufferedImage image; 
         int ny = plotImageBounds.height;
         int nx = plotImageBounds.width;
