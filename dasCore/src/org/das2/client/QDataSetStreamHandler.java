@@ -241,7 +241,7 @@ public class QDataSetStreamHandler implements StreamHandler {
             if (currentBuilders[i].rank()==1 ) {
                 currentBuilders[i].nextRecord(vectors[i].get(0));
             } else {
-                currentBuilders[i].nextRecord(DataSetUtil.asDataSet(vectors[i]));
+                currentBuilders[i].nextRecord(vectors[i]);
             }
         }
         
