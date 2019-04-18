@@ -1,8 +1,10 @@
 
 package org.das2.client;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
@@ -42,7 +44,7 @@ public class QDataSetStreamHandler implements StreamHandler {
     Map<PacketDescriptor,DataSetBuilder> xbuilders;
     Map<PacketDescriptor,DataSetBuilder[]> builders;
     Map<PacketDescriptor,String> schemes;
-    PacketDescriptor currentPd;
+    PacketDescriptor currentPd=null;
     DataSetBuilder[] currentBuilders;
     DataSetBuilder currentXBuilder;
     
@@ -222,7 +224,7 @@ public class QDataSetStreamHandler implements StreamHandler {
         if ( o!=null && o instanceof Datum ) {
             xbuilder.putProperty( QDataSet.CADENCE, DataSetUtil.asDataSet( (Datum)o ) );
         }
-            
+        
         xbuilders.put( pd, xbuilder );
         this.builders.put( pd, lbuilders );
     }
@@ -230,6 +232,7 @@ public class QDataSetStreamHandler implements StreamHandler {
     @Override
     public void packet(PacketDescriptor pd, Datum xTag, DatumVector[] vectors) throws StreamException {
         if ( pd!=currentPd ) {
+            logger.log(Level.FINE, "packet type changed: {0}", pd.getYDescriptor(0).getSizeBytes());
             currentXBuilder= xbuilders.get(pd);
             currentBuilders= builders.get(pd);
             currentPd= pd;
