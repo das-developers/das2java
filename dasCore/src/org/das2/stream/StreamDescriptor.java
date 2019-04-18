@@ -425,4 +425,8 @@ public class StreamDescriptor implements SkeletonDescriptor, Cloneable {
         }
     }
     
+    @Override
+    public String toString() {
+        return "StreamDescriptor " + this.properties.size() + " properties";
+    }
 }
