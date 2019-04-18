@@ -573,7 +573,7 @@ public class DataSetBuilder {
         int n= v.getLength();
         if ( u==null ) u= v.getUnits();
         for ( int i=0; i<n; i++ ) {
-            putValue( -1, i, v.doubleValue( index, u ) );
+            putValue( -1, i, v.doubleValue( i, u ) );
         }
         nextRecord();
     }
