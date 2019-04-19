@@ -312,7 +312,12 @@ public class QDataSetStreamHandler implements StreamHandler {
             }
         }
         ds1= Ops.link( xds1, ds1 );
-        ds= Ops.join( ds, ds1 );
+        
+        if ( ds==null ) {
+            ds= ds1;
+        } else {
+            ds= Ops.join( ds, ds1 );
+        }
         
     }
         
