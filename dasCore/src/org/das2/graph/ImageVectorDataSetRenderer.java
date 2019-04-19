@@ -462,7 +462,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
                     if (!isValid) {
                         state = STATE_MOVETO;
                     } else {
-                        int iy = (int) yAxis.transform( ds.value(i,j), dsunits, ydmin, ydmax );
+                        int iy = (int) yAxis.transform( ds.value(i,j), dsunits, ydmax, ydmin );
                         int ix;
                         if ( xoffsetsRank==1 ) {
                             ix= (int) xAxis.transform( xds.value(i) + xoffsets.value(j), xunits, xdmin, xdmax );
