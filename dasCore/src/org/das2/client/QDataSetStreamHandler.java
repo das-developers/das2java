@@ -17,6 +17,7 @@ import org.das2.datum.DatumRange;
 import org.das2.datum.DatumVector;
 import org.das2.qds.DDataSet;
 import org.das2.qds.DataSetUtil;
+import org.das2.qds.MutablePropertyDataSet;
 import org.das2.qds.QDataSet;
 import org.das2.qds.SemanticOps;
 import org.das2.qds.ops.Ops;
@@ -32,6 +33,8 @@ import org.das2.stream.StreamYDescriptor;
 import org.das2.stream.StreamYScanDescriptor;
 import org.das2.stream.StreamZDescriptor;
 import org.das2.util.LoggerManager;
+import org.das2.util.monitor.NullProgressMonitor;
+import org.das2.util.monitor.ProgressMonitor;
 
 /**
  * Write out QDataSet instead of legacy Das2 DataSet.
@@ -53,8 +56,18 @@ public class QDataSetStreamHandler implements StreamHandler {
     
     QDataSet ds=null;
     
+    private ProgressMonitor monitor= new NullProgressMonitor();
+    
     private static final String SCHEME_XYZSCATTER= "xyzScatter";
         
+    public QDataSetStreamHandler() {
+        
+    }
+    
+    public void setMonitor( ProgressMonitor monitor ) {
+        this.monitor= monitor;
+    }
+    
     @Override
     public void streamDescriptor(StreamDescriptor sd) throws StreamException {
         logger.log(Level.FINE, "streamDescriptor: {0}", sd);
@@ -68,6 +81,16 @@ public class QDataSetStreamHandler implements StreamHandler {
             streamTitle= null;
         }
         streamProperties= sd.getProperties();
+        
+        Object o;
+        if ( ( o= sd.getProperty("taskSize") )!=null ) {
+            monitor.setTaskSize(  ((Integer)o) );
+            monitor.started();
+        } else if ( ( o= sd.getProperty("packetCount" ) )!=null ) {
+            monitor.setTaskSize( ((Integer)o) );
+            monitor.started();
+        }
+        
     }
 
     private void putProperty( DataSetBuilder builder, String name, Object value ) {
@@ -160,18 +183,45 @@ public class QDataSetStreamHandler implements StreamHandler {
 
     @Override
     public void streamClosed(StreamDescriptor sd) throws StreamException {
-        System.err.println("streamClosed " + currentXBuilder );
+        logger.finest("got streamClosed");
     }
 
     @Override
     public void streamException(StreamException se) throws StreamException {
-        System.err.println("streamException ");
+        logger.finest("got streamException");
     }
 
     @Override
     public void streamComment(StreamComment sc) throws StreamException {
-        System.err.println("streamComment ");
+        logger.log(Level.FINEST, "got stream comment: {0}", sc);
+
+        if (sc.getType().equals(sc.TYPE_TASK_SIZE)) {
+            if (!monitor.isCancelled()) {
+                monitor.setTaskSize(Integer.parseInt(sc.getValue()));
+                monitor.started();
+            }
+            return;
+        }
+
+        if (sc.getType().equals(sc.TYPE_TASK_PROGRESS)) {
+            if (monitor.getTaskSize() != -1 && !monitor.isCancelled()) {
+                monitor.setTaskProgress(Long.parseLong(sc.getValue()));
+            }
+            return;
+        }
+
+        if (sc.getType().matches(sc.TYPE_LOG)) {
+            String level = sc.getType().substring(4);
+            Level l = Level.parse(level.toUpperCase());
+            if (l.intValue() > Level.FINE.intValue()) {
+                logger.log(Level.FINE, sc.getValue());
+            } else {
+                logger.log(l, sc.getValue());
+            }
+            monitor.setProgressMessage(sc.getValue());
+        }
     }
+    
     
     public void createBuilders( PacketDescriptor pd ) {
         DataSetBuilder[] lbuilders= new DataSetBuilder[pd.getYCount()];
@@ -292,7 +342,7 @@ public class QDataSetStreamHandler implements StreamHandler {
                 // look for bundles.
                 String prefix= (String)Ops.unbundle(ds1,0).property("NAME");
                 String name1= (String)Ops.unbundle(ds1,1).property("NAME");
-                if ( name1.equals( prefix + ".max" ) ) {
+                if ( name1.equals( prefix + ".max" ) || ( prefix.equals("") && name1.equals("peaks") ) ) {
                     QDataSet max= Ops.unbundle(ds1,1);
                     max= Ops.putProperty( max, QDataSet.NAME, name1.replaceAll("\\.","_") );
                     max= Ops.putProperty( max, QDataSet.BUNDLE_1, null );
@@ -311,7 +361,12 @@ public class QDataSetStreamHandler implements StreamHandler {
                 }
             }
         }
-        ds1= Ops.link( xds1, ds1 );
+        
+        if ( ds1 instanceof MutablePropertyDataSet && !((MutablePropertyDataSet)ds1).isImmutable() ) {
+            ((MutablePropertyDataSet)ds1).putProperty( QDataSet.DEPEND_0, xds1 );
+        } else {
+            ds1= Ops.link( xds1, ds1 );
+        }
         
         if ( ds==null ) {
             ds= ds1;
