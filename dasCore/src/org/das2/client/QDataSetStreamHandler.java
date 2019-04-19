@@ -153,6 +153,7 @@ public class QDataSetStreamHandler implements StreamHandler {
     @Override
     public void packetDescriptor(PacketDescriptor pd) throws StreamException {
         logger.log(Level.FINE, "packetDescriptor: {0}", pd);
+        pd.getProperties();
         createBuilders(pd);
     }
 
@@ -326,14 +327,26 @@ public class QDataSetStreamHandler implements StreamHandler {
         
         DataSetBuilder xbuilder= new DataSetBuilder(1,1000);
         xbuilder.putProperty( QDataSet.UNITS, pd.getXDescriptor().getUnits() );
-        xbuilder.putProperty( QDataSet.LABEL, streamProperties.get("xLabel") );
-        Object o= streamProperties.get("xTagWidth" );
+        
+        Object o;
+        
+        o= pd.getProperty( "xLabel" );
+        if ( o==null ) o=streamProperties.get("xLabel");
+        xbuilder.putProperty( QDataSet.LABEL, o );
+        
+        o= pd.getProperty( "xTagWidth" );
+        if ( o==null ) o=streamProperties.get("xTagWidth" );
         if ( o!=null ) {
             if ( o instanceof Datum ) {
                 xbuilder.putProperty( QDataSet.CADENCE, DataSetUtil.asDataSet( (Datum)o ) );
             } else {
                 logger.warning("property xTagWidth should be a Datum");
             }
+        }
+        o= pd.getProperty("monotonicXTags");
+        if ( o==null ) o= streamProperties.get("monotonicXTags");
+        if ( "true".equals( o ) ) {
+            xbuilder.putProperty( QDataSet.MONOTONIC, Boolean.TRUE );
         }
         
         xbuilders.put( pd, xbuilder );
