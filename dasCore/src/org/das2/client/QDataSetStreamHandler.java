@@ -255,6 +255,15 @@ public class QDataSetStreamHandler implements StreamHandler {
                 }                
                 ytags.putProperty( QDataSet.LABEL, findProperty( yscan, "yLabel" ));
                 ytags.putProperty( QDataSet.TITLE, findProperty( yscan, "ySummary" ));
+                Object o= findProperty( yscan, "yTagWidth" );
+                if ( o!=null ) {
+                    if ( o instanceof Datum ) {
+                        o= DataSetUtil.asDataSet( (Datum)o );
+                        ytags.putProperty( QDataSet.CADENCE, o );
+                    } else {
+                        logger.warning("property yTagWidth should be a Datum");
+                    }
+                }
                 putProperty( builder, QDataSet.DEPEND_1, ytags );
                 String checkOperation= (String)yscan.getProperty( "operation" );
                 String checkSource= (String)yscan.getProperty( "source" ); 
@@ -319,8 +328,12 @@ public class QDataSetStreamHandler implements StreamHandler {
         xbuilder.putProperty( QDataSet.UNITS, pd.getXDescriptor().getUnits() );
         xbuilder.putProperty( QDataSet.LABEL, streamProperties.get("xLabel") );
         Object o= streamProperties.get("xTagWidth" );
-        if ( o!=null && o instanceof Datum ) {
-            xbuilder.putProperty( QDataSet.CADENCE, DataSetUtil.asDataSet( (Datum)o ) );
+        if ( o!=null ) {
+            if ( o instanceof Datum ) {
+                xbuilder.putProperty( QDataSet.CADENCE, DataSetUtil.asDataSet( (Datum)o ) );
+            } else {
+                logger.warning("property xTagWidth should be a Datum");
+            }
         }
         
         xbuilders.put( pd, xbuilder );
