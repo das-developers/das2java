@@ -153,7 +153,6 @@ public class QDataSetStreamHandler implements StreamHandler {
     @Override
     public void packetDescriptor(PacketDescriptor pd) throws StreamException {
         logger.log(Level.FINE, "packetDescriptor: {0}", pd);
-        pd.getProperties();
         createBuilders(pd);
     }
 
