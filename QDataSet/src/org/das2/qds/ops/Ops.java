@@ -8595,13 +8595,27 @@ public final class Ops {
             }
 
             if ( ds.rank()==1 ) { // optimize for rank 1, see https://sourceforge.net/p/autoplot/bugs/1801/
-                for ( int i=0; i<min.length(); i++ ) {
+                int ni= min.length();
+                for ( int i=0; i<ni; i++ ) {
                     if ( wds.value(i)>0 ) {
                         count++;
                         result[0]= Math.min( result[0], min.value(i) );
                         result[1]= Math.max( result[1], max.value(i) );
                     }
                 }
+            } else if ( ds.rank()==2 ) {
+                int ni= min.length();
+                for ( int i=0; i<ni; i++ ) {
+                    int nj= min.length(i);
+                    for ( int j=0; j<nj; j++ ) {
+                        if ( wds.value(i,j)>0 ) {
+                            count++;
+                            result[0]= Math.min( result[0], min.value(i,j) );
+                            result[1]= Math.max( result[1], max.value(i,j) );
+                        }
+                    }
+                }
+                
             } else {
                 QubeDataSetIterator it = new QubeDataSetIterator(ds);
 
