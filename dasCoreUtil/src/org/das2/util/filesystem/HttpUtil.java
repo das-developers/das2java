@@ -187,13 +187,14 @@ public final class HttpUtil {
             if (responseCode == HttpURLConnection.HTTP_MOVED_PERM || responseCode == HttpURLConnection.HTTP_MOVED_TEMP || responseCode == HttpURLConnection.HTTP_SEE_OTHER) {
                 String newUrl = huc.getHeaderField("Location");
                 if (responseCode == HttpURLConnection.HTTP_MOVED_PERM) {
-                    logger.log(Level.FINE, "URL {0} permanently moved to {1}", new Object[]{urlConnection.getURL(), newUrl});
+                    logger.log(Level.INFO, "URL {0} permanently moved to {1}", new Object[]{urlConnection.getURL(), newUrl});
+                } else {
+                    loggerUrl.log(Level.FINE, "{0} redirect to {1}", new Object[] { responseCode, newUrl } );
                 }
                 String cookie = huc.getHeaderField("Cookie");
                 String acceptEncoding = huc.getRequestProperty("Accept-Encoding");
                 String authorization = huc.getRequestProperty("Authorization");
                 String requestMethod = huc.getRequestMethod();
-                loggerUrl.log(Level.FINE, "redirect to {0}", newUrl);
                 HttpURLConnection newUrlConnection = (HttpURLConnection) new URL(newUrl).openConnection();
                 newUrlConnection.addRequestProperty("Referer", urlConnection.getURL().toString());
                 if (cookie != null) {
