@@ -23,7 +23,6 @@ import org.apache.commons.vfs.VFS;
 import org.das2.util.monitor.ProgressMonitor;
 import org.das2.util.monitor.CancelledOperationException;
 
-//these were supposed to make the URIs consistent with the others: ftp://user@host.gov/foo/ should be "foo" in the user's home directory.
 //import org.apache.commons.vfs.FileSystemOptions;
 //import org.apache.commons.vfs.provider.ftp.FtpFileSystemConfigBuilder;
 
@@ -49,6 +48,10 @@ public class VFSFileSystem extends org.das2.util.filesystem.FileSystem {
             int i= userInfo.indexOf(":");
             userInfo= userInfo.substring(0,i) + "@";
         } else if ( userInfo!=null ) {
+            userInfo= userInfo + "@";
+        } else if ( userInfo==null ) {
+            userInfo= System.getProperty("user.name");
+            logger.log(Level.INFO, "using {0} as sftp user name", userInfo);
             userInfo= userInfo + "@";
         } else {
             if ( root.toASCIIString().contains("sftp:///") ) {
