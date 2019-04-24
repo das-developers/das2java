@@ -66,6 +66,8 @@ public class VFSFileSystem extends org.das2.util.filesystem.FileSystem {
         if ( root.getPort()>-1 ) {
             logger.warning("Ports are not always supported.");
         }
+        
+        logger.fine("attempt resolveFile(root.toString())");
         fsRoot = mgr.resolveFile(root.toString());
 
 
