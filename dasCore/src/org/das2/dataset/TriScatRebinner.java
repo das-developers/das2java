@@ -70,6 +70,19 @@ public class TriScatRebinner implements DataSetRebinner {
         return r;
     }
     
+    private boolean nearestNeighbor = false;
+
+    public static final String PROP_NEARESTNEIGHBOR = "nearestNeighbor";
+
+    public boolean isNearestNeighbor() {
+        return nearestNeighbor;
+    }
+
+    public void setNearestNeighbor(boolean nearestNeighbor) {
+        this.nearestNeighbor = nearestNeighbor;
+    }
+
+    
     @Override
     public QDataSet rebin(QDataSet ds, RebinDescriptor ddX, RebinDescriptor ddY, RebinDescriptor ddZ ) {
         // throws IllegalArgumentException, DasException {
@@ -191,6 +204,7 @@ public class TriScatRebinner implements DataSetRebinner {
         double xlimit= dxlimit.doubleValue(Units.dimensionless); // triangles have been normalized
         double ylimit= dylimit.doubleValue(Units.dimensionless);
         
+        final boolean nn= nearestNeighbor;
         for ( int ix= 0; ix<ddX.numberOfBins(); ix++ ) {
             for ( int iy= dir==1 ? 0 : ddY.numberOfBins()-1;
                     dir==1 ? iy<ddY.numberOfBins() : iy>=0; iy+=dir ) { // Boustrophedon back and forth
@@ -225,30 +239,34 @@ public class TriScatRebinner implements DataSetRebinner {
                     }
                     double d;
                     // nearest neighbor code
-        //            if ( w[0]>w[1] ) {
-        //                if ( w[0]>w[2] ) {
-        //                    d= data.value( abci[0].idx );
-        //                } else {
-        //                    d= data.value( abci[2].idx );
-        //                }
-        //            } else {
-        //                if ( w[1]>w[2] ) {
-        //                    d= data.value( abci[1].idx );
-        //                } else {
-        //                    d= data.value( abci[2].idx );
-        //                }
-        //            }      
-                    try { 
-                        d= zz.value( abci[0].idx ) * w[0] 
-                            +   zz.value( abci[1].idx ) * w[1] 
-                            +   zz.value( abci[2].idx ) * w[2];
+                    if ( nn ) {
+                        if ( w[0]>w[1] ) {
+                            if ( w[0]>w[2] ) {
+                                d= zz.value( abci[0].idx );
+                            } else {
+                                d= zz.value( abci[2].idx );
+                            }
+                        } else {
+                            if ( w[1]>w[2] ) {
+                                d= zz.value( abci[1].idx );
+                            } else {
+                                d= zz.value( abci[2].idx );
+                            }
+                        }
                         result.putValue( ix, iy, d );
-                    } catch ( NullPointerException ex ) {
-                        System.err.println("here151");
-                        d= zz.value( abci[0].idx ) * w[0] 
-                            +   zz.value( abci[1].idx ) * w[1] 
-                            +   zz.value( abci[2].idx ) * w[2];
-                        result.putValue( ix, iy, d );
+                    } else {
+                        try { 
+                            d= zz.value( abci[0].idx ) * w[0] 
+                                +   zz.value( abci[1].idx ) * w[1] 
+                                +   zz.value( abci[2].idx ) * w[2];
+                            result.putValue( ix, iy, d );
+                        } catch ( NullPointerException ex ) {
+                            System.err.println("here151");
+                            d= zz.value( abci[0].idx ) * w[0] 
+                                +   zz.value( abci[1].idx ) * w[1] 
+                                +   zz.value( abci[2].idx ) * w[2];
+                            result.putValue( ix, iy, d );
+                        }
                     }
                 }
             }
