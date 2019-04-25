@@ -120,6 +120,8 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
             t= getControl(CONTROL_KEY_REBIN, getRebinner().toString() );
             if ( t.equals("triScat") ) {
                 this.setRebinner( SpectrogramRenderer.RebinnerEnum.triScat );
+            } else if ( t.equals("nnTriScat") ) {
+                this.setRebinner( SpectrogramRenderer.RebinnerEnum.nnTriScat );
             }
         }
         update();
@@ -170,6 +172,8 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         public static final RebinnerEnum binXinterpY;
         public static final RebinnerEnum scatter;
         public static final RebinnerEnum triScat= new RebinnerEnum( new TriScatRebinner(), "triScat" );
+        public static final RebinnerEnum nnTriScat;
+        
 
         static {
             AverageTableRebinner rebinner = new AverageTableRebinner();
@@ -194,6 +198,9 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
 
             scatter = new RebinnerEnum( new ScatterRebinner(), "scatter");
 
+            TriScatRebinner trebinner= new TriScatRebinner();
+            trebinner.setNearestNeighbor(true);
+            nnTriScat= new RebinnerEnum( trebinner, "nnTriScat" );
             //nearestNeighbor = new RebinnerEnum(rebinner, "nearestNeighbor");
             
         }
