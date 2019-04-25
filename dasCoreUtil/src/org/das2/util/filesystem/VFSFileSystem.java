@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,6 +16,7 @@ import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.apache.commons.vfs.FileSystemException;
 import org.apache.commons.vfs.FileSystemManager;
@@ -52,7 +54,13 @@ public class VFSFileSystem extends org.das2.util.filesystem.FileSystem {
         } else {
             userInfo= System.getProperty("user.name");
             logger.log(Level.INFO, "using {0} as sftp user name", userInfo);
-            userInfo= userInfo + "@";
+            try {
+                root= new URI( root.getScheme(), userInfo, root.getHost(), root.getPort(), root.getPath(), root.getQuery(), root.getFragment() );
+            } catch (URISyntaxException ex) {
+                logger.log(Level.SEVERE, null, ex);
+            }
+            userInfo= userInfo + "@";            
+            
         } 
         String subFolderName = "vfsCache/" + root.getScheme() + "/" + userInfo + root.getHost() + root.getPath();
         cacheRoot = new File(settings().getLocalCacheDir(), subFolderName);
