@@ -6752,12 +6752,19 @@ public final class Ops {
     public static WritableDataSet applyIndex( QDataSet vv, QDataSet ds ) {
         QubeDataSetIterator iter= new QubeDataSetIterator(ds);
         DDataSet result= iter.createEmptyDs();
+        Number fill= (Number)vv.property( QDataSet.FILL_VALUE );
+        if ( fill==null ) fill= -1e38;
         while ( iter.hasNext() ) {
             iter.next();
             int idx= (int)( iter.getValue(ds) );
-            iter.putValue( result, vv.value(idx) );
+            if ( idx<0 || idx>=vv.length() ) {
+                iter.putValue( result, fill.doubleValue() );
+            } else {
+                iter.putValue( result, vv.value(idx) );
+            }
         }
         result.putProperty(QDataSet.UNITS,vv.property(QDataSet.UNITS));
+        result.putProperty(QDataSet.FILL_VALUE,fill);
         return result;
     }
     
