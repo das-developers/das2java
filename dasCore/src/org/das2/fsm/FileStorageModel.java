@@ -671,7 +671,7 @@ public class FileStorageModel {
                 String best= bestVersions.get(key);
                 if ( best==null ) {
                     try {
-                        comp.compare( thss, thss ); // check for format exception
+                        logger.log(Level.FINER, "check format exception: {0}", comp.compare( thss, thss )); // check for format exception
                         if ( ( versionGe==null || comp.compare( thss, versionGe )>=0 )
                                 && ( versionLt==null || comp.compare( thss, versionLt )<0 ) ){
                             bestVersions.put( key, thss );
