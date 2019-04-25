@@ -49,17 +49,11 @@ public class VFSFileSystem extends org.das2.util.filesystem.FileSystem {
             userInfo= userInfo.substring(0,i) + "@";
         } else if ( userInfo!=null ) {
             userInfo= userInfo + "@";
-        } else if ( userInfo==null ) {
+        } else {
             userInfo= System.getProperty("user.name");
             logger.log(Level.INFO, "using {0} as sftp user name", userInfo);
             userInfo= userInfo + "@";
-        } else {
-            if ( root.toASCIIString().contains("sftp:///") ) {
-                throw new IllegalArgumentException("sftp must not be followed by ///, should be //.");
-            } else {
-                throw new IllegalArgumentException("root must contain user name.");
-            }
-        }
+        } 
         String subFolderName = "vfsCache/" + root.getScheme() + "/" + userInfo + root.getHost() + root.getPath();
         cacheRoot = new File(settings().getLocalCacheDir(), subFolderName);
 
