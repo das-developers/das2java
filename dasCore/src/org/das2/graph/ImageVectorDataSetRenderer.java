@@ -613,8 +613,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
                             int ix = ddx.whichBin( xds.value(i), targetXUnits);
                             int iy = ddy.whichBin( v, targetYUnits);
                             if (ix != -1 && iy != -1) {
-                                double d = tds.value(ix, iy);
-                                tds.putValue( ix, iy, d+1 );
+                                tds.addValue( ix, iy, 1. );
                             }
                         }
                     }
@@ -627,8 +626,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
                             int ix = ddx.whichBin( xuc.convert( xds.value(i) ), targetXUnits);
                             int iy = ddy.whichBin( yuc.convert( v ), targetYUnits);
                             if (ix != -1 && iy != -1) {
-                                double d = tds.value(ix, iy);
-                                tds.putValue( ix, iy, d+1 );
+                                tds.addValue( ix, iy, 1. );
                             }
                         }
                     }
