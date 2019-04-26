@@ -340,7 +340,7 @@ public final class FDataSet extends ArrayDataSet {
      */
     public void addValue( int i0, double value ) {
         checkImmutable();
-        back[ i0 ]+= (short)value;
+        back[ i0 ]+= (float)value;
     }
 
     /**
@@ -351,7 +351,7 @@ public final class FDataSet extends ArrayDataSet {
      */
     public void addValue( int i0, int i1, double value ) {
         checkImmutable();
-        back[  i0 * len1 + i1 ]+= (short)value;
+        back[  i0 * len1 + i1 ]+= (float)value;
     }
         
     /**
