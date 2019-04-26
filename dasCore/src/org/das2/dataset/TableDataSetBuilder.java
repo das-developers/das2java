@@ -152,9 +152,6 @@ public class TableDataSetBuilder {
         else {
             yTagSet.add(y);
         }
-        if (insertionIndex < 0) {
-            insertionIndex = ~insertionIndex;
-        }
         xTags.add(x);
         MultiYScan scan = new MultiYScan();
         for (int i = 0; i < planeIDs.length; i++) {
@@ -341,7 +338,6 @@ public class TableDataSetBuilder {
 
     private static double[] collapseXTags( List list, int count ) {
         int index = 0;
-        list.size();
         double[] result = new double[count];
         for ( int i=0; i<list.size(); i++ ) {
             result[index] = (Double)list.get(index);
@@ -390,14 +386,10 @@ public class TableDataSetBuilder {
             if (d1.length != d2.length) {
                 return d1.length - d2.length;
             }
+            
             for (int i = 0; i < d1.length; i++) {
-                double delta = d1[i] - d2[i];
-                if (delta < 0.0) {
-                    return -1;
-                }
-                else if (delta > 0.0) {
-                    return 1;
-                }
+                int c= Double.compare(d1[i],d2[i]);
+                if ( c!=0 ) return c;
             }
             return 0;
         }
