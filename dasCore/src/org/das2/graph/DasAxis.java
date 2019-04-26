@@ -1131,7 +1131,14 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         return drawTca;
     }
     
-
+    /**
+     * true if the TCA data has been loaded and the axis bounds reflect TCA data present.
+     * @return true if the TCA data has been loaded and the axis bounds reflect TCA data present.
+     */
+    public boolean isTcaLoaded() {
+        return tcaData!=null;
+    }
+    
     /**
      * if true then turn on additional tick labels using the TCA function.
      * @param b if true then additional ticks will be drawn.
