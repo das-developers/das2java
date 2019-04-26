@@ -493,7 +493,15 @@ public abstract class Units {
             public int compare(Object o1, Object o2) {
                 Units u1= (Units)o1;
                 Units u2= (Units)o2;
-                return u1.convertDoubleTo( u2, 1.0 ) < 1.0 ? -1 : 1;
+                if ( UnitsUtil.isTimeLocation( u1 ) ) {
+                    return u1.toString().compareTo(u2.toString());
+                } else {
+                    try {
+                        return u1.convertDoubleTo( u2, 1.0 ) < 1.0 ? -1 : 1;
+                    } catch ( RuntimeException ex ) {
+                        return u1.toString().compareTo(u2.toString());
+                    }
+                }
             }
         };
         Units[] resultArray= (Units[])result.toArray( new Units[result.size()] );
@@ -614,6 +622,7 @@ public abstract class Units {
      * @param toUnits the units.
      * @param value the value in toUnits.
      * @return the double in the new units system.
+     * @throws InconvertibleUnitsException when the conversion is not possible.
      */
     public double convertDoubleTo( Units toUnits, double value ) {
         if ( this==toUnits ) {
