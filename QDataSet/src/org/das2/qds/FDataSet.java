@@ -336,7 +336,7 @@ public final class FDataSet extends ArrayDataSet {
     /**
      * add this value to the current value. 
      * @param i0 the index
-     * @param value the value, which is cast to this internal type.
+     * @param value the value
      */
     public void addValue( int i0, double value ) {
         checkImmutable();
@@ -347,7 +347,7 @@ public final class FDataSet extends ArrayDataSet {
      * add this value to the current value. 
      * @param i0 the index
      * @param i1 the index
-     * @param value the value, which is cast to this internal type.
+     * @param value the value
      */
     public void addValue( int i0, int i1, double value ) {
         checkImmutable();
@@ -377,6 +377,9 @@ public final class FDataSet extends ArrayDataSet {
     /**
      * creates a rank1 DDataSet by wrapping an existing array.
      * @param back the new backing array
+     * @param nx number of elements in the zeroth index
+     * @param ny number of elements in the first index
+     * @param nz number of elements in the second index
      * @return the dataset
      */
     public static FDataSet wrap( float[] back, int nx, int ny, int nz ) {
