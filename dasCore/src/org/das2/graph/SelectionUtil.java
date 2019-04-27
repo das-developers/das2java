@@ -34,8 +34,8 @@ public class SelectionUtil {
             return ((DigitalRenderer)r).selectionArea();
         } else if ( r instanceof EventsRenderer ) {
             return ((EventsRenderer)r).selectionArea();
-        } else if ( r instanceof ImageVectorDataSetRenderer ) {
-            return ((ImageVectorDataSetRenderer)r).selectionArea();
+        } else if ( r instanceof HugeScatterRenderer ) {
+            return ((HugeScatterRenderer)r).selectionArea();
         } else if ( r instanceof RGBImageRenderer ) {
             return ((RGBImageRenderer)r).selectionArea();
         } else if ( r instanceof PolarPlotRenderer ) {
