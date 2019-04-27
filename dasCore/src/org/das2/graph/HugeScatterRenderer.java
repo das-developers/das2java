@@ -66,7 +66,7 @@ import org.das2.qds.util.AsciiFormatter;
  * Created on April 14, 2005, 8:45 PM
  * @author Jeremy
  */
-public class ImageVectorDataSetRenderer extends Renderer {
+public class HugeScatterRenderer extends Renderer {
 
     protected static final Logger logger= LoggerManager.getLogger("das2.graphics.renderer.hugeScatter");
     
@@ -88,7 +88,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
      */
     private Shape selectionArea;
 
-    public ImageVectorDataSetRenderer(DataSetDescriptor dsd) {
+    public HugeScatterRenderer(DataSetDescriptor dsd) {
         super(dsd);
     }
 

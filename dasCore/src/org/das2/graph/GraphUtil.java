@@ -331,7 +331,7 @@ public class GraphUtil {
         Renderer rend = null;
         if ( !SemanticOps.isTableDataSet(ds) ) {// TODO use SeriesRenderer
             if (ds.length() > 10000) {
-                rend = new ImageVectorDataSetRenderer( null );
+                rend = new HugeScatterRenderer( null );
                 rend.setDataSet( ds );
             } else {
                 rend = new SeriesRenderer();
@@ -454,10 +454,10 @@ public class GraphUtil {
                 sr.setPsymConnector(((SeriesRenderer) r).getPsymConnector() );
                 sr.setLegendLabel(((SeriesRenderer) r).getLegendLabel());
                 sr.setDrawLegendLabel(((SeriesRenderer) r).isDrawLegendLabel());
-            } else if ( r instanceof ImageVectorDataSetRenderer ) {
-                cr= new ImageVectorDataSetRenderer(null);
-                ImageVectorDataSetRenderer sr= (ImageVectorDataSetRenderer)cr;
-                sr.setColor( ((ImageVectorDataSetRenderer) r).getColor() );
+            } else if ( r instanceof HugeScatterRenderer ) {
+                cr= new HugeScatterRenderer(null);
+                HugeScatterRenderer sr= (HugeScatterRenderer)cr;
+                sr.setColor( ((HugeScatterRenderer) r).getColor() );
             } else {
                 throw new UnsupportedOperationException("source renderer cannot be copied");
             }
