@@ -155,7 +155,7 @@ public class Reduction {
      */
     public static QDataSet reducex( QDataSet ds, QDataSet xLimit ) {
         long t0= System.currentTimeMillis();
-
+        logger.entering( "Reduction", "reducex" );
         if ( ds==null ) return ds; // Craig 2038937185
         
         if ( !DataSetUtil.isQube(ds) ) {
@@ -365,6 +365,7 @@ public class Reduction {
         result.putProperty( QDataSet.BIN_MAX, ymaxDs );
         
         logger.log( Level.FINE, "time to reducex({0} records -> {1} records) (ms): {2}", new Object[] { ds.length(), result.length(), System.currentTimeMillis()-t0 } );
+        logger.exiting("Reduction", "reducex" );
         
         //System.err.println( String.format( "time to reducex(%d records -> %d records) (ms): %d", ds.length(), result.length(), System.currentTimeMillis()-t0) );
 
@@ -395,7 +396,7 @@ public class Reduction {
      * @return the reduced dataset, rank 1 with DEPEND_0.
      */
     public static QDataSet reduce2D( QDataSet ds, QDataSet xLimit, QDataSet yLimit ) {
-
+        logger.entering("Reduction", "reduce2D");
         long t0= System.currentTimeMillis();
 
         DataSetBuilder xbuilder= new DataSetBuilder( 1, 1000 );
@@ -535,7 +536,8 @@ public class Reduction {
         yds.putProperty( QDataSet.DELTA_PLUS, Ops.subtract( ymaxbuilder.getDataSet(), yds ) );
 
         logger.log( Level.FINE, "time to reduce2D({0} records -> {1} records) (ms): {2}", new Object[] { ds.length(), yds.length(), System.currentTimeMillis()-t0 } );
-
+        logger.entering("Reduction", "reduce2D");
+        
         return yds;
 
     }
@@ -552,7 +554,7 @@ public class Reduction {
      * 
      */
     public static QDataSet hexbin( QDataSet ds, QDataSet z ) {
-
+        logger.entering("Reduction", "hexbin");
         if ( ds.rank()!=1 && !Ops.isBundle(ds) ) {
             throw new IllegalArgumentException("ds.rank() must be 1");
         }
@@ -643,10 +645,12 @@ public class Reduction {
             r.putProperty( QDataSet.DEPEND_0, xxxx );
             r.putProperty( QDataSet.DEPEND_1, yyyy );
             r.putProperty( QDataSet.WEIGHTS, result );
+            logger.exiting("Reduction", "hexbin");
             return r;
         } else {
             result.putProperty( QDataSet.DEPEND_0, xxxx );
             result.putProperty( QDataSet.DEPEND_1, yyyy );
+            logger.exiting("Reduction", "hexbin");
             return result;
         }
         
@@ -665,6 +669,7 @@ public class Reduction {
      * @throws IllegalArgumentException when the units cannot be converted
      */
     public static QDataSet histogram2D( QDataSet ds, QDataSet xxx, QDataSet yyy ) {
+        logger.entering("Reduction", "histogram2D");
         if ( ds.rank()!=1 ) {
             throw new IllegalArgumentException("ds.rank() must be 1");
         }
@@ -705,7 +710,7 @@ public class Reduction {
         }
         result.putProperty( QDataSet.DEPEND_0, xxx );
         result.putProperty( QDataSet.DEPEND_1, yyy );
-        
+        logger.exiting("Reduction", "histogram2D");
         return result;
     }
 }
