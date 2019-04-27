@@ -21,12 +21,9 @@ import org.das2.datum.DatumRange;
 import org.das2.datum.Units;
 import org.das2.datum.Datum;
 import org.das2.DasException;
-import org.das2.util.monitor.ProgressMonitor;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
@@ -46,12 +43,11 @@ import org.das2.qds.SemanticOps;
 import org.das2.qds.WeightsDataSet;
 import org.das2.qds.WritableDataSet;
 import org.das2.qds.ops.Ops;
-import org.das2.qds.util.AsciiFormatter;
 
 /**
- * ImageVectorDataSetRenderer
+ * HugeScatterRenderer
  *
- * This renderer can handle vector data sets with tens of thousands of points
+ * This renderer can handle vector data sets with hundreds of thousands of points
  * by histogramming the points and then creating a greyscale spectrogram of
  * the histogram.  The property "saturationHitCount" defines the number of pixel
  * hits that will make the pixel black.  
@@ -236,7 +232,7 @@ public class HugeScatterRenderer extends Renderer {
             }
         }
 
-        logger.entering( "org.das2.graph.ImageVectorDataSetRenderer", "render");
+        logger.entering( "org.das2.graph.HugeScatterRenderer", "render");
 
         QDataSet xds = SemanticOps.xtagsDataSet(ds);
         
@@ -293,7 +289,7 @@ public class HugeScatterRenderer extends Renderer {
             }
         }
 
-        logger.exiting( "org.das2.graph.ImageVectorDataSetRenderer", "render");
+        logger.exiting( "org.das2.graph.HugeScatterRenderer", "render");
 
     }
 
@@ -307,7 +303,7 @@ public class HugeScatterRenderer extends Renderer {
     private void renderPointsOfRank1(DasAxis xAxis, DasAxis yAxis, QDataSet ds, Rectangle plotImageBounds2) {
         int ny = plotImageBounds2.height;
         int nx = plotImageBounds2.width;
-        logger.entering( "org.das2.graph.ImageVectorDataSetRenderer", "renderPointsOfRank1");
+        logger.entering( "org.das2.graph.HugeScatterRenderer", "renderPointsOfRank1");
 
         BufferedImage image = new BufferedImage(nx, ny, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = (Graphics2D) image.getGraphics();
@@ -379,7 +375,7 @@ public class HugeScatterRenderer extends Renderer {
             }
         }
 
-        logger.exiting( "org.das2.graph.ImageVectorDataSetRenderer", "renderPointsOfRank1");
+        logger.exiting( "org.das2.graph.HugeScatterRenderer", "renderPointsOfRank1");
         
         synchronized (this) {
             plotImage = image;
@@ -400,7 +396,7 @@ public class HugeScatterRenderer extends Renderer {
      */
     private void renderPointsOfRank2Waveform( BufferedImage image, DasAxis xAxis, DasAxis yAxis, QDataSet ds, Rectangle plotImageBounds2) {
 
-        logger.entering( "org.das2.graph.ImageVectorDataSetRenderer", "renderPointsOfRank2Waveform");
+        logger.entering( "org.das2.graph.HugeScatterRenderer", "renderPointsOfRank2Waveform");
         
         Graphics2D g = (Graphics2D) image.getGraphics();
 
@@ -493,7 +489,7 @@ public class HugeScatterRenderer extends Renderer {
             }
         }
 
-        logger.exiting( "org.das2.graph.ImageVectorDataSetRenderer", "renderPointsOfRank2Waveform");
+        logger.exiting( "org.das2.graph.HugeScatterRenderer", "renderPointsOfRank2Waveform");
         synchronized (this) {
             plotImage = image;
             selectionArea= null;
@@ -540,7 +536,7 @@ public class HugeScatterRenderer extends Renderer {
     }
     
     private void darkenHistogram( WritableDataSet fds ) {
-        logger.entering( "org.das2.graph.ImageVectorDataSetRenderer", "darkenHistogram");
+        logger.entering( "org.das2.graph.HugeScatterRenderer", "darkenHistogram");
         QDataSet convolve= convolve33( fds, DDataSet.wrap( new double[] { 1,1,1,1,1,1,1,1,1 }, new int[] { 3,3 } ) );
         for ( int i=0; i<fds.length(); i++ ) {
             for ( int j=0; j<fds.length(i); j++ ) {
@@ -549,12 +545,12 @@ public class HugeScatterRenderer extends Renderer {
                 }
             }
         }
-        logger.exiting( "org.das2.graph.ImageVectorDataSetRenderer", "darkenHistogram");
+        logger.exiting( "org.das2.graph.HugeScatterRenderer", "darkenHistogram");
     }
     
     private FDataSet histogram( FDataSet tds, RebinDescriptor ddx, RebinDescriptor ddy, QDataSet ds, int firstIndex, int lastIndex ) {
         
-        logger.entering( "org.das2.graph.ImageVectorDataSetRenderer", "histogram");
+        logger.entering( "org.das2.graph.HugeScatterRenderer", "histogram");
         
         ddx.setOutOfBoundsAction(RebinDescriptor.MINUSONE);
         ddy.setOutOfBoundsAction(RebinDescriptor.MINUSONE);
@@ -634,13 +630,13 @@ public class HugeScatterRenderer extends Renderer {
             }
         }
 
-        logger.exiting("org.das2.graph.ImageVectorDataSetRenderer", "histogram");
+        logger.exiting("org.das2.graph.HugeScatterRenderer", "histogram");
         
         return tds;
     }
 
     private static void histogramRank2Waveform( RebinDescriptor ddx, int first0, int last0, int nj, RebinDescriptor ddy, QDataSet vds, Units yunits, FDataSet tds) throws IllegalArgumentException {
-        logger.entering("ImageVectorDataSetRenderer", "histogramRank2Waveform");
+        logger.entering("HugeScatterRenderer", "histogramRank2Waveform");
         QDataSet xds= (QDataSet) vds.property( QDataSet.DEPEND_0 );
         Units xunits= SemanticOps.getUnits( xds );
         QDataSet wds= SemanticOps.weightsDataSet( vds );
@@ -709,7 +705,7 @@ public class HugeScatterRenderer extends Renderer {
                 }
             }
         }
-        logger.exiting("ImageVectorDataSetRenderer", "histogramRank2Waveform");
+        logger.exiting("HugeScatterRenderer", "histogramRank2Waveform");
     }
 
     /**
@@ -722,7 +718,7 @@ public class HugeScatterRenderer extends Renderer {
      */
     private void renderHistogram( BufferedImage plotImage1, DasAxis xAxis, DasAxis yAxis, QDataSet ds, Rectangle plotImageBounds2) {
         
-        logger.entering( "org.das2.graph.ImageVectorDataSetRenderer", "renderHistogram" );
+        logger.entering( "org.das2.graph.HugeScatterRenderer", "renderHistogram" );
        
         DatumRange xrange = GraphUtil.invTransformRange( xAxis, plotImageBounds2.x, plotImageBounds2.x + plotImageBounds2.width);
         DatumRange yrange = GraphUtil.invTransformRange( yAxis, plotImageBounds2.y + plotImageBounds2.height,plotImageBounds2.y);
@@ -761,7 +757,7 @@ public class HugeScatterRenderer extends Renderer {
             //try {
             //    new AsciiFormatter().formatToFile( "/tmp/ap.txt", tds );
             //} catch (IOException ex) {
-            //    Logger.getLogger(ImageVectorDataSetRenderer.class.getName()).log(Level.SEVERE, null, ex);
+            //    Logger.getLogger(HugeScatterRenderer.class.getName()).log(Level.SEVERE, null, ex);
             //}
             
         } else if ( SemanticOps.isRank2Waveform(ds)) {
@@ -861,14 +857,14 @@ public class HugeScatterRenderer extends Renderer {
         }
         imageXRange = xrange;
 
-        logger.exiting( "org.das2.graph.ImageVectorDataSetRenderer", "renderHistogram" );
+        logger.exiting( "org.das2.graph.HugeScatterRenderer", "renderHistogram" );
 
     }
 
     @Override
     public synchronized void updatePlotImage(DasAxis xAxis, DasAxis yAxis, org.das2.util.monitor.ProgressMonitor monitor) throws DasException {
         
-        logger.entering( "org.das2.graph.ImageVectorDataSetRenderer", "updatePlotImage" );
+        logger.entering( "org.das2.graph.HugeScatterRenderer", "updatePlotImage" );
         long t0= System.currentTimeMillis();
 
         super.incrementUpdateCount();
@@ -914,7 +910,7 @@ public class HugeScatterRenderer extends Renderer {
                 lastIndex = DataSetUtil.getNextIndex(xds, visibleRange.max()) ;
             } catch ( InconvertibleUnitsException ex ) {
                 parent.postMessage(this, "inconvertible xaxis units", DasPlot.INFO, null, null );        
-                logger.exiting( "org.das2.graph.ImageVectorDataSetRenderer", "updatePlotImage" );
+                logger.exiting( "org.das2.graph.HugeScatterRenderer", "updatePlotImage" );
                 return;
             }
             if ( xAxis.isLog() ) {
@@ -1006,7 +1002,7 @@ public class HugeScatterRenderer extends Renderer {
         }
 
         logger.log(Level.FINE, "done updatePlotImage {0} ms", ( System.currentTimeMillis()-t0 ));
-        logger.exiting( "org.das2.graph.ImageVectorDataSetRenderer", "updatePlotImage" );
+        logger.exiting( "org.das2.graph.HugeScatterRenderer", "updatePlotImage" );
 
     }
 
