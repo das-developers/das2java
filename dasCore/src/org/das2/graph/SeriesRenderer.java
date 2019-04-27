@@ -1759,9 +1759,6 @@ public class SeriesRenderer extends Renderer {
             if (dataSetClipped) {
                 lparent.postMessage(this, "dataset clipped at " + ldataSetSizeLimit + " points", DasPlot.WARNING, null, null);
             }
-            if (dataSetReduced) {
-                lparent.postMessage(this, "dataset reduced because of size > " + ldataSetSizeLimit + " points", DasPlot.WARNING, null, null);
-            }
 
             if ( !dataSetReduced ) {
                 if ( ( lastIndex_v - firstIndex_v < 2 ) && dataSet.length()>1 ) { //TODO: single point would be helpful for digitizing.
@@ -1804,22 +1801,22 @@ public class SeriesRenderer extends Renderer {
      * @param xAxis the current xaxis
      * @param yAxis the current yaxis
      * @param vds the dataset
-     * @xlimit limit the resolution of the result to so many pixels
-     * @ylimit limit the resolution of the result to so many pixels
+     * @xlimit limit the resolution of the result to so many pixels (/2)
+     * @ylimit limit the resolution of the result to so many pixels (/2)
      * @return reduced version of the dataset
      */
     private QDataSet doDataSetReduce( DasAxis xAxis, DasAxis yAxis, QDataSet vds, int xlimit, int ylimit ) {
         DatumRange xdr= xAxis.getDatumRange();
-        QDataSet xxx= xAxis.isLog() ? Ops.exp10( Ops.linspace( Math.log10( xdr.min().doubleValue(xdr.getUnits()) ), Math.log10( xdr.max().doubleValue(xdr.getUnits()) ), xAxis.getDLength() ) ) :
-                Ops.linspace( xdr.min().doubleValue(xdr.getUnits()), xdr.max().doubleValue(xdr.getUnits() ), Math.max( 2, xAxis.getDLength()/xlimit ) );
+        QDataSet xxx= xAxis.isLog() ? Ops.exp10( Ops.linspace( Math.log10( xdr.min().doubleValue(xdr.getUnits()) ), Math.log10( xdr.max().doubleValue(xdr.getUnits()) ), 2*xAxis.getDLength() ) ) :
+                Ops.linspace( xdr.min().doubleValue(xdr.getUnits()), xdr.max().doubleValue(xdr.getUnits() ), Math.max( 2, 2*xAxis.getDLength()/xlimit ) );
         MutablePropertyDataSet mxxx= DataSetOps.makePropertiesMutable(xxx);  // it is already
         mxxx.putProperty( QDataSet.UNITS, xdr.getUnits() );
         if ( xAxis.isLog() ) {
             mxxx.putProperty( QDataSet.SCALE_TYPE, QDataSet.VALUE_SCALE_TYPE_LOG ); //TODO: cheat
         }
         DatumRange ydr= yAxis.getDatumRange();
-        QDataSet yyy= yAxis.isLog() ? Ops.exp10( Ops.linspace( Math.log10( ydr.min().doubleValue(ydr.getUnits()) ), Math.log10( ydr.max().doubleValue(ydr.getUnits()) ), yAxis.getDLength() ) ) :
-                Ops.linspace( ydr.min().doubleValue(ydr.getUnits()), ydr.max().doubleValue(ydr.getUnits() ), Math.max( 2, yAxis.getDLength()/ylimit ) );
+        QDataSet yyy= yAxis.isLog() ? Ops.exp10( Ops.linspace( Math.log10( ydr.min().doubleValue(ydr.getUnits()) ), Math.log10( ydr.max().doubleValue(ydr.getUnits()) ), 2*yAxis.getDLength() ) ) :
+                Ops.linspace( ydr.min().doubleValue(ydr.getUnits()), ydr.max().doubleValue(ydr.getUnits() ), Math.max( 2, 2*yAxis.getDLength()/ylimit ) );
         MutablePropertyDataSet myyy= DataSetOps.makePropertiesMutable(yyy);  // it is already
         myyy.putProperty( QDataSet.UNITS, ydr.getUnits() );
         if ( yAxis.isLog() ) {
@@ -2008,7 +2005,7 @@ public class SeriesRenderer extends Renderer {
                     ex.printStackTrace();
                     return;
                 }
-                numberOfPoints= lastIndex-firstIndex+1;
+                numberOfPoints= lastIndex-firstIndex;
                 if ( Schemes.isBundleDataSet(ds) ) {
                     dataSetReduced= false;
                 }
