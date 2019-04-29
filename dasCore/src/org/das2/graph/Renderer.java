@@ -273,6 +273,26 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
         }
     }
 
+    protected Painter bottomDecorator = null;
+
+    public static final String PROP_BOTTOMDECORATOR = "bottomDecorator";
+
+    public Painter getBottomDecorator() {
+        return bottomDecorator;
+    }
+
+    /**
+     * add additional painting code to the renderer, which is called before
+     * the renderer is called.
+     * @param bottomDecorator the Painter to call, or null to clear.
+     */
+    public void setBottomDecorator(Painter bottomDecorator) {
+        Painter oldBottomDecorator = this.topDecorator;
+        this.bottomDecorator = bottomDecorator;
+        updateCacheImage();
+        propertyChangeSupport.firePropertyChange(PROP_BOTTOMDECORATOR, oldBottomDecorator, bottomDecorator);
+    }
+    
     protected Painter topDecorator = null;
 
     public static final String PROP_TOPDECORATOR = "topDecorator";

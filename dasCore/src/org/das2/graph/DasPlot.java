@@ -711,6 +711,17 @@ public class DasPlot extends DasCanvasComponent {
 
     }
 
+    private void drawDecorator( Graphics2D plotGraphics, Painter p ) {
+        try {
+            Graphics2D g= (Graphics2D)plotGraphics.create();
+            g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
+            p.paint(g);
+            g.dispose();
+        } catch ( Exception ex ) {
+            logger.log( Level.WARNING, ex.getMessage(), ex );
+        }
+    }
+    
     /**
      * this is the heart of DasPlot, where each of the renderers is
      * painted on to the cacheImage.
@@ -727,6 +738,9 @@ public class DasPlot extends DasCanvasComponent {
         if (!drawGridOver) {
             maybeDrawGrid(plotGraphics);
         }
+
+        if ( this.bottomDecorator!=null ) drawDecorator(plotGraphics, this.bottomDecorator );
+            
         drawContent(plotGraphics);
 
         List<Renderer> renderers1= Arrays.asList(getRenderers());
@@ -738,11 +752,14 @@ public class DasPlot extends DasCanvasComponent {
                 logger.log(Level.FINEST, "rendering #{0}: {1}", new Object[]{i, rend});
                 try {
                     rend.incrementRenderCount();
+                    Painter p= rend.bottomDecorator;
+                    if ( p!=null ) drawDecorator(plotGraphics, p );
+                    
                     rend.render( (Graphics2D)plotGraphics.create(), lxaxis, lyaxis );
-                    Painter p= rend.topDecorator;
-                    if ( p!=null ) {
-                        p.paint((Graphics2D)plotGraphics.create());
-                    }
+                    
+                    p= rend.topDecorator;
+                    if ( p!=null ) drawDecorator(plotGraphics, p );
+                    
                 } catch ( RuntimeException ex ) {
                     logger.log( Level.WARNING, ex.getMessage(), ex );
                     //put breakpoint here:
@@ -764,6 +781,13 @@ public class DasPlot extends DasCanvasComponent {
             maybeDrawGrid(plotGraphics);
         }
         
+        if ( this.topDecorator!=null ) {
+            Graphics2D g= (Graphics2D)plotGraphics.create();
+            g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
+            this.topDecorator.paint(g);
+            g.dispose();
+        }
+
         if ( this.isPlotVisible() ) {
             if (renderers1.isEmpty()) {
                 postMessage(null, "(no renderers)", DasPlot.INFO, null, null);
@@ -1904,6 +1928,47 @@ public class DasPlot extends DasCanvasComponent {
         resize();
         invalidateCacheImage();
     }
+    
+    protected Painter bottomDecorator = null;
+
+    public static final String PROP_BOTTOMDECORATOR = "bottomDecorator";
+
+    public Painter getBottomDecorator() {
+        return bottomDecorator;
+    }
+
+    /**
+     * add additional painting code to the renderer, which is called after 
+     * the renderer is called.
+     * @param bottomDecorator the Painter to call, or null to clear.
+     */
+    public void setBottomDecorator(Painter bottomDecorator) {
+        Painter oldBottomDecorator = this.bottomDecorator;
+        this.bottomDecorator = bottomDecorator;
+        firePropertyChange(PROP_BOTTOMDECORATOR, oldBottomDecorator, bottomDecorator);
+        repaint();
+    }    
+    
+    
+    protected Painter topDecorator = null;
+
+    public static final String PROP_TOPDECORATOR = "topDecorator";
+
+    public Painter getTopDecorator() {
+        return topDecorator;
+    }
+
+    /**
+     * add additional painting code to the renderer, which is called after 
+     * the renderer is called.
+     * @param topDecorator the Painter to call, or null to clear.
+     */
+    public void setTopDecorator(Painter topDecorator) {
+        Painter oldTopDecorator = this.topDecorator;
+        this.topDecorator = topDecorator;
+        firePropertyChange(PROP_TOPDECORATOR, oldTopDecorator, topDecorator);
+        repaint();
+    }    
     
     /**
      * property where the plot context can be stored.  
