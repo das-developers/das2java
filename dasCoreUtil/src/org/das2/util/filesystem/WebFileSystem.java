@@ -832,9 +832,12 @@ public abstract class WebFileSystem extends FileSystem {
      * @throws java.io.IOException
      */
     protected void copyStream(InputStream is, OutputStream out, ProgressMonitor monitor) throws IOException {
+        long reportIncrementBytes= 1000000;
         byte[] buffer = new byte[2048];
         int bytesRead = is.read(buffer, 0, 2048);
         long totalBytesRead = bytesRead;
+        long t0= System.currentTimeMillis();
+        long reportSpeedTotalBytesRead= reportIncrementBytes;
         while (bytesRead > -1) {
             if (monitor.isCancelled()) {
                 throw new InterruptedIOException();
@@ -843,7 +846,17 @@ public abstract class WebFileSystem extends FileSystem {
             out.write(buffer, 0, bytesRead);
             bytesRead = is.read(buffer, 0, 2048);
             totalBytesRead += bytesRead;
-            logger.finest("transferring data");
+            if ( totalBytesRead>reportSpeedTotalBytesRead ) {
+                if ( logger.isLoggable(Level.FINER ) ) {
+                    String mbt= String.format( "%.1f MB", totalBytesRead / 1000000. );
+                    String mbps= String.format( "%.1f MBitsPerSecond", ( totalBytesRead * 8 ) / ( ( System.currentTimeMillis()-t0 ) / 1000. ) / 1000000 );
+                    logger.log(Level.FINER, "transferring data transferred={0} speed={1}", new Object[] { mbt, mbps } );
+                    reportSpeedTotalBytesRead+= Math.ceil( totalBytesRead / reportIncrementBytes ) * reportIncrementBytes;
+                }
+            } else {
+                logger.finest("transferring data");
+            }
+            
         }
     }
 
