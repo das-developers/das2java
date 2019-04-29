@@ -849,7 +849,7 @@ public abstract class WebFileSystem extends FileSystem {
             if ( totalBytesRead>reportSpeedTotalBytesRead ) {
                 if ( logger.isLoggable(Level.FINER ) ) {
                     String mbt= String.format( "%.1f MB", totalBytesRead / 1000000. );
-                    String mbps= String.format( "%.1f MBitsPerSecond", ( totalBytesRead * 8 ) / ( ( System.currentTimeMillis()-t0 ) / 1000. ) / 1000000 );
+                    String mbps= String.format( "%.2f MBytesPerSecond", ( totalBytesRead ) / ( ( System.currentTimeMillis()-t0 ) / 1000. ) / 1000000 );
                     logger.log(Level.FINER, "transferring data transferred={0} speed={1}", new Object[] { mbt, mbps } );
                     reportSpeedTotalBytesRead+= Math.ceil( totalBytesRead / reportIncrementBytes ) * reportIncrementBytes;
                 }
