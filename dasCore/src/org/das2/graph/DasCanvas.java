@@ -700,8 +700,8 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
             try {
                 Graphics2D g2= (Graphics2D) g.create(); // create a graphics object in case they reset colors, etc.
                 // See https://sourceforge.net/p/autoplot/bugs/2140/
-                //g2.setRenderingHint( RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON );
-                //g2.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
+                g2.setRenderingHint( RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON );
+                g2.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
                 p.paint(g2);
             } catch ( Exception ex ) {
                 g.drawString( "bottomDecorator causes exception: "+ex.toString(), 20, 20 );
@@ -2171,8 +2171,8 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
                     long t0= System.currentTimeMillis();
                     Graphics2D g22= (Graphics2D) g2.create(); // create a graphics object in case they reset colors, etc.
                     //See https://sourceforge.net/p/autoplot/bugs/2140/
-                    //g22.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON );
-                    //g22.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
+                    g22.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON );
+                    g22.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
                     p.paint(g22);
                     long dt= System.currentTimeMillis()-t0;
                     if (  dt > 120 ) { // warn if painters are taking more than 120 ms to paint.
