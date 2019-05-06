@@ -494,7 +494,7 @@ public class BinAverage {
 
             double d0 = ds.value(i - s2);
             double w0 = wds.value(i - s2);
-            if ( w0==0 ) d0= 0;
+            if ( w0==0 ) d0= 0; 
 
             double d = ds.value(i - s2 + size);
             double w = wds.value(i - s2 + size);
