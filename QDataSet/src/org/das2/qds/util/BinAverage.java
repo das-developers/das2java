@@ -478,6 +478,7 @@ public class BinAverage {
         for (int i = 0; i < size; i++) {
             double d = ds.value(i);
             double w = wds.value(i);
+            if ( w==0 ) d= 0;
             sums.putValue(i, d); //note for i>=s2, these values will be clobbered.
             //sums2.putValue(i, d*d);
             weights.putValue(i, w);
@@ -493,10 +494,12 @@ public class BinAverage {
 
             double d0 = ds.value(i - s2);
             double w0 = wds.value(i - s2);
+            if ( w0==0 ) d0= 0;
 
             double d = ds.value(i - s2 + size);
             double w = wds.value(i - s2 + size);
-
+            if ( w==0 ) d= 0;
+            
             runningSum += d * w - d0 * w0;
             //runningSum2 += d * d * w - d0 * d0 * w0; //  DANGER-assumes small boxcar
             runningWeight += w - w0;
