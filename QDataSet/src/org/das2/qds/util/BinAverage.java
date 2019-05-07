@@ -72,10 +72,12 @@ public class BinAverage {
             double d = ds.value(i);
             double w = wds.value(i);
 
-            double s = result.value(ibin);
-            result.putValue(ibin, s + d * w);
-            double n = weights.value(ibin);
-            weights.putValue(ibin, n + w);
+            if ( w>0 ) {
+                double s = result.value(ibin);
+                result.putValue(ibin, s + d * w);
+                double n = weights.value(ibin);
+                weights.putValue(ibin, n + w);
+            }
 
         }
 
@@ -172,11 +174,12 @@ public class BinAverage {
                 int ibin1 = ibins1[j];
                 double d = ds1.value(j);
                 double w = wds1.value(j);
-                double s = result.value(ibin0, ibin1);
-                result.putValue(ibin0, ibin1, s + w * d);
-                double n = weights.value(ibin0, ibin1);
-                weights.putValue(ibin0, ibin1, n + w);
-
+                if ( w>0 ) {
+                    double s = result.value(ibin0, ibin1);
+                    result.putValue(ibin0, ibin1, s + w * d);
+                    double n = weights.value(ibin0, ibin1);
+                    weights.putValue(ibin0, ibin1, n + w);
+                }
             }
         }
 
@@ -478,13 +481,14 @@ public class BinAverage {
         for (int i = 0; i < size; i++) {
             double d = ds.value(i);
             double w = wds.value(i);
-            if ( w==0 ) d= 0;
             sums.putValue(i, d); //note for i>=s2, these values will be clobbered.
             //sums2.putValue(i, d*d);
             weights.putValue(i, w);
-            runningSum += d * w;
-            //runningSum2 += d*d;
-            runningWeight += w;
+            if ( w>0 ) {
+                runningSum += d * w;
+                //runningSum2 += d*d;
+                runningWeight += w;
+            }
         }
 
         for (int i = s2; i < nn - s3; i++) {

@@ -708,7 +708,7 @@ public final class Ops {
 
         /**
          * average in measurement d1 with weight w1 into accum.
-         * @param d1 the data point.
+         * @param d1 the data point, possibly NaN.  Note NaN*0=NaN.
          * @param w1 the weight of the data, where 0 indicates the measurement can be ignored, and a positive 
          * number indicates the weight relative others in the average.
          * @param accum storage for the average and the weight.  accum[0] is the average, accum[1] is the weight. 
@@ -7528,11 +7528,11 @@ public final class Ops {
                         int istart= j*step;
                         GeneralFFT fft = GeneralFFT.newDoubleFFT(len);
                         QDataSet wave= slicei.trim( istart,istart+len );
-                        QDataSet weig= DataSetUtil.weightsDataSet(wave);
+                        QDataSet wds= DataSetUtil.weightsDataSet(wave);
                         
                         boolean hasFill= false;
-                        for ( int k=0; k<weig.length(); k++ ) {
-                            if ( weig.value(k)==0 ) {
+                        for ( int k=0; k<wds.length(); k++ ) {
+                            if ( wds.value(k)==0 ) {
                                 hasFill= true;
                             }
                         }
@@ -8270,16 +8270,16 @@ public final class Ops {
             for ( int j=0; j<len1; j++ ) {
                 GeneralFFT fft = GeneralFFT.newDoubleFFT(len);
                 QDataSet wave= slicei.trim( j*step,j*step+len );
-                QDataSet weig= DataSetUtil.weightsDataSet(wave);
+                QDataSet wds= DataSetUtil.weightsDataSet(wave);
                 boolean hasFill= false;
-                for ( int k=0; k<weig.length(); k++ ) {
-                    if ( weig.value(k)==0 ) {
+                for ( int k=0; k<wds.length(); k++ ) {
+                    if ( wds.value(k)==0 ) {
                         hasFill= true;
                     }
                 }
                 if ( hasFill ) continue;
 
-                QDataSet vds= FFTUtil.fft( fft, wave, windowNonUnity ? weig : null );
+                QDataSet vds= FFTUtil.fft( fft, wave, windowNonUnity ? wds : null );
 
                 if ( windowNonUnity ) {
                     vds= Ops.multiply( vds, DataSetUtil.asDataSet( 1/normalization ) );
@@ -9533,7 +9533,7 @@ public final class Ops {
         boolean hasFill= false;
 
         QDataSet wfindex= DataSetUtil.weightsDataSet(findex);
-        wfindex= copy(wfindex);
+        wfindex= copy(wfindex); // This was done presumably for performance.
         
         // Starting with v2014a_12, immodest extrapolations beyond 0.5 are no longer allowed.
         boolean noExtrapolate= true;

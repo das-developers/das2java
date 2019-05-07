@@ -306,8 +306,10 @@ public class LSpec {
                 int iy= (int)Math.floor( ( lds.value(j) - g0 ) / dg );
                 if ( iy>=0 && iy<ny ) {
                     double w= wds.value(j);
-                    ss[iy]+= w*zds.value(j);
-                    nn[iy]+= w;
+                    if ( w>0 ) {
+                        ss[iy]+= w*zds.value(j);
+                        nn[iy]+= w;
+                    }
                 }
             }
         }
