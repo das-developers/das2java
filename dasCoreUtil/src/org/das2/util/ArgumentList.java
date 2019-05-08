@@ -171,7 +171,11 @@ public class ArgumentList {
     }
     
     public boolean getBooleanValue(String key) {
-        return values.get( key ) .equals( this.TRUE );
+        if ( values.containsKey(key) ) {
+            return values.get( key ) .equals( this.TRUE );
+        } else {
+            throw new IllegalArgumentException( "No such key: "+key );
+        }
     }
     
     /**
