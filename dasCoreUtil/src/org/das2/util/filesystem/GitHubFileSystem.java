@@ -128,6 +128,7 @@ public class GitHubFileSystem extends HttpFileSystem {
         if ( directory.equals("/") && root.getRawPath().equals("/") ) { // list from cache.
             File dir= new File( FileSystem.settings().getLocalCacheDir() + "/" + root.getScheme() + "/" + root.getHost() );
             String[] ss= dir.list();
+            if ( ss==null ) throw new IllegalArgumentException("dir was not a directory");
             for ( int i=0; i<ss.length; i++ ) {
                 ss[i]= ss[i] + '/';
             }
@@ -272,7 +273,7 @@ public class GitHubFileSystem extends HttpFileSystem {
     @Override
     protected Map<String,String> downloadFile(String filename, File targetFile, File partFile, ProgressMonitor monitor) throws IOException {
         logger.log(Level.FINE, "downloadFile({0})", filename);
-        Map<String,String> result= new HashMap<>();
+        Map<String,String> result;
         
         FileOutputStream out=null;
         InputStream is= null;

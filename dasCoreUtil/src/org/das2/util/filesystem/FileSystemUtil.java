@@ -157,7 +157,9 @@ public class FileSystemUtil {
     public static void unzipFile( File zipFilePath, File destDir) throws IOException {
         
         if (!destDir.exists()) {
-            destDir.mkdirs();
+            if ( !destDir.mkdirs() ) {
+                throw new IOException("Unable to make directories: "+destDir);
+            }
         }
         try (ZipInputStream zipIn = new ZipInputStream(new FileInputStream(zipFilePath))) {
             ZipEntry entry = zipIn.getNextEntry();
@@ -176,7 +178,9 @@ public class FileSystemUtil {
                 } else {
                     // if the entry is a directory, make the directory
                     File dir = new File(filePath);
-                    dir.mkdir();
+                    if ( !dir.mkdir() ) {
+                        logger.log(Level.WARNING, "failed attempt to make directory: {0}", filePath);
+                    }
                 }
                 zipIn.closeEntry();
                 entry = zipIn.getNextEntry();
@@ -207,7 +211,13 @@ public class FileSystemUtil {
      * @see Glob#getRegex(java.lang.String) 
      */
     public static void deleteAllFiles( File dir, String regex ) {
+        if ( !dir.isDirectory() ) {
+            throw new IllegalArgumentException("first argument must be a directory");
+        }
         File[] ff= dir.listFiles();
+        if ( ff==null ) {
+            throw new IllegalArgumentException("null returned from listFiles, which shouldn't happen.");   
+        }
         for ( File f : ff ) {
             if ( f.isDirectory() ) {
                 deleteAllFiles(f,regex);

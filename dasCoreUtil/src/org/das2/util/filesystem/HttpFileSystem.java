@@ -768,6 +768,9 @@ public class HttpFileSystem extends WebFileSystem {
             
             if ( f.exists() ) {
                 File[] listing = f.listFiles();
+                if ( listing==null ) {
+                    throw new IllegalArgumentException("expected resource to be a directory: "+f);  
+                } 
 
                 for (File f1 : listing) {
                     if ( f1.getName().endsWith(".listing") ) continue;
@@ -803,7 +806,9 @@ public class HttpFileSystem extends WebFileSystem {
 
                 downloadFile( directory, listing, getPartFile(listing), new NullProgressMonitor() );
 
-                listing.setLastModified( System.currentTimeMillis() );
+                if ( !listing.setLastModified( System.currentTimeMillis() ) ) {
+                    logger.log(Level.WARNING, "failed to setLastModified: {0}", listing);
+                }
                 
                 try (FileInputStream fin = new FileInputStream(listing)) {
                     list = HtmlUtil.getDirectoryListing( getURL(directory), fin );

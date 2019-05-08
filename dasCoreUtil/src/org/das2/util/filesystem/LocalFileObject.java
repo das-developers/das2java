@@ -23,15 +23,13 @@
 
 package org.das2.util.filesystem;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.das2.util.monitor.ProgressMonitor;
 import java.io.*;
 import java.util.zip.GZIPInputStream;
 import org.das2.util.monitor.NullProgressMonitor;
 
 /**
- *
+ * Provide access to local files.
  * @author  Jeremy
  */
 public class LocalFileObject extends FileObject {
@@ -48,12 +46,15 @@ public class LocalFileObject extends FileObject {
         this.localRoot= localRoot;
     }
         
+    @Override
     public boolean canRead() {
         return localFile.canRead();
     }
     
+    @Override
     public FileObject[] getChildren() {
         File[] files= localFile.listFiles();
+        if ( files==null ) throw new NullPointerException("listFiles returns null: "+localFile);
         LocalFileObject[] result= new LocalFileObject[files.length];
         for ( int i=0; i<files.length; i++ ) {
             if ( ! files[i].isHidden() ) {
@@ -63,6 +64,7 @@ public class LocalFileObject extends FileObject {
         return result;
     }
     
+    @Override
     public java.io.InputStream getInputStream( ProgressMonitor monitor ) throws IOException {
         if ( !localFile.exists() && localGzFile.exists() ) {
             return new GZIPInputStream( new FileInputStream( localGzFile ) );
@@ -71,6 +73,7 @@ public class LocalFileObject extends FileObject {
         }
     }
     
+    @Override
     public FileObject getParent() {        
         if ( ! localFile.equals(localRoot) ) {
             return new LocalFileObject( lfs, localRoot, lfs.getLocalName( localFile.getParentFile() ) );
@@ -79,10 +82,12 @@ public class LocalFileObject extends FileObject {
         }
     }
     
+    @Override
     public long getSize() {
         return localFile.length();
     }
     
+    @Override
     public boolean isData() {
         if ( !localFile.exists() && localGzFile.exists() ) {
             return true;
@@ -91,38 +96,47 @@ public class LocalFileObject extends FileObject {
         }
     }
     
+    @Override
     public boolean isFolder() {
         return localFile.isDirectory();
     }
     
+    @Override
     public boolean isReadOnly() {
         return !localFile.canWrite();
     }
     
+    @Override
     public boolean isRoot() {
         return localFile.getParentFile()==null;
     }
     
+    @Override
     public java.util.Date lastModified() {
         return new java.util.Date(localFile.lastModified());
     }
     
+    @Override
     public boolean exists() {
         return localFile.exists() || localGzFile.exists();
     }
     
+    @Override
     public String getNameExt() {
         return FileSystem.toCanonicalFilename( localFile.toString().substring( localRoot.toString().length() ) );
     }
     
+    @Override
     public String toString() {
         return "["+lfs+"]"+getNameExt();
     }
     
+    @Override
     public java.nio.channels.ReadableByteChannel getChannel( ProgressMonitor monitor ) throws IOException {
         return ((FileInputStream)getInputStream( monitor )).getChannel();
     }
 
+    @Override
     public File getFile() throws FileNotFoundException {
         return getFile( new NullProgressMonitor() );
     }
@@ -165,6 +179,7 @@ public class LocalFileObject extends FileObject {
         return localFile;
     }
 
+    @Override
     public boolean isLocal() {
         return true;
     }
@@ -173,12 +188,15 @@ public class LocalFileObject extends FileObject {
     public <T> T getCapability(Class<T> clazz) {
         if ( clazz==WriteCapability.class ) {
             return (T) new WriteCapability() {
+                @Override
                 public OutputStream getOutputStream() throws FileNotFoundException {
                     return new FileOutputStream(localFile);
                 }
+                @Override
                 public boolean canWrite() {
                     return localFile.canWrite() || localFile.getParentFile().canWrite();
                 }
+                @Override
                 public boolean delete() {
                     return localFile.delete();
                 }
