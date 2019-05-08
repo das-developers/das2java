@@ -19,6 +19,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.das2.util.FileUtil;
 import org.das2.util.LoggerManager;
 import static org.das2.util.filesystem.FileSystem.loggerUrl;
 import static org.das2.util.filesystem.FileSystem.toCanonicalFilename;
@@ -294,6 +295,7 @@ public class GitHubFileSystem extends HttpFileSystem {
             monitor.finished();
             out.close();
             is.close();
+            //TODO: there's a problem where if you aren't logged in to a private project, you get a 200 response with HTML.  Detect this!
             if ( ! partFile.renameTo( targetFile ) ) {
                 throw new IllegalArgumentException("unable to rename "+partFile+" to "+targetFile );
             }
