@@ -280,7 +280,7 @@ public class GitHubFileSystem extends HttpFileSystem {
         try {
             filename= toCanonicalFilename( filename );
             URL url= gitHubMapFile( root, filename );
-            
+            logger.log(Level.FINE, "downloading {0}", url);
             URLConnection urlc = url.openConnection();
             result= reduceMeta(urlc);
             
