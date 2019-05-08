@@ -455,6 +455,22 @@ public class HorizontalSpectrogramSlicer implements DataPointSelectionListener {
         DasLogger.getLogger(DasLogger.GUI_LOG).finest("setDataSet sliceDataSet");
         if (!isPopupVisible()) {
             showPopup();
+        } else {
+            GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+            int totalwidth = gd.getDisplayMode().getWidth();
+            int totalheight = gd.getDisplayMode().getHeight();
+            if ( popupWindow.getX()>totalwidth ) {
+                popupWindow.setLocation( totalwidth-100, popupWindow.getY() );
+            }
+            if ( popupWindow.getY()>totalheight ) {
+                popupWindow.setLocation( popupWindow.getX(), totalheight-100 );
+            }
+            if ( popupWindow.getX()+popupWindow.getWidth() < 0 ) {
+                popupWindow.setLocation( 100, popupWindow.getY() );
+            }
+            if ( popupWindow.getY()+popupWindow.getHeight() < 0 ) {
+                popupWindow.setLocation( popupWindow.getX(), 100 );
+            }   
         }
         renderer.setDataSet(sliceDataSet);
         DatumFormatter formatter;
