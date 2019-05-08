@@ -68,13 +68,15 @@ import org.das2.qds.SemanticOps;
 public class VerticalSpectrogramAverager implements DataRangeSelectionListener {
     
     private JDialog popupWindow;
-    private DasPlot parentPlot;
+    private final DasPlot parentPlot;
     private DasPlot myPlot;
-    private DasAxis sourceZAxis;
-    private DasAxis sourceXAxis;
+    private final DasAxis sourceZAxis;
+    private final DasAxis sourceXAxis;
     protected Datum value;
     private SeriesRenderer renderer;
-    private Color markColor = new Color(230,230,230);
+    private final Color markColor = new Color(230,230,230);
+    private int totalwidth=640; // these will be set when the window starts.
+    private int totalheight=480;
     
     JPanel buttonPanel;
     List<Action> additionalActions= new ArrayList<>();
@@ -144,6 +146,7 @@ public class VerticalSpectrogramAverager implements DataRangeSelectionListener {
             showPopupImpl();
         } else {
             Runnable r = new Runnable() {
+                @Override
                 public void run() {
                     showPopupImpl();
                 }
@@ -205,6 +208,7 @@ public class VerticalSpectrogramAverager implements DataRangeSelectionListener {
         buttonPanel.add(Box.createHorizontalGlue());
 
         JButton printButton= new JButton( new AbstractAction("Print...") {
+            @Override
             public void actionPerformed( ActionEvent e ) {
                 canvas.makeCurrent();
                 DasCanvas.PRINT_ACTION.actionPerformed(e);
@@ -215,6 +219,7 @@ public class VerticalSpectrogramAverager implements DataRangeSelectionListener {
 
         JButton close = new JButton("Hide Window");
         close.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 popupWindow.setVisible(false);
             }
@@ -241,8 +246,9 @@ public class VerticalSpectrogramAverager implements DataRangeSelectionListener {
         int yy= parentLocation.y;
         
         GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
-        int totalwidth = gd.getDisplayMode().getWidth();
-        int totalheight = gd.getDisplayMode().getHeight();
+        
+        this.totalwidth = gd.getDisplayMode().getWidth();
+        this.totalheight = gd.getDisplayMode().getHeight();
         
         if ( xx>totalwidth-100 ) {
             xx= totalwidth-100;
@@ -257,6 +263,7 @@ public class VerticalSpectrogramAverager implements DataRangeSelectionListener {
         return ( popupWindow != null && popupWindow.isVisible()) && myPlot.getCanvas() != null;
     }
     
+    @Override
     public void dataRangeSelected(DataRangeSelectionEvent e) {
         QDataSet ds = e.getDataSet();
 
@@ -274,6 +281,19 @@ public class VerticalSpectrogramAverager implements DataRangeSelectionListener {
 
         if (!isPopupVisible()) {
             showPopup();
+        } else {
+            if ( popupWindow.getX()>totalwidth ) {
+                popupWindow.setLocation( totalwidth-100, popupWindow.getY() );
+            }
+            if ( popupWindow.getY()>totalheight ) {
+                popupWindow.setLocation( popupWindow.getX(), totalheight-100 );
+            }
+            if ( popupWindow.getX()+popupWindow.getWidth() < 0 ) {
+                popupWindow.setLocation( 100, popupWindow.getY() );
+            }
+            if ( popupWindow.getY()+popupWindow.getHeight() < 0 ) {
+                popupWindow.setLocation( popupWindow.getX(), 100 );
+            }   
         }
         
         RebinDescriptor ddX = new RebinDescriptor(xValue1, xValue2, 1, false);

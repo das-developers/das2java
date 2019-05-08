@@ -98,6 +98,8 @@ public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
     //private long eventBirthMilli;
     private SymbolLineRenderer renderer;
     private Color markColor = new Color(230,230,230);
+    private int totalwidth=640; // these will be set when the window starts.
+    private int totalheight=480;
     
     protected VerticalSpectrogramSlicer( DasPlot parent, DasAxis sourceXAxis, DasAxis sourceZAxis ) {
         this.sourceZAxis= sourceZAxis;
@@ -312,8 +314,9 @@ public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
         int yy= parentLocation.y;
         
         GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
-        int totalwidth = gd.getDisplayMode().getWidth();
-        int totalheight = gd.getDisplayMode().getHeight();
+        
+        this.totalwidth = gd.getDisplayMode().getWidth();
+        this.totalheight = gd.getDisplayMode().getHeight();
         
         if ( xx>totalwidth-100 ) {
             xx= totalwidth-100;
@@ -436,6 +439,19 @@ public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
         logger.finest("setDataSet sliceDataSet");
         if (!isPopupVisible()) {
             showPopup();
+        } else {
+            if ( popupWindow.getX()>totalwidth ) {
+                popupWindow.setLocation( totalwidth-100, popupWindow.getY() );
+            }
+            if ( popupWindow.getY()>totalheight ) {
+                popupWindow.setLocation( popupWindow.getX(), totalheight-100 );
+            }
+            if ( popupWindow.getX()+popupWindow.getWidth() < 0 ) {
+                popupWindow.setLocation( 100, popupWindow.getY() );
+            }
+            if ( popupWindow.getY()+popupWindow.getHeight() < 0 ) {
+                popupWindow.setLocation( popupWindow.getX(), 100 );
+            }   
         }
         logger.log(Level.FINER, "slice window position: {0} {1}", new Object[]{popupWindow.getX(), popupWindow.getY()});
         
