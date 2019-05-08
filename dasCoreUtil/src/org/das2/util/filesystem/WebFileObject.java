@@ -489,6 +489,7 @@ public class WebFileObject extends FileObject {
             if ( download && remoteETag!=null ) {
                 String localETag= getLocalETag( getLocalFile() );
                 if ( localETag.length()>0 && localETag.equals(remoteETag ) ) {
+                    logger.fine("etag hasn't changed, don't download.");
                     download= false;
                 }
             }
