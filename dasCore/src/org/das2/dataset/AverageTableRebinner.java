@@ -338,7 +338,7 @@ public class AverageTableRebinner implements DataSetRebinner {
 
     /**
      * return the next or previous closest index.  For monotonic datasets,
-     * this just calls org.virbo.dataset.DataSetUtil.getPreviousIndex or getNextIndex.
+     * this just calls org.das2.qds.DataSetUtil.getPreviousIndex or getNextIndex.
      * Otherwise, we scan the dataset.
      * @param xds the rank 1 dataset to search.
      * @param xx the reference value.
