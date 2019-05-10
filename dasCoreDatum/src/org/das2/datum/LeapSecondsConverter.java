@@ -102,7 +102,13 @@ public class LeapSecondsConverter extends UnitsConverter {
     }
 
     /**
-     * calculate the number of leap seconds in the us2000, since 2000.
+     * calculate the number of leap seconds in the us2000 time.  For example,
+     * <pre>
+     * {@code
+     * print getLeapSecondCountForUs2000( Units.us2000.parse('1972-01-01T00:00Z').doubleValue(Units.us2000) ) # results in 10
+     * print getLeapSecondCountForUs2000( Units.us2000.parse('2017-01-01T00:00Z').doubleValue(Units.us2000) ) # results in 37
+     * }
+     * </pre>
      * This is intended to replicate the table https://cdf.gsfc.nasa.gov/html/CDFLeapSeconds.txt
      * @param us2000 the time in us2000, which include the leap seconds.
      * @return the number of leap seconds for the time.
@@ -131,7 +137,14 @@ public class LeapSecondsConverter extends UnitsConverter {
     }
 
     /**
-     * calculate the number of leap seconds in the tt2000, since 2000.
+     * calculate the number of leap seconds in the tt2000 time.  For example,
+     * <pre>
+     * {@code
+     * print getLeapSecondCountForTT2000( Units.cdfTT2000.parse('1972-01-01T00:00Z').doubleValue(Units.cdfTT2000) ) # results in 10
+     * print getLeapSecondCountForTT2000( 0 )   # results in 32
+     * print getLeapSecondCountForTT2000( Units.cdfTT2000.parse('2017-01-01T00:00Z').doubleValue(Units.cdfTT2000) ) # results in 37
+     * }
+     * </pre>
      * This is intended to replicate the table https://cdf.gsfc.nasa.gov/html/CDFLeapSeconds.txt
      * @param tt2000 the time in tt2000, which include the leap seconds.
      * @return the number of leap seconds for the time.
