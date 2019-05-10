@@ -429,22 +429,25 @@ public final class TimeUtil {
         } catch ( IOException ex ) {
             throw new RuntimeException(ex); // this should not happen.
         }
-        l= l + 43135816000000L;
-        // 0 is 2000-Jan-01 11:58:55.816000000
-        // -43135816000000 is 2000-Jan-01 00:00:00.000000000
-        long midnight= ( l + (leapSeconds-32)*1000000000L );
-        if ( midnight<0 ) {
-            midnight= midnight / 86400000000000L - 1;
+        // convert to a new time format, nanoseconds since 2000-Jan-01 00:00:00.000Z.
+        // Units.cdfTT2000's 0 is 2000-Jan-01 11:58:55.816000000,
+        // so -43135816000000 is 2000-Jan-01 00:00:00.000000000.
+        
+        // calculate the number of days passed since 2000-01-01.
+        long mn= ( ( l + 43135816000000L ) - (leapSeconds-32)*1000000000L );
+        if ( mn<0 ) {
+            mn= mn / 86400000000000L - 1;
         } else {
-            midnight= midnight / 86400000000000L;            
+            mn= mn / 86400000000000L;            
         }
         
-        int jd= 2451545 + (int)midnight;
+        int julianDay= 2451545 + (int)mn;
 
-        midnight= midnight * 86400000000000L;
-        TimeStruct result= julianToGregorian( jd );
+        long midnightCdfTT2000= mn * 86400000000000L + ( leapSeconds-32 ) *1000000000L - 43135816000000L; 
         
-        long sinceMidnight= l-midnight;
+        TimeStruct result= julianToGregorian( julianDay );
+        
+        long sinceMidnight= l-midnightCdfTT2000;
         
         long nanoseconds= sinceMidnight;
 
