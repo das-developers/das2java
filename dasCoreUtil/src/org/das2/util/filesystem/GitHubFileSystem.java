@@ -204,6 +204,13 @@ public class GitHubFileSystem extends HttpFileSystem {
      * @param root
      * @param filename
      * @return
+     * Translate:<pre>%{code
+     * https://abbith.physics.uiowa.edu/jbf/myawesomepublicproject/blob/24dff04b9bcb275d8bfd85b38e0e8b039b21d655/sayAwesome.jy to <br>
+     * https://abbith.physics.uiowa.edu/jbf/myawesomepublicproject/raw/24dff04b9bcb275d8bfd85b38e0e8b039b21d655/sayAwesome.jy
+     * https://github.com/autoplot/app/raw/master/Autoplot/src/resources/badge_ok.png
+     * https://github.com/autoplot/app/raw/master/Autoplot/src/resources/badge_ok.png
+     * }
+     * </pre>
      * @throws MalformedURLException 
      */
     public static URL gitHubMapFile( URI root, String filename ) throws MalformedURLException {
@@ -211,9 +218,15 @@ public class GitHubFileSystem extends HttpFileSystem {
         // png image "https://github.com/autoplot/app/raw/master/Autoplot/src/resources/badge_ok.png"
         String[] path= root.getPath().split("/",-2);
         String spath= path[0] + '/' + path[1] + '/' + path[2] ;
-        String n= root.getScheme() + "://" + root.getHost() + '/' + spath + "/raw/master/" + strjoin( path, "/", 3, -1 ) + filename;
-        URL url= new URL( n );
-        return url;
+        if ( path[3].equals("blob") ) {
+            String n= root.getScheme() + "://" + root.getHost() + '/' + spath + "/raw/" + strjoin( path, "/", 4, -1 ) + filename;
+            URL url= new URL( n );
+            return url;
+        } else {
+            String n= root.getScheme() + "://" + root.getHost() + '/' + spath + "/raw/master/" + strjoin( path, "/", 3, -1 ) + filename;
+            URL url= new URL( n );
+            return url;
+        }
     }
 
     /**
