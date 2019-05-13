@@ -243,17 +243,9 @@ public class DisplayDataMouseModule extends MouseModule {
         final DatumRange xrng;
         final DatumRange yrng;
 
-        if (plot.getXAxis().isFlipped()) {
-            xrng = new DatumRange(plot.getXAxis().invTransform(e.getXMaximum()), plot.getXAxis().invTransform(e.getXMinimum()));
-        } else {
-            xrng = new DatumRange(plot.getXAxis().invTransform(e.getXMinimum()), plot.getXAxis().invTransform(e.getXMaximum()));
-        }
+        xrng= plot.getXAxis().invTransform( e.getXMaximum(), e.getXMinimum() );
         if ( yclip ) {
-            if (plot.getYAxis().isFlipped()) {
-                yrng = new DatumRange(plot.getYAxis().invTransform(e.getYMinimum()), plot.getYAxis().invTransform(e.getYMaximum()));
-            } else {
-                yrng = new DatumRange(plot.getYAxis().invTransform(e.getYMaximum()), plot.getYAxis().invTransform(e.getYMinimum()));
-            }
+            yrng= plot.getYAxis().invTransform(e.getYMinimum(),e.getYMaximum());
         } else {
             yrng= null;
         }
