@@ -2011,7 +2011,6 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
      * @return Value of property sorted.
      */
     public boolean isSorted() {
-
         return this.sorted;
     }
 
@@ -2020,7 +2019,6 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
      * @param sorted New value of property sorted.
      */
     public void setSorted(boolean sorted) {
-
         this.sorted = sorted;
     }
 
