@@ -90,7 +90,7 @@
     <Component class="javax.swing.JCheckBox" name="yclipCheckBox">
       <Properties>
         <Property name="text" type="java.lang.String" value="yclip"/>
-        <Property name="toolTipText" type="java.lang.String" value="Trim the data to the yrange selected."/>
+        <Property name="toolTipText" type="java.lang.String" value="Trim the data to the yrange selected (called yclip in code)."/>
       </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="messageLabel">

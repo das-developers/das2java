@@ -76,7 +76,7 @@ public class DisplayDataMouseModuleGUI extends javax.swing.JPanel {
         comboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
         yclipCheckBox.setText("yclip");
-        yclipCheckBox.setToolTipText("Trim the data to the yrange selected.");
+        yclipCheckBox.setToolTipText("Trim the data to the yrange selected (called yclip in code).");
 
         messageLabel.setText("jLabel3");
 

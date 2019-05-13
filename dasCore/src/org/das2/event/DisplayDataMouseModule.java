@@ -181,7 +181,7 @@ public class DisplayDataMouseModule extends MouseModule {
             });
             
             myPanel2.getRenderersComboBox().addItemListener(itemListener);
-             
+            myPanel2.getYClipCheckBox().setSelected(yclip);
             myPanel2.getYClipCheckBox().addActionListener( new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -221,7 +221,7 @@ public class DisplayDataMouseModule extends MouseModule {
         
         final Renderer[] rends1 = plot.getRenderers();
 
-        myPanel2.getInstructionsLabel().setText("The plot contains "+rends1.length+" renderer" + (rends1.length>1 ? "s" : "")+".  Right-click to copy data to clipboard.");
+        myPanel2.getInstructionsLabel().setText("The plot contains "+rends1.length+" renderer" + (rends1.length>1 ? "s" : "")+".");
         if ( rends1.length==0 ) return;
         myFrame.setVisible(true);
 
