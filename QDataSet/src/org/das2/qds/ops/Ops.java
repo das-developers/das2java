@@ -10454,6 +10454,8 @@ public final class Ops {
      * @return rank 0 dataset
      * @see #mode
      * @see #median
+     * @see #variance(org.das2.qds.QDataSet) 
+     * @see #mad(org.das2.qds.QDataSet) 
      * @author mmclouth
      */
     public static QDataSet mean( QDataSet ds ) {
@@ -10647,6 +10649,44 @@ public final class Ops {
      */
     public static QDataSet variance( QDataSet ds ) {
         return Ops.pow(stddev(ds),2);
+    }
+    
+    /**
+     * return the Mean Average Deviation of the rank N dataset.  The result will contain
+     * the USER_PROPERTIES with a map containing the mean and number of points.
+     * @param ds the rank N dataset.
+     * @return the rank 0 MAD of the dataset.
+     * @see #mean(org.das2.qds.QDataSet) 
+     */
+    public static QDataSet mad( QDataSet ds ) {
+        
+        QDataSet mean= mean( ds );
+        double meanDouble= mean.value();
+        
+        double sub;
+        double sum = 0;
+        int n=0;
+        
+        QDataSet w= DataSetUtil.weightsDataSet(ds);
+        
+        DataSetIterator iter= new QubeDataSetIterator(ds);
+        while ( iter.hasNext() )  {
+            iter.next();
+            if ( iter.getValue(w)>0 ) {
+                sub = ( iter.getValue(ds) - meanDouble );
+                sum += sub<0 ? -sub : sub;
+                n+= 1;
+            }
+        }
+
+        double result = sum / n;
+        QDataSet results= DataSetUtil.asDataSet( result, SemanticOps.getUnits(ds).getOffsetUnits() );
+        
+        Map<String,Object> user= new HashMap<>();
+        user.put( "mean", mean );
+        user.put( "n", n );
+        
+        return putProperty( results, "USER_PROPERTIES", user );
     }
     
     /**
