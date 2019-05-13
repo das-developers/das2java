@@ -13,10 +13,7 @@ import org.das2.datum.DatumRange;
 import org.das2.datum.Units;
 import org.das2.graph.DasPlot;
 import org.das2.graph.Renderer;
-import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.Window;
@@ -25,39 +22,30 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
-import java.text.ParseException;
-import java.util.Comparator;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.AbstractAction;
-import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.ListCellRenderer;
 import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
-import javax.swing.table.TableRowSorter;
-import org.das2.datum.Datum;
-import org.das2.datum.EnumerationUnits;
 import org.das2.qds.DataSetUtil;
 import org.das2.qds.QDataSet;
 import org.das2.qds.SemanticOps;
@@ -72,10 +60,7 @@ public class DisplayDataMouseModule extends MouseModule {
     private final static String LABEL = "Display Data";
     private final DasPlot plot;
     private JFrame myFrame;
-    private JPanel myPanel;
-    private JTable myEdit;
-    private JComboBox comboBox;
-    private JLabel messageLabel;
+    private DisplayDataMouseModuleGUI myPanel2;
     private Renderer[] rends;
     private Renderer currentRenderer;
     private DatumRange xrange;
@@ -161,19 +146,12 @@ public class DisplayDataMouseModule extends MouseModule {
                     myFrame.setIconImage( ((JFrame)w).getIconImage() );
                 }
             }
-            myPanel = new JPanel();
-            myPanel.setPreferredSize(new Dimension(300, 300));
-            myPanel.setLayout(new BorderLayout());
-            myEdit = new JTable();
-            myEdit.setFont(Font.decode("fixed-10"));
-            myEdit.setAutoResizeMode( JTable.AUTO_RESIZE_OFF );
-            myEdit.getTableHeader().setReorderingAllowed(false);
-            myEdit.setCellSelectionEnabled(true);
-            //myEdit.setRowSelectionAllowed(false);
+            myPanel2= new DisplayDataMouseModuleGUI();
+
             final JPopupMenu pm = new JPopupMenu();
-            pm.add(new CopyAction(myEdit));
+            pm.add(new CopyAction(myPanel2.getMyEdit()));
 // See https://stackoverflow.com/questions/22622973/jtable-copy-and-paste-using-clipboard-and-abstractaction
-            myEdit.addMouseListener(new MouseAdapter() {
+            myPanel2.getMyEdit().addMouseListener(new MouseAdapter() {
 
                 @Override
                 public void mouseClicked(MouseEvent e) {
@@ -201,23 +179,19 @@ public class DisplayDataMouseModule extends MouseModule {
                 }
 
             });
+            
+            myPanel2.getRenderersComboBox().addItemListener(itemListener);
              
-            JScrollPane scrollPane = new JScrollPane( myEdit, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED );
-            myPanel.add(scrollPane, BorderLayout.CENTER);
+            myPanel2.getYClipCheckBox().addActionListener( new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    DisplayDataMouseModule.this.yclip= myPanel2.getYClipCheckBox().isSelected();
+                    int i= myPanel2.getRenderersComboBox().getSelectedIndex();
+                    if ( i<rends.length ) setDataSet( rends[i].getDataSet(), xrange, yrange ); // thread safety
+                }
+            });
             
-            messageLabel= new JLabel("");
-            myPanel.add( messageLabel, BorderLayout.SOUTH );
-            
-            JPanel comboBoxArea= new JPanel();
-            comboBoxArea.setLayout( new BoxLayout(comboBoxArea,BoxLayout.X_AXIS ) );
-            comboBox= new JComboBox();
-            comboBox.addItemListener( itemListener );
-            comboBoxArea.add( new JLabel("Plotted Data:") );
-            comboBoxArea.add(comboBox);
-            
-            myPanel.add( comboBoxArea, BorderLayout.NORTH );
-            
-            myFrame.getContentPane().add(myPanel);
+            myFrame.getContentPane().add(myPanel2);
             myFrame.pack();
             myFrame.setLocationRelativeTo(SwingUtilities.getWindowAncestor(plot));
         }
@@ -239,19 +213,15 @@ public class DisplayDataMouseModule extends MouseModule {
         }
        
         maybeCreateFrame(e0.getSource());
-
-        final DatumRange xrng;
-        final DatumRange yrng;
-
-        xrng= plot.getXAxis().invTransform( e.getXMaximum(), e.getXMinimum() );
-        if ( yclip ) {
-            yrng= plot.getYAxis().invTransform(e.getYMinimum(),e.getYMaximum());
-        } else {
-            yrng= null;
-        }
-
+        
+        this.xrange= plot.getXAxis().invTransform( e.getXMaximum(), e.getXMinimum() );
+        this.yrange= plot.getYAxis().invTransform( e.getYMinimum(),e.getYMaximum() );
+        
+        this.myPanel2.getYClipCheckBox().setText( "Show only data where Y is within "+this.yrange);
+        
         final Renderer[] rends1 = plot.getRenderers();
 
+        myPanel2.getInstructionsLabel().setText("The plot contains "+rends1.length+" renderer" + (rends1.length>1 ? "s" : "")+".  Right-click to copy data to clipboard.");
         if ( rends1.length==0 ) return;
         myFrame.setVisible(true);
 
@@ -293,11 +263,9 @@ public class DisplayDataMouseModule extends MouseModule {
         }
 
         this.rends= rends1;
-        this.xrange= xrng;
-        this.yrange= yrng;
 
-        comboBox.setModel( new DefaultComboBoxModel( rlabels ) );
-        comboBox.setRenderer( new DefaultListCellRenderer() {
+        myPanel2.getRenderersComboBox().setModel( new DefaultComboBoxModel( rlabels ) );
+        myPanel2.getRenderersComboBox().setRenderer( new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 final javax.swing.JLabel label;
@@ -310,7 +278,7 @@ public class DisplayDataMouseModule extends MouseModule {
                 return label;
             }   
         });
-        comboBox.setSelectedIndex(icurrent);
+        myPanel2.getRenderersComboBox().setSelectedIndex(icurrent);
         
         setDataSet(currentRenderer.getDataSet(),xrange,yrange);
 
@@ -320,7 +288,7 @@ public class DisplayDataMouseModule extends MouseModule {
         @Override
         public void itemStateChanged(ItemEvent e) {
             if ( rends==null ) return;
-            int i= comboBox.getSelectedIndex();
+            int i= myPanel2.getRenderersComboBox().getSelectedIndex();
             if ( i<rends.length ) setDataSet( rends[i].getDataSet(), xrange, yrange ); // thread safety
             currentRenderer= rends[i];
         }
@@ -349,14 +317,16 @@ public class DisplayDataMouseModule extends MouseModule {
     private void setDataSet( QDataSet ds, DatumRange xrange, DatumRange yrange ) {
         QDataSetTableModel tm;
 
+        DatumRange yrng= isYclip() ? yrange : null;
+        
         if ( ds==null ) {
-            showMessageInTable( myEdit, "no dataset" );
+            showMessageInTable( myPanel2.getMyEdit(), "no dataset" );
             return;
         }
         if ( ds.rank()>2 ) {
             QDataSet ds2= SemanticOps.getSimpleTableContaining( ds, xrange.min(), yrange.min() );
             if ( ds2==null ) {
-                showMessageInTable( myEdit,"data cannot be displayed" );
+                showMessageInTable( myPanel2.getMyEdit(),"data cannot be displayed" );
                 return;
             } else {
                 ds= ds2;
@@ -370,28 +340,28 @@ public class DisplayDataMouseModule extends MouseModule {
             QDataSet dep1= (QDataSet) ds.property(QDataSet.DEPEND_1); // kludge code because isQube returns true.  It probably should return false.
             if ( dep1!=null && dep1.rank()==2 ) isQube= false;
             if ( isQube) {
-                tds=SemanticOps.trim( ds, xrange, yrange );
+                tds=SemanticOps.trim( ds, xrange, yrng );
             } else {
                 tds=SemanticOps.trim( ds, xrange, null ); // this may cause problems else where...
             }
             tm= new QDataSetTableModel(tds);
             tcm= tm.getTableColumnModel();
             if ( dep1!=null && dep1.rank()==2 ) {
-                myEdit.getTableHeader().setToolTipText("Column labels reported are from the first record");
+                myPanel2.getMyEdit().getTableHeader().setToolTipText("Column labels reported are from the first record");
             }
             if ( tds.rank()==1 ) {
-                messageLabel.setText( tds.length() + " records" );
+                myPanel2.getMessageLabel().setText( tds.length() + " records.  Right-click to copy data to clipboard." );
             } else {
                 if ( tds.length()>0 ) {
                     int[] qube= DataSetUtil.qubeDims(tds );
                     int[] qube1= DataSetUtil.qubeDims(tds.slice(0) );
                     if ( qube!=null ) {
-                        messageLabel.setText( tds.length() + " records, each is "+ DataSetUtil.toString(qube1) );
+                        myPanel2.getMessageLabel().setText( tds.length() + " records, each is "+ DataSetUtil.toString(qube1) );
                     } else {
-                        messageLabel.setText( tds.length() + " records, first is "+ DataSetUtil.toString(qube1) );
+                        myPanel2.getMessageLabel().setText( tds.length() + " records, first is "+ DataSetUtil.toString(qube1) );
                     }
                 } else {
-                    messageLabel.setText( "no records" );
+                    myPanel2.getMessageLabel().setText( "no records" );
                 }
             }
             
@@ -399,11 +369,11 @@ public class DisplayDataMouseModule extends MouseModule {
             logger.log( Level.SEVERE, ex.getMessage(), ex );
             tm= new QDataSetTableModel(ds);
             tcm= tm.getTableColumnModel();
-            messageLabel.setText( ex.getMessage() );
+            myPanel2.getMessageLabel().setText( ex.getMessage() );
         }
-        myEdit.setModel(tm);
-        myEdit.setColumnModel(tcm);
-        myEdit.setRowSorter( QDataSetTableModel.getRowSorter(tm) );
+        myPanel2.getMyEdit().setModel(tm);
+        myPanel2.getMyEdit().setColumnModel(tcm);
+        myPanel2.getMyEdit().setRowSorter( QDataSetTableModel.getRowSorter(tm) );
         
         
         //myEdit.setColumnModel(new DefaultTableColumnModel() );
