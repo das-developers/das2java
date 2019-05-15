@@ -9,12 +9,13 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 /**
- *
+ * The FileObject can be written.
  * @author jbf
  */
 public interface WriteCapability {
+    
     /**
-     * Get the output stream.
+     * Get the output stream.  The client who has requested the stream must close the stream.
      * @return
      * @throws IOException
      */
