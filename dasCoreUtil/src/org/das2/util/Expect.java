@@ -144,9 +144,8 @@ public class Expect {
 		try {
 			p = pb.start();
 		} catch (IOException e) {
-			//e.printStackTrace();
 			log.log( Level.WARNING, "Error when spawning command: " + command, e);
-			return null;
+			throw new IllegalArgumentException( "Error when spawning command: " + command );
 		}
 		Expect retv = new Expect(p.getInputStream(), p.getOutputStream());
 		retv.process = p;
