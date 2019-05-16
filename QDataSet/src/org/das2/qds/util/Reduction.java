@@ -406,7 +406,13 @@ public class Reduction {
         DataSetBuilder wbuilder= new DataSetBuilder( 1, 1000 ); // weights to go here
 
         QDataSet x= (QDataSet) ds.property( QDataSet.DEPEND_0 );
-        if ( x==null ) x= new org.das2.qds.IndexGenDataSet(ds.length());
+        if ( x==null ) {
+            if ( SemanticOps.getUnits(xLimit)!=Units.dimensionless ) {
+                throw new IllegalArgumentException("xLimit is not dimensionless, yet there are no timetags in the data set: "+ds );
+            } else {
+                x= new org.das2.qds.IndexGenDataSet(ds.length());
+            }
+        }
         QDataSet y= ds;
 
         double x0 = Float.MAX_VALUE;
