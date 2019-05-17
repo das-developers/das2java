@@ -57,6 +57,11 @@ public class TimeParser {
     private TimeStruct timeWidth;
     
     /**
+     * the width cached as a Datum, to support phaseStart.
+     */
+    private Datum timeWidthDatum;
+    
+    /**
      * the context for parsing times.  For example 2014-09-08 can be the context, and then 
      * "11:00" will result in 2014-09-08T11:00.  This is set in the constructor and will not be 
      * mutated after.
@@ -1175,6 +1180,8 @@ public class TimeParser {
             logger.log( Level.FINE, "Canonical: {0}", canonical.toString());
         }
         
+        this.timeWidthDatum= TimeUtil.toDatum(this.timeWidth);
+        
         this.delims = delim;
         this.regex = regex1.toString();
     }
@@ -2095,7 +2102,6 @@ public class TimeParser {
         int len;
 
         if ( this.phaseStart!=null ) {
-            Datum timeWidthDatum= TimeUtil.toDatum(timeWidth);
             start= this.phaseStart.add( timeWidthDatum.multiply( DatumUtil.divp( start.subtract(this.phaseStart), timeWidthDatum ) ) );
         }
 
