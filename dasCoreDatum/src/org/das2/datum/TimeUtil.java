@@ -334,20 +334,35 @@ public final class TimeUtil {
 
     /**
      * convert to Datum without regard to the type of unit used to represent time.
-     * This will use the canonical Units.us2000, which does not represent leap 
-     * seconds.  Note this may change.
-     * @param d the decomposed time.
+     * This will use the canonical Units.us2000 for time locations, which does 
+     * not represent leap seconds.  
+     * @param d the decomposed time or time width.
      * @return the Datum.
      */
     public static Datum toDatum( TimeStruct d ) {
-        int year = (int)d.year;
-        int month = (int)d.month;
-        int day = (int)d.day;
-        int jd = 367 * year - 7 * (year + (month + 9) / 12) / 4 -
-                3 * ((year + (month - 9) / 7) / 100 + 1) / 4 +
-                275 * month / 9 + day + 1721029;
-        double us2000= ( jd - 2451545 ) * 86400e6; // TODO: leap seconds 
-        return Datum.create( d.hour * 3600.0e6 + d.minute * 60e6 + d.seconds * 1e6 + d.millis * 1000 + d.micros + us2000, Units.us2000  );
+        if ( d.isLocation ) {
+            int year = (int)d.year;
+            int month = (int)d.month;
+            int day = (int)d.day;
+            int jd = 367 * year - 7 * (year + (month + 9) / 12) / 4 -
+                    3 * ((year + (month - 9) / 7) / 100 + 1) / 4 +
+                    275 * month / 9 + day + 1721029;
+            double us2000= ( jd - 2451545 ) * 86400e6; // TODO: leap seconds 
+            return Datum.create( d.hour * 3600.0e6 + d.minute * 60e6 + d.seconds * 1e6 + d.millis * 1000 + d.micros + us2000, Units.us2000  );
+        } else {
+            Datum result;
+            if ( d.year>0 ) {
+                result= Units.years.createDatum(d.year);
+            } else if ( d.month>0 ) {
+                result= Units.days.createDatum(d.month*30);
+                logger.warning("approximating months");  // TODO: just add Units.months, which is no worse than Units.days or Units.years
+            } else if ( d.day>0 ){
+                result= Units.days.createDatum(d.day);
+            } else {
+                result= Units.seconds.createDatum( d.hour*3600 + d.minute*60 + d.seconds + d.millis/1e3 + d.micros/1e6 + d.nanos/1e9 );
+            }
+            return result;
+        }
     }
     
     /**
@@ -357,25 +372,29 @@ public final class TimeUtil {
      * @return the Datum in the units specified.
      */
     public static Datum toDatum( TimeStruct d, Units u ) {
-        int year = (int)d.year;
-        int month = (int)d.month;
-        int day = (int)d.day;
-        int jd = 367 * year - 7 * (year + (month + 9) / 12) / 4 -
-                3 * ((year + (month - 9) / 7) / 100 + 1) / 4 +
-                275 * month / 9 + day + 1721029;
-        if ( u==Units.cdfTT2000 ) {
-            double us2000= ( jd - 2451545 ) * 86400e6; 
-            double tt2000= Units.us2000.convertDoubleTo( Units.cdfTT2000, us2000 );
-            Units.cdfTT2000.createDatum(tt2000);
-            Datum rtt2000= Datum.create( d.hour * 3600.0e9 + d.minute * 60e9 + d.seconds * 1e9 + d.millis * 1e6 + d.micros*1e3 + tt2000, Units.cdfTT2000  );
-            return rtt2000;
-        } else if ( u!=Units.us2000 ) { // TODO: sub-optimal implementation...
-            double us2000= ( jd - 2451545 ) * 86400e6; 
-            Datum rus2000= Datum.create( d.hour * 3600.0e6 + d.minute * 60e6 + d.seconds * 1e6 + d.millis * 1000 + d.micros + us2000, Units.us2000  );
-            return rus2000.convertTo(u);
+        if ( d.isLocation ) {
+            int year = (int)d.year;
+            int month = (int)d.month;
+            int day = (int)d.day;
+            int jd = 367 * year - 7 * (year + (month + 9) / 12) / 4 -
+                    3 * ((year + (month - 9) / 7) / 100 + 1) / 4 +
+                    275 * month / 9 + day + 1721029;
+            if ( u==Units.cdfTT2000 ) {
+                double us2000= ( jd - 2451545 ) * 86400e6; 
+                double tt2000= Units.us2000.convertDoubleTo( Units.cdfTT2000, us2000 );
+                Units.cdfTT2000.createDatum(tt2000);
+                Datum rtt2000= Datum.create( d.hour * 3600.0e9 + d.minute * 60e9 + d.seconds * 1e9 + d.millis * 1e6 + d.micros*1e3 + tt2000, Units.cdfTT2000  );
+                return rtt2000;
+            } else if ( u!=Units.us2000 ) { // TODO: sub-optimal implementation...
+                double us2000= ( jd - 2451545 ) * 86400e6; 
+                Datum rus2000= Datum.create( d.hour * 3600.0e6 + d.minute * 60e6 + d.seconds * 1e6 + d.millis * 1000 + d.micros + us2000, Units.us2000  );
+                return rus2000.convertTo(u);
+            } else {
+                double us2000= ( jd - 2451545 ) * 86400e6; // TODO: leap seconds 
+                return Datum.create( d.hour * 3600.0e6 + d.minute * 60e6 + d.seconds * 1e6 + d.millis * 1000 + d.micros + us2000, Units.us2000  );
+            }
         } else {
-            double us2000= ( jd - 2451545 ) * 86400e6; // TODO: leap seconds 
-            return Datum.create( d.hour * 3600.0e6 + d.minute * 60e6 + d.seconds * 1e6 + d.millis * 1000 + d.micros + us2000, Units.us2000  );
+            return toDatum(d).convertTo(u);
         }
     }
     
