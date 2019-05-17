@@ -1580,12 +1580,12 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         update();
     }
 
-    private String manualTicks="";
+    private String tickValues="";
 
-    public static final String PROP_MANUALTICKS = "manualTicks";
+    public static final String PROP_TICKVALUES = "tickValues";
 
-    public String getManualTicks() {
-        return manualTicks;
+    public String getTickValues() {
+        return tickValues;
     }
 
     /**
@@ -1598,11 +1598,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * </table>
      * @param ticks 
      */
-    public void setManualTicks(String ticks) {
-        String oldTicks = this.manualTicks;
-        this.manualTicks = ticks;
+    public void setTickValues(String ticks) {
+        String oldTicks = this.tickValues;
+        this.tickValues = ticks;
         if ( oldTicks!=null && !oldTicks.equals(ticks) ) {
-            firePropertyChange(PROP_MANUALTICKS, oldTicks, ticks);
+            firePropertyChange(PROP_TICKVALUES, oldTicks, ticks);
         }
     }
     
@@ -2052,7 +2052,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      */
     protected void updateTickV() {
         boolean lautoTickV= getAutoTickV();
-        String lticks= getManualTicks();
+        String lticks= getTickValues();
         
         DatumRange dr= getDatumRange();
         if ( !dr.min().isFinite() || !dr.max().isFinite() ) {
