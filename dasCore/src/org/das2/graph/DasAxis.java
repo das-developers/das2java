@@ -2101,6 +2101,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 }
             }
         } else {
+            if ( lticks.trim().length()>0 ) {
+                updateTickVManualTicks(lticks);
+                if ( this.tickV!=null ) return;
+            }
             if (lautoTickV) {
                 try {
                     if (majorTicksDomainDivider != null) {
