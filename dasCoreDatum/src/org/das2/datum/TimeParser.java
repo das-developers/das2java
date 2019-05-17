@@ -1531,6 +1531,17 @@ public class TimeParser {
 
         }
         
+        if ( this.phaseStart!=null ) {
+            Datum start;
+            if (startTime.year < 1990) {
+               start= Units.us1980.createDatum(toUs1980(startTime));
+            } else {
+               start= Units.us2000.createDatum(toUs2000(startTime));
+            }
+            start= this.phaseStart.add( timeWidthDatum.multiply( DatumUtil.divp( start.subtract(this.phaseStart), timeWidthDatum ) ) );
+            this.startTime= TimeUtil.toTimeStruct(start);
+            this.stopTime= TimeUtil.add( this.startTime, this.timeWidth );
+        }
         this.lock= "";
         
         return this;
@@ -2337,6 +2348,7 @@ public class TimeParser {
         testTimeParser1( "$Y-$m-$dT$H:$M:$S.$(subsec,places=6)", "2000-01-01T00:00:00.000001", "2000-001T00:00:00.000001/PT.000001S");
         testTimeParser1( "$Y-$m-$dT$H:$M:$S.$(subsec,places=6)", "2000-01-01T00:00:05.000001", "2000-001T00:00:05.000001/PT.000001S");
         testTimeParser1( "$Y-$m-$dT$H:$M:$S.$(subsec,places=9)", "2000-01-01T00:00:05.000001001", "2000-001T00:00:05.000001001/PT.000000001S");
+        testTimeParser1( "$Y-$m-$(d,phasestart=2019-05-12,delta=7)", "2019-05-03", "2019-04-28T00:00Z/P7D");
         TimeParser tp= TimeParser.create("$Y$m$d_v$v.dat");
         System.err.println( tp.parse("20130618_v4.05.dat").getTimeRange() );
         System.err.println( makeCanonical( "%Y-%m-%dT%H:%M:%S.%{milli}Z" ) );
