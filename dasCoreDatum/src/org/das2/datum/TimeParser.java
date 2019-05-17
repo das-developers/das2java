@@ -115,6 +115,8 @@ public class TimeParser {
     private final String regex;
     //private String formatString;
     
+    private Datum phaseStart=null;
+            
     /**
      * position in the template where we switch over to stop time digits.
      */
@@ -1028,7 +1030,11 @@ public class TimeParser {
                                 ; //TODO: this all needs to be redone...
                                 break;
                             case "phasestart":
-                                ; //TODO: this all needs to be redone...
+                                try {
+                                    phaseStart= TimeUtil.create(val);
+                                } catch (ParseException ex) {
+                                    logger.log(Level.SEVERE, null, ex);
+                                }
                                 break;
                             case "shift":
                                 shift[i]= Integer.parseInt(val);
@@ -2088,11 +2094,16 @@ public class TimeParser {
         int offs = 0;
         int len;
 
+        if ( this.phaseStart!=null ) {
+            Datum timeWidthDatum= TimeUtil.toDatum(timeWidth);
+            start= this.phaseStart.add( timeWidthDatum.multiply( DatumUtil.divp( start.subtract(this.phaseStart), timeWidthDatum ) ) );
+        }
+
         TimeUtil.TimeStruct timel = TimeUtil.toTimeStruct(start);
-        TimeUtil.TimeStruct timeWidthl= new TimeUtil.TimeStruct();
+        TimeUtil.TimeStruct timeWidthl= new TimeUtil.TimeStruct();        
         copyTime( timeWidth, timeWidthl ); // make a local copy in case future versions allow variable time widths.
         extra= new HashMap(extra);
-        
+
         TimeUtil.TimeStruct stopTimel;
         if ( stop==null ) {
             if ( timeWidth.year==MAX_VALID_YEAR-MIN_VALID_YEAR ) { // orbits and other strange times
@@ -2291,8 +2302,12 @@ public class TimeParser {
     }
     
     public static void main( String[] aa ) throws Exception {
-        TimeParser tp= TimeParser.create( "$Y-$m-$dT$H:$M:$S.$(subsec,places=9)" );
-        System.err.println( "tpf: " + tp.format( Units.cdfTT2000.parse( "2016-05-05T12:54:54.002232668") ) );
+        TimeParser tp;
+        //tp= TimeParser.create( "$Y-$m-$dT$H:$M:$S.$(subsec,places=9)" );
+        //System.err.println( "tpf: " + tp.format( Units.cdfTT2000.parse( "2016-05-05T12:54:54.002232668") ) );
+        tp= TimeParser.create( "$Y-$m-$(d,phasestart=2019-05-12,delta=7)" );
+        System.err.println( "tpf: " + tp.format( Units.cdfTT2000.parse( "2019-05-17T00:00Z") ) );
+        System.err.println( "tpf: " + tp.format( Units.cdfTT2000.parse( "2019-05-04T00:00Z") ) );
         testTimeParser();
     }
 
