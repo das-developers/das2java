@@ -645,6 +645,40 @@ public final class DatumUtil {
         return datump.subtract(datum);
     }
     
+    /**
+     * return the modulo within the delta.  The result will always
+     * be a positive number.  For example:
+     * <table><tr><td>modp('-3days','7days')</td><td>4days</td></tr>
+     * <tr><td>modp('10days','7days')</td><td>3days</td></tr>
+     * </table>
+     * A typical use might be:
+     * <pre>%{code
+     * t= t + modp(t-phaseStart,span)
+     * }</pre>
+     * TODO: study inconsistencies with QDataset Ops modp.
+     * @param amount
+     * @param delta
+     * @return the amount.
+     */
+    public static Datum modp( Datum amount, Datum delta ) {
+        if ( UnitsUtil.isIntervalMeasurement(amount.getUnits()) ) {
+            throw new IllegalArgumentException("amount cannot be a location");
+        }
+        double count= amount.divide(delta).doubleValue(Units.dimensionless);
+        count= Math.floor(count);
+        return amount.subtract(delta.multiply(count));
+    }
     
-    
+    /**
+     * this is the divide that rounds down to the next integer, so divp("-25hr","24hr") is -2.
+     * Note that the result must be dimensionless, other forms are not supported.
+     * TODO: study inconsistencies with QDataset Ops divp
+     * @param amount 
+     * @param delta
+     * @return the dimensionless amount.  
+     */
+    public static Datum divp( Datum amount, Datum delta ) {
+        double result= Math.floor( amount.divide(delta).doubleValue(Units.dimensionless) );
+        return Units.dimensionless.createDatum(result);
+    }
 }
