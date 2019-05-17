@@ -1580,6 +1580,32 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         update();
     }
 
+    private String manualTicks="";
+
+    public static final String PROP_MANUALTICKS = "manualTicks";
+
+    public String getManualTicks() {
+        return manualTicks;
+    }
+
+    /**
+     * manually set the tick positions or spacing.  The following are 
+     * examples of accepted settings:<table>
+     * <tr><td></td><td>empty string is legacy behavior</td></tr>
+     * <tr><td>0,45,90,135,180</td><td>explicit tick positions, in axis units</td></tr>
+     * <tr><td>+45</td><td>spacing between ticks, parsed with the axis offset units.</td></tr>
+     * <tr><td>+30s</td><td>30 seconds spacing between ticks</td></tr>
+     * </table>
+     * @param ticks 
+     */
+    public void setManualTicks(String ticks) {
+        String oldTicks = this.manualTicks;
+        this.manualTicks = ticks;
+        if ( oldTicks!=null && !oldTicks.equals(ticks) ) {
+            firePropertyChange(PROP_MANUALTICKS, oldTicks, ticks);
+        }
+    }
+    
     /**
      * calculate a set of log spaced ticks.
      * @param dr the range.
@@ -1983,11 +2009,50 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         return autoTickV;
     }
     
+    protected void updateTickVManualTicks(String lticks) {
+        if ( lticks.startsWith("+") ) {
+            try {
+                Units u= this.getUnits();
+                Datum tickM= u.getOffsetUnits().parse(lticks.substring(1));
+                double min= this.getDataMinimum( u );
+                double max= this.getDataMaximum( u );
+                double dt= tickM.doubleValue(u.getOffsetUnits());
+                double firstTick= Math.floor( min/dt )*dt;
+                double lastTick= Math.ceil( max/dt )*dt;
+                int ntick= (int)( ( lastTick - firstTick ) / dt ) + 1;
+                double[] dticks= new double[ ntick ];
+                for ( int i=0; i<dticks.length; i++ ) {
+                    dticks[i]= firstTick + i*dt; // TODO: rewrite unstable
+                }
+                TickVDescriptor majorTicks= new TickVDescriptor( dticks, dticks, u );
+                this.tickV= majorTicks;
+            } catch (ParseException ex) {
+                this.tickV= null;
+            }
+        } else {
+            String[] ss= lticks.split(",");
+            double[] dticks= new double[ss.length];
+            Units u= this.getUnits();
+            for ( int i=0; i<dticks.length; i++ ) {
+                try {
+                    dticks[i]= u.parse(ss[i]).doubleValue(u);
+                } catch (ParseException ex) {
+                    logger.log(Level.WARNING, "failed to parse tick: {0}", ss[i]);
+                    dticks[i]= 0;
+                }
+            }
+            TickVDescriptor majorTicks= new TickVDescriptor( dticks, dticks, u );
+            this.tickV= majorTicks;
+        }
+    }
+    
     /**
      * recalculate the tick positions.
      */
     protected void updateTickV() {
         boolean lautoTickV= getAutoTickV();
+        String lticks= getManualTicks();
+        
         DatumRange dr= getDatumRange();
         if ( !dr.min().isFinite() || !dr.max().isFinite() ) {
             logger.info( "range is not finite...");
@@ -1995,6 +2060,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
         if (!valueIsAdjusting()) {
             if ( getFont()==null ) return;
+            
+            if ( lticks.trim().length()>0 ) {
+                updateTickVManualTicks(lticks);
+                if ( this.tickV!=null ) return;
+            }
             
             //if ( getCanvas()==null || getCanvas().getHeight()==0 ) return;
             //if ( ( isHorizontal() ? getColumn().getWidth() : getRow().getHeight() ) < 2 ) return; // canvas is not sized yet
