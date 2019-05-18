@@ -1591,7 +1591,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     /**
      * manually set the tick positions or spacing.  The following are 
      * examples of accepted settings:<table>
-     * <tr><td></td><td>empty string is legacy behavior</td></tr>
+     * <tr><td></td><td>empty string is automatic behavior</td></tr>
      * <tr><td>0,45,90,135,180</td><td>explicit tick positions, in axis units</td></tr>
      * <tr><td>+45</td><td>spacing between ticks, parsed with the axis offset units.</td></tr>
      * <tr><td>+30s</td><td>30 seconds spacing between ticks</td></tr>
@@ -2010,6 +2010,24 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         return autoTickV;
     }
     
+    /**
+     * return the number of minor ticks for the spacing.  This should be
+     * return by searching for the first two factors.
+     * @param dt the step size
+     * @return the number of minor ticks
+     */
+    private int updateTickVManualTicksMinor( double dt ) {
+        int scale= (int)Math.log10(dt);
+        dt= dt/Math.pow(10,scale);
+        if ( dt==1. ) return 4;
+        if ( dt==2. ) return 2;
+        if ( dt==4. ) return 2;
+        if ( dt==5. ) return 5;
+        if ( dt==3. ) return 3;
+        if ( dt==1.5 ) return 3;
+        return 1;
+    }
+    
     protected void updateTickVManualTicks(String lticks) {
         if ( lticks.startsWith("+") ) {
             try {
@@ -2025,8 +2043,14 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 for ( int i=0; i<dticks.length; i++ ) {
                     dticks[i]= firstTick + i*dt; // TODO: rewrite unstable
                 }
+                int minorTicks=updateTickVManualTicksMinor(dt);
+                dt= dt/minorTicks;
+                double[] dticksMinor= new double[ ntick*minorTicks ];
+                for ( int i=0; i<dticksMinor.length; i++ ) {
+                    dticksMinor[i]= firstTick + i*dt; // TODO: rewrite unstable
+                }
                 //TODO: we need a getPrimeFactors to get the minor tick positions.
-                TickVDescriptor majorTicks= new TickVDescriptor( dticks, dticks, u );
+                TickVDescriptor majorTicks= new TickVDescriptor( dticksMinor, dticks, u );
                 this.tickV= majorTicks;
             } catch (ParseException ex) {
                 this.tickV= null;
@@ -2043,7 +2067,22 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                     dticks[i]= 0;
                 }
             }
-            TickVDescriptor majorTicks= new TickVDescriptor( dticks, dticks, u );
+            double[] dticksMinor;
+            if ( dticks.length>2 ) {
+                double dt= DasMath.gcd( dticks, (dticks[1]-dticks[0])/100. );
+                int minorTicks= updateTickVManualTicksMinor(dt);
+                dt= dt/minorTicks;
+                double firstTick= DasMath.min(dticks);
+                double lastTick= DasMath.max(dticks);
+                int ntick= (int)(Math.ceil(lastTick-firstTick)/dt) + 1;
+                dticksMinor= new double[ ntick ];
+                for ( int i=0; i<dticksMinor.length; i++ ) {
+                    dticksMinor[i]= firstTick + i * dt;
+                }
+            } else {
+                dticksMinor= dticks;
+            }
+            TickVDescriptor majorTicks= new TickVDescriptor( dticksMinor, dticks, u );
             this.tickV= majorTicks;
         }
     }
@@ -2053,7 +2092,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      */
     protected void updateTickV() {
         boolean lautoTickV= getAutoTickV();
-        String lticks= getTickValues();
+        String lticks= tickValues;
         
         DatumRange dr= getDatumRange();
         if ( !dr.min().isFinite() || !dr.max().isFinite() ) {
