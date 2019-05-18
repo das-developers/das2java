@@ -219,6 +219,13 @@ public class DasMath {
         return result;
     }
     
+    /**
+     * return the mean of the list. The first element's magnitude is
+     * removed from each accumulated value so that items with large offset 
+     * values (for example times) can be averaged.
+     * @param A
+     * @return 
+     */
     public static double mean( double[] A ) {        
         double avgGuess= A[0];
         double sum=0.;
@@ -230,11 +237,23 @@ public class DasMath {
         return sum / A.length + avgGuess;        
     }
     
+    /**
+     * return the median of the list length N, which is the value at index N/2 of 
+     * the sorted list.  This does not return the average for even-length lists.
+     * and there is no checking for NaNs or fill values.
+     * @param A
+     * @return the median of the list
+     */
     public static double median( double[] A ) {
         double[] sorted= sort( A );
         return sorted[A.length/2];
     }
     
+    /**
+     * return the maximum of the list
+     * @param A the list
+     * @return the maximum of the list
+     */
     public static double max( double[] A ) {
         double max= A[0];
         for ( int i=0; i<A.length; i++ ) {
@@ -243,6 +262,11 @@ public class DasMath {
         return max;
     }
     
+    /**
+     * return the minimum of the list
+     * @param A the list
+     * @return the minimum of the list
+     */
     public static double min( double[] A ) {
         double min= A[0];
         for ( int i=0; i<A.length; i++ ) {
