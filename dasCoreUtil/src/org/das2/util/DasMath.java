@@ -276,11 +276,15 @@ public class DasMath {
         return min;
     }
 
+    /**
+     * return a sorted version of the array.  The original array is not
+     * modified.
+     * @param A
+     * @return return a sorted version of the array.
+     */
     public static double[] sort( double[] A ) {
         double[] copy= new double[A.length];
-        for ( int i=0; i<A.length; i++ ) {
-            copy[i]= A[i];
-        }
+        System.arraycopy(A, 0, copy, 0, A.length);
         java.util.Arrays.sort( copy );
         return copy;
     }
