@@ -810,8 +810,8 @@ public final class SemanticOps {
                 
                 QDataSet xinside= xrange==null ? null :
                     Ops.and( Ops.ge( xds, DataSetUtil.asDataSet(xrange.min()) ), Ops.le(  xds, DataSetUtil.asDataSet(xrange.max()) ) );
-                //QDataSet yinside= null; //yrange==null ? null :
-                    //Ops.and( Ops.ge( yds, DataSetUtil.asDataSet(yrange.min()) ), Ops.le(  yds, DataSetUtil.asDataSet(yrange.max()) ) );
+                QDataSet yinside= yrange==null ? null :
+                    Ops.and( Ops.ge( yds, DataSetUtil.asDataSet(yrange.min()) ), Ops.le(  yds, DataSetUtil.asDataSet(yrange.max()) ) );
                 QDataSet ok;
                 SubsetDataSet sds= new SubsetDataSet(ds);
                 if ( xrange==null && yrange==null ) {
@@ -825,8 +825,7 @@ public final class SemanticOps {
                     sds.applyIndex( 0, ok );
                 } else {
                     logger.fine( "yds is being ignored, not sure why...");
-                    //ok= Ops.where( Ops.and( xinside, yinside ) );
-                    ok= Ops.where( xinside );
+                    ok= Ops.where( Ops.and( xinside, yinside ) );
                     sds.applyIndex( 0, ok );
                 }
                 return sds;
