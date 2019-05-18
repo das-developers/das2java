@@ -222,9 +222,10 @@ public class DasMath {
     /**
      * return the mean of the list. The first element's magnitude is
      * removed from each accumulated value so that items with large offset 
-     * values (for example times) can be averaged.
+     * values (for example times) can be averaged.  There is no checking
+     * for NaNs or fill values.
      * @param A
-     * @return 
+     * @return the mean of the list.
      */
     public static double mean( double[] A ) {        
         double avgGuess= A[0];
