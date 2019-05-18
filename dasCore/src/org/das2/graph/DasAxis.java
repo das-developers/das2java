@@ -2049,7 +2049,6 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 for ( int i=0; i<dticksMinor.length; i++ ) {
                     dticksMinor[i]= firstTick + i*dt; // TODO: rewrite unstable
                 }
-                //TODO: we need a getPrimeFactors to get the minor tick positions.
                 TickVDescriptor majorTicks= new TickVDescriptor( dticksMinor, dticks, u );
                 this.tickV= majorTicks;
             } catch (ParseException ex) {
