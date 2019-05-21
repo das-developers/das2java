@@ -17,6 +17,7 @@ import org.das2.datum.DatumRange;
 import org.das2.datum.DatumVector;
 import org.das2.qds.DDataSet;
 import org.das2.qds.DataSetUtil;
+import org.das2.qds.JoinDataSet;
 import org.das2.qds.MutablePropertyDataSet;
 import org.das2.qds.QDataSet;
 import org.das2.qds.SemanticOps;
@@ -55,6 +56,9 @@ public class QDataSetStreamHandler implements StreamHandler {
     Map streamProperties;
     
     QDataSet ds=null;
+    
+    //private Object collectionMode= MODE_SPLIT_BY_PACKET_DESCRIPTOR;
+    private Object collectionMode= MODE_SPLIT_BY_NEW_PACKET_DESCRIPTOR;
     
     private ProgressMonitor monitor= new NullProgressMonitor();
     
@@ -159,7 +163,7 @@ public class QDataSetStreamHandler implements StreamHandler {
     @Override
     public void packet(PacketDescriptor pd, Datum xTag, DatumVector[] vectors) throws StreamException {
         if ( pd!=currentPd ) {
-            if ( currentPd!=null ) {
+            if ( currentPd!=null && collectionMode==MODE_SPLIT_BY_PACKET_DESCRIPTOR ) {
                 collectDataSet();
                 createBuilders(currentPd);
             }
@@ -180,7 +184,10 @@ public class QDataSetStreamHandler implements StreamHandler {
         }
         
     }
-
+    
+    public static final Object MODE_SPLIT_BY_PACKET_DESCRIPTOR = "splitByPacketDescriptor";
+    public static final Object MODE_SPLIT_BY_NEW_PACKET_DESCRIPTOR = "splitByNewPacketDescriptor";
+    
     @Override
     public void streamClosed(StreamDescriptor sd) throws StreamException {
         logger.finest("got streamClosed");
@@ -353,6 +360,50 @@ public class QDataSetStreamHandler implements StreamHandler {
         
     }
     
+    private static QDataSet collectDataSet( DataSetBuilder currentXBuilder, DataSetBuilder[] currentBuilders ) {
+        QDataSet xds1= currentXBuilder.getDataSet();
+        QDataSet ds1;
+        if ( currentBuilders.length==1 ) {
+            ds1= currentBuilders[0].getDataSet();
+        } else {
+            ds1= null;
+            for (DataSetBuilder currentBuilder : currentBuilders) {
+                ds1 = Ops.bundle(ds1, currentBuilder.getDataSet());
+            }
+            if ( currentBuilders.length==2 ) {
+                // look for bundles.
+                String prefix= (String)Ops.unbundle(ds1,0).property("NAME");
+                String name1= (String)Ops.unbundle(ds1,1).property("NAME");
+                if ( name1.equals( prefix + ".max" ) || ( prefix.equals("") && name1.equals("peaks") ) ) {
+                    QDataSet max= Ops.unbundle(ds1,1);
+                    max= Ops.putProperty( max, QDataSet.NAME, name1.replaceAll("\\.","_") );
+                    max= Ops.putProperty( max, QDataSet.BUNDLE_1, null );
+                    max= Ops.link( xds1, max );
+                    ds1= Ops.unbundle(ds1,0);
+                    ds1= Ops.putProperty( ds1, QDataSet.BIN_MAX, max );
+                    ds1= Ops.putProperty( ds1, QDataSet.BUNDLE_1, null );
+                } else if ( name1.equals( prefix + ".min" ) ) {
+                    QDataSet min= Ops.unbundle(ds1,1);
+                    min= Ops.putProperty( min, QDataSet.NAME, name1.replaceAll("\\.","_") );
+                    min= Ops.putProperty( min, QDataSet.BUNDLE_1, null );
+                    min= Ops.link( xds1, min );
+                    ds1= Ops.unbundle(ds1,0);
+                    ds1= Ops.putProperty( ds1, QDataSet.BIN_MIN, min );
+                    ds1= Ops.putProperty( ds1, QDataSet.BUNDLE_1, null );
+                }
+            }
+        }
+        
+        if ( ds1 instanceof MutablePropertyDataSet && !((MutablePropertyDataSet)ds1).isImmutable() ) {
+            ((MutablePropertyDataSet)ds1).putProperty( QDataSet.DEPEND_0, xds1 );
+        } else {
+            ds1= Ops.link( xds1, ds1 );
+        }
+        
+        return ds1;
+        
+    }
+    
     public void collectDataSet( ) {
         QDataSet xds1= currentXBuilder.getDataSet();
         QDataSet ds1;
@@ -402,8 +453,20 @@ public class QDataSetStreamHandler implements StreamHandler {
     }
         
     public QDataSet getDataSet() {
-        collectDataSet();
-        
+          
+        if ( collectionMode==MODE_SPLIT_BY_PACKET_DESCRIPTOR ) {
+            collectDataSet();
+        } else {
+            JoinDataSet jds= null;
+            for ( Entry<PacketDescriptor,DataSetBuilder[]> e: builders.entrySet() ) {
+                currentPd= e.getKey();
+                currentBuilders= e.getValue();
+                currentXBuilder= xbuilders.get(currentPd);
+                QDataSet ds1= collectDataSet( currentXBuilder, currentBuilders );
+                jds= (JoinDataSet)Ops.join( jds, ds1 );
+            }
+            ds= jds;
+        }
         ds= Ops.putProperty( ds, QDataSet.TITLE, streamTitle );
         Object oxCacheRange= streamProperties.get( "xCacheRange" );
         if ( oxCacheRange!=null ) {
