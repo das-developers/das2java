@@ -1180,7 +1180,11 @@ public class TimeParser {
             logger.log( Level.FINE, "Canonical: {0}", canonical.toString());
         }
         
-        this.timeWidthDatum= TimeUtil.toDatum(this.timeWidth);
+        if ( this.timeWidth.year!=0 || this.timeWidth.month!=0 ) {
+            this.timeWidthDatum= null;
+        } else {
+            this.timeWidthDatum= TimeUtil.toDatum(this.timeWidth);
+        }
         
         this.delims = delim;
         this.regex = regex1.toString();
@@ -1532,15 +1536,19 @@ public class TimeParser {
         }
         
         if ( this.phaseStart!=null ) {
-            Datum start;
-            if (startTime.year < 1990) {
-               start= Units.us1980.createDatum(toUs1980(startTime));
+            if ( timeWidthDatum==null ) {
+                logger.warning("phaseStart cannot be used for month or year resolution");
             } else {
-               start= Units.us2000.createDatum(toUs2000(startTime));
+                Datum start;
+                if (startTime.year < 1990) {
+                   start= Units.us1980.createDatum(toUs1980(startTime));
+                } else {
+                   start= Units.us2000.createDatum(toUs2000(startTime));
+                }
+                start= this.phaseStart.add( timeWidthDatum.multiply( DatumUtil.divp( start.subtract(this.phaseStart), timeWidthDatum ) ) );
+                this.startTime= TimeUtil.toTimeStruct(start);
+                this.stopTime= TimeUtil.add( this.startTime, this.timeWidth );
             }
-            start= this.phaseStart.add( timeWidthDatum.multiply( DatumUtil.divp( start.subtract(this.phaseStart), timeWidthDatum ) ) );
-            this.startTime= TimeUtil.toTimeStruct(start);
-            this.stopTime= TimeUtil.add( this.startTime, this.timeWidth );
         }
         this.lock= "";
         
@@ -2113,7 +2121,11 @@ public class TimeParser {
         int len;
 
         if ( this.phaseStart!=null ) {
-            start= this.phaseStart.add( timeWidthDatum.multiply( DatumUtil.divp( start.subtract(this.phaseStart), timeWidthDatum ) ) );
+            if ( timeWidthDatum==null ) {
+                logger.warning("phaseStart cannot be used for month or year resolution");
+            } else {
+                start= this.phaseStart.add( timeWidthDatum.multiply( DatumUtil.divp( start.subtract(this.phaseStart), timeWidthDatum ) ) );
+            }
         }
 
         TimeUtil.TimeStruct timel = TimeUtil.toTimeStruct(start);
