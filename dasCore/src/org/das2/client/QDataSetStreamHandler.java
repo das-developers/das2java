@@ -452,6 +452,10 @@ public class QDataSetStreamHandler implements StreamHandler {
         
     }
         
+    /**
+     * return the dataset collected by the handler.
+     * @return the dataset collected by the handler.
+     */
     public QDataSet getDataSet() {
           
         if ( collectionMode==MODE_SPLIT_BY_PACKET_DESCRIPTOR ) {
