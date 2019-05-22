@@ -458,14 +458,19 @@ public class QDataSetStreamHandler implements StreamHandler {
             collectDataSet();
         } else {
             JoinDataSet jds= null;
-            for ( Entry<PacketDescriptor,DataSetBuilder[]> e: builders.entrySet() ) {
-                currentPd= e.getKey();
-                currentBuilders= e.getValue();
-                currentXBuilder= xbuilders.get(currentPd);
-                QDataSet ds1= collectDataSet( currentXBuilder, currentBuilders );
-                jds= (JoinDataSet)Ops.join( jds, ds1 );
+            int nbuilders= builders.size();
+            if ( nbuilders==1 ) {
+                collectDataSet();
+            } else {
+                for ( Entry<PacketDescriptor,DataSetBuilder[]> e: builders.entrySet() ) {
+                    currentPd= e.getKey();
+                    currentBuilders= e.getValue();
+                    currentXBuilder= xbuilders.get(currentPd);
+                    QDataSet ds1= collectDataSet( currentXBuilder, currentBuilders );
+                    jds= (JoinDataSet)Ops.join( jds, ds1 );
+                }
+                ds= jds;
             }
-            ds= jds;
         }
         ds= Ops.putProperty( ds, QDataSet.TITLE, streamTitle );
         Object oxCacheRange= streamProperties.get( "xCacheRange" );
