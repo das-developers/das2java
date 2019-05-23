@@ -51,6 +51,7 @@ import org.das2.qds.ArrayDataSet;
 import org.das2.qds.demos.RipplesDataSet;
 import org.das2.qds.BundleDataSet;
 import org.das2.qds.CdfSparseDataSet;
+import org.das2.qds.ConstantDataSet;
 import org.das2.qds.DataSetOps;
 import org.das2.qds.DataSetUtil;
 import org.das2.qds.DDataSet;
@@ -3131,8 +3132,8 @@ public final class Ops {
 
     /**
      * return a rank 1 dataset of times.  All inputs should be rank 1 dataset (for now) or null.
-     * @param years the years. (2010) Less than 100 is interpreted as 19xx.  This must be integers.
-     * @param mons the months (1..12), or null.  If null, then days are day of year.  This must be integers.
+     * @param years the years. (2010) Less than 100 is interpreted as 19xx.  These must be integers, and must be rank 1.
+     * @param mons the months (1..12), or null.  If null, then days are day of year.  These must be integers.
      * @param days the day of month (1..28) or day of year.  This may be fractional.
      * @param hour null or the hours of the day.
      * @param minute null or the minutes of the day
@@ -3141,7 +3142,41 @@ public final class Ops {
      * @return
      */
     public static QDataSet toTimeDataSet( QDataSet years, QDataSet mons, QDataSet days, QDataSet hour, QDataSet minute, QDataSet second, QDataSet nano ) {
-        DDataSet result= DDataSet.createRank1(years.length());
+        
+        QDataSet[] operands= new QDataSet[2];
+        
+        for ( int i=0; i<2; i++ ) { // two passes.
+            if ( mons!=null ) {
+                CoerceUtil.coerce( years, mons, true, operands );
+                years= operands[0];
+                mons= operands[1];
+            }
+            CoerceUtil.coerce( years, days, true, operands );
+            years= operands[0];
+            days= operands[1];
+            if ( hour!=null ) {
+                CoerceUtil.coerce( years, hour, true, operands );
+                years= operands[0];
+                hour= operands[1];
+            }
+            if ( minute!=null ) {
+                CoerceUtil.coerce( years, minute, true, operands );
+                years= operands[0];
+                minute= operands[1];
+            }
+            if ( second!=null ) {
+                CoerceUtil.coerce( years, second, true, operands );
+                years= operands[0];
+                second= operands[1];
+            }            
+            if ( nano!=null ) {
+                CoerceUtil.coerce( years, nano, true, operands );
+                years= operands[0];
+                nano= operands[1];
+            }     
+        }
+        WritableDataSet result= CoerceUtil.coerce( years, days, true, operands );
+        
         result.putProperty( QDataSet.UNITS, Units.us2000 );
         if ( years.length()==0 ) {
             throw new IllegalArgumentException("Empty year array");
@@ -3155,7 +3190,7 @@ public final class Ops {
             mons= Ops.ones( years.length() );
         }
         // handle nulls with one array, and avoid condition tests within the loop
-        QDataSet zeros= Ops.zeros( years.length() );  //TODO: rewrite with zerosDataSet that doesn't allocate space
+        QDataSet zeros= ConstantDataSet.create( 0., DataSetUtil.qubeDims(years) );
         if ( hour==null ) hour= zeros;
         if ( minute==null ) minute= zeros;
         if ( second==null ) second= zeros;
