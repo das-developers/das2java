@@ -3132,14 +3132,14 @@ public final class Ops {
 
     /**
      * return a rank 1 dataset of times.  All inputs should be rank 1 dataset (for now) or null.
-     * @param years the years. (2010) Less than 100 is interpreted as 19xx.  These must be integers, and must be rank 1.
-     * @param mons the months (1..12), or null.  If null, then days are day of year.  These must be integers.
+     * @param years the years. (2010) Less than 100 is interpreted as 19xx.  
+     * @param mons the months (1..12), or null.  If null, then days are day of year.  These are interpreted as integers
      * @param days the day of month (1..28) or day of year.  This may be fractional.
      * @param hour null or the hours of the day.
      * @param minute null or the minutes of the day
      * @param second null or the seconds of the day
      * @param nano null or the nanoseconds (1e-9) of the day
-     * @return
+     * @return rank 1 time data set.
      */
     public static QDataSet toTimeDataSet( QDataSet years, QDataSet mons, QDataSet days, QDataSet hour, QDataSet minute, QDataSet second, QDataSet nano ) {
         
