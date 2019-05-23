@@ -385,7 +385,7 @@ public class PolarPlotRenderer extends Renderer {
         
         Units xunits= xAxis.getUnits();
         Units yunits= yAxis.getUnits();
-        Units zunits= SemanticOps.getUnits(cds);
+        Units zunits= cds==null ? null : SemanticOps.getUnits(cds);
         
         gp.moveTo( xAxis.transform( x, xunits ), yAxis.transform( y, yunits ) );
         
