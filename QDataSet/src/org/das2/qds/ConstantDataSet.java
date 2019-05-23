@@ -16,6 +16,16 @@ public final class ConstantDataSet implements QDataSet {
         this( 1, len, 1, 1, 1, value );
     }
     
+    public static ConstantDataSet create( double value, int[] qube ) {
+        switch ( qube.length ) {
+            case 0: return new ConstantDataSet(0,1,1,1,1,value);
+            case 1: return new ConstantDataSet(1,qube[0],1,1,1,value);
+            case 2: return new ConstantDataSet(2,qube[0],qube[1],1,1,value);
+            case 3: return new ConstantDataSet(3,qube[0],qube[1],qube[2],1,value);
+            case 4: return new ConstantDataSet(4,qube[0],qube[1],qube[2],qube[3],value);
+            default: throw new IllegalArgumentException("unsupported rank: "+qube.length);
+        }
+    }
     private ConstantDataSet( int rank, int len0, int len1, int len2, int len3, double value ) {
         this.rank= rank;
         this.len0= len0;
