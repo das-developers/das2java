@@ -179,7 +179,7 @@ public final class TickCurveRenderer extends Renderer {
     }
 
     /**
-     * return true if the data is ds[:,3] or ds[x[t]]  t&rarr;x&rarr;y
+     * return true if the data is ds[:,3] (T,X,Y) or ds[x[t]]  t&rarr;x&rarr;y
      * @param ds the dataset
      * @return true if the data is ds[:,3] or ds[x[t]]  
      */
@@ -249,6 +249,11 @@ public final class TickCurveRenderer extends Renderer {
 
     }
 
+    /**
+     * return data in the canonical form, a rank 2 bundle [n,3] of tt,xx,yy.
+     * @param ds
+     * @return 
+     */
     private static QDataSet makeCanonical( QDataSet ds ) {
         if ( ds.rank()==2 && ds.length(0)==3 ) {
             return ds;
@@ -612,23 +617,21 @@ public final class TickCurveRenderer extends Renderer {
         
         g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
 
-        QDataSet ds3= ds2;
-        
         if ( xplane!=null && !xplane.equals("") ) {
-            xds= DataSetOps.unbundle( ds3, xplane );
+            xds= DataSetOps.unbundle( ds2, xplane );
         } else {
-            xds= DataSetOps.unbundle( ds3, 1 );
+            xds= DataSetOps.unbundle( ds2, 1 );
         }
         if ( yplane!=null && !yplane.equals("") ) {
-            yds= DataSetOps.unbundle( ds3, yplane );
+            yds= DataSetOps.unbundle( ds2, yplane );
         } else {
-            yds= DataSetOps.unbundle( ds3, 2 );
+            yds= DataSetOps.unbundle( ds2, 2 );
         }
 
         QDataSet tds;
         tds= (QDataSet) xds.property(QDataSet.DEPEND_0);
         if ( tds==null ) {
-            tds= DataSetOps.unbundle( ds3, 0 );
+            tds= DataSetOps.unbundle( ds2, 0 );
         }
         
 
