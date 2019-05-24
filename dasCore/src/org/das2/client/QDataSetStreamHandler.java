@@ -472,7 +472,7 @@ public class QDataSetStreamHandler implements StreamHandler {
             int nbuilders= builders.size();
             if ( nbuilders==1 ) {
                 collectDataSet();
-                ds= jds;
+                if ( jds!=null ) ds= jds;
             } else {
                 for ( Entry<Integer,DataSetBuilder[]> e: builders.entrySet() ) {
                     int id= e.getKey();
