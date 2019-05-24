@@ -44,10 +44,24 @@ public class DataSetBuilder {
     DDataSet current;
     int recCount;
     int dim1, dim2, dim3;
-    int recElements; // number of elements per record
+    
+    /**
+     * number of elements per record
+     */
+    int recElements; 
+    
+    /**
+     * index into the current dataset used to collect data.
+     */
     int index;
+    
     int offset;
-    int length;  // number of records or partial records written
+    
+    /**
+     * number of records or partial records written
+     */
+    int length;  
+    
     HashMap<String,Object> properties;
     private HashMap<String,String> unresolvedPropertyTypes;
     private HashMap<String,String> unresolvedPropertyValues;
@@ -684,7 +698,11 @@ public class DataSetBuilder {
             }
             DDataSet.copyElements( current, 0, result, dsindex, length-dsindex );
         } else {
-            result= (DDataSet) ArrayDataSet.copy(double.class,current);
+            if ( index<recCount/2 ) {
+                DDataSet.copyElements( current, 0, result, 0, length );                
+            } else {
+                result= (DDataSet) ArrayDataSet.copy(double.class,current);
+            }
         }
         result.putLength( length );
         
