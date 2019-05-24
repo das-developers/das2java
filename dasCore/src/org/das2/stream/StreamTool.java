@@ -498,7 +498,9 @@ public class StreamTool {
                 Document doc = getXMLDocument(struct.bigBuffer, contentLength);
                 Element root = doc.getDocumentElement();
                 if (root.getTagName().equals("packet")) {
-                    PacketDescriptor pd = new PacketDescriptor(doc.getDocumentElement());
+                    int id= 10*(struct.four[1]-48)+(struct.four[2]-48);
+                    if ( id<0 || id>99 ) logger.warning("unable to parse id for packetDescriptor");
+                    PacketDescriptor pd = new PacketDescriptor(id,doc.getDocumentElement());
                     struct.handler.packetDescriptor(pd);
                     struct.descriptors.put(asciiBytesToString(struct.four, 1, 2), pd);
                 } else if (root.getTagName().equals("exception")) {
