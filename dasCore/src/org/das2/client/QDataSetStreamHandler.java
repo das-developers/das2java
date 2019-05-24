@@ -45,20 +45,24 @@ public class QDataSetStreamHandler implements StreamHandler {
 
     private static final Logger logger= LoggerManager.getLogger("das2.dataTransfer");
     
-    Map<PacketDescriptor,DataSetBuilder> xbuilders;
-    Map<PacketDescriptor,DataSetBuilder[]> builders;
-    Map<PacketDescriptor,String> schemes;
-    PacketDescriptor currentPd=null;
-    DataSetBuilder[] currentBuilders;
-    DataSetBuilder currentXBuilder;
+    private Map<Integer,DataSetBuilder> xbuilders;
+    private Map<Integer,DataSetBuilder[]> builders;
     
-    String streamTitle;
-    Map streamProperties;
+    // as each id is retired (for example, packet id 01 gets a new definition), put its data into the result.
+    private QDataSet jds= null;
     
-    QDataSet ds=null;
+    private Map<Integer,String> schemes;
+    private PacketDescriptor currentPd=null;
+    private DataSetBuilder[] currentBuilders;
+    private DataSetBuilder currentXBuilder;
+    
+    private String streamTitle;
+    private Map streamProperties;
+    
+    private QDataSet ds=null;
     
     //private Object collectionMode= MODE_SPLIT_BY_PACKET_DESCRIPTOR;
-    private Object collectionMode= MODE_SPLIT_BY_NEW_PACKET_DESCRIPTOR;
+    private final Object collectionMode= MODE_SPLIT_BY_NEW_PACKET_DESCRIPTOR;
     
     private ProgressMonitor monitor= new NullProgressMonitor();
     
@@ -168,8 +172,8 @@ public class QDataSetStreamHandler implements StreamHandler {
                 createBuilders(currentPd);
             }
             logger.log(Level.FINE, "packet type changed: {0}", pd.getYDescriptor(0).getSizeBytes());
-            currentXBuilder= xbuilders.get(pd);
-            currentBuilders= builders.get(pd);
+            currentXBuilder= xbuilders.get(pd.getId());
+            currentBuilders= builders.get(pd.getId());
             currentPd= pd;
         }
         
@@ -325,9 +329,9 @@ public class QDataSetStreamHandler implements StreamHandler {
         }
         
         if ( pd.getYCount()==2 && pd.getYDescriptor(0) instanceof StreamYDescriptor && pd.getYDescriptor(1) instanceof StreamZDescriptor ) {
-            this.schemes.put( pd, SCHEME_XYZSCATTER );
+            this.schemes.put( pd.getId(), SCHEME_XYZSCATTER );
         } else {
-            this.schemes.put( pd, "" );
+            this.schemes.put( pd.getId(), "" );
         }
         
         
@@ -355,8 +359,11 @@ public class QDataSetStreamHandler implements StreamHandler {
             xbuilder.putProperty( QDataSet.MONOTONIC, Boolean.TRUE );
         }
         
-        xbuilders.put( pd, xbuilder );
-        this.builders.put( pd, lbuilders );
+        DataSetBuilder retirex= xbuilders.put( pd.getId(), xbuilder );
+        DataSetBuilder[] retireb= this.builders.put( pd.getId(), lbuilders );
+        if ( retirex!=null ) {
+            jds= Ops.join( jds, collectDataSet( retirex, retireb ) );
+        }
         
     }
     
@@ -368,7 +375,8 @@ public class QDataSetStreamHandler implements StreamHandler {
         } else {
             ds1= null;
             for (DataSetBuilder currentBuilder : currentBuilders) {
-                ds1 = Ops.bundle(ds1, currentBuilder.getDataSet());
+                DDataSet ds= currentBuilder.getDataSet();
+                ds1 = Ops.bundle(ds1, ds );
             }
             if ( currentBuilders.length==2 ) {
                 // look for bundles.
@@ -461,15 +469,15 @@ public class QDataSetStreamHandler implements StreamHandler {
         if ( collectionMode==MODE_SPLIT_BY_PACKET_DESCRIPTOR ) {
             collectDataSet();
         } else {
-            JoinDataSet jds= null;
             int nbuilders= builders.size();
             if ( nbuilders==1 ) {
                 collectDataSet();
+                ds= jds;
             } else {
-                for ( Entry<PacketDescriptor,DataSetBuilder[]> e: builders.entrySet() ) {
-                    currentPd= e.getKey();
+                for ( Entry<Integer,DataSetBuilder[]> e: builders.entrySet() ) {
+                    int id= e.getKey();
                     currentBuilders= e.getValue();
-                    currentXBuilder= xbuilders.get(currentPd);
+                    currentXBuilder= xbuilders.get(id);
                     QDataSet ds1= collectDataSet( currentXBuilder, currentBuilders );
                     jds= (JoinDataSet)Ops.join( jds, ds1 );
                 }
