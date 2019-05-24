@@ -41,7 +41,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 
-/** Represents the global properties of the stream, that are accessible to
+/**
+ * Represents the global properties of the stream, that are accessible to
  * datasets within.
  * @author jbf
  */
@@ -53,15 +54,40 @@ public class PacketDescriptor implements Cloneable {
     private SkeletonDescriptor[] yDescriptors = new SkeletonDescriptor[6];
     private int yCount = 0;    
     private Map properties;
+    private int id= -99;
     
-    /** Creates a new instance of StreamProperties */
+    /** 
+     * creates a new PacketDescriptor
+     * @param element
+     * @throws org.das2.stream.StreamException
+     */
     public PacketDescriptor( Element element ) throws StreamException {
+        this( -99, element );
+    }
+    
+    /** 
+     * creates a new PacketDescriptor
+     * @param id
+     * @param element
+     * @throws org.das2.stream.StreamException
+     */
+    public PacketDescriptor( int id, Element element ) throws StreamException {
         properties= new HashMap();        
+        this.id= id;
         if (element.getTagName().equals("packet")) {
             processElement(element);
         } else {
             processLegacyElement(element);
         }
+    }   
+
+    /**
+     * return the ID associated with this packet type, or -99 if no id
+     * has been assigned.
+     * @return the id or -99
+     */
+    public int getId() {
+        return id;
     }
     
     private void processElement(Element element) throws StreamException {
