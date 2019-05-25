@@ -472,7 +472,14 @@ public class QDataSetStreamHandler implements StreamHandler {
             int nbuilders= builders.size();
             if ( nbuilders==1 ) {
                 collectDataSet();
-                if ( jds!=null ) ds= jds;
+                if ( jds!=null ) { // TODO: the structure of this changed, so that ds should probably be renames with a new mission statement.
+                    if ( ds==null ) {
+                        ds= jds;
+                    } else {
+                        jds= (JoinDataSet)Ops.join( jds, ds );
+                        ds= jds;
+                    }
+                }
             } else {
                 for ( Entry<Integer,DataSetBuilder[]> e: builders.entrySet() ) {
                     int id= e.getKey();
