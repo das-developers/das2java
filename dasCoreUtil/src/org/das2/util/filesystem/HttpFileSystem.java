@@ -205,7 +205,11 @@ public class HttpFileSystem extends WebFileSystem {
                     responseCode= urlc.getResponseCode();
                     
                     logger.log( Level.FINER, "made connection, now consume rest of stream: {0}", urlc );
-                    HttpUtil.consumeStream( urlc.getInputStream() );
+                    try {
+                        HttpUtil.consumeStream( urlc.getInputStream() );
+                    } catch ( IOException ex ) {
+                        logger.fine("exception when politely consuming stream after initial check");
+                    }
                     logger.log( Level.FINER, "done consuming and initial connection is complete: {0}" );
                     urlc.disconnect();
                     offline= false;
