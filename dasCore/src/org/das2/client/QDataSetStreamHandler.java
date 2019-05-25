@@ -472,7 +472,7 @@ public class QDataSetStreamHandler implements StreamHandler {
             int nbuilders= builders.size();
             if ( nbuilders==1 ) {
                 collectDataSet();
-                if ( jds!=null ) { // TODO: the structure of this changed, so that ds should probably be renames with a new mission statement.
+                if ( jds!=null ) { // TODO: the structure of this changed, so that "ds" should probably be renamed with a new mission statement.
                     if ( ds==null ) {
                         ds= jds;
                     } else {
