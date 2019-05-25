@@ -44,15 +44,15 @@ public class ArgumentList {
      */
     boolean allowUndefinedSwitch= false;
     
-    private final String UNSPECIFIED = "__unspecified__";
+    private static final String UNSPECIFIED = "__unspecified__";
     
-    private final String REFERENCEWITHOUTVALUE = "__referencewithoutvalue__";
+    private static final String REFERENCEWITHOUTVALUE = "__referencewithoutvalue__";
     
-    private final String UNDEFINED_SWITCH = "__undefinedSwitch__";
+    private static final String UNDEFINED_SWITCH = "__undefinedSwitch__";
     
-    public final String FALSE = "__false__";
+    public static final String FALSE = "__false__";
     
-    public final String TRUE = "__true__";
+    public static final String TRUE = "__true__";
     
     private static final Logger logger= Logger.getLogger( "das2.util" );
     
