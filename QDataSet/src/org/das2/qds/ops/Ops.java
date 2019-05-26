@@ -10490,7 +10490,7 @@ public final class Ops {
      * @see #mode
      * @see #median
      * @see #variance(org.das2.qds.QDataSet) 
-     * @see #mad(org.das2.qds.QDataSet) 
+     * @see #meanAverageDeviation(org.das2.qds.QDataSet) 
      * @author mmclouth
      */
     public static QDataSet mean( QDataSet ds ) {
@@ -10687,13 +10687,14 @@ public final class Ops {
     }
     
     /**
-     * return the Mean Average Deviation of the rank N dataset.  The result will contain
-     * the USER_PROPERTIES with a map containing the mean and number of points.
+     * return the Mean Average Deviation (MAD) of the rank N dataset.  
+     * The result will contain the USER_PROPERTIES with a map containing 
+     * the mean and number of points.
      * @param ds the rank N dataset.
-     * @return the rank 0 MAD of the dataset.
+     * @return the rank 0 mean average deviation of the dataset.
      * @see #mean(org.das2.qds.QDataSet) 
      */
-    public static QDataSet mad( QDataSet ds ) {
+    public static QDataSet meanAverageDeviation( QDataSet ds ) {
         
         QDataSet mean= mean( ds );
         double meanDouble= mean.value();
