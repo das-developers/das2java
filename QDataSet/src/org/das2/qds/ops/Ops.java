@@ -7389,6 +7389,8 @@ public final class Ops {
             title= "FFTPower of "+title;
         }
         
+        Map<String,Object> userProperties= (Map<String,Object>) ds.property(QDataSet.USER_PROPERTIES);
+        
         if ( ds.rank()==1 ) { // wrap to make rank 2
             QDataSet c= (QDataSet) ds.property( QDataSet.CONTEXT_0 );
             JoinDataSet dep0;
@@ -7449,6 +7451,7 @@ public final class Ops {
                 result.putProperty( QDataSet.QUBE, Boolean.TRUE );
                 result.putProperty( QDataSet.SCALE_TYPE, QDataSet.VALUE_SCALE_TYPE_LOG );
                 if ( title!=null ) result.putProperty( QDataSet.TITLE, title );
+                if ( userProperties!=null ) result.putProperty( QDataSet.USER_PROPERTIES, userProperties );
                 
                 return result;
                 
@@ -7671,6 +7674,7 @@ public final class Ops {
                 }
                 
                 if ( title!=null ) result.putProperty( QDataSet.TITLE, title );
+                if ( userProperties!=null ) result.putProperty( QDataSet.USER_PROPERTIES, userProperties );
                 result.putProperty( QDataSet.QUBE, Boolean.TRUE );
                 result.putProperty( QDataSet.SCALE_TYPE, QDataSet.VALUE_SCALE_TYPE_LOG );
                 return result;
