@@ -27,6 +27,7 @@ import org.das2.qds.DataSetOps;
 import org.das2.qds.QDataSet;
 import org.das2.qds.SemanticOps;
 import org.das2.qds.ops.Ops;
+import org.das2.util.DasMath;
 import org.jdesktop.beansbinding.Converter;
 //import org.apache.xml.serialize.*;
 
@@ -1326,6 +1327,96 @@ public class GraphUtil {
                 }
             }  
         };
+    }
+
+    /**
+     * return the number of minor ticks for the spacing.  This should be
+     * return by searching for the first two factors.
+     * @param dt the step size
+     * @return the number of minor ticks
+     */
+    private static int updateTickVManualTicksMinor( double dt ) {
+        int scale= (int)Math.log10(dt);
+        dt= dt/Math.pow(10,scale);
+        if ( dt==1. ) return 4;
+        if ( dt==2. ) return 2;
+        if ( dt==4. ) return 2;
+        if ( dt==5. ) return 5;
+        if ( dt==3. ) return 3;
+        if ( dt==1.5 ) return 3;
+        return 1;
+    }
+    
+    /**
+     * calculate a TickVDescriptor for the ticks.  
+     * Example specifications:<ul>
+     * <li>+20 every 20 units, whatever the data units are.
+     * <li>+20s  every 20 seconds
+     * <li>0,20,40,60,100  explicit locations.
+     * </ul>
+     * 
+     * @param lticks
+     * @param dr
+     * @param log
+     * @return 
+     */
+    public static TickVDescriptor calculateManualTicks( String lticks, DatumRange dr, boolean log ) {
+        TickVDescriptor result;
+        Units u= dr.getUnits();
+        if ( lticks.startsWith("+") ) {
+            try {
+                Datum tickM= u.getOffsetUnits().parse(lticks.substring(1));
+                double min= dr.min().doubleValue(u);
+                double max= dr.max().doubleValue(u);
+                double dt= tickM.doubleValue(u.getOffsetUnits());
+                double firstTick= Math.floor( min/dt )*dt;
+                double lastTick= Math.ceil( max/dt )*dt;
+                int ntick= (int)( ( lastTick - firstTick ) / dt ) + 1;
+                double[] dticks= new double[ ntick ];
+                for ( int i=0; i<dticks.length; i++ ) {
+                    dticks[i]= firstTick + i*dt; // TODO: rewrite unstable
+                }
+                int minorTicks=updateTickVManualTicksMinor(dt);
+                dt= dt/minorTicks;
+                double[] dticksMinor= new double[ ntick*minorTicks ];
+                for ( int i=0; i<dticksMinor.length; i++ ) {
+                    dticksMinor[i]= firstTick + i*dt; // TODO: rewrite unstable
+                }
+                TickVDescriptor majorTicks= new TickVDescriptor( dticksMinor, dticks, u );
+                result= majorTicks;
+            } catch (ParseException ex) {
+                result= null;
+            }
+        } else {
+            String[] ss= lticks.split(",");
+            double[] dticks= new double[ss.length];
+            for ( int i=0; i<dticks.length; i++ ) {
+                try {
+                    dticks[i]= u.parse(ss[i]).doubleValue(u);
+                } catch (ParseException ex) {
+                    logger.log(Level.WARNING, "failed to parse tick: {0}", ss[i]);
+                    dticks[i]= 0;
+                }
+            }
+            double[] dticksMinor;
+            if ( dticks.length>2 ) {
+                double dt= DasMath.gcd( dticks, (dticks[1]-dticks[0])/100. );
+                int minorTicks= updateTickVManualTicksMinor(dt);
+                dt= dt/minorTicks;
+                double firstTick= DasMath.min(dticks);
+                double lastTick= DasMath.max(dticks);
+                int ntick= (int)(Math.ceil(lastTick-firstTick)/dt) + 1;
+                dticksMinor= new double[ ntick ];
+                for ( int i=0; i<dticksMinor.length; i++ ) {
+                    dticksMinor[i]= firstTick + i * dt;
+                }
+            } else {
+                dticksMinor= dticks;
+            }
+            TickVDescriptor majorTicks= new TickVDescriptor( dticksMinor, dticks, u );
+            result= majorTicks;
+        }
+        return result;
     }
 
 
