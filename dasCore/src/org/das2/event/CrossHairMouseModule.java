@@ -126,6 +126,11 @@ public class CrossHairMouseModule extends MouseModule {
     }
 
     @Override
+    public String getDirections() {
+        return "Press p to pin, ctrl-C to copy to clipboard";
+    }
+
+    @Override
     public void keyTyped(KeyEvent keyEvent) {
         if ( ( Toolkit.getDefaultToolkit().getMenuShortcutKeyMask() & keyEvent.getModifiers() ) !=0 ) {
             if ( keyEvent.getKeyChar()==KeyEvent.VK_C || keyEvent.getKeyChar()==3 ) { // 3 was observed on Linux/Centos6/Java
