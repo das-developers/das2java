@@ -2036,6 +2036,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 double min= this.getDataMinimum( u );
                 double max= this.getDataMaximum( u );
                 double dt= tickM.doubleValue(u.getOffsetUnits());
+                if ( dt==0. ) {
+                    logger.warning("delta ticks cannot be 0.");
+                    this.tickV= null;
+                    return;
+                }
                 double firstTick= Math.floor( min/dt )*dt;
                 double lastTick= Math.ceil( max/dt )*dt;
                 int ntick= (int)( ( lastTick - firstTick ) / dt ) + 1;
@@ -2052,6 +2057,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 TickVDescriptor majorTicks= new TickVDescriptor( dticksMinor, dticks, u );
                 this.tickV= majorTicks;
             } catch (ParseException ex) {
+                logger.log(Level.WARNING, "failed to parse delta ticks: {0}", lticks);
                 this.tickV= null;
             }
         } else {

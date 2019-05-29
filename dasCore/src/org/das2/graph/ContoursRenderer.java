@@ -559,7 +559,7 @@ public class ContoursRenderer extends Renderer {
     /**
      * the contour locations, a comma-separated list
      */
-    private String contours = "+.1";
+    private String contours = "0.0";
 
     /**
      * return the contour locations, a comma-separated list

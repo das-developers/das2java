@@ -1369,6 +1369,10 @@ public class GraphUtil {
                 double min= dr.min().doubleValue(u);
                 double max= dr.max().doubleValue(u);
                 double dt= tickM.doubleValue(u.getOffsetUnits());
+                if ( dt==0. ) {
+                    logger.warning("delta ticks cannot be 0.");
+                    return null;
+                }
                 double firstTick= Math.floor( min/dt )*dt;
                 double lastTick= Math.ceil( max/dt )*dt;
                 int ntick= (int)( ( lastTick - firstTick ) / dt ) + 1;
@@ -1385,6 +1389,7 @@ public class GraphUtil {
                 TickVDescriptor majorTicks= new TickVDescriptor( dticksMinor, dticks, u );
                 result= majorTicks;
             } catch (ParseException ex) {
+                logger.warning(ex.getMessage());
                 result= null;
             }
         } else {
