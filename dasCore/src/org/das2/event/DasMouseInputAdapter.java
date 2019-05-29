@@ -955,7 +955,15 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
                                 // set the message based on whether the module overrides mouseRangeSelected
                                 Method m= theone.getClass().getMethod("mouseRangeSelected",MouseDragEvent.class);
                                 if ( m.equals(MouseModule.class.getMethod("mouseRangeSelected",MouseDragEvent.class)) ) {
-                                    //feedback.setMessage("" + theone.getListLabel() );
+                                    String s= theone.getDirections();
+                                    if ( s==null ) {
+                                        s= theone.getLabel();
+                                    }
+                                    if ( !( s.startsWith(theone.getLabel()) ) ) {
+                                        s= theone.getLabel()+": "+s;
+                                    }
+                                    feedback.setMessage( s ); 
+                                    
                                 } else {
                                     // it's going to do something when we release.
                                     String s= theone.getDirections();
@@ -965,7 +973,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
                                     if ( !( s.startsWith(theone.getLabel()) ) ) {
                                         s= theone.getLabel()+": "+s;
                                     }
-                                    feedback.setMessage( s + ", press escape to cancel" );                    
+                                    feedback.setMessage( s + ", press escape to cancel and p to pin" );                    
                                 }
                             } catch (NoSuchMethodException ex) {
                                 logger.log(Level.SEVERE, ex.getMessage(), ex);
