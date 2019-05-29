@@ -55,6 +55,10 @@ public class PutPropertyFilterEditorPanel extends AbstractFilterEditorPanel {
                 vv= new String[] { "%5.2f", "%d", "%05d", "%x" };
                 documentationLabel.setText("format specifier for digital display");
                 break;
+            case "UNITS":
+                vv= new String[] { "None" };
+                documentationLabel.setText("reset the units");
+                break;
             default:
                 vv= new String[] { "" };
                 documentationLabel.setText(" ");
@@ -79,7 +83,7 @@ public class PutPropertyFilterEditorPanel extends AbstractFilterEditorPanel {
         jLabel1.setText("Put Property");
 
         jComboBox1.setEditable(true);
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "VALID_MIN", "VALID_MAX", "FILL_VALUE", "TITLE", "LABEL", "DEPEND_0", "FORMAT", "DELTA_PLUS", "DELTA_MINUS", " " }));
+        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "VALID_MIN", "VALID_MAX", "FILL_VALUE", "TITLE", "LABEL", "DEPEND_0", "FORMAT", "DELTA_PLUS", "DELTA_MINUS", "UNITS" }));
         jComboBox1.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 jComboBox1ItemStateChanged(evt);

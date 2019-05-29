@@ -71,7 +71,7 @@
             <StringItem index="6" value="FORMAT"/>
             <StringItem index="7" value="DELTA_PLUS"/>
             <StringItem index="8" value="DELTA_MINUS"/>
-            <StringItem index="9" value=" "/>
+            <StringItem index="9" value="UNITS"/>
           </StringArray>
         </Property>
       </Properties>
