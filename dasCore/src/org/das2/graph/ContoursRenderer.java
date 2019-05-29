@@ -2,9 +2,6 @@
  * ContoursRenderer.java
  *
  * Created on December 7, 2007, 2:47 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
  */
 package org.das2.graph;
 
@@ -17,7 +14,6 @@ import org.das2.util.monitor.ProgressMonitor;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontMetrics;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
@@ -34,8 +30,10 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import org.das2.datum.DatumRange;
 import org.das2.qds.DDataSet;
 import org.das2.qds.DataSetOps;
+import org.das2.qds.DataSetUtil;
 import org.das2.qds.QDataSet;
 import org.das2.qds.SemanticOps;
 import org.das2.qds.JoinDataSet;
@@ -269,16 +267,16 @@ public class ContoursRenderer extends Renderer {
         
         Units units = SemanticOps.getUnits(tds);
 
-        String[] cons = this.contours.trim().split(",");
-        double[] dcons = new double[cons.length];
-        for (int i = 0; i < cons.length; i++) {
-            if (cons[i].trim().equals("")) {
-                continue;
-            }
-            double c = Double.parseDouble(cons[i]);
-            dcons[i] = c;
+        DatumRange extent= DataSetUtil.asDatumRange( Ops.extent(tds) );
+        
+        String lcontours= this.contours.trim();
+        TickVDescriptor ticks= GraphUtil.calculateManualTicks( lcontours, extent, false );
+                
+        DatumVector dv = ticks.tickV;
+        if ( dv.getLength()>200 ) {
+            logger.warning("Too many contour levels, limit is 200");
+            dv= dv.getSubVector(0,200);
         }
-        DatumVector dv = DatumVector.newDatumVector(dcons, units );        
         contoursDs= Contour.contour(tds, DDataSet.wrap(dv.toDoubleArray(units) ) );
     }
     
