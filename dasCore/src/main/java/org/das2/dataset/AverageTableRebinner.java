@@ -606,9 +606,12 @@ public class AverageTableRebinner implements DataSetRebinner {
                     boolean doInterp;
                     if ( i1[j]!= -1 && i2[j] != -1) {
                         doInterp= ( yTagTemp[i2[j]]-yTagTemp[i1[j]] ) < ySampleWidth*2;
-                    } else {
-                        //kludge for bug 000321
-                        doInterp= Math.min(i1[j] == -1 ? Double.MAX_VALUE : (yTagTemp[j] - yTagTemp[i1[j]]), i2[j] == -1 ? Double.MAX_VALUE : (yTagTemp[i2[j]] - yTagTemp[j])) < ySampleWidth / 2;
+					} else if ( i1[j] != -1 ) {
+						doInterp= (yTagTemp[j] - yTagTemp[i1[j]]) < ySampleWidth / 2;
+					} else if ( i2[j] != -1 ) {
+						doInterp= (yTagTemp[i2[j]] - yTagTemp[j]) < ySampleWidth / 2;
+                    } else { // If we reach this branch then both i1[j] and i2[j] equal -1
+                        doInterp= false;
                     }
                     if ( doInterp ) { 
                         int idx;
