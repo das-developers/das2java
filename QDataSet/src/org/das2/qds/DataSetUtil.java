@@ -2300,6 +2300,41 @@ public class DataSetUtil {
     }
     
     /**
+     * return true if each record of DEPEND_i is the same.  Rank 0 datasets
+     * are trivially constant.
+     * @param ds any dataset
+     * @param dim the index
+     * @return true if the dataset doesn't change with DEPEND_0 or is rank 0.
+     */
+    public static boolean isConstant( QDataSet ds, int dim ) {
+        if ( ds.rank()==0 || ds.length()==0 ) {
+            return true;
+        } else if ( dim==0 ) {
+            return isConstant( ds );
+        } else if ( dim==1 ) {
+            QDataSet s1= Ops.slice1( ds, 0 );
+            for ( int i=1; i<ds.length(0); i++ ) {
+                if ( !Ops.equivalent(s1,Ops.slice1(ds,i) ) ) return false;
+            }
+            return true;
+        } else if ( dim==2 ) {
+            QDataSet s1= Ops.slice2( ds, 0 );
+            for ( int i=1; i<ds.length(0,0); i++ ) {
+                if ( !Ops.equivalent(s1,Ops.slice2(ds,i) ) ) return false;
+            }
+            return true;
+        } else if ( dim==3 ) {
+            QDataSet s1= Ops.slice3( ds, 0 );
+            for ( int i=1; i<ds.length(0); i++ ) {
+                if ( !Ops.equivalent(s1,Ops.slice3(ds,i) ) ) return false;
+            }
+            return true;
+        } else {
+            throw new IllegalArgumentException("rank limit");
+        }
+    }    
+    
+    /**
      * special check to see if joined datasets really are a qube.  This
      * will putProperty(QDataSet.QUBE,Boolean.TRUE) when the dataset really is
      * a qube.
