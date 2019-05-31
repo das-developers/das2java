@@ -84,12 +84,13 @@ public class UByteDataSet extends BufferDataSet {
      */
     public String collectString( Charset charset ) {
         if ( this.rank!=1 ) throw new IllegalArgumentException("data must be rank 1");
+        int st= offset(0);
         if ( back.hasArray() ) {
-            return new String( back.array(), charset );
+            return new String( back.array(), st, st+this.len0, charset );
         } else {
             byte[] array= new byte[this.length()];
-            back.position(0);
-            back.limit(this.len0);
+            back.position( st );
+            back.limit( st+this.len0 );
             back.get(array);
             return new String( array, charset );
         }
