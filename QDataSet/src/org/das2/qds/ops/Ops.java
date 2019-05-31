@@ -925,6 +925,30 @@ public final class Ops {
         }
         Map<String,Object> props= DataSetUtil.getProperties(ds);
         props= DataSetOps.sliceProperties( props, dim );
+        
+        for ( int i=dim+1; i<ds.rank(); i++ ) {
+            QDataSet dep= (QDataSet) ds.property( "DEPEND_"+i );
+            if ( dep.rank()>1 && DataSetUtil.isConstant( dep, dim ) ) {
+                switch (dim) {
+                    case 0:
+                        dep= Ops.slice0(dep,0);
+                        break;
+                    case 1:
+                        dep= Ops.slice1(dep,0);
+                        break;
+                    case 2:
+                        dep= Ops.slice2(dep,0);
+                        break;
+                    case 3:
+                        dep= Ops.slice3(dep,0);
+                        break;
+                    default:
+                        dep= null;
+                }
+                props.put( "DEPEND_"+(i-1), dep );
+            }
+        }
+        
         DataSetUtil.putProperties( props, result );
         result.putProperty(QDataSet.WEIGHTS,weights);
         result.putProperty(QDataSet.FILL_VALUE,fill);
