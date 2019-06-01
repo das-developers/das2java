@@ -399,12 +399,12 @@ public class ContoursRenderer extends Renderer {
             String label = pathLabels[i];
             GeneralPath p = lpaths[i];
             
-            if ( !p.intersects(visible) ) {
-                logger.finer("skipping non-intersecting path");
-                continue;
-            }
-
             if (p != null) {
+                
+                if ( !p.intersects(visible) ) {
+                    logger.finer("skipping offscreen path");
+                    continue;
+                }
 
                 PathIterator it1 = p.getPathIterator(null);
                 PathIterator it2 = p.getPathIterator(null);
@@ -414,7 +414,6 @@ public class ContoursRenderer extends Renderer {
                     double len = GraphUtil.pointsAlongCurve(it1, null, null, null, true);
 
                     int nlabel = 1 + (int) Math.floor( len / labelCadencePixels );
-                    logger.finer("nlabel="+nlabel);
 
                     double phase = (len - ( nlabel-1 )  * labelCadencePixels ) / 2;
 
