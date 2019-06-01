@@ -28,6 +28,8 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.das2.datum.DatumRange;
@@ -38,6 +40,7 @@ import org.das2.qds.QDataSet;
 import org.das2.qds.SemanticOps;
 import org.das2.qds.JoinDataSet;
 import org.das2.qds.ops.Ops;
+import org.das2.util.LoggerManager;
 import org.jdesktop.beansbinding.Converter;
 
 /**
@@ -46,6 +49,8 @@ import org.jdesktop.beansbinding.Converter;
  */
 public class ContoursRenderer extends Renderer {
 
+    protected static final Logger logger= LoggerManager.getLogger("das2.graphics.renderer.contours");
+    
     public ContoursRenderer() {
     }
     
@@ -167,6 +172,8 @@ public class ContoursRenderer extends Renderer {
         if ( paths==null ) {
             return;
         }
+
+        logger.entering( "ContoursRenderer", "render" );
         
         if (lparent.getCanvas().isAntiAlias()) {
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -192,6 +199,7 @@ public class ContoursRenderer extends Renderer {
                 g.draw(path);
             }
         }
+        logger.exiting( "ContoursRenderer", "render" );
 
     }
 
@@ -277,7 +285,9 @@ public class ContoursRenderer extends Renderer {
             logger.warning("Too many contour levels, limit is 200");
             dv= dv.getSubVector(0,200);
         }
+        long t0= System.currentTimeMillis();
         contoursDs= Contour.contour(tds, DDataSet.wrap(dv.toDoubleArray(units) ) );
+        logger.log(Level.FINE, "contours calculated in {0}ms", System.currentTimeMillis()-t0);
     }
     
     private String fontSize = "8pt";
@@ -496,6 +506,8 @@ public class ContoursRenderer extends Renderer {
             return;
         }
         
+        logger.entering( "ContoursRenderer", "updatePlotImage" );
+
         QDataSet xds = (QDataSet) DataSetOps.unbundle(contoursDs, 0 );
         QDataSet yds = (QDataSet) DataSetOps.unbundle(contoursDs, 1 );
         QDataSet zds=  (QDataSet) DataSetOps.unbundle(contoursDs, 2 );
@@ -554,6 +566,9 @@ public class ContoursRenderer extends Renderer {
 
         paths = (GeneralPath[]) list.toArray(new GeneralPath[list.size()]);
         pathLabels = (String[]) labels.toArray(new String[labels.size()]);
+
+        logger.exiting( "ContoursRenderer", "updatePlotImage" );
+        
     }
     
     /**
