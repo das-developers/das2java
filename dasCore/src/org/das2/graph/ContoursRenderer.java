@@ -387,6 +387,8 @@ public class ContoursRenderer extends Renderer {
 
         GeneralPath[] lpaths= getPaths();
         
+        Rectangle visible= getParent().getAxisClip();
+        
         double labelCadencePixels= getPixelLength( labelCadence, font.getSize2D() );
             
         double minLength= 20;
@@ -396,6 +398,11 @@ public class ContoursRenderer extends Renderer {
             }
             String label = pathLabels[i];
             GeneralPath p = lpaths[i];
+            
+            if ( !p.intersects(visible) ) {
+                logger.finer("skipping non-intersecting path");
+                continue;
+            }
 
             if (p != null) {
 
@@ -407,6 +414,7 @@ public class ContoursRenderer extends Renderer {
                     double len = GraphUtil.pointsAlongCurve(it1, null, null, null, true);
 
                     int nlabel = 1 + (int) Math.floor( len / labelCadencePixels );
+                    logger.finer("nlabel="+nlabel);
 
                     double phase = (len - ( nlabel-1 )  * labelCadencePixels ) / 2;
 
@@ -455,14 +463,19 @@ public class ContoursRenderer extends Renderer {
                             GeneralPath rect = new GeneralPath(sbounds);
                             rect.transform(AffineTransform.getTranslateInstance( -w / 2, 0));
                             rect.transform(at);
-                            clip.add(new Area(rect));
-
-                            AffineTransform gat= new AffineTransform(at0);
-                            gat.concatenate(at);
                             
-                            g.setTransform( gat );
-                            g.setColor(color);
-                            g.drawString(label, (int) ( (-w / 2) + emw/2 ), 0);
+                            if ( rect.intersects(visible) ) {
+                                clip.add(new Area(rect));
+
+                                AffineTransform gat= new AffineTransform(at0);
+                                gat.concatenate(at);
+                            
+                                g.setTransform( gat );
+                                g.setColor(color);
+                                g.drawString(label, (int) ( (-w / 2) + emw/2 ), 0);
+                            } else {
+                                logger.finest("skipping label");
+                            }
                         }
                     }
                 }
