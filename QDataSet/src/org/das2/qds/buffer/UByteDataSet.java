@@ -89,8 +89,9 @@ public class UByteDataSet extends BufferDataSet {
             return new String( back.array(), st, st+this.len0, charset );
         } else {
             byte[] array= new byte[this.length()];
-            back.position( st );
+            back.position(0);
             back.limit( st+this.len0 );
+            back.position( st );
             back.get(array);
             return new String( array, charset );
         }
