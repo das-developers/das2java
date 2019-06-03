@@ -545,12 +545,12 @@ public class DasAnnotation extends DasCanvasComponent {
                 try {
                     headx= (int)plot.getXAxis().transform(pointAtX);
                 } catch ( InconvertibleUnitsException ex ) {
-                    headx= (int)plot.getXAxis().transform(pointAtX.value(),plot.getXAxis().getUnits());
+                    headx= (int)plot.getXAxis().transform(pointAtX.doubleValue(pointAtX.getUnits()),plot.getXAxis().getUnits());
                 }   
                 try {
                     heady= (int)plot.getYAxis().transform(pointAtY);
                 } catch ( InconvertibleUnitsException ex ) {
-                    heady= (int)plot.getYAxis().transform(pointAtY.value(),plot.getYAxis().getUnits());
+                    heady= (int)plot.getYAxis().transform(pointAtY.doubleValue(pointAtY.getUnits()),plot.getYAxis().getUnits());
                 }   
             }
             
