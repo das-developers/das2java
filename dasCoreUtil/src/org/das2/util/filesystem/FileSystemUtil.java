@@ -178,8 +178,10 @@ public class FileSystemUtil {
                 } else {
                     // if the entry is a directory, make the directory
                     File dir = new File(filePath);
-                    if ( !dir.mkdir() ) {
-                        logger.log(Level.WARNING, "failed attempt to make directory: {0}", filePath);
+                    if ( !dir.exists() ) {
+                        if ( !dir.mkdir() ) {
+                            logger.log(Level.WARNING, "failed attempt to make directory: {0}", filePath);
+                        }
                     }
                 }
                 zipIn.closeEntry();
