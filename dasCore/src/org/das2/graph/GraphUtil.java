@@ -892,6 +892,30 @@ public class GraphUtil {
 
         return remaining;
     }
+    
+    /**
+     * parse strings like "14em+2pt" into a length in pixels.
+     * @param s the string specifying ems and pxs
+     * @param totalWidth the total with for the normalized position.
+     * @param em the size of an em in pixels.
+     * @return the length in pixels
+     * @see DasDevicePosition#parseLayoutStr(java.lang.String) 
+     */
+    public static double parseLayoutLength( String s, double totalWidth, double em ) {
+        try {
+            double[] dd= DasDevicePosition.parseLayoutStr((String)s);
+            if ( dd[0]==0 && dd[1]==1 && dd[2]==0 ) {
+                return em; 
+            } else {
+                double parentSize= em;
+                double newSize= dd[0]*totalWidth + dd[1]*parentSize + dd[2];
+                return newSize;
+            }
+        } catch (ParseException ex) {
+            logger.log( Level.WARNING, null, ex.getMessage() );
+            return 0.f;
+        }
+    }
 
     /**
      * return a string representation of the affine transforms used in DasPlot for
