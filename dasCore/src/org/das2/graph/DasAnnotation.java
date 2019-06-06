@@ -601,22 +601,31 @@ public class DasAnnotation extends DasCanvasComponent {
                     return;
                 }
             } else {
+                BufferedImage localImage= img;
+                if ( localImage==null ) {
+                    try {
+                        localImage= ImageIO.read( DasAnnotation.class.getResource("/images/grey100.png") );
+                    } catch (IOException ex) {
+                        logger.log(Level.SEVERE, null, ex); // this shouldn't happen.
+                        return;
+                    }
+                }
                 if ( scale!=1.0 ) {
-                    int newWidth= (int)(img.getWidth()*scale);
-                    int newHeight= (int)(img.getHeight()*scale);
+                    int newWidth= (int)(localImage.getWidth()*scale);
+                    int newHeight= (int)(localImage.getHeight()*scale);
                     
                     boolean printing= getCanvas().isPrintingThread();
                     if ( printing ) {
                         g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-                        g.drawImage( img, r.x+em, r.y+em, newWidth, newHeight, this );        
+                        g.drawImage( localImage, r.x+em, r.y+em, newWidth, newHeight, this );        
                     } else {
-                        BufferedImage resized = org.das2.util.ImageUtil.getScaledInstance( img, (int)Math.sqrt( newWidth*newWidth + newHeight*newHeight ) );
+                        BufferedImage resized = org.das2.util.ImageUtil.getScaledInstance( localImage, (int)Math.sqrt( newWidth*newWidth + newHeight*newHeight ) );
                         g.drawImage( resized, r.x+em, r.y+em, this );                        
                     }
                     
 
                 } else {
-                    g.drawImage( img, r.x+em, r.y+em, this );
+                    g.drawImage( localImage, r.x+em, r.y+em, this );
                 }
             }
         
@@ -766,7 +775,7 @@ public class DasAnnotation extends DasCanvasComponent {
         Rectangle r;
         if ( gtr==null ) {
             if ( img==null ) {
-                r= new Rectangle( 0, 0, 64, 64 );
+                r= new Rectangle( 0, 0, (int)(100* scale), (int)(100* scale) );
             } else {
                 r= new Rectangle( 0, 0, (int)(img.getWidth() * scale), (int)(img.getHeight()*scale) );
             }
