@@ -13,6 +13,7 @@ import org.das2.event.MoveComponentMouseModule;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
+import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
@@ -568,9 +569,16 @@ public class DasAnnotation extends DasCanvasComponent {
             Rectangle2D rect2d= new Rectangle2D.Double(r.x, r.y, r.width, r.height );
             Point2D p2d= GraphUtil.lineRectangleIntersection( tail2d, head2d, rect2d );
             Point p= p2d==null ? head : new Point( (int)p2d.getX(), (int)p2d.getY() );
-
+            
             g2.setStroke( new BasicStroke( (float) (em2/4), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ) );
             
+            if ( pointAtOffset.length()>0 ) {
+                double lengthPixels= GraphUtil.getPixelLength( pointAtOffset, 0, getEmSize() );
+                Line2D line= new Line2D.Double( head.x, head.y, p.x, p.y );
+                Line2D newLine= GraphUtil.shortenLine(line, lengthPixels, 0 );
+                head= new Point( (int)newLine.getP1().getX(), (int)newLine.getP1().getY() );
+            }
+                                    
             Color glowColor= getCanvas().getBackground();
             g2.setColor( new Color( glowColor.getRed(), glowColor.getGreen(), glowColor.getBlue(), 128 ) );
             Arrow.paintArrow(g2, head, p, em2, this.arrowStyle );
@@ -1135,6 +1143,20 @@ public class DasAnnotation extends DasCanvasComponent {
         Datum oldPointAtY = this.pointAtY;
         this.pointAtY = pointAtY;
         firePropertyChange(PROP_POINTATY, oldPointAtY, pointAtY);
+    }
+    
+    private String pointAtOffset="";
+
+    public static final String PROP_POINTATOFFSET = "pointAtOffset";
+
+    public String getPointAtOffset() {
+        return pointAtOffset;
+    }
+
+    public void setPointAtOffset(String pointAtOffset) {
+        String oldPointAtOffset = this.pointAtOffset;
+        this.pointAtOffset = pointAtOffset;
+        firePropertyChange(PROP_POINTATOFFSET, oldPointAtOffset, pointAtOffset);
     }
 
     private boolean showArrow = false;
