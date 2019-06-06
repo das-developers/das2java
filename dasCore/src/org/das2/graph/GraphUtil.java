@@ -895,8 +895,15 @@ public class GraphUtil {
     
     /**
      * parse strings like "14em+2pt" into a length in pixels.
+     * <ul>
+     * <li>"1em",0,8 -> 8
+     * <li>"50%",240,0 -> 120
+     * <li>"4pt",240,8 -> 4
+     * <li>"4px",240,8 -> 4
+     * <li>"1em+4pt",240,8 -> 12
+     * </ul>
      * @param s the string specifying ems and pxs
-     * @param totalWidth the total with for the normalized position.
+     * @param totalWidth the total with for the normalized length.
      * @param em the size of an em in pixels.
      * @return the length in pixels
      * @see DasDevicePosition#parseLayoutStr(java.lang.String) 
