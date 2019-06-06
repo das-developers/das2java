@@ -1582,6 +1582,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
     private String tickValues="";
 
+    /**
+     * @see #setTickValues(java.lang.String) 
+     */
     public static final String PROP_TICKVALUES = "tickValues";
 
     public String getTickValues() {
