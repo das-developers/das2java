@@ -573,8 +573,8 @@ public class DasAnnotation extends DasCanvasComponent {
             g2.setStroke( new BasicStroke( (float) (em2/4), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ) );
             
             if ( pointAtOffset.length()>0 ) {
-                double lengthPixels= GraphUtil.getPixelLength( pointAtOffset, 0, getEmSize() );
                 Line2D line= new Line2D.Double( head.x, head.y, p.x, p.y );
+                double lengthPixels= GraphUtil.parseLayoutLength( pointAtOffset, line.getP1().distance(line.getP2()), getEmSize() );
                 Line2D newLine= GraphUtil.shortenLine(line, lengthPixels, 0 );
                 head= new Point( (int)newLine.getP1().getX(), (int)newLine.getP1().getY() );
             }
