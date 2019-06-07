@@ -120,7 +120,7 @@ public class TimeParser {
     private final String regex;
     //private String formatString;
     
-    private Datum phaseStart=null;
+    private Datum phasestart=null;
             
     /**
      * position in the template where we switch over to stop time digits.
@@ -1036,7 +1036,7 @@ public class TimeParser {
                                 break;
                             case "phasestart":
                                 try {
-                                    phaseStart= TimeUtil.create(val);
+                                    phasestart= TimeUtil.create(val);
                                 } catch (ParseException ex) {
                                     logger.log(Level.SEVERE, null, ex);
                                 }
@@ -1535,9 +1535,9 @@ public class TimeParser {
 
         }
         
-        if ( this.phaseStart!=null ) {
+        if ( this.phasestart!=null ) {
             if ( timeWidthDatum==null ) {
-                logger.warning("phaseStart cannot be used for month or year resolution");
+                logger.warning("phasestart cannot be used for month or year resolution");
             } else {
                 Datum start;
                 if (startTime.year < 1990) {
@@ -1545,7 +1545,10 @@ public class TimeParser {
                 } else {
                    start= Units.us2000.createDatum(toUs2000(startTime));
                 }
-                start= this.phaseStart.add( timeWidthDatum.multiply( DatumUtil.divp( start.subtract(this.phaseStart), timeWidthDatum ) ) );
+                Datum s1= this.phasestart.add( timeWidthDatum.multiply( DatumUtil.divp( start.subtract(this.phasestart), timeWidthDatum ) ) );
+                if ( !s1.equals(start) ) {
+                    throw new ParseException("does not obey phasestart: "+timeString,0 );
+                }
                 this.startTime= TimeUtil.toTimeStruct(start);
                 this.stopTime= TimeUtil.add( this.startTime, this.timeWidth );
             }
@@ -2120,11 +2123,11 @@ public class TimeParser {
         int offs = 0;
         int len;
 
-        if ( this.phaseStart!=null ) {
+        if ( this.phasestart!=null ) {
             if ( timeWidthDatum==null ) {
                 logger.warning("phaseStart cannot be used for month or year resolution");
             } else {
-                start= this.phaseStart.add( timeWidthDatum.multiply( DatumUtil.divp( start.subtract(this.phaseStart), timeWidthDatum ) ) );
+                start= this.phasestart.add( timeWidthDatum.multiply( DatumUtil.divp( start.subtract(this.phasestart), timeWidthDatum ) ) );
             }
         }
 
