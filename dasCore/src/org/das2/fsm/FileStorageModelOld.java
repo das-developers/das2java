@@ -31,6 +31,7 @@ import org.das2.DasApplication;
  * interpreted as a time digit.  The model can then be used to provide the set
  * of files that cover a time range, etc.
  *
+ * @see FileStorageModel FileStorageModel should be used in new applications.
  * @author  Jeremy
  */
 public class FileStorageModelOld {
