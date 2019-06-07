@@ -616,6 +616,8 @@ public class FileStorageModel {
             String[] files1= fileSystems[i].listDirectory( "/", theListRegex );
             logger.log( Level.FINER, "listDirectory({0})->{1}", new Object[]{theListRegex, files1.length});
             
+            Arrays.sort(files1);
+            
             for ( int j=0; j<files1.length; j++ ) {
                 String ff= names[i].equals("") ? files1[j] : names[i]+"/"+files1[j];
                 if ( ff.endsWith("/") ) ff=ff.substring(0,ff.length()-1);
