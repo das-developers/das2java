@@ -278,6 +278,30 @@ public class Datum implements Comparable, Serializable {
     }
     
     /**
+     * return log10 of this datum.
+     * @return log10 of this datum.
+     */
+    public Datum log10() {
+        if ( this.getUnits()==Units.dimensionless ) {
+            return Units.dimensionless.createDatum( Math.log10( this.value() ) );
+        } else {
+            throw new IllegalArgumentException("units are not dimensionless");
+        }
+    }
+    
+    /**
+     * return Math.pow(10,v)
+     * @return Math.pow(10,v)
+     */
+    public Datum exp10() {
+        if ( this.getUnits()==Units.dimensionless ) {
+            return Units.dimensionless.createDatum( Math.pow(10,this.value() ) );
+        } else {
+            throw new IllegalArgumentException("units are not dimensionless");
+        }
+    }
+    
+    /**
      * Groovy scripting language uses this negation operator.
      * @return a Datum such that it plus this is 0.
      * @throws IllegalArgumentException when the units are location units.
