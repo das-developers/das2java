@@ -214,17 +214,6 @@ public class DasProgressPanel implements ProgressMonitor {
         return this.thePanel;
     }
     
-    private void adjustPositionToCenterOverContext() {
-        Component window= this.contextComponent;
-        Component c= this.getComponent();
-        if ( c==null ) return;
-        Window w= SwingUtilities.getWindowAncestor( c );
-        Window monitorWindow= SwingUtilities.getWindowAncestor( window );
-        if ( w!=null && w!=monitorWindow ) {
-            w.setLocationRelativeTo( window );
-        }        
-    }
-    
     /**
      * set the component where this progress monitor is understood.  This
      * is typically the DasCanvas.
@@ -458,7 +447,12 @@ public class DasProgressPanel implements ProgressMonitor {
         }
 
         if ( this.contextComponent!=null ) {
-            adjustPositionToCenterOverContext();
+            Component window= this.contextComponent;
+            Window w= SwingUtilities.getWindowAncestor( thePanel );
+            Window monitorWindow= SwingUtilities.getWindowAncestor( window );
+            if ( w!=null && w!=monitorWindow ) {
+                w.setLocationRelativeTo( window );
+            }        
         }
         
         componentsInitialized = true;
