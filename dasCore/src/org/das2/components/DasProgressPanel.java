@@ -201,7 +201,7 @@ public class DasProgressPanel implements ProgressMonitor {
         showProgressRate = true;
         isCancelled = false;
         running = false;
-        //System.err.println("here create \"" + label + "\" " + Integer.toHexString( this.hashCode() ) + " " + Thread.currentThread()  );        
+        //System.err.println("here create \"" + label + "\" " + Integer.toHexString( this.hashCode() ) + " " + Thread.currentThread()  );
     }
 
     /**
@@ -214,6 +214,17 @@ public class DasProgressPanel implements ProgressMonitor {
         return this.thePanel;
     }
     
+    private void adjustPositionToCenterOverContext() {
+        Component window= this.contextComponent;
+        Component c= this.getComponent();
+        if ( c==null ) return;
+        Window w= SwingUtilities.getWindowAncestor( c );
+        Window monitorWindow= SwingUtilities.getWindowAncestor( window );
+        if ( w!=null && w!=monitorWindow ) {
+            w.setLocationRelativeTo( window );
+        }        
+    }
+    
     /**
      * set the component where this progress monitor is understood.  This
      * is typically the DasCanvas.
@@ -221,14 +232,6 @@ public class DasProgressPanel implements ProgressMonitor {
      */
     public void setContextComponent( Component window ) {
         this.contextComponent= window;
-        if ( window==null ) return;
-        Component c= this.getComponent();
-        if ( c==null ) return;
-        Window w= SwingUtilities.getWindowAncestor( c );
-        Window monitorWindow= SwingUtilities.getWindowAncestor( window );
-        if ( w!=null && w!=monitorWindow ) {
-            w.setLocationRelativeTo( window );
-        }
     }
 
     /**
@@ -439,7 +442,7 @@ public class DasProgressPanel implements ProgressMonitor {
             int y = parentComponent.getRow().getDMiddle();
             thePanel.setLocation(x - thePanel.getWidth() / 2, y - thePanel.getHeight() / 2);
             removeFromComponent= ((Container) (parentComponent.getCanvas().getGlassPane()));
-            //removeFromComponent.add(thePanel);
+            removeFromComponent.add(thePanel);
             thePanel.setVisible(false);
         } else if ( parentCanvas!=null ) {
             thePanel.setSize(thePanel.getPreferredSize());
@@ -447,13 +450,17 @@ public class DasProgressPanel implements ProgressMonitor {
             int y = parentCanvas.getHeight()/2;
             thePanel.setLocation(x - thePanel.getWidth() / 2, y - thePanel.getHeight() / 2);
             removeFromComponent= ((Container) (parentCanvas.getGlassPane()));
-            //removeFromComponent.add(thePanel);
+            removeFromComponent.add(thePanel);
 
             thePanel.setVisible(false);
         } else {
             thePanel.setSize(thePanel.getPreferredSize());
         }
 
+        if ( this.contextComponent!=null ) {
+            adjustPositionToCenterOverContext();
+        }
+        
         componentsInitialized = true;
     }
 
@@ -563,7 +570,7 @@ public class DasProgressPanel implements ProgressMonitor {
             setVisible(true);
         }
     }
-    
+
     @Override
     public boolean canBeCancelled() {
         return cancelChecked;
@@ -734,11 +741,6 @@ public class DasProgressPanel implements ProgressMonitor {
                     initComponents();
                 if (thePanel != null)
                     thePanel.setVisible(visible);
-                if ( removeFromComponent!=null && visible ) {
-                    removeFromComponent.add(thePanel);
-                } else if (removeFromComponent!=null && !visible ) {
-                    removeFromComponent.remove(thePanel);
-                }
                 if (DasProgressPanel.this.jframe != null)
                     DasProgressPanel.this.jframe.setVisible(visible);
             }
@@ -773,7 +775,7 @@ public class DasProgressPanel implements ProgressMonitor {
         taskStartedTime = System.currentTimeMillis();
         running = true;
         currentThreadName= Thread.currentThread().getName(); 
-        
+
         if (hideInitiallyMilliSeconds > 0) {
             setVisible(false);
             new Thread(new Runnable() {
