@@ -1607,6 +1607,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         if ( oldTicks!=null && !oldTicks.equals(ticks) ) {
             firePropertyChange(PROP_TICKVALUES, oldTicks, ticks);
             updateTickV();
+            if ( dasPlot!=null ) dasPlot.invalidateCacheImage();
         }
     }
     
