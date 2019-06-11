@@ -70,6 +70,7 @@ import org.das2.datum.DomainDividerUtil;
 import org.das2.datum.OrbitDatumRange;
 import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
+import org.das2.math.fft.jnt.Factorize;
 import org.das2.system.RequestProcessor;
 import org.das2.util.LoggerManager;
 import org.das2.util.TickleTimer;
@@ -2023,13 +2024,28 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     private int updateTickVManualTicksMinor( double dt ) {
         int scale= (int)Math.log10(dt);
         dt= dt/Math.pow(10,scale);
-        if ( dt==1. ) return 4;
-        if ( dt==2. ) return 2;
-        if ( dt==4. ) return 2;
-        if ( dt==5. ) return 5;
-        if ( dt==3. ) return 3;
-        if ( dt==1.5 ) return 3;
-        return 1;
+        if ( (int)dt!=dt ) dt= dt*10;
+        int idt= (int)dt;
+        switch ( idt ) {
+            case 1: return 4;
+            case 2: return 4;
+            case 3: return 3;
+            case 4: return 4;
+            case 5: return 5;
+            case 6: return 3;
+            //case 15: return 3;
+            //case 45: return 3;
+            //case 25: return 5;
+            default: {
+                int[] factors= Factorize.factor( idt, new int[0] );
+                int result= 1;
+                for ( int i=0; i<factors.length; i++ ) {
+                    if ( result>3 ) return result;
+                    result*= factors[i];
+                }
+                return 1;
+            }
+        }
     }
     
     protected void updateTickVManualTicks(String lticks) {
