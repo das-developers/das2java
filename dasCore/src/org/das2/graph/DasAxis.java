@@ -2068,7 +2068,14 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 for ( int i=0; i<dticks.length; i++ ) {
                     dticks[i]= firstTick + i*dt; // TODO: rewrite unstable
                 }
-                int minorTicks=updateTickVManualTicksMinor(dt);
+                int minorTicks;
+                if ( UnitsUtil.isTimeLocation(u) ) {
+                    tickM= DatumUtil.asOrderOneUnits(tickM);
+                    double dd= tickM.doubleValue(tickM.getUnits());
+                    minorTicks = updateTickVManualTicksMinor(dd);
+                } else {
+                    minorTicks = updateTickVManualTicksMinor(dt);
+                }
                 dt= dt/minorTicks;
                 double[] dticksMinor= new double[ ntick*minorTicks ];
                 for ( int i=0; i<dticksMinor.length; i++ ) {
