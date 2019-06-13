@@ -41,6 +41,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -52,6 +53,7 @@ import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.tree.DefaultTreeModel;
+import org.das2.util.LoggerManager;
 //import org.apache.xml.serialize.OutputFormat;
 //import org.apache.xml.serialize.XMLSerializer;
 
@@ -62,10 +64,10 @@ import javax.swing.tree.DefaultTreeModel;
  */
 public class PropertyEditor extends JComponent {
 
+    private static final Logger logger= LoggerManager.getLogger("das2.gui.propertyedit");
+    
     static final Set editableTypes;
     public final static Object MULTIPLE= new Object();
-
-    
 
     static {
         HashSet set = new HashSet();
@@ -100,8 +102,6 @@ public class PropertyEditor extends JComponent {
      */
     private int focusRow = 0;
     private JPopupMenu popupMenu;
-    private static final Logger logger = DasLogger.getLogger(DasLogger.GUI_LOG);
-
     
     private PropertyChangeListener myPcl= new PropertyChangeListener() {
         @Override
@@ -112,24 +112,98 @@ public class PropertyEditor extends JComponent {
            
     private boolean doListen= false;
             
-    public void setListenForExternalChanges( boolean v ) {
-        if ( v ) {
-            if ( !this.doListen ) {
+    public static boolean isBean( Object lbean ) {
+        try {
+            Method m= lbean.getClass().getMethod( "addPropertyChangeListener", PropertyChangeListener.class );
+            return true;
+        } catch (NoSuchMethodException | SecurityException ex) {
+            return false;
+        } 
+    }
+    
+    private static void addListenerAndRecurse( Object lbean, PropertyChangeListener thepcl, Set<Object> listeningToAlready ) {
+        logger.log(Level.FINE, "addListenerAndRecurse: {0}", lbean);
+        Method m;
+        try {
+            m= lbean.getClass().getMethod( "addPropertyChangeListener", PropertyChangeListener.class );
+            m.invoke( lbean, new Object[] { thepcl } ); 
+            listeningToAlready.add(lbean);
+        } catch (Exception ex) {
+            logger.log(Level.SEVERE, null, ex);
+            return;
+        } 
+        for ( Method m2: lbean.getClass().getDeclaredMethods() ) {
+            if ( m2.getName().startsWith("get") && m2.getParameterCount()==0 ) {
                 try {
-                    Method m= this.bean.getClass().getMethod( "addPropertyChangeListener", PropertyChangeListener.class );
-                    m.invoke( this.bean, new Object[] { myPcl } ); 
-                } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+                    Object child= m2.invoke( lbean );
+                    if ( child==null ) continue;
+                    if ( child.getClass().isArray() ) {
+                        for ( int i=0; i<Array.getLength(child); i++ ) {
+                            Object childi= Array.get( child, i );
+                            if ( editableTypes.contains( childi.getClass() ) ) continue;
+                            if ( !isBean( childi ) ) continue;
+                            if ( listeningToAlready.contains(childi) ) continue;
+                            addListenerAndRecurse( childi, thepcl, listeningToAlready );                        
+                        }
+                    } else {
+                        if ( editableTypes.contains( child.getClass() ) ) continue;
+                        if ( !isBean( child ) ) continue;
+                        if ( listeningToAlready.contains(child) ) continue;
+                        addListenerAndRecurse( child, thepcl, listeningToAlready );
+                    }
+                } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
                     logger.log(Level.SEVERE, null, ex);
                 }
             }
-        } else {
-            if ( this.doListen ) {
+        }
+    }
+    
+    private static void removeListenerAndRecurse( Object lbean, PropertyChangeListener thepcl, Set<Object> removedAlready ) {
+        Method m;
+        try {
+            m= lbean.getClass().getMethod( "removePropertyChangeListener", PropertyChangeListener.class );
+            m.invoke( lbean, new Object[] { thepcl } ); 
+            removedAlready.add( lbean );
+        } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+            logger.log(Level.SEVERE, null, ex);
+            return;
+        } 
+        for ( Method m2: lbean.getClass().getDeclaredMethods() ) {
+            logger.log(Level.FINER, "check {0}", m2.getName());
+            if ( m2.getName().startsWith("get") && m2.getParameterCount()==0 ) {
                 try {
-                    Method m= this.bean.getClass().getMethod( "removePropertyChangeListener", PropertyChangeListener.class );
-                    m.invoke( this.bean, new Object[] { myPcl } ); 
-                } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+                    Object child= m2.invoke( lbean );
+                    if ( child==null ) continue;
+                    if ( child.getClass().isArray() ) {
+                        for ( int i=0; i<Array.getLength(child); i++ ) {
+                            Object childi= Array.get( child, i );
+                            if ( editableTypes.contains( childi.getClass() ) ) continue;
+                            if ( !isBean( childi ) ) continue;
+                            if ( removedAlready.contains(childi) ) continue;
+                            removeListenerAndRecurse( childi, thepcl, removedAlready );                        
+                        }
+                    } else {
+                        if ( editableTypes.contains( child.getClass() ) ) continue;
+                        if ( !isBean( child ) ) continue;
+                        if ( removedAlready.contains(child) ) continue;
+                        removeListenerAndRecurse( child, thepcl, removedAlready );
+                    }                    
+                } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
                     logger.log(Level.SEVERE, null, ex);
                 }
+            }
+        }
+    }    
+    
+    public void setListenForExternalChanges( boolean v ) {
+        if ( v ) {
+            if ( !this.doListen ) {
+                // recurse through children
+                addListenerAndRecurse(bean,myPcl, new HashSet<>() );
+            }
+        } else {
+            if ( this.doListen ) {
+                removeListenerAndRecurse(bean,myPcl, new HashSet<>() );
             }
         }
         this.doListen= v;
