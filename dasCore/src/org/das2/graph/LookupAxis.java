@@ -8,6 +8,7 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
@@ -85,7 +86,11 @@ public class LookupAxis extends DasCanvasComponent {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             LookupAxis.this.resize();
-            LookupAxis.this.updateTicks();
+            try {
+                LookupAxis.this.updateTicks();
+            } catch ( Exception e ){ 
+                logger.log( Level.WARNING, null, e );
+            }
             //LookupAxis.this.repaint();
             
         }
@@ -254,7 +259,7 @@ public class LookupAxis extends DasCanvasComponent {
             logger.fine( "no data" );
             return;
         }
-
+        
         if ( !SemanticOps.getUnits(tt).isConvertibleTo(ticks.getUnits() ) ) {
             if ( UnitsUtil.isTimeLocation(SemanticOps.getUnits(tt)) ) {
                 logger.fine( "inconvertible units" );
