@@ -1,24 +1,21 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 
 package org.das2.qds;
 
 /**
- * reverses the order of the elements of the rank 1 dataset.  If there is a DEPEND_0,
- * this is reversed as well.
+ * reverses the order of the elements of the dataset.  If there is a DEPEND_0,
+ * high-rank DEPEND properties, or BUNDLE_0, they are reversed as well.
  * @author jbf
  */
 public class ReverseDataSet extends AbstractDataSet {
 
     QDataSet source;
     int len;
+    int lastIndex;
 
     public ReverseDataSet( QDataSet source ) {
         this.source= source;
         this.len= source.length();
-        if ( source.rank()!=1 ) throw new IllegalArgumentException("only rank 1 supported");
+        this.lastIndex= len-1;
     }
 
     @Override
@@ -27,13 +24,33 @@ public class ReverseDataSet extends AbstractDataSet {
     }
 
     @Override
-    public double value(int i) {
-        return source.value(len-1-i);
+    public double value() {
+        return source.value(); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
+    public double value(int i) {
+        return source.value( lastIndex-i );
+    }
+
+    @Override
+    public double value(int i0, int i1) {
+        return source.value( lastIndex-i0,i1 );
+    }
+
+    @Override
+    public double value(int i0, int i1, int i2) {
+        return source.value( lastIndex-i0,i1,i2 );
+    }
+
+    @Override
+    public double value(int i0, int i1, int i2, int i3) {
+        return source.value( lastIndex-i0,i1,i2,i3 );
+    }
+    
+    @Override
     public int rank() {
-        return 1;
+        return source.rank();
     }
 
     @Override
@@ -45,6 +62,20 @@ public class ReverseDataSet extends AbstractDataSet {
             } else {
                 return null;
             }
+        } else if ( name.startsWith("DEPEND_") ) {
+            QDataSet dep= (QDataSet)source.property(name);
+            if ( dep!=null && dep.rank()>1 ) {
+                return new ReverseDataSet(dep);
+            } else {
+                return dep;
+            }
+        } else if ( name.startsWith("BUNDLE_0" ) ) {
+            QDataSet bds= (QDataSet)source.property(name);
+            if ( bds!=null ) {
+                return new ReverseDataSet(bds);
+            } else {
+                return null;
+            }
         } else {
             if ( this.properties.containsKey(name) ) {
                 return this.properties.get(name);
@@ -53,6 +84,13 @@ public class ReverseDataSet extends AbstractDataSet {
             }
         }
     }
+
+    @Override
+    public Object property(String name, int i) {
+        return super.property(name, len-1-i);
+    }
+    
+    
 
 
 }
