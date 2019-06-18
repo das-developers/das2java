@@ -451,7 +451,7 @@ public class Orbits {
             return orbits;
         } else {
             try {
-                System.err.println("** reading orbits for "+sc );
+                logger.log(Level.INFO, "** reading orbits for {0}", sc);
                 List<URL> source= new ArrayList();
                 LinkedHashMap<String,DatumRange> lorbits= readOrbits(sc,source);
                 orbits= new Orbits(sc,lorbits);
@@ -461,10 +461,13 @@ public class Orbits {
                 orbits.last= last;
                 if ( source.size()==1 ) orbits.url= source.get(0);
                 missions.put( sc, orbits );
-                System.err.println("** done reading orbits for "+sc );
+                logger.log(Level.INFO, "** done reading orbits for {0}", sc);
             } catch ( IOException ex ) {
+                logger.log(Level.INFO, "** not orbits: {0}", sc);
+                nonmissions.put(sc,ex.getMessage());
                 throw new IllegalArgumentException( "Unable to read orbits file for "+sc, ex );
             } catch ( IllegalArgumentException ex ) {
+                logger.log(Level.INFO, "** not orbits: {0}", sc);
                 nonmissions.put(sc,ex.getMessage());
                 throw ex;
             }
