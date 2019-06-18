@@ -58,6 +58,11 @@ public class Orbits {
     private static HashMap<String,Orbits> missions= new HashMap();
 
     /**
+     * keep track of where we tried to read an orbits file and failed.
+     */
+    private static HashMap<String,String> nonmissions= new HashMap();
+    
+    /**
      * Read the orbits file.  Example files may be on the wiki page http://das2.org/wiki/index.php/Orbits.&lt;SC%gt;,
      * or on the classpath in /orbits/&lt;SC%gt;.dat  The orbits file will be read by ignoring any line
      * that does not contain three non-space blobs, and either the first two or last two should parse as an
@@ -408,6 +413,7 @@ public class Orbits {
      */
     public static synchronized void reset() {
         missions= new HashMap();
+        nonmissions= new HashMap();
     }
 
     /**
@@ -435,10 +441,17 @@ public class Orbits {
      */
     public static synchronized Orbits getOrbitsFor( String sc ) {
         Orbits orbits= missions.get(sc);
+        if ( orbits==null ) {
+            String error= nonmissions.get(sc);
+            if ( error!=null ) {
+                throw new IllegalArgumentException(error);
+            }
+        }
         if ( orbits!=null && orbits.orbits.size()>0 ) {
             return orbits;
         } else {
             try {
+                System.err.println("** reading orbits for "+sc );
                 List<URL> source= new ArrayList();
                 LinkedHashMap<String,DatumRange> lorbits= readOrbits(sc,source);
                 orbits= new Orbits(sc,lorbits);
@@ -448,13 +461,39 @@ public class Orbits {
                 orbits.last= last;
                 if ( source.size()==1 ) orbits.url= source.get(0);
                 missions.put( sc, orbits );
+                System.err.println("** done reading orbits for "+sc );
             } catch ( IOException ex ) {
                 throw new IllegalArgumentException( "Unable to read orbits file for "+sc, ex );
+            } catch ( IllegalArgumentException ex ) {
+                nonmissions.put(sc,ex.getMessage());
+                throw ex;
             }
             return orbits;
         }
     }
 
+    /**
+     * provide method for clients to see if the URI represents an orbits file, without 
+     * constantly going into the synchronized block, which was causing things to hang for
+     * Masafumi.
+     * @param sc the string identifier for the spacecraft, such as "rbspa-pp", or URL to orbit file.
+     * @return true if the uri refers to orbits.
+     */
+    public static boolean isOrbitsFile( String sc ) {
+        if ( missions.containsKey(sc) ) {
+            return true;
+        } else if ( nonmissions.containsKey(sc) ) {
+            return false;
+        } else {
+            try {
+                getOrbitsFor(sc);                
+                return true;
+            } catch ( IllegalArgumentException ex ) {
+                return false;
+            }
+        }
+    }
+    
     /**
      * return the URL used to populate the orbits.
      * @return
