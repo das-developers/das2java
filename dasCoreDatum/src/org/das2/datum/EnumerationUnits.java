@@ -341,7 +341,14 @@ public class EnumerationUnits extends Units {
 
     @Override
     public double convertDoubleTo(Units toUnits, double value) {
-        if ( !( toUnits instanceof EnumerationUnits ) ) throw new IllegalArgumentException("unable to convert ordinal data");
+        if ( !( toUnits instanceof EnumerationUnits ) ) {
+            if ( toUnits==Units.dimensionless ) {
+                logger.warning("ignoring EnumerationUnits and returning the ordinal.");
+                return value;
+            } else {
+                throw new IllegalArgumentException("unable to convert ordinal data");
+            }
+        }
         if ( this==toUnits ) {
             return value;
         } else {
