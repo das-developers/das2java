@@ -254,28 +254,57 @@ public class BinAverage {
         IDataSet nresult= IDataSet.createRank3( dep0.length(), dep1.length(), dep2.length() );
         QDataSet wds= DataSetUtil.weightsDataSet( DataSetOps.slice1(ds,3) );
 
-        double xscal= dep0.value(1) - dep0.value(0);
-        double xbase= dep0.value(0) - ( xscal / 2 );
-        if ( ! isLinearlySpaced( dep0, xscal, xbase ) ) {
-            throw new IllegalArgumentException("dep0 must be uniformly spaced.");            
-        }
+        QDataSet dep0_0 = dep0;
+        QDataSet dep1_0 = dep1;
+        QDataSet dep2_0 = dep2;
         
-        double yscal= dep1.value(1) - dep1.value(0);
-        double ybase= dep1.value(0) - ( yscal / 2 );
-        if ( ! isLinearlySpaced( dep1, yscal, ybase ) ) {
-            throw new IllegalArgumentException("dep1 must be uniformly spaced.");            
+        boolean xlog = false;
+        double xscal = dep0.value(1) - dep0.value(0);
+        double xbase = dep0.value(0) - (xscal / 2);
+        int nx = dep0.length();
+        if (!isLinearlySpaced(dep0, xscal, xbase)) {
+            xscal = Math.log10(dep0.value(1) / dep0.value(0));
+            xbase = Math.log10(xbase);
+            dep0 = Ops.log10(dep0);
+            if (!isLinearlySpaced(dep0, xscal, xbase)) {
+                throw new IllegalArgumentException("dep0 must be uniformly spaced.");
+            } else {
+                xlog = true;
+            }
+        }        
+        
+        boolean ylog = false;
+        double yscal = dep1.value(1) - dep1.value(0);
+        double ybase = dep1.value(0) - (yscal / 2);
+        int ny = dep1.length();
+        if (!isLinearlySpaced(dep1, yscal, ybase)) {
+            yscal = Math.log10(dep1.value(1) / dep1.value(0));
+            ybase = Math.log10(ybase);
+            dep1 = Ops.log10(dep1);
+            if (!isLinearlySpaced(dep1, yscal, ybase)) {
+                isLinearlySpaced(dep1, yscal, ybase);
+                throw new IllegalArgumentException("dep1 must be uniformly spaced.");
+            } else {
+                ylog = true;
+            }
         }
 
-        double zscal= dep2.value(1) - dep2.value(0);
-        double zbase= dep2.value(0) - ( zscal / 2 );
-        if ( ! isLinearlySpaced( dep2, zscal, zbase ) ) {
-            throw new IllegalArgumentException("dep2 must be uniformly spaced.");            
-        } 
-        
-        int nx= dep0.length();
-        int ny= dep1.length();
-        int nz= dep2.length();
-        
+        boolean zlog = false;
+        double zscal = dep2.value(1) - dep2.value(0);
+        double zbase = dep2.value(0) - (zscal / 2);
+        int nz = dep2.length();
+        if (!isLinearlySpaced(dep2, zscal, zbase)) {
+            zscal = Math.log10(dep2.value(1) / dep2.value(0));
+            zbase = Math.log10(zbase);
+            dep2 = Ops.log10(dep2);
+            if (!isLinearlySpaced(dep2, zscal, zbase)) {
+                isLinearlySpaced(dep2, zscal, zbase);
+                throw new IllegalArgumentException("dep2 must be uniformly spaced.");
+            } else {
+                ylog = true;
+            }
+        }        
+                
         if ( ds.length()>0 ) { // accumulate.
             UnitsConverter xuc= SemanticOps.getLooseUnitsConverter( ds.slice(0).slice(0), dep0 );
             UnitsConverter yuc= SemanticOps.getLooseUnitsConverter( ds.slice(0).slice(1), dep1 );
@@ -283,9 +312,9 @@ public class BinAverage {
             for ( int ids=0; ids<ds.length(); ids++ ) {
                 double w= wds.value(ids);
                 if ( w>0 ) {
-                    double x= xuc.convert(ds.value(ids,0));
-                    double y= yuc.convert(ds.value(ids,1));
-                    double z= zuc.convert(ds.value(ids,2));
+                    double x= xuc.convert( xlog ? Math.log10( ds.value(ids,0) ) : ds.value(ids,0));
+                    double y= yuc.convert( ylog ? Math.log10( ds.value(ids,1) ) : ds.value(ids,1));
+                    double z= zuc.convert( zlog ? Math.log10( ds.value(ids,2) ) : ds.value(ids,2));
                     double f= ds.value(ids,3);
                     int i= (int)( ( x-xbase ) / xscal );
                     int j= (int)( ( y-ybase ) / yscal );
@@ -313,12 +342,12 @@ public class BinAverage {
         }
 
         DataSetUtil.copyDimensionProperties( ds, sresult );
-        nresult.putProperty( QDataSet.DEPEND_0, dep0 );
-        nresult.putProperty( QDataSet.DEPEND_1, dep1 );
-        nresult.putProperty( QDataSet.DEPEND_2, dep2 );
-        sresult.putProperty( QDataSet.DEPEND_0, dep0 );
-        sresult.putProperty( QDataSet.DEPEND_1, dep1 );
-        sresult.putProperty( QDataSet.DEPEND_2, dep2 );
+        nresult.putProperty( QDataSet.DEPEND_0, dep0_0 );
+        nresult.putProperty( QDataSet.DEPEND_1, dep1_0 );
+        nresult.putProperty( QDataSet.DEPEND_2, dep2_0 );
+        sresult.putProperty( QDataSet.DEPEND_0, dep0_0 );
+        sresult.putProperty( QDataSet.DEPEND_1, dep1_0 );
+        sresult.putProperty( QDataSet.DEPEND_2, dep2_0 );
         sresult.putProperty( QDataSet.FILL_VALUE, fill );
         sresult.putProperty( QDataSet.WEIGHTS, nresult );
         sresult.putProperty( QDataSet.RENDER_TYPE, "nnSpectrogram" );
@@ -353,27 +382,43 @@ public class BinAverage {
      * @see #rebin(org.das2.qds.QDataSet, org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      * @see #rebinBundle(org.das2.qds.QDataSet, org.das2.qds.QDataSet, org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      */
-    public static DDataSet binAverageBundle( QDataSet ds, QDataSet dep0, QDataSet dep1 ) {
-    
-        DDataSet sresult= DDataSet.createRank2( dep0.length(), dep1.length() );
-        IDataSet nresult= IDataSet.createRank2( dep0.length(), dep1.length() );
-        QDataSet wds= DataSetUtil.weightsDataSet( DataSetOps.slice1(ds,2) );
+    public static DDataSet binAverageBundle(QDataSet ds, QDataSet dep0, QDataSet dep1) {
 
-        double xscal= dep0.value(1) - dep0.value(0);
-        double xbase= dep0.value(0) - ( xscal / 2);
-        int nx= dep0.length(); 
-        for ( int i=0; i<nx; i++ ) {
-            if ( (int)( ( dep0.value(i)-xbase ) / xscal )!=i ) {
+        DDataSet sresult = DDataSet.createRank2(dep0.length(), dep1.length());
+        IDataSet nresult = IDataSet.createRank2(dep0.length(), dep1.length());
+        QDataSet wds = DataSetUtil.weightsDataSet(DataSetOps.slice1(ds, 2));
+
+        QDataSet dep0_0 = dep0;
+        QDataSet dep1_0 = dep1;
+        
+        boolean xlog = false;
+        double xscal = dep0.value(1) - dep0.value(0);
+        double xbase = dep0.value(0) - (xscal / 2);
+        int nx = dep0.length();
+        if (!isLinearlySpaced(dep0, xscal, xbase)) {
+            xscal = Math.log10(dep0.value(1) / dep0.value(0));
+            xbase = Math.log10(xbase);
+            dep0 = Ops.log10(dep0);
+            if (!isLinearlySpaced(dep0, xscal, xbase)) {
                 throw new IllegalArgumentException("dep0 must be uniformly spaced.");
+            } else {
+                xlog = true;
             }
         }
 
-        double yscal= dep1.value(1) - dep1.value(0);
-        double ybase= dep1.value(0) - ( yscal / 2);
-        int ny= dep1.length();
-        for ( int i=0; i<ny; i++ ) {
-            if ( (int)( ( dep1.value(i)-ybase ) / yscal )!=i ) {
+        boolean ylog = false;
+        double yscal = dep1.value(1) - dep1.value(0);
+        double ybase = dep1.value(0) - (yscal / 2);
+        int ny = dep1.length();
+        if (!isLinearlySpaced(dep1, yscal, ybase)) {
+            yscal = Math.log10(dep1.value(1) / dep1.value(0));
+            ybase = Math.log10(ybase);
+            dep1 = Ops.log10(dep1);
+            if (!isLinearlySpaced(dep1, yscal, ybase)) {
+                isLinearlySpaced(dep1, yscal, ybase);
                 throw new IllegalArgumentException("dep1 must be uniformly spaced.");
+            } else {
+                ylog = true;
             }
         }
 
@@ -383,8 +428,8 @@ public class BinAverage {
             for ( int ids=0; ids<ds.length(); ids++ ) {
                 double w= wds.value(ids);
                 if ( w>0 ) {
-                    double x= xuc.convert(ds.value(ids,0));
-                    double y= yuc.convert(ds.value(ids,1));
+                    double x= xuc.convert( xlog ? Math.log10( ds.value(ids,0) ) : ds.value(ids,0) );
+                    double y= yuc.convert( ylog ? Math.log10( ds.value(ids,1) ) : ds.value(ids,1) );
                     double z= ds.value(ids,2);
                     int i= (int)( ( x-xbase ) / xscal );
                     int j= (int)( ( y-ybase ) / yscal );
@@ -409,10 +454,10 @@ public class BinAverage {
         }
 
         DataSetUtil.copyDimensionProperties( ds, sresult );
-        nresult.putProperty( QDataSet.DEPEND_0, dep0 );
-        nresult.putProperty( QDataSet.DEPEND_1, dep1 );
-        sresult.putProperty( QDataSet.DEPEND_0, dep0 );
-        sresult.putProperty( QDataSet.DEPEND_1, dep1 );
+        nresult.putProperty( QDataSet.DEPEND_0, dep0_0 );
+        nresult.putProperty( QDataSet.DEPEND_1, dep1_0 );
+        sresult.putProperty( QDataSet.DEPEND_0, dep0_0 );
+        sresult.putProperty( QDataSet.DEPEND_1, dep1_0 );
         sresult.putProperty( QDataSet.FILL_VALUE, fill );
         sresult.putProperty( QDataSet.WEIGHTS, nresult );
         sresult.putProperty( QDataSet.RENDER_TYPE, "nnSpectrogram" );
