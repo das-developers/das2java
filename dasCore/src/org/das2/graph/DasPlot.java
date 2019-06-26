@@ -502,13 +502,20 @@ public class DasPlot extends DasCanvasComponent {
             msgx+= maxIconWidth + em/4;
         }
 
+        Rectangle legendBounds= new Rectangle( mrect.x - em / 4, mrect.y - em/4, mrect.width + em / 2, mrect.height + em/2 );
+        int canvasWidth= getParent().getWidth();
+        Rectangle clip= legendBounds.intersection( new Rectangle( 0, getRow().getDMinimum(), 2*canvasWidth, getRow().getHeight() ) );
+        clip.height+= 1; //TODO lineThickness
+        clip.width+= 1;
+        graphics.setClip( clip );
+        
         if ( legendPosition!=LegendPosition.OutsideNE ) {
             graphics.setColor(backColor);
-            graphics.fillRoundRect(mrect.x - em / 4, mrect.y - em/4, mrect.width + em / 2, mrect.height + em/2, 5, 5);
+            graphics.fillRoundRect( legendBounds.x, legendBounds.y, legendBounds.width, legendBounds.height, 5, 5);
             graphics.setColor(getForeground());
-            graphics.drawRoundRect(mrect.x - em / 4, mrect.y - em/4, mrect.width + em / 2, mrect.height + em/2, 5, 5);
+            graphics.drawRoundRect( legendBounds.x, legendBounds.y, legendBounds.width, legendBounds.height, 5, 5);
         }
-
+        
         String contextStr= this.context==null ? "" : this.context.toString();
         for (LegendElement le : llegendElements) {
             if ( ( le.renderer!=null && le.renderer.isActive() ) || le.icon!=null || drawInactiveInLegend ) {
@@ -563,6 +570,9 @@ public class DasPlot extends DasCanvasComponent {
     private void drawMessages(Graphics2D g, List<MessageDescriptor> lmessages ) {
 
         Graphics2D graphics= (Graphics2D) g.create();
+        
+        graphics.setClip( DasDevicePosition.toRectangle( getRow(), getColumn() ) );
+        
         boolean isPrint= getCanvas().isPrintingThread();
         
         Font font0 = graphics.getFont();
@@ -637,7 +647,7 @@ public class DasPlot extends DasCanvasComponent {
             graphics.setColor(backColor);
             graphics.fillRoundRect(mrect.x - em / 4, mrect.y, mrect.width + em / 2, mrect.height, 5, 5);
             graphics.setColor(getForeground());
-            if ( icon!=null ) icon.paintIcon( this, g, mrect.x, mrect.y  );
+            if ( icon!=null ) icon.paintIcon( this, graphics, mrect.x, mrect.y  );
             graphics.drawRoundRect(mrect.x - em / 4, mrect.y, mrect.width + em / 2, mrect.height, 5, 5);
             if ( icon!=null ) {
                 gtr.draw(graphics, msgx1 + icon.getIconWidth() + spc, msgy);
