@@ -501,15 +501,14 @@ public class DasPlot extends DasCanvasComponent {
         if ( legendPosition!=LegendPosition.OutsideNE ) {
             msgx+= maxIconWidth + em/4;
         }
-
-        Rectangle legendBounds= new Rectangle( mrect.x - em / 4, mrect.y - em/4, mrect.width + em / 2, mrect.height + em/2 );
-        int canvasWidth= getParent().getWidth();
-        Rectangle clip= legendBounds.intersection( new Rectangle( 0, getRow().getDMinimum(), 2*canvasWidth, getRow().getHeight() ) );
-        clip.height+= 1; //TODO lineThickness
-        clip.width+= 1;
-        graphics.setClip( clip );
         
         if ( legendPosition!=LegendPosition.OutsideNE ) {
+            Rectangle legendBounds= new Rectangle( mrect.x - em / 4, mrect.y - em/4, mrect.width + em / 2, mrect.height + em/2 );
+            int canvasWidth= getParent().getWidth();
+            Rectangle clip= legendBounds.intersection( new Rectangle( 0, getRow().getDMinimum(), 2*canvasWidth, getRow().getHeight() ) );
+            clip.height+= 1; //TODO lineThickness
+            clip.width+= 1;
+            graphics.setClip( clip );
             graphics.setColor(backColor);
             graphics.fillRoundRect( legendBounds.x, legendBounds.y, legendBounds.width, legendBounds.height, 5, 5);
             graphics.setColor(getForeground());
