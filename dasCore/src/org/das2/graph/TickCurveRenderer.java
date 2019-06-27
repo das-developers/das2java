@@ -776,6 +776,22 @@ public final class TickCurveRenderer extends Renderer {
         
     }
     
+    /**
+     * provide access to the tick labelling code
+     * @return 
+     */
+    public TickLabeller getTickLabeller() {
+        return this.tickLabeller;
+    }
+
+    /**
+     * set the tick labelling code.
+     * @param tickLabeller
+     */
+    public void setTickLabeller( TickLabeller tickLabeller ) {
+        this.tickLabeller= tickLabeller;
+    }
+    
 //    private static String lineToString( Line2D line ) {
 //        return GraphUtil.toString( line );
 //    }
