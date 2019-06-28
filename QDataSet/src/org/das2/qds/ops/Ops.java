@@ -4892,7 +4892,21 @@ public final class Ops {
         return circle( radius );
     }
 
-
+    /**
+     * return a dataset with X and Y forming a ellipse, introduced as a convenient way to indicate 
+     * planet location of any planet, according to Masafumi.
+     * @param xwidth 
+     * @param ywidth
+     * @return QDataSet that when plotted is an ellipse.
+     */
+    public static QDataSet ellipse( double xwidth, double ywidth ) {
+        MutablePropertyDataSet result= (MutablePropertyDataSet) Ops.link( 
+            Ops.multiply( xwidth, sin(linspace(0,601*PI/300,601) ) ), 
+            Ops.multiply( ywidth, cos(linspace(0,601*PI/300,601 ) ) ) );
+        result.putProperty( QDataSet.RENDER_TYPE, "series" );        
+        return result;
+    }
+    
     /**
      * copies the properties, copying depend datasets as well.  
      * TODO: This is not thorough, and this needs to be reviewed.
