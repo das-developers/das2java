@@ -12,6 +12,7 @@ import java.util.Map.Entry;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
+import javax.swing.tree.TreeNode;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
 import org.das2.util.DasMath;
@@ -93,14 +94,20 @@ public class PropertiesTreeModel extends DefaultTreeModel {
                             svalue= "fill" + " (" + svalue + ")";
                         }
                     }
+                    nextChild= new DefaultMutableTreeNode(""+key+"="+svalue);
                 } else if ( key.equals(QDataSet.FILL_VALUE ) && value instanceof Number ) { // round N digits.
                     if ( value instanceof Long ||value instanceof Integer || value instanceof Short ) {
                         svalue= String.valueOf( value ); 
                     } else {
                         svalue= String.valueOf( DasMath.roundNSignificantDigits( ((Number)value).doubleValue(), 6 ) ); 
                     }
+                    nextChild= new DefaultMutableTreeNode(""+key+"="+svalue);
+                } else if ( key.equals(QDataSet.DESCRIPTION) ) {
+                    String rootNode= key + "=" + ( svalue.length()>60 ? svalue.substring(0,60)+"..." : svalue );
+                    nextChild= (MutableTreeNode) new LongStringTreeModel( rootNode, svalue ).getRoot();
+                } else {
+                    nextChild= new DefaultMutableTreeNode(""+key+"="+svalue);
                 }
-                nextChild= new DefaultMutableTreeNode(""+key+"="+svalue);
             }
             mroot.insert( nextChild, mroot.getChildCount() );
         }
@@ -170,4 +177,55 @@ public class PropertiesTreeModel extends DefaultTreeModel {
 
     }
     
+    /**
+     * copied from Autoplot's DataSource package.
+     */
+    private static class LongStringTreeModel extends DefaultTreeModel {
+        private static final int LINE_LEN = 133;
+
+        String name;
+        String value;
+        List<Integer> splits;
+        boolean hasKids;
+
+        LongStringTreeModel( Object root, String value) {
+            super( new DefaultMutableTreeNode(root) );
+            MutableTreeNode mrt= ((MutableTreeNode)getRoot());
+            
+            value= value.trim();
+            this.value = value;
+            int lastBreak= -1;
+            if ( value.length()>LINE_LEN || value.contains("\n") ) {
+                int ii=0;
+                while ( ii<value.length() ) {
+                    int i= value.indexOf('\n',ii);
+                    if ( (i-ii)>LINE_LEN || i==-1 ) {
+                        if ( value.length()-ii < LINE_LEN ) {
+                            ii= value.length();
+                        } else {
+                            i= value.lastIndexOf(' ',ii+LINE_LEN);
+                            if ( i==-1 ) {
+                                ii= ii+LINE_LEN; 
+                            } else if ( i>ii ) {
+                                ii= i+1;
+                            } else {
+                                ii= value.length(); // couldn't find a break
+                            }
+                        }
+                    } else {
+                        ii= i+1;
+                    }
+                    if ( ii<value.length() ) {
+                        String schild= lastBreak==-1 ? value.substring(0,ii) : value.substring( lastBreak, ii );
+                        mrt.insert( new DefaultMutableTreeNode( schild ),mrt.getChildCount() );
+                        lastBreak= ii;
+                    }
+                }
+            } else {
+                mrt.insert( new DefaultMutableTreeNode( value ),mrt.getChildCount() );
+            }
+        }
+
+    }
+
 }
