@@ -416,7 +416,7 @@ public class DataSetUtil {
                     QDataSet.MONOTONIC, QDataSet.SCALE_TYPE,
                     QDataSet.TYPICAL_MIN, QDataSet.TYPICAL_MAX, QDataSet.RENDER_TYPE,
                     QDataSet.QUBE,
-                    QDataSet.NAME, QDataSet.LABEL, QDataSet.TITLE,
+                    QDataSet.NAME, QDataSet.LABEL, QDataSet.TITLE, QDataSet.DESCRIPTION,
                     QDataSet.CACHE_TAG,
                     QDataSet.COORDINATE_FRAME,
                     QDataSet.DELTA_MINUS, QDataSet.DELTA_PLUS,
