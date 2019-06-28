@@ -169,6 +169,11 @@ public class PropertiesTreeModel extends DefaultTreeModel {
                 } else if ( value!=null && Map.class.isAssignableFrom( value.getClass() ) ) {
                     MutableTreeNode nextChild= (MutableTreeNode) new MapTreeModel( val.getKey(), (Map)value ).getRoot();
                     mrt.insert( nextChild, mrt.getChildCount() );
+                } else if ( value instanceof String && ((String)value).length()>80 ) {
+                    String svalue= (String)value;
+                    String rootString= val.getKey() + "=" + ( svalue.length()>60 ? svalue.substring(0,60)+"..." : svalue );
+                    MutableTreeNode nextChild= (MutableTreeNode) new LongStringTreeModel( rootString, (String)value ).getRoot();
+                    mrt.insert( nextChild, mrt.getChildCount() );
                 } else {
                     mrt.insert( new DefaultMutableTreeNode(""+val.getKey()+"="+val.getValue() ),mrt.getChildCount() );
                 }
