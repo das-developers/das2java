@@ -5,6 +5,8 @@ import org.das2.datum.Datum;
 import org.das2.util.GrannyTextRenderer;
 import java.awt.*;
 import java.awt.geom.*;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 
 /**
  * TickLabeller based on the formatting and bounding-box capabilities of the
@@ -18,6 +20,7 @@ public class GrannyTickLabeller implements TickLabeller {
     
     private TickVDescriptor ticks;
     
+    private DatumFormatter manualDatumFormatter;
     private DatumFormatter df;
     
     public GrannyTickLabeller() {
@@ -25,17 +28,36 @@ public class GrannyTickLabeller implements TickLabeller {
     
     /**
      * sets the ticks and DatumFormatter before drawing.
+     * @param ticks
      */
+    @Override
     public void init(TickVDescriptor ticks) {
         this.ticks= ticks;
-        this.df= ticks.getFormatter();
+        if ( this.manualDatumFormatter==null ) {
+            this.df= ticks.getFormatter();
+        } else {
+            this.df= this.manualDatumFormatter; 
+        }
+    }
+    
+    public static final String PROP_FORMATTER= "formatter";
+    /**
+     * override the formatter in the TickVDescriptor.
+     * @param df the formatter to use
+     */
+    public void setFormatter( DatumFormatter df ) {
+        DatumFormatter oldDf= this.manualDatumFormatter;
+        this.manualDatumFormatter= df;
+        this.df= df;
+        propertyChangeSupport.firePropertyChange(PROP_FORMATTER, oldDf, df );
     }
     
     /**
-     * override the formatter in the TickVDescriptor.
+     * the formatter.
+     * @return the formatter
      */
-    public void setFormatter( DatumFormatter df ) {
-        this.df= df;
+    public DatumFormatter getFormatter() {
+        return this.manualDatumFormatter;
     }
     
     private double length(Line2D line) {
@@ -56,6 +78,7 @@ public class GrannyTickLabeller implements TickLabeller {
         return result;
     }
     
+    @Override
     public Rectangle labelMajorTick(Graphics g, int tickNumber, java.awt.geom.Line2D tickLine) {
         GrannyTextRenderer gtr= new GrannyTextRenderer();
         String grannyString= getLabel( tickNumber, ticks.tickV.get(tickNumber) );
@@ -121,7 +144,18 @@ public class GrannyTickLabeller implements TickLabeller {
     protected String getLabel(int tickNumber, Datum value) {
         return df.grannyFormat(value); //+ "!cseconds";
     }
-    
+
+    private transient final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.addPropertyChangeListener(listener);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.removePropertyChangeListener(listener);
+    }
+
+    @Override
     public void finished() {
     }
     

@@ -29,6 +29,8 @@ import org.das2.components.propertyeditor.Enumeration;
 import java.awt.*;
 import java.awt.geom.*;
 import java.awt.image.BufferedImage;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.text.ParseException;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -97,6 +99,13 @@ public final class TickCurveRenderer extends Renderer {
     
     private GeneralPath path;
     
+    private PropertyChangeListener labelListener= new PropertyChangeListener() {
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            updateCacheImage();
+        }
+    };
+    
     public static class TickStyle implements Enumeration {
         private final String name;
         public static final TickStyle OUTER= new TickStyle("Outer");
@@ -128,11 +137,13 @@ public final class TickCurveRenderer extends Renderer {
         this.setDataSet(ds);
         this.xplane= xplane;
         this.yplane= yplane;
-        this.tickv= tickv;                
+        this.tickv= tickv;     
     }
 
     public TickCurveRenderer() {
         super();
+        this.tickLabeller= new GrannyTickLabeller( ); 
+        ((GrannyTickLabeller)this.tickLabeller).addPropertyChangeListener( labelListener );
     }
 
     @Override
@@ -738,7 +749,6 @@ public final class TickCurveRenderer extends Renderer {
         
         updateTickLength( g );
         
-        tickLabeller= new GrannyTickLabeller( ); 
         tickLabeller.init( tickv );
         
         for ( int i=0; i<tickv.minorTickV.getLength(); i++ ) {
@@ -785,11 +795,19 @@ public final class TickCurveRenderer extends Renderer {
     }
 
     /**
-     * set the tick labelling code.
+     * set the tick labelling code.  If this is an instance of GrannyTickLabeller,
+     * then a property change listener will be added.
      * @param tickLabeller
      */
     public void setTickLabeller( TickLabeller tickLabeller ) {
+        TickLabeller old= this.tickLabeller;
         this.tickLabeller= tickLabeller;
+        if ( old instanceof GrannyTickLabeller ) {// cheesy
+            ((GrannyTickLabeller)old).removePropertyChangeListener(labelListener);
+        }
+        if ( tickLabeller instanceof GrannyTickLabeller ) { // cheesy
+            ((GrannyTickLabeller)tickLabeller).addPropertyChangeListener(labelListener);
+        }    
     }
     
 //    private static String lineToString( Line2D line ) {
