@@ -396,7 +396,7 @@ public class SeriesRenderer extends Renderer {
         @Override
         public synchronized int render(Graphics2D graphics, DasAxis xAxis, DasAxis yAxis, QDataSet vds, ProgressMonitor mon) {
             int i;
-            if ( vds.rank()!=1 && !SemanticOps.isBundle(vds) && !SemanticOps.isRank2Waveform(vds) ) {
+            if ( vds.rank()>1 && !SemanticOps.isBundle(vds) && !SemanticOps.isRank2Waveform(vds) ) {
                 renderException( graphics, xAxis, yAxis, new IllegalArgumentException("dataset is not rank 1"));
             }
             DasPlot lparent= getParent();
@@ -754,7 +754,7 @@ public class SeriesRenderer extends Renderer {
             }
             logger.log(Level.FINE, "enter connector render" );
             logger.log(Level.FINER, "path was reduced: {0}", pathWasReduced);
-            if ( vds.rank()!=1 && !SemanticOps.isRank2Waveform(vds) && !SemanticOps.isRank3JoinOfRank2Waveform(vds)) {
+            if ( vds.rank()>1 && !SemanticOps.isRank2Waveform(vds) && !SemanticOps.isRank3JoinOfRank2Waveform(vds)) {
                 renderException( g, xAxis, yAxis, new IllegalArgumentException("dataset is not rank 1"));
             }
             GeneralPath lpath1= getPath();
@@ -807,6 +807,14 @@ public class SeriesRenderer extends Renderer {
                 unitsWarning= true;
             }
 
+            if ( vds.rank()==0 ) {
+                GeneralPath gp= new GeneralPath();
+                gp.moveTo( xAxis.transform( xAxis.getDataMinimum() ), yAxis.transform( DataSetUtil.asDatum(vds) ) );
+                gp.lineTo( xAxis.transform( xAxis.getDataMaximum() ), yAxis.transform( DataSetUtil.asDatum(vds) ) );
+                this.path1 = gp;
+                return;
+            }
+            
             if ( lastIndex-firstIndex==0 ) {
                 this.path1= null;
                 return;
@@ -1507,20 +1515,20 @@ public class SeriesRenderer extends Renderer {
 
         if (dataSet.rank() == 0) {
             DasLogger.getLogger(DasLogger.GRAPHICS_LOG).fine("rank 0 data set");
-            if ( lparent!=null ) lparent.postMessage(this, "rank 0 data set: "+dataSet.toString(), DasPlot.INFO, null, null);
-            return;
-        }
-
-        if (dataSet.length() == 0) {
-            DasLogger.getLogger(DasLogger.GRAPHICS_LOG).fine("empty data set");
-            if ( lparent!=null ) lparent.postMessage(this, "empty data set", DasPlot.INFO, null, null);
-            return;
-        }
+            //if ( lparent!=null ) lparent.postMessage(this, "rank 0 data set: "+dataSet.toString(), DasPlot.INFO, null, null);
+            //return;
+        } else {
+            if (dataSet.length() == 0) {
+                DasLogger.getLogger(DasLogger.GRAPHICS_LOG).fine("empty data set");
+                if ( lparent!=null ) lparent.postMessage(this, "empty data set", DasPlot.INFO, null, null);
+                return;
+            }
         
-        if ( dataSet.rank()!=1 && ! ( SemanticOps.isBundle(ds) || SemanticOps.isRank2Waveform(ds) || SemanticOps.isRank3JoinOfRank2Waveform(ds) ) ) {
-            DasLogger.getLogger(DasLogger.GRAPHICS_LOG).fine("dataset is not rank 1 or a rank 2 waveform");
-            if ( lparent!=null ) lparent.postMessage(this, "dataset is not rank 1 or a rank 2 waveform", DasPlot.INFO, null, null);
-            return;
+            if ( dataSet.rank()!=1 && ! ( SemanticOps.isBundle(ds) || SemanticOps.isRank2Waveform(ds) || SemanticOps.isRank3JoinOfRank2Waveform(ds) ) ) {
+                DasLogger.getLogger(DasLogger.GRAPHICS_LOG).fine("dataset is not rank 1 or a rank 2 waveform");
+                if ( lparent!=null ) lparent.postMessage(this, "dataset is not rank 1 or a rank 2 waveform", DasPlot.INFO, null, null);
+                return;
+            }
         }
 
         if ( psym== DefaultPlotSymbol.NONE && psymConnector==PsymConnector.NONE ) {
@@ -1604,7 +1612,7 @@ public class SeriesRenderer extends Renderer {
         int messageCount= 0;
 
         logger.log(Level.FINER, "rendering points: ds[{0}:{1}]", new Object[]{firstIndex,lastIndex});
-        if ( lastIndex == -1 ) {
+        if ( dataSet.rank()>0 && lastIndex == -1 ) {
             if ( messageCount++==0) {
                 if ( lparent!=null ) lparent.postMessage(SeriesRenderer.this, "need to update first/last", DasPlot.INFO, null, null);
             }
@@ -1623,7 +1631,7 @@ public class SeriesRenderer extends Renderer {
         }
 
         if ( lparent!=null ) {
-            if (lastIndex == firstIndex) {
+            if (lastIndex == firstIndex && dataSet.rank()>0 ) {
                 if ( firstValidIndex==lastValidIndex ) {
                     if ( !dataSetReduced ) {
                         if ( messageCount++==0) lparent.postMessage(SeriesRenderer.this, "dataset contains no valid data", DasPlot.INFO, null, null);
@@ -1894,13 +1902,12 @@ public class SeriesRenderer extends Renderer {
         }
 
         if ( dataSet.rank() == 0) {
-            logger.fine("rank 0 dataset");
-            return;
-        }
-
-        if ( dataSet.length() == 0) {
-            logger.fine("dataset was empty");
-            return;
+            logger.fine("rank 0 dataset will not work with older Autoplots");
+        } else {
+            if ( dataSet.length() == 0) {
+                logger.fine("dataset was empty");
+                return;
+            }
         }
 
         if ( !this.isActive() ) {
@@ -1916,7 +1923,7 @@ public class SeriesRenderer extends Renderer {
 
         Units yunits;
         
-        if ( dataSet.rank()<3 && !SemanticOps.isRank2Waveform(dataSet) ) {  // xtags are rank 2 bins can happen too
+        if ( dataSet.rank()>0 && dataSet.rank()<3 && !SemanticOps.isRank2Waveform(dataSet) ) {  // xtags are rank 2 bins can happen too
             vds= ytagsDataSet(ds);
             if ( vds==null ) {
                 logger.fine("dataset is not rank 1 or a rank 2 waveform");
@@ -2105,7 +2112,8 @@ public class SeriesRenderer extends Renderer {
                     LoggerManager.markTime("updateFirstLast again");
                 }
                 logger.log(Level.FINER, "renderWaveform updateFirstLast complete ({0}ms)", System.currentTimeMillis()-t0 );
-
+            } else if ( ds.rank()==0 ) {
+                
             } else {
                 System.err.println("both tds and vds are null");
             }
@@ -2116,6 +2124,8 @@ public class SeriesRenderer extends Renderer {
                 try {
                     if ( vds!=null && vds.rank()==1 && dataSet.rank()==2 && SemanticOps.isBundle(dataSet) ) {
                         psymConnectorElement.update(xAxis, yAxis, dataSet, monitor.getSubtaskMonitor("psymConnectorElement.update")); 
+                    } else if ( dataSet!=null && dataSet.rank()==0 ) {
+                        psymConnectorElement.update(xAxis, yAxis, dataSet, monitor.getSubtaskMonitor("psymConnectorElement.update")); 
                     } else {
                         psymConnectorElement.update(xAxis, yAxis, vds, monitor.getSubtaskMonitor("psymConnectorElement.update"));
                     }
@@ -2125,13 +2135,17 @@ public class SeriesRenderer extends Renderer {
             }
 
             try {
-                errorElement.update(xAxis, yAxis, vds, monitor.getSubtaskMonitor("errorElement.update"));
-                if ( vds!=null && vds.rank()==1 && dataSet.rank()==2 && SemanticOps.isBundle(dataSet) ) {
-                    psymsElement.update(xAxis, yAxis, dataSet, monitor.getSubtaskMonitor("psymsElement.update"));     // color scatter
+                if ( dataSet!=null && dataSet.rank()==0 ) {
+                    
                 } else {
-                    psymsElement.update(xAxis, yAxis, vds, monitor.getSubtaskMonitor("psymsElement.update"));
+                    errorElement.update(xAxis, yAxis, vds, monitor.getSubtaskMonitor("errorElement.update"));
+                    if ( vds!=null && vds.rank()==1 && dataSet.rank()==2 && SemanticOps.isBundle(dataSet) ) {
+                        psymsElement.update(xAxis, yAxis, dataSet, monitor.getSubtaskMonitor("psymsElement.update"));     // color scatter
+                    } else {
+                        psymsElement.update(xAxis, yAxis, vds, monitor.getSubtaskMonitor("psymsElement.update"));
+                    }
+                    logger.log(Level.FINER, "psymsElement.update complete ({0}ms)", System.currentTimeMillis()-t0 );            
                 }
-                logger.log(Level.FINER, "psymsElement.update complete ({0}ms)", System.currentTimeMillis()-t0 );            
             } catch ( InconvertibleUnitsException ex ) {
                 return;
             }
