@@ -8803,8 +8803,10 @@ public final class Ops {
                         int n1= ds.length(i0);
                         for ( int i1=0; i1<n1; i1++ ) {
                             if ( valid.value(i0,i1)>0 ) {
-                                result[0]= Math.min( result[0], min.value(i0,i1) );
-                                result[1]= Math.max( result[1], max.value(i0,i1) );
+                                double min1= min.value(i0,i1); 
+                                result[0]= result[0] < min1 ? result[0] : min1 ;
+                                double max1= max.value(i0,i1);
+                                result[1]= result[1] > max1 ? result[1] : max1;
                                 count++;
                             }
                         }
@@ -8820,8 +8822,10 @@ public final class Ops {
                             int n2= ds.length(i0,i1);
                             for ( int i2=0; i2<n2; i2++ ) {
                                 if ( valid.value(i0,i1,i2)>0 ) {
-                                    result[0]= Math.min( result[0], min.value(i0,i1,i2) );
-                                    result[1]= Math.max( result[1], max.value(i0,i1,i2) );
+                                    double min1= min.value(i0,i1,i2); 
+                                    result[0]= result[0] < min1 ? result[0] : min1;
+                                    double max1= max.value(i0,i1,i2);
+                                    result[1]= result[1] > max1 ? result[1] : max1;
                                     count++;
                                 }
                             }
