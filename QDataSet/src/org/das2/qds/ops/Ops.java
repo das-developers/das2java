@@ -1749,21 +1749,41 @@ public final class Ops {
             return trim( ds, st, en );
         } else {
             QDataSet dep= (QDataSet) ds.property( "DEPEND_"+dim );
-        
-            QDataSet findex= Ops.findex( dep, st );
-            double f1= Math.ceil( findex.value() );
-            findex= Ops.findex( dep, en );
-            double f2= Math.ceil( findex.value() ); // f2 is exclusive.
-        
-            int n= dep.length();
-            f1= 0>f1 ? 0 : f1;
-            f1= n<f1 ? n : f1;
-            f2= 0>f2 ? 0 : f2;
-            f2= n<f2 ? n : f2;            
+            if ( dep.rank()==2 ) {
+                JoinDataSet result= new JoinDataSet(ds.rank());
+                for ( int i=0; i<ds.length(); i++ ) {
+                    QDataSet sliceds= trim( dim-1, ds.slice(i), st, en );
+                    result.join( sliceds );
+                }
+                DataSetUtil.copyDimensionProperties( ds, result );
+                result.putProperty( QDataSet.DEPEND_0, ds.property(QDataSet.DEPEND_0 ));
+                // DEPEND_1 is special, because it ends up attached to each of the joined datasets as DEPEND_0.
+                JoinDataSet dep1= new JoinDataSet(2); //TODO: why doesn't this happen automatically?
+                for ( int i=0; i<result.length(); i++ ) {
+                    QDataSet sliceds= (QDataSet) result.slice(i).property(QDataSet.DEPEND_0);
+                    dep1.join( sliceds );
+                }
+                result.putProperty( QDataSet.DEPEND_1, dep1 );
+                result.property( QDataSet.JOIN_0 );
+                return result;
+            } else if ( dep.rank()!=1 ) {
+                throw new IllegalArgumentException("depend rank must be 1 or 2 for trim");
+            } else {
+                QDataSet findex= Ops.findex( dep, st );
+                double f1= Math.ceil( findex.value() );
+                findex= Ops.findex( dep, en );
+                double f2= Math.ceil( findex.value() ); // f2 is exclusive.
+                
+                int n= dep.length();
+                f1= 0>f1 ? 0 : f1;
+                f1= n<f1 ? n : f1;
+                f2= 0>f2 ? 0 : f2;
+                f2= n<f2 ? n : f2;            
                                 
-            TrimStrideWrapper tsw= new TrimStrideWrapper(ds);
-            tsw.setTrim( dim, (int)f1, (int)f2, 1 );
-            return tsw;
+                TrimStrideWrapper tsw= new TrimStrideWrapper(ds);
+                tsw.setTrim( dim, (int)f1, (int)f2, 1 );
+                return tsw;
+            }
         }
     }
     
@@ -7713,7 +7733,9 @@ public final class Ops {
                 
                 if ( title!=null ) result.putProperty( QDataSet.TITLE, title );
                 if ( userProperties!=null ) result.putProperty( QDataSet.USER_PROPERTIES, userProperties );
-                result.putProperty( QDataSet.QUBE, Boolean.TRUE );
+                if ( dep1_.rank()==1 ) {
+                    result.putProperty( QDataSet.QUBE, Boolean.TRUE );
+                }
                 result.putProperty( QDataSet.SCALE_TYPE, QDataSet.VALUE_SCALE_TYPE_LOG );
                 return result;
                 
