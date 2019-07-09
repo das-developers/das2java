@@ -9446,13 +9446,14 @@ public final class Ops {
      * it is useful in other situations as well.
      *
      * @param uu rank 1 monotonically increasing dataset, non-repeating, containing no fill values.
-     * @param vv rank N dataset with values in the same physical dimension as uu.  Now fill is allowed.
+     * @param vv rank N dataset with values in the same physical dimension as uu.  Fill is allowed.
      * @return rank N dataset with the same geometry as vv.  It will have DEPEND_0=vv when vv is rank 1. 
      */
     public static QDataSet findex(QDataSet uu, QDataSet vv) {
         if ( uu==null ) throw new IllegalArgumentException("uu parameter of findex is null");
         if ( vv==null ) throw new IllegalArgumentException("vv parameter of findex is null");
         if ( uu.length()==0 ) throw new IllegalArgumentException("uu has length=0");
+        if ( uu.rank()!=1 ) throw new IllegalArgumentException("uu must be rank 1");
         if (!DataSetUtil.isMonotonic(uu)) {
             throw new IllegalArgumentException("u must be monotonic");
         }
