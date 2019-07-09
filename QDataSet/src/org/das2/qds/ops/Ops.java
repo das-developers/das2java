@@ -1809,7 +1809,7 @@ public final class Ops {
         }
         QDataSet dep1= SemanticOps.ytagsDataSet(ds);
         if ( dep1.rank()!=1 ) {
-            throw new IllegalArgumentException("dataset must have rank 1 tags");
+            return trim( 1, ds, st, en);
         }
         
         QDataSet findex= Ops.findex( dep1, st );
