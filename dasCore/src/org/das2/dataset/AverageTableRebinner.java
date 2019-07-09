@@ -798,6 +798,7 @@ public class AverageTableRebinner implements DataSetRebinner {
                 }
                 
                 if ( yds.rank()==2 ) {
+                    ibiny = new int[tds1.length(i)];
                     for (int j = 0; j < ibiny.length; j++) {
                         if (ddY != null) {
                             if ( vyds.value(i,j)>0 ) {
