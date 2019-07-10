@@ -424,7 +424,12 @@ public class HttpFileSystem extends WebFileSystem {
 
             InputStream in;
 
-            loggerUrl.log(Level.FINE, "GET to get data {0}", new Object[] { urlc.getURL() } );
+            if ( loggerUrl.isLoggable(Level.FINE) && urlc.getURL().getPath().endsWith("/") ) {
+                loggerUrl.log(Level.FINE, "GET to get listing {0}", new Object[] { urlc.getURL() } );
+            } else {
+                loggerUrl.log(Level.FINE, "GET to get data {0}", new Object[] { urlc.getURL() } );
+            }
+            
             in= urlc.getInputStream();
 
             HttpURLConnection hurlc = (HttpURLConnection) urlc;
