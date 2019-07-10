@@ -211,12 +211,32 @@ public class FileStorageModel {
      * @throws java.io.IOException if the file cannot be downloaded.
      */
     private String getRepresentativeFile( ProgressMonitor monitor, String childRegex, DatumRange range, int depth ) throws IOException {
+        return getRepresentativeFile( this, monitor, childRegex, range, depth );
+    }
+
+    /**
+     * Return a random file from the FSM, which can be used to represent a typical file.  For
+     * example, we need to look at metadata of a given file to see what is available inside.  
+     * This is introduced to support discovery, where we just need one file to
+     * get started.  Before, there was code that would list all files, then use
+     * just the first one.  This may return a skeleton file, but getFileFor() must
+     * return a result.
+     * This implementation does the same as getNames(), but stops after finding a file.
+     * @param ths
+     * @param monitor progress monitor in case a file must be downloaded.
+     * @param childRegex the parent must contain a file/folder matching childRegex
+     * @param range hint at the range where we are looking.  
+     * @param depth the recursion depth, useful for debugging.
+     * @return null if no file is found
+     * @throws java.io.IOException if the file cannot be downloaded.
+     */
+    public static String getRepresentativeFile( FileStorageModel ths, ProgressMonitor monitor, String childRegex, DatumRange range, int depth ) throws IOException {
             
-        logger.log(Level.FINE, "get representative from {0} {1} range: {2}", new Object[]{this.getFileSystem(), childRegex, range});
+        logger.log(Level.FINE, "get representative from {0} {1} range: {2}", new Object[]{ths.getFileSystem(), childRegex, range});
         
-        //if ( depth==2 ) {
-        //    System.err.println("here at depth 2: "+this.toString() );
-        //}
+        if ( depth==1 ) { // recusion makes this really hard to debug, and this should be rewritten to remove recursion.
+            System.err.println("here at depth 1: "+ths.toString() );
+        }
         if ( monitor==null ) monitor= new NullProgressMonitor();
         
         String listRegex;
@@ -234,24 +254,24 @@ public class FileStorageModel {
         String result= null;
 
         try {
-            if ( parent!=null ) {
-                parentRegex= getParentRegex(regex);
-                String one= parent.getRepresentativeFile( monitor.getSubtaskMonitor("get representative file"),regex.substring(parentRegex.length()+1), range, depth+1 );
+            if ( ths.parent!=null ) {
+                parentRegex= getParentRegex(ths.regex);
+                String one= ths.parent.getRepresentativeFile( monitor.getSubtaskMonitor("get representative file"),ths.regex.substring(parentRegex.length()+1), range, depth+1 );
                 if ( one==null ) return null;
                 names= new String[] { one }; //parent.getNamesFor(null);
                 fileSystems= new FileSystem[names.length];
                 for ( int i=0; i<names.length; i++ ) {
                     try {
-                        fileSystems[i]= getChildFileSystem( root, names[i], monitor.getSubtaskMonitor("create") );
+                        fileSystems[i]= getChildFileSystem( ths.root, names[i], monitor.getSubtaskMonitor("create") );
                     } catch ( FileSystem.FileSystemOfflineException | UnknownHostException | FileNotFoundException e ) {
                         throw new RuntimeException(e);
                     }
                 }
-                listRegex= regex.substring( parentRegex.length()+1 );
+                listRegex= ths.regex.substring( parentRegex.length()+1 );
             } else {
-                fileSystems= new FileSystem[] { root };
+                fileSystems= new FileSystem[] { ths.root };
                 names= new String[] {""};
-                listRegex= regex;
+                listRegex= ths.regex;
             }
 
             while ( result==null ) {
@@ -272,11 +292,11 @@ public class FileStorageModel {
                         if ( ff.endsWith("/") ) ff=ff.substring(0,ff.length()-1);
                         try {
                             HashMap<String,String> extra= new HashMap();
-                            DatumRange tr= getDatumRangeFor( ff, extra );
+                            DatumRange tr= getDatumRangeFor( ths, ff, extra );
                             boolean versionOk= true;
-                            if ( versionGe!=null && versioningType.comp.compare( extra.get("v"), versionGe )<0 ) versionOk=false;
-                            if ( versionLt!=null && versioningType.comp.compare( extra.get("v"), versionLt )>=0 ) versionOk=false;
-                            if ( versionOk && timeParser.getValidRange().contains( tr ) && ( range==null || range.intersects(tr) ) ) {
+                            if ( ths.versionGe!=null && ths.versioningType.comp.compare( extra.get("v"), ths.versionGe )<0 ) versionOk=false;
+                            if ( ths.versionLt!=null && ths.versioningType.comp.compare( extra.get("v"), ths.versionLt )>=0 ) versionOk=false;
+                            if ( versionOk && ths.timeParser.getValidRange().contains( tr ) && ( range==null || range.intersects(tr) ) ) {
                                 if ( childRegex!=null ) {
                                     String[] kids= fileSystems[i].listDirectory( files1[ j ],childRegex, monitor.getSubtaskMonitor("list directory") );
                                     if ( kids.length>0 ) {
@@ -293,7 +313,7 @@ public class FileStorageModel {
                     }
                 }
 
-                if ( allowGz ) {
+                if ( ths.allowGz ) {
                     if ( result==null) {
                         for ( int i=fileSystems.length-1; result==null && i>=0; i-- ) {
                             String[] files1= fileSystems[i].listDirectory( "/", listRegex + ".gz" );
@@ -308,18 +328,18 @@ public class FileStorageModel {
                 }
 
                 if ( result==null ) {
-                    if ( parent==null  ) {
+                    if ( ths.parent==null  ) {
                         return null;
                     } else { // fall back to old code that would list everything.
                         logger.fine("fall back to old code that would list everything");
-                        range1= parent.getRangeFor(names[0]);
+                        range1= ths.parent.getRangeFor(names[0]);
                         range1= range1.previous();
                         if ( range!=null && !range.intersects(range1) ) {
                             return null;
                         }
-                        String one= parent.getRepresentativeFile( 
+                        String one= ths.parent.getRepresentativeFile( 
                                 monitor.getSubtaskMonitor("getRepresentativeFile"),
-                                regex.substring(parentRegex.length()+1), 
+                                ths.regex.substring(parentRegex.length()+1), 
                                 range1, 
                                 depth+1 );
                         if ( one==null ) return null;
@@ -327,7 +347,7 @@ public class FileStorageModel {
                         fileSystems= new FileSystem[names.length];
                         for ( int i=0; i<names.length; i++ ) {
                             try {
-                                fileSystems[i]= getChildFileSystem( root, names[i], monitor.getSubtaskMonitor("create") ); 
+                                fileSystems[i]= getChildFileSystem( ths.root, names[i], monitor.getSubtaskMonitor("create") ); 
                             } catch ( Exception e ) {
                                 throw new RuntimeException(e);
                             }
@@ -341,7 +361,7 @@ public class FileStorageModel {
 
         return result;
     }
-
+    
     /**
      * set the datum range giving context to the files.  For example,
      * filenames are just $H$M$S.dat, and the context is "Jan 17th, 2015"
@@ -386,6 +406,26 @@ public class FileStorageModel {
         }
     }
 
+    private static DatumRange getDatumRangeFor( FileStorageModel ths, String filename, Map<String,String> extra ) {
+        try {
+            extra.clear();
+            if ( ths.pattern.matcher(filename).matches() ) {
+                ths.timeParser.parse( filename, extra );
+                return ths.timeParser.getTimeRange();
+            } else {
+                if ( ths.gzpattern!=null && ths.gzpattern.matcher(filename).matches() ) {
+                    ths.timeParser.parse( filename.substring(0,filename.length()-3), extra );
+                    return ths.timeParser.getTimeRange();
+                } else {
+                    throw new IllegalArgumentException( "file name \""+filename+"\" doesn't match model specification ("+ths.template+")");
+                }
+            }
+        } catch ( ParseException | NumberFormatException e ) {
+            IllegalArgumentException e2=new IllegalArgumentException( "file name \""+filename+"\" doesn't match model specification ("+ths.template+"), parse error in field",e);
+            throw e2;
+        }
+    }
+    
     /**
      * return a filename that would intersect the range.  Note this file
      * may not actually exist.  This may be used to quantize the range.
@@ -1203,12 +1243,17 @@ public class FileStorageModel {
     private FileStorageModel( FileStorageModel parent, FileSystem root, String template, String fieldName, TimeParser.FieldHandler fieldHandler, Object ... moreHandler   ) {
         this.root= root;
         this.parent= parent;
-        this.template= template.replaceAll("\\+", "\\\\+");
         
         if ( template.startsWith("/") ) { // clean up double slashes immediately.  (/home/jbf//data/)
             template= template.substring(1);
         }
+        
+        while ( template.contains("//") ) {
+            template= template.replaceAll("\\/\\/", "/");
+        }
 
+        this.template= template.replaceAll("\\+", "\\\\+");
+        
         String f="v";
         versioningType= VersioningType.none;
         
