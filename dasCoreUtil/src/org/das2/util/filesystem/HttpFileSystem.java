@@ -707,14 +707,15 @@ public class HttpFileSystem extends WebFileSystem {
     @Override
     public String[] listDirectory(String directory) throws IOException {
         logger.log(Level.FINE, "** listDirectory({0}{1})", new Object[]{root, directory});
+
         DirectoryEntry[] cached= listDirectoryFromMemory( directory );
         if ( cached!=null ) {
             return FileSystem.getListing( cached );
         }
 
-        if ( protocol!=null && protocol instanceof AppletHttpProtocol ) { // support applets.  This could check for local write access, but DefaultHttpProtocol shows a problem here too.
+        if ( this.protocol!=null && this.protocol instanceof AppletHttpProtocol ) { // support applets.  This could check for local write access, but DefaultHttpProtocol shows a problem here too.
             URL[] list;
-            try ( InputStream in = protocol.getInputStream( new WebFileObject(this,directory,new Date() ), new NullProgressMonitor() ) ) {
+            try ( InputStream in = this.protocol.getInputStream( new WebFileObject(this,directory,new Date() ), new NullProgressMonitor() ) ) {
                 list= HtmlUtil.getDirectoryListing( getURL(directory), in );
             } catch ( CancelledOperationException ex ) {
                 throw new IllegalArgumentException(ex); //TODO: this should probably be IOException(ex).  See use 20 lines below as well.
@@ -934,8 +935,8 @@ public class HttpFileSystem extends WebFileSystem {
             //logger.warning("listDirectory called on event thread!");
         }
         
-        logger.log(Level.FINER, "listDirectory({0},{1})", new Object[]{directory, regex});
-
+        logger.log(Level.FINE, "listDirectory({0},{1})", new Object[]{directory, regex});
+        
         if ( regex.endsWith("/") ) regex= regex.substring(0,regex.length()-1);
 
         directory = toCanonicalFilename(directory);
