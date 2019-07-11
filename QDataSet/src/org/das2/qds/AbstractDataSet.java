@@ -205,10 +205,11 @@ public abstract class AbstractDataSet implements QDataSet, MutablePropertyDataSe
             if ( ( name.charAt(7)-'0') > 0 ) {
                 if ( value instanceof QDataSet ) {
                     if ( ((QDataSet)value).rank()>1 ) {
-                        Object o= properties.remove(QDataSet.QUBE); // BufferDataSet automatically sets QUBE to be true.
-                        if ( o!=null ) {
-                            logger.log(Level.FINER, "removing QUBE property (if any) because high rank {0}", name);
-                        }
+                        //Object o= properties.remove(QDataSet.QUBE); // BufferDataSet automatically sets QUBE to be true.
+                        //if ( o!=null ) {
+                        //    logger.log(Level.FINER, "removing QUBE property (if any) because high rank {0}", name);
+                        //}
+                        logger.log(Level.FINER, "high rank 2 {0} might imply this is not a QUBE.", name);
                     }
                 }
             }
