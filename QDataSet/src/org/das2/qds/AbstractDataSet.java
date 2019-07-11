@@ -177,31 +177,42 @@ public abstract class AbstractDataSet implements QDataSet, MutablePropertyDataSe
             propCheckName= name.substring(0,i__);
         }
         if ( value!=null ) checkPropertyType( propCheckName, value );
-        
-        if ( name.equals( QDataSet.DEPEND_0 ) && value!=null ) {
-            if ( value instanceof QDataSet ) { // BUNDLES can have string value here
-                QDataSet dep0= ((QDataSet)value);
-                if ( this.rank()>0 && dep0.length()!=this.length() ) {
-                    logger.log(Level.WARNING, "DEPEND_0 is incorrect length, its length is {0} should be {1}", new Object[]{dep0.length(), this.length()});
-                }
-            } else if ( value instanceof String ) {
-                logger.warning("Use DEPENDNAME_0 instead of DEPEND_0");
-            }
-        } else if ( name.equals( QDataSet.DEPEND_1 ) && value!=null ) {
-            if ( this.rank()<=1 ) {
-                logger.warning("DEPEND_1 was set on dataset of rank 0 or rank 1.  Ignoring...");
-            } else {
+
+        if ( name.startsWith("DEPEND_") ) {        
+            if ( name.equals( QDataSet.DEPEND_0 ) && value!=null ) {
                 if ( value instanceof QDataSet ) { // BUNDLES can have string value here
-                    QDataSet dep1= ((QDataSet)value);
-                    if ( this.rank()>0 && this.length()>0 && dep1.rank()==1 && dep1.length()!=this.length(0) ) {
-                        logger.log(Level.WARNING, "DEPEND_1 is incorrect length, its length is {0} should be {1}", new Object[]{dep1.length(), this.length(0)});
+                    QDataSet dep0= ((QDataSet)value);
+                    if ( this.rank()>0 && dep0.length()!=this.length() ) {
+                        logger.log(Level.WARNING, "DEPEND_0 is incorrect length, its length is {0} should be {1}", new Object[]{dep0.length(), this.length()});
                     }
                 } else if ( value instanceof String ) {
-                    logger.warning("Use DEPENDNAME_1 instead of DEPEND_1");
+                    logger.warning("Use DEPENDNAME_0 instead of DEPEND_0");
+                }
+            } else if ( name.equals( QDataSet.DEPEND_1 ) && value!=null ) {
+                if ( this.rank()<=1 ) {
+                    logger.warning("DEPEND_1 was set on dataset of rank 0 or rank 1.  Ignoring...");
+                } else {
+                    if ( value instanceof QDataSet ) { // BUNDLES can have string value here
+                        QDataSet dep1= ((QDataSet)value);
+                        if ( this.rank()>0 && this.length()>0 && dep1.rank()==1 && dep1.length()!=this.length(0) ) {
+                            logger.log(Level.WARNING, "DEPEND_1 is incorrect length, its length is {0} should be {1}", new Object[]{dep1.length(), this.length(0)});
+                        }
+                    } else if ( value instanceof String ) {
+                        logger.warning("Use DEPENDNAME_1 instead of DEPEND_1");
+                    }
+                }
+            }
+            if ( ( name.charAt(7)-'0') > 0 ) {
+                if ( value instanceof QDataSet ) {
+                    if ( ((QDataSet)value).rank()>1 ) {
+                        Object o= properties.remove(QDataSet.QUBE); // BufferDataSet automatically sets QUBE to be true.
+                        if ( o!=null ) {
+                            logger.log(Level.FINER, "removing QUBE property (if any) because high rank {0}", name);
+                        }
+                    }
                 }
             }
         }
-
         properties.put( name, value );
         
     }
