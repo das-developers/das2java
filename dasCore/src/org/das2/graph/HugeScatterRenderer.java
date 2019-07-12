@@ -369,6 +369,8 @@ public class HugeScatterRenderer extends Renderer {
                             ix0 = ix;
                             iy0 = iy;
                             break;
+                        default:
+                            logger.log(Level.INFO, "state: {0}", state);                            
                     }
                     state = STATE_LINETO;
                 }
@@ -483,6 +485,8 @@ public class HugeScatterRenderer extends Renderer {
                                 ix0 = ix;
                                 iy0 = iy;
                                 break;
+                            default:
+                                logger.log(Level.INFO, "state: {0}", state);
                         }
                     }
                 }
