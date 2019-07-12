@@ -94,7 +94,7 @@ public class PdfGraphicsOutput implements GraphicsOutput {
         // Identify the search path for ttf fonts, which must have the extension .ttf.  See http://www.fontation.com/feature/ which confirms this code.
         File[] dirs;
         if ( osName.startsWith("Mac") ) {
-            dirs= new File[] { new File( userhome + "/Library/Fonts/" ), new File( MAC_FONT_HOME ) };
+            dirs= new File[] { new File( userhome + "/Library/Fonts/" ), new File( MAC_FONT_HOME ) }; // Findbugs DMI_HARDCODED_ABSOLUTE_FILENAME okay
         } else if ( osName.startsWith("Linux") ) {
             dirs= new File[] { new File( userhome, ".fonts" ), new File( LINUX_FONT_HOME ) }; // note Ubuntu is /usr/share/fonts/truetype, but this will work.
         } else if ( osName.startsWith("Windows") ) {
