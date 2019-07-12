@@ -887,10 +887,11 @@ public class DatumRangeUtil {
             String[] ss= result.split("to"); //findbugs SBSC_USE_STRINGBUFFER_CONCATENATION okay
             
             if ( ss.length>2 ) {
-                result= ss[0];
+                StringBuilder sb= new StringBuilder(ss[0]);
                 for ( int i=1; i<ss.length; i++ ) {
-                    result= result + "-" + ss[i];
+                    sb.append("-").append(ss[i]);
                 }
+                result= sb.toString();
             } else if ( ss.length==2 ) { // kludgy check for YYYY to YYYY, everything else is error
                 String s0= ss[0].trim();
                 String s1= ss[1].trim();
