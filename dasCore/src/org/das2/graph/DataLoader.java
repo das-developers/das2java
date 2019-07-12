@@ -82,12 +82,12 @@ public abstract class DataLoader {
         }
         @Override
         public String toString() {
-            return xmem.toString();
+            return xmem.toString() + " " +ymem.toString();
         }
     }
     
     /**
-     * convenient method for getting a rebindescriptor with one bin per pixel.  -1 is
+     * convenient method for getting a RebinDescriptor with one bin per pixel.  -1 is
      * returned by the rebinDescriptor when no bin holds the point.
      */
     protected RebinDescriptor getRebinDescriptor( DasAxis axis ) {
