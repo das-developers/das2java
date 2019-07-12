@@ -30,6 +30,7 @@ import org.das2.util.GrannyTextRenderer;
 import org.das2.util.monitor.ProgressMonitor;
 import org.das2.qds.DDataSet;
 import org.das2.qds.DataSetOps;
+import org.das2.qds.IndexGenDataSet;
 import org.das2.qds.JoinDataSet;
 import org.das2.qds.QDataSet;
 import org.das2.qds.SemanticOps;
@@ -754,7 +755,7 @@ public class DigitalRenderer extends Renderer {
                 ds1= Ops.putProperty(ds1,QDataSet.DEPEND_0,Ops.linspace(firstIndex,lastIndex-1,lastIndex-firstIndex) );
             }
             if ( ds1.property(QDataSet.DEPEND_1)==null ) {
-                ds1= Ops.putProperty(ds1,QDataSet.DEPEND_1,Ops.dindgen(ds1.length(0)));
+                ds1= Ops.putProperty(ds1,QDataSet.DEPEND_1,IndexGenDataSet.lastindex(ds1));
             }
         } else {
             ds1= ds;
@@ -762,7 +763,7 @@ public class DigitalRenderer extends Renderer {
                 ds1= Ops.putProperty(ds1,QDataSet.DEPEND_0,Ops.linspace(firstIndex,lastIndex-1,firstIndex-lastIndex) );
             }
             if ( ds1.property(QDataSet.DEPEND_1)==null ) {
-                ds1= Ops.putProperty(ds1,QDataSet.DEPEND_1,Ops.dindgen(ds1.length(0)));
+                ds1= Ops.putProperty(ds1,QDataSet.DEPEND_1,IndexGenDataSet.lastindex(ds1));
             }
         }
 
