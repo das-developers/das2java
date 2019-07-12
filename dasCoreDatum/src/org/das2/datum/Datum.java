@@ -611,15 +611,8 @@ public class Datum implements Comparable, Serializable {
             a= a.convertTo(this.units);
         }
         
-        double d= this.getValue().doubleValue() - a.getValue().doubleValue();
+        return java.lang.Double.compare( this.getValue().doubleValue(), a.getValue().doubleValue() );
         
-        if (d==0.) {
-            return 0;
-        } else if ( d<0. ) {
-            return -1;
-        } else {
-            return 1;
-        }
     }
     
     /**
