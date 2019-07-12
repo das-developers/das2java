@@ -5007,7 +5007,7 @@ public final class Ops {
      */
     public static WritableDataSet copy( QDataSet src ) {
         logger.log(Level.FINE, "copy({0})", src);
-        if ( SemanticOps.isJoin(src) ) {
+        if ( SemanticOps.isJoin(src) || DataSetUtil.isQube(src)==false ) {
             return WritableJoinDataSet.copy(src);
         } else {
             if ( src instanceof BufferDataSet ) {
@@ -6261,7 +6261,7 @@ public final class Ops {
             mds= ArrayDataSet.maybeCopy(ds);  // https://sourceforge.net/p/autoplot/bugs/1357/ should this be DataSetWrapper.wrap?
         } else {
             if ( ((MutablePropertyDataSet)ds).isImmutable() ) {
-                mds= ArrayDataSet.copy(ds);
+                mds= copy(ds);
             } else {
                 mds= (MutablePropertyDataSet)ds;            
             }
