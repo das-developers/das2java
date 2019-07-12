@@ -25,7 +25,12 @@ package org.das2.event;
 
 import org.das2.graph.DasCanvasComponent;
 
-import java.awt.*;
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.Rectangle;
 
 /**
  *
@@ -33,11 +38,9 @@ import java.awt.*;
  */
 public class VerticalRangeGesturesRenderer implements DragRenderer {
     
-    protected int xInitial;
-    protected int yInitial;
-    private GesturesRenderer gr;
-    private Rectangle dirtyBounds;    
-    private DasCanvasComponent parent;
+    private final GesturesRenderer gr;
+    private final Rectangle dirtyBounds;    
+    private final DasCanvasComponent parent;
     
     public VerticalRangeGesturesRenderer(DasCanvasComponent parent) {
        gr= new GesturesRenderer(parent);
@@ -45,6 +48,7 @@ public class VerticalRangeGesturesRenderer implements DragRenderer {
        dirtyBounds= new Rectangle();
     }
     
+    @Override
     public Rectangle[] renderDrag(Graphics g1, Point p1, Point p2) {
         
         Graphics2D g= (Graphics2D) g1;
@@ -62,19 +66,20 @@ public class VerticalRangeGesturesRenderer implements DragRenderer {
             
             Color color0= g.getColor();
             g.setColor(new Color(255,255,255,100));            
-            g.setStroke(new BasicStroke( 3.0f,
-                BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ));            
+            g.setStroke(new BasicStroke( 3.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ));            
 
-            if ( height > 6 )
+            if ( height > 6 ) {
                 g.drawLine(x, y1+3, x, y2-3);
+            }
             g.drawLine(x+2, y1, x-2, y1 ); //serifs
             g.drawLine(x+2, y2, x-2, y2 );
             
             g.setStroke(new BasicStroke());
             g.setColor(color0);
             
-            if ( height > 6 )
+            if ( height > 6 ) {
                 g.drawLine(x, y1+3, x, y2-3);
+            }
             g.drawLine(x+2, y1, x-2, y1 ); //serifs
             g.drawLine(x+2, y2, x-2, y2 );
             dirtyBounds.setLocation(x-4,y1-2);
@@ -84,6 +89,7 @@ public class VerticalRangeGesturesRenderer implements DragRenderer {
     }
     
     
+    @Override
     public MouseDragEvent getMouseDragEvent(Object source, Point p1, Point p2, boolean isModified) {
         //double dx= p2.x-p1.x;
         //double dy= -1* ( p2.y-p1.y );
@@ -94,14 +100,17 @@ public class VerticalRangeGesturesRenderer implements DragRenderer {
         }                
     }
         
+    @Override
     public void clear(Graphics g) {
         parent.paintImmediately(dirtyBounds);
     }
     
+    @Override
     public boolean isPointSelection() {
         return false;
     }
     
+    @Override
     public boolean isUpdatingDragSelection() {
         return false;
     }    
