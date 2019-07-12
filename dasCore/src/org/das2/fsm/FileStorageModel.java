@@ -1338,9 +1338,9 @@ public class FileStorageModel {
             }
         }
 
-        if ( this.timeParser.isStartTimeOnly() ) {
-            this.startTimeOnly= true;
-        }
+        //if ( this.timeParser.isStartTimeOnly() ) {
+        //    this.startTimeOnly= true;
+        //}
 
         this.regex= timeParser.getRegex();
         this.pattern= Pattern.compile(regex);
@@ -1352,18 +1352,18 @@ public class FileStorageModel {
         }
     }
 
-    /**
-     * The filename time only contains the start time of the interval, the end of the interval
-     * is only bounded by the next file.
-     */
-    protected boolean startTimeOnly = false;
-
-    /**
-     * limit on the length of files with startTimeOnly set.
-     * e.g. $Y$m$d_$(H,startTimeOnly)$M means that the files should be much less that one hour long
-     *
-     */
-    protected Datum implicitTimeDelta= null;
+//    /**
+//     * The filename time only contains the start time of the interval, the end of the interval
+//     * is only bounded by the next file.
+//     */
+//    protected boolean startTimeOnly = false;
+//
+//    /**
+//     * limit on the length of files with startTimeOnly set.
+//     * e.g. $Y$m$d_$(H,startTimeOnly)$M means that the files should be much less that one hour long
+//     *
+//     */
+//    protected Datum implicitTimeDelta= null;
 
     private FileStorageModel( FileStorageModel parent, FileSystem root, String template ) {
         this( parent, root, template, null, null );
