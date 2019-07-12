@@ -23,9 +23,12 @@
 
 package org.das2.dataset;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.das2.datum.DatumVector;
 import org.das2.datum.UnitsConverter;
 import org.das2.datum.Datum;
+import org.das2.datum.LoggerManager;
 import org.das2.datum.Units;
 import org.das2.qds.DDataSet;
 import org.das2.qds.DataSetOps;
@@ -40,6 +43,8 @@ import org.das2.qds.SemanticOps;
  * @author  jbf
  */
 public final class RebinDescriptor {
+    
+    private static final Logger logger= LoggerManager.getLogger("das2.data.rebinner");
     
     Units units;
     protected double start;
@@ -103,6 +108,8 @@ public final class RebinDescriptor {
                 case MINUSONE:
                     result= -1;
                     break;
+                default:
+                    logger.log(Level.INFO, "outOfBoundsAction not supported: {0}", outOfBoundsAction);
             }
         } else {
             result= (int)((x-start)*nBin/(end-start));
