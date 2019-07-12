@@ -35,4 +35,44 @@ public final class IndexGenDataSet extends AbstractDataSet {
         return length;
     }
 
+    /**
+     * this is used to create a 0,1,2,... index list when DEPEND_1 is rank 2,
+     * but this also works for rank 1.
+     * @param src
+     * @return 
+     */
+    public static QDataSet lastindex( final QDataSet src ) {
+        if ( src.rank()==1 ) {
+            return new IndexGenDataSet(src.length());
+        }
+        AbstractDataSet result= new AbstractDataSet() {
+            @Override
+            public int rank() {
+                return src.rank();
+            }
+
+            @Override
+            public double value(int i0) {
+                return i0;
+            }
+
+            @Override
+            public double value(int i0, int i1) {
+                return i1;
+            }
+
+            @Override
+            public int length() {
+                return src.length();
+            }
+
+            @Override
+            public int length(int i) {
+                return src.length(i);
+            }
+            
+        };
+        result.putProperty( QDataSet.FORMAT,  "%d" );
+        return result;
+    }
 }
