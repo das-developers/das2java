@@ -552,7 +552,7 @@ public class QdsToD2sStream {
 	}
 	
 	// Hold the information for serializing a single packet and it's dependencies
-	private class PacketXferInfo {
+	private static class PacketXferInfo {
 		Document doc;        // Overall header document
 		List<QdsXferInfo> lDsXfer;
 		
@@ -952,7 +952,7 @@ public class QdsToD2sStream {
 	}
 	
 	// Getting string representation for ytags
-	private class YTagStrings {
+	private static class YTagStrings {
 		String sYTagInterval = null;
 		String sYTagMin = null;
 		String sYTags = null;
@@ -1458,7 +1458,7 @@ public class QdsToD2sStream {
 	
 	// Custom ISO time transfer type handles fractional seconds at arbitrary
 	// precision instead of ms, microsec, and nanosec only
-	private class D2TextTimeTransfer extends TransferType{
+	private static class D2TextTimeTransfer extends TransferType{
 		
 		Units units;
 		DatumFormatter formatter;
@@ -1541,7 +1541,7 @@ public class QdsToD2sStream {
 
 	// Custom local transfer type for exponential notation, use a small 'e'
 	// and don't print + signs.
-	private class D2SciNoteTransfer extends TransferType {
+	private static class D2SciNoteTransfer extends TransferType {
 
 		final int nLen;
 		private String sFmt;
