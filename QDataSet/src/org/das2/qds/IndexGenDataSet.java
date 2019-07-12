@@ -45,6 +45,19 @@ public final class IndexGenDataSet extends AbstractDataSet {
         if ( src.rank()==1 ) {
             return new IndexGenDataSet(src.length());
         }
+        if ( src.rank()==0 ) {
+            return new IndexGenDataSet(1);
+        }
+        boolean rank2= false;
+        int firstLength= src.length(0);
+        for ( int i=1; i<src.length(); i++ ) {
+            if ( src.length(i)!=firstLength ) {
+                rank2= true;
+            }
+        }
+        if ( rank2==false ) {
+            return new IndexGenDataSet(src.length());
+        }
         AbstractDataSet result= new AbstractDataSet() {
             @Override
             public int rank() {
