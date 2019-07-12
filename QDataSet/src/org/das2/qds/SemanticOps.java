@@ -513,7 +513,7 @@ public final class SemanticOps {
             } else {
                 QDataSet result= (QDataSet) ds.property(QDataSet.DEPEND_1);
                 if ( result==null ) {
-                    return IndexGenDataSet.lastindex(ds);
+                    return new IndexGenDataSet(ds.length(0));  //TODO: this should support non-qubes with IndexGenDataSet.lastIndex
                 } else {
                     return result;
                 }
