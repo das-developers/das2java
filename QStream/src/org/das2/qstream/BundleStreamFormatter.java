@@ -383,9 +383,9 @@ public class BundleStreamFormatter {
         osout.close();
     }
     
-    public static void main( String[] args ) throws StreamException, IOException {
-        QDataSet ds= BundleBinsDemo.demo1();
-        new BundleStreamFormatter().format( ds, new FileOutputStream("/tmp/jbf/foo.qds"), true );
-    }
+    //public static void main( String[] args ) throws StreamException, IOException {
+    //    QDataSet ds= BundleBinsDemo.demo1();
+    //    new BundleStreamFormatter().format( ds, new FileOutputStream("/tmp/jbf/foo.qds"), true );
+    //}
 
 }
