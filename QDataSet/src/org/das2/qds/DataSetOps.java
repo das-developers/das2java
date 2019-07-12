@@ -224,8 +224,8 @@ public class DataSetOps {
         QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
         QDataSet dep1= (QDataSet) ds.property(QDataSet.DEPEND_1);
         QDataSet dep0offset=  (QDataSet) ds.property("OFFSETS_1"); //kludge to experiment with this.
-        if ( dep0==null ) dep0= Ops.findgen(ds.length(0));
-        if ( dep1==null ) dep1= Ops.findgen(ds.length(0));
+        if ( dep0==null ) dep0= Ops.findgen(ds.length());
+        if ( dep1==null ) dep1= IndexGenDataSet.lastindex(ds);
         DataSetBuilder builder= new DataSetBuilder( 1, 100 );
         DataSetBuilder xbuilder= new DataSetBuilder( 1, 100 );
         DataSetBuilder ybuilder= new DataSetBuilder( 1, 100 );
