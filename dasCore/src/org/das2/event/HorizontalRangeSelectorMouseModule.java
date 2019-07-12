@@ -84,6 +84,8 @@ public class HorizontalRangeSelectorMouseModule extends MouseModule {
             axis.scanPrevious();
         } else if ( e0.getGesture()==Gesture.SCANNEXT) {
             axis.scanNext();
+        } else {
+            logger.log(Level.INFO, "unsupported gesture: {0}", e0.getGesture());
         }
     }
 
@@ -140,6 +142,8 @@ public class HorizontalRangeSelectorMouseModule extends MouseModule {
             case max:
                 shift = nmin;
                 break;
+            default:
+                logger.log(Level.FINE, "xpos: {0}", xpos);
         }
                     
         int clickMag = 1;

@@ -100,6 +100,8 @@ public class BoxZoomMouseModule extends BoxRangeSelectorMouseModule {
                 case max:
                     xshift = nmin;
                     break;
+                default:
+                    logger.log(Level.FINE, "xpos: {0}", xpos);
             }
             switch (ypos) {
                 case min:
@@ -108,6 +110,8 @@ public class BoxZoomMouseModule extends BoxRangeSelectorMouseModule {
                 case max:
                     yshift = -nmin;
                     break;
+                default:
+                    logger.log(Level.FINE, "ypos: {0}", xpos);
             }
         }
 

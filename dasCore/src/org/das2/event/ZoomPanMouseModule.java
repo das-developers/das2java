@@ -106,6 +106,8 @@ public class ZoomPanMouseModule extends MouseModule {
                 case max:
                     xshift = nmin;
                     break;
+                default:
+                    logger.log(Level.FINE, "xpos: {0}", xpos);
             }
             switch (ypos) {
                 case min:
@@ -114,6 +116,8 @@ public class ZoomPanMouseModule extends MouseModule {
                 case max:
                     yshift = -nmin;
                     break;
+                default:
+                    logger.log(Level.FINE, "ypos: {0}", ypos);
             }
         }
         

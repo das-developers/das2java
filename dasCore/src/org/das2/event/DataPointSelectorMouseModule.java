@@ -82,6 +82,8 @@ public class DataPointSelectorMouseModule extends MouseModule {
                         case KeyEvent.VK_DOWN:
                             robot.mouseMove(lastMousePoint.getX()+xOff, lastMousePoint.getY()+yOff+1);
                             break;
+                        default:
+                            logger.log(Level.FINE, "keypress: {0}", keyCode);
                     }
                 } catch ( java.awt.AWTException e1 ) {
                     logger.log(Level.SEVERE,null,e1);
