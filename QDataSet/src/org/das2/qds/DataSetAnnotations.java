@@ -73,6 +73,11 @@ public class DataSetAnnotations {
     public static final String ANNOTATION_CADENCE= "cadence";
 
     /**
+     * qube for the dataset.
+     */
+    public static final String ANNOTATION_QUBE= "qube";
+    
+    /**
      * return either null or the value for the annotation.  Note some
      * Java compilers (Java6?) will not allow code such as:<tt>
      * 0==DataSetAnnotations.getInstance().getAnnotation(...)
