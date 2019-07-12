@@ -20,9 +20,9 @@ import org.das2.datum.Units;
  */
 public final class DDataSet extends ArrayDataSet {
 
-    static long t0= System.currentTimeMillis();
+    //static long t0= System.currentTimeMillis();
     
-    public long t= System.currentTimeMillis() - t0;
+    //public long t= System.currentTimeMillis() - t0;
     
     double[] back;
 
