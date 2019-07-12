@@ -2364,13 +2364,26 @@ public class DataSetUtil {
     }
     
     /**
+     * have one place where we assert qube.
+     * @param ds
+     * @param value 
+     */
+    private static void maybeAssertQube( QDataSet ds, Boolean value ) {
+        if ( ds instanceof MutablePropertyDataSet && !((MutablePropertyDataSet)ds).isImmutable() ) {
+            logger.log(Level.FINE, "putProperty(QDataSet.QUBE,{0})", value);
+            ((MutablePropertyDataSet)ds).putProperty( QDataSet.QUBE, value );
+        }
+        DataSetAnnotations.getInstance().putAnnotation( ds, DataSetAnnotations.ANNOTATION_QUBE, value );
+    }
+    
+    /**
      * check to see if a dataset really is a qube, even if there is a
      * rank 2 dep1.  Note this ignores BUNDLE_1 property if there is a DEPEND_1.
      * This was motivated by the fftPower routine, which returned a rank 2 DEPEND_1,
      * but is typically constant, and RBSP/ECT datasets that often have rank 2 
      * DEPEND_1s that are constant.  This
      * will putProperty(QDataSet.QUBE,Boolean.TRUE) when the dataset really is
-     * a qube.
+     * a qube, or Boolean.FALSE if is clearly not a qube.
      * @param ds any dataset
      * @return true if the dataset really is a qube.
      */
@@ -2379,7 +2392,9 @@ public class DataSetUtil {
             return true;
         } else {
             Boolean q = (Boolean) ds.property(QDataSet.QUBE);
-            if ( q == null || q.equals(Boolean.FALSE)) {
+            if ( q == null ) {
+                Boolean q1= (Boolean)DataSetAnnotations.getInstance().getAnnotation( ds, DataSetAnnotations.ANNOTATION_QUBE );
+                if ( q1!=null ) return q1;
                 if ( SemanticOps.isJoin(ds) ) {
                     return checkQubeJoin(ds);
                 }
@@ -2387,14 +2402,21 @@ public class DataSetUtil {
                     QDataSet dep= (QDataSet) ds.property( "DEPEND_"+i );
                     if ( dep!=null && dep.rank()>1 ) {
                         if ( !isConstant(dep) ) {
+                            maybeAssertQube( ds, Boolean.FALSE );
                             return false;
                         }
                     }
+                    if ( i==1 && dep==null && ds.length()>0 ) {
+                        int rec0len= DataSetUtil.totalLength( ds.slice(0) );
+                        for ( int j=0; j<ds.length(); j++ ) {
+                            if ( DataSetUtil.totalLength( ds.slice(j) ) != rec0len ) {
+                                 maybeAssertQube( ds, Boolean.FALSE );
+                                 return false;
+                            }
+                        }
+                    }
                 }
-                if ( ds instanceof MutablePropertyDataSet && !((MutablePropertyDataSet)ds).isImmutable() ) {
-                    logger.fine("putProperty(QDataSet.QUBE,Boolean.TRUE)");
-                    ((MutablePropertyDataSet)ds).putProperty( QDataSet.QUBE, Boolean.TRUE );
-                }
+                maybeAssertQube( ds, Boolean.TRUE );
                 return true;
             } else {
                 return true;
@@ -2404,11 +2426,12 @@ public class DataSetUtil {
     
     /**
      * test to see that the dataset is a qube.  
+     * TODO: this all needs review.
      * @param ds QDataSet of any rank.
      * @return true if the dataset is a qube.
      */
     public static boolean isQube(QDataSet ds) {
-        if (ds.rank() <= 1) return true;
+        if (ds.rank() < 2) return true;
         Boolean q = (Boolean) ds.property(QDataSet.QUBE);
         if (q == null || q.equals(Boolean.FALSE)) {
             QDataSet dep1= (QDataSet) ds.property(QDataSet.DEPEND_1);
@@ -2784,6 +2807,7 @@ public class DataSetUtil {
      */
     public static int totalLength(QDataSet ds) {
         if ( ds.rank()==0 ) return 1;
+        if ( ds.rank()==1 ) return ds.length();
         int[] qube= DataSetUtil.qubeDims(ds); 
         if ( qube==null ) {
             LengthsDataSet lds= new LengthsDataSet(ds);
