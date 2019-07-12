@@ -15,14 +15,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.das2.util.LoggerManager;
 
 
 /**
  * Provides similar functions as the Unix Expect tool.<br>
  * There are two ways to create an Expect object: a constructor that takes an
  * {@link InputStream} handle and {@link OutputStream} handle; or spawning a
- * process by providing a comamnd String. <br>
+ * process by providing a command String. <br>
  * <br>
  * The API is loosely based on Perl Expect library:<br>
  * <a href="http://search.cpan.org/~rgiersig/Expect-1.15/Expect.pod">
@@ -315,6 +314,15 @@ public class Expect {
 		}
 		
 	}
+        
+        /**
+         * print internal debug information to stderr.
+         */
+        public void printDebugInfo() {
+            System.err.println( "before: " + this.before );
+            System.err.println( "isSuccess: " + this.isSuccess );
+            System.err.println( "match: " + this.match );
+        }
 
 	/**
 	 * Convenience method, internally it calls {@link #expect(int, List)
