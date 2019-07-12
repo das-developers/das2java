@@ -513,7 +513,7 @@ public final class SemanticOps {
             } else {
                 QDataSet result= (QDataSet) ds.property(QDataSet.DEPEND_1);
                 if ( result==null ) {
-                    return new IndexGenDataSet(ds.length(0));
+                    return IndexGenDataSet.lastindex(ds);
                 } else {
                     return result;
                 }
