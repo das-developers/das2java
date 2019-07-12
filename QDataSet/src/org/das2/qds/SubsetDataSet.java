@@ -184,7 +184,7 @@ public class SubsetDataSet extends AbstractDataSet {
         }
         for ( int i=idim+1; i<source.rank(); i++ ) { // rfe670: high-rank DEPEND_2
             dep= (QDataSet)property("DEPEND_"+i);
-            if ( dep!=null && dep.rank()>2 ) {
+            if ( dep!=null && dep.rank()>=2 ) {
                 SubsetDataSet dim= new SubsetDataSet( dep );
                 dim.applyIndex(idim,idx);
                 putProperty("DEPEND_"+i,dim);
