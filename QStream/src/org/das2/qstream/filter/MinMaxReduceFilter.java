@@ -115,6 +115,11 @@ public class MinMaxReduceFilter extends QDataSetsFilter {
         InputStream in= System.in;
         OutputStream out= System.out;
         
+        if ( args.length==0 || args[0].trim().length()==0 ) {
+            System.err.println("java -jar autoplot.jar org.qstream.filter.MinMaxFilter <seconds> [Urlin] [FileOut]");
+            System.exit(-1);
+        }
+
         if ( args.length>1 ) {
             in= new URL(args[1]).openStream();
         }
@@ -122,11 +127,6 @@ public class MinMaxReduceFilter extends QDataSetsFilter {
             out= new FileOutputStream(args[2]);
         }
         
-        if ( args.length==0 || args[0].trim().length()==0 ) {
-            System.err.println("java -jar autoplot.jar org.qstream.filter.MinMaxFilter <seconds> [Urlin] [FileOut]");
-            System.exit(-1);
-        }
-
         MinMaxReduceFilter me= new MinMaxReduceFilter();
         me.cadence= Units.seconds.parse(args[0]);
         me.init(out);
