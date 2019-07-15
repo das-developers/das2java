@@ -5439,7 +5439,7 @@ public final class Ops {
                     qqube.add( Array.getLength(slice) );
                     slice= Array.get( slice, 0 );
                 }
-            } catch ( Exception ex ) {
+            } catch ( ArrayIndexOutOfBoundsException | IllegalArgumentException ex ) {
                 Array.getLength(slice);
             }
         }
