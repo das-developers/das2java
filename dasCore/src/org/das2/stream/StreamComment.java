@@ -33,9 +33,9 @@ public class StreamComment {
     
     Element element;
     
-	 public final String TYPE_TASK_SIZE="taskSize";
-    public final String TYPE_TASK_PROGRESS="taskProgress";
-    public final String TYPE_LOG="log:(.*)";
+    public static final String TYPE_TASK_SIZE="taskSize";
+    public static final String TYPE_TASK_PROGRESS="taskProgress";
+    public static final String TYPE_LOG="log:(.*)";
     
     public StreamComment( Element element ) {
         this.element= element;
@@ -44,5 +44,8 @@ public class StreamComment {
     public String getType() { return element.getAttribute("type"); }
     public String getValue() { return element.getAttribute("value"); }
     
-    public String toString() { return "stream comment: "+getType()+"="+getValue(); }
+    @Override
+    public String toString() { 
+        return "stream comment: "+getType()+"="+getValue();
+    }
 }
