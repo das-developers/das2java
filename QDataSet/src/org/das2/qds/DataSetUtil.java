@@ -242,7 +242,7 @@ public class DataSetUtil {
                 double last = -1.0 * Double.MAX_VALUE;
                 int n = ds.length();
                 int jump = n / 20;
-                for (; i < n; i += (1 + (int) (jump * r.nextDouble()))) {
+                for (; i < n; i += (1 + r.nextInt(jump))) {
                     double d = ds.value(i);
                     double w = wds.value(i);
                     while (w == 0 && i < n) {
@@ -292,7 +292,7 @@ public class DataSetUtil {
                 double last = -1.0 * Double.MAX_VALUE;
                 int n = ds.length();
                 int jump = n / 20;
-                for (; i < n; i += (1 + (int) (jump * r.nextDouble()))) {
+                for (; i < n; i += (1 + r.nextInt(jump))) {
                     double d = ds.value(i);
                     double w = wds.value(i);
                     while (w == 0 && i < n) {
