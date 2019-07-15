@@ -573,6 +573,12 @@ public class AsciiHeadersParser {
         private ParamDescription( String name ) {
             this.name= name;
         }
+        public boolean getHasFill() {
+            return hasFill;
+        }
+        public double getFillValue() {
+            return fillValue;
+        }
     }
         
     public static BundleDescriptor parseMetadataHapi( JSONObject doc ) throws JSONException, ParseException {
