@@ -970,6 +970,8 @@ public class DataSetBuilder {
             case 1: dims= "*"; break;
             case 2: dims= "*,"+this.dim1; break;
             case 3: dims= "*,"+this.dim1+","+this.dim2; break;
+            case 4: dims= "*,"+this.dim1+","+this.dim2+","+this.dim3; break;
+            default: throw new IllegalArgumentException("unsupported rank");
         }
         return "DataSetBuilder rank=" + this.rank + " dims=[" + dims + "] reccount="+(this.index+this.offset);
     }
