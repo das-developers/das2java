@@ -1809,6 +1809,11 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
         if ( dep0!=null ) throw new IllegalArgumentException("dataset should not have DEPEND_0");
         
+        if ( ds.length()==0 ) {
+            logger.fine("no data points in data added.");
+            return;
+        }
+        
         dep0= Ops.slice1( ds,0  );
         if ( dep0.property(QDataSet.CADENCE) != null) {
             DataPointRecorder.this.xTagWidth = DataSetUtil.asDatum( (QDataSet)dep0.property(QDataSet.CADENCE) );
