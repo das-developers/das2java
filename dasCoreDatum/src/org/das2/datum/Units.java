@@ -767,7 +767,7 @@ public abstract class Units {
             result= Units.getByName(canonicalName);
             return result;
         } catch ( IllegalArgumentException ex ) {
-            Basis basis= new Basis( "since "+ base, "since "+ base, Basis.since2000, base.doubleValue(Units.us2000), Units.us2000.getOffsetUnits() );
+            Basis basis= new Basis( "since "+ base, "since "+ base, Basis.since2000, base.doubleValue(Units.us2000), Units.us2000.getOffsetUnits().id );
             result= new TimeLocationUnits( canonicalName, canonicalName, offsetUnits, basis );
             result.registerConverter( Units.us2000,
                     new UnitsConverter.ScaleOffset(
