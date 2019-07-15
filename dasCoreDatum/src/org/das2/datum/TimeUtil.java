@@ -1081,6 +1081,8 @@ public final class TimeUtil {
         switch(step) {
             case WEEK:
                 throw new IllegalArgumentException("not supported, use prevWeek");
+            default:
+                throw new IllegalArgumentException("unsupported step, implementation error");
             case YEAR:
                 t.month=1;
             case HALF_YEAR:
