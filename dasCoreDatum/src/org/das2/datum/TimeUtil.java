@@ -174,7 +174,6 @@ public final class TimeUtil {
                 return DatumRangeUtil.formatISO8601Duration( new int[] { year,month,day,hour,minute,intSeconds,nanos } ); //TODO: test this.
             }
         }
-        public boolean[] want;
         
         public TimeStruct copy() {
             TimeStruct result= new TimeStruct();
@@ -1504,9 +1503,7 @@ public final class TimeUtil {
         result.minute = minute;
         result.seconds = second;
         result.isLocation= true;
-        
-        result.want= want;
-        
+                
         return result;
     }
     
