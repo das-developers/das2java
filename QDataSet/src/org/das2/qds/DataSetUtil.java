@@ -3107,10 +3107,9 @@ public class DataSetUtil {
             } else {
                 MutablePropertyDataSet mresult= DataSetOps.makePropertiesMutable(result);
                 mresult.putProperty( WeightsDataSet.PROP_SUGGEST_FILL, ofill );
-                return result;
+                return mresult;
             }
-        }
-        if (result == null) {
+        } else {
             Number validMin,validMax;
             Units u;
             QDataSet bds= (QDataSet)ds.property(QDataSet.BUNDLE_1);
@@ -3140,8 +3139,9 @@ public class DataSetUtil {
                     result = new WeightsDataSet.Finite(ds);
                 }
             }
+            return result;
         }
-        return result;
+        
     }
 
     /** 
