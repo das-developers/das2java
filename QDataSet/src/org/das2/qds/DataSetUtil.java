@@ -2257,11 +2257,6 @@ public class DataSetUtil {
         
         QDataSet dxds= Ops.diff( xds );
         
-        if ( yds.rank()==1 && xds.rank()==1 && yds.length()==xds.length() ) {
-            DataSetBuilder dsb= new DataSetBuilder(1,100);
-            
-        }
-        
         dxds= Ops.divide( Ops.add( Ops.append( dxds.slice(0), dxds ), Ops.append( dxds, dxds.slice(dxds.length()-1) ) ), Ops.dataset(2) );
         
         QDataSet hh= Ops.autoHistogram( dxds );
