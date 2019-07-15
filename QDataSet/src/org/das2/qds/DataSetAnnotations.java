@@ -34,7 +34,7 @@ public class DataSetAnnotations {
     /**
      * set this to true to keep track of hits.
      */
-    private final boolean hitTracking= true;
+    private static final boolean hitTracking= true;
     
     /**
      * keep track of how often an annotation is used.
