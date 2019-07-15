@@ -127,19 +127,22 @@ public class MinMaxReduceFilter extends QDataSetsFilter {
             out= new FileOutputStream(args[2]);
         }
         
-        MinMaxReduceFilter me= new MinMaxReduceFilter();
-        me.cadence= Units.seconds.parse(args[0]);
-        me.init(out);
-        me.setSink( me.mySink );
+        try {
+            MinMaxReduceFilter me= new MinMaxReduceFilter();
+            me.cadence= Units.seconds.parse(args[0]);
+            me.init(out);
+            me.setSink( me.mySink );
         
-        StreamTool.readStream( Channels.newChannel(in), me );
-        
-        if ( args.length>2 ) {
-            out.close();
-        }
+            StreamTool.readStream( Channels.newChannel(in), me );
+            
+        } finally {
+            if ( args.length>2 ) {
+                out.close();
+            }
 
-        if ( args.length>1 ) {
-            in.close();
+            if ( args.length>1 ) {
+                in.close();
+            }
         }
     }
 }
