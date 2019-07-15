@@ -827,7 +827,6 @@ public class SeriesRenderer extends Renderer {
                 
             /* fuzz the xSampleWidth */
             double xSampleWidthExact= pathBuilder.getCadenceDouble();
-            boolean logStep= pathBuilder.isCadenceRatiometric();
             
             double x;
             double y;
