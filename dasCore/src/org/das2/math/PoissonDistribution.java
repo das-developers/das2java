@@ -11,18 +11,18 @@ package org.das2.math;
 import java.util.Random;
 
 /**
- *
+ * Class for generating numbers from a Poisson distribution.
  * @author Jeremy
  */
 public class PoissonDistribution {
     
-    static Fac fac= new Fac();
+    private static Fac fac= new Fac();
     
     private static class Fac {
-        final static int FAK_LEN=1024;
-        double[] fac_table;
-        boolean initialized= false;
-        final double        // coefficients in Stirling approximation
+        private final static int FAK_LEN=1024;
+        private final double[] fac_table;
+        private static boolean initialized= false;
+        private static final double        // coefficients in Stirling approximation
                 C0 =  0.918938533204672722,   // ln(sqrt(2*pi))
                 C1 =  1./12.,
                 C3 = -1./360.;
@@ -112,17 +112,17 @@ public class PoissonDistribution {
      * discrete random variates". Journal of Computational and Applied Mathematics,
      * vol. 31, no. 1, 1990, pp. 181-189.
      */
-    static class PoissonRatioUniforms {
-        final double SHAT1 = 2.943035529371538573;    // 8/e
-        final double SHAT2 = 0.8989161620588987408;   // 3-sqrt(12/e)
+    private static class PoissonRatioUniforms {
+        private static final double SHAT1 = 2.943035529371538573;    // 8/e
+        private static final double SHAT2 = 0.8989161620588987408;   // 3-sqrt(12/e)
         
-        double p_L_last = -1.0;            // previous L cache tag
-        double p_a;                       // hat center
-        double p_h;                       // hat width
-        double p_g;                       // ln(L)
-        double p_q;                       // value at mode
-        int p_bound;                    // upper bound
-        int mode;                              // mode
+        private static double p_L_last = -1.0;            // previous L cache tag
+        private static double p_a;                       // hat center
+        private static double p_h;                       // hat width
+        private static double p_g;                       // ln(L)
+        private static double p_q;                       // value at mode
+        private static int p_bound;                    // upper bound
+        private static int mode;                              // mode
         
         private int PoissonRatioUniforms(double L, Random random ) {
             double u;                                // uniform random
@@ -162,6 +162,9 @@ public class PoissonDistribution {
      *
      * For L &lt; 1.E-6 numerical inaccuracy is avoided by direct calculation.
      * For L &gt; 2E9 too big--throws IllegalArgumentException
+     * @param L
+     * @param random
+     * @return 
      */
     public static int poisson( double L,Random random ) {
         
