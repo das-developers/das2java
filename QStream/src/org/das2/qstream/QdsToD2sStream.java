@@ -384,9 +384,11 @@ public class QdsToD2sStream {
 				
 				if(ds.rank() > 1){
 					// Blind cast, is there any way to check this first?
-					if( (dsDep = (QDataSet)ds.property(QDataSet.DEPEND_1)) != null){
-						if(dsDep1 == null) dsDep1 = dsDep;
-						else{
+                                        dsDep = (QDataSet)ds.property(QDataSet.DEPEND_1);
+					if( dsDep != null){
+						if(dsDep1 == null) {
+                                                    dsDep1 = dsDep;
+                                                } else {
 							// More than one dep1 running around
 							if(dsDep != dsDep1) return false;
 						}
@@ -395,7 +397,7 @@ public class QdsToD2sStream {
 					// For now no one has come up with a concise way to say that 
 					// one yscan is the "frequency" set for a second yscan, we should
 					// do this but for now the answer is no, can't stream it
-					if(dsDep.rank() > 1) return false;
+                                        if( dsDep!=null && dsDep.rank() > 1) return false;
 				}
 				if( (dsDep = (QDataSet)ds.property(QDataSet.DEPEND_0)) != null){
 					if(dsDep0 == null) dsDep0 = dsDep;
