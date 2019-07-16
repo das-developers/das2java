@@ -1837,7 +1837,6 @@ public class DasPlot extends DasCanvasComponent {
                 bounds.height += titleHeight;
             }
 
-            System.err.println("bounds: "+bounds);
             if ( legendBounds!=null ) bounds.add(legendBounds);
             
             // TODO check bounds.height<10
