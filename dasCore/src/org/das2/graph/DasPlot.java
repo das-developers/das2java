@@ -1234,7 +1234,7 @@ public class DasPlot extends DasCanvasComponent {
     public Rectangle getAxisClip() {
         return DasDevicePosition.toRectangle( getRow(),getColumn() );
     }
-
+    
     @Override
     protected synchronized void paintComponent(Graphics graphics0) {
         logger.log(Level.FINER, "dasPlot.paintComponent {0}", getDasName());
@@ -1243,8 +1243,8 @@ public class DasPlot extends DasCanvasComponent {
             return;
         }
 
-        graphics0.setClip(null);
-        
+        double lineThicknessDouble= getLineThicknessDouble(lineThickness);
+                
         if ( isOpaque() ) {
             Color co= graphics0.getColor();
             graphics0.setColor(getBackground());
@@ -1292,23 +1292,13 @@ public class DasPlot extends DasCanvasComponent {
 
         Graphics2D graphics = (Graphics2D) graphics0.create();
 
-        if ( this.lineThickness.length()>0 && !this.lineThickness.equals("1px") ) {
-            double px= DasDevicePosition.parseLayoutStr( this.lineThickness, getEmSize(), getCanvas().getWidth(), 1. );
-            if ( px>1. ) {
-                graphics.setStroke( new BasicStroke((float)px,BasicStroke.CAP_ROUND,BasicStroke.JOIN_ROUND) );
+        if ( lineThicknessDouble!=1.f ) {
+            if ( lineThicknessDouble>1. ) {
+                graphics.setStroke( new BasicStroke((float)lineThicknessDouble,BasicStroke.CAP_ROUND,BasicStroke.JOIN_ROUND) );
             } else {
-                graphics.setStroke( new BasicStroke((float)px) );
+                graphics.setStroke( new BasicStroke((float)lineThicknessDouble) );
             }
         }
-                
-        Rectangle clip0= graphics.getClipBounds();
-        Rectangle plotClip= DasDevicePosition.toRectangle( getRow(), getColumn() );
-        plotClip.height+=2;
-        if ( displayTitle ) plotClip.height+=titleHeight;
-        plotClip.width+=2;
-        plotClip.translate(-x, -y);
-        if ( clip!=null ) plotClip= plotClip.intersection(clip);
-        graphics.setClip( plotClip );
 
         if ( drawBackground.getAlpha()>0 ) {
             Color c0= graphics0.getColor();
@@ -1362,16 +1352,8 @@ public class DasPlot extends DasCanvasComponent {
                 
                 // Draw the cache image onto the plot.
                 atGraphics.drawImage(lcacheImage, lcacheImageBounds.x, lcacheImageBounds.y, lcacheImageBounds.width, lcacheImageBounds.height, this);
-                
-                
-                    //atGraphics.setClip(null);
-                    //return;
-                    //graphics.drawString( "cacheImage "+atDesc, getWidth()/2, getHeight()/2 );
-            //atGraphics.setClip(null);
-            //return;
-            //graphics.drawString( "cacheImage "+atDesc, getWidth()/2, getHeight()/2 );
-
-                    }
+                 
+            }
 
             atGraphics.dispose();
 
@@ -1481,12 +1463,8 @@ public class DasPlot extends DasCanvasComponent {
         graphics.setColor(getForeground());
         
         if ( plotVisible ) {
-            graphics.setClip(null);
             graphics.drawRect(x - 1, y - 1, xSize + 1, ySize + 1);
         }
-
-        if ( clip0!=null ) clip0.translate( getX(), getY() );
-        graphics.setClip(clip0);
 
         if ( displayTitle && plotTitle != null && plotTitle.length() != 0) {
             String t= plotTitle;
@@ -1845,18 +1823,21 @@ public class DasPlot extends DasCanvasComponent {
             List<LegendElement> llegendElements= this.legendElements==null ? null : new ArrayList(this.legendElements);
             Rectangle legendBounds= getLegendBounds((Graphics2D) getGraphics(), 0, 0, llegendElements );
 
+            double lineThicknessDouble= getLineThicknessDouble( lineThickness );        
+
             Rectangle bounds = new Rectangle();
-            bounds.x = getColumn().getDMinimum() - 1;
-            bounds.y = getRow().getDMinimum() - 1;
+            bounds.x = getColumn().getDMinimum() - 1 - (int)( lineThicknessDouble/2. );
+            bounds.y = getRow().getDMinimum() - 1 - (int)( lineThicknessDouble/2. );
             // if legend label is outside the plot, then we'll do something here.  Note this will cause the data to be drawn out-of-bounds as well.
 
-            bounds.width = getColumn().getDMaximum() - bounds.x + 1;
-            bounds.height = getRow().getDMaximum() - bounds.y + 1;
+            bounds.width = getColumn().getDMaximum() - bounds.x + 1 + (int)( lineThicknessDouble / 2 );
+            bounds.height = getRow().getDMaximum() - bounds.y + 1 + (int)( lineThicknessDouble / 2 );
             if ( displayTitle && !getTitle().equals("") ) {
                 bounds.y -= titleHeight;
                 bounds.height += titleHeight;
             }
 
+            System.err.println("bounds: "+bounds);
             if ( legendBounds!=null ) bounds.add(legendBounds);
             
             // TODO check bounds.height<10

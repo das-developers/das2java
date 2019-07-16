@@ -381,7 +381,7 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
      * @param lineThickness
      * @return 
      */
-    public double getLineThicknessDouble( String lineThickness ) {
+    public final double getLineThicknessDouble( String lineThickness ) {
         double lineThicknessFloat;
                 
         if ( lineThickness.length()>0 && !lineThickness.equals("1px") ) {
