@@ -19,7 +19,7 @@ public class PoissonDistribution {
     private static Fac fac= new Fac();
     
     private static class Fac {
-        private final static int FAK_LEN=1024;
+        private static final int FAK_LEN=1024;
         private final double[] fac_table;
         private static boolean initialized= false;
         private static final double        // coefficients in Stirling approximation
