@@ -163,7 +163,7 @@ public class FileStorageModel {
      * @throws IOException 
      */
     public String getRepresentativeFile( ProgressMonitor monitor ) throws IOException {
-        return getRepresentativeFile( monitor, null );
+        return getRepresentativeFile( this, monitor, null, null, 0 );
     }
     
     /**
@@ -175,7 +175,7 @@ public class FileStorageModel {
      * @throws IOException 
      */  
     public String getRepresentativeFile( ProgressMonitor monitor, String childRegex ) throws IOException {     
-        return getRepresentativeFile( monitor, childRegex, null );
+        return getRepresentativeFile( this, monitor, childRegex, null, 0 );
     }
     /**
      * Return a random file from the FSM, which can be used to represent a typical file.  For
@@ -192,26 +192,7 @@ public class FileStorageModel {
      * @throws java.io.IOException if the file cannot be downloaded.
      */
     public String getRepresentativeFile( ProgressMonitor monitor, String childRegex, DatumRange range ) throws IOException {
-        return getRepresentativeFile( monitor,childRegex,range,0 );
-    }
-    
-    /**
-     * Return a random file from the FSM, which can be used to represent a typical file.  For
-     * example, we need to look at metadata of a given file to see what is available inside.  
-     * This is introduced to support discovery, where we just need one file to
-     * get started.  Before, there was code that would list all files, then use
-     * just the first one.  This may return a skeleton file, but getFileFor() must
-     * return a result.
-     * This implementation does the same as getNames(), but stops after finding a file.
-     * @param monitor progress monitor in case a file must be downloaded.
-     * @param childRegex the parent must contain a file/folder matching childRegex
-     * @param range hint at the range where we are looking.  
-     * @param depth the recursion depth, useful for debugging.
-     * @return null if no file is found
-     * @throws java.io.IOException if the file cannot be downloaded.
-     */
-    private String getRepresentativeFile( ProgressMonitor monitor, String childRegex, DatumRange range, int depth ) throws IOException {
-        return getRepresentativeFile( this, monitor, childRegex, range, depth );
+        return getRepresentativeFile( this, monitor,childRegex,range,0 );
     }
 
     /**
@@ -234,9 +215,9 @@ public class FileStorageModel {
             
         logger.log(Level.FINE, "get representative from {0} {1} range: {2}", new Object[]{ths.getFileSystem(), childRegex, range});
         
-        if ( depth==1 ) { // recusion makes this really hard to debug, and this should be rewritten to remove recursion.
-            System.err.println("here at depth 1: "+ths.toString() );
-        }
+        //if ( depth==1 ) { //TODO: recusion makes this really hard to debug, and this should be rewritten to remove recursion.
+        //    System.err.println("here at depth 1: "+ths.toString() );
+        //}
         if ( monitor==null ) monitor= new NullProgressMonitor();
         
         String listRegex;
@@ -256,7 +237,7 @@ public class FileStorageModel {
         try {
             if ( ths.parent!=null ) {
                 parentRegex= getParentRegex(ths.regex);
-                String one= ths.parent.getRepresentativeFile( monitor.getSubtaskMonitor("get representative file"),ths.regex.substring(parentRegex.length()+1), range, depth+1 );
+                String one= getRepresentativeFile( ths.parent, monitor.getSubtaskMonitor("get representative file"),ths.regex.substring(parentRegex.length()+1), range, depth+1 );
                 if ( one==null ) return null;
                 names= new String[] { one }; //parent.getNamesFor(null);
                 fileSystems= new FileSystem[names.length];
@@ -337,7 +318,8 @@ public class FileStorageModel {
                         if ( range!=null && !range.intersects(range1) ) {
                             return null;
                         }
-                        String one= ths.parent.getRepresentativeFile( 
+                        String one= getRepresentativeFile( 
+                                ths.parent,
                                 monitor.getSubtaskMonitor("getRepresentativeFile"),
                                 ths.regex.substring(parentRegex.length()+1), 
                                 range1, 
@@ -1102,6 +1084,7 @@ public class FileStorageModel {
         } else {
             result= template;
         }
+        result= result.replaceAll("//+","/");
         int i=result.indexOf("/");
         if ( i>-1 && result.indexOf("%")>i ) {
             System.err.println("each folder of template must have fields marked by $ or %: "+ result.substring(0,i) );
