@@ -3553,12 +3553,16 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             blLineRect.add( DMin, bottomPosition );
         }
 
+        double lineThicknessDouble= getLineThicknessDouble(lineThickness);
+                
+        int tickLength= tickLen + ( tickLen<0 ? -1 : 1 ) *(int)( lineThicknessDouble / 2 );
+        
         //Add room for ticks
         if (bottomTicks) {
             int x = DMin;
-            int y = bottomPosition + 1 - Math.max( -tickLen, 0 );
+            int y = bottomPosition + 1 - Math.max( -tickLength, 0 );
             int width = DWidth;
-            int height = Math.abs( tickLen );
+            int height = Math.abs( tickLength );
             //The last tick is at position (x + width), so add 1 to width
             if ( isVisible() ) {
                 blTickRect = setRectangleBounds(blTickRect, x, y, width + 1, height );
@@ -3568,9 +3572,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
         if (topTicks) {
             int x = DMin;
-            int y = topPosition - Math.max( 0, tickLen );
+            int y = topPosition - Math.max( 0, tickLength + (int)(lineThicknessDouble/2) );
             int width = DWidth;
-            int height = Math.abs( tickLen );
+            int height = Math.abs( tickLength + (int)(lineThicknessDouble/2) );
             //The last tick is at position (x + width), so add 1 to width
             if ( isVisible() ) {
                 trTickRect = setRectangleBounds(trTickRect, x, y, width + 1, height );
@@ -3688,19 +3692,23 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             blLineRect.add( leftPosition, DMin );
         }
         
+        double lineThicknessDouble= getLineThicknessDouble(lineThickness);
+                
+        int tickLength= tickLen + ( tickLen<0 ? -1 : 1 ) *(int)( lineThicknessDouble / 2 );
+        
         //Add room for ticks
         if (leftTicks) {
-            int x = leftPosition - Math.max( 0,tickLen );
+            int x = leftPosition - Math.max( 0,tickLength );
             int y = DMin;
-            int width = Math.abs( tickLen );
+            int width = Math.abs( tickLength );
             int height = DWidth;
             //The last tick is at position (y + height), so add 1 to height
             blTickRect = setRectangleBounds(blTickRect, x, y, width, height + 1);
         }
         if (rightTicks) {
-            int x = rightPosition + 1 + Math.min( 0,tickLen );
+            int x = rightPosition + 1 + Math.min( 0,tickLength );
             int y = DMin;
-            int width = Math.abs( tickLen );
+            int width = Math.abs( tickLength );
             int height = DWidth;
             //The last tick is at position (y + height), so add 1 to height
             trTickRect = setRectangleBounds(trTickRect, x, y, width, height + 1);

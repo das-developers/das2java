@@ -373,8 +373,27 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
         Font f= getFont();
         return f==null ? 8 : f.getSize2D();
     }
+     
+    /**
+     * return the thickness of the lines (in points or pixels), as specified
+     * in the lineThickness parameter.  Example inputs include "", "1px", and
+     * ".1em".
+     * @param lineThickness
+     * @return 
+     */
+    public double getLineThicknessDouble( String lineThickness ) {
+        double lineThicknessFloat;
+                
+        if ( lineThickness.length()>0 && !lineThickness.equals("1px") ) {
+            double px= DasDevicePosition.parseLayoutStr( lineThickness, getEmSize(), getCanvas().getWidth(), 1. );
+            lineThicknessFloat= px;
+        } else {
+            lineThicknessFloat= 1.0f;
+        }
+        return lineThicknessFloat;
+    }
     
-    private final Set dirty = new HashSet<String>();
+    private final Set dirty = new HashSet<>();
     
     /**
      * set the dirty flag indicating the state has changed and work is to be
