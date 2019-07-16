@@ -2267,7 +2267,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
          */
         if ( this.lineThickness.length()>0 && !this.lineThickness.equals("1px") ) {
             logger.finer("disabling clip for thicker axis");
-            graphics.setClip(null);
+            //graphics.setClip(null);
+            ((Graphics2D)graphics).setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
         } 
         
         logger.log(Level.FINEST, "DasAxis clip={0} @ {1},{2}", new Object[]{graphics.getClip(), getX(), getY()});
