@@ -631,7 +631,7 @@ public class DataSetUtil {
      * @return the properties that describe the dataset itself
      */
     public static String[] globalProperties() {
-        return GLOBAL_PROPERTIES;
+        return Arrays.copyOf(GLOBAL_PROPERTIES,GLOBAL_PROPERTIES.length);        
     }
 
     
@@ -645,7 +645,7 @@ public class DataSetUtil {
      * @return the properties that go along with the zeroth index
      */
     public static String[] correlativeProperties() {
-        return CORRELATIVE_PROPERTIES;
+        return Arrays.copyOf(CORRELATIVE_PROPERTIES,CORRELATIVE_PROPERTIES.length);
     }
 
 
