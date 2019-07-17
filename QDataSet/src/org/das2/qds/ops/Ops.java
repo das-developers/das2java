@@ -13063,9 +13063,24 @@ public final class Ops {
             super( x,y,z,w );
             this.idx= idx;
         }
+        @Override
         public String toString() {
             return String.valueOf(idx);
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if ( o instanceof PointWeightedInt ) {
+                if (((PointWeightedInt)o).idx==this.idx ) {
+                    return true;
+                } else {
+                    return super.equals(o);
+                }
+            } else {
+                return super.equals(o); 
+            }
+        }
+        
     }
     
 //    /**
@@ -13121,9 +13136,24 @@ public final class Ops {
             super( x,y );
             this.idx= idx;
         }
+        @Override
         public String toString() {
             return String.valueOf(idx);
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if ( o instanceof VertexInt ) {
+                if ( ((VertexInt)o).idx==this.idx ) {
+                    return true;
+                } else {
+                    return super.equals(o);
+                }
+            } else {
+                return super.equals(o); //To change body of generated methods, choose Tools | Templates.
+            }
+        }
+        
     }    
     
     /**
