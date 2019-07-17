@@ -13079,6 +13079,10 @@ public final class Ops {
             } else {
                 return super.equals(o); 
             }
+        }        
+        @Override
+        public int hashCode() {
+            return this.idx;
         }
         
     }
@@ -13152,6 +13156,11 @@ public final class Ops {
             } else {
                 return super.equals(o); //To change body of generated methods, choose Tools | Templates.
             }
+        }
+
+        @Override
+        public int hashCode() {
+            return this.idx;
         }
         
     }    
