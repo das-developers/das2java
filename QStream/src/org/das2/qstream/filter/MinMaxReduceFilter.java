@@ -137,7 +137,7 @@ public class MinMaxReduceFilter extends QDataSetsFilter {
             
         } finally {
             if ( args.length>2 ) {
-                out.close();
+                out.close(); // Grr findbugs OBL_UNSATISFIED_OBLIGATION
             }
 
             if ( args.length>1 ) {
