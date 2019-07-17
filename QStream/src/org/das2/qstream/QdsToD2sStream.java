@@ -1481,22 +1481,23 @@ public class QdsToD2sStream {
 			// yyyy-mm-ddThh:mm:ss.ssssssssssss +1 for space at end
 			// 12345678901234567890123456789012
 			nSize = 20;
-			String sFmt =  "yyyy-MM-dd'T'HH:mm:ss";
-			String sFill = "                   ";
+			StringBuilder sFmt =  new StringBuilder("yyyy-MM-dd'T'HH:mm:ss");
+			StringBuilder sFill = new StringBuilder("                   ");
 			
 			if(nFracSec > 0){ 
-				sFmt += ".";
-				sFill += " ";
+				sFmt.append( "." );
+				sFill.append( " " );
 			}
 			for(int i = 0; i < nFracSec; ++i){ 
-				sFmt += "S";
-				sFill += " ";
+				sFmt.append( "S" );
+				sFill.append( " " );
 			}
-			sFmt += " "; sFill += " ";
+			sFmt.append(" "); 
+                        sFill.append(" ");
 			
-			aFill = sFill.getBytes(StandardCharsets.US_ASCII);
+			aFill = sFill.toString().getBytes(StandardCharsets.US_ASCII);
 			try{
-				formatter = new TimeDatumFormatter(sFmt);
+				formatter = new TimeDatumFormatter(sFmt.toString());
 			}
 			catch(ParseException ex){
 				throw new RuntimeException(ex);
