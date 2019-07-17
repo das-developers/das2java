@@ -24,7 +24,6 @@ package org.das2.graph;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Polygon;
@@ -69,7 +68,6 @@ import org.das2.util.monitor.ProgressMonitor;
 import org.das2.qds.ArrayDataSet;
 import org.das2.qds.DataSetOps;
 import org.das2.qds.DataSetUtil;
-import org.das2.qds.IndexGenDataSet;
 import org.das2.qds.MutablePropertyDataSet;
 import org.das2.qds.QDataSet;
 import org.das2.qds.SemanticOps;
@@ -848,7 +846,7 @@ public class SeriesRenderer extends Renderer {
 
             // now loop through all of them. //
             //boolean ignoreCadence= ! cadenceCheck;
-            boolean isValid= false;
+            boolean isValid;
             
             //poes_n17_20041228.cdf?P1_90[0:300] contains fill records between 
             //each measurement. Test for this.
@@ -2008,7 +2006,7 @@ public class SeriesRenderer extends Renderer {
                 try {
                     updateFirstLast(xAxis, yAxis, xds, vds );
                 } catch ( InconvertibleUnitsException ex ) {
-                    ex.printStackTrace();
+                    logger.log( Level.INFO, ex.getMessage(), ex );
                     return;
                 }
                 numberOfPoints= lastIndex-firstIndex;
@@ -2023,7 +2021,7 @@ public class SeriesRenderer extends Renderer {
                         mvds= doDataSetReduce( xAxis, yAxis, vds, 1, 1 );
                     } catch ( InconvertibleUnitsException ex ) {
                         logger.warning("InconvertibleUnitsException");
-                        ex.printStackTrace();
+                        logger.log( Level.INFO, ex.getMessage(), ex );
                         return;
                     }
 
@@ -2123,7 +2121,7 @@ public class SeriesRenderer extends Renderer {
                 try {
                     if ( vds!=null && vds.rank()==1 && dataSet.rank()==2 && SemanticOps.isBundle(dataSet) ) {
                         psymConnectorElement.update(xAxis, yAxis, dataSet, monitor.getSubtaskMonitor("psymConnectorElement.update")); 
-                    } else if ( dataSet!=null && dataSet.rank()==0 ) {
+                    } else if ( dataSet.rank()==0 ) {
                         psymConnectorElement.update(xAxis, yAxis, dataSet, monitor.getSubtaskMonitor("psymConnectorElement.update")); 
                     } else {
                         psymConnectorElement.update(xAxis, yAxis, vds, monitor.getSubtaskMonitor("psymConnectorElement.update"));
@@ -2134,7 +2132,7 @@ public class SeriesRenderer extends Renderer {
             }
 
             try {
-                if ( dataSet!=null && dataSet.rank()==0 ) {
+                if ( dataSet.rank()==0 ) {
                     
                 } else {
                     errorElement.update(xAxis, yAxis, vds, monitor.getSubtaskMonitor("errorElement.update"));
@@ -2625,6 +2623,7 @@ public class SeriesRenderer extends Renderer {
             if (parent != null && parent.getCanvas() != null) {
                 final DasCanvas dasCanvas= parent.getCanvas();
                 Runnable run= new Runnable() {
+                    @Override
                     public void run() {
                         dasCanvas.add(colorBar);
                     }
