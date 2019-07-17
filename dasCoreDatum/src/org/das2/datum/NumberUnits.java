@@ -206,11 +206,11 @@ public class NumberUnits extends Units {
                 if ( ss.length==1 ) {
                     return Datum.create( dd[0], this, 0 );
                 } else {
-                    String unitsString= ss[1];
-                    for ( int i=2; i<ss.length; i++ ) unitsString+= " "+ss[i];
+                    StringBuilder unitsString= new StringBuilder( ss[1] );
+                    for ( int i=2; i<ss.length; i++ ) unitsString.append(" ").append(ss[i]);
                     Units u;
                     try {
-                        u= Units.getByName(unitsString);
+                        u= Units.getByName(unitsString.toString());
                     } catch ( IllegalArgumentException e ) {
                         ParseException t= new ParseException(s, ss[0].length()+1 );
                         t.initCause(e);
