@@ -1428,13 +1428,7 @@ public class AsciiParser {
         if ( regex.equals("\\s+") ) {
             ss= string.trim().split(regex); // do what you did before.
         } else {
-            ss= string.trim().split(regex);
-        }
-        if (string.endsWith(regex)) {
-            String[] ss1 = new String[ss.length + 1];
-            System.arraycopy(ss, 0, ss1, 0, ss.length);
-            ss1[ss1.length - 1] = "";
-            ss = ss1;
+            ss= string.trim().split(regex,-2);
         }
         return ss;
     }
