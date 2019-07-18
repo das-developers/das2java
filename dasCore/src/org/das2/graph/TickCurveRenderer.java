@@ -429,7 +429,7 @@ public final class TickCurveRenderer extends Renderer {
             double[] pos = DasDevicePosition.parseLayoutStr(this.tickLength );
             Font f= g.getFont();
             if ( pos[0]==0 ) {
-                this.tickLen = (int) ( Math.round( pos[1]* f.getSize2D() + pos[2] ) ); // make independent from row layout for initialization.
+                this.tickLen = (int) ( Math.round( pos[0]*getParent().getCanvas().getWidth() + pos[1]* f.getSize2D() + pos[2] ) );
             } else {
                 this.tickLen = (int) ( Math.round( pos[1]* f.getSize2D() + pos[2] ) );
             }
