@@ -526,14 +526,7 @@ public class DataSetBuilder {
     public void nextRecords( QDataSet ds ) {
         for ( int i=0; i<ds.length(); i++ ) {
             QDataSet ds1= ds.slice(i);
-            if ( ds1.rank()==0 ) {
-                this.nextRecord(ds1);
-            } else {
-                //int count= DataSetUtil.totalLength(ds1);
-                //this.putValues( index, ds1, count );
-                //this.nextRecord();
-                this.nextRecord(ds1);
-            }
+            this.nextRecord(ds1);
         }
     }
     
