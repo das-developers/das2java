@@ -1981,7 +1981,7 @@ public class DataSetUtil {
         QDataSet sss= (QDataSet) hist.property( QDataSet.PLANE_0 ); // DANGER--don't change PLANE_0!
 
         for ( int i=ipeak; i>=0; i-- ) {
-            if ( hist.value(i)>(peakv/4) ) {
+            if ( hist.value(i)>(peakv/4.) ) {
                 ss+= sss.value(i) * hist.value(i);
                 nn+= hist.value(i);
             } else {
@@ -1990,7 +1990,7 @@ public class DataSetUtil {
         }
 
         for ( int i=ipeak+1; i<hist.length(); i++ ) {
-            if ( hist.value(i)>(peakv/4) ) {
+            if ( hist.value(i)>(peakv/4.) ) {
                 ss+= sss.value(i) * hist.value(i);
                 nn+= hist.value(i);
             } else {
