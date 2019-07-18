@@ -764,12 +764,6 @@ public class HugeScatterRenderer extends Renderer {
             //    Logger.getLogger(HugeScatterRenderer.class.getName()).log(Level.SEVERE, null, ex);
             //}
             
-        } else if ( SemanticOps.isRank2Waveform(ds)) {
-            QDataSet xds= SemanticOps.xtagsDataSet(ds);
-            boolean xmono= SemanticOps.isMonotonic(xds);
-            int firstIndex = xmono ? DataSetUtil.getPreviousIndex(xds,  ddx.binStart(0) ) : 0;
-            int lastIndex = xmono ? DataSetUtil.getNextIndex(xds, ddx.binStop(ddx.numberOfBins() - 1) ) : ds.length()-1;
-            tds = histogram(tds, ddx, ddy, ds, firstIndex, lastIndex );
         } else {
             QDataSet xds= SemanticOps.xtagsDataSet(ds);
             boolean xmono= SemanticOps.isMonotonic(xds);
