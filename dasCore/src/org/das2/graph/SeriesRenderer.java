@@ -2243,8 +2243,8 @@ public class SeriesRenderer extends Renderer {
                     xds, ds2,
                     0,
                     xds.length(),
-                    widthx.divide(xaxis.getColumn().getWidth()/5),
-                    widthy.divide(yaxis.getRow().getHeight()/5)
+                    widthx.divide(xaxis.getColumn().getWidth()/5.),
+                    widthy.divide(yaxis.getRow().getHeight()/5.)
                     );
 
                 logger.fine( String.format( "reduce path in calcSelectionArea: %s\n", reduce ) );
