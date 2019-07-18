@@ -112,11 +112,19 @@ public class PropertyEditor extends JComponent {
            
     private boolean doListen= false;
             
+    /**
+     * return true if the object is a Java Bean that fires property change events.
+     * This checks to see if listeners can be registered.
+     * @param lbean an object which may be a bean
+     * @return true if the object has an addPropertyChangeListener method.
+     */
     public static boolean isBean( Object lbean ) {
         try {
             Method m= lbean.getClass().getMethod( "addPropertyChangeListener", PropertyChangeListener.class );
+            logger.log(Level.FINEST, "isBean true because addPropertyChangeListener exists: {0} {1}", new Object[]{lbean, m});
             return true;
         } catch (NoSuchMethodException | SecurityException ex) {
+            logger.log(Level.FINEST, "isBean false: {0} {1}", new Object[]{lbean,ex.getMessage()});
             return false;
         } 
     }
