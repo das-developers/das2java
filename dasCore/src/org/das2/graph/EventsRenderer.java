@@ -300,7 +300,7 @@ public class EventsRenderer extends Renderer {
                     }
                 }
 
-                if ( ii.size()>=0 ) {
+                if ( ii.size()>0 ) {
                     StringBuilder sb= new StringBuilder();
                     int count= 0;
                     for ( Integer ii1 : ii ) {
