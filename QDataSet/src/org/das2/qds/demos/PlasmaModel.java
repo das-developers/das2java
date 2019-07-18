@@ -108,7 +108,7 @@ public class PlasmaModel {
                     double[] yy = new double[nj];
                     for (int j = 0; j < nj; j++) {
                         if (ylog) {
-                            yy[j] = (nj / 300) + j * 0.05;
+                            yy[j] = (nj / 300) + j * 0.05; // findbugs okay ICAST_IDIV_CAST_TO_DOUBLE
                             yy[j] = Math.pow(10,yy[j]);
                         } else {
                             yy[j] = (nj / 3) + j * 1.2;
