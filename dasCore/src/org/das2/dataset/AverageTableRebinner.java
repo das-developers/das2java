@@ -520,14 +520,10 @@ public class AverageTableRebinner implements DataSetRebinner {
                     if (ddY.isLog()) {
                         Units u = dr.getUnits();
                         double d = dr.min().doubleValue(u);
-                        if ( d>0 ) {
-                            double d0 = Math.log(dr.min().doubleValue(u) / d);
-                            double d1 = Math.log(dr.max().doubleValue(u) / d);
-                            dr = new DatumRange(d0, d1, Units.logERatio);
-                            yy = Units.logERatio.createDatum(Math.log(yy.doubleValue(u) / d));
-                        } else {
-                            yy = dr.min();
-                        }
+                        double d0 = Math.log(dr.min().doubleValue(u) / d);
+                        double d1 = Math.log(dr.max().doubleValue(u) / d);
+                        dr = new DatumRange(d0, d1, Units.logERatio);
+                        yy = Units.logERatio.createDatum(Math.log(yy.doubleValue(u) / d));
                     // TODO: infinity
                     }
                     double alpha = DatumRangeUtil.normalize(dr, yy);

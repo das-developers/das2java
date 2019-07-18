@@ -611,7 +611,17 @@ public class Datum implements Comparable, Serializable {
             a= a.convertTo(this.units);
         }
         
-        return java.lang.Double.compare( this.getValue().doubleValue(), a.getValue().doubleValue() );
+        double d= this.getValue().doubleValue() - a.getValue().doubleValue();
+        
+        if (d==0.) {
+            return 0;
+        } else if ( d<0. ) {
+            return -1;
+        } else {
+            return 1;
+        }
+        //findbugs wants:
+        //return java.lang.Double.compare( this.getValue().doubleValue(), a.getValue().doubleValue() );
         
     }
     
