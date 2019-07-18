@@ -19,7 +19,7 @@ public class PoissonDistribution {
     private static final Fac fac= new Fac();
     
     private static class Fac {
-        private final int FAK_LEN=1024;
+        private static final int FAK_LEN=1024;
 
         private final double[] fac_table;
         private static boolean initialized= false;
