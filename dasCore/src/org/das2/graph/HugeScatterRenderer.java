@@ -1132,7 +1132,7 @@ public class HugeScatterRenderer extends Renderer {
                 }
                 if ( n>0 ) {
                     // why 2*overx?  I have no idea...
-                    result.append( new Rectangle( (int)( 2* overx + i+((float)x)/n+parentx-dd/2 + dx ), (int)( j+((float)y)/n+parenty-dd/2 ), dd, dd ), true );
+                    result.append( new Rectangle( (int)( 2* overx + i+x/n+parentx-dd/2 + dx ), (int)( j+y/n+parenty-dd/2 ), dd, dd ), true );
                 }
             }
         }
