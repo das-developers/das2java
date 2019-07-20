@@ -35,7 +35,8 @@ public final class EventQueueBlocker {
     private EventQueueBlocker() {
     }
     
-    private static Runnable clearEventQueueImmediatelyRunnable= new Runnable() {
+    private static final Runnable clearEventQueueImmediatelyRunnable= new Runnable() {
+        @Override
         public void run() {
             clearEventQueueImmediately();
         }
@@ -43,13 +44,13 @@ public final class EventQueueBlocker {
     
     private static void clearEventQueueImmediately() {
         DasUpdateEvent evt;
-        evt= (DasUpdateEvent) Toolkit.getDefaultToolkit().getSystemEventQueue().peekEvent(DasUpdateEvent.DAS_UPDATE_EVENT_ID)  ;
-        if ( evt != null ) {
-            logger.finer("pending update event: "+evt);
-            EventQueue.invokeLater( clearEventQueueImmediatelyRunnable );
-        } else {
-            logger.finer("no update events found ");
-            synchronized(lockObject) {
+        synchronized(lockObject) {
+            evt= (DasUpdateEvent) Toolkit.getDefaultToolkit().getSystemEventQueue().peekEvent(DasUpdateEvent.DAS_UPDATE_EVENT_ID)  ;
+            if ( evt != null ) {
+                logger.log(Level.FINER, "pending update event: {0}", evt);
+                EventQueue.invokeLater( clearEventQueueImmediatelyRunnable );
+            } else {
+                logger.finer("no update events found ");
                 lockObject.notify();  // findbugs NN_NAKED_NOTIFY okay
             }
         }
@@ -80,6 +81,7 @@ public final class EventQueueBlocker {
     
     /**
      * method for inspecting the event queue.
+     * @param out
      */
     public static void dumpEventQueue( PrintStream out ) {
         
