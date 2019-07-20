@@ -368,10 +368,10 @@ public abstract class FileSystem  {
         }
 
         if ( factory==null ) {
-            logger.log(Level.FINE, "releasing {0}", waitObject);
-            blocks.remove(root);
-            logger.log(Level.FINE, "releasing {0}", waitObject); // need to do this in the finally block in case there was an Exception.
             synchronized( waitObject ) {
+                logger.log(Level.FINE, "releasing {0}", waitObject);
+                blocks.remove(root);
+                logger.log(Level.FINE, "releasing {0}", waitObject); // need to do this in the finally block in case there was an Exception.
                 waitObject.notifyAll(); //TODO: the other threads are going to think it's offline.
             }                
             logger.log(Level.SEVERE, "unsupported protocol: {0}", root);
