@@ -1396,9 +1396,13 @@ public class TimeParser {
      * @param extra map that is passed into field handlers
      * @return the TimeParser, call getTimeRange or getTime to get result.
      * @throws ParseException
+     * @throws IllegalArgumentException if another thread is parsing.
      */
-    public synchronized TimeParser parse(String timeString, Map<String,String> extra ) throws ParseException {
+    public TimeParser parse(String timeString, Map<String,String> extra ) throws ParseException {
         
+        if ( !lock.equals("") ) {
+            throw new IllegalArgumentException("someone is messing with the parser on a different thread "+lock+ " this thread is "+Thread.currentThread().getName() );
+        }
         lock= Thread.currentThread().getName();
         
         int offs = 0;
@@ -1925,8 +1929,12 @@ public class TimeParser {
      * </code>
      * @param units as in Units.us2000
      * @return the value in the given units.
+     * @throws IllegalArgumentException if another thread is currently parsing a time.
      */
     public double getTime(Units units) {
+        if ( !lock.equals("") ) {
+            throw new IllegalArgumentException("someone is messing with the parser on a different thread "+lock+ " this thread is "+Thread.currentThread().getName() );
+        }
         return Units.us2000.convertDoubleTo(units, toUs2000(startTime));
     }
 
@@ -1934,8 +1942,12 @@ public class TimeParser {
      * return the parsed time as a Datum.  For years less than 1990, 
      * Units.us1980 is used, otherwise Units.us2000 is used.
      * @return a datum representing the parsed time.
+     * @throws IllegalArgumentException if another thread is currently parsing a time.
      */
     public Datum getTimeDatum() {
+        if ( !lock.equals("") ) {
+            throw new IllegalArgumentException("someone is messing with the parser on a different thread "+lock+ " this thread is "+Thread.currentThread().getName() );
+        }
         if (startTime.year < 1990) {
             return Units.us1980.createDatum(toUs1980(startTime));
         } else {
@@ -1981,9 +1993,12 @@ public class TimeParser {
      * 
      * This accesses time, timeWidth, orbitDatumRange, startTime.
      * @return the DatumRange
+     * @throws IllegalArgumentException if another thread is currently parsing a time.
      */
     public DatumRange getTimeRange() {
-        if ( !lock.equals("") ) throw new IllegalArgumentException("someone is messing with the parser on a different thread "+lock+ " this thread is "+Thread.currentThread().getName() );
+        if ( !lock.equals("") ) {
+            throw new IllegalArgumentException("someone is messing with the parser on a different thread "+lock+ " this thread is "+Thread.currentThread().getName() );
+        }
         if ( stopTimeDigit==AFTERSTOP_INIT && startTime.day==1 && startTime.hour==0 && startTime.minute==0 && startTime.seconds==0 && startTime.millis==0 && startTime.micros==0 &&
             timeWidth.day==0 && timeWidth.hour==0 && timeWidth.minute==0 && timeWidth.seconds==0 && timeWidth.millis==0 && timeWidth.micros==0 ) { // special code for years.
             TimeStruct lstopTime = startTime.add(timeWidth);
