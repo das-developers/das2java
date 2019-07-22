@@ -78,23 +78,33 @@ public class WebFileObject extends FileObject {
      * For thread safety, metadata should only be read by other threads, and only if it exists.
      * @throws IOException
      */
-    protected synchronized void maybeLoadMetadata() throws IOException {
-        if ( metadata==null ) {
-            if ( this.wfs.offline ) {
-                if ( FileSystem.settings().isOffline() ) { //bug https://sourceforge.net/p/autoplot/bugs/932/
-                    metadata= new HashMap();
-                    metadata.put( WebProtocol.META_EXIST, isLocal() ? "true" : "false" );
-                } else {
-                    if ( wfs.protocol!=null ) {
-                       metadata= wfs.protocol.getMetadata( this );
+    protected void maybeLoadMetadata() throws IOException {
+        Map<String,String> localMetadata;
+        synchronized (this){
+            localMetadata= this.metadata;
+        }
+        if ( localMetadata==null ) {
+            synchronized (this) {
+                if ( this.metadata==null ) { // double-check
+                    if ( this.wfs.offline ) {
+                        if ( FileSystem.settings().isOffline() ) { //bug https://sourceforge.net/p/autoplot/bugs/932/
+                            metadata= new HashMap();
+                            metadata.put( WebProtocol.META_EXIST, isLocal() ? "true" : "false" );
+                        } else {
+                            if ( wfs.protocol!=null ) {
+                               metadata= wfs.protocol.getMetadata( this );
+                            }
+                        }
+                    } else {
+                        if ( wfs.protocol!=null ) {
+                            metadata= wfs.protocol.getMetadata( this );
+                        }
                     }
-                }
-            } else {
-                if ( wfs.protocol!=null ) {
-                    metadata= wfs.protocol.getMetadata( this );
+                    metaFresh= System.currentTimeMillis();
                 }
             }
-            metaFresh= System.currentTimeMillis();
+        } else {
+            logger.finer("using fresh metadata");
         }
     }
     
@@ -174,9 +184,7 @@ public class WebFileObject extends FileObject {
     @Override
     public java.util.Date lastModified() {
         long localMetaFresh;
-        synchronized (this) {
-            localMetaFresh= metaFresh;
-        }
+        localMetaFresh= metaFresh;
         if ( System.currentTimeMillis() - localMetaFresh > METADATA_FRESH_TIMEOUT_MS ) {
             metadata= null;
             modifiedDate= new Date( Long.MAX_VALUE );
