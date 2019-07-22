@@ -1225,7 +1225,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
      * return the number of times render has been called since the last reset.
      * @return number of times render has been called since the last reset.
      */
-    public int getRenderCount() {
+    public synchronized int getRenderCount() {
         return renderCount;
     }
     
@@ -1237,7 +1237,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
      * return the number of times updatePlotImage has been called since the last reset.
      * @return the number of times updatePlotImage has been called since the last reset.
      */
-    public int getUpdateCount() {
+    public synchronized int getUpdateCount() {
         return updateCount;
     }
     
@@ -1295,7 +1295,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
      */
     protected void addToStats( int numberOfPoints, long millis, char t ) {
         if ( recordStream!=null ) {
-            recordStream.format( "%d, %d, %d, %.3f, %c\n", updateCount, renderCount, numberOfPoints, millis/1000., t );
+            recordStream.format( "%d, %d, %d, %.3f, %c\n", getUpdateCount(), getRenderCount(), numberOfPoints, millis/1000., t );
             recordStream.flush();
         }
     }
