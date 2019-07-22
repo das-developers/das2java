@@ -2942,9 +2942,8 @@ public class DasPlot extends DasCanvasComponent {
             lcacheImageBounds.x = x - 1;
         }
         lcacheImageBounds.y = y - 1;
-        synchronized (this) {
-            cacheImageBounds= lcacheImageBounds;
-        }
+        
+        setCacheImageBounds( lcacheImageBounds );
         
         return lcacheImageBounds;
     }
@@ -2960,6 +2959,15 @@ public class DasPlot extends DasCanvasComponent {
         return lcacheImageBounds;
     }
 
+    /**
+     * there's a deadlock that shows with test140 on ci-pw if this is synchronized.
+     * @see https://ci-pw.physics.uiowa.edu/job/autoplot-test140
+     * @param cacheImageBounds 
+     */
+    protected void setCacheImageBounds( Rectangle cacheImageBounds ) {
+        this.cacheImageBounds= new Rectangle( cacheImageBounds );
+    }
+    
     /**
      * adjust the plot axes so it remains isotropic.
      * @param axis if non-null, the axis that changed, and the other should be adjusted.
