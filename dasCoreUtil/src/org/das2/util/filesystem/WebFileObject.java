@@ -173,7 +173,11 @@ public class WebFileObject extends FileObject {
 
     @Override
     public java.util.Date lastModified() {
-        if ( System.currentTimeMillis() - metaFresh > METADATA_FRESH_TIMEOUT_MS ) {
+        long localMetaFresh;
+        synchronized (this) {
+            localMetaFresh= metaFresh;
+        }
+        if ( System.currentTimeMillis() - localMetaFresh > METADATA_FRESH_TIMEOUT_MS ) {
             metadata= null;
             modifiedDate= new Date( Long.MAX_VALUE );
         }
