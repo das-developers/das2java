@@ -57,6 +57,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -1214,39 +1215,39 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
         }
     }
     
-    private int renderCount=0;
-    private int updateCount=0;
+    private final AtomicInteger renderCount= new AtomicInteger(0);
+    private final AtomicInteger updateCount= new AtomicInteger(0);
     
-    protected synchronized void incrementRenderCount() {
-        renderCount++;
+    protected void incrementRenderCount() {
+        renderCount.incrementAndGet();
     }
     
     /**
      * return the number of times render has been called since the last reset.
      * @return number of times render has been called since the last reset.
      */
-    public synchronized int getRenderCount() {
-        return renderCount;
+    public int getRenderCount() {
+        return renderCount.get();
     }
     
-    protected synchronized void incrementUpdateCount() {
-        updateCount++;
+    protected void incrementUpdateCount() {
+        updateCount.incrementAndGet();
     }
     
     /**
      * return the number of times updatePlotImage has been called since the last reset.
      * @return the number of times updatePlotImage has been called since the last reset.
      */
-    public synchronized int getUpdateCount() {
-        return updateCount;
+    public int getUpdateCount() {
+        return updateCount.get();
     }
     
     /**
      * reset the counters.
      */
-    public synchronized void resetCounters() {
-        renderCount=0;
-        updateCount=0;
+    public void resetCounters() {
+        renderCount.set(0);
+        updateCount.set(0);
     }
     
     private String recordFile = "";
