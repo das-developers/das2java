@@ -468,7 +468,7 @@ public class DasProgressPanel implements ProgressMonitor {
     }
     
     @Override
-    public synchronized void finished() {
+    public void finished() {
         //System.err.println("here finished " + Integer.toHexString( this.hashCode() ) + " " + Thread.currentThread() );
         //if ( this.progressMessageString.endsWith("t: 31" ) ) {
         //    System.err.println("*** here finished t31 " + Integer.toHexString( this.hashCode() )  );    
@@ -573,7 +573,6 @@ public class DasProgressPanel implements ProgressMonitor {
     
     private void startUpdateThread() {
         Runnable run = new Runnable() {
-
             @Override
             public void run() {
                 while (!DasProgressPanel.this.finished) {
@@ -725,9 +724,10 @@ public class DasProgressPanel implements ProgressMonitor {
      * make the progressPanel visible or hide it.  This
      * @param visible true if the progressPanel should be visible.
      */
-    public synchronized void setVisible(final boolean visible) {
-        if (!componentsInitialized && !visible)
+    public void setVisible(final boolean visible) {
+        if (!componentsInitialized && !visible) {
             return;
+        }
         Runnable run= new Runnable() {
             @Override
             public void run() {
