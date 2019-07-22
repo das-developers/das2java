@@ -1767,7 +1767,7 @@ public class DasPlot extends DasCanvasComponent {
      * @param yticks the yticks.
      */
     private void drawGrid(Graphics2D g, DatumVector xticks, DatumVector yticks) {
-        Rectangle lcacheImageBounds= new Rectangle(cacheImageBounds); // make a local copy for thread safety.
+        Rectangle lcacheImageBounds= getCacheImageBounds(); // make a local copy for thread safety.
         
         int xmin = lcacheImageBounds.x;
         int xmax = lcacheImageBounds.x + lcacheImageBounds.width;
@@ -2933,7 +2933,9 @@ public class DasPlot extends DasCanvasComponent {
             lcacheImageBounds.x = x - 1;
         }
         lcacheImageBounds.y = y - 1;
-        cacheImageBounds= lcacheImageBounds;
+        synchronized (this) {
+            cacheImageBounds= lcacheImageBounds;
+        }
         
         return lcacheImageBounds;
     }
@@ -2944,7 +2946,7 @@ public class DasPlot extends DasCanvasComponent {
      * 
      * @return Rectangle
      */
-    protected Rectangle getCacheImageBounds() {
+    protected synchronized Rectangle getCacheImageBounds() {
         Rectangle lcacheImageBounds= new Rectangle(cacheImageBounds);
         return lcacheImageBounds;
     }
@@ -2993,14 +2995,14 @@ public class DasPlot extends DasCanvasComponent {
      * itself since the last reset.
      * @return the number of times the component has painted itself.
      */
-    public int getPaintCount() {
+    public synchronized int getPaintCount() {
         return paintComponentCount;
     }
     
     /**
      * reset the paint counter.
      */
-    public void resetPaintCount() {
+    public synchronized void resetPaintCount() {
         Renderer[] lrenderers= getRenderers();
         this.paintComponentCount= 0;
         for ( Renderer r: lrenderers ) {
