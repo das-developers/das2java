@@ -393,9 +393,9 @@ public abstract class FileSystem  {
                         instances.put( result.getRootURI(), result);
                     }
                 }
-                blocks.remove(root);
-                logger.log(Level.FINE, "releasing {0}", waitObject); // need to do this in the finally block in case there was an Exception.
                 synchronized( waitObject ) {
+                    blocks.remove(root);
+                    logger.log(Level.FINE, "releasing {0}", waitObject); // need to do this in the finally block in case there was an Exception.
                     waitObject.notifyAll();
                 }
             }
