@@ -70,6 +70,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 import org.das2.DasException;
 import org.das2.dataset.DataSetAdapter;
@@ -209,7 +210,7 @@ public class DasPlot extends DasCanvasComponent {
     boolean preview = false;
     
     //private int repaintCount = 0;
-    private int paintComponentCount = 0;
+    private final AtomicInteger paintComponentCount = new AtomicInteger(0);
     
     /**
      * height of the title in pixels.
@@ -1260,7 +1261,7 @@ public class DasPlot extends DasCanvasComponent {
         if (!getCanvas().isPrintingThread() && !EventQueue.isDispatchThread()) {
             throw new RuntimeException("not event thread: " + Thread.currentThread().getName());
         }
-        paintComponentCount++;
+        paintComponentCount.incrementAndGet();
 
         if (getCanvas().isPrintingThread()) {
             logger.fine("* printing thread *");
@@ -3003,16 +3004,16 @@ public class DasPlot extends DasCanvasComponent {
      * itself since the last reset.
      * @return the number of times the component has painted itself.
      */
-    public synchronized int getPaintCount() {
-        return paintComponentCount;
+    public int getPaintCount() {
+        return paintComponentCount.intValue();
     }
     
     /**
      * reset the paint counter.
      */
-    public synchronized void resetPaintCount() {
+    public void resetPaintCount() {
         Renderer[] lrenderers= getRenderers();
-        this.paintComponentCount= 0;
+        this.paintComponentCount.set(0);
         for ( Renderer r: lrenderers ) {
             r.resetCounters();
         }
