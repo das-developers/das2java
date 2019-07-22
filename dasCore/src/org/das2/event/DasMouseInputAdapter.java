@@ -118,18 +118,18 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
     private final boolean headless;
 
     public void setMenuLabel(String id) {
-        primaryPopup.setLabel(id);
-        secondaryPopup.setLabel(id);
+        getPrimaryPopupMenu().setLabel(id);
+        getSecondaryPopupMenu().setLabel(id);
     }
 
     /**
      * set the name of the menus to help with debugging
      * @param name 
      */
-    public void resetName(String name) {
+    public synchronized void resetName(String name) {
         if ( !this.headless ) {
-            primaryPopup.setName("dmia_pop1_"+name);
-            secondaryPopup.setName("dmia_pop2_"+name);
+            getPrimaryPopupMenu().setName("dmia_pop1_"+name);
+            getSecondaryPopupMenu().setName("dmia_pop2_"+name);
         }
     }
 
@@ -176,13 +176,14 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
 
         this.headless = DasApplication.getDefaultApplication().isHeadless();
         if (!headless) {
-            primaryPopup= new JPopupMenu();
-            primaryPopup.setName("dmia_pop1_"+parent.getDasName());
-            numInserted = createPopup(primaryPopup);
-            secondaryPopup= new JPopupMenu();
-            secondaryPopup.setName("dmia_pop2_"+parent.getDasName()); 
-            numInsertedSecondary = createPopup(secondaryPopup);
-            
+            synchronized (this) {
+                primaryPopup= new JPopupMenu();
+                primaryPopup.setName("dmia_pop1_"+parent.getDasName());
+                numInserted = createPopup(primaryPopup);
+                secondaryPopup= new JPopupMenu();
+                secondaryPopup.setName("dmia_pop2_"+parent.getDasName()); 
+                numInsertedSecondary = createPopup(secondaryPopup);
+            }
         }
 
         active = null;
@@ -259,8 +260,8 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
                 replaceMouseModule(preExisting, module);
 
             } else {
-                JPopupMenu lprimaryPopup= primaryPopup;
-                JPopupMenu lsecondaryPopup= secondaryPopup;
+                JPopupMenu lprimaryPopup= getPrimaryPopupMenu();
+                JPopupMenu lsecondaryPopup= getSecondaryPopupMenu();
                 
                 if ( lprimaryPopup==null || lsecondaryPopup==null ) return;
                 
@@ -311,8 +312,16 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
      * added so ColumnColumnConnector could delegate to DasPlot's adapter.
      * @return
      */
-    public JPopupMenu getPrimaryPopupMenu() {
+    public synchronized JPopupMenu getPrimaryPopupMenu() {
         return this.primaryPopup;
+    }
+    
+    /**
+     * access popup menu so that synchronized blocks are minimized.
+     * @return 
+     */
+    public synchronized JPopupMenu getSecondaryPopupMenu() {
+        return this.secondaryPopup;
     }
 
     /**
@@ -851,7 +860,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
 
     private void showPopup(JPopupMenu menu, MouseEvent ev) {
         logger.finest("showPopup");
-        if ( menu != primaryPopup && menu != secondaryPopup) {
+        if ( menu != getPrimaryPopupMenu() && menu != getSecondaryPopupMenu() ) {
             throw new IllegalArgumentException("menu must be primary or secondary popup menu");
         }
         ButtonGroup bg= new ButtonGroup();
@@ -920,9 +929,9 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
 
                 if (e.isControlDown() || button == MouseEvent.BUTTON3) {
                     if (button == MouseEvent.BUTTON1 || button == MouseEvent.BUTTON3) {
-                        showPopup(primaryPopup, e);
+                        showPopup(getPrimaryPopupMenu(), e);
                     } else {
-                        showPopup(secondaryPopup, e);
+                        showPopup(getSecondaryPopupMenu(), e);
                     }
                 } else {
 
@@ -1229,13 +1238,19 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
      * @param label the parameter to find, e.h.
      * @param b 
      */
-    public synchronized void replaceMenuItem( String label, Component b ) {
+    public void replaceMenuItem( String label, Component b ) {
         if (headless) {
             return;
         }
-        MenuElement[] ele = primaryPopup.getSubElements();
+        int localNumInserted;
+        JPopupMenu localPrimaryPopup;
+        synchronized (this) {
+            localNumInserted= numInserted;
+            localPrimaryPopup= primaryPopup;
+        }
+        MenuElement[] ele = localPrimaryPopup.getSubElements();
         int index = -1;
-        for (int i = 0; i < numInserted; i++) {
+        for (int i = 0; i < localNumInserted; i++) {
             if (ele[i] instanceof JMenuItem) {
                 if (((JMenuItem) ele[i]).getText().contains(label)) {
                     index = i;
@@ -1244,11 +1259,11 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
             }
         }
         if ( index>-1 ) {
-            primaryPopup.remove(index);
-            primaryPopup.add( b, index );
+            localPrimaryPopup.remove(index);
+            localPrimaryPopup.add( b, index );
         } else {
-            logger.info("unable to find menu item \""+label+"\"");
-            primaryPopup.add( b );
+            logger.log(Level.INFO, "unable to find menu item \"{0}\"", label);
+            localPrimaryPopup.add( b );
         }
         
     }
@@ -1440,7 +1455,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
     /**
      * remove all references to mouse modules
      */
-    public void releaseAll() {
+    public synchronized void releaseAll() {
         active= null;
         modules.clear();
         primary= null;
