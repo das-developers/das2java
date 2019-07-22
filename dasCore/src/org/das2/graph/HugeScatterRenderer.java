@@ -279,7 +279,7 @@ public class HugeScatterRenderer extends Renderer {
             int y = (int) (p.getY());
             if (parent.getCanvas().isPrintingThread() && print300dpi) {
                 AffineTransformOp atop = new AffineTransformOp(AffineTransform.getScaleInstance(4, 4), AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
-                BufferedImage image300 = atop.filter((BufferedImage) plotImage, null);
+                BufferedImage image300 = atop.filter((BufferedImage) localPlotImage, null);
                 AffineTransform atinv;
                 try {
                     atinv = atop.getTransform().createInverse();
