@@ -213,7 +213,7 @@ public class HugeScatterRenderer extends Renderer {
     }
 
     @Override
-    public synchronized void render(java.awt.Graphics2D g1, DasAxis xAxis, DasAxis yAxis ) {
+    public void render(java.awt.Graphics2D g1, DasAxis xAxis, DasAxis yAxis ) {
 
         // logger.entering is just past this check.
         DasPlot parent= getParent();
@@ -231,7 +231,11 @@ public class HugeScatterRenderer extends Renderer {
                 return;
             }
         }
-
+        BufferedImage localPlotImage;
+        synchronized (this) {
+            localPlotImage= this.plotImage;
+        }
+        
         logger.entering( "org.das2.graph.HugeScatterRenderer", "render");
 
         QDataSet xds = SemanticOps.xtagsDataSet(ds);
@@ -254,7 +258,7 @@ public class HugeScatterRenderer extends Renderer {
         }
 
         Graphics2D g2 = (Graphics2D) g1;
-        if (plotImage == null) {
+        if (localPlotImage == null) {
             if (lastException != null) {
                 if (lastException instanceof NoDataInIntervalException) {
                     parent.postMessage(this, "no data in interval:!c" + lastException.getMessage(), DasPlot.WARNING, null, null);
@@ -285,7 +289,7 @@ public class HugeScatterRenderer extends Renderer {
                 atinv.translate(x * 4, y * 4);
                 g2.drawImage(image300, atinv, getParent());
             } else {
-                g2.drawImage(plotImage, x, y, getParent());
+                g2.drawImage(localPlotImage, x, y, getParent());
             }
         }
 
@@ -846,12 +850,12 @@ public class HugeScatterRenderer extends Renderer {
             }
         }
 
-        selectionArea= null;
         WritableRaster r = plotImage1.getRaster();
         r.setDataElements(0, 0, w, h, raster);
 
         synchronized (this) {
             plotImage= plotImage1;
+            selectionArea= null;
         }
         imageXRange = xrange;
 
@@ -860,7 +864,7 @@ public class HugeScatterRenderer extends Renderer {
     }
 
     @Override
-    public synchronized void updatePlotImage(DasAxis xAxis, DasAxis yAxis, org.das2.util.monitor.ProgressMonitor monitor) throws DasException {
+    public void updatePlotImage(DasAxis xAxis, DasAxis yAxis, org.das2.util.monitor.ProgressMonitor monitor) throws DasException {
         
         logger.entering( "org.das2.graph.HugeScatterRenderer", "updatePlotImage" );
         long t0= System.currentTimeMillis();
@@ -1130,7 +1134,9 @@ public class HugeScatterRenderer extends Renderer {
                 }
             }
         }
-        selectionArea= result;
+        synchronized (this) {
+            selectionArea= result;
+        }
         logger.log(Level.FINER, "done in calc selection area {0}ms", ( System.currentTimeMillis()-t0));
     }
 
@@ -1138,11 +1144,18 @@ public class HugeScatterRenderer extends Renderer {
      * return a Shape object showing where the data lie and focus should be accepted.
      * @return
      */
-    Shape selectionArea() {
-        if ( selectionArea==null ) {
-            calcSelectionArea();
+    public Shape selectionArea() {
+        Shape localSelectionArea;
+        synchronized (this){
+            localSelectionArea= this.selectionArea;
         }
-        return selectionArea==null ? SelectionUtil.NULL : selectionArea;
+        if ( localSelectionArea==null ) {
+            calcSelectionArea();
+            synchronized (this) {
+                localSelectionArea= selectionArea;
+            }
+        }
+        return localSelectionArea==null ? SelectionUtil.NULL : localSelectionArea;
     }
 
     private static ArrayDataSet resetUnits(ArrayDataSet xoffsets, Units offsetUnits) {
