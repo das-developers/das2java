@@ -1243,6 +1243,9 @@ public class DasPlot extends DasCanvasComponent {
             return;
         }
 
+        String localPlotTitle;
+        localPlotTitle= getTitle();
+        
         double lineThicknessDouble= getLineThicknessDouble(lineThickness);
                 
         if ( isOpaque() ) {
@@ -1465,10 +1468,10 @@ public class DasPlot extends DasCanvasComponent {
         if ( plotVisible ) {
             graphics.drawRect(x - 1, y - 1, xSize + 1, ySize + 1);
         }
-
-        if ( displayTitle && plotTitle != null && plotTitle.length() != 0) {
-            String t= plotTitle;
-            if ( plotTitle.contains("%{CONTEXT}") ) {
+        
+        if ( displayTitle && localPlotTitle != null && localPlotTitle.length() != 0) {
+            String t= localPlotTitle;
+            if ( localPlotTitle.contains("%{CONTEXT}") ) {
                 String contextStr= this.context==null ? "" : this.context.toString();
                 t= t.replace("%{CONTEXT}",contextStr);
             }
@@ -1865,8 +1868,13 @@ public class DasPlot extends DasCanvasComponent {
      * @see #setDisplayTitle(boolean) 
      */
     public void setTitle(String t) {
-        Object oldValue = plotTitle;
-        plotTitle = t;
+        
+        Object oldValue;
+        synchronized (this) {
+            oldValue= plotTitle;
+            plotTitle = t;
+        }
+        
         logger.log(Level.FINE, "setTitle(\"{0}\")", t);
         if ( t==null ) t="";
         if (getCanvas() != null) {
@@ -1885,7 +1893,7 @@ public class DasPlot extends DasCanvasComponent {
      * @return The plot title
      * @see #setTitle(String)
      */
-    public String getTitle() {
+    public synchronized String getTitle() {
         return plotTitle;
     }
 
