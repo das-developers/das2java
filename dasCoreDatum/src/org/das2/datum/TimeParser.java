@@ -1856,7 +1856,7 @@ public class TimeParser {
      * @throws IllegalArgumentException if the digit has a custom field handler
      * @throws IllegalArgumentException if the digit does not exist.
      */
-    public TimeParser setDigit(int digitNumber, int digit) {
+    public synchronized TimeParser setDigit(int digitNumber, int digit) {
         TimeStruct time;
         
         time= startTime;
@@ -1926,7 +1926,7 @@ public class TimeParser {
      * @param units as in Units.us2000
      * @return the value in the given units.
      */
-    public double getTime(Units units) {
+    public synchronized double getTime(Units units) {
         return Units.us2000.convertDoubleTo(units, toUs2000(startTime));
     }
 
@@ -1935,7 +1935,7 @@ public class TimeParser {
      * Units.us1980 is used, otherwise Units.us2000 is used.
      * @return a datum representing the parsed time.
      */
-    public Datum getTimeDatum() {
+    public synchronized Datum getTimeDatum() {
         if (startTime.year < 1990) {
             return Units.us1980.createDatum(toUs1980(startTime));
         } else {
@@ -1982,7 +1982,7 @@ public class TimeParser {
      * This accesses time, timeWidth, orbitDatumRange, startTime.
      * @return the DatumRange
      */
-    public DatumRange getTimeRange() {
+    public synchronized DatumRange getTimeRange() {
         if ( !lock.equals("") ) throw new IllegalArgumentException("someone is messing with the parser on a different thread "+lock+ " this thread is "+Thread.currentThread().getName() );
         if ( stopTimeDigit==AFTERSTOP_INIT && startTime.day==1 && startTime.hour==0 && startTime.minute==0 && startTime.seconds==0 && startTime.millis==0 && startTime.micros==0 &&
             timeWidth.day==0 && timeWidth.hour==0 && timeWidth.minute==0 && timeWidth.seconds==0 && timeWidth.millis==0 && timeWidth.micros==0 ) { // special code for years.
@@ -2054,7 +2054,7 @@ public class TimeParser {
      * peek at the regular expression used.
      * @return 
      */
-    public String getRegex() {
+    public synchronized String getRegex() {
         return this.regex;
     }
 
