@@ -85,7 +85,7 @@ public class HorizontalRangeSelectorMouseModule extends MouseModule {
         } else if ( e0.getGesture()==Gesture.SCANNEXT) {
             axis.scanNext();
         } else {
-            logger.log(Level.INFO, "unsupported gesture: {0}", e0.getGesture());
+            logger.log(Level.FINE, "unsupported gesture: {0}", e0.getGesture());
         }
     }
 

@@ -94,7 +94,7 @@ public class VerticalRangeSelectorMouseModule extends MouseModule {
         } else if (e0.getGesture()==Gesture.FORWARD) {
             axis.setDataRangeForward();
         } else {
-            logger.log(Level.INFO, "unsupported gesture: {0}", e0.getGesture());
+            logger.log(Level.FINE, "unsupported gesture: {0}", e0.getGesture());
         }
     }
     
