@@ -39,6 +39,8 @@ public class ArgumentList {
     
     private final ArrayList<String[]> requireOneOfList;
     
+    private int exitCode= -999;
+    
     /**
      * if false, then any unrecognized switch is an error.
      */
@@ -55,7 +57,7 @@ public class ArgumentList {
     public static final String TRUE = "__true__";
     
     private static final Logger logger= Logger.getLogger( "das2.util" );
-    
+
     /**
      * creates the processor for the program.  <tt>programName</tt> is provided
      * for the usage statement.  After creating the object, arguments are
@@ -371,14 +373,25 @@ public class ArgumentList {
     }
     
     /**
-     * check that the user's specified arguments are valid.
+     * return 0 if the exit code for a checkArgs()==false is 0 or non-zero.
+     * It will be 0 if --help was used.
+     * @return the exit code.
      */
-    private void checkArgs() {
+    public int getExitCode() {
+        return exitCode;
+    }
+    
+    /**
+     * check that the user's specified arguments are valid.
+     * @return false if usage has been printed and the caller should exit.
+     */
+    private boolean checkArgs() {
         boolean error= false;
         java.util.List<String> errorList= new java.util.ArrayList<>(); // add strings to here
         for ( int i=0; !error & i<nposition; i++ ) {
             if ( values.get( positionKeys[i] ) == this.UNSPECIFIED ) {
                 errorList.add( "Expected more positional arguments, only got "+i );
+                exitCode= 1;
                 error= true;
             }
         }
@@ -389,12 +402,13 @@ public class ArgumentList {
                 Entry<String,String> e= ientries.next();
                 String key= e.getKey();
                 if ( key==null ) {
-                    System.err.println("TODO: handle this case whereever it's coming from: key==null");
+                    System.err.println("TODO: handle this case where ever it's coming from: key==null");
                     continue;
                 }
                 if ( key.equals("help") || key.equals("--help" ) ) { // kludge
                     printUsage();
-                    System.exit(-1); //Findbugs correctly points out that this is a bad idea.  For example, a typo on a web server could bring the whole thing down.
+                    exitCode= 0;
+                    return false;
                 }
                 if ( e.getValue() == this.UNSPECIFIED ) {
                     errorList.add( "Argument needed: --" + reverseNames.get( key ) );
@@ -431,9 +445,12 @@ public class ArgumentList {
             for ( int ii=0; ii<errorList.size(); ii++ ) {
                 System.err.println( errorList.get(ii) );
             }
-            System.exit(-1);
+            exitCode= 2;
+            return false;
         }
         
+        exitCode= 0;
+        return true;
     }
     
     /**
@@ -528,8 +545,9 @@ public class ArgumentList {
      * method will probably be added that would return true if processing was successful.
      *
      * @param args as in public static void main( String[] args ).
+     * @return false if System.exit should be called.
      */
-    public void process(String[] args) {
+    public boolean process(String[] args) {
         
         StringBuilder sb= new StringBuilder();
         for (String arg : args) {
@@ -563,7 +581,7 @@ public class ArgumentList {
                 formUsed.put( key, args[i] );
             }
         }
-        checkArgs();
+        return checkArgs();
     }
     
     /**
@@ -616,6 +634,6 @@ public class ArgumentList {
         String s= getPrefsSettings();
         logger.log(Level.CONFIG,s);
     }
-    
+
 }
 
