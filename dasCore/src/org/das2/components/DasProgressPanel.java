@@ -58,6 +58,7 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import oracle.jrockit.jfr.JFR;
 import org.das2.graph.DasCanvas;
 import org.das2.util.LoggerManager;
 import org.das2.util.monitor.NullProgressMonitor;
@@ -452,7 +453,9 @@ public class DasProgressPanel implements ProgressMonitor {
             Window monitorWindow= SwingUtilities.getWindowAncestor( window );
             if ( w!=null && w!=monitorWindow ) {
                 w.setLocationRelativeTo( window );
-            }        
+            } else if ( jframe!=null && window instanceof Window ) {
+                jframe.setLocationRelativeTo( window );
+            }
         }
         
         componentsInitialized = true;
