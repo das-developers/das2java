@@ -6,5 +6,5 @@ package org.das2.graph;
  * @author jbf
  */
 public enum ErrorBarType {
-    NONE, SERIF, SHADE
+    BAR, SERIF_BAR, SHADE
 }
