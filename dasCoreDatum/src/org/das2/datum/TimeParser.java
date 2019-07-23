@@ -1338,16 +1338,6 @@ public class TimeParser {
     }
 
     /**
-     * reset the seconds register.  setDigit( String formatCode, double val ) accumulates 
-     * fractional part in the seconds.
-     * 
-     * TODO: where is this used?  
-     */
-    public void resetSeconds() {
-        startTime.seconds = 0;
-    }
-
-    /**
      * force the parser to look for delimiters.  This should be called immediately after 
      */
     public void sloppyColumns() {
@@ -1632,7 +1622,7 @@ public class TimeParser {
      * @param format like "Y"
      * @param value like 2014
      */
-    public void setDigit(String format, double value) {
+    public synchronized void setDigit(String format, double value) {
 
         TimeStruct time;
 
@@ -1739,7 +1729,7 @@ public class TimeParser {
      * @param value integer like 20080830.
      * @return
      */
-    public TimeParser setDigit(String format, int value) {
+    public synchronized TimeParser setDigit(String format, int value) {
 
         TimeStruct time= startTime;
         
@@ -1910,7 +1900,7 @@ public class TimeParser {
      * spans (e.g. 3-day) are not supported.
      * @param tr the range
      */
-    public void setContext( DatumRange tr ) {
+    public synchronized void setContext( DatumRange tr ) {
         this.context= TimeUtil.toTimeStruct(tr.min());
     }
     
