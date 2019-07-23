@@ -84,6 +84,7 @@ public class BeansUtil {
             registerEditor(org.das2.graph.AnchorPosition.class, EnumerationEditor.class );
             registerEditor(org.das2.graph.AnchorType.class,EnumerationEditor.class );
             registerEditor(org.das2.graph.BorderType.class,EnumerationEditor.class );
+            registerEditor(org.das2.graph.ErrorBarType.class,EnumerationEditor.class );
             registerEditor(java.util.logging.Level.class, EnumerationEditor.class );
             
         // registerEditor(Rectangle.class, RectangleEditor.class);
