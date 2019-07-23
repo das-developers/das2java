@@ -1067,9 +1067,13 @@ public class SeriesRenderer extends Renderer {
             
             Units xUnits = SemanticOps.getUnits(xds);
             Units yUnits = SemanticOps.getUnits(vds);
-            if ( unitsWarning ) yUnits= yAxis.getUnits();
-            if ( xunitsWarning ) xUnits= xAxis.getUnits();
-
+            
+            synchronized(SeriesRenderer.this) {
+                if ( unitsWarning ) yUnits= yAxis.getUnits();
+                if ( xunitsWarning ) xUnits= xAxis.getUnits();
+            }
+            
+            
             boolean above= fillDirection.equals("above") || fillDirection.equals("both");
             boolean below= fillDirection.equals("below") || fillDirection.equals("both");
             
@@ -1080,11 +1084,15 @@ public class SeriesRenderer extends Renderer {
             Units yaxisUnits= yAxis.getUnits();
             if ( !yUnits.isConvertibleTo(yaxisUnits) ) {
                 yUnits= yAxis.getUnits();
-                unitsWarning= true;
+                synchronized(SeriesRenderer.this){
+                    unitsWarning= true;
+                }
             }
             if ( !xUnits.isConvertibleTo(xaxisUnits) ) {
                 xUnits= xAxis.getUnits();
-                unitsWarning= true;
+                synchronized(SeriesRenderer.this){
+                    xunitsWarning= true;
+                }
             }
             
             DataGeneralPathBuilder pathBuilder= getPathBuilderForData( xAxis, yAxis, xds, vds );
@@ -2194,6 +2202,13 @@ public class SeriesRenderer extends Renderer {
         
         long t0= System.currentTimeMillis();
 
+        boolean _unitsWarning;
+        boolean _xunitsWarning;
+        synchronized (this) {
+            _unitsWarning= this.unitsWarning;
+            _xunitsWarning= this.xunitsWarning;
+        }
+        
         Datum widthx;
         if (xaxis.isLog()) {
             widthx = Units.logERatio.createDatum(Math.log(xaxis.getDataMaximum(xaxis.getUnits()) - xaxis.getDataMinimum(xaxis.getUnits())));
@@ -2210,14 +2225,14 @@ public class SeriesRenderer extends Renderer {
         if ( xaxis.getColumn().getWidth()==0 || yaxis.getRow().getHeight()==0 ) return null;
         
         QDataSet ds2= ds;
-        if ( this.unitsWarning ) {
+        if ( _unitsWarning ) {
             ArrayDataSet ds3= ArrayDataSet.copy(ds);
             ds3.putProperty( QDataSet.UNITS, yaxis.getUnits() );
             ds2= ds3;
         }
-        if ( this.xunitsWarning ) {
+        if ( _xunitsWarning ) {
             ArrayDataSet ds3= ArrayDataSet.copy(xds);
-            ds3.putProperty( QDataSet.UNITS, yaxis.getUnits() );
+            ds3.putProperty( QDataSet.UNITS, xaxis.getUnits() );
             xds= ds3;
         }
         if ( ds2.rank()==2 ) {
