@@ -664,8 +664,24 @@ public class SeriesRenderer extends Renderer {
                         if ( w1.value(i)>0 && w2.value(i)>0 ) {
                             double ixm = xAxis.transform( p1.value(i), xunits );
                             double ixp = xAxis.transform( p2.value(i), xunits );
-                            lp.moveTo(ixm, iy);
-                            lp.lineTo(ixp, iy);
+                            switch (errorBarType) {
+                                case BAR:
+                                    lp.moveTo(ixm, iy);
+                                    lp.lineTo(ixp, iy);
+                                    break;
+                                case SERIF_BAR:
+                                    lp.moveTo(ixm, iy-2);
+                                    lp.lineTo(ixm, iy+2);
+                                    lp.moveTo(ixm, iy);
+                                    lp.lineTo(ixp, iy);
+                                    lp.moveTo(ixp, iy-2);
+                                    lp.lineTo(ixp, iy+2);
+                                    break;
+                                default:
+                                    logger.log(Level.INFO, "unsupported ErrorBarType: {0}", errorBarType);
+                                    break;
+                            }
+
                         }
                     }
                 } catch ( IllegalArgumentException ex ) {
