@@ -579,6 +579,7 @@ public class SeriesRenderer extends Renderer {
                 logger.log(Level.FINE, "all data is off-page" );
                 return 0;
             }
+            g.setStroke(new BasicStroke((float) lineWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ));
             g.draw(lp);
             return lastIndex - firstIndex;
         }
