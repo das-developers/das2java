@@ -13,7 +13,6 @@ import org.das2.datum.Units;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumUtil;
 import org.das2.datum.TimeUtil;
-import org.das2.util.DasExceptionHandler;
 import org.das2.util.monitor.NullProgressMonitor;
 import org.das2.util.monitor.ProgressMonitor;
 import org.das2.components.propertyeditor.PropertyEditor;
@@ -23,7 +22,6 @@ import java.awt.BorderLayout;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.BufferedReader;
@@ -43,7 +41,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -350,7 +347,7 @@ public class DataPointRecorderNew extends JPanel {
     public void select(DatumRange xrange, DatumRange yrange) {
         Datum mid= xrange.rescale( 0.5,0.5 ).min();
         synchronized (dataPoints) {
-            List selectMe = new ArrayList();
+            List<Integer> selectMe = new ArrayList();
             int iclosest= -1;
             Datum closestDist=null;
             for (int i = 0; i < dataPoints.size(); i++) {
@@ -368,12 +365,12 @@ public class DataPointRecorderNew extends JPanel {
             }
             table.getSelectionModel().clearSelection();
             for (int i = 0; i < selectMe.size(); i++) {
-                int iselect = ((Integer) selectMe.get(i)).intValue();
+                int iselect = selectMe.get(i);
                 table.getSelectionModel().addSelectionInterval(iselect, iselect);
             }
 
             if ( selectMe.size()>0 ) {
-                int iselect= (Integer)selectMe.get(0);
+                int iselect= selectMe.get(0);
                 table.scrollRectToVisible(new Rectangle(table.getCellRect( iselect, 0, true)) );
             }
         }
@@ -394,9 +391,7 @@ public class DataPointRecorderNew extends JPanel {
             dataPoints1= new ArrayList( dataPoints );
         }
         FileOutputStream out = new FileOutputStream(file);
-        BufferedWriter r = new BufferedWriter(new OutputStreamWriter(out));
-
-        try {
+        try (BufferedWriter r = new BufferedWriter(new OutputStreamWriter(out))) {
             StringBuilder header = new StringBuilder();
             //header.append("## "); // don't use comment characters so that labels and units are used in Autoplot's ascii parser.
             for (int j = 0; j < lnamesArray.length; j++) {
@@ -430,8 +425,6 @@ public class DataPointRecorderNew extends JPanel {
                 prefs.put("components.DataPointRecorder.lastFileSave", file.toString());
                 prefs.put("components.DataPointRecorder.lastFileLoad", file.toString());
             }
-        } finally {
-            r.close();
         }
         modified = false;
         updateStatus();
@@ -527,13 +520,18 @@ public class DataPointRecorderNew extends JPanel {
                         if (m.matches()) {
                             //System.err.printf("%d %s\n", i, m.group(1) );
                             namesArray1[i] = m.group(1).trim();
+                            String m2= m.group(2).trim();
                             try {
-                                if ( m.group(2).trim().equals("UTC") ) {
-                                    unitsArray1[i] = Units.cdfTT2000;
-                                } else if ( m.group(2).trim().equals("ordinal") ) {
-                                    unitsArray1[i] = EnumerationUnits.create("default");
-                                } else {
-                                    unitsArray1[i] = Units.lookupUnits(m.group(2).trim());
+                                switch (m2) {
+                                    case "UTC":
+                                        unitsArray1[i] = Units.cdfTT2000;
+                                        break;
+                                    case "ordinal":
+                                        unitsArray1[i] = EnumerationUnits.create("default");
+                                        break;
+                                    default:
+                                        unitsArray1[i] = Units.lookupUnits(m.group(2).trim());
+                                        break;
                                 }
                             } catch (IndexOutOfBoundsException e) {
                                 throw e;
@@ -765,6 +763,7 @@ public class DataPointRecorderNew extends JPanel {
         final JFileChooser jj = new JFileChooser();
         final Map<String,Integer> statusHolder= new HashMap<>();
         Runnable run= new Runnable() {
+            @Override
             public void run() {
                 jj.setFileFilter( new FileFilter() {
                     @Override
@@ -850,12 +849,13 @@ public class DataPointRecorderNew extends JPanel {
     public boolean saveBeforeExit( ) {
         if ( this.modified ) {
             int i= JOptionPane.showConfirmDialog( this, "Save changes before exiting?");
-            if ( i==JOptionPane.OK_OPTION ) {
-                return save();
-            } else if ( i==JOptionPane.CANCEL_OPTION ) {
-                return false;
-            } else {
-                return true;
+            switch (i) {
+                case JOptionPane.OK_OPTION:
+                    return save();
+                case JOptionPane.CANCEL_OPTION:
+                    return false;
+                default:
+                    return true;
             }
         } else {
             return true;
@@ -983,6 +983,7 @@ public class DataPointRecorderNew extends JPanel {
         JMenu editMenu = new JMenu("Edit");
         editMenu.add(new JMenuItem(getPropertiesAction()));
         editMenu.add( new JMenuItem( new AbstractAction("Clear Table Sorting") {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 table.setAutoCreateRowSorter(false);
                 table.setAutoCreateRowSorter(true);
@@ -1111,6 +1112,7 @@ public class DataPointRecorderNew extends JPanel {
     }
 
     private transient Comparator comparator= new Comparator() {
+        @Override
         public int compare(Object o1, Object o2) {
             if ( o1 instanceof QDataSet && o2 instanceof QDataSet ) {
                 QDataSet qds1= (QDataSet)o1;
@@ -1163,6 +1165,7 @@ public class DataPointRecorderNew extends JPanel {
      * @param name a Java identifier for the column, e.g. "StartTime"
      * @param units  units units for the column, or null for dimensionless.
      * @param deft default value to use when data is not provided, which must be parseable by units.
+     * @throws java.text.ParseException
      */
     public void setColumn( int i, String name, Units units, String deft ) throws ParseException {
         if ( units==null ) units= Units.dimensionless;
@@ -1180,7 +1183,7 @@ public class DataPointRecorderNew extends JPanel {
      * @param units  units units for the column, or null for dimensionless.
      * @param deft default value to use when data is not provided.
      */
-    public void setColumn( int i, String name, Units units, double deft ) throws ParseException {
+    public void setColumn( int i, String name, Units units, double deft ) {
         if ( units==null ) units= Units.dimensionless;
         setColumn( i, name, units, units.createDatum(deft) );
     }
@@ -1423,12 +1426,13 @@ public class DataPointRecorderNew extends JPanel {
                     }
                     @Override
                     public Object property(String name, int i) {
-                        if ( name.equals(QDataSet.NAME) ) {
-                            return namesArray[i];
-                        } else if ( name.equals(QDataSet.UNITS) ) {
-                            return unitsArray[i];
-                        } else {
-                            return null;
+                        switch (name) {
+                            case QDataSet.NAME:
+                                return namesArray[i];
+                            case QDataSet.UNITS:
+                                return unitsArray[i];
+                            default:
+                                return null;
                         }
                     }
                     @Override
@@ -1475,14 +1479,11 @@ public class DataPointRecorderNew extends JPanel {
 
         String[] planes = ds.getPlaneIds();
 
-        for (int i = 0; i <
-                ds.getXLength(); i++) {
-            for (int j = 0; j <
-                    planes.length; j++) {
-                if (!planes[j].equals("")) {
-                    planesMap.put(planes[j], ((VectorDataSet) ds.getPlanarView(planes[j])).getDatum(i));
+        for (int i = 0; i < ds.getXLength(); i++) {
+            for (String plane : planes) {
+                if (!plane.equals("")) {
+                    planesMap.put(plane, ((VectorDataSet) ds.getPlanarView(plane)).getDatum(i));
                 }
-
             }
             addDataPoint(ds.getXTagDatum(i), ds.getDatum(i), planesMap);
         }
@@ -1593,7 +1594,6 @@ public class DataPointRecorderNew extends JPanel {
      * @return Value of property sorted.
      */
     public boolean isSorted() {
-
         return this.sorted;
     }
 
@@ -1602,7 +1602,6 @@ public class DataPointRecorderNew extends JPanel {
      * @param sorted New value of property sorted.
      */
     public void setSorted(boolean sorted) {
-
         this.sorted = sorted;
     }
 
@@ -1670,7 +1669,6 @@ public class DataPointRecorderNew extends JPanel {
      * @return Value of property snapToGrid.
      */
     public boolean isSnapToGrid() {
-
         return this.snapToGrid;
     }
 
@@ -1680,12 +1678,12 @@ public class DataPointRecorderNew extends JPanel {
      * @param snapToGrid New value of property snapToGrid.
      */
     public void setSnapToGrid(boolean snapToGrid) {
-
         this.snapToGrid = snapToGrid;
     }
 
     /**
      * return true when the data point recorder has been modified.
+     * @return true when the data point recorder has been modified.
      */
     public boolean isModified() {
         return modified;
