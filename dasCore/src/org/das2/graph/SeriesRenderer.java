@@ -628,8 +628,23 @@ public class SeriesRenderer extends Renderer {
                         if ( w1.value(i)>0 && w2.value(i)>0 ) {
                             double iym = yAxis.transform( p1.value(i), yunits );
                             double iyp = yAxis.transform( p2.value(i), yunits );
-                            lp.moveTo(ix, iym);
-                            lp.lineTo(ix, iyp);
+                            switch (errorBarType) {
+                                case BAR:
+                                    lp.moveTo(ix, iym);
+                                    lp.lineTo(ix, iyp);
+                                    break;
+                                case SERIF_BAR:
+                                    lp.moveTo(ix-2, iym);
+                                    lp.lineTo(ix+2, iym);
+                                    lp.moveTo(ix, iym);
+                                    lp.lineTo(ix, iyp);
+                                    lp.moveTo(ix-2, iyp);
+                                    lp.lineTo(ix+2, iyp);
+                                    break;
+                                default:
+                                    logger.log(Level.INFO, "unsupported ErrorBarType: {0}", errorBarType);
+                                    break;
+                            }
                         }
                     }
                 } catch ( IllegalArgumentException ex ) {
@@ -2707,6 +2722,22 @@ public class SeriesRenderer extends Renderer {
         }
 
     }
+    
+    private ErrorBarType errorBarType = ErrorBarType.BAR;
+
+    public static final String PROP_ERRORBARTYPE = "errorBarType";
+
+    public ErrorBarType getErrorBarType() {
+        return errorBarType;
+    }
+
+    public void setErrorBarType(ErrorBarType errorBarType) {
+        ErrorBarType oldErrorBarType = this.errorBarType;
+        this.errorBarType = errorBarType;
+        updateCacheImage();
+        propertyChangeSupport.firePropertyChange(PROP_ERRORBARTYPE, oldErrorBarType, errorBarType);
+    }
+
 
     /**
      * Holds value of property resetDebugCounters.
