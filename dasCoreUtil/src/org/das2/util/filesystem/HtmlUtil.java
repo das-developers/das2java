@@ -211,7 +211,7 @@ public class HtmlUtil {
         
         logger.log(Level.FINER, "connected in {0} millis", (System.currentTimeMillis() - t0));
         if ( userInfo != null) {
-            String encode = Base64.encodeBytes( userInfo.getBytes());
+            String encode = Base64.getEncoder().encodeToString( userInfo.getBytes());
             urlConnection.setRequestProperty("Authorization", "Basic " + encode);
         }
                 

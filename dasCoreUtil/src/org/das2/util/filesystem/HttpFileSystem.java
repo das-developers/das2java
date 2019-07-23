@@ -183,7 +183,7 @@ public class HttpFileSystem extends WebFileSystem {
                 }
                 
                 if ( userInfo != null) {
-                    String encode = Base64.encodeBytes( userInfo.getBytes());
+                    String encode = Base64.getEncoder().encodeToString( userInfo.getBytes());
                     urlc.setRequestProperty("Authorization", "Basic " + encode);
                 }
 
@@ -412,7 +412,7 @@ public class HttpFileSystem extends WebFileSystem {
             throw new IOException("user cancelled at credentials entry");
         }
         if ( userInfo != null) {
-            String encode = Base64.encodeBytes(userInfo.getBytes());
+            String encode = Base64.getEncoder().encodeToString(userInfo.getBytes());
             urlc.setRequestProperty("Authorization", "Basic " + encode);
         }
 

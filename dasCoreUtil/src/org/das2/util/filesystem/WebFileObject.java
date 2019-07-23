@@ -440,7 +440,7 @@ public class WebFileObject extends FileObject {
             Map<String,String> requestProperties= new HashMap<>();
             
             if ( userInfo != null) {
-                String encode = Base64.encodeBytes( userInfo.getBytes());
+                String encode = Base64.getEncoder().encodeToString( userInfo.getBytes());
                 requestProperties.put( "Authorization", "Basic " + encode );
             }
 

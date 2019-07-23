@@ -237,7 +237,7 @@ public class CredentialsManager{
                 if ( sTmp==null ) {
                     return null;
                 } else {
-                    String sHash = Base64.encodeBytes( sTmp.getBytes());
+                    String sHash = Base64.getEncoder().encodeToString(sTmp.getBytes());
                     return sHash;
                 }
 	}

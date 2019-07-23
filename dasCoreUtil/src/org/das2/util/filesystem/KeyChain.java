@@ -322,7 +322,7 @@ public class KeyChain {
     public String getUserInfoBase64Encoded( URL url ) throws CancelledOperationException {
         String userInfo= getUserInfo(url);
         if ( userInfo!=null ) {
-            return Base64.encodeBytes( userInfo.getBytes());
+            return Base64.getEncoder().encodeToString( userInfo.getBytes());
         } else {
             return null;
         }
