@@ -1610,10 +1610,7 @@ public class DataPointRecorderNew extends JPanel {
      * Registers DataPointSelectionListener to receive events.
      * @param listener The listener to register.
      */
-    public synchronized void addDataPointSelectionListener(org.das2.event.DataPointSelectionListener listener) {
-        if (listenerList1 == null) {
-            listenerList1 = new javax.swing.event.EventListenerList();
-        }
+    public void addDataPointSelectionListener(org.das2.event.DataPointSelectionListener listener) {
         listenerList1.add(org.das2.event.DataPointSelectionListener.class, listener);
     }
 
@@ -1621,7 +1618,7 @@ public class DataPointRecorderNew extends JPanel {
      * Removes DataPointSelectionListener from the list of listeners.
      * @param listener The listener to remove.
      */
-    public synchronized void removeDataPointSelectionListener(org.das2.event.DataPointSelectionListener listener) {
+    public void removeDataPointSelectionListener(org.das2.event.DataPointSelectionListener listener) {
         listenerList1.remove(org.das2.event.DataPointSelectionListener.class, listener);
     }
 
@@ -1631,13 +1628,7 @@ public class DataPointRecorderNew extends JPanel {
      * @param event The event to be fired
      */
     private void fireDataPointSelectionListenerDataPointSelected(org.das2.event.DataPointSelectionEvent event) {
-        Object[] listeners;
-        synchronized (this) {
-            if (listenerList1 == null) {
-                return;
-            }
-            listeners = listenerList1.getListenerList();
-        }
+        Object[] listeners= listenerList1.getListenerList();
 
         logger.fine("firing data point selection event");
         for (int i = listeners.length - 2; i >= 0; i -= 2 ) {
