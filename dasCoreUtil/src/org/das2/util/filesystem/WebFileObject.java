@@ -15,8 +15,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * as well as the GNU General Public License along with Das2 utilities.  If
  * not, see <http://www.gnu.org/licenses/>.
- *
- * WebFile.java
+
  *
  * Created on May 14, 2004, 10:06 AM
  */
@@ -28,7 +27,6 @@ import org.das2.util.monitor.ProgressMonitor;
 import org.das2.util.monitor.NullProgressMonitor;
 import java.io.*;
 import java.net.ConnectException;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.util.*;
@@ -36,7 +34,6 @@ import java.util.logging.Logger;
 import org.das2.util.Base64;
 import org.das2.util.filesystem.FileSystem.DirectoryEntry;
 import org.das2.util.filesystem.FileSystem.FileSystemOfflineException;
-import static org.das2.util.filesystem.FileSystem.loggerUrl;
 import org.das2.util.monitor.CancelledOperationException;
 
 /**
@@ -184,7 +181,9 @@ public class WebFileObject extends FileObject {
     @Override
     public java.util.Date lastModified() {
         long localMetaFresh;
-        localMetaFresh= metaFresh;
+        synchronized (this) {
+            localMetaFresh= metaFresh;
+        }
         if ( System.currentTimeMillis() - localMetaFresh > METADATA_FRESH_TIMEOUT_MS ) {
             metadata= null;
             modifiedDate= new Date( Long.MAX_VALUE );
@@ -357,7 +356,6 @@ public class WebFileObject extends FileObject {
                     this.isFolderResolved= true;
                 }
             } catch ( ConnectException ex ) {
-                ex.printStackTrace();
                 logger.log(Level.SEVERE,ex.getMessage(), ex);
             } catch (IOException ex) {
                 logger.log(Level.SEVERE,"unable to construct web file object",ex);
