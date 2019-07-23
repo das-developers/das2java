@@ -66,8 +66,14 @@
  */
 package org.das2.util;
 
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 public class Base64
 {
+    
+    public static final Logger logger= LoggerManager.getLogger("das2.util");
     
 /* ********  P U B L I C   F I E L D S  ******** */   
     
@@ -1188,7 +1194,11 @@ public class Base64
         }   // end catch: IOException
         finally
         {
-            try{ bis.close(); } catch( Exception e) {}
+            try{ 
+                bis.close(); 
+            } catch( IOException e) {
+                logger.log( Level.WARNING, e.getLocalizedMessage(), e );
+            }
         }   // end finally
         
         return decodedData;
@@ -1236,7 +1246,11 @@ public class Base64
         }   // end catch: IOException
         finally
         {
-            try{ bis.close(); } catch( Exception e) {}
+            try{ 
+                bis.close(); 
+            } catch( IOException e) {
+                logger.log( Level.WARNING, e.getLocalizedMessage(), e );
+            }
         }   // end finally
         
         return encodedData;
