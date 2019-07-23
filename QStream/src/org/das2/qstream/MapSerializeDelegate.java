@@ -141,7 +141,7 @@ public class MapSerializeDelegate implements SerializeDelegate, XMLSerializeDele
             }
             return result;
         } else {
-            byte[] buff = Base64.decode(s);
+            byte[] buff = Base64.getDecoder().decode(s);
             XMLDecoder dec = new XMLDecoder(new ByteArrayInputStream(buff));
             Object result = dec.readObject();
             return result;
