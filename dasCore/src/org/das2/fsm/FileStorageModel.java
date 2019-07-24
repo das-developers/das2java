@@ -102,8 +102,8 @@ public class FileStorageModel {
                     String[] ss2= o2.toString().split("[\\.-]",-2);
                     int n= Math.min( ss1.length, ss2.length );
                     for ( int i=0; i<n; i++ ) {
-                        double d1= Double.parseDouble(ss1[i]);
-                        double d2= Double.parseDouble(ss2[i]);
+                        int d1= Integer.parseInt(ss1[i]);
+                        int d2= Integer.parseInt(ss2[i]);
                         if ( d1!=d2 ) {
                             return d1 < d2 ? -1 : 1;
                         }
