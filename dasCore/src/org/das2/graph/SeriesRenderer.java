@@ -580,7 +580,12 @@ public class SeriesRenderer extends Renderer {
                 return 0;
             }
             g.setStroke(new BasicStroke((float) lineWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ));
-            g.draw(lp);
+            if ( errorBarType==ErrorBarType.SHADE ) {
+                g.setColor( fillColor );
+                g.fill(lp);
+            } else {
+                g.draw(lp);
+            }
             return lastIndex - firstIndex;
         }
 
@@ -615,6 +620,8 @@ public class SeriesRenderer extends Renderer {
 
             lp = null;
             
+            Point2D.Double returnTo= null;
+            
             if ( deltaPlusY!=null && deltaMinusY!=null ) {
                 try {
                     lp = new GeneralPath();
@@ -641,11 +648,26 @@ public class SeriesRenderer extends Renderer {
                                     lp.moveTo(ix-2, iyp);
                                     lp.lineTo(ix+2, iyp);
                                     break;
+                                case SHADE:
+                                    if ( i==firstIndex ) {
+                                        lp.moveTo(ix, iym);
+                                        returnTo= new Point2D.Double(ix,iym);
+                                    } else {
+                                        lp.lineTo(ix, iym);
+                                    }
                                 default:
                                     logger.log(Level.INFO, "unsupported ErrorBarType: {0}", errorBarType);
                                     break;
                             }
                         }
+                    }
+                    if ( errorBarType==ErrorBarType.SHADE ) {
+                        for (int i = lastIndex-1; i >= firstIndex; i--) {
+                            double ix = xAxis.transform( xds.value(i), xunits );
+                            double iyp = yAxis.transform( p2.value(i), yunits );
+                            lp.lineTo(ix, iyp);
+                        }
+                        lp.lineTo( returnTo.x, returnTo.y );
                     }
                 } catch ( IllegalArgumentException ex ) {
                     if ( getParent()!=null ) getParent().postException(SeriesRenderer.this,ex);
@@ -676,6 +698,9 @@ public class SeriesRenderer extends Renderer {
                                     lp.lineTo(ixp, iy);
                                     lp.moveTo(ixp, iy-2);
                                     lp.lineTo(ixp, iy+2);
+                                    break;
+                                case SHADE:
+                                    logger.log(Level.INFO, "SHADE does not support x error bars" );
                                     break;
                                 default:
                                     logger.log(Level.INFO, "unsupported ErrorBarType: {0}", errorBarType);
@@ -1695,6 +1720,10 @@ public class SeriesRenderer extends Renderer {
             int connectCount= psymConnectorElement.render(graphics, xAxis, yAxis, dataSet, monitor.getSubtaskMonitor("psymConnectorElement.render")); // vds is only to check units
             logger.log(Level.FINEST, "connectCount: {0}", connectCount);
 
+            if ( drawError ) { // error bars show the extent of the waveform
+                errorElement.render(graphics, xAxis, yAxis, dataSet, monitor.getSubtaskMonitor("errorElement.render"));
+            }
+
             int symCount;
             if (psym != DefaultPlotSymbol.NONE) {
 
@@ -1703,9 +1732,6 @@ public class SeriesRenderer extends Renderer {
                 
             }
             
-            if ( drawError ) { // error bars show the extent of the waveform
-                errorElement.render(graphics, xAxis, yAxis, dataSet, monitor.getSubtaskMonitor("errorElement.render"));
-            }
             
         } else if (tds != null ) {
             graphics.setColor(color);
@@ -1727,13 +1753,13 @@ public class SeriesRenderer extends Renderer {
 
             graphics.setColor(color);
             logger.log(Level.FINEST, "drawing psymConnector in {0}", color);
-
-            int connectCount= psymConnectorElement.render(graphics, xAxis, yAxis, vds, monitor.getSubtaskMonitor("psymConnectorElement.render")); // vds is only to check units
-            logger.log(Level.FINEST, "connectCount: {0}", connectCount);
             
             if ( drawError ) { // error bars
                 errorElement.render(graphics, xAxis, yAxis, vds, monitor.getSubtaskMonitor("errorElement.render"));
             }
+
+            int connectCount= psymConnectorElement.render(graphics, xAxis, yAxis, vds, monitor.getSubtaskMonitor("psymConnectorElement.render")); // vds is only to check units
+            logger.log(Level.FINEST, "connectCount: {0}", connectCount);
 
             int symCount;
             if (psym != DefaultPlotSymbol.NONE) {
