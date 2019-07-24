@@ -20,16 +20,18 @@ public class TimerConsoleFormatter extends Formatter {
     String lastLoggerName;
     String resetMessage;
 
+    private final static String SPACES = "                                  ";
+    
+    @Override
     public String format(LogRecord rec) {
         
         final String message = rec.getMessage();
         //if ( lastLoggerName==null || lastLoggerName!=rec.getLoggerName() ) {
         if (message != null && resetMessage!=null && message.contains(resetMessage)) {
-            lastLoggerName = rec.getLoggerName();
+            //lastLoggerName = rec.getLoggerName();
             t0 = System.currentTimeMillis();
         }
 
-        String spaces = "                                  ";
         String source = "???";
         
         StackTraceElement[] st = new Throwable().getStackTrace();
@@ -39,8 +41,8 @@ public class TimerConsoleFormatter extends Formatter {
             source = String.valueOf(st[idx].getClassName());
             if (source.startsWith("org.das2")) {
                 source = source.substring("org.das2".length());
-                if (source.length() < spaces.length()) {
-                    source = spaces.substring(source.length()) + source;
+                if (source.length() < SPACES.length()) {
+                    source = SPACES.substring(source.length()) + source;
                 }
             }
         }
@@ -66,7 +68,7 @@ public class TimerConsoleFormatter extends Formatter {
     private String fixedColumn(String threadId, int sp) {
         try {
         if (threadId.length() > sp) threadId = threadId.substring(threadId.length()-sp, threadId.length());
-        if (threadId.length() < sp) threadId = spaces.substring(0, sp - threadId.length()) + threadId;
+        if (threadId.length() < sp) threadId = SPACES.substring(0, sp - threadId.length()) + threadId;
         return threadId;
         } catch ( StringIndexOutOfBoundsException ex ) {
             return threadId;
