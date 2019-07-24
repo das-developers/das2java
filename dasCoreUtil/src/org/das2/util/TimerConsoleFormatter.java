@@ -64,7 +64,6 @@ public class TimerConsoleFormatter extends Formatter {
         nf = new DecimalFormat("00000");
     }
 
-    String spaces= "                                                               ";
     private String fixedColumn(String threadId, int sp) {
         try {
         if (threadId.length() > sp) threadId = threadId.substring(threadId.length()-sp, threadId.length());
