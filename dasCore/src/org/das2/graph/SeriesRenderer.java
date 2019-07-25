@@ -1702,7 +1702,7 @@ public class SeriesRenderer extends Renderer {
             }
         }
 
-        Graphics2D graphics = (Graphics2D) g;
+        Graphics2D graphics = g;
 
         if (antiAliased) {
             graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -1717,17 +1717,17 @@ public class SeriesRenderer extends Renderer {
             graphics.setColor(color);
             logger.log(Level.FINEST, "drawing psymConnector in {0}", color);
 
-            int connectCount= psymConnectorElement.render(graphics, xAxis, yAxis, dataSet, monitor.getSubtaskMonitor("psymConnectorElement.render")); // vds is only to check units
+            int connectCount= psymConnectorElement.render((Graphics2D)graphics.create(), xAxis, yAxis, dataSet, monitor.getSubtaskMonitor("psymConnectorElement.render")); // vds is only to check units
             logger.log(Level.FINEST, "connectCount: {0}", connectCount);
 
             if ( drawError ) { // error bars show the extent of the waveform
-                errorElement.render(graphics, xAxis, yAxis, dataSet, monitor.getSubtaskMonitor("errorElement.render"));
+                errorElement.render((Graphics2D)graphics.create(), xAxis, yAxis, dataSet, monitor.getSubtaskMonitor("errorElement.render"));
             }
 
             int symCount;
             if (psym != DefaultPlotSymbol.NONE) {
 
-                symCount= psymsElement.render(graphics, xAxis, yAxis, dataSet, monitor.getSubtaskMonitor("psymsElement.render"));
+                symCount= psymsElement.render((Graphics2D)graphics.create(), xAxis, yAxis, dataSet, monitor.getSubtaskMonitor("psymsElement.render"));
                 logger.log(Level.FINEST, "symCount: {0}", symCount);
                 
             }
@@ -1737,25 +1737,25 @@ public class SeriesRenderer extends Renderer {
             graphics.setColor(color);
             logger.log(Level.FINEST, "drawing psymConnector in {0}", color);
 
-            int connectCount= psymConnectorElement.render(graphics, xAxis, yAxis, tds, monitor.getSubtaskMonitor("psymConnectorElement.render")); // tds is only to check units
+            int connectCount= psymConnectorElement.render( (Graphics2D)graphics.create(), xAxis, yAxis, tds, monitor.getSubtaskMonitor("psymConnectorElement.render")); // tds is only to check units
 
             logger.log(Level.FINEST, "connectCount: {0}", connectCount);
             
             if ( drawError ) { // error bars
-                errorElement.render(graphics, xAxis, yAxis, tds, monitor.getSubtaskMonitor("errorElement.render"));
+                errorElement.render( (Graphics2D)graphics.create(), xAxis, yAxis, tds, monitor.getSubtaskMonitor("errorElement.render"));
             }
 
         } else {
 
             if (this.fillToReference) {
-                fillElement.render(graphics, xAxis, yAxis, vds, monitor.getSubtaskMonitor("fillElement.render"));
+                fillElement.render( (Graphics2D)graphics.create(), xAxis, yAxis, vds, monitor.getSubtaskMonitor("fillElement.render"));
             }
 
             graphics.setColor(color);
             logger.log(Level.FINEST, "drawing psymConnector in {0}", color);
             
             if ( drawError ) { // error bars
-                errorElement.render(graphics, xAxis, yAxis, vds, monitor.getSubtaskMonitor("errorElement.render"));
+                errorElement.render( (Graphics2D)graphics.create(), xAxis, yAxis, vds, monitor.getSubtaskMonitor("errorElement.render"));
             }
 
             int connectCount= psymConnectorElement.render(graphics, xAxis, yAxis, vds, monitor.getSubtaskMonitor("psymConnectorElement.render")); // vds is only to check units
@@ -1764,7 +1764,7 @@ public class SeriesRenderer extends Renderer {
             int symCount;
             if (psym != DefaultPlotSymbol.NONE) {
 
-                symCount= psymsElement.render(graphics, xAxis, yAxis, vds, monitor.getSubtaskMonitor("psymsElement.render"));
+                symCount= psymsElement.render( (Graphics2D)graphics.create(), xAxis, yAxis, vds, monitor.getSubtaskMonitor("psymsElement.render"));
                 logger.log(Level.FINEST, "symCount: {0}", symCount);
                 
             }
