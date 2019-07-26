@@ -47,8 +47,8 @@ public class ToAsciiStreamHandler implements StreamHandler {
         format.setOutputStream( out );
         pdouts= new LinkedHashMap<>();
         newEncodings= new LinkedHashMap<>();
-        newEncodings.put( "double",new AsciiTransferType(20,false) );
-        newEncodings.put( "float",new AsciiTransferType(10,false) );
+        newEncodings.put( "double",new AsciiTransferType(20,true) );
+        newEncodings.put( "float",new AsciiTransferType(10,true) );
         newEncodings.put( "int8",new AsciiTransferType(20,false) );
         newEncodings.put( "int4",new AsciiTransferType(10,false) );
         newEncodings.put( "int2",new AsciiTransferType(7,false) ); // 7 is the shortest supported.
