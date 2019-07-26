@@ -6,9 +6,11 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
+import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.das2.dataset.NoDataInIntervalException;
+import org.das2.datum.LoggerManager;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -24,6 +26,8 @@ import org.w3c.dom.Element;
  */
 public class FormatStreamHandler implements StreamHandler {
 
+    private static final Logger logger= LoggerManager.getLogger("qstream");
+            
     WritableByteChannel out;
 
     StreamDescriptor sd;
@@ -104,8 +108,15 @@ public class FormatStreamHandler implements StreamHandler {
 
     @Override
     public void packet(PacketDescriptor pd, ByteBuffer data) throws StreamException {
+        int id;
         try {
-            out.write( ByteBuffer.wrap( String.format( ":%02d:", sd.descriptorId(pd) ).getBytes("US-ASCII")) );
+            id= sd.descriptorId(pd);
+        } catch ( IllegalArgumentException ex ) {
+            logger.fine("stream doesn't recognize this packet type.");
+            id= pd.getPacketId();
+        }
+        try {
+            out.write( ByteBuffer.wrap( String.format( ":%02d:", id ).getBytes("US-ASCII")) );
             out.write(data);
         } catch ( IOException ex ) {
             throw new StreamException(ex);
