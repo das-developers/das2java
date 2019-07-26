@@ -114,6 +114,13 @@ public class StreamDescriptor implements Descriptor {
     }
 
 
+    /**
+     * get the id for the descriptor.  Note packetDescriptors contain the id, 
+     * but this is not used. 
+     * @param pd the packet descriptor.
+     * @return the id
+     * @throws IllegalArgumentException when the Descriptor is not found.
+     */
     public synchronized int descriptorId(Descriptor pd) {
         if ( pd==this ) return 0;
         Integer i= invPackets.get(pd);
