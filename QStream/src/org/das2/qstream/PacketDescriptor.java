@@ -120,6 +120,7 @@ public class PacketDescriptor implements Descriptor,Cloneable {
     /**
      * return the packet ID, which is a number from 1-99.
      * @return 
+     * @throws IllegalStateException when the packet ID is invalid (which shouldn't happen)
      */
     public int getPacketId() {
         if ( packetId<1 || packetId>99 ) {
@@ -131,6 +132,7 @@ public class PacketDescriptor implements Descriptor,Cloneable {
     /**
      * keep track of the packet ID, which is a number from 1-99.
      * @param packetId 
+     * @throws IllegalArgumentException then the packet ID is invalid.
      */
     public void setPacketId( int packetId ) {
         if ( packetId<1 || packetId>99 ) {
