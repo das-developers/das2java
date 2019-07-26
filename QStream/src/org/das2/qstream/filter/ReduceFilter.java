@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 
 package org.das2.qstream.filter;
 
@@ -28,7 +24,6 @@ import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.Units;
 import org.das2.qds.DataSetUtil;
 import org.das2.qds.QDataSet;
-import org.das2.qds.SemanticOps;
 import org.das2.qstream.CacheTagSerializeDelegate;
 import org.das2.qstream.PacketDescriptor;
 import org.das2.qstream.PlaneDescriptor;
@@ -72,6 +67,10 @@ public class ReduceFilter implements StreamHandler {
 
     Map<String, Accum> accum;
     Map<PacketDescriptor, Boolean> skip;
+    
+    /**
+     * keep track of the time that is the boundary for this packet timetag.
+     */
     Map<PacketDescriptor, Double> nextTags;
 
     StreamDescriptor sd;
@@ -105,6 +104,8 @@ public class ReduceFilter implements StreamHandler {
         } catch ( IllegalArgumentException ex ) {
             //old id has already been cleared
             // vap+das2server:http://emfisis.physics.uiowa.edu/das/das2Server?dataset=rbsp/RBSP-A/HFR_spectra.dsdf&start_time=2012-11-01T23:17&end_time=2012-11-02T08:16
+            logger.fine("Illegal Argument Exception at line 113");
+            ex.printStackTrace();
         }
 
         try {
@@ -183,7 +184,7 @@ public class ReduceFilter implements StreamHandler {
             }
 
             this.skip.put(pd, lskip);
-            this.nextTags.put( pd, 0. );
+            this.nextTags.put( pd, Double.NEGATIVE_INFINITY );
 
         } catch (XPathExpressionException ex) {
             logger.log(Level.SEVERE, ex.getMessage(), ex);
@@ -218,7 +219,7 @@ public class ReduceFilter implements StreamHandler {
     }
         
     /**
-     * initialize the accumulators to an empty state.
+     * initialize the accumulators to an empty state, with no records accumulated.
      * @param pd
      */
     private void initAccumulators(PacketDescriptor pd) {
@@ -308,6 +309,7 @@ public class ReduceFilter implements StreamHandler {
                 }
             } else {
                 double avg= ss[0]/nn + bb;
+                //pd.getPlanes().get(0).getUnits().createDatum(avg);
                 planed.getType().write( avg, data );
             }
 
@@ -343,13 +345,25 @@ public class ReduceFilter implements StreamHandler {
 
             PlaneDescriptor t0= planes.get(0);
             double ttag= t0.getType().read(data);
+            
+            //Datum t= t0.getUnits().createDatum(ttag);
+            
+            //if ( Ops.datumRange("2012-09-25T23:59:45/PT1M").contains(t) ) {
+            //    System.err.println( t );
+            //}
+            
 
             double nextTag= nextTags.get( pd );
+            //Datum nextTagDatum= t0.getUnits().createDatum(nextTag);  // useful for debugging.
 
+            //if ( t.gt(nextTagDatum) ) {
+            //    System.err.println("next tag");
+            //}
             if ( ttag>nextTag ) {
                 unload( pd );
                 initAccumulators(pd);
                 nextTag= ( 1 + Math.floor( ttag/length ) ) * length;
+                //nextTagDatum= t0.getUnits().createDatum(nextTag);
                 nextTags.put( pd, nextTag );
             }
 
