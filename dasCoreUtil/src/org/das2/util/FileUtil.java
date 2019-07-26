@@ -10,11 +10,13 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.nio.file.OpenOption;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -402,4 +404,17 @@ public class FileUtil {
 
     }
     
+    /**
+     * write all the bytes in the string to a file using UTF-8 encoding.
+     * @param f the file name.
+     * @param src the string to write to the file.
+     * @throws IOException 
+     */
+    public static void writeStringToFile( File f, String src ) throws IOException {
+        try {
+            Files.write( Paths.get( f.toURI() ), src.getBytes("UTF-8"), new OpenOption[0] );
+        } catch (UnsupportedEncodingException ex) {
+            logger.log(Level.SEVERE, null, ex);
+        }
+    }
 }
