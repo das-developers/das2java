@@ -307,11 +307,16 @@ public class NumberUnits extends Units {
         if ( bUnits==Units.dimensionless ) {
             return createDatum( divide( a, b ) );
         } else if ( this==Units.dimensionless ) {
-            Units inv= UnitsUtil.getInverseUnit(bUnits);
-            if ( inv!=null ) {
+            try {
+                Units inv= UnitsUtil.getInverseUnit(bUnits);
                 return inv.createDatum( divide( a, b ) );
-            } else {
-                throw new IllegalArgumentException("No inversion found for "+bUnits );
+            } catch ( IllegalArgumentException ex ) {
+                if ( bUnits.isConvertibleTo(Units.seconds) ) {
+                    double factor= bUnits.convertDoubleTo( Units.seconds, 1 );
+                    return Units.hertz.createDatum( divide( a, b ).doubleValue() / factor );
+                } else {                    
+                    throw new IllegalArgumentException("No inversion found for "+bUnits );
+                }
             }
         } else {
             UnitsConverter uc= bUnits.getConverter(this);
