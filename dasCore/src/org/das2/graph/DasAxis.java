@@ -3549,8 +3549,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
         
         if ( reference.length()>0 ) {
-            blLineRect.add( DMin, topPosition );
-            blLineRect.add( DMin, bottomPosition );
+            if ( blLineRect!=null ) {
+                blLineRect.add( DMin, topPosition );
+                blLineRect.add( DMin, bottomPosition );
+            }
         }
 
         double lineThicknessDouble= getLineThicknessDouble(lineThickness);
@@ -3688,8 +3690,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
 
         if ( reference.length()>0 ) {
-            blLineRect.add( rightPosition, DMax );
-            blLineRect.add( leftPosition, DMin );
+            if ( blLineRect!=null ) {
+                blLineRect.add( rightPosition, DMax );
+                blLineRect.add( leftPosition, DMin );
+            }
         }
         
         double lineThicknessDouble= getLineThicknessDouble(lineThickness);
