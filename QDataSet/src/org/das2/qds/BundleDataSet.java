@@ -3,6 +3,7 @@ package org.das2.qds;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 import org.das2.datum.LoggerManager;
 import org.das2.qds.ops.Ops;
@@ -135,6 +136,25 @@ public final class BundleDataSet extends AbstractDataSet {
         if ( dep0!=null && result.property(QDataSet.DEPEND_0)==null ) {
             result= Ops.putProperty( result, QDataSet.DEPEND_0, dep0 );
         }
+        // check this datasets properties to see if there's additional properties which have been
+        // added to the data.
+//        QDataSet bds= (QDataSet) this.property( QDataSet.BUNDLE_1 );
+//        if ( bds!=null ) {
+//            bds= bds.slice(i);
+//            Map<String,Object> p= DataSetUtil.getProperties(bds);
+//            if ( result instanceof MutablePropertyDataSet ) {
+//                MutablePropertyDataSet mpds= (MutablePropertyDataSet)result;
+//                if ( !mpds.isImmutable() ) {
+//                    DataSetUtil.putProperties( p, mpds ); // I may regret this in the future...
+//                } else {
+//                    mpds= DataSetOps.makePropertiesMutable( result );
+//                    DataSetUtil.putProperties( p, mpds ); 
+//                }
+//            } else {
+//                MutablePropertyDataSet mpds= DataSetOps.makePropertiesMutable( result );
+//                DataSetUtil.putProperties( p, mpds ); 
+//            }
+//        }
         return result;
     }
 
