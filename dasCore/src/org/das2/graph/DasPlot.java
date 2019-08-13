@@ -509,7 +509,7 @@ public class DasPlot extends DasCanvasComponent {
             Rectangle clip= legendBounds.intersection( new Rectangle( 0, getRow().getDMinimum(), 2*canvasWidth, getRow().getHeight() ) );
             clip.height+= 1; //TODO lineThickness
             clip.width+= 1;
-            graphics.setClip( clip );
+            graphics.clip( clip );
             graphics.setColor(backColor);
             graphics.fillRoundRect( legendBounds.x, legendBounds.y, legendBounds.width, legendBounds.height, 5, 5);
             graphics.setColor(getForeground());
@@ -571,7 +571,7 @@ public class DasPlot extends DasCanvasComponent {
 
         Graphics2D graphics= (Graphics2D) g.create();
         
-        graphics.setClip( DasDevicePosition.toRectangle( getRow(), getColumn() ) );
+        graphics.clip( DasDevicePosition.toRectangle( getRow(), getColumn() ) );
         
         boolean isPrint= getCanvas().isPrintingThread();
         
@@ -751,7 +751,7 @@ public class DasPlot extends DasCanvasComponent {
 
         if ( this.bottomDecorator!=null ) drawDecorator(plotGraphics, this.bottomDecorator );
             
-        drawContent(plotGraphics);
+        drawContent(plotGraphics); // This is an old hook which is deprecated by bottomDecorator.
 
         List<Renderer> renderers1= Arrays.asList(getRenderers());
 
@@ -1323,9 +1323,13 @@ public class DasPlot extends DasCanvasComponent {
         boolean useCacheImage= cacheImageValid && !getCanvas().isPrintingThread() && !disableImageCache 
                 && ( lcacheImageBounds.width==lcacheImage.getWidth() );
         
+        Rectangle cacheImageClip= DasDevicePosition.toRectangle( getRow(), getColumn() );
+        
+        logger.log(Level.FINE, "draw plot useCacheImage: {0}", useCacheImage);
         if ( useCacheImage ) {
             
             Graphics2D atGraphics = (Graphics2D) graphics.create();
+            atGraphics.clip(cacheImageClip);
 
             AffineTransform at = getAffineTransform(xAxis, yAxis);
             if (at == null || (preview == false && !isIdentity(at))) {
@@ -1362,7 +1366,7 @@ public class DasPlot extends DasCanvasComponent {
             atGraphics.dispose();
 
         } else {  // don't useCacheImage
-                
+            
             synchronized (this) {
                 Graphics2D plotGraphics;
                 if (getCanvas().isPrintingThread() || disableImageCache) {
@@ -1406,7 +1410,8 @@ public class DasPlot extends DasCanvasComponent {
                 }
 
                 plotGraphics.translate(-x + 1, -y + 1);
-
+                plotGraphics.clip(cacheImageClip);
+                
                 // check mementos before drawing.  They should all be the same.  See https://sourceforge.net/tracker/index.php?func=detail&aid=3075655&group_id=199733&atid=970682
                 Renderer[] rends= getRenderers();
 
@@ -1446,6 +1451,9 @@ public class DasPlot extends DasCanvasComponent {
                 //if ( !xmem2.equals(xmem) ) {
                 //    System.err.println("mementocheck: "+xmem2.equals(xmem));
                 //}
+                
+                plotGraphics.dispose();
+                
             }
 
 
@@ -1547,8 +1555,6 @@ public class DasPlot extends DasCanvasComponent {
             graphics.drawString( "paint: "+this.paintComponentCount, xx+10, yy+20+ir*30-graphics.getFontMetrics().getHeight() );
         }
         
-        graphics.setClip(null);
-
         graphics.dispose();
 
         getDasMouseInputAdapter().paint(graphics0);
