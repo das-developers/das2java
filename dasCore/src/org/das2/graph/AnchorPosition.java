@@ -105,7 +105,7 @@ public enum AnchorPosition implements Enumeration {
                 g.fillRect(0,8,3,5);
                 break;
             case OutsideS:
-                g.fillRect(12,7,5,5);
+                g.fillRect(5,12,5,5);
                 break;
             default:
                 g.drawString("?", 0, 14);
