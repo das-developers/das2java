@@ -8447,6 +8447,7 @@ public final class Ops {
      * The property count is set to the number of valid measurements.
      * TODO: this could use MONOTONIC, but it doesn't.  DELTA_PLUS, DELTA_MINUS make that more difficult.
      * @see DataSetUtil#rangeOfMonotonic(org.das2.qds.QDataSet) 
+     * @see AutoRangeUtil#simpleRange in Autoplot.
      * @param ds
      * @return two element, rank 1 "bins" dataset.
      */
