@@ -295,6 +295,7 @@ public abstract class FileSystem  {
             if ( blocks.containsKey(root) ) {
                 waitObject= blocks.get(root);
                 ishouldwait= true;
+                logger.log(Level.FINE, "this thread should wait for waitObject {0} {1}", new Object[]{waitObject, root});
             } else {
                 waitObject= new Object(); 
                 blocks.put( root, waitObject );
@@ -369,9 +370,9 @@ public abstract class FileSystem  {
 
         if ( factory==null ) {
             synchronized( waitObject ) {
-                logger.log(Level.FINE, "releasing {0}", waitObject);
+                logger.log(Level.FINE, "releasing waitObject after factory=null {0}", waitObject);
                 blocks.remove(root);
-                logger.log(Level.FINE, "releasing {0}", waitObject); // need to do this in the finally block in case there was an Exception.
+                logger.log(Level.FINE, "releasing waitObject after factory=null {0} (repeat)", waitObject); // need to do this in the finally block in case there was an Exception.
                 waitObject.notifyAll(); //TODO: the other threads are going to think it's offline.
             }                
             logger.log(Level.SEVERE, "unsupported protocol: {0}", root);
@@ -395,7 +396,7 @@ public abstract class FileSystem  {
                 }
                 synchronized( waitObject ) {
                     blocks.remove(root);
-                    logger.log(Level.FINE, "releasing {0}", waitObject); // need to do this in the finally block in case there was an Exception.
+                    logger.log(Level.FINE, "releasing waitObject {0}", waitObject); // need to do this in the finally block in case there was an Exception.
                     waitObject.notifyAll();
                 }
             }
@@ -407,6 +408,7 @@ public abstract class FileSystem  {
            ((WebFileSystem)result).setOffline(true);
        }
 
+       logger.log(Level.FINE, "create provides filesystem: {0}", result);
        return result;
     }
     
