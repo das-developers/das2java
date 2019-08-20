@@ -137,6 +137,8 @@ public class KeyChain {
                 }
             }
 
+        } else {
+            logger.log( Level.FINE, "keychain file not found: {0}", keysFile);
         }
     }
 
