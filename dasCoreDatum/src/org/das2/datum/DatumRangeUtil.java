@@ -1985,6 +1985,19 @@ public class DatumRangeUtil {
     }
     
     /**
+     * create a DatumRange with the value for the center, and the width.
+     * @param middle
+     * @param width
+     * @return datumRange centered at middle with the given width.
+     */
+    public static DatumRange createCentered(Datum middle, Datum width) {
+        Units u= middle.getUnits();
+        double m= middle.doubleValue(u);
+        double dm= width.doubleValue( u.getOffsetUnits() );
+        return DatumRange.newDatumRange( m-dm/2, m+dm/2, u );
+    }
+
+    /**
      * returns the position within dr, where 0. is the dr.min(), and 1. is dr.max()
      * @param dr a datum range with non-zero width.
      * @param d a datum to normalize with respect to the range.
