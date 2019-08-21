@@ -1389,6 +1389,8 @@ public class TimeParser {
      */
     public synchronized TimeParser parse(String timeString, Map<String,String> extra ) throws ParseException {
         
+        logger.log(Level.FINER, "parse {0}", timeString);
+        
         lock= Thread.currentThread().getName();
         
         int offs = 0;
@@ -1444,7 +1446,7 @@ public class TimeParser {
 
             String field= timeString.substring(offs, offs + len).trim();
             
-            logger.log(Level.FINE, "handling {0} with {1}", new Object[]{field, handlers[idigit]});
+            logger.log(Level.FINEST, "handling {0} with {1}", new Object[]{field, handlers[idigit]});
             
             try {
 
