@@ -58,7 +58,6 @@ import java.util.concurrent.locks.Lock;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
-import javax.swing.SwingUtilities;
 import org.das2.util.FileUtil;
 import org.das2.util.OsUtil;
 import static org.das2.util.filesystem.FileSystem.toCanonicalFilename;
@@ -931,9 +930,9 @@ public class HttpFileSystem extends WebFileSystem {
     @Override
     public String[] listDirectory(String directory, String regex) throws IOException {
         
-        if ( SwingUtilities.isEventDispatchThread() ) {
+        //if ( SwingUtilities.isEventDispatchThread() ) {
             //logger.warning("listDirectory called on event thread!");
-        }
+        //}
         
         logger.log(Level.FINE, "listDirectory({0},{1})", new Object[]{directory, regex});
         
