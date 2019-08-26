@@ -236,6 +236,8 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
             result= new HistogramFilterEditorPanel();            
         } else if ( f.matches(Histogram2dFilterEditorPanel.PROP_REGEX) ) {
             result= new Histogram2dFilterEditorPanel();            
+        } else if ( f.matches(BinAverage2dFilterEditorPanel.PROP_REGEX) ) {
+            result= new BinAverage2dFilterEditorPanel();            
         } else if ( f.matches( UnbundleFilterEditorPanel.PROP_REGEX ) ) { // TODO: FilterEditorPanel might choose to accept a filter.
             result= new UnbundleFilterEditorPanel();
         } else if ( f.matches("\\|dbAboveBackgroundDim1\\((\\S+)\\)") ) { // TODO: FilterEditorPanel might choose to accept a filter.
