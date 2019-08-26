@@ -11503,8 +11503,13 @@ public final class Ops {
             }
             case 1:
                 QDataSet dep0= (QDataSet) ds.property( QDataSet.DEPEND_0 );
+                QDataSet plane0= (QDataSet) ds.property( QDataSet.PLANE_0 );
                 if ( dep0!=null ) {
-                    return bundle(dep0,ds);
+                    if ( plane0==null ) {
+                        return bundle(dep0,ds); 
+                    } else {
+                        return bundle(dep0,ds,plane0);
+                    }
                 } else {
                     return bundle(ds);
                 }
