@@ -450,7 +450,7 @@ public class OperationsProcessor {
                     QDataSet xtags= Ops.linspace( xrange.min(), xrange.max(), bins[0] );
                     QDataSet ytags= Ops.linspace( yrange.min(), yrange.max(), bins[1] );
                     
-                    fillDs= BinAverage.binAverage( Ops.bundle( x, y, z ), xtags, ytags );
+                    fillDs= BinAverage.binAverageBundle( Ops.bundle( x, y, z ), xtags, ytags );
                     
                 } else if ( cmd.equals("|extent") ) {
                     fillDs= Ops.extent(fillDs);
