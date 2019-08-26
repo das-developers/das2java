@@ -94,6 +94,11 @@
                         <description>Perform a 2-D histogram of X and Y to create a rank 2 table.</description>
                     </bookmark>
                     <bookmark>
+                        <title>Bin Average 2D</title>
+                        <filter>|binAverage2d()</filter>
+                        <description>Perform a 2-D bin average X, Y, Z scatter to create a rank 2 table.</description>
+                    </bookmark>
+                    <bookmark>
                         <title>Reduce In Zeroth Dimension</title>
                         <filter>|reducex('1 hr')</filter>
                         <description>Reduces data to selected time/data intervals</description>
