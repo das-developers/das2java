@@ -122,9 +122,6 @@ public class PdfGraphicsOutput implements GraphicsOutput {
                 ttfFonts= Arrays.copyOf( ttfFonts, ttfFonts.length+otfFonts.length );
                 System.arraycopy( otfFonts, 0, ttfFonts, nttfFonts, otfFonts.length );
                 for ( File f: ttfFonts ) {
-                    if ( f.getName().contains("Roboto") ) {
-                        System.err.println("here stop");
-                    }
                     FileInputStream in = null;
                     try {
                         com.itextpdf.text.pdf.BaseFont.createFont( f.toString(), BaseFont.IDENTITY_H, BaseFont.EMBEDDED ); // check to see if iText is going to fuss about licensing.
@@ -132,12 +129,8 @@ public class PdfGraphicsOutput implements GraphicsOutput {
                         Font font= Font.createFont(Font.TRUETYPE_FONT, in );
                         logger.log( Level.FINEST, "adding {0} -> {1}", new Object[]{font.getFontName(), f});
                         fontToTtfMap1.put( font.getFontName(), f ); 
-                    } catch ( DocumentException ex ) {
+                    } catch ( DocumentException | FontFormatException | IOException ex ) {
                         logger.log( Level.SEVERE, ex.getMessage(), ex );
-                    } catch (FontFormatException ex) {
-                        logger.log(Level.SEVERE, ex.getMessage(), ex);
-                    } catch (IOException ex) {
-                        logger.log(Level.SEVERE, ex.getMessage(), ex);
                     } finally {
                         try {
                             if ( in!=null ) in.close();
@@ -152,12 +145,13 @@ public class PdfGraphicsOutput implements GraphicsOutput {
                 try {
                     URL u= PdfGraphics2D.class.getResource("/resources/"+s );
                     if ( u!=null ) {
+                        
                         File fout= File.createTempFile( "temp", s );
-                        FileOutputStream ffout= new FileOutputStream(fout);
-                        InputStream ins=  u.openStream();
-                        FileSystemUtil.copyStream( ins, ffout, new NullProgressMonitor() );
-                        ins.close();
-                        ffout.close();
+                        logger.log(Level.FINER, "copy font to temporary file {0}", fout);
+                        try (FileOutputStream ffout = new FileOutputStream(fout); InputStream ins = u.openStream()) {
+                            FileSystemUtil.copyStream( ins, ffout, new NullProgressMonitor() );
+                        }
+                        
                         InputStream in = null;
                         try {
                             com.itextpdf.text.pdf.BaseFont.createFont( fout.toString(), BaseFont.IDENTITY_H, BaseFont.EMBEDDED ); // check to see if iText is going to fuss about licensing.
@@ -165,12 +159,8 @@ public class PdfGraphicsOutput implements GraphicsOutput {
                             Font font= Font.createFont(Font.TRUETYPE_FONT, in );
                             logger.log( Level.FINEST, "adding {0} -> {1}", new Object[]{font.getFontName(), s } );
                             fontToTtfMap1.put( font.getFontName(), fout );
-                        } catch ( DocumentException ex ) {
+                        } catch ( DocumentException | FontFormatException | IOException ex ) {
                             logger.log( Level.SEVERE, ex.getMessage(), ex );
-                        } catch (FontFormatException ex) {
-                            logger.log(Level.SEVERE, ex.getMessage(), ex);
-                        } catch (IOException ex) {
-                            logger.log(Level.SEVERE, ex.getMessage(), ex);
                         } finally {
                             try {
                                 if ( in!=null ) in.close();
