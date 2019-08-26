@@ -5,10 +5,12 @@
 
 package org.das2.util;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
@@ -415,6 +417,27 @@ public class FileUtil {
             Files.write( Paths.get( f.toURI() ), src.getBytes("UTF-8"), new OpenOption[0] );
         } catch (UnsupportedEncodingException ex) {
             logger.log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    /**
+     * return the number of lines in the text file.  Breaking the file into
+     * lines is handled by Java's BufferedReader.
+     * @param f the file
+     * @return the number of lines.
+     * @throws FileNotFoundException
+     * @throws IOException 
+     * @see BufferedReader
+     */
+    public static int lineCount( File f ) throws FileNotFoundException, IOException {
+        try ( BufferedReader r= new BufferedReader( new FileReader( f ) ) ) {
+            String line= r.readLine();
+            int lineCount=0;
+            while ( line!=null ) {
+                lineCount++;
+                line= r.readLine();
+            }
+            return lineCount;
         }
     }
 }
