@@ -29,6 +29,7 @@ import static org.das2.qds.DataSetOps.slice2;
 import static org.das2.qds.DataSetOps.slice3;
 import org.das2.qds.filters.ApplyIndexEditorPanel;
 import org.das2.qds.ops.Ops;
+import org.das2.qds.util.BinAverage;
 import org.das2.qds.util.Reduction;
 
 /**
@@ -425,6 +426,32 @@ public class OperationsProcessor {
                         yrange= Ops.extent(y);
                     }
                     fillDs= Ops.histogram2d( x, y, bins, xrange, yrange );
+                } else if ( cmd.equals("|binAverage2d") ) {
+                    ds0= Ops.flatten(ds0);
+                    QDataSet x= Ops.slice1( ds0, 0 );
+                    QDataSet y= Ops.slice1( ds0, 1 );
+                    QDataSet z= Ops.slice1( ds0, 2 );
+                    int [] bins= new int[] { 20, 20 };
+                    DatumRange xrange=null;
+                    DatumRange yrange=null;
+                    if ( s.hasNextInt() ) {
+                        bins[0]= s.nextInt();
+                        bins[1]= s.nextInt();
+                        if ( s.hasNext() ) {
+                            xrange= Ops.datumRange(s.next());
+                            yrange= Ops.datumRange(s.next());
+                        }
+                    }
+                    if ( xrange==null ) {
+                        xrange= DataSetUtil.asDatumRange(Ops.extent(x));
+                        yrange= DataSetUtil.asDatumRange(Ops.extent(y));
+                    }
+                    assert yrange!=null;
+                    QDataSet xtags= Ops.linspace( xrange.min(), xrange.max(), bins[0] );
+                    QDataSet ytags= Ops.linspace( yrange.min(), yrange.max(), bins[1] );
+                    
+                    fillDs= BinAverage.binAverage( Ops.bundle( x, y, z ), xtags, ytags );
+                    
                 } else if ( cmd.equals("|extent") ) {
                     fillDs= Ops.extent(fillDs);
                 } else if ( cmd.equals("|logHistogram") ) {
