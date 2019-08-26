@@ -427,10 +427,14 @@ public class OperationsProcessor {
                     }
                     fillDs= Ops.histogram2d( x, y, bins, xrange, yrange );
                 } else if ( cmd.equals("|binAverage2d") ) {
-                    ds0= Ops.flatten(ds0);
-                    QDataSet x= Ops.slice1( ds0, 0 );
-                    QDataSet y= Ops.slice1( ds0, 1 );
-                    QDataSet z= Ops.slice1( ds0, 2 );
+                    QDataSet bundle1;
+                    if ( Ops.isBundle(ds0) && ds0.rank()==2 ) {
+                        bundle1= ds0;
+                    } else {
+                        bundle1= Ops.flatten(ds0);
+                    }
+                    QDataSet x= Ops.unbundle( bundle1, 0 );
+                    QDataSet y= Ops.unbundle( bundle1, 1 );
                     int [] bins= new int[] { 20, 20 };
                     DatumRange xrange=null;
                     DatumRange yrange=null;
@@ -450,7 +454,7 @@ public class OperationsProcessor {
                     QDataSet xtags= Ops.linspace( xrange.min(), xrange.max(), bins[0] );
                     QDataSet ytags= Ops.linspace( yrange.min(), yrange.max(), bins[1] );
                     
-                    fillDs= BinAverage.binAverageBundle( Ops.bundle( x, y, z ), xtags, ytags );
+                    fillDs= BinAverage.binAverageBundle( bundle1, xtags, ytags );
                     
                 } else if ( cmd.equals("|extent") ) {
                     fillDs= Ops.extent(fillDs);
