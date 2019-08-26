@@ -41,6 +41,7 @@ public class Histogram2dFilterEditorPanel extends AbstractFilterEditorPanel {
         rangeX = new javax.swing.JTextField();
         jLabel4 = new javax.swing.JLabel();
         rangeY = new javax.swing.JTextField();
+        jLabel5 = new javax.swing.JLabel();
 
         jCheckBox1.setText("Set Number of Bins Manually");
         jCheckBox1.addActionListener(new java.awt.event.ActionListener() {
@@ -100,6 +101,8 @@ public class Histogram2dFilterEditorPanel extends AbstractFilterEditorPanel {
         binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, jCheckBox2, org.jdesktop.beansbinding.ELProperty.create("${selected}"), rangeY, org.jdesktop.beansbinding.BeanProperty.create("enabled"));
         bindingGroup.addBinding(binding);
 
+        jLabel5.setText("Count the number in each 2-D bin");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -132,17 +135,22 @@ public class Histogram2dFilterEditorPanel extends AbstractFilterEditorPanel {
                                     .addGroup(layout.createSequentialGroup()
                                         .addComponent(jLabel4)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(rangeY, javax.swing.GroupLayout.DEFAULT_SIZE, 174, Short.MAX_VALUE))
+                                        .addComponent(rangeY, javax.swing.GroupLayout.DEFAULT_SIZE, 170, Short.MAX_VALUE))
                                     .addGroup(layout.createSequentialGroup()
                                         .addComponent(jLabel3)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(rangeX)))))
-                        .addGap(142, 142, 142))))
+                        .addGap(142, 142, 142))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel5)
+                        .addGap(0, 0, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
+                .addComponent(jLabel5)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jCheckBox1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -188,6 +196,7 @@ public class Histogram2dFilterEditorPanel extends AbstractFilterEditorPanel {
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
     private javax.swing.JTextField rangeX;
     private javax.swing.JTextField rangeY;
     private org.jdesktop.beansbinding.BindingGroup bindingGroup;
