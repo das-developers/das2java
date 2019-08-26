@@ -122,6 +122,9 @@ public class PdfGraphicsOutput implements GraphicsOutput {
                 ttfFonts= Arrays.copyOf( ttfFonts, ttfFonts.length+otfFonts.length );
                 System.arraycopy( otfFonts, 0, ttfFonts, nttfFonts, otfFonts.length );
                 for ( File f: ttfFonts ) {
+                    if ( f.getName().contains("Roboto") ) {
+                        System.err.println("here stop");
+                    }
                     FileInputStream in = null;
                     try {
                         com.itextpdf.text.pdf.BaseFont.createFont( f.toString(), BaseFont.IDENTITY_H, BaseFont.EMBEDDED ); // check to see if iText is going to fuss about licensing.
@@ -144,7 +147,7 @@ public class PdfGraphicsOutput implements GraphicsOutput {
                     }
                 }
             }
-            String[] ss= new String[] { "Roboto-Regular.ttf", "ArchitectsDaughter.ttf", "scheme_bk.otf" };
+            String[] ss= new String[] { "Roboto-Regular.ttf", "ArchitectsDaughter.ttf", "scheme_bk.otf", "xkcd-script.ttf" };
             for ( String s: ss ) {
                 try {
                     URL u= PdfGraphics2D.class.getResource("/resources/"+s );
