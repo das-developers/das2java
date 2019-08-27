@@ -10763,6 +10763,7 @@ public final class Ops {
      * @param ds the rank N dataset.
      * @return the rank 0 mean average deviation of the dataset.
      * @see #mean(org.das2.qds.QDataSet) 
+     * @see BinAverage#binMeanAverageDeviation(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      */
     public static QDataSet meanAverageDeviation( QDataSet ds ) {
         

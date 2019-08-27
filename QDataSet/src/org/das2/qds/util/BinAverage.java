@@ -464,7 +464,110 @@ public class BinAverage {
 
         return sresult;
     }
-    
+
+    /**
+     * takes rank 2 bundle (x,y,z) and averages in table z(x,y) and computes the
+     * mean average deviation in each bin.
+     * @param ads rank 2 grid of averages
+     * @param ds rank 2 bundle(x,y,z)
+     * @return rank 2 dataset of z averages with depend_0 and depend_1.  WEIGHTS contains the total weight for each bin.
+     * @see #rebin(org.das2.qds.QDataSet, org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
+     * @see #rebinBundle(org.das2.qds.QDataSet, org.das2.qds.QDataSet, org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
+     * @see Ops#meanAverageDeviation(org.das2.qds.QDataSet) 
+     */
+    public static DDataSet binMeanAverageDeviation( QDataSet ads, QDataSet ds ) {
+
+        if ( ads.rank()!=2 ) {
+            throw new IllegalArgumentException("ads must be rank 2");
+        }
+        
+        if ( ds.length(0)!=3 ) {
+            throw new IllegalArgumentException("ds must be ds[n,3]");
+        }
+        QDataSet dep0= (QDataSet)ads.property(QDataSet.DEPEND_0);
+        QDataSet dep1= (QDataSet)ads.property(QDataSet.DEPEND_1);
+        
+        DDataSet sresult = DDataSet.createRank2(dep0.length(), dep1.length());
+        IDataSet nresult = IDataSet.createRank2(dep0.length(), dep1.length());
+        QDataSet wds = DataSetUtil.weightsDataSet(DataSetOps.slice1(ds, 2));
+
+        QDataSet dep0_0 = dep0;
+        QDataSet dep1_0 = dep1;
+        
+        boolean xlog = false;
+        double xscal = dep0.value(1) - dep0.value(0);
+        double xbase = dep0.value(0) - (xscal / 2);
+        int nx = dep0.length();
+        if (!isLinearlySpaced(dep0, xscal, xbase)) {
+            xscal = Math.log10(dep0.value(1) / dep0.value(0));
+            xbase = Math.log10(xbase);
+            dep0 = Ops.log10(dep0);
+            if (!isLinearlySpaced(dep0, xscal, xbase)) {
+                throw new IllegalArgumentException("dep0 must be uniformly spaced.");
+            } else {
+                xlog = true;
+            }
+        }
+
+        boolean ylog = false;
+        double yscal = dep1.value(1) - dep1.value(0);
+        double ybase = dep1.value(0) - (yscal / 2);
+        int ny = dep1.length();
+        if (!isLinearlySpaced(dep1, yscal, ybase)) {
+            yscal = Math.log10(dep1.value(1) / dep1.value(0));
+            ybase = Math.log10(ybase);
+            dep1 = Ops.log10(dep1);
+            if (!isLinearlySpaced(dep1, yscal, ybase)) {
+                isLinearlySpaced(dep1, yscal, ybase);
+                throw new IllegalArgumentException("dep1 must be uniformly spaced.");
+            } else {
+                ylog = true;
+            }
+        }
+
+        if ( ds.length()>0 ) {
+            UnitsConverter xuc= SemanticOps.getLooseUnitsConverter( ds.slice(0).slice(0), dep0 );
+            UnitsConverter yuc= SemanticOps.getLooseUnitsConverter( ds.slice(0).slice(1), dep1 );
+            for ( int ids=0; ids<ds.length(); ids++ ) {
+                double w= wds.value(ids);
+                if ( w>0 ) {
+                    double x= xuc.convert( xlog ? Math.log10( ds.value(ids,0) ) : ds.value(ids,0) );
+                    double y= yuc.convert( ylog ? Math.log10( ds.value(ids,1) ) : ds.value(ids,1) );
+                    int i= (int)( ( x-xbase ) / xscal );
+                    int j= (int)( ( y-ybase ) / yscal );
+                    if ( i<0 || j<0 ) continue;
+                    if ( i>=nx || j>=ny ) continue;
+                    double z= Math.abs( ds.value(ids,2) - ads.value(i,j) );
+                    sresult.putValue( i, j, z + sresult.value( i, j ) );
+                    nresult.putValue( i, j, w + nresult.value( i, j ) );
+                }
+            }
+        }
+
+        double fill= -1e31;
+        for ( int i=0; i<nx; i++ ) {
+            for ( int j=0; j<ny; j++ ) {
+                int n= (int)nresult.value( i,j );
+                if ( n>0 ) {
+                    sresult.putValue( i,j, sresult.value(i,j)/n );
+                } else {
+                    sresult.putValue( i,j, fill );
+                }
+            }
+        }
+
+        DataSetUtil.copyDimensionProperties( ds, sresult );
+        nresult.putProperty( QDataSet.DEPEND_0, dep0_0 );
+        nresult.putProperty( QDataSet.DEPEND_1, dep1_0 );
+        sresult.putProperty( QDataSet.DEPEND_0, dep0_0 );
+        sresult.putProperty( QDataSet.DEPEND_1, dep1_0 );
+        sresult.putProperty( QDataSet.FILL_VALUE, fill );
+        sresult.putProperty( QDataSet.WEIGHTS, nresult );
+        sresult.putProperty( QDataSet.RENDER_TYPE, "nnSpectrogram" );
+
+        return sresult;
+    }
+
     /**
      * returns number of stddev from adjacent data.
      * @param ds, rank 1 dataset.
