@@ -226,6 +226,8 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
             result= new TotalFilterEditorPanel();
         } else if ( f.matches("\\|slices\\((.*)\\)") ) { 
             result= new SlicesFilterEditorPanel();
+        } else if ( f.matches("\\|smooth1\\(\\d+\\)") ) {
+            result= new SmoothDimensionFilterEditorPanel();
         } else if ( f.matches("\\|smooth\\(\\d+\\)") ) { // TODO: FilterEditorPanel might choose to accept a filter.
             result= new SmoothFilterEditorPanel();
         } else if ( f.matches("\\|smoothfit\\(\\d+\\)") ) { // TODO: FilterEditorPanel might choose to accept a filter.

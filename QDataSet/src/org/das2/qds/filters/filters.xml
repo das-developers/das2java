@@ -136,7 +136,12 @@
                     <bookmark>
                         <title>Smooth</title>
                         <filter>|smooth(5)</filter>
-                        <description>Initializes Smooth Filter</description>
+                        <description>Smooth Filter</description>
+                    </bookmark>
+                    <bookmark>
+                        <title>Smooth Over Dimension</title>
+                        <filter>|smooth1(5)</filter>
+                        <description>Smooth Filter over the first dimension</description>
                     </bookmark>
                     <bookmark>
                         <title>Total Over a Dimension</title>
