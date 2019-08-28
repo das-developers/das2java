@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 
 package org.das2.datum;
 
@@ -9,7 +5,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -39,7 +34,7 @@ import org.das2.datum.TimeUtil.TimeStruct;
  */
 public class Orbits {
 
-    private static final Logger logger= LoggerManager.getLogger("das2.datum.orbits");
+    private static final Logger LOGGER= LoggerManager.getLogger("das2.datum.orbits");
 
     private final String sc;
 
@@ -82,7 +77,7 @@ public class Orbits {
     private static LinkedHashMap<String,DatumRange> readOrbits( String sc, List<URL> source ) throws IOException {
         List<URL> urls= new ArrayList<>();
         if ( SwingUtilities.isEventDispatchThread() ) {
-            logger.warning("read orbits called on event thread");
+            LOGGER.warning("read orbits called on event thread");
         }
         try {
             if ( sc.contains(":") ) {
@@ -97,10 +92,11 @@ public class Orbits {
                         urls.add( new URL( "ftp://virbo.org/mirror/stevens.lanl.gov/pub/projects/rbsp/autoplot/orbits/"+fsc ) );
                         URL lurl= Orbits.class.getResource("/orbits/"+fsc );
                         if ( lurl==null ) {
-                            logger.warning("null found in orbits URLs indicates expected orbit was not found on classpath");
+                            LOGGER.warning("null found in orbits URLs indicates expected orbit was not found on classpath");
                         } else {
                             urls.add( lurl );
-                        }   break;
+                        }   
+                        break;
                     case "crres":
                         urls.add( new URL( "https://das2.org/Orbits/crres.dat" ) );
                         break;
@@ -124,22 +120,22 @@ public class Orbits {
         for ( URL url: urls ) {
             URLConnection connect=null;
             try {
-                logger.log(Level.FINE, "Orbits trying to connect to {0}", url);
+                LOGGER.log(Level.FINE, "Orbits trying to connect to {0}", url);
                 connect= url.openConnection();
                 connect.setConnectTimeout(5000);
                 connect= HttpUtil.checkRedirect(connect);
                 in= connect.getInputStream();
-                logger.log(Level.FINE, "  got input stream from {0}", url);
+                LOGGER.log(Level.FINE, "  got input stream from {0}", url);
                 sourceUrl= url;
                 break;
             } catch ( IOException ex ) {
                 try {
                     if ( connect!=null && ( connect instanceof HttpURLConnection ) && ((HttpURLConnection)connect).getResponseCode()==401 ) {
-                        logger.info("HTTP connection needs credentials, which must be in the URL.");
+                        LOGGER.info("HTTP connection needs credentials, which must be in the URL.");
                     }
-                    logger.log( Level.FINE, ex.getMessage(), ex );
+                    LOGGER.log( Level.FINE, ex.getMessage(), ex );
                 } catch ( IOException ex2 ) {
-                    logger.log( Level.FINE, ex.getMessage(), ex2 ); // this can happen when we get the response code.
+                    LOGGER.log( Level.FINE, ex.getMessage(), ex2 ); // this can happen when we get the response code.
                 }
                 if ( exfirst==null ) exfirst= ex;
             }
@@ -171,7 +167,7 @@ public class Orbits {
                                 d1= TimeUtil.create(ss[col]);
                                 d2= TimeUtil.create(ss[col+1]);
                                 if ( ss.length<=labelColumn ) {
-                                    logger.info("number of columns changes, reverting to old logic");
+                                    LOGGER.info("number of columns changes, reverting to old logic");
                                     labelColumn= 2;
                                 }
                                 s0= ss[ col==0 ? labelColumn : 0 ];
@@ -203,19 +199,19 @@ public class Orbits {
                         }
                     }
                     if ( d1.gt(d2) ) {
-                        logger.log(Level.WARNING, "dropping invalid orbit: {0}", s);
+                        LOGGER.log(Level.WARNING, "dropping invalid orbit: {0}", s);
                     } else {
                         try {
                             result.put( trimOrbit(s0), new DatumRange(d1,d2) );
                         } catch ( IllegalArgumentException ex ) {
-                            logger.log(Level.WARNING, "{0}: {1}", new Object[]{ex.getMessage(), s});
+                            LOGGER.log(Level.WARNING, "{0}: {1}", new Object[]{ex.getMessage(), s});
                         }
                     }
                 }
                 s= rin.readLine();
             }
         } finally {
-            logger.log(Level.FINE, "read orbits for {0}", sc);
+            LOGGER.log(Level.FINE, "read orbits for {0}", sc);
         }
 
         if ( result.isEmpty() ) {
@@ -245,7 +241,7 @@ public class Orbits {
         if ( s==null ) {
             throw new ParseException("unable to find orbit: "+orbit+" for "+sc, 0 );
         } else {
-            logger.log( Level.FINEST, "orbit {0} -> {1} to {2}", new Object[]{ s.min(), s.max() });
+            LOGGER.log( Level.FINEST, "orbit {0} -> {1} to {2}", new Object[]{ s.min(), s.max() });
         }
         return s;
     }
@@ -262,7 +258,7 @@ public class Orbits {
                     return s;
                 }
             } catch (ParseException ex) {
-                logger.log(Level.SEVERE, ex.getMessage(), ex);
+                LOGGER.log(Level.SEVERE, ex.getMessage(), ex);
             }
         }
         return null;
@@ -287,7 +283,7 @@ public class Orbits {
                     }
                 }
             } catch (ParseException ex) {
-                logger.log(Level.SEVERE, ex.getMessage(), ex);
+                LOGGER.log(Level.SEVERE, ex.getMessage(), ex);
             }
         }
         return best;
@@ -451,7 +447,7 @@ public class Orbits {
             return orbits;
         } else {
             try {
-                logger.log(Level.INFO, "** reading orbits for {0}", sc);
+                LOGGER.log(Level.INFO, "** reading orbits for {0}", sc);
                 List<URL> source= new ArrayList();
                 LinkedHashMap<String,DatumRange> lorbits= readOrbits(sc,source);
                 orbits= new Orbits(sc,lorbits);
@@ -461,13 +457,13 @@ public class Orbits {
                 orbits.last= last;
                 if ( source.size()==1 ) orbits.url= source.get(0);
                 missions.put( sc, orbits );
-                logger.log(Level.INFO, "** done reading orbits for {0}", sc);
+                LOGGER.log(Level.INFO, "** done reading orbits for {0}", sc);
             } catch ( IOException ex ) {
-                logger.log(Level.INFO, "** not orbits: {0}", sc);
+                LOGGER.log(Level.INFO, "** not orbits: {0}", sc);
                 nonmissions.put(sc,ex.getMessage());
                 throw new IllegalArgumentException( "Unable to read orbits file for "+sc, ex );
             } catch ( IllegalArgumentException ex ) {
-                logger.log(Level.INFO, "** not orbits: {0}", sc);
+                LOGGER.log(Level.INFO, "** not orbits: {0}", sc);
                 nonmissions.put(sc,ex.getMessage());
                 throw ex;
             }
