@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * single place to contain Color-Name mapping.  See https://sourceforge.net/p/autoplot/feature-requests/263/
@@ -382,10 +384,10 @@ public class ColorUtil {
         if ( s!=null ) {
             return s;
         } else {
-            if ( color.getAlpha()<255 ) {
-                return "#" + Integer.toHexString(color.getRGB());
-            } else {
+            if ( color.getAlpha()==255 ) {
                 return "#" + Integer.toHexString(color.getRGB() & 0xFFFFFF);
+            } else {
+                return "#" + String.format( "%02X%06X", color.getAlpha(), color.getRGB() & 0xFFFFFF );
             }
         }
     }
@@ -397,6 +399,8 @@ public class ColorUtil {
      * <li>"RED" 
      * <li>"0xFF0000" 
      * <li>"0xff0000" 
+     * <li>"#00000000" (transparent)
+     * <li>"0x00ffffff" (transparent)
      * <li>"#ffeedd"
      * <li>"LightPink" (X11 color names)
      * </ul>
@@ -421,17 +425,27 @@ public class ColorUtil {
         
         Color r= revNamedColors.get(s);
         
+        Pattern p= Pattern.compile("(0x|#)([0-9a-fA-F][0-9a-fA-F])([0-9a-fA-F][0-9a-fA-F])([0-9a-fA-F][0-9a-fA-F])([0-9a-fA-F][0-9a-fA-F])");
         if ( r!=null ) {
             return r;
         } else {
             try {
-                Integer i= Integer.decode(s);            
-                if ( ( i & 0xFF000000 ) != 0 ) { 
-                    r= new Color( i, true);
+                Matcher m= p.matcher(s);
+                if ( m.matches() ) {
+                    return new Color( 
+                            Integer.decode(m.group(2)), 
+                            Integer.decode(m.group(3)), 
+                            Integer.decode(m.group(4)), 
+                            Integer.decode(m.group(5)) );
                 } else {
-                    r= new Color( i );
-                }            
-                return r;
+                    Integer i= Integer.decode(s);
+                    if ( ( i & 0xFF000000 ) != 0 ) { 
+                        r= new Color( i, true);
+                    } else {
+                        r= new Color( i );
+                    }            
+                    return r;
+                }
             } catch ( NumberFormatException ex ) {        
                 logger.log(Level.INFO, "unable to find color for \"{0}\"", s);
                 return Color.GRAY;
