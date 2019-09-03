@@ -433,10 +433,10 @@ public class ColorUtil {
                 Matcher m= p.matcher(s);
                 if ( m.matches() ) {
                     return new Color( 
-                            Integer.decode(m.group(2)), 
-                            Integer.decode(m.group(3)), 
-                            Integer.decode(m.group(4)), 
-                            Integer.decode(m.group(5)) );
+                            Integer.parseInt(m.group(3),16), // R
+                            Integer.parseInt(m.group(4),16), // G 
+                            Integer.parseInt(m.group(5),16), // B
+                            Integer.parseInt(m.group(2),16) ); // A
                 } else {
                     Integer i= Integer.decode(s);
                     if ( ( i & 0xFF000000 ) != 0 ) { 
