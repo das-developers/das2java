@@ -361,8 +361,12 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         return Collections.unmodifiableList(devicePositionList);
     }
 
+    /**
+     * Override Component.setBounds for debugging.
+     */
     //@Override
     //public void setBounds(int x, int y, int width, int height) {
+    //    System.err.println(">>> "+width + ","+ height );
     //    super.setBounds(x, y, width, height);
     //}
 
