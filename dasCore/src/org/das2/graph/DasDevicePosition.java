@@ -333,7 +333,7 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
     
     /**
      * set the name associated with this object.
-     * @param name
+     * @param name the name associated with this object
      * @throws org.das2.DasNameException 
      */
     public void setDasName(String name) throws org.das2.DasNameException {
@@ -354,7 +354,7 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
     
     /**
      * get the name associated with this object.
-     * @return 
+     * @return the name associated with this object.
      */
     public String getDasName() {
         return dasName;
@@ -385,6 +385,9 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         }
     }
     
+    /**
+     * dMinimum and dMaximum are the position in pixel space.
+     */
     private int dMinimum, dMaximum;
     
     /**

@@ -176,7 +176,6 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
 
     /* Canvas actions */
     protected static abstract class CanvasAction extends AbstractAction {
-
         CanvasAction(String label) {
             super(label);
         }
@@ -184,11 +183,11 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
 
     private static FileFilter getFileNameExtensionFilter(final String description, final String ext) {
         return new FileFilter() {
-
+            @Override
             public boolean accept(File f) {
                 return f.isDirectory() || f.getName().endsWith(ext);
             }
-
+            @Override
             public String getDescription() {
                 return description;
             }
@@ -196,7 +195,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
     }
     private static File currentFile;
     public static final Action SAVE_AS_PNG_ACTION = new CanvasAction("Save as PNG") {
-
+        @Override
         public void actionPerformed(ActionEvent e) {
             final JFileChooser fileChooser = new JFileChooser();
             fileChooser.setDialogTitle("Write to PNG");
@@ -229,7 +228,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         }
     };
     public static final Action SAVE_AS_SVG_ACTION = new CanvasAction("Save as SVG") {
-
+        @Override
         public void actionPerformed(ActionEvent e) {
             final JFileChooser fileChooser = new JFileChooser();
             fileChooser.setApproveButtonText("Select File");
@@ -249,7 +248,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
                 prefs.put("savedir", new File(ffname).getParent());
                 currentFile = new File(ffname.substring(0, ffname.length() - 4));
                 Runnable run = new Runnable() {
-
+                    @Override
                     public void run() {
                         try {
                             canvas.writeToSVG(ffname);
@@ -263,7 +262,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         }
     };
     public static final Action SAVE_AS_PDF_ACTION = new CanvasAction("Save as PDF") {
-
+        @Override
         public void actionPerformed(ActionEvent e) {
             final JFileChooser fileChooser = new JFileChooser();
             fileChooser.setApproveButtonText("Select File");
@@ -297,7 +296,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         }
     };
     public static final Action EDIT_DAS_PROPERTIES_ACTION = new AbstractAction("DAS Properties") {
-
+        @Override
         public void actionPerformed(ActionEvent e) {
             org.das2.DasProperties.showEditor();
         }
@@ -362,15 +361,15 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         return Collections.unmodifiableList(devicePositionList);
     }
 
-    @Override
-    public void setBounds(int x, int y, int width, int height) {
-        super.setBounds(x, y, width, height);
-    }
+    //@Override
+    //public void setBounds(int x, int y, int width, int height) {
+    //    super.setBounds(x, y, width, height);
+    //}
 
-    @Override
-    public void invalidate() {
-        super.invalidate();
-    }
+    //@Override
+    //public void invalidate() {
+    //    super.invalidate();
+    //}
     public static final Action ABOUT_ACTION = new CanvasAction("About") {
 
         public void actionPerformed(ActionEvent e) {
@@ -454,7 +453,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         makeCurrent();
         stateSupport = new ChangesSupport(null, this);
         stateSupport.addPropertyChangeListener(new PropertyChangeListener() {
-
+            @Override
             public void propertyChange(PropertyChangeEvent e) {
                 if (Boolean.FALSE.equals(e.getNewValue())) {
                     setOpaque(true);
