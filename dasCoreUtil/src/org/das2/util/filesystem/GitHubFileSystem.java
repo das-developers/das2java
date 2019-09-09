@@ -309,6 +309,11 @@ public class GitHubFileSystem extends HttpFileSystem {
             out.close();
             is.close();
             //TODO: there's a problem where if you aren't logged in to a private project, you get a 200 response with HTML.  Detect this!
+            if ( targetFile.exists() ) {
+                if ( !targetFile.delete() ) {
+                    throw new IllegalArgumentException("unable to delete existing file "+targetFile );
+                }
+            }
             if ( ! partFile.renameTo( targetFile ) ) {
                 throw new IllegalArgumentException("unable to rename "+partFile+" to "+targetFile );
             }
