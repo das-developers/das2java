@@ -1849,6 +1849,13 @@ public class DasPlot extends DasCanvasComponent {
 
             if ( legendBounds!=null ) bounds.add(legendBounds);
             
+            if ( isotropic ) {
+                if ( oldBounds.width==bounds.width ) {
+                    checkIsotropic( this, xAxis );
+                } else {
+                    checkIsotropic( this, yAxis );
+                }
+            }
             // TODO check bounds.height<10
             logger.log(Level.FINER, "DasPlot setBounds {0}", bounds);
             if ( !bounds.equals(oldBounds) ) {
@@ -2075,6 +2082,7 @@ public class DasPlot extends DasCanvasComponent {
             if ( isotropic && e.getSource() instanceof DasAxis ) {
                 DasAxis axis= (DasAxis)e.getSource();
                 checkIsotropic( DasPlot.this, axis );
+                System.err.println("**** Check isotropic");
             }
             //vandalize cacheImage so we can see what's happening
             //BufferedImage ci= cacheImage;
@@ -3006,7 +3014,7 @@ public class DasPlot extends DasCanvasComponent {
             Datum otherScale = otherRange.width().divide(otherAxis.getDLength());
             double expand = (scale.divide(otherScale).value() - 1) / 2;
             if (Math.abs(expand) > 0.0001) {
-                logger.log(Level.FINER, "expand={0} scale={1} otherScale={2}", new Object[]{expand, scale, otherScale});
+                logger.log(Level.INFO, "expand={0} scale={1} otherScale={2}", new Object[]{expand, scale, otherScale});
                 DatumRange newOtherRange = DatumRangeUtil.rescale(otherRange, 0 - expand, 1 + expand);
                 otherAxis.setDatumRange(newOtherRange);
             }
