@@ -1851,8 +1851,10 @@ public class DasPlot extends DasCanvasComponent {
             
             if ( isotropic ) {
                 if ( oldBounds.width==bounds.width ) {
+                    System.err.println("*** check isotropic because of resize width");  //TODO: 2202
                     checkIsotropic( this, xAxis );
                 } else {
+                    System.err.println("*** check isotropic because of resize");  //TODO: 2202
                     checkIsotropic( this, yAxis );
                 }
             }
@@ -3014,7 +3016,8 @@ public class DasPlot extends DasCanvasComponent {
             Datum otherScale = otherRange.width().divide(otherAxis.getDLength());
             double expand = (scale.divide(otherScale).value() - 1) / 2;
             if (Math.abs(expand) > 0.0001) {
-                logger.log(Level.INFO, "expand={0} scale={1} otherScale={2}", new Object[]{expand, scale, otherScale});
+                logger.log(Level.FINE, "expand={0} scale={1} otherScale={2}", new Object[]{expand, scale, otherScale});  //TODO: 2202
+                System.err.println( String.format( "expand=%s scale=%s otherScale=%s axis=%s", new Object[]{expand, scale, otherScale, axis.getDasName() }) ); //TODO: 2202
                 DatumRange newOtherRange = DatumRangeUtil.rescale(otherRange, 0 - expand, 1 + expand);
                 otherAxis.setDatumRange(newOtherRange);
             }
