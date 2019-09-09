@@ -2084,7 +2084,6 @@ public class DasPlot extends DasCanvasComponent {
             if ( isotropic && e.getSource() instanceof DasAxis ) {
                 DasAxis axis= (DasAxis)e.getSource();
                 checkIsotropic( DasPlot.this, axis );
-                System.err.println("**** Check isotropic");
             }
             //vandalize cacheImage so we can see what's happening
             //BufferedImage ci= cacheImage;
