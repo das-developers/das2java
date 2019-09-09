@@ -1849,15 +1849,15 @@ public class DasPlot extends DasCanvasComponent {
 
             if ( legendBounds!=null ) bounds.add(legendBounds);
             
-            if ( isotropic ) {
-                if ( oldBounds.width==bounds.width ) {
-                    System.err.println("*** check isotropic because of resize width");  //TODO: 2202
-                    checkIsotropic( this, xAxis );
-                } else {
-                    System.err.println("*** check isotropic because of resize");  //TODO: 2202
-                    checkIsotropic( this, yAxis );
-                }
-            }
+//            if ( isotropic ) {
+//                if ( oldBounds.width==bounds.width ) {
+//                    System.err.println("*** check isotropic because of resize width");  //TODO: 2202
+//                    checkIsotropic( this, xAxis );
+//                } else {
+//                    System.err.println("*** check isotropic because of resize");  //TODO: 2202
+//                    checkIsotropic( this, yAxis );
+//                }
+//            }
             // TODO check bounds.height<10
             logger.log(Level.FINER, "DasPlot setBounds {0}", bounds);
             if ( !bounds.equals(oldBounds) ) {
