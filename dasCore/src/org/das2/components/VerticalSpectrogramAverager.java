@@ -25,10 +25,10 @@ package org.das2.components;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics2D;
-import java.awt.GraphicsDevice;
-import java.awt.GraphicsEnvironment;
 import java.awt.Point;
+import java.awt.Toolkit;
 import java.awt.Window;
 import org.das2.graph.SymbolLineRenderer;
 import org.das2.graph.DasColumn;
@@ -48,6 +48,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Box;
@@ -60,12 +62,15 @@ import org.das2.graph.Renderer;
 import org.das2.graph.SeriesRenderer;
 import org.das2.qds.QDataSet;
 import org.das2.qds.SemanticOps;
+import org.das2.util.LoggerManager;
 
 /**
  * show the average of the data over an interval
  * @author jbf
  */
 public class VerticalSpectrogramAverager implements DataRangeSelectionListener {
+    
+    private static final Logger logger= LoggerManager.getLogger("das2.gui.dmia");
     
     private JDialog popupWindow;
     private final DasPlot parentPlot;
@@ -245,10 +250,11 @@ public class VerticalSpectrogramAverager implements DataRangeSelectionListener {
         int xx= parentLocation.x + parentPlot.getCanvas().getWidth();
         int yy= parentLocation.y;
         
-        GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+        Dimension dimensions = Toolkit.getDefaultToolkit().getScreenSize();
+        logger.log(Level.FINE, "screen dimensions: {0}", dimensions);
         
-        this.totalwidth = gd.getDisplayMode().getWidth();
-        this.totalheight = gd.getDisplayMode().getHeight();
+        this.totalwidth = dimensions.width;
+        this.totalheight = dimensions.height;
         
         if ( xx>totalwidth-100 ) {
             xx= totalwidth-100;

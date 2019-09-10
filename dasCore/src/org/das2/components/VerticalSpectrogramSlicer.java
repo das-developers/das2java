@@ -25,10 +25,10 @@ package org.das2.components;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics2D;
-import java.awt.GraphicsDevice;
-import java.awt.GraphicsEnvironment;
 import java.awt.Point;
+import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -312,11 +312,12 @@ public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
         //make sure some portion of the slice window is visible on the screen.
         int xx= parentLocation.x + parentPlot.getCanvas().getWidth();
         int yy= parentLocation.y;
+                
+        Dimension dimensions = Toolkit.getDefaultToolkit().getScreenSize();
+        logger.log(Level.FINE, "screen dimensions: {0}", dimensions);
         
-        GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
-        
-        this.totalwidth = gd.getDisplayMode().getWidth();
-        this.totalheight = gd.getDisplayMode().getHeight();
+        this.totalwidth = dimensions.width;
+        this.totalheight = dimensions.height;
         
         if ( xx>totalwidth-100 ) {
             xx= totalwidth-100;
