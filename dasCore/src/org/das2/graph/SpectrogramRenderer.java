@@ -242,32 +242,42 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         
         private static final int PUBLIC_STATIC_FINAL = Modifier.PUBLIC | Modifier.STATIC | Modifier.FINAL;
         
+        /**
+         * return all the values for RebinnerEnum
+         * @return all the values for RebinnerEnum
+         */
         public static RebinnerEnum[] values() {
             Field[] fields = RebinnerEnum.class.getDeclaredFields();
             RebinnerEnum[] result= new RebinnerEnum[fields.length];
             int i2=0;
-            for ( int i=0; i<fields.length; i++ ) {
+            for (Field field : fields) {
                 try {
-                    int modifiers = fields[i].getModifiers();
+                    int modifiers = field.getModifiers();
                     if ((modifiers & PUBLIC_STATIC_FINAL) == PUBLIC_STATIC_FINAL) {
-                        result[i2]= (RebinnerEnum) fields[i].get(null);
+                        result[i2] = (RebinnerEnum) field.get(null);
                         i2=i2+1;
                     }
-                    
-                } catch (IllegalArgumentException | IllegalAccessException ex) {
+                }catch (IllegalArgumentException | IllegalAccessException ex) {
                     logger.log(Level.SEVERE, null, ex);
                 }
             }
             return Arrays.copyOf( result,i2 );
         }
         
+        /**
+         * return the RebinnerEnum with this string name.
+         * @param s the name
+         * @return the RebinnerEnum with this string name.
+         * @throws IllegalArgumentException if the name is not found.
+         */
         public static RebinnerEnum valueOf( String s ) {
+            if ( s==null ) throw new NullPointerException("argument to RebinnerEnum.valueOf is null");
             Field[] fields = RebinnerEnum.class.getDeclaredFields();
-            for ( int i=0; i<fields.length; i++ ) {
+            for (Field field : fields) {
                 try {
-                    int modifiers = fields[i].getModifiers();
+                    int modifiers = field.getModifiers();
                     if ((modifiers & PUBLIC_STATIC_FINAL) == PUBLIC_STATIC_FINAL) {
-                        RebinnerEnum r= (RebinnerEnum) fields[i].get(null);
+                        RebinnerEnum r = (RebinnerEnum) field.get(null);
                         if ( r.toString().equals(s) ) {
                             return r;
                         }
