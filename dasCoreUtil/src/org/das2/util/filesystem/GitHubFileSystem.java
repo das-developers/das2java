@@ -145,14 +145,17 @@ public class GitHubFileSystem extends HttpFileSystem {
             int parentLen= root.toString().length() + ( directory.length() -1 ) + 12;
             for ( URL u: listing ) {
                 String su= u.toString();
-                if ( su.contains("/blob/master/") ) {
+                if ( su.contains("/blob/master/")
+                        && !su.endsWith(".gitkeep") ) {
                     result.add( su.substring( parentLen ) );
                 } else if ( su.contains("/tree/master/") ) {
                     if ( su.length()>parentLen ) {
                         String ss= u.toString().substring( parentLen ) + "/" ;
                         if ( ss.length()>1 
                                 && !ss.contains("#start-of-content") 
-                                && !su.contains("return_to=")  ) {
+                                && !ss.contains("#content-body") 
+                                && !su.contains("return_to=") 
+                                && !su.endsWith("/..") ) {
                             result.add( ss );
                         }
                     }
