@@ -433,7 +433,7 @@ public class GraphUtil {
             Renderer cr;
             if ( r instanceof Copyable ) {
             	@SuppressWarnings("unchecked")
-				Copyable<Renderer> copyable = (Copyable<Renderer>) r;
+		Copyable<Renderer> copyable = (Copyable<Renderer>) r;
             	cr = copyable.copy();
             } else if ( r instanceof SpectrogramRenderer ) {
                 DasColorBar cb= copyColorBar(((SpectrogramRenderer)r).getColorBar());
@@ -459,12 +459,20 @@ public class GraphUtil {
                 cr= new HugeScatterRenderer(null);
                 HugeScatterRenderer sr= (HugeScatterRenderer)cr;
                 sr.setColor( ((HugeScatterRenderer) r).getColor() );
+            } else if ( r instanceof ContoursRenderer ) { // NOTE this could probably work for all Renderers.
+                cr= new ContoursRenderer();
+                ContoursRenderer sr= (ContoursRenderer)r;
+                cr.setControl( sr.getControl() );
             } else {
-                throw new UnsupportedOperationException("source renderer cannot be copied");
+                logger.log(Level.WARNING, "source renderer {0} cannot be copied. Skipping.", r.getLegendLabel());
+            	continue;
             }
             cr.setControl(r.getControl());
             cr.setDataSet(r.getDataSet());
             c.addRenderer( cr );
+        }
+        if (c.getRenderers().length == 0) {
+            throw new UnsupportedOperationException("No copyable renderers.");
         }
         return c;
     }
