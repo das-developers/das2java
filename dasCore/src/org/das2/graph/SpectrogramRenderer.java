@@ -55,6 +55,8 @@ import java.awt.image.IndexColorModel;
 import java.awt.image.WritableRaster;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -223,7 +225,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         public Icon getListIcon() {
             URL url = SpectrogramRenderer.class.getResource("/images/icons/rebin." + label + ".png");
             if ( url==null ) {
-                logger.info("icon not found at /images/icons/rebin." + label + ".png");
+                logger.log(Level.INFO, "icon not found at /images/icons/rebin.{0}.png", label);
                 return new ImageIcon( SpectrogramRenderer.class.getResource("/images/icons/rebin.nearestNeighbor.png"));
             }
             return new ImageIcon(url);
@@ -237,6 +239,46 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         DataSetRebinner getRebinner() {
             return this.rebinner;
         }
+        
+        private static final int PUBLIC_STATIC_FINAL = Modifier.PUBLIC | Modifier.STATIC | Modifier.FINAL;
+        
+        public static RebinnerEnum[] values() {
+            Field[] fields = RebinnerEnum.class.getDeclaredFields();
+            RebinnerEnum[] result= new RebinnerEnum[fields.length];
+            int i2=0;
+            for ( int i=0; i<fields.length; i++ ) {
+                try {
+                    int modifiers = fields[i].getModifiers();
+                    if ((modifiers & PUBLIC_STATIC_FINAL) == PUBLIC_STATIC_FINAL) {
+                        result[i2]= (RebinnerEnum) fields[i].get(null);
+                        i2=i2+1;
+                    }
+                    
+                } catch (IllegalArgumentException | IllegalAccessException ex) {
+                    logger.log(Level.SEVERE, null, ex);
+                }
+            }
+            return Arrays.copyOf( result,i2 );
+        }
+        
+        public static RebinnerEnum valueOf( String s ) {
+            Field[] fields = RebinnerEnum.class.getDeclaredFields();
+            for ( int i=0; i<fields.length; i++ ) {
+                try {
+                    int modifiers = fields[i].getModifiers();
+                    if ((modifiers & PUBLIC_STATIC_FINAL) == PUBLIC_STATIC_FINAL) {
+                        RebinnerEnum r= (RebinnerEnum) fields[i].get(null);
+                        if ( r.toString().equals(s) ) {
+                            return r;
+                        }
+                    }
+                    
+                } catch (IllegalArgumentException | IllegalAccessException ex) {
+                    logger.log(Level.SEVERE, null, ex);
+                }
+            }
+            throw new IllegalArgumentException("no such value: "+s);
+        }        
     }
 
     public SpectrogramRenderer(DataSetDescriptor dsd, DasColorBar colorBar) {
