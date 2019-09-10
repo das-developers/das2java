@@ -14,7 +14,9 @@ public interface Enumeration {
      * <code>String</code> that will be helpful to the user
      * when choosing this as an option from a list.
      *
+     * @return a concise string representation
      */
+    @Override
     String toString();
     //TODO: getListLabel() better, because toString should be reserved for programmers.
     
@@ -23,6 +25,7 @@ public interface Enumeration {
      * This method should return <code>null</code> if there
      * is no icon available.
      *
+     * @return the icon
      */
     Icon getListIcon();
     
