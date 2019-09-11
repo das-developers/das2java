@@ -27,6 +27,8 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.Window;
@@ -318,6 +320,8 @@ public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
         
         this.totalwidth = dimensions.width;
         this.totalheight = dimensions.height;
+        
+        // See https://github.com/autoplot/dev/blob/master/bugs/sf/2122/demoResolutionWindows.jy
         
         if ( xx>totalwidth-100 ) {
             xx= totalwidth-100;
