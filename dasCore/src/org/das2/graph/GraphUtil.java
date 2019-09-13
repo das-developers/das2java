@@ -1107,7 +1107,53 @@ public class GraphUtil {
             return null;
         }
     }
-
+    
+    /**
+     * return the line segment which is within the rectangle mask.
+     * @param p0 the first point
+     * @param p1 the second point
+     * @param r the rectangle
+     * @return line segment with zero length when they do not intersect, or the segment
+     */
+    public static Line2D lineRectangleMask( Point2D p0, Point2D p1, Rectangle2D r ) {
+        Line2D.Double line= new Line2D.Double( p0, p1 );
+        Point2D.Double r0= new Point2D.Double( r.getX(), r.getY() );
+        Point2D.Double r1= new Point2D.Double( r.getX()+r.getWidth(), r.getY()+r.getHeight() );
+        Point2D point1=null; 
+        Point2D point2=null;
+        Point2D p;
+        p= lineIntersection( line, new Line2D.Double( r0.x, r0.y, r1.x, r0.y ), false );
+        if ( p!=null ) if ( point1==null ) point1= p; else point2= p;
+        p= lineIntersection( line, new Line2D.Double( r1.x, r0.y, r1.x, r1.y ), false );
+        if ( p!=null ) if ( point1==null ) point1= p; else point2= p;
+        p= lineIntersection( line, new Line2D.Double( r1.x, r1.y, r0.x, r1.y ), false );
+        if ( p!=null ) if ( point1==null ) point1= p; else point2= p; 
+        p= lineIntersection( line, new Line2D.Double( r0.x, r1.y, r0.x, r0.y ), false );
+        if ( p!=null ) if ( point1==null ) point1= p; else point2= p; 
+        if ( point1==null ) {
+            return new Line2D.Double( p1, p1 );
+        } else if ( point2==null ) {
+            if ( r.contains( p1 ) ) {
+                return new Line2D.Double( point1, p1 );
+            } else {
+                return new Line2D.Double( p0, point1 );
+            }
+        } else if ( Point2D.distance( p0.getX(), p0.getY(), point1.getX(), point1.getY() ) < Point2D.distance( p0.getX(), p0.getY(), point2.getX(), point2.getY() ) ) {
+            return new Line2D.Double( point1, point2 );
+        } else {
+            return new Line2D.Double( point2, point1 );
+        }
+        
+    }
+            
+    /**
+     * return the intersection of a line segment and the edge of a rectangle, 
+     * where one point is outside of the rectangle and one is inside.
+     * @param p0
+     * @param p1
+     * @param r0
+     * @return the point along the rectangle
+     */
     public static Point2D lineRectangleIntersection( Point2D p0, Point2D p1, Rectangle2D r0) {
 
         PathIterator it = r0.getPathIterator(null);
