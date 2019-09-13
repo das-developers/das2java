@@ -708,7 +708,7 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
             result= ByteBuffer.allocateDirect( capacity );
             return result;
         } catch ( java.lang.OutOfMemoryError ex ) {
-            logger.log(Level.WARNING, "out of memory error handled: gcCounter={0}", gcCounter);
+            logger.log(Level.FINE, "out of memory error handled: gcCounter={0}", gcCounter);
             System.gc();
             gcCounter=capacity;
             try {
