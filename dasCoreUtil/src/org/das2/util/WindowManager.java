@@ -9,6 +9,8 @@ import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,10 +22,12 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.Icon;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
 /**
@@ -194,6 +198,7 @@ public class WindowManager {
                     org.das2.util.LoggerManager.logGuiEvent(e);
                     result.set( 0, JOptionPane.CANCEL_OPTION );
                     dia.setVisible(false);
+                    dia.dispose(); 
                 }
             }) );
             pc.add( Box.createHorizontalStrut(7) );
@@ -203,6 +208,7 @@ public class WindowManager {
                     org.das2.util.LoggerManager.logGuiEvent(e);        
                     result.set( 0, JOptionPane.OK_OPTION );
                     dia.setVisible(false);
+                    dia.dispose(); 
                 }
             }) );
         } else if ( optionType==JOptionPane.YES_NO_CANCEL_OPTION ) {
@@ -212,6 +218,7 @@ public class WindowManager {
                     org.das2.util.LoggerManager.logGuiEvent(e);                        
                     result.set( 0, JOptionPane.YES_OPTION );
                     dia.setVisible(false);
+                    dia.dispose(); 
                 }
             }) );
             pc.add( Box.createHorizontalStrut(7) );
@@ -221,6 +228,7 @@ public class WindowManager {
                     org.das2.util.LoggerManager.logGuiEvent(e);                        
                     result.set( 0, JOptionPane.NO_OPTION );
                     dia.setVisible(false);
+                    dia.dispose(); 
                 }
             }) );
             pc.add( Box.createHorizontalStrut(7) );
@@ -230,10 +238,22 @@ public class WindowManager {
                     org.das2.util.LoggerManager.logGuiEvent(e);        
                     result.set( 0, JOptionPane.CANCEL_OPTION );
                     dia.setVisible(false);
+                    dia.dispose(); 
                 }
             }) );
         }
         
+        //TODO: there are two dialog codes which could be made into one.
+        dia.getRootPane().registerKeyboardAction( new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                org.das2.util.LoggerManager.logGuiEvent(e);        
+                result.set( 0, JOptionPane.CANCEL_OPTION );
+                dia.setVisible(false);
+                dia.dispose(); 
+            }
+        }, KeyStroke.getKeyStroke( KeyEvent.VK_ESCAPE, 0 ), JComponent.WHEN_IN_FOCUSED_WINDOW );       
+
         pc.add( Box.createHorizontalStrut(7) );
         
         Runnable run = new Runnable() {
