@@ -407,7 +407,8 @@ public class ColorUtil {
      * This also allows a color name to follow the RGB like so:<ul>
      * <li>"0xFFFF00 (Purple)"
      * </ul>
-     * to improve legibility of .vap files.
+     * to improve legibility of .vap files.  <a href="https://wikipedia.org/wiki/X11_color_names#Color_name_chart">X11 color names</a>
+     * can be found at wikipedia.
      * @param s the string representation 
      * @return the color
      * @see https://en.wikipedia.org/wiki/X11_color_names
