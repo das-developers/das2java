@@ -414,7 +414,7 @@ public class ColorUtil {
      * @see https://en.wikipedia.org/wiki/X11_color_names
      * @see http://cng.seas.rochester.edu/CNG/docs/x11color.html
      */
-    public static Color decodeColor( String s ) throws NullPointerException {
+    public static Color decodeColor( String s ) {
         s= s.toLowerCase().trim();
         if ( s.endsWith(")") ) {
             int i= s.indexOf("(");
