@@ -521,6 +521,92 @@ public class GraphUtil {
 
 
     /**
+     * clip the path to within the clip rectangle.  Note this may introduce 
+     * breaks where the path was continuous before.  Note this does not work
+     * with quadTo etc.  This was motivated by an old version of Adobe Illustrator
+     * which didn't respect the clip set in the PDF, and with the journal 
+     * Nature, which appearently uses an old version of Ill
+     * @param it
+     * @param result
+     * @param clip
+     * @return 
+     */
+    public static int clipPath( PathIterator it, GeneralPath result, Rectangle clip ) {
+        logger.entering( "GraphUtil", "clipPath" );
+        
+        float[] p = new float[6];
+        
+        Point2D lastP= null;
+        Point2D thisP;
+        
+        while (!it.isDone()) {
+
+            int type = it.currentSegment(p);
+            it.next();
+            
+            float xx = p[0];
+            float yy = p[1];
+                        
+            if ( type == PathIterator.SEG_MOVETO ) {
+                if ( lastP!=null ) { 
+                    thisP= new Point2D.Float( xx, yy );
+                    Point2D clipP= lineRectangleIntersection( lastP, thisP, clip );
+                    if ( clip.contains(lastP) ) {
+                        throw new IllegalArgumentException("should not happen 584");
+                    } else if ( clip.contains(thisP) ) {
+                        result.moveTo( clipP.getX(), clipP.getY() );
+                        result.moveTo( thisP.getX(), thisP.getY() );
+                    }
+                    lastP= thisP;
+                } else {
+                    thisP= new Point2D.Float( xx, yy );
+                    if ( clip.contains(thisP) ) {
+                        result.moveTo( thisP.getX(), thisP.getY() );
+                    } else if ( lastP==null ) {
+                        // do nothing
+                    } else {
+                        Point2D clipP= lineRectangleIntersection( lastP, thisP, clip );
+                        result.moveTo( clipP.getX(), clipP.getY() );
+                    }
+                    lastP= thisP;
+                }
+                    
+            } else if ( type == PathIterator.SEG_LINETO ) {
+                if ( lastP!=null ) { // we need to clip this line segment
+                    thisP= new Point2D.Float( xx, yy );
+                    Point2D clipP= lineRectangleIntersection( lastP, thisP, clip );
+                    if ( clip.contains(lastP) ) {
+                        if ( clip.contains(thisP) ) {
+                            result.lineTo( thisP.getX(), thisP.getY() );
+                        } else {
+                            result.lineTo( clipP.getX(), clipP.getY() );
+                        }
+                    } else if ( clip.contains(thisP) ) {
+                        result.moveTo( clipP.getX(), clipP.getY() );
+                        result.lineTo( thisP.getX(), thisP.getY() );
+                    } else {
+                        
+                    }
+                    lastP= thisP;
+                } else {
+                    thisP= new Point2D.Float( xx, yy );
+                    if ( clip.contains(thisP) ) {
+                        result.lineTo( thisP.getX(), thisP.getY() );
+                    } else {
+                        Point2D clipP= lineRectangleIntersection( lastP, thisP, clip );
+                        result.lineTo( clipP.getX(), clipP.getY() );
+                    }
+                    lastP= thisP;
+                }
+            }
+
+        }
+        logger.exiting( "GraphUtil", "clipPath" );
+        return 0;
+
+    }
+    
+    /**
      * New ReducePath reduces a path by keeping track of vertically collinear points, and reducing them to an entry
      * point, an exit point, min and max.  This can be all four in one point.  We also limit the resolution and 
      * combine points that are basically the same value, using resn and resd (numerator and denominator).  For 
@@ -530,10 +616,12 @@ public class GraphUtil {
      * @param result output path.
      * @param resn the resolution numerator (e.g. 1)
      * @param resd the resolution denominator (e.g. 5)
-     * @return the reduced path.
+     * @return the number of points.
      */
     public static int reducePath20140622( PathIterator it, GeneralPath result, int resn, int resd ) {
-        logger.fine( "enter reducePath20140622" );
+        
+        logger.entering( "GraphUtil", "reducePath20140622" );
+        
         long t0= System.currentTimeMillis();
         
         float[] p = new float[6];
@@ -554,7 +642,7 @@ public class GraphUtil {
 
         boolean atMiny=false;
         boolean atMaxy=false;
-        
+            
         while (!it.isDone()) {
             inCount++;
 
@@ -672,6 +760,8 @@ public class GraphUtil {
         }
         
         logger.log(Level.FINE, "reduce {0} to {1} in {2}ms", new Object[]{inCount, points, System.currentTimeMillis()-t0 });
+        logger.exiting( "GraphUtil", "reducePath20140622" );
+        
         return points;
         
     }
