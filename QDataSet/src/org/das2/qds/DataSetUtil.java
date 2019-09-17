@@ -3914,17 +3914,19 @@ public class DataSetUtil {
     }
     
     /**
-     * return the next interval containing data, centered on data, with the
-     * same width.
-     * @param ds
-     * @param dr0
-     * @return 
+     * return the next interval (typically time) containing data, centered on data, with the
+     * roughly the same width.
+     * @param ds the dataset
+     * @param dr0 the current interval
+     * @return the next interval
      */
     public static DatumRange getNextInterval( QDataSet ds, DatumRange dr0 ) {
         DatumRange dr= dr0;
         int count; // limits the number of steps we can take.
         int STEP_LIMIT=10000;
-        if ( ds!=null &&  ds.rank()>0 && UnitsUtil.isIntervalOrRatioMeasurement(SemanticOps.getUnits(ds) ) ) {
+        if ( ds==null ||  ds.rank()==0 || !UnitsUtil.isIntervalOrRatioMeasurement(SemanticOps.getUnits(ds) ) ) {
+            dr= dr.next();
+        } else {
             try {
                 QDataSet bounds;
                 QDataSet xtags= SemanticOps.xtagsDataSet(ds);
@@ -3975,24 +3977,25 @@ public class DataSetUtil {
                 logger.log(Level.FINE, ex.getMessage() );
                 dr= dr.next();
             }
-        } else {
-            dr= dr.next();
         }
+        
         return dr;
     }
 
     /**
-     * return the previous interval containing data, centered on data, with the
-     * same width.
-     * @param ds
-     * @param dr0
-     * @return 
+     * return the previous interval (typically time) containing data, centered on data, with the
+     * roughly the same width.
+     * @param ds the dataset
+     * @param dr0 the current interval
+     * @return the previous interval
      */
     public static DatumRange getPreviousInterval( QDataSet ds, DatumRange dr0 ) {
         DatumRange dr= dr0;
         int count; // limits the number of steps we can take.
         int STEP_LIMIT=10000;
-        if ( ds!=null &&  ds.rank()>0 && UnitsUtil.isIntervalOrRatioMeasurement(SemanticOps.getUnits(ds) ) ) {
+        if ( ds==null ||  ds.rank()==0 || !UnitsUtil.isIntervalOrRatioMeasurement(SemanticOps.getUnits(ds) ) ) {
+            dr= dr.previous();
+        } else {
             try {
                 QDataSet bounds;
                 QDataSet xtags= SemanticOps.xtagsDataSet(ds);
@@ -4041,8 +4044,6 @@ public class DataSetUtil {
                 logger.log(Level.FINE, ex.getMessage() );
                 dr= dr.previous();
             }
-        } else {
-            dr= dr.previous();
         }
         return dr;
     }
