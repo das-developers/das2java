@@ -585,7 +585,9 @@ public class GraphUtil {
                         result.moveTo( clipP.getX(), clipP.getY() );
                         result.lineTo( thisP.getX(), thisP.getY() );
                     } else {
-                        
+                        Line2D clipP2= lineRectangleMask( lastP, thisP, clip );
+                        result.moveTo( clipP2.getX1(), clipP2.getY1() );
+                        result.lineTo( clipP2.getX2(), clipP2.getY2() );
                     }
                     lastP= thisP;
                 } else {
