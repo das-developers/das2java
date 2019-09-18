@@ -539,6 +539,8 @@ public class GraphUtil {
         Point2D lastP= null;
         Point2D thisP;
         
+        boolean initialMoveTo= true;
+        
         while (!it.isDone()) {
 
             int type = it.currentSegment(p);
@@ -556,17 +558,20 @@ public class GraphUtil {
                     } else if ( clip.contains(thisP) ) {
                         result.moveTo( clipP.getX(), clipP.getY() );
                         result.moveTo( thisP.getX(), thisP.getY() );
+                        initialMoveTo= false;
                     }
                     lastP= thisP;
                 } else {
                     thisP= new Point2D.Float( xx, yy );
                     if ( clip.contains(thisP) ) {
                         result.moveTo( thisP.getX(), thisP.getY() );
+                        initialMoveTo= false;
                     } else if ( lastP==null ) {
                         // do nothing
                     } else {
                         Point2D clipP= lineRectangleIntersection( lastP, thisP, clip );
                         result.moveTo( clipP.getX(), clipP.getY() );
+                        initialMoveTo= false;
                     }
                     lastP= thisP;
                 }
@@ -577,17 +582,34 @@ public class GraphUtil {
                     Point2D clipP= lineRectangleIntersection( lastP, thisP, clip );
                     if ( clip.contains(lastP) ) {
                         if ( clip.contains(thisP) ) {
+                            if ( initialMoveTo ) {
+                                result.moveTo( lastP.getX(), lastP.getY() );
+                                initialMoveTo= false;
+                                //logger.warning("what to do now!");
+                            }
                             result.lineTo( thisP.getX(), thisP.getY() );
                         } else {
-                            result.lineTo( clipP.getX(), clipP.getY() );
+                            if ( initialMoveTo ) {
+                                result.moveTo( lastP.getX(), lastP.getY() );
+                                initialMoveTo= false;
+                            }
+                            try {
+                                result.lineTo( clipP.getX(), clipP.getY() );
+                            } catch ( NullPointerException ex ) {
+                                result.lineTo( clipP.getX(), clipP.getY() );
+                            }
                         }
                     } else if ( clip.contains(thisP) ) {
-                        result.moveTo( clipP.getX(), clipP.getY() );
-                        result.lineTo( thisP.getX(), thisP.getY() );
+                        if ( clipP!=null ) {                            
+                            result.moveTo( clipP.getX(), clipP.getY() );
+                            result.lineTo( thisP.getX(), thisP.getY() );
+                        }
                     } else {
                         Line2D clipP2= lineRectangleMask( lastP, thisP, clip );
-                        result.moveTo( clipP2.getX1(), clipP2.getY1() );
-                        result.lineTo( clipP2.getX2(), clipP2.getY2() );
+                        if ( clipP2!=null ) {
+                            result.moveTo( clipP2.getX1(), clipP2.getY1() );
+                            result.lineTo( clipP2.getX2(), clipP2.getY2() );
+                        }
                     }
                     lastP= thisP;
                 } else {
@@ -1186,14 +1208,20 @@ public class GraphUtil {
         if (denom != 0) {
             result = new Point2D.Double((b1 * c2 - b2 * c1) / denom, (a2 * c1 -
                     a1 * c2) / denom);
-            if (noBoundsCheck 
-                    ||(((result.getX() - line1.getX1()) * (line1.getX2() - result.getX()) >= 0) 
-                    && ((result.getY() - line1.getY1()) * (line1.getY2() - result.getY()) >= 0) 
-                    && ((result.getX() - line2.getX1()) * (line2.getX2() - result.getX()) >= 0) 
-                    && ((result.getY() - line2.getY1()) * (line2.getY2() - result.getY()) >= 0) ) ) {
+            
+            if (noBoundsCheck ) {
                 return result;
             } else {
-                return null;
+                // calculate small number which can be treated as zero.
+                double epsilon= -1 * Math.min( ( line1.getP1().distance(line1.getP2()) ), line2.getP1().distance(line2.getP2() ) ) / 10000.;
+                if (((result.getX() - line1.getX1()) * (line1.getX2() - result.getX()) >= epsilon ) 
+                    && ((result.getY() - line1.getY1()) * (line1.getY2() - result.getY()) >= epsilon ) 
+                    && ((result.getX() - line2.getX1()) * (line2.getX2() - result.getX()) >= epsilon ) 
+                    && ((result.getY() - line2.getY1()) * (line2.getY2() - result.getY()) >= epsilon ) ) {
+                    return result;
+                } else {
+                    return null;
+                }
             }
         } else {
             return null;
@@ -1205,7 +1233,7 @@ public class GraphUtil {
      * @param p0 the first point
      * @param p1 the second point
      * @param r the rectangle
-     * @return line segment with zero length when they do not intersect, or the segment
+     * @return null when they do not intersect, or the segment
      */
     public static Line2D lineRectangleMask( Point2D p0, Point2D p1, Rectangle2D r ) {
         Line2D.Double line= new Line2D.Double( p0, p1 );
@@ -1223,7 +1251,7 @@ public class GraphUtil {
         p= lineIntersection( line, new Line2D.Double( r0.x, r1.y, r0.x, r0.y ), false );
         if ( p!=null ) if ( point1==null ) point1= p; else point2= p; 
         if ( point1==null ) {
-            return new Line2D.Double( p1, p1 );
+            return null;
         } else if ( point2==null ) {
             if ( r.contains( p1 ) ) {
                 return new Line2D.Double( point1, p1 );
@@ -1244,7 +1272,7 @@ public class GraphUtil {
      * @param p0
      * @param p1
      * @param r0
-     * @return the point along the rectangle
+     * @return null or the point along the rectangle
      */
     public static Point2D lineRectangleIntersection( Point2D p0, Point2D p1, Rectangle2D r0) {
 
