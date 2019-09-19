@@ -108,8 +108,8 @@ public final class Auralizor {
 
     public void setPosition(Datum position) {
         if ( position!=this.position ) {
-            this.currentRecord= DataSetUtil.closestIndex( dep0, position );
             if ( lastAnnouncedPosition==null || lastAnnouncedPosition.subtract(position).abs().gt(limit) ) {
+                this.currentRecord= DataSetUtil.closestIndex( dep0, position );
                 Datum newPosition= getPosition();
                 pcs.firePropertyChange( PROP_POSITION, lastAnnouncedPosition, newPosition );
                 lastAnnouncedPosition= newPosition;
