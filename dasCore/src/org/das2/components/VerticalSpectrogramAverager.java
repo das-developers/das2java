@@ -25,10 +25,9 @@ package org.das2.components;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Point;
-import java.awt.Toolkit;
+import java.awt.Rectangle;
 import java.awt.Window;
 import org.das2.graph.SymbolLineRenderer;
 import org.das2.graph.DasColumn;
@@ -48,7 +47,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -80,8 +78,6 @@ public class VerticalSpectrogramAverager implements DataRangeSelectionListener {
     protected Datum value;
     private SeriesRenderer renderer;
     private final Color markColor = new Color(230,230,230);
-    private int totalwidth=640; // these will be set when the window starts.
-    private int totalheight=480;
     
     JPanel buttonPanel;
     List<Action> additionalActions= new ArrayList<>();
@@ -250,18 +246,12 @@ public class VerticalSpectrogramAverager implements DataRangeSelectionListener {
         int xx= parentLocation.x + parentPlot.getCanvas().getWidth();
         int yy= parentLocation.y;
         
-        Dimension dimensions = Toolkit.getDefaultToolkit().getScreenSize();
-        logger.log(Level.FINE, "screen dimensions: {0}", dimensions);
-        
-        this.totalwidth = dimensions.width;
-        this.totalheight = dimensions.height;
-        
-        if ( xx>totalwidth-100 ) {
-            xx= totalwidth-100;
+        Rectangle r= ComponentsUtil.verifyVisible( new Rectangle( xx, yy, width, height ) );
+        if ( r!=null ) {
+            xx= r.x;
+            yy= r.y;
         }
-        if ( yy>totalheight-100 ) {
-            yy= totalheight-100;
-        }
+        
         popupWindow.setLocation(xx,yy);
     }
     
@@ -288,18 +278,10 @@ public class VerticalSpectrogramAverager implements DataRangeSelectionListener {
         if (!isPopupVisible()) {
             showPopup();
         } else {
-            if ( popupWindow.getX()>totalwidth ) {
-                popupWindow.setLocation( totalwidth-100, popupWindow.getY() );
+            Rectangle r= ComponentsUtil.verifyVisible( popupWindow.getBounds() );
+            if ( r!=null ) {
+                popupWindow.setLocation( r.x, r.y );
             }
-            if ( popupWindow.getY()>totalheight ) {
-                popupWindow.setLocation( popupWindow.getX(), totalheight-100 );
-            }
-            if ( popupWindow.getX()+popupWindow.getWidth() < 0 ) {
-                popupWindow.setLocation( 100, popupWindow.getY() );
-            }
-            if ( popupWindow.getY()+popupWindow.getHeight() < 0 ) {
-                popupWindow.setLocation( popupWindow.getX(), 100 );
-            }   
         }
         
         RebinDescriptor ddX = new RebinDescriptor(xValue1, xValue2, 1, false);

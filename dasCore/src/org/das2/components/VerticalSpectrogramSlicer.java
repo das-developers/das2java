@@ -25,12 +25,9 @@ package org.das2.components;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Graphics2D;
-import java.awt.GraphicsDevice;
-import java.awt.GraphicsEnvironment;
 import java.awt.Point;
-import java.awt.Toolkit;
+import java.awt.Rectangle;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -100,8 +97,6 @@ public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
     //private long eventBirthMilli;
     private SymbolLineRenderer renderer;
     private Color markColor = new Color(230,230,230);
-    private int totalwidth=640; // these will be set when the window starts.
-    private int totalheight=480;
     
     protected VerticalSpectrogramSlicer( DasPlot parent, DasAxis sourceXAxis, DasAxis sourceZAxis ) {
         this.sourceZAxis= sourceZAxis;
@@ -158,7 +153,7 @@ public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
      */
     public QDataSet getDataSet() {
         return renderer.getDataSet();
-    }    
+    }
             
     public static VerticalSpectrogramSlicer createSlicer( DasPlot plot, TableDataSetConsumer dataSetConsumer) {
         DasAxis sourceYAxis = plot.getYAxis();
@@ -314,21 +309,13 @@ public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
         //make sure some portion of the slice window is visible on the screen.
         int xx= parentLocation.x + parentPlot.getCanvas().getWidth();
         int yy= parentLocation.y;
-                
-        Dimension dimensions = Toolkit.getDefaultToolkit().getScreenSize();
-        logger.log(Level.FINE, "screen dimensions: {0}", dimensions);
-        
-        this.totalwidth = dimensions.width;
-        this.totalheight = dimensions.height;
-        
-        // See https://github.com/autoplot/dev/blob/master/bugs/sf/2122/demoResolutionWindows.jy
-        
-        if ( xx>totalwidth-100 ) {
-            xx= totalwidth-100;
+
+        Rectangle r= ComponentsUtil.verifyVisible( new Rectangle( xx, yy, width, height ) );
+        if ( r!=null ) {
+            xx= r.x;
+            yy= r.y;
         }
-        if ( yy>totalheight-100 ) {
-            yy= totalheight-100;
-        }
+        
         popupWindow.setLocation(xx,yy);
 
     }
@@ -445,18 +432,10 @@ public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
         if (!isPopupVisible()) {
             showPopup();
         } else {
-            if ( popupWindow.getX()>totalwidth ) {
-                popupWindow.setLocation( totalwidth-100, popupWindow.getY() );
+            Rectangle r= ComponentsUtil.verifyVisible( popupWindow.getBounds() );
+            if ( r!=null ) {
+                popupWindow.setLocation( r.x, r.y );
             }
-            if ( popupWindow.getY()>totalheight ) {
-                popupWindow.setLocation( popupWindow.getX(), totalheight-100 );
-            }
-            if ( popupWindow.getX()+popupWindow.getWidth() < 0 ) {
-                popupWindow.setLocation( 100, popupWindow.getY() );
-            }
-            if ( popupWindow.getY()+popupWindow.getHeight() < 0 ) {
-                popupWindow.setLocation( popupWindow.getX(), 100 );
-            }   
         }
         logger.log(Level.FINER, "slice window position: {0} {1}", new Object[]{popupWindow.getX(), popupWindow.getY()});
         
