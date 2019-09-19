@@ -426,7 +426,7 @@ public class QDataSetStreamHandler implements StreamHandler {
                 // look for bundles.
                 String prefix= (String)Ops.unbundle(ds1,0).property("NAME");
                 String name1= (String)Ops.unbundle(ds1,1).property("NAME");
-                if ( name1.equals( prefix + ".max" ) || ( prefix.equals("") && name1.equals("peaks") ) ) {
+                if ( ds1.rank()==3 && name1.equals( prefix + ".max" ) || ( prefix.equals("") && name1.equals("peaks") ) ) {
                     QDataSet max= Ops.unbundle(ds1,1);
                     max= Ops.putProperty( max, QDataSet.NAME, name1.replaceAll("\\.","_") );
                     max= Ops.putProperty( max, QDataSet.BUNDLE_1, null );
@@ -434,7 +434,7 @@ public class QDataSetStreamHandler implements StreamHandler {
                     ds1= Ops.unbundle(ds1,0);
                     ds1= Ops.putProperty( ds1, QDataSet.BIN_MAX, max );
                     ds1= Ops.putProperty( ds1, QDataSet.BUNDLE_1, null );
-                } else if ( name1.equals( prefix + ".min" ) ) {
+                } else if ( ds1.rank()==3 && name1.equals( prefix + ".min" ) ) {
                     QDataSet min= Ops.unbundle(ds1,1);
                     min= Ops.putProperty( min, QDataSet.NAME, name1.replaceAll("\\.","_") );
                     min= Ops.putProperty( min, QDataSet.BUNDLE_1, null );
