@@ -65,6 +65,7 @@ public class ComponentsUtil {
         popupWindow.pack();
         
         close.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 popupWindow.setVisible(false);
             }
