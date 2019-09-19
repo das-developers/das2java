@@ -929,11 +929,16 @@ public class SeriesRenderer extends Renderer {
             logger.log(Level.FINE, "done create general path ({0}ms)", ( System.currentTimeMillis()-t0  ));
             
             pathBuilder.finishThought();
-            boolean allowSimplify= (lastIndex-firstIndex)>SIMPLIFY_PATHS_MIN_LIMIT && xSampleWidthExact<1e37;
+            boolean allowSimplify= xSampleWidthExact<1e37;
             if (!histogram && simplifyPaths && allowSimplify && colorByDataSetId.length()==0 ) {
                 int pathLengthApprox= Math.max( 5, 110 * (lastIndex - firstIndex) / 100 );
                 this.path1= new GeneralPath(GeneralPath.WIND_NON_ZERO, pathLengthApprox );
                 int count = GraphUtil.reducePath20140622(pathBuilder.getPathIterator(), path1, 1, 5 );
+                if ( additionalClip ) {
+                    GeneralPath path2= new GeneralPath(GeneralPath.WIND_NON_ZERO, pathLengthApprox );
+                    int x2= GraphUtil.clipPath( path1.getPathIterator(null), path2, GraphUtil.shrinkRectangle( getParent().getAxisClip(), 90 ) );
+                    path1= path2;
+                }
                 pathWasReduced= true;
                 logger.fine( String.format("reduce path in=%d  out=%d\n", lastIndex-firstIndex, count) );
             } else {
@@ -1540,6 +1545,21 @@ public class SeriesRenderer extends Renderer {
         super.setActive(active);
         if ( active ) updatePsym();
     }
+    
+    private boolean additionalClip = false;
+
+    public static final String PROP_ADDITIONALCLIP = "additionalClip";
+
+    public boolean isAdditionalClip() {
+        return additionalClip;
+    }
+
+    public void setAdditionalClip(boolean additionalClip) {
+        boolean oldAdditionalClip = this.additionalClip;
+        this.additionalClip = additionalClip;
+        propertyChangeSupport.firePropertyChange(PROP_ADDITIONALCLIP, oldAdditionalClip, additionalClip);
+    }
+
 
     /**
      * render the dataset by delegating to internal components such as the symbol connector and error bars.
