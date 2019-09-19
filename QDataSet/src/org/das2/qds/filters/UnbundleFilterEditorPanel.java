@@ -18,7 +18,7 @@ import org.das2.qds.QDataSet;
  */
 public class UnbundleFilterEditorPanel extends AbstractFilterEditorPanel {
 
-    public static final String PROP_REGEX = "\\|unbundle\\('?(\\w+)'?\\)";
+    public static final String PROP_REGEX = "\\|unbundle\\('?(\\S+)'?\\)";
 
     /**
      * Creates new form UnbundleFilterEditorPanel
