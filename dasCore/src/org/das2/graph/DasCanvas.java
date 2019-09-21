@@ -120,6 +120,7 @@ import org.das2.system.DefaultMonitorFactory;
 import org.das2.system.DefaultMonitorFactory.MonitorEntry;
 import org.das2.system.EventQueueBlocker;
 import org.das2.system.MonitorFactory;
+import org.das2.util.LoggerManager;
 import org.das2.util.monitor.ProgressMonitor;
 
 /** Canvas for das2 graphics.  The DasCanvas contains any number of DasCanvasComponents such as axes, plots, colorbars, etc.
@@ -1550,6 +1551,25 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
             }
         }
 
+        Logger logger1= LoggerManager.getLogger( "das2.graphics.layout" );
+        if ( logger1.isLoggable(Level.FINER ) ) {
+            logger1.log(Level.FINER, "All Row Positions for Canvas ({0}x{1}): ", new Object[]{width, height});
+            ArrayList<DasRow> rows= new ArrayList<>();
+            for ( DasCanvasComponent dcc: getCanvasComponents() ) {
+                DasRow r= dcc.getRow();
+                DasRow pr= (DasRow)r.getParentDevicePosition();
+                if ( pr!=null && !rows.contains(pr) ) rows.add(pr);
+                if ( !rows.contains(r) ) rows.add(r);
+            }
+            for ( DasRow r: rows ) {
+                String s= ""+r.getDasName() + " " +DasDevicePosition.formatLayoutStr(r,true)+","+DasDevicePosition.formatLayoutStr(r,false);
+                if ( r.getParentDevicePosition()!=null ) {
+                    s+= " "+r.getParentDevicePosition().getDasName();
+                }
+                logger1.finer( s );
+            }
+        }
+        
         logger.log(Level.FINE, "time to getImage: {0}ms", (System.currentTimeMillis() - t0));
         return image;
     }
