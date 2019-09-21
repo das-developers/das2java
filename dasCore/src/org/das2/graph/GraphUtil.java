@@ -617,8 +617,7 @@ public class GraphUtil {
                     if ( clip.contains(thisP) ) {
                         result.lineTo( thisP.getX(), thisP.getY() );
                     } else {
-                        Point2D clipP= lineRectangleIntersection( lastP, thisP, clip );
-                        result.lineTo( clipP.getX(), clipP.getY() );
+                        logger.info("TODO: what about this branch?");
                     }
                     lastP= thisP;
                 }
