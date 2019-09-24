@@ -491,6 +491,7 @@ public class QDataSetStreamHandler implements StreamHandler {
                 ds= jds;
             }
         }
+        if ( ds==null ) return null;
         ds= Ops.putProperty( ds, QDataSet.TITLE, streamTitle );
         Object oxCacheRange= streamProperties.get( "xCacheRange" );
         if ( oxCacheRange!=null ) {
