@@ -262,6 +262,63 @@ public class FFTUtil {
         return result;
     }
     
+    /**
+     * Perform the inverse fft to get real and imaginary components for intervals.  
+     * @param fft FFT code to use, such as GeneralFFT.newDoubleFFT(len)
+     * @param vds QDataSet rank 2 dataset with depend 0 units TimeLocationUnits and depend_1=['real','imaginary'].
+     * @param weights QDataSet rank 1 dataset containing weights, as in hanning.  null indicates no weights.
+     * @return the rank 2 FFT
+     */
+    public static QDataSet ifft( GeneralFFT fft, QDataSet vds, QDataSet weights ) {
+        
+        double [] yreal= new double[ fft.size() ];
+        double [] yimag= new double[ fft.size() ];
+        
+        if ( weights==null ) {
+            for ( int i=0; i<fft.size(); i++ ) {
+                yreal[i]= vds.value( i, 0 );
+                yimag[i]= vds.value( i, 1 );
+            }
+        } else {
+            for ( int i=0; i<fft.size(); i++ ) {
+                yreal[i]= vds.value( i, 0 ) * weights.value( i );
+                yimag[i]= vds.value( i, 1 ) * weights.value( i );
+            }
+        }
+
+        ComplexArray.Double ca= ComplexArray.newArray(yreal,yimag);
+        fft.invTransform( ca );  
+
+        QDataSet dep0= (QDataSet) vds.property( QDataSet.DEPEND_0 );
+        if ( dep0==null ) {
+            dep0= new IndexGenDataSet( vds.length() );
+        }
+
+        QDataSet xtags= getTimeDomainTags( dep0 );
+
+        Units xUnits= (Units)xtags.property( QDataSet.UNITS );
+
+        // this code was derived by experiment.  
+        // TODO: find someone that understands this better and have them verify.
+        double binsize;
+        if ( xUnits.isConvertibleTo(Units.seconds) ) {
+            UnitsConverter uc= xUnits.getConverter(Units.seconds);
+            binsize= 1 / ( uc.convert( dep0.value( 1 ) ) );
+        } else {
+            binsize= 1 / ( dep0.value( 1 ));
+        }
+        
+        DDataSet result= DDataSet.createRank2(xtags.length(),2);
+
+        for ( int i=1; i<xtags.length(); i++ ) {
+            result.putValue(i,0, ca.getReal(i) / binsize );
+            result.putValue(i,1, ca.getImag(i) / binsize );
+        }
+
+        result.putProperty( QDataSet.DEPEND_0, xtags );
+        return result;
+    }
+    
     
     private static class TTagBufElement {
         QDataSet data;

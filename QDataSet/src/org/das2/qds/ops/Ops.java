@@ -8242,6 +8242,183 @@ public final class Ops {
     }
     
     /**
+     * create the inverse fft of the real and imaginary spec
+     * @param ds rank 3 dataset of N,FFTLength,2
+     * @param window
+     * @param stepFraction
+     * @param mon
+     * @return 
+     */
+    public static QDataSet ifft( QDataSet ds, QDataSet window, int stepFraction, ProgressMonitor mon ) {
+
+        String title= (String) ds.property(QDataSet.TITLE);
+        if ( title!=null ) {
+            title= "IFFT of "+title;
+        }
+        
+        if ( ds.rank()<3 || ds.rank()>4 ) {
+            throw new IllegalArgumentException("rank exception, expected rank 3 or 4: got "+ds );
+                        
+        } else if ( ds.rank()==4 ) { // slice it and do the process to each branch.
+            JoinDataSet result= new JoinDataSet(4);
+            mon.setTaskSize( ds.length()*10  );
+            mon.started();
+            for ( int i=0; i<ds.length(); i++ ) {
+                mon.setTaskProgress(i*10);
+                QDataSet pow1= ifft( ds.slice(i), window, stepFraction, SubTaskMonitor.create( mon, i*10, (i+1)*10 ) );
+                result.join(pow1);
+            }
+            mon.finished();
+
+            result.putProperty( QDataSet.QUBE, Boolean.TRUE );
+            if ( title!=null ) result.putProperty( QDataSet.TITLE, title );
+            
+            return result;
+
+        }
+        
+        assert ds.rank()==3;
+        
+        int len= window.length();
+        int step;
+        if ( stepFraction < 0 ) {
+            throw new IllegalArgumentException( String.format( "fractional step size (%d) is negative.", stepFraction ) );
+        } else if ( stepFraction <= 32 ) { 
+            step= len/stepFraction;
+        } else {
+            throw new IllegalArgumentException( String.format( "fractional step size (%d) is bigger than 32, the max allowed.", stepFraction ) );
+        }
+        boolean windowNonUnity= false; // true if a non-unity window is to be applied.
+        for ( int i=0; windowNonUnity==false && i<len; i++ ) {
+            if ( window.value(i)!=1.0 ) windowNonUnity=true;
+        }
+
+        double normalization; // the normalization needed because of the window.
+
+        if ( windowNonUnity ) {
+            normalization= total( Ops.pow( window, 2 ) ) / window.length();
+        } else {
+            normalization= 1.0;
+        }
+        
+        JoinDataSet result= new JoinDataSet(3);
+        result.putProperty(QDataSet.JOIN_0, null);
+
+        int nsam= ds.length()*(ds.length(0)/step); // approx
+        DataSetBuilder dep0b= new DataSetBuilder( 1,nsam );
+
+        QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
+        if ( dep0!=null ) { // make sure these are really units we can use
+            Units u0= SemanticOps.getUnits(dep0);
+            if ( UnitsUtil.isNominalMeasurement(u0) ) dep0= null; // nope, we can't use it.
+        }
+
+        UnitsConverter uc= UnitsConverter.IDENTITY;
+
+        QDataSet dep1= (QDataSet) ds.property( QDataSet.DEPEND_1 );
+        if ( dep1==null ) {
+            dep1= (QDataSet)ds.slice(0).property(QDataSet.DEPEND_0);
+        }
+        
+        QDataSet ytags;
+        double minD= Double.NEGATIVE_INFINITY, maxD=Double.POSITIVE_INFINITY;
+        if ( dep1!=null && dep1.rank()==1 ) {
+            ytags= FFTUtil.getTimeDomainTags( dep1.trim(0,len) );
+            //NOTE translation is not implemented for this mode.
+            result.putProperty( QDataSet.DEPEND_1, ytags );
+            Units dep1Units= (Units) dep1.property(QDataSet.UNITS);
+            Units dep0Units= dep0==null ? null : (Units) dep0.property(QDataSet.UNITS);
+            if ( dep0Units!=null && dep1Units!=null ) uc= UnitsConverter.IDENTITY;
+            if ( dep0!=null && dep0.property(QDataSet.VALID_MIN)!=null ) minD= ((Number)dep0.property(QDataSet.VALID_MIN)).doubleValue();
+            if ( dep0!=null && dep0.property(QDataSet.VALID_MAX)!=null ) maxD= ((Number)dep0.property(QDataSet.VALID_MAX)).doubleValue();
+        } else {
+            throw new IllegalArgumentException("must have ytags...");
+        }
+
+        int len1= ( ( ds.length(0)-len ) / step ) + 1;
+
+        mon.setTaskSize(ds.length()*len1); // assumes all are the same length.
+        mon.started();
+        mon.setProgressMessage("performing fft");
+
+        boolean isMono= dep0==null ? true : DataSetUtil.isMonotonic(dep0);
+
+        for ( int i=0; i<ds.length(); i++ ) {
+            QDataSet slicei= ds.slice(i); //TODO: for DDataSet, this copies the backing array.  This shouldn't happen in DDataSet.slice, but it does...
+            QDataSet dep0i= (QDataSet) slicei.property(QDataSet.DEPEND_0);
+            if ( dep0i!=null && dep0==null ) {
+                dep0b.putProperty(QDataSet.UNITS, dep0i.property(QDataSet.UNITS) );
+                if ( !Boolean.TRUE.equals( dep0i.property(QDataSet.MONOTONIC) ) ) {
+                    isMono= false;
+                }
+                if ( dep0i.property(QDataSet.VALID_MIN)!=null ) minD= ((Number)dep0i.property(QDataSet.VALID_MIN)).doubleValue(); else minD= Double.NEGATIVE_INFINITY;
+                if ( dep0i.property(QDataSet.VALID_MAX)!=null ) maxD= ((Number)dep0i.property(QDataSet.VALID_MAX)).doubleValue(); else maxD= Double.POSITIVE_INFINITY;
+            }
+
+            for ( int j=0; j<len1; j++ ) {
+                GeneralFFT fft = GeneralFFT.newDoubleFFT(len);
+                QDataSet wave= slicei.trim( j*step,j*step+len );
+                QDataSet wds= DataSetUtil.weightsDataSet(wave);
+                boolean hasFill= false;
+                for ( int k=0; k<wds.length(); k++ ) {
+                    if ( wds.value(k,0)==0 ) {
+                        hasFill= true;
+                    }
+                }
+                if ( hasFill ) continue;
+
+                QDataSet vds= FFTUtil.ifft( fft, wave, null );
+
+                if ( windowNonUnity ) {
+                    vds= Ops.multiply( vds, DataSetUtil.asDataSet( 1/normalization ) );
+                }
+
+                double d0=0;
+                if ( dep0!=null && dep1!=null ) {
+                    d0= dep0.value(i) + uc.convert( ytags.value( j*step + len/2 )  );
+                } else if ( dep0!=null ) {
+                    d0= dep0.value(i);
+                } else if ( dep0i!=null ) {
+                    d0= dep0i.value(j*step+len/2);
+                } else {
+                    dep0b= null;
+                }
+
+                if ( d0>=minD && d0<=maxD) {
+                    result.join(vds);
+                    if ( dep0b!=null ) {
+                        dep0b.putValue(-1, d0 );
+                        dep0b.nextRecord();
+                    }
+                } else {
+                    System.err.println("dropping record with invalid timetag: "+d0 ); //TODO: consider setting VALID_MIN, VALID_MAX instead...
+                }
+
+                mon.setTaskProgress(i*len1+j);
+
+            }
+
+        }
+        mon.finished();
+        
+        if ( dep0!=null && dep0b!=null ) {
+            dep0b.putProperty(QDataSet.UNITS, dep0.property(QDataSet.UNITS) );
+            if ( isMono ) dep0b.putProperty(QDataSet.MONOTONIC,true);
+            result.putProperty(QDataSet.DEPEND_0, dep0b.getDataSet() );
+        } else if ( dep0b!=null ) {
+            if ( isMono ) dep0b.putProperty(QDataSet.MONOTONIC,true);
+            result.putProperty(QDataSet.DEPEND_0, dep0b.getDataSet() );
+        }
+
+        if ( title!=null ) result.putProperty( QDataSet.TITLE, title );
+        result.putProperty( QDataSet.QUBE, Boolean.TRUE );
+
+        return result;
+            
+        
+    }
+    
+    /**
      * perform ffts on the waveform as we do with fftPower, but keep real and
      * imaginary components.
      * @param ds the waveform rank 1,2,or 3 dataset.
