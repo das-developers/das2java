@@ -447,6 +447,7 @@ public abstract class FileSystem  {
     }
     
     protected FileSystem( URI root ) {
+        logger.log(Level.FINE, "create new FileSystem: {0}", root);
         if ( !root.toString().endsWith("/" ) ) {
             String s= root.toString();
             try {
