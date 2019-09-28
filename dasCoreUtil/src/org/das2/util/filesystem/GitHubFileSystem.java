@@ -5,6 +5,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InterruptedIOException;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -12,6 +14,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,7 +56,12 @@ public class GitHubFileSystem extends HttpFileSystem {
         public InputStream getInputStream(WebFileObject fo, ProgressMonitor mon) throws IOException {
             URL gitHubURL= gitHubMapFile( root, fo.getNameExt() );
             logger.log(Level.INFO, "get InputStream from {0}", gitHubURL);
-            return gitHubURL.openStream();
+            try {
+                InputStream result= HtmlUtil.getInputStream(gitHubURL); // handles redirects.
+                return result;
+            } catch ( CancelledOperationException ex ) {
+                throw new InterruptedIOException(ex.getMessage());
+            }
         }
 
         @Override
@@ -218,18 +226,26 @@ public class GitHubFileSystem extends HttpFileSystem {
      * @throws MalformedURLException 
      */
     public static URL gitHubMapFile( URI root, String filename ) throws MalformedURLException {
-        filename= toCanonicalFilename( filename );            
+        filename= toCanonicalFilename( filename );       
         // png image "https://github.com/autoplot/app/raw/master/Autoplot/src/resources/badge_ok.png"
         String[] path= root.getPath().split("/",-2);
         String spath= path[0] + '/' + path[1] + '/' + path[2] ;
+        if ( spath.startsWith("/") ) spath=spath.substring(1);
+        
         if ( path[3].equals("blob") ) {
             String n= root.getScheme() + "://" + root.getHost() + '/' + spath + "/raw/" + strjoin( path, "/", 4, -1 ) + filename;
             URL url= new URL( n );
             return url;
         } else {
-            String n= root.getScheme() + "://" + root.getHost() + '/' + spath + "/raw/master/" + strjoin( path, "/", 3, -1 ) + filename;
-            URL url= new URL( n );
-            return url;
+            if ( root.getHost().equals("github.com") && filename.endsWith(".vap" ) ) { // This is an experiment
+                String n= root.getScheme() + "://raw.githubusercontent.com" + '/' + spath + "/master/" + strjoin( path, "/", 3, -1 ) + filename;
+                URL url= new URL( n );
+                return url;                
+            } else {
+                String n= root.getScheme() + "://" + root.getHost() + '/' + spath + "/raw/master/" + strjoin( path, "/", 3, -1 ) + filename;
+                URL url= new URL( n );
+                return url;
+            }
         }
     }
 
