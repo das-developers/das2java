@@ -660,13 +660,7 @@ public class DasPlot extends DasCanvasComponent {
 
         if ( needRepaintSoon ) {
             logger.log( Level.FINER, "need to repaint in {0} ms", repaintDelay);
-            ActionListener animate = new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent ae) {
-                    repaint();
-                }
-            };
-            Timer timer = new Timer( (int)repaintDelay, animate );
+            Timer timer = new Timer( (int)repaintDelay, repaintActionListener );
             timer.setRepeats(false);
             timer.start();
         }
@@ -674,6 +668,13 @@ public class DasPlot extends DasCanvasComponent {
         graphics.dispose();
         
     }
+        
+    private ActionListener repaintActionListener= new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            repaint();
+        }
+    };
 
     private void maybeDrawGrid(Graphics2D plotGraphics) {
         Color gridColor;
