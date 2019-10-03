@@ -1,12 +1,16 @@
 
 package org.das2.qds.util;
 
+import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.datum.Datum;
+import org.das2.datum.DatumUtil;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsConverter;
+import org.das2.datum.UnitsUtil;
+import org.das2.qds.ConstantDataSet;
 import org.das2.util.LoggerManager;
 import org.das2.qds.DDataSet;
 import org.das2.qds.DataSetOps;
@@ -183,6 +187,9 @@ public class Reduction {
                 ymaxbuilder= new DataSetBuilder( 2, 1000, ds.length(0) );
                 wbuilder= new DataSetBuilder( 2, 1000, ds.length(0) );
             }
+        } else if ( ds.rank()==3 && DataSetUtil.isQube(ds) ) {
+            return reduceRankN(ds, DataSetUtil.asDatum(xLimit));
+            
         } else if ( ds.rank()==3 && SemanticOps.isJoin(ds) ) {
             JoinDataSet result= new JoinDataSet(3);
             for ( int i=0; i<ds.length(); i++ ) {
@@ -718,5 +725,100 @@ public class Reduction {
         result.putProperty( QDataSet.DEPEND_1, yyy );
         logger.exiting("Reduction", "histogram2D");
         return result;
+    }
+    
+    private static Datum calculateNextX( Datum x, Datum xLimit ) {
+        Datum nx;
+        if ( UnitsUtil.isTimeLocation( x.getUnits() ) ) {
+            Datum t0= x.subtract( Units.us2000.createDatum(0) );
+            nx= Units.us2000.createDatum(0).add(t0).add( DatumUtil.modp( t0, xLimit ) );
+        } else {
+            nx= x.add( DatumUtil.modp( x, xLimit ) );
+        }
+        if ( nx.equals(x) ) nx= nx.add(xLimit);
+        return nx;
+    }
+        
+
+    /**
+     * reduce the data.  This is needed to implement reducex so that high-rank 
+     * datasets can be reduced as they are read in.  TODO: make streaming version of this.
+     * @param ds
+     * @param xLimit
+     * @param object
+     * @return 
+     */
+    private static QDataSet reduceRankN(QDataSet ds, Datum xLimit) {
+        
+        QDataSet oneRecord= ds.slice(0);
+        int[] oneRecordQube= DataSetUtil.qubeDims(oneRecord);
+        DDataSet sss= DDataSet.create( oneRecordQube );
+        DDataSet nnn= DDataSet.create( oneRecordQube );
+        Datum xNext= null;
+        
+        QDataSet xds= SemanticOps.xtagsDataSet(ds);
+        
+        DataSetBuilder resultSBuilder;
+        DataSetBuilder resultNBuilder;
+        DataSetBuilder resultxBuilder;
+        
+        switch ( ds.rank() ) {
+            case 3: 
+                resultSBuilder= new DataSetBuilder( ds.rank(), ds.length()/10, oneRecordQube[0], oneRecordQube[1] );
+                resultNBuilder= new DataSetBuilder( ds.rank(), ds.length()/10, oneRecordQube[0], oneRecordQube[1] );
+                break;
+            case 4:
+                resultSBuilder= new DataSetBuilder( ds.rank(), ds.length()/10, oneRecordQube[0], oneRecordQube[1], oneRecordQube[2] );
+                resultNBuilder= new DataSetBuilder( ds.rank(), ds.length()/10, oneRecordQube[0], oneRecordQube[1], oneRecordQube[2] );
+                break;
+            default:
+                throw new IllegalArgumentException("rank not supported: "+ds.rank() );
+        }
+        resultxBuilder= new DataSetBuilder( 1, ds.length()/10 );
+        
+        for ( int icurrent= 0; icurrent<ds.length(); icurrent++ ) {
+            Datum x= DataSetUtil.asDatum(xds.slice(icurrent));
+            QDataSet rec= ds.slice(icurrent);
+            if ( xNext==null ) {
+                xNext= calculateNextX( x, xLimit );
+            }
+            if ( x.ge( xNext ) ) {
+                resultSBuilder.nextRecord( Ops.divide( sss, nnn ) );
+                resultNBuilder.nextRecord( nnn );
+                resultxBuilder.nextRecord( xNext.subtract(xLimit.divide(2) ) );
+                xNext= xNext.add( xLimit );
+                sss= DDataSet.create( oneRecordQube );
+                nnn= DDataSet.create( oneRecordQube );
+            }             
+            QDataSet n= Ops.valid( rec );
+            sss.addValues( rec, n );
+            nnn.addValues( n, n );
+        }
+     
+        if ( xNext==null ) {
+            throw new IllegalArgumentException("this should not happen");
+        }
+        
+        resultSBuilder.nextRecord( Ops.divide( sss, nnn ) );
+        resultNBuilder.nextRecord( nnn );
+        resultxBuilder.nextRecord( xNext.subtract(xLimit.divide(2) ) );        
+
+        Map<String,Object> props= Ops.copyProperties(ds);
+        for ( Map.Entry<String,Object> en: props.entrySet() ) {
+            resultSBuilder.putProperty( en.getKey(), en.getValue() );
+        }
+        
+        Map<String,Object> xprops= Ops.copyProperties(xds);
+        for ( Map.Entry<String,Object> en: xprops.entrySet() ) {
+            resultxBuilder.putProperty( en.getKey(), en.getValue() );
+        }
+        resultxBuilder.putProperty( QDataSet.CADENCE, DataSetUtil.asDataSet(xLimit) );
+        
+        resultSBuilder.putProperty( QDataSet.DEPEND_0, resultxBuilder.getDataSet() );
+        resultSBuilder.putProperty( QDataSet.WEIGHTS, resultNBuilder.getDataSet() );
+        
+        DDataSet resultDs= resultSBuilder.getDataSet();
+        
+        return resultDs;
     }
 }
