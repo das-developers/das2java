@@ -1,7 +1,4 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package org.das2.qds;
 
 /**
@@ -12,10 +9,22 @@ package org.das2.qds;
  */
 public final class ConstantDataSet implements QDataSet {
 
+    /**
+     * create a rank 1 dataset of the given length.
+     * @param len
+     * @param value 
+     */
     public ConstantDataSet( int len, double value ) {
         this( 1, len, 1, 1, 1, value );
     }
     
+    /**
+     * create a constant dataset with the value and having the dimensions
+     * given in qube.
+     * @param value the value for the dataset.
+     * @param qube number of elements in each dimension
+     * @return the dataset.
+     */
     public static ConstantDataSet create( double value, int[] qube ) {
         switch ( qube.length ) {
             case 0: return new ConstantDataSet(0,1,1,1,1,value);
@@ -26,6 +35,7 @@ public final class ConstantDataSet implements QDataSet {
             default: throw new IllegalArgumentException("unsupported rank: "+qube.length);
         }
     }
+    
     private ConstantDataSet( int rank, int len0, int len1, int len2, int len3, double value ) {
         this.rank= rank;
         this.len0= len0;
