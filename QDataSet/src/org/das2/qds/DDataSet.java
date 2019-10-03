@@ -12,6 +12,8 @@ package org.das2.qds;
 import java.lang.reflect.Array;
 import java.util.Map;
 import org.das2.datum.Units;
+import org.das2.qds.ops.CoerceUtil;
+import org.das2.qds.ops.Ops;
 
 /**
  * rank 0,1,2,3 or 4 dataset backed by double array (8 byte real numbers).
@@ -358,7 +360,7 @@ public final class DDataSet extends ArrayDataSet {
                 throw new IndexOutOfBoundsException("i3=" + i3 + " " + this);
             }
         }
-        back[ i0 * len1 * len2 * len3 + i1 * len2 * len3 + i2 * len3 + i3 ] = value;
+        back[ i0 * len1*len2*len3 + i1 * len2*len3 + i2 * len3 + i3 ] = value;
     }
     
     /**
@@ -392,6 +394,74 @@ public final class DDataSet extends ArrayDataSet {
     public void addValue( int i0, int i1, int i2, double value ) {
         checkImmutable();
         back[  i0 * len1 * len2 + i1 * len2 + i2 ]+= value;
+    }
+    
+    /**
+     * add all valid values of ds to this dataset.
+     * This does not reconcile rank, see CoerceUtil.
+     * @param ds
+     * @param wds 
+     * @see CoerceUtil#coerce(org.das2.qds.QDataSet, org.das2.qds.QDataSet, boolean, org.das2.qds.QDataSet[]) 
+     */
+    public void addValues( QDataSet ds, QDataSet wds ) {
+        checkImmutable();
+        if ( wds==null ) {
+            wds= Ops.valid(ds);
+        }
+        switch ( rank ) {
+            case 1:
+                for ( int i0=0; i0<len0; i0++ ) {
+                    double w= wds.value(i0);
+                    if ( w>0 ) {
+                        back[ i0 ]+= ds.value(i0) * w;
+                    }
+                }
+                break;
+            case 2:
+                for ( int i0=0; i0<len0; i0++ ) {
+                    for ( int i1=0; i1<len1; i1++ ) {                
+                        double w= wds.value(i0,i1);
+                        if ( w>0 ) {
+                            back[  i0 * len1 + i1 ]+= ds.value(i0,i1) * w;
+                        }
+                    }
+                }
+                break;
+            case 3:
+                for ( int i0=0; i0<len0; i0++ ) {
+                    for ( int i1=0; i1<len1; i1++ ) {                
+                        for ( int i2=0; i2<len2; i2++ ) {
+                            double w= wds.value(i0,i1,i2);
+                            if ( w>0 ) {
+                                back[ i0 * len1 * len2 
+                                        + i1 * len2  
+                                        + i2 ]+= 
+                                        ds.value(i0,i1,i2) * w;
+                            }
+                        }
+                    }
+                }
+                break;       
+            case 4:
+                for ( int i0=0; i0<len0; i0++ ) {
+                    for ( int i1=0; i1<len1; i1++ ) {                
+                        for ( int i2=0; i2<len2; i2++ ) {
+                            for ( int i3=0; i3<len3; i3++ ) {
+                                double w= wds.value(i0,i1,i2,i3);
+                                if ( w>0 ) {
+                                    back[ i0 * len1 * len2 * len3 
+                                            + i1 * len2 * len3 
+                                            + i2 * len3 + i3 ]+= 
+                                            ds.value(i0,i1,i2,i3) * w;
+                                }
+                            }
+                        }
+                    }
+                }
+                break;       
+            default:
+                throw new IllegalArgumentException("rank exception");
+        }       
     }
     
     /**
