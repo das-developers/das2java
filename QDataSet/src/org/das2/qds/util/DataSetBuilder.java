@@ -590,6 +590,15 @@ public class DataSetBuilder {
      * @param v rank 0 or rank 1 dataset
      */
     public void nextRecord( QDataSet v ) {
+        if ( this.rank()==3 && v.rank()==2 ) {
+            for ( int i=0; i<v.length(); i++ ) {
+                for ( int j=0; j<v.length(0); j++ ) {
+                    putValue( -1, i, j, v.value(i,j) );
+                }
+            }
+            nextRecord();
+            return;
+        }
         if ( this.rank()>2 ) {
             throw new IllegalArgumentException("builder must be rank 1, it is rank "+this.rank);
         }
