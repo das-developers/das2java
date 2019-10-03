@@ -810,7 +810,9 @@ public class Reduction {
         
         Map<String,Object> xprops= DataSetUtil.getDimensionProperties( xds, null );
         for ( Map.Entry<String,Object> en: xprops.entrySet() ) {
-            resultxBuilder.putProperty( en.getKey(), en.getValue() );
+            if ( !en.getKey().equals(QDataSet.UNITS) ) {
+                resultxBuilder.putProperty( en.getKey(), en.getValue() );
+            }
         }
         resultxBuilder.putProperty( QDataSet.CADENCE, DataSetUtil.asDataSet(xLimit) );
         
