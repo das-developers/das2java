@@ -803,12 +803,12 @@ public class Reduction {
         resultNBuilder.nextRecord( nnn );
         resultxBuilder.nextRecord( xNext.subtract(xLimit.divide(2) ) );        
 
-        Map<String,Object> props= Ops.copyProperties(ds);
+        Map<String,Object> props= DataSetUtil.getDimensionProperties( ds, null );
         for ( Map.Entry<String,Object> en: props.entrySet() ) {
             resultSBuilder.putProperty( en.getKey(), en.getValue() );
         }
         
-        Map<String,Object> xprops= Ops.copyProperties(xds);
+        Map<String,Object> xprops= DataSetUtil.getDimensionProperties( xds, null );
         for ( Map.Entry<String,Object> en: xprops.entrySet() ) {
             resultxBuilder.putProperty( en.getKey(), en.getValue() );
         }
