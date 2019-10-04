@@ -1,6 +1,8 @@
 
 package org.das2.util.filesystem;
 
+import com.itextpdf.text.io.StreamUtil;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -58,7 +60,13 @@ public class GitHubFileSystem extends HttpFileSystem {
             logger.log(Level.INFO, "get InputStream from {0}", gitHubURL);
             try {
                 InputStream result= HtmlUtil.getInputStream(gitHubURL); // handles redirects.
-                return result;
+                if ( gitHubURL.toString().endsWith(".vap") ) {
+                    byte[] bb= StreamUtil.inputStreamToArray(result);
+                    logger.log(Level.FINE, "downloaded {0} got {1} bytes.", new Object[]{result, bb.length});
+                    return new ByteArrayInputStream(bb);
+                } else {
+                    return result;
+                }
             } catch ( CancelledOperationException ex ) {
                 throw new InterruptedIOException(ex.getMessage());
             }
@@ -239,6 +247,9 @@ public class GitHubFileSystem extends HttpFileSystem {
         } else {
             if ( root.getHost().equals("github.com") && filename.endsWith(".vap" ) ) { // This is an experiment
                 String n= root.getScheme() + "://raw.githubusercontent.com" + '/' + spath + "/master/" + strjoin( path, "/", 3, -1 ) + filename;
+                if ( n.indexOf("//",8)>-1 ) {
+                    n= n.substring(0,8) + n.substring(8).replaceAll("//", "/");
+                }
                 URL url= new URL( n );
                 return url;                
             } else {

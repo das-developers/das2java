@@ -219,14 +219,7 @@ public class HtmlUtil {
         urlConnection= HttpUtil.checkRedirect( urlConnection );
         InputStream ins= urlConnection.getInputStream();
         
-        if ( url.toString().endsWith(".vap") ) {
-            byte[] bb= StreamUtil.inputStreamToArray(ins);
-            logger.log(Level.INFO, "downloaded {0} got {1} bytes.", new Object[]{url, bb.length});
-            return new ByteArrayInputStream(bb);
-        } else {
-            return ins;
-        }
-        
+        return ins;
         
     }
 
