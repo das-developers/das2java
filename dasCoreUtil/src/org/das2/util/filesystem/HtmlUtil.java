@@ -23,6 +23,7 @@
 
 package org.das2.util.filesystem;
 
+import com.itextpdf.text.io.StreamUtil;
 import java.util.logging.Level;
 import org.das2.util.monitor.CancelledOperationException;
 import org.das2.util.Base64;
@@ -216,8 +217,17 @@ public class HtmlUtil {
         }
                 
         urlConnection= HttpUtil.checkRedirect( urlConnection );
-        return urlConnection.getInputStream();
-           
+        InputStream ins= urlConnection.getInputStream();
+        
+        if ( url.toString().endsWith(".vap") ) {
+            byte[] bb= StreamUtil.inputStreamToArray(ins);
+            logger.log(Level.INFO, "downloaded {0} got {1} bytes.", new Object[]{url, bb.length});
+            return new ByteArrayInputStream(bb);
+        } else {
+            return ins;
+        }
+        
+        
     }
 
     /**
