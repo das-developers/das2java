@@ -426,7 +426,9 @@ public class QDataSetStreamHandler implements StreamHandler {
                 // look for bundles.
                 String prefix= (String)Ops.unbundle(ds1,0).property("NAME");
                 String name1= (String)Ops.unbundle(ds1,1).property("NAME");
-                if ( ds1.rank()==3 && name1.equals( prefix + ".max" ) || ( prefix.equals("") && name1.equals("peaks") ) ) {
+                if ( ds1.rank()==3 && ( name1.equals( prefix + ".max" ) 
+                        || ( prefix.equals("") && name1.equals("peaks") ) 
+                        || ( prefix.equals("avg") && name1.endsWith(".max") ) ) ) {
                     QDataSet max= Ops.unbundle(ds1,1);
                     max= Ops.putProperty( max, QDataSet.NAME, name1.replaceAll("\\.","_") );
                     max= Ops.putProperty( max, QDataSet.BUNDLE_1, null );
