@@ -67,6 +67,7 @@ public class QDataSetStreamHandler implements StreamHandler {
     private ProgressMonitor monitor= new NullProgressMonitor();
     
     private static final String SCHEME_XYZSCATTER= "xyzScatter";
+    private static final String SCHEME_PEAKS_AND_AVERAGES= "peaksAndAverages";
         
     public QDataSetStreamHandler() {
         
@@ -281,7 +282,9 @@ public class QDataSetStreamHandler implements StreamHandler {
                 if ( checkSource!=null && !yscan.getName().equals(checkSource) ) {  // support the new format using the old format.
                     if ( checkOperation.equals("BIN_MAX") ) {
                         putProperty( builder, QDataSet.NAME, checkSource + ".max" );
-                    } else if ( checkOperation.equals("BIN_MIN") ) {
+                    } else if ( checkOperation.equals("BIN_AVG") ) {
+                        putProperty( builder, QDataSet.NAME, checkSource + ".avg" );
+                    }else if ( checkOperation.equals("BIN_MIN") ) {
                         putProperty( builder, QDataSet.NAME, checkSource + ".min" );
                     }
                 }
@@ -424,11 +427,20 @@ public class QDataSetStreamHandler implements StreamHandler {
             }
             if ( currentBuilders.length==2 ) {
                 // look for bundles.
-                String prefix= (String)Ops.unbundle(ds1,0).property("NAME");
+                
+                String name0= (String)Ops.unbundle(ds1,0).property("NAME");
                 String name1= (String)Ops.unbundle(ds1,1).property("NAME");
-                if ( ds1.rank()==3 && ( name1.equals( prefix + ".max" ) 
-                        || ( prefix.equals("") && name1.equals("peaks") ) 
-                        || ( prefix.equals("avg") && name1.endsWith(".max") ) ) ) {
+                String prefix;
+                int ip= name0.lastIndexOf('.');
+                if ( ip>-1 ) {
+                    prefix= name0.substring(0,ip);
+                } else {
+                    prefix= name0;
+                }
+                
+                if ( ds1.rank()==3 && 
+                        ( name0.equals( prefix + ".avg" ) && name1.equals( prefix + ".max" ) ) 
+                        || ( prefix.equals("") && name1.equals("peaks") ) ) {
                     QDataSet max= Ops.unbundle(ds1,1);
                     max= Ops.putProperty( max, QDataSet.NAME, name1.replaceAll("\\.","_") );
                     max= Ops.putProperty( max, QDataSet.BUNDLE_1, null );
