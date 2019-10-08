@@ -1,10 +1,7 @@
 
 package org.das2.client;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
@@ -38,8 +35,9 @@ import org.das2.util.monitor.NullProgressMonitor;
 import org.das2.util.monitor.ProgressMonitor;
 
 /**
- * Write out QDataSet instead of legacy Das2 DataSet.
+ * Read the Das2Stream into a QDataSet.
  * @author jbf
+ * @see DataSetStreamHandler which reads into the old model.
  */
 public class QDataSetStreamHandler implements StreamHandler {
 
@@ -207,7 +205,7 @@ public class QDataSetStreamHandler implements StreamHandler {
     public void streamComment(StreamComment sc) throws StreamException {
         logger.log(Level.FINEST, "got stream comment: {0}", sc);
 
-        if (sc.getType().equals(sc.TYPE_TASK_SIZE)) {
+        if (sc.getType().equals(StreamComment.TYPE_TASK_SIZE)) {
             if (!monitor.isCancelled()) {
                 monitor.setTaskSize(Integer.parseInt(sc.getValue()));
                 monitor.started();
@@ -215,14 +213,14 @@ public class QDataSetStreamHandler implements StreamHandler {
             return;
         }
 
-        if (sc.getType().equals(sc.TYPE_TASK_PROGRESS)) {
+        if (sc.getType().equals(StreamComment.TYPE_TASK_PROGRESS)) {
             if (monitor.getTaskSize() != -1 && !monitor.isCancelled()) {
                 monitor.setTaskProgress(Long.parseLong(sc.getValue()));
             }
             return;
         }
 
-        if (sc.getType().matches(sc.TYPE_LOG)) {
+        if (sc.getType().matches(StreamComment.TYPE_LOG)) {
             String level = sc.getType().substring(4);
             Level l = Level.parse(level.toUpperCase());
             if (l.intValue() > Level.FINE.intValue()) {
@@ -475,14 +473,16 @@ public class QDataSetStreamHandler implements StreamHandler {
     }
         
     /**
-     * return the dataset collected by the handler.
-     * @return the dataset collected by the handler.
+     * return the dataset collected by the handler, or null if no records have been received.
+     * @return the dataset collected by the handler, or null if no records have been received.
      */
     public QDataSet getDataSet() {
           
         if ( collectionMode==MODE_SPLIT_BY_PACKET_DESCRIPTOR ) {
+            if ( currentXBuilder==null ) return null;
             collectDataSet();
         } else {
+            if ( currentXBuilder==null ) return null;
             int nbuilders= builders.size();
             if ( nbuilders==1 ) {
                 collectDataSet();
