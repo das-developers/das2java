@@ -54,6 +54,7 @@ import java.util.logging.Logger;
 /**
  *
  * @author Edward E. West
+ * @see QDataSetStreamHandler which reads into the modern data model (QDataSet).
  */
 public class DataSetStreamHandler implements StreamHandler {
     
