@@ -233,6 +233,10 @@ public class DataSetStreamHandler implements StreamHandler {
         }
     }
     
+    /**
+     * return the dataset collected or null if no packets were received.
+     * @return the dataset collected or null if no packets were received.
+     */
     public DataSet getDataSet() {
         if (delegate == null) {
             System.err.println("never established delegate, which might mean the stream contains no packets.");
