@@ -4461,7 +4461,7 @@ public final class Ops {
      * tool for creating ad-hoc events datasets.
      * @param append null or a dataset to append the result.  This events dataset must have [starttime, endtime, RBG color, string] for each record.
      * @param timeRange a timerange like "2010-01-01" or "2010-01-01/2010-01-10" or "2010-01-01 through 2010-01-09"
-     * @param rgbcolor an RGB color like 0xFF0000 (red), 0x00FF00 (green), or 0x0000FF (blue),
+     * @param rgbcolor an RGB color like 0xFF0000 (red), 0x00FF00 (green), or 0x0000FF (blue).  
      * @param annotation label for event, possibly including granny codes.
      * @return a rank 2 QDataSet with [[ startTime, stopTime, rgbColor, annotation  ]]
      */
@@ -4524,7 +4524,7 @@ public final class Ops {
             
         ds.putProperty( QDataSet.BUNDLE_1, bds );
         
-        append= concatenate( append, ds );
+        append= append( append, ds );
         
         ((MutablePropertyDataSet)append).putProperty(QDataSet.RENDER_TYPE,QDataSet.VALUE_RENDER_TYPE_EVENTS_BAR);
         return append;
@@ -4626,6 +4626,10 @@ public final class Ops {
                         } else {
                             throw new IllegalArgumentException("DEPEND_0 is rank 2 but not bins");
                         }
+                    } else if ( dep0.rank()==1 && SemanticOps.isBins(dep0) ) {
+                        xmins= replicate( DataSetOps.slice0( dep0, 0 ), 1 ); // make into 1-element rank 1 dataset
+                        xmaxs= replicate( DataSetOps.slice0( dep0, 1 ), 1 );
+                        msgs= Ops.replicate( dataset( EnumerationUnits.create("default").createDatum("_") ), 1 );
                     } else if ( dep0.rank() == 1 ) {
                         Datum width= SemanticOps.guessXTagWidth( dep0, null );
                         if ( width!=null ) {
