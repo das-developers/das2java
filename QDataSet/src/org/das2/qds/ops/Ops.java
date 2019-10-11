@@ -5980,6 +5980,12 @@ public final class Ops {
      * @see #binsWithin(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      */
     public static QDataSet within( QDataSet ds, QDataSet bounds ) {
+        if ( bounds==null ) {
+            throw new NullPointerException("bounds is null");
+        }
+        if ( bounds.rank()==0 ) {
+            throw new IllegalArgumentException("bounds must be not be rank 0, but a rank 1 bounding box");
+        }
         final UnitsConverter uc= SemanticOps.getLooseUnitsConverter( bounds, ds );
         final double min= uc.convert(bounds.value(0));
         final double max= uc.convert(bounds.value(1));
@@ -6036,6 +6042,12 @@ public final class Ops {
      * @see #within(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      */
     public static QDataSet without( QDataSet ds, QDataSet bounds ) {
+        if ( bounds==null ) {
+            throw new NullPointerException("bounds is null");
+        }
+        if ( bounds.rank()==0 ) {
+            throw new IllegalArgumentException("bounds must be not be rank 0, but a rank 1 bounding box");
+        }
         return or( lt( ds, bounds.slice(0) ), ge( ds, bounds.slice(1) ) );
     }
 
