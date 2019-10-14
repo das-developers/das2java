@@ -892,6 +892,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
 
             //logger.fine("*** print graphics: " + g);
             //logger.fine("*** print graphics clip: " + g.getClip());
+            logger.log(Level.FINE, "*** print graphics clip: {0}", g.getClip() );
 
             if ( logger.isLoggable(Level.FINER) ) {
                 for (int i = 0; i < getComponentCount(); i++) {
