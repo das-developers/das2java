@@ -247,6 +247,9 @@ public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
         
         buttonPanel.add(Box.createHorizontalGlue());
 
+        JButton pdfButton= new JButton( ComponentsUtil.getPdfButtonAction(canvas) );
+        buttonPanel.add( pdfButton );
+
         JButton printButton= new JButton( new AbstractAction("Print...") {
             @Override
             public void actionPerformed( ActionEvent e ) {

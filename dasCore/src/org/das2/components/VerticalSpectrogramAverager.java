@@ -45,15 +45,21 @@ import org.das2.event.DataRangeSelectionEvent;
 import org.das2.event.DataRangeSelectionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.das2.graph.Renderer;
@@ -61,6 +67,7 @@ import org.das2.graph.SeriesRenderer;
 import org.das2.qds.QDataSet;
 import org.das2.qds.SemanticOps;
 import org.das2.util.LoggerManager;
+import org.das2.util.filesystem.FileSystemUtil;
 
 /**
  * show the average of the data over an interval
@@ -207,6 +214,9 @@ public class VerticalSpectrogramAverager implements DataRangeSelectionListener {
         }
         
         buttonPanel.add(Box.createHorizontalGlue());
+
+        JButton pdfButton= new JButton( ComponentsUtil.getPdfButtonAction(canvas) );
+        buttonPanel.add( pdfButton );
 
         JButton printButton= new JButton( new AbstractAction("Print...") {
             @Override
