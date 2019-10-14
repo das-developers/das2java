@@ -28,6 +28,7 @@ import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import javax.swing.filechooser.FileFilter;
 import org.das2.util.LoggerManager;
 import org.das2.util.monitor.NullProgressMonitor;
 import org.das2.util.monitor.ProgressMonitor;
@@ -446,4 +447,23 @@ public class FileSystemUtil {
         return f;
     }
     
+    /**
+     * get simple filter based on extension for use with JFileChooser.
+     * @param description descriptions, like "png image file"
+     * @param ext file extension, like ".png"
+     * @return the FileFilter 
+     */
+    public static FileFilter getFileNameExtensionFilter(final String description, final String ext) {
+        return new FileFilter() {
+            @Override
+            public boolean accept(File f) {
+                String s= f.getName();
+                return f.isDirectory() || s.endsWith(ext);
+            }
+            @Override
+            public String getDescription() {
+                return description;
+            }
+        };
+    }
 }
