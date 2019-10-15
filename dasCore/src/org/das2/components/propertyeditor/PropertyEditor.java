@@ -44,6 +44,7 @@ import java.beans.PropertyChangeListener;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -141,7 +142,7 @@ public class PropertyEditor extends JComponent {
             return;
         } 
         for ( Method m2: lbean.getClass().getDeclaredMethods() ) {
-            if ( m2.getName().startsWith("get") && m2.getParameterCount()==0 ) {
+            if ( m2.getName().startsWith("get") && m2.getParameterCount()==0 && (m2.getModifiers() & Modifier.PUBLIC) != 0 ) {
                 try {
                     Object child= m2.invoke( lbean );
                     if ( child==null ) continue;
@@ -178,7 +179,7 @@ public class PropertyEditor extends JComponent {
         } 
         for ( Method m2: lbean.getClass().getDeclaredMethods() ) {
             logger.log(Level.FINER, "check {0}", m2.getName());
-            if ( m2.getName().startsWith("get") && m2.getParameterCount()==0 ) {
+            if ( m2.getName().startsWith("get") && m2.getParameterCount()==0 && (m2.getModifiers() & Modifier.PUBLIC) != 0 ) {
                 try {
                     Object child= m2.invoke( lbean );
                     if ( child==null ) continue;
