@@ -23,10 +23,15 @@
  */
 package org.das2.util.filesystem;
 
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.UnknownHostException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.das2.util.FileUtil;
 import org.das2.util.filesystem.FileSystem.FileSystemOfflineException;
 
 /**
@@ -57,6 +62,8 @@ public class HttpFileSystemFactory implements FileSystemFactory {
             return result;            
         } else {
             HttpFileSystem hfs = HttpFileSystem.createHttpFileSystem(root);
+            //TODO: In the response, there's: <meta content="GitLab" property="og:site_name">
+            // which could be used to detect gitlabs.
             if (!FileSystemSettings.hasAllPermission()) hfs.setAppletMode(true);
             return hfs;
         }
