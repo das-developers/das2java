@@ -343,7 +343,7 @@ public class Reduction {
         if ( xprops.containsKey( QDataSet.CACHE_TAG ) ) xprops.put( QDataSet.CACHE_TAG, null );
         DataSetUtil.putProperties( xprops, xds );
 
-        Map<String,Object> yprops= DataSetUtil.getProperties(ds);
+        Map<String,Object> yprops= DataSetUtil.getDimensionProperties(ds,null);
         yprops.put( QDataSet.DEPEND_0, xds );
         for ( int j=1; j<ds.rank(); j++ ) {
             String DEP= "DEPEND_"+j;
@@ -530,12 +530,12 @@ public class Reduction {
         MutablePropertyDataSet yds= ybuilder.getDataSet();
         MutablePropertyDataSet xds= xbuilder.getDataSet();
 
-        Map<String,Object> xprops= DataSetUtil.getProperties(x);
+        Map<String,Object> xprops= DataSetUtil.getDimensionProperties(x,null);
         if ( xprops.containsKey( QDataSet.CADENCE ) ) xprops.put( QDataSet.CADENCE, xLimit );
         if ( xprops.containsKey( QDataSet.CACHE_TAG ) ) xprops.put( QDataSet.CACHE_TAG, null );
         DataSetUtil.putProperties( xprops, xds );
 
-        Map<String,Object> yprops= DataSetUtil.getProperties(y);
+        Map<String,Object> yprops= DataSetUtil.getDimensionProperties(y,null);
         yprops.put( QDataSet.DEPEND_0, xds );
         DataSetUtil.putProperties( yprops, yds );
         yminbuilder.putProperty( QDataSet.UNITS, SemanticOps.getUnits(y) );
