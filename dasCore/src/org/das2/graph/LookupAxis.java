@@ -181,7 +181,13 @@ public class LookupAxis extends DasCanvasComponent {
         maxHeight= 0;
         
         if ( xpos==null ) {
-            updateTicks();
+            try {
+                updateTicks();
+            } catch ( RuntimeException ex ) {
+                logger.info( ex.getMessage() );
+                drawMessage( g,"error while updating ticks: "+ex.getMessage() );
+                return;
+            }
         }
         
         if ( xpos==null ) {
