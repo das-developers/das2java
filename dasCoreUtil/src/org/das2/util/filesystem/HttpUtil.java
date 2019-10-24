@@ -106,8 +106,15 @@ public final class HttpUtil {
             Map<String, String> theResult;
             if (!url.getProtocol().equals("ftp")) {
                 boolean exists;
+                
                 HttpURLConnection connect = (HttpURLConnection) url.openConnection();
+                //connect.setDefaultUseCaches(false);
+                //connect.setUseCaches(false);
+                
                 connect.setRequestMethod("HEAD");
+                //connect.setDefaultUseCaches(false);
+                //connect.setUseCaches(false);
+                //connect.setRequestProperty("Cache-Control", "max-age=0"); // attempts to get github.com to send fresh headers.
                 try {
                     String encode = KeyChain.getDefault().getUserInfoBase64Encoded(url);
                     if (encode != null) {
