@@ -341,9 +341,14 @@ public class Reduction {
         Map<String,Object> xprops= DataSetUtil.getDimensionProperties(x,null);
         if ( xprops.containsKey( QDataSet.CADENCE ) ) xprops.put( QDataSet.CADENCE, xLimit );
         if ( xprops.containsKey( QDataSet.CACHE_TAG ) ) xprops.put( QDataSet.CACHE_TAG, null );
+        if ( xprops.containsKey( QDataSet.DEPEND_0 ) ) xprops.put( QDataSet.DEPEND_0, null );
+        if ( xprops.containsKey( QDataSet.BIN_MINUS ) ) xprops.put( QDataSet.BIN_MINUS, null );
+        if ( xprops.containsKey( QDataSet.BIN_PLUS ) ) xprops.put( QDataSet.BIN_PLUS, null );
+        if ( xprops.containsKey( QDataSet.BIN_MIN ) ) xprops.put( QDataSet.BIN_MIN, null );
+        if ( xprops.containsKey( QDataSet.BIN_MAX ) ) xprops.put( QDataSet.BIN_MAX, null );        
         DataSetUtil.putProperties( xprops, xds );
 
-        Map<String,Object> yprops= DataSetUtil.getDimensionProperties(ds,null);
+        Map<String,Object> yprops= DataSetUtil.getProperties(ds);
         yprops.put( QDataSet.DEPEND_0, xds );
         for ( int j=1; j<ds.rank(); j++ ) {
             String DEP= "DEPEND_"+j;
@@ -530,12 +535,17 @@ public class Reduction {
         MutablePropertyDataSet yds= ybuilder.getDataSet();
         MutablePropertyDataSet xds= xbuilder.getDataSet();
 
-        Map<String,Object> xprops= DataSetUtil.getDimensionProperties(x,null);
+        Map<String,Object> xprops= DataSetUtil.getProperties(x);
         if ( xprops.containsKey( QDataSet.CADENCE ) ) xprops.put( QDataSet.CADENCE, xLimit );
         if ( xprops.containsKey( QDataSet.CACHE_TAG ) ) xprops.put( QDataSet.CACHE_TAG, null );
+        if ( xprops.containsKey( QDataSet.DEPEND_0 ) ) xprops.put( QDataSet.DEPEND_0, null );
+        if ( xprops.containsKey( QDataSet.BIN_MINUS ) ) xprops.put( QDataSet.BIN_MINUS, null );
+        if ( xprops.containsKey( QDataSet.BIN_PLUS ) ) xprops.put( QDataSet.BIN_PLUS, null );
+        if ( xprops.containsKey( QDataSet.BIN_MIN ) ) xprops.put( QDataSet.BIN_MIN, null );
+        if ( xprops.containsKey( QDataSet.BIN_MAX ) ) xprops.put( QDataSet.BIN_MAX, null );
         DataSetUtil.putProperties( xprops, xds );
 
-        Map<String,Object> yprops= DataSetUtil.getDimensionProperties(y,null);
+        Map<String,Object> yprops= DataSetUtil.getProperties(y);
         yprops.put( QDataSet.DEPEND_0, xds );
         DataSetUtil.putProperties( yprops, yds );
         yminbuilder.putProperty( QDataSet.UNITS, SemanticOps.getUnits(y) );
