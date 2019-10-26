@@ -23,15 +23,10 @@
  */
 package org.das2.util.filesystem;
 
-import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.UnknownHostException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.das2.util.FileUtil;
 import org.das2.util.filesystem.FileSystem.FileSystemOfflineException;
 
 /**
@@ -59,6 +54,9 @@ public class HttpFileSystemFactory implements FileSystemFactory {
             return result;
         } else if ( h.equals("abbith.physics.uiowa.edu") ) {
             WebFileSystem result= GitHubFileSystem.createGitHubFileSystem(root);
+            return result;            
+        } else if ( h.equals("jfaden.net") && root.getPath().startsWith("/git") ) {
+            WebFileSystem result= GitHubFileSystem.createGitHubFileSystem(root,1);  // TODO: detect automatically
             return result;            
         } else {
             HttpFileSystem hfs = HttpFileSystem.createHttpFileSystem(root);

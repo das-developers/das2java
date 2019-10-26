@@ -49,6 +49,8 @@ public class GitHubFileSystem extends HttpFileSystem {
     
     private static final String branch= "master";
     
+    private static int baseOffset= 0;
+    
     private class GitHubHttpProtocol implements WebProtocol {
 
         @Override
@@ -93,13 +95,30 @@ public class GitHubFileSystem extends HttpFileSystem {
      * in the local folder.
      * @param root the root of the filesystem
      * @param localRoot the local root where files are downloaded.
+     * @param baseOffset
      */
-    protected GitHubFileSystem(URI root, File localRoot) {
+    protected GitHubFileSystem(URI root, File localRoot, int baseOffset) {
         super(root, localRoot);
+        this.baseOffset= baseOffset;
         this.protocol= new GitHubHttpProtocol();
     }
     
+    /**
+     * create GitLabs instance
+     * @param root the root
+     * @return the filesystem.
+     */
     public static GitHubFileSystem createGitHubFileSystem( URI root ) {
+        return createGitHubFileSystem(root,0);
+    }
+    
+    /**
+     * @param root the root
+     * @param baseOffset the number of folders after the host in the root, for
+     * this GitLabs instance.
+     * @return the filesystem.
+     */
+    public static GitHubFileSystem createGitHubFileSystem( URI root, int baseOffset ) {
         File local;
         
         String suri= root.toString();
@@ -133,7 +152,7 @@ public class GitHubFileSystem extends HttpFileSystem {
             logger.log(Level.FINER, "initializing httpfs {0} in applet mode", root);
         }
 
-        return new GitHubFileSystem(root, local);
+        return new GitHubFileSystem(root, local, baseOffset );
         
     }
     
@@ -230,27 +249,30 @@ public class GitHubFileSystem extends HttpFileSystem {
      * </pre>
      * @throws MalformedURLException 
      */
-    public static URL gitHubMapFile( URI root, String filename ) throws MalformedURLException {
+    public URL gitHubMapFile( URI root, String filename ) throws MalformedURLException {
         filename= toCanonicalFilename( filename );       
         // png image "https://github.com/autoplot/app/raw/master/Autoplot/src/resources/badge_ok.png"
         String[] path= root.getPath().split("/",-2);
         String spath= path[0] + '/' + path[1] + '/' + path[2] ;
+        for ( int i=3; i<3+baseOffset; i++ ) {
+            spath+= "/" + path[i];
+        }
         if ( spath.startsWith("/") ) spath=spath.substring(1);
         
-        if ( path[3].equals("blob") ) {
-            String n= root.getScheme() + "://" + root.getHost() + '/' + spath + "/raw/" + strjoin( path, "/", 4, -1 ) + filename;
+        if ( path[3+baseOffset].equals("blob") ) {
+            String n= root.getScheme() + "://" + root.getHost() + '/' + spath + "/raw/" + strjoin( path, "/", 4+baseOffset, -1 ) + filename;
             URL url= new URL( n );
             return url;
         } else {
             if ( root.getHost().equals("github.com") && filename.endsWith(".vap" ) ) { // This is an experiment
-                String n= root.getScheme() + "://raw.githubusercontent.com" + '/' + spath + "/master/" + strjoin( path, "/", 3, -1 ) + filename;
+                String n= root.getScheme() + "://raw.githubusercontent.com" + '/' + spath + "/master/" + strjoin( path, "/", 3+baseOffset, -1 ) + filename;
                 if ( n.indexOf("//",8)>-1 ) {
                     n= n.substring(0,8) + n.substring(8).replaceAll("//", "/");
                 }
                 URL url= new URL( n );
                 return url;                
             } else {
-                String n= root.getScheme() + "://" + root.getHost() + '/' + spath + "/raw/master/" + strjoin( path, "/", 3, -1 ) + filename;
+                String n= root.getScheme() + "://" + root.getHost() + '/' + spath + "/raw/master/" + strjoin( path, "/", 3+baseOffset, -1 ) + filename;
                 URL url= new URL( n );
                 return url;
             }
@@ -269,11 +291,14 @@ public class GitHubFileSystem extends HttpFileSystem {
         // png image "https://github.com/autoplot/app/raw/master/Autoplot/src/resources/badge_ok.png"
         String[] path= root.getPath().split("/",-2);
         String spath= path[0] + '/' + path[1] + '/' + path[2] ;
+        for ( int i=3; i<3+baseOffset; i++ ) {
+            spath+= "/" + path[i];
+        }
         String n;
-        if ( path.length==3 && filename.length()==1 ) {
+        if ( path.length==(3+baseOffset) && filename.length()==1 ) {
             return root.toURL();
         } else {
-            n= root.getScheme() + "://" + root.getHost() + '/' + spath + "/tree/master/" + strjoin( path, "/", 3, -1 ) + filename;
+            n= root.getScheme() + "://" + root.getHost() + '/' + spath + "/tree/master/" + strjoin( path, "/", 3 + baseOffset, -1 ) + filename;
             URL url= new URL( n );
             return url;
         }
