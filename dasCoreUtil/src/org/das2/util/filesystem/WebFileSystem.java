@@ -540,7 +540,19 @@ public abstract class WebFileSystem extends FileSystem {
     public File getLocalRoot() {
         return this.localRoot;
     }
+    
+    /**
+     * return the protocol object, which allows access to the metadata.  This
+     * may go away, so do not depend on this for production code.
+     * @return the protocol object.
+     */
+    public WebProtocol getProtocol() {
+        return this.protocol;
+    }
 
+    /**
+     * reset the .listing files and the ram-memory caches.
+     */
     public synchronized void resetListingCache() {
         if ( !FileUtil.deleteWithinFileTree(localRoot,".listing") ) { // yikes.  This should probably not be in a synchronized block...
             throw new IllegalArgumentException("unable to delete all .listing files");
