@@ -440,8 +440,17 @@ public class EventsRenderer extends Renderer {
         if ( vds.rank()==2 ) {
             QDataSet dep0= (QDataSet) vds.property(QDataSet.DEPEND_0);
             if ( dep0==null ) {
-                xmins= DataSetOps.unbundle( vds,0 );
-                xmaxs= DataSetOps.unbundle( vds,1 );
+                try {
+                    xmins= DataSetOps.unbundle( vds,0 );
+                    xmaxs= DataSetOps.unbundle( vds,1 );
+                } catch ( IndexOutOfBoundsException ex ) {
+                    if ( vds.length()==0 ) {
+                        //TODO: unbundle should be able to handle this.
+                        return null;
+                    } else {
+                        throw ex;
+                    }
+                }
 
                 if ( useColor ) {
                     colors= Ops.replicate( getColor().getRGB(), xmins.length() );
