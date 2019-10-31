@@ -245,6 +245,7 @@ public class GitHubFileSystem extends HttpFileSystem {
      * https://abbith.physics.uiowa.edu/jbf/myawesomepublicproject/raw/24dff04b9bcb275d8bfd85b38e0e8b039b21d655/sayAwesome.jy
      * https://github.com/autoplot/app/raw/master/Autoplot/src/resources/badge_ok.png
      * https://github.com/autoplot/app/raw/master/Autoplot/src/resources/badge_ok.png
+     * https://jfaden.net/git/jbfaden/public/blob/master/u/jeremy/2019/20191023/updates.jy
      * }
      * </pre>
      * @throws MalformedURLException 
