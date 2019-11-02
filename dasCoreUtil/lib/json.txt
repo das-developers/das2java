@@ -1,0 +1,4 @@
+The JSON jar file was created from the git repository at:
+https://github.com/douglascrockford/JSON-java
+on 20110127.  I believe this was the "head" release.
+

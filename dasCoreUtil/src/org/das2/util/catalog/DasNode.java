@@ -1,6 +1,6 @@
 /* Copyright (C) 2019 Chris Piker 
  *
- * This file is part of the das2 library.
+ * This file is part of the das2 Core library.
  *
  * das2 is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -70,9 +70,9 @@ public abstract class DasNode
 	protected Object oDef = null; // A pointer to the content
 	
 	
-	/** Create a root catalog node, possibly using the federated catalog 
-	 * s
-	 * @param sPath - The Catalog path name for this node
+	/** Create a root catalog node. 
+	 * Root nodes do not have a name, they are made by explicit URLs
+	 * 
 	 * @param sURI - Make a root node using this particular resource URL
 	 * @param mon
 	 * @return 
