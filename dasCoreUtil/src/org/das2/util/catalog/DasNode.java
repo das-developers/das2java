@@ -42,5 +42,17 @@ public interface DasNode
 	 * @return true if this node describes one or more data sources
 	 */
 	public abstract boolean isDataSource();
+
+	/** Is this object a detached root of a catalog tree.
+	 * Note that the build in root URLs are always detached roots because there is no
+	 * higher node to find.
+	 * @return true if no higher node is reachable from this one.
+	 */
+	public boolean isRootNode();
+
+	/** Return the highest node reachable by this catalog node.  
+	 * @return the highest node reachable by this catalog node, which may just be itself.
+	 */
+	public DasNode getRootNode();
 	
 }

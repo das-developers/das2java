@@ -74,6 +74,21 @@ public class DasNodeFactory
 		"https://raw.githubusercontent.com/das-developers/das-cat/master/cat/index.json"
 	};
 	
+	/** Get the root node list as a string with some separator and prefix
+	 * @param sPre A prefix to place before each root node URL, may be null
+	 * @param sSep The separator to use between each root node URL, may be null
+	 * @return A formatted string containing a list of all root node URLs
+	 */
+	public static String defRootNodesAsStr(String sPre, String sSep){
+		StringBuilder bldr = new StringBuilder();
+		for(int i = 0; i < DEFAULT_ROOT_URLS.length; i++){
+			if((i > 0)&&(sSep!=null)) bldr.append(sSep);  // prefix sep if needed
+			if(sPre != null) bldr.append(sPre);
+			bldr.append(DEFAULT_ROOT_URLS[i]);
+		}
+		return bldr.toString();
+	}
+	
 	
 	// Get a dom object from a document in string form
 	static Document getXmlDoc(String sData)
@@ -107,14 +122,18 @@ public class DasNodeFactory
 		return sThing;
 	}
 		
-	/** Get a node from the global node map by URL.
+	/** Get a node from the global node map by URL. 
+	 * 
+	 * This function tries for an exact match to the URL.  If that can't be done then
+	 * parts of the URL are shaved off (at natural seeming boundaries) and the attempted
+	 * again.  If nothing works, null is returned.
 	 * 
 	 * @param sUrl
 	 * @param mon
 	 * @param bReload - Reload the node definition from the original source
 	 * @return The node requested, or throws an error
 	 */
-	public static DasNode getNode(String sApUrl, ProgressMonitor mon, boolean bReload) {
+	public static DasNode getNearestNode(String sApUrl, ProgressMonitor mon, boolean bReload) {
 				
 		if(!bReload && ROOT_NODES.containsKey(sApUrl))
 			return ROOT_NODES.get(sApUrl).get(0);
