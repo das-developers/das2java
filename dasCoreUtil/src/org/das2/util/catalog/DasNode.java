@@ -25,87 +25,22 @@ import java.util.logging.Logger;
 import org.das2.util.monitor.ProgressMonitor;
 
 /** A single node from the das2 federated catalog
- * This represents a catalog node.  It has a 2-phase construction sequence
- * A minimal version may be in memory representing just a referenced item from
- * a higher level container, or it may be fully realized by a catalog lookup.
- * 
- * Loading the full node is delayed until the functionality of a full definition
- * is needed.  For example a minimal catalog entry will load itself when a list
- * of sub items is called for.  A minimal data source entry will load itself
- * when a data request or interface defintion request occurs.
- * 
- * All Nodes have the following data members:
- *   path - The Path URI of this object.  This is a conceptual location, not a physical
- *          path.  Even nodes loaded from a local file can have a path URI.  A root node
- *          for a given tree has a 'null' path URI.  You can't navigate above a root node,
- *          but, depending on the node type, you can navigate down.
- * 
- *   type - The type of object, cannot be null
- * 
- *   name - The name of the object
- * 
- *   url  - Where the item was loaded from (if fully realized)
- * 
- *   locs - Where you can get the full item definition from if needed
- * 
- *   data - The string information read in to generate the node.  The actual
- *         format of this data is may be JSON, XML, or some other format.
  *
  * @author cwp
  */
-public abstract class DasNode
+public interface DasNode
 {
-	private static final Logger logger = org.das2.util.LoggerManager.getLogger(
-		"das2.catalog.node" 
-	);
-
-	protected String sPath;  // My name from the root location
-	protected String sName;  // My human readable name
-	protected String sSrcUrl = null;  // Where I came from (if loaded)
-	protected Map<String, String> dLocs = new HashMap<>();  // Where I can be loaded from
-	
-	protected enum content_fmt {
-		JSON, XML
-	}
-	protected Object oDef = null; // A pointer to the content
-	
-	
-	/** Create a root catalog node. 
-	 * Root nodes do not have a name, they are made by explicit URLs
-	 * 
-	 * @param sURI - Make a root node using this particular resource URL
-	 * @param mon
-	 * @return 
-	 */
-	public static DasNode rootNode(String sPath, String sURI, ProgressMonitor mon)
-	{
-		
-		return null;
-	}
-	
-	
-	public DasNode(String sURL){
-		
-	}
-	
-	
-	/** Get the catalog node type.
+	/** Get the node type.
 	 * @return A string representing the node type
 	 */
 	public abstract String type();
 	
-	/** Convert a stub node into a full node.
-	 * 
-	 * This method does nothing if called on a fully loaded node.  Internally the
-	 * list possible locations (dLocs) is used to load the full definition.
-	 * If an error is encountered on the first URL, subsequent URLs are attempted
-	 * until the list is exhausted or a the node loads correctly.
-	 */
-	protected void load(){
-		
-		
-		
-	}
+	/** get the node name */
+	public abstract String name();
 	
+	/** Can this catalog node provide data
+	 * @return true if this node describes one or more data sources
+	 */
+	public abstract boolean isDataSource();
 	
 }
