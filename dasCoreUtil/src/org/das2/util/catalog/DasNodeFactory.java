@@ -65,7 +65,7 @@ public class DasNodeFactory
 	// children.
 	private static final Map<String, List<DasNode>> ROOT_NODES;
 	static{
-		ROOT_NODES = Collections.synchronizedMap(new HashMap<>());
+		ROOT_NODES = Collections.synchronizedMap(new HashMap<String, List<DasNode>>());
 	}
 	
 	// The compiled in default root node locations if user doesn't supply a URL
