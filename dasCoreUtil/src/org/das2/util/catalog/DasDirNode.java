@@ -13,11 +13,11 @@ public interface DasDirNode extends DasNode {
 	 */
 	public String[] list();
 	
-	/** Get a child node.
+	/** Get a decendent node given a string
 	 * 
 	 * @param sName
 	 * @return The child node object, or null if no such sub object exits
 	 */
-	public DasNode subNode(String sName);
+	public DasNode resolve(String sName);
 	
 }

@@ -60,6 +60,39 @@ public class DasNodeFactory
 {
 	private static final Logger LOGGER = LoggerManager.getLogger( "das2.catalog" );
 	
+	
+	// This is the supra node, it's not real.  It only has one child, null, that
+	// has hard coded lookup URLs
+	public class SupraNode extends DasAbstractNode implements DasDirNode{
+
+		@Override
+		LoadResult load(String sUrl, ProgressMonitor mon) {
+			LoadResult res = new LoadResult();  // Defaults to success
+			return res;
+		}
+
+		@Override
+		public String type() { return "Catalog"; }
+
+		@Override
+		public String name() { return null; /* voldemort */ }
+
+		@Override
+		public boolean isDataSource() { return false; }
+
+		@Override
+		public String[] list() {
+			throw new UnsupportedOperationException("Not supported yet.");
+		}
+
+		@Override
+		public DasNode resolve(String sName) {
+			// The main purpose of this fake node, to provide a list of
+			throw new UnsupportedOperationException("Not supported yet.");
+		}
+		
+	}
+	
 	// The, the only, the detached root node map.  Any understood format can be a detached
 	// root node.  Root nodes have no path name and cannot have parents, but may have
 	// children.
@@ -70,6 +103,7 @@ public class DasNodeFactory
 	
 	// The compiled in default root node locations if user doesn't supply a URL
 	public static final String[] DEFAULT_ROOT_URLS = {
+		// TODO: Move to supranode data
 		"http://das2.org/catalog/index.json",
 		"https://raw.githubusercontent.com/das-developers/das-cat/master/cat/index.json"
 	};
@@ -80,6 +114,8 @@ public class DasNodeFactory
 	 * @return A formatted string containing a list of all root node URLs
 	 */
 	public static String defRootNodesAsStr(String sPre, String sSep){
+		// TODO: move to supra node data
+		
 		StringBuilder bldr = new StringBuilder();
 		for(int i = 0; i < DEFAULT_ROOT_URLS.length; i++){
 			if((i > 0)&&(sSep!=null)) bldr.append(sSep);  // prefix sep if needed
@@ -124,24 +160,35 @@ public class DasNodeFactory
 		
 	/** Get a node from the global node map by URL. 
 	 * 
-	 * This function tries for an exact match to the URL.  If that can't be done then
-	 * parts of the URL are shaved off (at natural seeming boundaries) and the attempted
-	 * again.  If nothing works, null is returned.
+	 * This function tries to load and return the node for the given URL.  If the file
+	 * portion of the node is a recognized filesystem type then that exact URL is 
+	 * attempted.  For example:
+	 * 
+	 *    https://space.physics.uiowa.edu/juno/test/random_source.json
+	 * 
+	 * would trigger a filesystem type lookup that expects an exact match.  While a URL
+	 * such as:
+	 * 
+	 *   tag:das2.org,2012:test:/uiowa/juno/random_collection/das2
+	 * 
+	 * For space savings, tag:das2.org,2012: may be left off of the given URLs.
+	 * 
+	 * If nothing can be matched, null is return.  The resulting parsed node is saved in
+	 * a cache to avoid repeated network traffic.
 	 * 
 	 * @param sUrl
 	 * @param mon
 	 * @param bReload - Reload the node definition from the original source
 	 * @return The node requested, or throws an error
 	 */
-	public static DasNode getNearestNode(String sApUrl, ProgressMonitor mon, boolean bReload) {
-				
-		if(!bReload && ROOT_NODES.containsKey(sApUrl))
-			return ROOT_NODES.get(sApUrl).get(0);
+	public static DasNode getNode(String sUrl, ProgressMonitor mon, boolean bReload) {
 		
-		// We don't have it (or user wants to reload) so go get it. 
+		// We never put non root nodes in here, so this step is okay
+		if(!bReload && ROOT_NODES.containsKey(sUrl))
+			return ROOT_NODES.get(sUrl).get(0);
 		
 		// null URL, go get one of the default roots
-		if(sApUrl == null){
+		if(sUrl == null){
 			// I know that the root nodes are DasDirNodeCat objects.  If this changes will
 			// have to update this library
 			DasDirNodeCat node = new DasDirNodeCat();
@@ -158,8 +205,31 @@ public class DasNodeFactory
 					return node;
 				}
 			}
+			return null;
 		}
 		
+		// See if it matches a filesystem prefix
+		
+		return null;
+	}
+	
+	/** If the given node lookup fails, attempt to get a higher level catalog node.
+	 * 
+	 * The operation of this function is the same as getNode if the given URL does 
+	 * resolve to a loadable catalog node.
+	 * 
+	 * @param sUrl An autoplot URL
+	 * @param mon
+	 * @param bReload
+	 * @return null if resolution failed or a DasNode otherwise.  The actual 
+	 *        source of the node can be found by DasNode.source().
+	 */
+	public static DasNode getNearestNode(String sUrl, ProgressMonitor mon, boolean bReload)
+	{
+		DasNode node = getNode(sUrl, mon, bReload);
+		if(node != null) return node;
+		
+		assert false : "handle resolution failure";
 		return null;
 	}
 	

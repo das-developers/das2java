@@ -59,7 +59,7 @@ public class DasDirNodeCat extends DasAbstractNode implements DasDirNode
 	}
 
 	@Override
-	public DasNode subNode(String sName) {
+	public DasNode resolve(String sName) {
 		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 	}
 	
