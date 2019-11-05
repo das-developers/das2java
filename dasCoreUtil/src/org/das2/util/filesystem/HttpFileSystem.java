@@ -634,6 +634,7 @@ public class HttpFileSystem extends WebFileSystem {
             result.putAll(meta);
             
             result.put( "EXIST", Boolean.parseBoolean(meta.get( WebProtocol.META_EXIST ) ) );
+            result.put( WebProtocol.META_EXIST, Boolean.parseBoolean(meta.get( WebProtocol.META_EXIST ) ) );  // exist is lower case.
             result.put( WebProtocol.META_CONTENT_LENGTH, Long.parseLong(meta.get(WebProtocol.META_CONTENT_LENGTH) ) );
             result.put( WebProtocol.META_LAST_MODIFIED, Long.parseLong(meta.get(WebProtocol.META_LAST_MODIFIED ) ) );
 
@@ -943,6 +944,17 @@ public class HttpFileSystem extends WebFileSystem {
             throw new IllegalArgumentException("is not a directory: " + directory);
         }
 
+        if ( !regex.contains(".*") ) { // if it is not a regular expression // TODO: finally support ? in glob with """!regex.contains(".{1}")"""
+            try {
+                Map<String,Object> meta= getHeadMeta( directory+regex );
+                if ( Boolean.TRUE.equals( meta.get(WebProtocol.META_EXIST) ) ) {
+                    return new String[] { regex };
+                }
+            } catch (CancelledOperationException ex) {
+                Logger.getLogger(HttpFileSystem.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        
         String[] listing = listDirectory(directory);
         Pattern pattern = Pattern.compile(regex);
         ArrayList result = new ArrayList();
