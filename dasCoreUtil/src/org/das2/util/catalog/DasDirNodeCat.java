@@ -6,9 +6,14 @@
 package org.das2.util.catalog;
 
 import java.io.IOException;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.util.monitor.ProgressMonitor;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -19,7 +24,7 @@ import org.json.JSONObject;
  * Loading the full node is delayed until the functionality of a full definition
  * is needed.  For example a minimal catalog entry will load itself when a list
  * of sub items is called for.  A minimal data source entry will load itself
- * when a data request or interface defintion request occurs.
+ * when a data request or interface definition request occurs.
  * 
  * All Nodes have the following data members:
  *   path - The Path URI of this object.  This is a conceptual location, not a physical
@@ -38,77 +43,150 @@ import org.json.JSONObject;
  *   data - The string information read in to generate the node.  The actual
  *         format of this data is may be JSON, XML, or some other format. * @author cwp
  */
-public class DasDirNodeCat extends DasAbstractNode implements DasDirNode
+public class DasDirNodeCat extends DasAbstractDirNode
 {
-	private static final Logger logger = org.das2.util.LoggerManager.getLogger(
+	private static final Logger LOGGER = org.das2.util.LoggerManager.getLogger(
 		"das2.catalog.node" 
 	);
 	
 	JSONObject json = null;
-	public static final String TYPE_CATALOG = "Catalog";
+	public static final String TYPE = "Catalog";
+
+	// Phase 1 construction, just let super-class handle it
+	public DasDirNodeCat(DasDirNode parent, String id, String name, List<String> locations)
+	{
+		super(parent, id, name, locations);
+	}
 	
 	@Override
-	public String type() { return TYPE_CATALOG; }
+	public String type() { return TYPE; }
 
 	@Override
 	public boolean isDataSource() { return false; }
-
-	@Override
-	public String[] list() {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-	}
-
-	@Override
-	public DasNode resolve(String sName) {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-	}
 	
 	@Override
-	public String name() {
+	public boolean isDir(){ return true; }
+	
+	@Override
+	boolean isLoaded(){ return (json != null); }
+
+	
+	protected void initFromJson(JSONObject jo) throws JSONException, ParseException{
+		json = jo;
+		if(json.has("catalog")){
+			JSONObject cat = json.getJSONObject("catalag");
+			Iterator<String> keys = cat.sortedKeys();
+			while(keys.hasNext()){
+				String sChildId = keys.next();
+				JSONObject joChild = cat.getJSONObject(sChildId);
+				
+				String sChildType = joChild.getString("type");  // Can't be null				
+				String sChildName = joChild.optString("name", null);
+				JSONArray jaLocs = joChild.optJSONArray("urls");
+				List<String> lChildLocs = null;
+				if(jaLocs != null){
+					lChildLocs = new ArrayList<>();
+					for(int i = 0; i < jaLocs.length(); ++i){
+						lChildLocs.add(jaLocs.getString(i));
+					}
+				}
+				// Make the right kind of child
+				DasAbstractNode child = DasNodeFactory.newNode(
+					sChildType, this, sChildId, sChildName, lChildLocs
+				);
+				
+				dSubNodes.put(sChildId, child);
+			}
+		}
+	}
+	
+	protected void mergeFromJson(JSONObject jo){
+		throw new UnsupportedOperationException("Not supported yet.");
+	}
+	
+
+	@Override
+	void load(ProgressMonitor mon) throws ResolutionException {
+		for(NodeDefLoc loc: lLocs){
+			loc.bLoaded = false;
+			loc.bBad = false;
+		}
+		
+		for(int i = 0; i < lLocs.size(); i++){
+			NodeDefLoc loc = lLocs.get(i);
+			try{
+				String sData = DasNodeFactory.getUtf8NodeDef(loc.sUrl, mon);
+				JSONObject jo = new JSONObject(sData);
+				
+				String sVal = jo.getString("type");
+				
+				// Using exceptions for flow control... not good.
+				if(!sVal.equals(TYPE))
+					throw new ResolutionException("Expected type '"+TYPE+"' not '"+sVal+"'", loc.sUrl);
+				
+				initFromJson(jo);
+				loc.bLoaded = true;
+				return;
+				
+			} catch(IOException | JSONException | ParseException | ResolutionException ex){
+				loc.bBad = true;
+				LOGGER.log(Level.FINE, 
+					"Catalog location {0} marked as bad because {1}", 
+					new Object[]{loc.sUrl, ex.getMessage()}
+				);
+				//If this was our last chance, go ahead and raise the exception
+				if((i + 1) == lLocs.size()){
+					ResolutionException resEx = new ResolutionException(
+						"Couldn't load catalog node because "+ex.getMessage(),
+						ex, loc.sUrl
+					);
+					throw resEx;
+				}
+			}
+		} 
+	}
+
+	@Override
+	boolean merge(ProgressMonitor mon)
+	{
+		for(NodeDefLoc loc: lLocs){
+			if(loc.bLoaded || loc.bBad) continue;
+			
+			try{
+				String sData = DasNodeFactory.getUtf8NodeDef(loc.sUrl, mon);
+				JSONObject jo = new JSONObject(sData);
+				String sVal = jo.getString("type");
+				
+				if(!sVal.equals(TYPE))
+					throw new ResolutionException("Expected type '"+TYPE+"' not '"+sVal+"'", loc.sUrl	);
+				
+				mergeFromJson(jo);
+				loc.bLoaded = true;
+				return true;
+				
+			} catch(IOException | JSONException | ResolutionException ex){
+				loc.bBad = true;
+				LOGGER.log(Level.FINE, 
+					"Catalog location {0} marked as bad because {1}", 
+					new Object[]{loc.sUrl, ex.getMessage()}
+				);
+			}
+		}
+		
+		return false;
+	}
+
+	@Override
+	public DasNode get(String sChildId)
+	{
 		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 	}
 
 	@Override
-	LoadResult load(String sUrl, ProgressMonitor mon) {
-		LoadResult res = new LoadResult();  // Defaults to success
-		String sData;
-		try {
-			// This type of node expects a string data definition
-			sData = DasNodeFactory.getUtf8NodeDef(sUrl, mon);
-		} catch (IOException ex) {
-			res.bSuccess = false;
-			res.sFailure = "Couldn't download from "+sUrl;
-			res.exFailure = ex;
-			return res;
-		}
-		
-		try {
-			json = new JSONObject(sData);
-		} catch (JSONException ex) {
-			res.bSuccess = false;
-			res.sFailure = "Text from "+sUrl+" was not a valid JSON file";
-			res.exFailure = ex;
-			return res;
-		}
-		
-		// Okay, it should be valid JSON data, make sure it has the content we
-		// need.
-		try {
-			String sVal = json.getString("type");
-			if(!sVal.equals(TYPE_CATALOG)){
-				throw new CatalogException(
-					"Expected type '"+TYPE_CATALOG+"' not '"+sVal+"'", sUrl
-				);
-			}
-		} 
-		catch (JSONException|CatalogException ex) {
-			res.bSuccess = false;
-			res.sFailure = "Error in JSON object definition at "+sUrl;
-			res.exFailure = ex;
-			return res;
-		}
-		
-		return res;
+	boolean parse(String sData, String sUrl) throws ParseException
+	{
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 	}
+
 	
 }

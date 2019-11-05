@@ -19,10 +19,6 @@
  */
 package org.das2.util.catalog;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.logging.Logger;
-import org.das2.util.monitor.ProgressMonitor;
 
 /** A single node from the das2 federated catalog
  *
@@ -42,6 +38,11 @@ public interface DasNode
 	 * @return true if this node describes one or more data sources
 	 */
 	public abstract boolean isDataSource();
+	
+	/** Can this catalog node have the sub-nodes?
+	 * @return  true if this node can have child nodes, not that it necessarily
+	 *          contains any. */
+	public abstract boolean isDir();
 
 	/** Is this object a detached root of a catalog tree.
 	 * Note that the build in root URLs are always detached roots because there is no

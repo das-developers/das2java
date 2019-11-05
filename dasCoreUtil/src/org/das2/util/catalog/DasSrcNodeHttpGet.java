@@ -1,10 +1,13 @@
 
 package org.das2.util.catalog;
 
+import java.text.ParseException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 import org.das2.util.monitor.ProgressMonitor;
+import org.json.JSONObject;
 
 /**
  *
@@ -13,13 +16,21 @@ import org.das2.util.monitor.ProgressMonitor;
 public class DasSrcNodeHttpGet extends DasAbstractNode implements DasSrcNode
 {
 	private static final Logger LOGGER = org.das2.util.LoggerManager.getLogger(
-		"das2.catalog.node" 
+		"das2.catalog" 
 	);
 
+	JSONObject json = null;
+	public static final String TYPE = "HttpStreamSrc";
+	
 	protected String sPath;  // My name from the root location
 	protected String sName;  // My human readable name
 	protected String sSrcUrl = null;  // Where I came from (if loaded)
 	protected Map<String, String> dLocs = new HashMap<>();  // Where I can be loaded from
+
+	public DasSrcNodeHttpGet(DasDirNode parent, String id, String name, List<String> locations)
+	{
+		super(parent, id, name, locations);
+	}
 
 	@Override
 	public String type() { return "HttpGetSrc";}
@@ -39,7 +50,38 @@ public class DasSrcNodeHttpGet extends DasAbstractNode implements DasSrcNode
 	}
 
 	@Override
-	LoadResult load(String sUrl, ProgressMonitor mon) {
+	boolean isLoaded()
+	{
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+
+	@Override
+	void load(ProgressMonitor mon)
+	{
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+
+	@Override
+	boolean canMerge()
+	{
+		throw new UnsupportedOperationException("Not supported yet.");
+	}
+
+	@Override
+	boolean merge(ProgressMonitor mon)
+	{
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+
+	@Override
+	public boolean isDir()
+	{
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+
+	@Override
+	boolean parse(String sData, String sUrl) throws ParseException
+	{
 		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 	}
 	

@@ -24,11 +24,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.URL;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -38,20 +40,23 @@ import org.das2.util.monitor.ProgressMonitor;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 
 /** Static generator functions for das2 federated catalog node objects. 
  * 
- * One of the main purposes of this class is to maintain the node registry.  Since many
- * formally constant responses (such as completions) are now dynamic, something has to
- * keep track of the catalog nodes or they would be re-loaded all the time.  Furthermore
- * some of the catalog nodes (namely SPASE) can be loaded from locations that require 
- * query parameters in the URLs, so we don't want to use the http filesystem objects 
- * because they (AFAIK) would not map URLs like this:
+ * One of the main purposes of this class is to maintain the root node registry.  Since
+ * many formally constant responses (such as completions) are now dynamic, something has
+ * to keep track of the catalog nodes or they would be re-loaded all the time.
+ * Furthermore some of the catalog nodes (namely SPASE) can be loaded from locations that
+ * require query parameters in the URLs, so we don't want to use the http filesystem
+ * objects because they (AFAIK) would not map URLs like this:
  * 
  *    http://spase-group.org/registry/resolver?t=yes&i=spase://ASWS
  * 
  * to a file object on disk due to the '?' character in the URL.  The das2 catalog is
- * supposed to paper over all kinds of wierd URLs, so directly downloading and caching
+ * supposed to paper over all kinds of weird URLs, so directly downloading and caching
  * items seems like the best bet.
  * 
  * @author cwp
@@ -60,71 +65,39 @@ public class DasNodeFactory
 {
 	private static final Logger LOGGER = LoggerManager.getLogger( "das2.catalog" );
 	
-	
-	// This is the supra node, it's not real.  It only has one child, null, that
-	// has hard coded lookup URLs
-	public class SupraNode extends DasAbstractNode implements DasDirNode{
-
-		@Override
-		LoadResult load(String sUrl, ProgressMonitor mon) {
-			LoadResult res = new LoadResult();  // Defaults to success
-			return res;
-		}
-
-		@Override
-		public String type() { return "Catalog"; }
-
-		@Override
-		public String name() { return null; /* voldemort */ }
-
-		@Override
-		public boolean isDataSource() { return false; }
-
-		@Override
-		public String[] list() {
-			throw new UnsupportedOperationException("Not supported yet.");
-		}
-
-		@Override
-		public DasNode resolve(String sName) {
-			// The main purpose of this fake node, to provide a list of
-			throw new UnsupportedOperationException("Not supported yet.");
-		}
-		
-	}
-	
 	// The, the only, the detached root node map.  Any understood format can be a detached
 	// root node.  Root nodes have no path name and cannot have parents, but may have
 	// children.
-	private static final Map<String, List<DasNode>> ROOT_NODES;
+	private static final Map<String, DasAbstractNode> ROOT_NODES;
 	static{
-		ROOT_NODES = Collections.synchronizedMap(new HashMap<String, List<DasNode>>());
-	}
-	
-	// The compiled in default root node locations if user doesn't supply a URL
-	public static final String[] DEFAULT_ROOT_URLS = {
-		// TODO: Move to supranode data
-		"http://das2.org/catalog/index.json",
-		"https://raw.githubusercontent.com/das-developers/das-cat/master/cat/index.json"
-	};
-	
-	/** Get the root node list as a string with some separator and prefix
-	 * @param sPre A prefix to place before each root node URL, may be null
-	 * @param sSep The separator to use between each root node URL, may be null
-	 * @return A formatted string containing a list of all root node URLs
-	 */
-	public static String defRootNodesAsStr(String sPre, String sSep){
-		// TODO: move to supra node data
+		ROOT_NODES = Collections.synchronizedMap(new HashMap<String, DasAbstractNode>());
 		
-		StringBuilder bldr = new StringBuilder();
-		for(int i = 0; i < DEFAULT_ROOT_URLS.length; i++){
-			if((i > 0)&&(sSep!=null)) bldr.append(sSep);  // prefix sep if needed
-			if(sPre != null) bldr.append(sPre);
-			bldr.append(DEFAULT_ROOT_URLS[i]);
-		}
-		return bldr.toString();
+		// Add the built-in root node
+		List<String> lUrls = new ArrayList<>();
+		lUrls.add("http://das2.org/catalog/index.json");
+		lUrls.add("https://raw.githubusercontent.com/das-developers/das-cat/master/cat/index.json");
+		ROOT_NODES.put(null, new DasDirNodeCat(null, null, null, lUrls));
 	}
 	
+	// The starting path for the das2 source catalog
+	public static final String DAS_ROOT_PATH = "tag:das2.org,2012:";
+	
+	// The heart of the factory, preform phase 1 construction of a node given a type
+	// name
+	static DasAbstractNode newNode(
+		String sType, DasDirNode parent, String sId, String sName, List<String> lLocs
+	) throws ParseException {
+		switch(sType){
+			case DasDirNodeCat.TYPE:
+				return new DasDirNodeCat(parent, sId, sName, lLocs);
+			case DasSrcNodeHttpGet.TYPE:
+				return new DasSrcNodeHttpGet(parent, sId, sName, lLocs);
+			
+			// TODO: Add collection type here...
+				
+		}
+		throw new ParseException("Unknown node type '"+sType+"'.", -1);
+	}
 	
 	// Get a dom object from a document in string form
 	static Document getXmlDoc(String sData)
@@ -157,6 +130,68 @@ public class DasNodeFactory
 		String sThing = output.toString("UTF-8");
 		return sThing;
 	}
+	
+	static DasNode getDetachedRoot(String sUrl, ProgressMonitor mon, boolean bReload) 
+		throws ParseException, IOException
+	{
+		
+		// It's a standalone root node, see if we've already been asked for this one.
+		if(!bReload && ROOT_NODES.containsKey(sUrl)) return ROOT_NODES.get(sUrl);
+		
+		// Just going around seeing who can parse it, start first with JSON nodes
+		String sData = getUtf8NodeDef(sUrl, mon);
+		DasAbstractNode node;
+		if(sData.startsWith("{")){
+			JSONObject json;
+			String sType;
+			try{
+				json = new JSONObject(sData);
+				sType = json.getString("type");
+			} catch(JSONException ex){
+				ParseException pe = new ParseException(
+					"Error reading "+sUrl+": "+ex.getMessage(), -1
+				);
+				pe.initCause(ex);
+				throw pe;
+			}
+			
+			// Could be a Catalog, Collection, or HttpStreamSrc all of which are JSON data
+			switch(sType){
+				case DasDirNodeCat.TYPE:
+					node = new DasDirNodeCat(null, null, null, null);
+					node.parse(sData, sUrl);
+					ROOT_NODES.put(sUrl, node);
+					return node;
+					
+				case DasSrcNodeHttpGet.TYPE:
+					node = new DasSrcNodeHttpGet(null, null, null, null);
+					node.parse(sData, sUrl);
+					ROOT_NODES.put(sUrl, node);
+					return node;
+				default:
+					throw new ParseException("Unknown node type '"+sType+"' at "+sUrl+".", -1);
+			}
+		}
+		
+		// Well that didn't work, try to parse it as XML.
+		if(sData.startsWith("<?xml")){
+			Document doc;
+			try{
+				doc = getXmlDoc(sData);
+			} catch(SAXException | ParserConfigurationException ex){
+				ParseException pe = new ParseException(
+					"Error reading "+sUrl+": "+ex.getMessage(), -1
+				);
+				pe.initCause(ex);
+				throw pe;
+			}
+			
+			// I don't have any catalog types that support XML...yet
+			throw new UnsupportedOperationException("SPASE catalog objects not yet supported");
+		}
+		
+		throw new ParseException("Couldn't determine node type of document at "+sUrl, -1);
+	}
 		
 	/** Get a node from the global node map by URL. 
 	 * 
@@ -181,42 +216,35 @@ public class DasNodeFactory
 	 * @param bReload - Reload the node definition from the original source
 	 * @return The node requested, or throws an error
 	 */
-	public static DasNode getNode(String sUrl, ProgressMonitor mon, boolean bReload) {
-		
-		// We never put non root nodes in here, so this step is okay
-		if(!bReload && ROOT_NODES.containsKey(sUrl))
-			return ROOT_NODES.get(sUrl).get(0);
+	public static DasNode getNode(String sUrl, ProgressMonitor mon, boolean bReload) 
+		throws ResolutionException, IOException, ParseException {
 		
 		// null URL, go get one of the default roots
-		if(sUrl == null){
-			// I know that the root nodes are DasDirNodeCat objects.  If this changes will
-			// have to update this library
-			DasDirNodeCat node = new DasDirNodeCat();
+		if(sUrl == null || (sUrl.length() == 0)){
+			DasAbstractNode node = ROOT_NODES.get(null);
+			if(!node.isLoaded()) node.load(mon);
+			return node;
+		}
 			
-			// Clean out the old definitions (if any)
-			if(ROOT_NODES.containsKey(null)) ROOT_NODES.remove(null);
-			
-			for(String sLoc: DEFAULT_ROOT_URLS){
-				DasAbstractNode.LoadResult res = node.load(sLoc, mon);
-				if(res.bSuccess){
-					List<DasNode> list = new ArrayList<>();
-					list.add(node);
-					ROOT_NODES.put(null, list);
-					return node;
-				}
-			}
-			return null;
+		// If this starts 'site' or 'test' it's one of our convienence paths, make it 
+		// an absolute path
+		if(sUrl.startsWith("site") || sUrl.startsWith("site"))
+			sUrl = DAS_ROOT_PATH + sUrl;
+		
+		// If this starts with 'tag:' it's a network catalog node, resolve it
+		if(sUrl.startsWith("tag:")){
+			DasAbstractDirNode node = (DasAbstractDirNode) ROOT_NODES.get(null);
+			if(!node.isLoaded()) node.load(mon);
+			return node.resolve(sUrl, mon);
 		}
 		
-		// See if it matches a filesystem prefix
-		
-		return null;
+		// Try to see if it will load as a detached root
+		return getDetachedRoot(sUrl, mon, bReload);
 	}
 	
-	/** If the given node lookup fails, attempt to get a higher level catalog node.
-	 * 
-	 * The operation of this function is the same as getNode if the given URL does 
-	 * resolve to a loadable catalog node.
+	/** Kind of like traceroute, try to resolve successively longer paths until you
+	 * get to one that fails.  For filesystem type URLS (http:, file:, etc.) this is the
+	 * same as getNode().
 	 * 
 	 * @param sUrl An autoplot URL
 	 * @param mon
@@ -224,57 +252,58 @@ public class DasNodeFactory
 	 * @return null if resolution failed or a DasNode otherwise.  The actual 
 	 *        source of the node can be found by DasNode.source().
 	 */
-	public static DasNode getNearestNode(String sUrl, ProgressMonitor mon, boolean bReload)
+	public static DasNode getNearestNode(String sUrl, ProgressMonitor mon, boolean bReload) throws ResolutionException
 	{
-		DasNode node = getNode(sUrl, mon, bReload);
-		if(node != null) return node;
+		// Get the root node
+		DasAbstractDirNode root = (DasAbstractDirNode) ROOT_NODES.get(null);
 		
-		assert false : "handle resolution failure";
-		return null;
+		if(sUrl == null || (sUrl.length() == 0)){
+			if(!root.isLoaded()) root.load(mon);
+			return root;
+		}
+		
+		// Handle convienence URLs
+		if(sUrl.startsWith("site") || sUrl.startsWith("site"))
+			sUrl = DAS_ROOT_PATH + sUrl;
+		
+		if(!sUrl.startsWith("tag:")) try{
+			return getDetachedRoot(sUrl, mon, bReload);
+		} catch(ParseException | IOException ex){
+			LOGGER.log(Level.FINE, "Get detached root {0} failed", sUrl);
+		}
+		
+		if(!root.isLoaded()) root.load(mon);
+		
+		// TODO: Implement ping shooting similar to traceroute
+		DasNode node;
+		try{
+			node = getNode(sUrl, mon, bReload);
+		} catch(ResolutionException | IOException | ParseException ex){
+			
+			LOGGER.fine("Implement get nearest node...");
+			return root;
+		}
+		return node;
 	}
 	
-	// Catalog node URIs, all begin with vap+dfcnode:
-		 // 
-		 //   http://das2.org/catalog/das2/site/uiowa.json   (root is some file)
-		 //   file:///home/cwp/test/uiowa.json               (root is some file)
-		 //   dfc:///tag:das2.org,2012:site:/uiowa/juno/survey/wav  (root is main)
 		 
-		 //try{
-		//	File file = DataSetURI.getFile(split.resourceUri, mon);
-		//	String s = FileUtil.readFileToString(file);
-			
-			// See if you can parse the JSON
-		//	JSONObject obj = new JSONObject(s);
-			
-		 //}
-		 //catch(Exception ex){
-		//	 logger.log(Level.SEVERE, surl, ex);
-			// return false;
-		// }
+	//try{
+	//mon.setTaskSize(5);
+	//mon.started();
+	
+	//do step
+		 
+	//mon.setTaskProgress(0);
+	 
+	//monSub = mon.getSubtaskMonitor("Downloading blah");
 		 
 		 
-		 //If the authority starts with 'tag:' then assume we can look it up in 
-		 // the global catalog, otherwise it's just a file to read
-		 //if(split.)
-		 
-		 
-		 //try{
-		 //mon.setTaskSize(5);
-		 //mon.started();
-		 
-		 //do step
-		 
-		 //mon.setTaskProgress(0);
-		 
-		 //monSub = mon.getSubtaskMonitor("Downloading blah");
-		 
-		 
-		 //}
-		 //catch{
+	//}
+	//catch{
+	 
 			 
-			 
-		 //}
-		//finally{
-		//	 mon.finished();
-		// }
+	//}
+	//finally{
+	//	 mon.finished();
+	// }
 }
