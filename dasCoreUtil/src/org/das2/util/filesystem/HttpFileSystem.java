@@ -928,6 +928,22 @@ public class HttpFileSystem extends WebFileSystem {
 //        }
 //    }
 
+    /**
+     * return true if the regular expression for the file is actually a single
+     * file with no wildcards.  This is tricky because for years a single period
+     * (".") has been left in the name, so that "." matches ".", and really 
+     * screen.png would match screen_png.  To contain this logic, this routine
+     * is introduced.  Presently it just checks for "screen.png" so that a 
+     * pngwalk of each screenshot (http://autoplot.org/jnlp/v$x/screen.png) can
+     * be made, which is useful when looking for old versions.      
+     * 
+     * @param regex
+     * @return 
+     */
+    public static boolean isRegexNoWild( String regex ) {
+        return regex.equals("screen.png");
+    }
+    
     @Override
     public String[] listDirectory(String directory, String regex) throws IOException {
         
@@ -944,7 +960,7 @@ public class HttpFileSystem extends WebFileSystem {
             throw new IllegalArgumentException("is not a directory: " + directory);
         }
 
-        if ( regex.equals("screen.png") ) { // if it is not a regular expression // TODO: finally support ? in glob with """!regex.contains(".{1}")"""
+        if ( isRegexNoWild(regex) ) { // if it is not a regular expression // TODO: finally support ? in glob with """!regex.contains(".{1}")"""
             try {
                 Map<String,Object> meta= getHeadMeta( directory+regex );
                 if ( Boolean.TRUE.equals( meta.get(WebProtocol.META_EXIST) ) ) {
