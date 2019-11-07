@@ -944,7 +944,7 @@ public class HttpFileSystem extends WebFileSystem {
             throw new IllegalArgumentException("is not a directory: " + directory);
         }
 
-        if ( !regex.contains(".*") ) { // if it is not a regular expression // TODO: finally support ? in glob with """!regex.contains(".{1}")"""
+        if ( regex.equals("screen.png") ) { // if it is not a regular expression // TODO: finally support ? in glob with """!regex.contains(".{1}")"""
             try {
                 Map<String,Object> meta= getHeadMeta( directory+regex );
                 if ( Boolean.TRUE.equals( meta.get(WebProtocol.META_EXIST) ) ) {
