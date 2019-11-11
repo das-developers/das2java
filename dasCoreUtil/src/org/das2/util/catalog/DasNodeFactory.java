@@ -76,7 +76,7 @@ public class DasNodeFactory
 		List<String> lUrls = new ArrayList<>();
 		lUrls.add("http://das2.org/catalog/index.json");
 		lUrls.add("https://raw.githubusercontent.com/das-developers/das-cat/master/cat/index.json");
-		ROOT_NODES.put(null, new DasDirNodeCat(null, null, null, lUrls));
+		ROOT_NODES.put(null, new DasDirNodeCat(null, null, lUrls));
 	}
 	
 	// The starting path for the das2 source catalog
@@ -85,13 +85,13 @@ public class DasNodeFactory
 	// The heart of the factory, preform phase 1 construction of a node given a type
 	// name
 	static DasAbstractNode newNode(
-		String sType, DasDirNode parent, String sId, String sName, List<String> lLocs
+		String sType, DasDirNode parent, String sName, List<String> lLocs
 	) throws ParseException {
 		switch(sType){
 			case DasDirNodeCat.TYPE:
-				return new DasDirNodeCat(parent, sId, sName, lLocs);
+				return new DasDirNodeCat(parent, sName, lLocs);
 			case DasSrcNodeHttpGet.TYPE:
-				return new DasSrcNodeHttpGet(parent, sId, sName, lLocs);
+				return new DasSrcNodeHttpGet(parent, sName, lLocs);
 			
 			// TODO: Add collection type here...
 				
@@ -158,13 +158,13 @@ public class DasNodeFactory
 			// Could be a Catalog, Collection, or HttpStreamSrc all of which are JSON data
 			switch(sType){
 				case DasDirNodeCat.TYPE:
-					node = new DasDirNodeCat(null, null, null, null);
+					node = new DasDirNodeCat(null,  null, null);
 					node.parse(sData, sUrl);
 					ROOT_NODES.put(sUrl, node);
 					return node;
 					
 				case DasSrcNodeHttpGet.TYPE:
-					node = new DasSrcNodeHttpGet(null, null, null, null);
+					node = new DasSrcNodeHttpGet(null, null, null);
 					node.parse(sData, sUrl);
 					ROOT_NODES.put(sUrl, node);
 					return node;
@@ -215,6 +215,9 @@ public class DasNodeFactory
 	 * @param mon
 	 * @param bReload - Reload the node definition from the original source
 	 * @return The node requested, or throws an error
+	 * @throws org.das2.util.catalog.ResolutionException
+	 * @throws java.io.IOException
+	 * @throws java.text.ParseException
 	 */
 	public static DasNode getNode(String sUrl, ProgressMonitor mon, boolean bReload) 
 		throws ResolutionException, IOException, ParseException {
@@ -228,7 +231,7 @@ public class DasNodeFactory
 			
 		// If this starts 'site' or 'test' it's one of our convienence paths, make it 
 		// an absolute path
-		if(sUrl.startsWith("site") || sUrl.startsWith("site"))
+		if(sUrl.startsWith("site") || sUrl.startsWith("test"))
 			sUrl = DAS_ROOT_PATH + sUrl;
 		
 		// If this starts with 'tag:' it's a network catalog node, resolve it
@@ -242,48 +245,73 @@ public class DasNodeFactory
 		return getDetachedRoot(sUrl, mon, bReload);
 	}
 	
-	/** Kind of like traceroute, try to resolve successively longer paths until you
-	 * get to one that fails.  For filesystem type URLS (http:, file:, etc.) this is the
-	 * same as getNode().
+	/** Kind of like traceroute, try to resolve successively longer paths until
+	 * you get to one that fails.  For filesystem type URLS (http:, file:, etc.)
+	 * this is the same as getNode().
 	 * 
 	 * @param sUrl An autoplot URL
 	 * @param mon
 	 * @param bReload
-	 * @return null if resolution failed or a DasNode otherwise.  The actual 
-	 *        source of the node can be found by DasNode.source().
+	 * @return The nearest loadable DasNode for the path specified.
+	 * @throws org.das2.util.catalog.ResolutionException if a Filesystem style URL cannot
+	 *         be loaded as a dasnode.
+	 * 
 	 */
-	public static DasNode getNearestNode(String sUrl, ProgressMonitor mon, boolean bReload) throws ResolutionException
+	public static DasNode getNearestNode(String sUrl, ProgressMonitor mon, boolean bReload) 
+		throws ResolutionException 
 	{
-		// Get the root node
-		DasAbstractDirNode root = (DasAbstractDirNode) ROOT_NODES.get(null);
-		
-		if(sUrl == null || (sUrl.length() == 0)){
-			if(!root.isLoaded()) root.load(mon);
-			return root;
-		}
-		
-		// Handle convienence URLs
-		if(sUrl.startsWith("site") || sUrl.startsWith("site"))
-			sUrl = DAS_ROOT_PATH + sUrl;
-		
-		if(!sUrl.startsWith("tag:")) try{
-			return getDetachedRoot(sUrl, mon, bReload);
-		} catch(ParseException | IOException ex){
-			LOGGER.log(Level.FINE, "Get detached root {0} failed", sUrl);
-		}
-		
-		if(!root.isLoaded()) root.load(mon);
-		
-		// TODO: Implement ping shooting similar to traceroute
 		DasNode node;
+		
+		// Get simple filsystem style lookups out of the way first
+		// FIXME: Relpace prefix list below with filesystem registry listing
+		if((sUrl != null)&&(sUrl.length() > 5)){
+			String aFileSysPrefixes[] = {"file:", "http:", "https:", "ftp:"};
+			for (String sPrefix: aFileSysPrefixes){
+				if(!sUrl.toLowerCase().startsWith(sPrefix)) continue;
+				
+				try{
+					// Exact node match is all we've got...
+					node = getNode(sUrl, mon, bReload);
+					return node;
+				} catch(IOException | ParseException ex){
+					ResolutionException re;
+					re = new ResolutionException("Could not resolve URL to node", sUrl);
+					re.initCause(ex);
+					throw re;
+				}
+			}
+		}
+		
+		// Assume it's a catalog path and try for exact resolution, exception handling is
+		// different here because we do have a fallback point if nothing else works
 		try{
 			node = getNode(sUrl, mon, bReload);
-		} catch(ResolutionException | IOException | ParseException ex){
-			
-			LOGGER.fine("Implement get nearest node...");
-			return root;
+			return node;
+		} catch(IOException | ParseException | ResolutionException ex){
+			LOGGER.log(Level.FINE, 
+				"Exact resolution of {0} failed due to {1}, looking for longest resolvable path", 
+				new Object[]{sUrl, ex.getMessage()}
+			);
 		}
-		return node;
+		
+		// Going to need the root node now
+		DasAbstractDirNode root = (DasAbstractDirNode) ROOT_NODES.get(null);
+		if(!root.isLoaded()) try{
+			root.load(mon);
+		} catch(ResolutionException ex){
+			LOGGER.log(
+				Level.INFO, "Root node could not be resolved tried {0}", 
+				root.prettyPrintLoc(null, " ")
+			);
+		}
+		
+		if(sUrl == null || (sUrl.length() == 0))  return root;
+		
+		// Handle convienence URLs
+		if(sUrl.startsWith("site") || sUrl.startsWith("test"))
+			sUrl = DAS_ROOT_PATH + sUrl;
+		
+		return root.nearest(sUrl, mon);		
 	}
 	
 		 

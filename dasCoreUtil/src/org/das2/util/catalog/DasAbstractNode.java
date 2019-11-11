@@ -1,6 +1,7 @@
 package org.das2.util.catalog;
 
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.List;
 import org.das2.util.monitor.ProgressMonitor;
 
@@ -14,9 +15,8 @@ import org.das2.util.monitor.ProgressMonitor;
  */
 abstract class DasAbstractNode implements DasNode {
 	
-	protected String sId;
-	protected String sName;
-	protected DasDirNode nodePar;
+	protected String sName; //
+	protected DasDirNode parent;
 	
 	class NodeDefLoc{
 		String sUrl;      /* The simple URL such as http://das2.org/catalog/das/uiowa.json */
@@ -31,30 +31,42 @@ abstract class DasAbstractNode implements DasNode {
 	
 	protected List<NodeDefLoc> lLocs;
 	
-	@Override
-	public String name() {return sName; }
-	
 	
 	/** Phase 1 construction for a node.  The information in a catalog listing is
 	 * sufficient to construct a node.  
 	 * 
 	 * @param parent The parent method if any.  For root nodes this is null.
-	 * @param id     The id string of this node within it's parent.  Ids are used for
-	 *               sub-item listings.
 	 * @param name   The human readable name of this object within it's parent.  May be
-	 *               null.
+	 *               null.  And the object may change it's name upon load!
 	 * @param locations A list of URLs from which the full definition of this item may
 	 *               be loaded for phase-2 construction, this should *NOT* be null.
 	 */
-	DasAbstractNode(DasDirNode parent, String id, String name, List<String> locations){
-		nodePar = parent;
-		sId = id;
+	DasAbstractNode(DasDirNode parent, String name, List<String> locations)
+	{
+		this.parent = parent;
 		sName = name;
+		lLocs = new ArrayList<NodeDefLoc>();
 		if(locations != null){
 			for(String sLoc: locations){
 				lLocs.add(new NodeDefLoc(sLoc));
 			}
 		}
+	}
+	
+	@Override
+	public String name() {return sName; }
+	
+	// Reverse resolution, ask my parent for my full name
+	@Override
+	public String path() {
+		if(parent != null) return parent.childPath(this);
+		return null;
+	}
+	
+	@Override
+	public String toString(){
+		if(isRoot()) return type() + " @ (detached)";
+		else return type() + " @ " + parent.childPath(this);
 	}
 	
 	/** Append another location onto the stack of locations that my define this source */
@@ -110,14 +122,14 @@ abstract class DasAbstractNode implements DasNode {
 	
 	// See definition in DasNode interface
 	@Override
-	public boolean isRootNode(){ return (nodePar == null); }
+	public boolean isRoot(){ return (parent == null); }
 
 	// See definition in DasNode interface
 	@Override
-	public DasNode getRootNode()
+	public DasNode getRoot()
 	{
-		if(nodePar == null) return this;
-		return nodePar.getRootNode();
+		if(parent == null) return this;
+		return parent.getRoot();
 	}
 	
 	// Side loading data

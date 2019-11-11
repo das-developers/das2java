@@ -51,21 +51,30 @@ public class DasDirNodeCat extends DasAbstractDirNode
 	
 	JSONObject json = null;
 	public static final String TYPE = "Catalog";
+	
+	// Static names for important json dictionary keys
+	static final String KEY_CATALOG = "catalog";
+	static final String KEY_TYPE    = "type";
+	static final String KEY_NAME    = "name";
+	static final String KEY_URLS    = "urls";
 
 	// Phase 1 construction, just let super-class handle it
-	public DasDirNodeCat(DasDirNode parent, String id, String name, List<String> locations)
+	public DasDirNodeCat(DasDirNode parent, String name, List<String> locations)
 	{
-		super(parent, id, name, locations);
+		super(parent, name, locations);
 	}
 	
 	@Override
 	public String type() { return TYPE; }
 
 	@Override
-	public boolean isDataSource() { return false; }
+	public boolean isSrc() { return false; }
 	
 	@Override
 	public boolean isDir(){ return true; }
+	
+	@Override
+	public boolean isInfo(){ return false; }
 	
 	@Override
 	boolean isLoaded(){ return (json != null); }
@@ -73,16 +82,16 @@ public class DasDirNodeCat extends DasAbstractDirNode
 	
 	protected void initFromJson(JSONObject jo) throws JSONException, ParseException{
 		json = jo;
-		if(json.has("catalog")){
-			JSONObject cat = json.getJSONObject("catalag");
+		if(json.has(KEY_CATALOG)){
+			JSONObject cat = json.getJSONObject(KEY_CATALOG);
 			Iterator<String> keys = cat.sortedKeys();
 			while(keys.hasNext()){
 				String sChildId = keys.next();
 				JSONObject joChild = cat.getJSONObject(sChildId);
 				
-				String sChildType = joChild.getString("type");  // Can't be null				
-				String sChildName = joChild.optString("name", null);
-				JSONArray jaLocs = joChild.optJSONArray("urls");
+				String sChildType = joChild.getString(KEY_TYPE);  // Can't be null				
+				String sChildName = joChild.optString(KEY_NAME, null);
+				JSONArray jaLocs = joChild.optJSONArray(KEY_URLS);
 				List<String> lChildLocs = null;
 				if(jaLocs != null){
 					lChildLocs = new ArrayList<>();
@@ -92,8 +101,10 @@ public class DasDirNodeCat extends DasAbstractDirNode
 				}
 				// Make the right kind of child
 				DasAbstractNode child = DasNodeFactory.newNode(
-					sChildType, this, sChildId, sChildName, lChildLocs
+					sChildType, this, sChildName, lChildLocs
 				);
+				
+				String sCheck = child.toString();
 				
 				dSubNodes.put(sChildId, child);
 			}
@@ -118,7 +129,7 @@ public class DasDirNodeCat extends DasAbstractDirNode
 				String sData = DasNodeFactory.getUtf8NodeDef(loc.sUrl, mon);
 				JSONObject jo = new JSONObject(sData);
 				
-				String sVal = jo.getString("type");
+				String sVal = jo.getString(KEY_TYPE);
 				
 				// Using exceptions for flow control... not good.
 				if(!sVal.equals(TYPE))
@@ -155,7 +166,7 @@ public class DasDirNodeCat extends DasAbstractDirNode
 			try{
 				String sData = DasNodeFactory.getUtf8NodeDef(loc.sUrl, mon);
 				JSONObject jo = new JSONObject(sData);
-				String sVal = jo.getString("type");
+				String sVal = jo.getString(KEY_TYPE);
 				
 				if(!sVal.equals(TYPE))
 					throw new ResolutionException("Expected type '"+TYPE+"' not '"+sVal+"'", loc.sUrl	);
@@ -187,6 +198,5 @@ public class DasDirNodeCat extends DasAbstractDirNode
 	{
 		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 	}
-
 	
 }

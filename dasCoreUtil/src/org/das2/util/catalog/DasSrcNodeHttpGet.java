@@ -27,16 +27,28 @@ public class DasSrcNodeHttpGet extends DasAbstractNode implements DasSrcNode
 	protected String sSrcUrl = null;  // Where I came from (if loaded)
 	protected Map<String, String> dLocs = new HashMap<>();  // Where I can be loaded from
 
-	public DasSrcNodeHttpGet(DasDirNode parent, String id, String name, List<String> locations)
+	public DasSrcNodeHttpGet(DasDirNode parent, String name, List<String> locations)
 	{
-		super(parent, id, name, locations);
+		super(parent, name, locations);
 	}
 
 	@Override
-	public String type() { return "HttpGetSrc";}
+	public String type() { return TYPE;}
 
 	@Override
-	public boolean isDataSource() { return true; }
+	public boolean isSrc() { return true; }
+	
+	@Override
+	public boolean isDir(){ return false; }
+	
+	@Override
+	public boolean isInfo(){ return false; }
+
+	@Override
+	boolean parse(String sData, String sUrl) throws ParseException
+	{
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
 
 	
 	@Override
@@ -69,18 +81,6 @@ public class DasSrcNodeHttpGet extends DasAbstractNode implements DasSrcNode
 
 	@Override
 	boolean merge(ProgressMonitor mon)
-	{
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-	}
-
-	@Override
-	public boolean isDir()
-	{
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-	}
-
-	@Override
-	boolean parse(String sData, String sUrl) throws ParseException
 	{
 		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 	}
