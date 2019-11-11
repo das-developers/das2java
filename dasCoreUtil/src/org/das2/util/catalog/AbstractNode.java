@@ -1,19 +1,51 @@
+/* Copyright (C) 2019 Chris Piker 
+ *
+ * This file is part of the das2 Core library.
+ *
+ * das2 is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public Library License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 
+ * USA
+ */
+
 package org.das2.util.catalog;
 
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
+import org.das2.util.LoggerManager;
 import org.das2.util.monitor.ProgressMonitor;
 
-/**  All nodes loadable by the DasNodeFactory should inherit from this package private
- * abstract class.  It supports the general 2-phase construction.  The information in
- * a catalog directory listing is sufficient to provide for basic construction.  
- * Afterwards if more information is needed the node's load() member can be called to
- * finish the job.
+/**  All nodes loadable by the DasNodeFactory should inherit from this package 
+ * private abstract class.  
+ * 
+ * It supports the general 3-phase construction.  In general the construction 
+ * phases are:
+ * 
+ * 1. Create a stub object that knows what kind of thing it is and who it's 
+ *    parents are.
+ * 
+ * 2. Resolve one of the URLs to get a full definition of the object.
+ * 
+ * 3. Possibly merge information from a secondary URL if requested.
  *
  * @author cwp
  */
-abstract class DasAbstractNode implements DasNode {
+abstract class AbstractNode implements DasNode {
+	
+	private static final Logger LOGGER = LoggerManager.getLogger("das2.catalog.adsnode" );
+	
 	
 	protected String sName; //
 	protected DasDirNode parent;
@@ -41,11 +73,11 @@ abstract class DasAbstractNode implements DasNode {
 	 * @param locations A list of URLs from which the full definition of this item may
 	 *               be loaded for phase-2 construction, this should *NOT* be null.
 	 */
-	DasAbstractNode(DasDirNode parent, String name, List<String> locations)
+	AbstractNode(DasDirNode parent, String name, List<String> locations)
 	{
 		this.parent = parent;
 		sName = name;
-		lLocs = new ArrayList<NodeDefLoc>();
+		lLocs = new ArrayList<>();
 		if(locations != null){
 			for(String sLoc: locations){
 				lLocs.add(new NodeDefLoc(sLoc));
@@ -65,8 +97,14 @@ abstract class DasAbstractNode implements DasNode {
 	
 	@Override
 	public String toString(){
-		if(isRoot()) return type() + " @ (detached)";
-		else return type() + " @ " + parent.childPath(this);
+		String sType = type();
+		if(isRoot()){ 
+			return sType + " [root]";
+		}
+		else{
+			String sPath = parent.childPath(this);
+			return sType + " @ " + sPath;
+		}
 	}
 	
 	/** Append another location onto the stack of locations that my define this source */
@@ -101,7 +139,7 @@ abstract class DasAbstractNode implements DasNode {
 	 * loaded.
 	 * @param mon A human amusement device incase network operations are taking a while.
 	 */
-	abstract void load(ProgressMonitor mon) throws ResolutionException;
+	abstract void load(ProgressMonitor mon) throws DasResolveException;
 	
 	/** If there is another source of information for this node and you might be able
 	 * to load it, return true.  This default version just looks to see if any of the

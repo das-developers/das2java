@@ -1,35 +1,62 @@
+/* Copyright (C) 2019 Chris Piker 
+ *
+ * This file is part of the das2 Core library.
+ *
+ * das2 is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public Library License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 
+ * USA
+ */
+
 package org.das2.util.catalog;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
+//import java.util.NoSuchElementException;  <-- important one to remember
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.util.LoggerManager;
 import org.das2.util.monitor.ProgressMonitor;
 
-/** Add the child node list functionality on top of an Abstract Leaf Node
- *  Package private to avoid leaking implementation details
+/** All nodes which have child catalog nodes should inherit from this package
+ * private class.
+ * 
+ * In addition to the 3-phase construction interface, this abstract class adds the
+ * ability to have sub-nodes, which is provided via the resolve() and nearest() 
+ * functions.
  * 
  * @author cwp
  */
-abstract class DasAbstractDirNode extends DasAbstractNode implements DasDirNode
+abstract class AbstractDirNode extends AbstractNode implements DasDirNode
 {
-	private static final Logger LOGGER = LoggerManager.getLogger( "das2.catalog" );
+	private static final Logger LOGGER = LoggerManager.getLogger( "das2.catalog.absdir" );
 	
-	protected Map<String, DasAbstractNode> dSubNodes;
+	// A dictionary of subnodes 
+	protected Map<String, AbstractNode> dSubNodes;
 	
 	// The separator string used for sub-paths of this node, may be null.
 	protected String sSep;
 	
-	public DasAbstractDirNode(DasDirNode parent, String name, List<String> locations)
+	public AbstractDirNode(DasDirNode parent, String name, List<String> locations)
 	{
 		super(parent, name, locations);
 		dSubNodes = new HashMap<>();
+		sSep = null;
 	}
 	
+	// WARNING: This is called as part of child's toString, don't use toString here
 	@Override
 	public String childPath(DasNode child){
 		String sPath = "";
@@ -44,7 +71,7 @@ abstract class DasAbstractDirNode extends DasAbstractNode implements DasDirNode
 			}
 		}
 		throw new IllegalArgumentException(
-			"Object "+child.toString()+", is not a member of "+toString()
+			"Object "+child.name()+", is not a member of "+toString()
 		);
 	}
 	
@@ -56,7 +83,7 @@ abstract class DasAbstractDirNode extends DasAbstractNode implements DasDirNode
 	}
 	
 	@Override
-	public DasNode resolve(String sPath, ProgressMonitor mon) throws ResolutionException {
+	public DasNode resolve(String sPath, ProgressMonitor mon) throws DasResolveException {
 		if(!isLoaded()) load(mon);
 		
 		if(sPath == null) return this;
@@ -89,10 +116,10 @@ abstract class DasAbstractDirNode extends DasAbstractNode implements DasDirNode
 		}
 		
 		if(sChild == null){
-			throw new ResolutionException("Cannot resolve (sub)path", sPath);
+			throw new DasResolveException("Cannot resolve (sub)path", sPath);
 		}
 		
-		DasAbstractNode node = dSubNodes.get(sChild);
+		AbstractNode node = dSubNodes.get(sChild);
 		
 		if(!node.isLoaded()){
 			Exception cause = null;
@@ -101,7 +128,7 @@ abstract class DasAbstractDirNode extends DasAbstractNode implements DasDirNode
 					node.load(mon);
 					break;
 				}
-				catch(ResolutionException ex){
+				catch(DasResolveException ex){
 					LOGGER.log(Level.FINE, "load failure for child node {0}", ex.getMessage());
 					cause = ex;
 				}
@@ -109,7 +136,7 @@ abstract class DasAbstractDirNode extends DasAbstractNode implements DasDirNode
 			
 			// If the node is not loaded now, we have a problem.
 			if(!node.isLoaded()){
-				throw new ResolutionException("Couldn't load", cause, sPath);
+				throw new DasResolveException("Couldn't load", cause, sPath);
 			}
 		}
 		
@@ -118,10 +145,10 @@ abstract class DasAbstractDirNode extends DasAbstractNode implements DasDirNode
 		String sSubPath = sPath.substring(sChild.length());
 		if(sSubPath.length() > 0){
 			if(node.isDir()){
-				DasAbstractDirNode dirNode = (DasAbstractDirNode)node;
+				AbstractDirNode dirNode = (AbstractDirNode)node;
 				return dirNode.resolve(sSubPath, mon);
 			}
-			throw new ResolutionException("Sub node "+sChild+" is not a directory", sSubPath);
+			throw new DasResolveException("Sub node "+sChild+" is not a directory", sSubPath);
 		}
 		
 		return node;
@@ -135,7 +162,7 @@ abstract class DasAbstractDirNode extends DasAbstractNode implements DasDirNode
 		if(!isLoaded()){
 			try{
 				load(mon);
-			} catch(ResolutionException ex){
+			} catch(DasResolveException ex){
 				LOGGER.log(Level.INFO, "Couldn't resolve {0} using sources {1}", 
 					new Object[]{sPath, prettyPrintLoc(null, " ")}
 				);
@@ -178,7 +205,7 @@ abstract class DasAbstractDirNode extends DasAbstractNode implements DasDirNode
 			return this;
 		}
 		
-		DasAbstractNode node = dSubNodes.get(sChild);
+		AbstractNode node = dSubNodes.get(sChild);
 		
 		if(!node.isLoaded()){
 			do{
@@ -186,7 +213,7 @@ abstract class DasAbstractDirNode extends DasAbstractNode implements DasDirNode
 					node.load(mon);
 					break;
 				}
-				catch(ResolutionException ex){
+				catch(DasResolveException ex){
 					LOGGER.log(Level.FINE, "load failure for child node {0}", ex.getMessage());
 				}
 			} while(canMerge());
@@ -203,7 +230,7 @@ abstract class DasAbstractDirNode extends DasAbstractNode implements DasDirNode
 		String sSubPath = sPath.substring(sChild.length());
 		if(sSubPath.length() > 0){
 			if(node.isDir()){
-				DasAbstractDirNode dirNode = (DasAbstractDirNode)node;
+				AbstractDirNode dirNode = (AbstractDirNode)node;
 				return dirNode.nearest(sSubPath, mon);
 			}
 		}

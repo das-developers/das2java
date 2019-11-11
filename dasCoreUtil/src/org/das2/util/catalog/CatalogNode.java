@@ -1,7 +1,21 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+/* Copyright (C) 2019 Chris Piker 
+ *
+ * This file is part of the das2 Core library.
+ *
+ * das2 is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public Library License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 
+ * USA
  */
 package org.das2.util.catalog;
 
@@ -12,56 +26,38 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.das2.util.LoggerManager;
 import org.das2.util.monitor.ProgressMonitor;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-/** This represents a catalog node.  It has a 2-phase construction sequence
- * A minimal version may reside in memory representing just a referenced item
- * from a higher level container, or it may be fully realized by a catalog lookup.
+/** A specific implementation of DasDirNode, uses JSON catalogs with a 
+ * particular format.
  * 
- * Loading the full node is delayed until the functionality of a full definition
- * is needed.  For example a minimal catalog entry will load itself when a list
- * of sub items is called for.  A minimal data source entry will load itself
- * when a data request or interface definition request occurs.
+ * FIXME: Add reference to Catalog node JSON format documentation or JSON schema
+ * once it exists
  * 
- * All Nodes have the following data members:
- *   path - The Path URI of this object.  This is a conceptual location, not a physical
- *          path.  Even nodes loaded from a local file can have a path URI.  A root node
- *          for a given tree has a 'null' path URI.  You can't navigate above a root node,
- *          but, depending on the node type, you can navigate down.
- * 
- *   type - The type of object, cannot be null
- * 
- *   name - The name of the object
- * 
- *   url  - Where the item was loaded from (if fully realized)
- * 
- *   locs - Where you can get the full item definition from if needed
- * 
- *   data - The string information read in to generate the node.  The actual
- *         format of this data is may be JSON, XML, or some other format. * @author cwp
+ * @author cwp
  */
-public class DasDirNodeCat extends DasAbstractDirNode
+public class CatalogNode extends AbstractDirNode
 {
-	private static final Logger LOGGER = org.das2.util.LoggerManager.getLogger(
-		"das2.catalog.node" 
-	);
+	private static final Logger LOGGER = LoggerManager.getLogger("das2.catalog.catalog" );
 	
-	JSONObject json = null;
+	JSONObject data;
 	public static final String TYPE = "Catalog";
 	
-	// Static names for important json dictionary keys
+	// Static names for important data dictionary keys
 	static final String KEY_CATALOG = "catalog";
 	static final String KEY_TYPE    = "type";
 	static final String KEY_NAME    = "name";
 	static final String KEY_URLS    = "urls";
 
 	// Phase 1 construction, just let super-class handle it
-	public DasDirNodeCat(DasDirNode parent, String name, List<String> locations)
+	public CatalogNode(DasDirNode parent, String name, List<String> locations)
 	{
 		super(parent, name, locations);
+		data = null;
 	}
 	
 	@Override
@@ -77,13 +73,13 @@ public class DasDirNodeCat extends DasAbstractDirNode
 	public boolean isInfo(){ return false; }
 	
 	@Override
-	boolean isLoaded(){ return (json != null); }
+	boolean isLoaded(){ return (data != null); }
 
 	
 	protected void initFromJson(JSONObject jo) throws JSONException, ParseException{
-		json = jo;
-		if(json.has(KEY_CATALOG)){
-			JSONObject cat = json.getJSONObject(KEY_CATALOG);
+		data = jo;
+		if(data.has(KEY_CATALOG)){
+			JSONObject cat = data.getJSONObject(KEY_CATALOG);
 			Iterator<String> keys = cat.sortedKeys();
 			while(keys.hasNext()){
 				String sChildId = keys.next();
@@ -100,13 +96,13 @@ public class DasDirNodeCat extends DasAbstractDirNode
 					}
 				}
 				// Make the right kind of child
-				DasAbstractNode child = DasNodeFactory.newNode(
+				AbstractNode child = DasNodeFactory.newNode(
 					sChildType, this, sChildName, lChildLocs
 				);
 				
-				String sCheck = child.toString();
-				
 				dSubNodes.put(sChildId, child);
+				
+				//String sCheck = child.toString();
 			}
 		}
 	}
@@ -117,7 +113,7 @@ public class DasDirNodeCat extends DasAbstractDirNode
 	
 
 	@Override
-	void load(ProgressMonitor mon) throws ResolutionException {
+	void load(ProgressMonitor mon) throws DasResolveException {
 		for(NodeDefLoc loc: lLocs){
 			loc.bLoaded = false;
 			loc.bBad = false;
@@ -133,13 +129,13 @@ public class DasDirNodeCat extends DasAbstractDirNode
 				
 				// Using exceptions for flow control... not good.
 				if(!sVal.equals(TYPE))
-					throw new ResolutionException("Expected type '"+TYPE+"' not '"+sVal+"'", loc.sUrl);
+					throw new DasResolveException("Expected type '"+TYPE+"' not '"+sVal+"'", loc.sUrl);
 				
 				initFromJson(jo);
 				loc.bLoaded = true;
 				return;
 				
-			} catch(IOException | JSONException | ParseException | ResolutionException ex){
+			} catch(IOException | JSONException | ParseException | DasResolveException ex){
 				loc.bBad = true;
 				LOGGER.log(Level.FINE, 
 					"Catalog location {0} marked as bad because {1}", 
@@ -147,7 +143,7 @@ public class DasDirNodeCat extends DasAbstractDirNode
 				);
 				//If this was our last chance, go ahead and raise the exception
 				if((i + 1) == lLocs.size()){
-					ResolutionException resEx = new ResolutionException(
+					DasResolveException resEx = new DasResolveException(
 						"Couldn't load catalog node because "+ex.getMessage(),
 						ex, loc.sUrl
 					);
@@ -169,13 +165,13 @@ public class DasDirNodeCat extends DasAbstractDirNode
 				String sVal = jo.getString(KEY_TYPE);
 				
 				if(!sVal.equals(TYPE))
-					throw new ResolutionException("Expected type '"+TYPE+"' not '"+sVal+"'", loc.sUrl	);
+					throw new DasResolveException("Expected type '"+TYPE+"' not '"+sVal+"'", loc.sUrl	);
 				
 				mergeFromJson(jo);
 				loc.bLoaded = true;
 				return true;
 				
-			} catch(IOException | JSONException | ResolutionException ex){
+			} catch(IOException | JSONException | DasResolveException ex){
 				loc.bBad = true;
 				LOGGER.log(Level.FINE, 
 					"Catalog location {0} marked as bad because {1}", 

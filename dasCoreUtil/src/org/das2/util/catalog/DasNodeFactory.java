@@ -68,15 +68,15 @@ public class DasNodeFactory
 	// The, the only, the detached root node map.  Any understood format can be a detached
 	// root node.  Root nodes have no path name and cannot have parents, but may have
 	// children.
-	private static final Map<String, DasAbstractNode> ROOT_NODES;
+	private static final Map<String, AbstractNode> ROOT_NODES;
 	static{
-		ROOT_NODES = Collections.synchronizedMap(new HashMap<String, DasAbstractNode>());
+		ROOT_NODES = Collections.synchronizedMap(new HashMap<String, AbstractNode>());
 		
 		// Add the built-in root node
 		List<String> lUrls = new ArrayList<>();
 		lUrls.add("http://das2.org/catalog/index.json");
 		lUrls.add("https://raw.githubusercontent.com/das-developers/das-cat/master/cat/index.json");
-		ROOT_NODES.put(null, new DasDirNodeCat(null, null, lUrls));
+		ROOT_NODES.put(null, new CatalogNode(null, null, lUrls));
 	}
 	
 	// The starting path for the das2 source catalog
@@ -84,14 +84,14 @@ public class DasNodeFactory
 	
 	// The heart of the factory, preform phase 1 construction of a node given a type
 	// name
-	static DasAbstractNode newNode(
+	static AbstractNode newNode(
 		String sType, DasDirNode parent, String sName, List<String> lLocs
 	) throws ParseException {
 		switch(sType){
-			case DasDirNodeCat.TYPE:
-				return new DasDirNodeCat(parent, sName, lLocs);
-			case DasSrcNodeHttpGet.TYPE:
-				return new DasSrcNodeHttpGet(parent, sName, lLocs);
+			case CatalogNode.TYPE:
+				return new CatalogNode(parent, sName, lLocs);
+			case HttpGetSrcNode.TYPE:
+				return new HttpGetSrcNode(parent, sName, lLocs);
 			
 			// TODO: Add collection type here...
 				
@@ -140,7 +140,7 @@ public class DasNodeFactory
 		
 		// Just going around seeing who can parse it, start first with JSON nodes
 		String sData = getUtf8NodeDef(sUrl, mon);
-		DasAbstractNode node;
+		AbstractNode node;
 		if(sData.startsWith("{")){
 			JSONObject json;
 			String sType;
@@ -157,14 +157,14 @@ public class DasNodeFactory
 			
 			// Could be a Catalog, Collection, or HttpStreamSrc all of which are JSON data
 			switch(sType){
-				case DasDirNodeCat.TYPE:
-					node = new DasDirNodeCat(null,  null, null);
+				case CatalogNode.TYPE:
+					node = new CatalogNode(null,  null, null);
 					node.parse(sData, sUrl);
 					ROOT_NODES.put(sUrl, node);
 					return node;
 					
-				case DasSrcNodeHttpGet.TYPE:
-					node = new DasSrcNodeHttpGet(null, null, null);
+				case HttpGetSrcNode.TYPE:
+					node = new HttpGetSrcNode(null, null, null);
 					node.parse(sData, sUrl);
 					ROOT_NODES.put(sUrl, node);
 					return node;
@@ -196,35 +196,35 @@ public class DasNodeFactory
 	/** Get a node from the global node map by URL. 
 	 * 
 	 * This function tries to load and return the node for the given URL.  If the file
-	 * portion of the node is a recognized filesystem type then that exact URL is 
-	 * attempted.  For example:
-	 * 
-	 *    https://space.physics.uiowa.edu/juno/test/random_source.json
-	 * 
-	 * would trigger a filesystem type lookup that expects an exact match.  While a URL
-	 * such as:
-	 * 
-	 *   tag:das2.org,2012:test:/uiowa/juno/random_collection/das2
-	 * 
-	 * For space savings, tag:das2.org,2012: may be left off of the given URLs.
-	 * 
-	 * If nothing can be matched, null is return.  The resulting parsed node is saved in
-	 * a cache to avoid repeated network traffic.
+ portion of the node is a recognized filesystem type then that exact URL is 
+ attempted.  For example:
+ 
+    https://space.physics.uiowa.edu/juno/test/random_source.data
+ 
+ would trigger a filesystem type lookup that expects an exact match.  While a URL
+ such as:
+ 
+   tag:das2.org,2012:test:/uiowa/juno/random_collection/das2
+ 
+ For space savings, tag:das2.org,2012: may be left off of the given URLs.
+ 
+ If nothing can be matched, null is return.  The resulting parsed node is saved in
+ a cache to avoid repeated network traffic.
 	 * 
 	 * @param sUrl
 	 * @param mon
 	 * @param bReload - Reload the node definition from the original source
 	 * @return The node requested, or throws an error
-	 * @throws org.das2.util.catalog.ResolutionException
+	 * @throws org.das2.util.catalog.DasResolveException
 	 * @throws java.io.IOException
 	 * @throws java.text.ParseException
 	 */
 	public static DasNode getNode(String sUrl, ProgressMonitor mon, boolean bReload) 
-		throws ResolutionException, IOException, ParseException {
+		throws DasResolveException, IOException, ParseException {
 		
 		// null URL, go get one of the default roots
 		if(sUrl == null || (sUrl.length() == 0)){
-			DasAbstractNode node = ROOT_NODES.get(null);
+			AbstractNode node = ROOT_NODES.get(null);
 			if(!node.isLoaded()) node.load(mon);
 			return node;
 		}
@@ -236,7 +236,7 @@ public class DasNodeFactory
 		
 		// If this starts with 'tag:' it's a network catalog node, resolve it
 		if(sUrl.startsWith("tag:")){
-			DasAbstractDirNode node = (DasAbstractDirNode) ROOT_NODES.get(null);
+			AbstractDirNode node = (AbstractDirNode) ROOT_NODES.get(null);
 			if(!node.isLoaded()) node.load(mon);
 			return node.resolve(sUrl, mon);
 		}
@@ -253,12 +253,12 @@ public class DasNodeFactory
 	 * @param mon
 	 * @param bReload
 	 * @return The nearest loadable DasNode for the path specified.
-	 * @throws org.das2.util.catalog.ResolutionException if a Filesystem style URL cannot
+	 * @throws org.das2.util.catalog.DasResolveException if a Filesystem style URL cannot
 	 *         be loaded as a dasnode.
 	 * 
 	 */
 	public static DasNode getNearestNode(String sUrl, ProgressMonitor mon, boolean bReload) 
-		throws ResolutionException 
+		throws DasResolveException 
 	{
 		DasNode node;
 		
@@ -274,8 +274,8 @@ public class DasNodeFactory
 					node = getNode(sUrl, mon, bReload);
 					return node;
 				} catch(IOException | ParseException ex){
-					ResolutionException re;
-					re = new ResolutionException("Could not resolve URL to node", sUrl);
+					DasResolveException re;
+					re = new DasResolveException("Could not resolve URL to node", sUrl);
 					re.initCause(ex);
 					throw re;
 				}
@@ -287,7 +287,7 @@ public class DasNodeFactory
 		try{
 			node = getNode(sUrl, mon, bReload);
 			return node;
-		} catch(IOException | ParseException | ResolutionException ex){
+		} catch(IOException | ParseException | DasResolveException ex){
 			LOGGER.log(Level.FINE, 
 				"Exact resolution of {0} failed due to {1}, looking for longest resolvable path", 
 				new Object[]{sUrl, ex.getMessage()}
@@ -295,10 +295,10 @@ public class DasNodeFactory
 		}
 		
 		// Going to need the root node now
-		DasAbstractDirNode root = (DasAbstractDirNode) ROOT_NODES.get(null);
+		AbstractDirNode root = (AbstractDirNode) ROOT_NODES.get(null);
 		if(!root.isLoaded()) try{
 			root.load(mon);
-		} catch(ResolutionException ex){
+		} catch(DasResolveException ex){
 			LOGGER.log(
 				Level.INFO, "Root node could not be resolved tried {0}", 
 				root.prettyPrintLoc(null, " ")
