@@ -62,7 +62,7 @@ abstract class AbstractDirNode extends AbstractNode implements DasDirNode
 	AbstractDirNode(DasDirNode parent, String name, List<String> lUrls)
 	{
 		super(parent, name, lUrls);
-		dSubNodes = Collections.synchronizedMap(new HashMap<>());
+		dSubNodes = Collections.synchronizedMap(new HashMap<String, AbstractNode>());
 		sSep = DEFAULT_PATH_SEP;
 	}
 	
