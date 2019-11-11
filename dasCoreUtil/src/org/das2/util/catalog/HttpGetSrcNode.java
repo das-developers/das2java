@@ -63,7 +63,7 @@ public class HttpGetSrcNode extends AbstractNode implements DasSrcNode
 	public boolean isInfo(){ return false; }
 
 	@Override
-	boolean parse(String sData, String sUrl) throws ParseException
+	void parse(String sData, String sUrl) throws ParseException
 	{
 		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 	}

@@ -21,6 +21,7 @@
 package org.das2.util.catalog;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,23 +38,32 @@ import org.das2.util.monitor.ProgressMonitor;
  * ability to have sub-nodes, which is provided via the resolve() and nearest() 
  * functions.
  * 
+ * The two main data members intended for inheritance are dSubNodes and sSep.
+ * If derived classes use this sub-node list and fill in their separator string
+ * the sub-node resolution can be handled by this class with out overriding 
+ * resolve() and nearest().
+ * 
  * @author cwp
  */
 abstract class AbstractDirNode extends AbstractNode implements DasDirNode
 {
 	private static final Logger LOGGER = LoggerManager.getLogger( "das2.catalog.absdir" );
 	
+	static final String DEFAULT_PATH_SEP = "/";
+	
 	// A dictionary of subnodes 
 	protected Map<String, AbstractNode> dSubNodes;
 	
-	// The separator string used for sub-paths of this node, may be null.
+	/** The separator string used for sub-paths of this node, may be set to null 
+	 * or some other value by some nodes, defaults to "/".
+	 */
 	protected String sSep;
 	
-	public AbstractDirNode(DasDirNode parent, String name, List<String> locations)
+	AbstractDirNode(DasDirNode parent, String name, List<String> lUrls)
 	{
-		super(parent, name, locations);
-		dSubNodes = new HashMap<>();
-		sSep = null;
+		super(parent, name, lUrls);
+		dSubNodes = Collections.synchronizedMap(new HashMap<>());
+		sSep = DEFAULT_PATH_SEP;
 	}
 	
 	// WARNING: This is called as part of child's toString, don't use toString here
@@ -83,21 +93,21 @@ abstract class AbstractDirNode extends AbstractNode implements DasDirNode
 	}
 	
 	@Override
-	public DasNode resolve(String sPath, ProgressMonitor mon) throws DasResolveException {
+	public DasNode resolve(String sSubPath, ProgressMonitor mon) throws DasResolveException {
 		if(!isLoaded()) load(mon);
 		
-		if(sPath == null) return this;
+		if(sSubPath == null) return this;
 		
 		// Remove my seperator from the name then try to find it
 		if((sSep != null) && sSep.length() > 0){ 
-			if(sPath.startsWith(sSep)) sPath = sPath.substring(sSep.length());
+			if(sSubPath.startsWith(sSep)) sSubPath = sSubPath.substring(sSep.length());
 		}
 		
 		// Get longest match from the list of child names
 		String[] aSubs = list();
 		String sChild = null;
 		for(String sCheck: aSubs){
-			if(sPath.startsWith(sCheck)){
+			if(sSubPath.startsWith(sCheck)){
 				if(sChild == null) sChild = sCheck;
 				else if(sCheck.length() > sChild.length()) sChild = sCheck;
 			}
@@ -111,21 +121,21 @@ abstract class AbstractDirNode extends AbstractNode implements DasDirNode
 		if(sChild == null){
 			while(canMerge()){  // This node might have extra information in another copy
 				if(merge(mon))   // try to merge
-					return resolve(sPath, mon); // it worked, try to resolve again
+					return resolve(sSubPath, mon); // it worked, try to resolve again
 			}
 		}
 		
 		if(sChild == null){
-			throw new DasResolveException("Cannot resolve (sub)path", sPath);
+			throw new DasResolveException("Cannot resolve (sub)path", sSubPath);
 		}
 		
-		AbstractNode node = dSubNodes.get(sChild);
+		AbstractNode child = dSubNodes.get(sChild);
 		
-		if(!node.isLoaded()){
+		if(!child.isLoaded()){
 			Exception cause = null;
 			do{
 				try{
-					node.load(mon);
+					child.load(mon);
 					break;
 				}
 				catch(DasResolveException ex){
@@ -135,54 +145,56 @@ abstract class AbstractDirNode extends AbstractNode implements DasDirNode
 			} while(canMerge());
 			
 			// If the node is not loaded now, we have a problem.
-			if(!node.isLoaded()){
-				throw new DasResolveException("Couldn't load", cause, sPath);
+			if(!child.isLoaded()){
+				throw new DasResolveException("Couldn't load", cause, sSubPath);
 			}
 		}
 		
 		// Take the child portion off the string, if it's non-zero length, and the 
 		// child is a directory object, resolution should continue
-		String sSubPath = sPath.substring(sChild.length());
-		if(sSubPath.length() > 0){
-			if(node.isDir()){
-				AbstractDirNode dirNode = (AbstractDirNode)node;
-				return dirNode.resolve(sSubPath, mon);
+		String sSubSubPath = sSubPath.substring(sChild.length());
+		if(sSubSubPath.length() > 0){
+			if(child.isDir()){
+				AbstractDirNode childDir = (AbstractDirNode)child;
+				return childDir.resolve(sSubSubPath, mon);
 			}
-			throw new DasResolveException("Sub node "+sChild+" is not a directory", sSubPath);
+			throw new DasResolveException(
+				"Sub node "+sChild+" is not a directory", sSubSubPath
+			);
 		}
 		
-		return node;
+		return child;
 	}
 	
 	// Similar to resolve, but expects to fail at some point and just returns the deepest
 	// node that resolved
 	@Override
-	public DasNode nearest(String sPath, ProgressMonitor mon) 
+	public DasNode nearest(String sSubPath, ProgressMonitor mon) 
 	{
 		if(!isLoaded()){
 			try{
 				load(mon);
 			} catch(DasResolveException ex){
 				LOGGER.log(Level.INFO, "Couldn't resolve {0} using sources {1}", 
-					new Object[]{sPath, prettyPrintLoc(null, " ")}
+					new Object[]{sSubPath, prettyPrintLoc(null, " ")}
 				);
 				if(parent != null) return parent;
 				else return this;
 			}
 		}
 		
-		if(sPath == null) return this;
+		if(sSubPath == null) return this;
 		
 		// Remove my seperator from the name then try to find it
 		if((sSep != null) && sSep.length() > 0){ 
-			if(sPath.startsWith(sSep)) sPath = sPath.substring(sSep.length());
+			if(sSubPath.startsWith(sSep)) sSubPath = sSubPath.substring(sSep.length());
 		}
 		
 		// Get longest match from the list of child names
 		String[] aSubs = list();
 		String sChild = null;
 		for(String sCheck: aSubs){
-			if(sPath.startsWith(sCheck)){
+			if(sSubPath.startsWith(sCheck)){
 				if(sChild == null) sChild = sCheck;
 				else if(sCheck.length() > sChild.length()) sChild = sCheck;
 			}
@@ -196,12 +208,12 @@ abstract class AbstractDirNode extends AbstractNode implements DasDirNode
 		if(sChild == null){
 			while(canMerge()){  // This node might have extra information in another copy
 				if(merge(mon))   // try to merge
-					return nearest(sPath, mon); // it worked, try to resolve again
+					return nearest(sSubPath, mon); // it worked, try to resolve again
 			}
 		}
 		
 		if(sChild == null){
-			LOGGER.log(Level.FINE, "Cannot resolve (sub)path {0}", sPath);
+			LOGGER.log(Level.FINE, "Cannot resolve (sub)path {0}", sSubPath);
 			return this;
 		}
 		
@@ -220,21 +232,26 @@ abstract class AbstractDirNode extends AbstractNode implements DasDirNode
 			
 			// If the node is not loaded now, we have a problem.
 			if(!node.isLoaded()){
-				LOGGER.log(Level.FINE, "Couldn''t load {0}", sPath);
+				LOGGER.log(Level.FINE, "Couldn''t load {0}", sSubPath);
 				return this;
 			}
 		}
 		
 		// Take the child portion off the string, if it's non-zero length, and the 
 		// child is a directory object, resolution should continue
-		String sSubPath = sPath.substring(sChild.length());
-		if(sSubPath.length() > 0){
+		String sSubSubPath = sSubPath.substring(sChild.length());
+		if(sSubSubPath.length() > 0){
 			if(node.isDir()){
 				AbstractDirNode dirNode = (AbstractDirNode)node;
-				return dirNode.nearest(sSubPath, mon);
+				return dirNode.nearest(sSubSubPath, mon);
 			}
 		}
 		
 		return this;
+	}
+	
+	@Override
+	public DasNode get(String sChildId){ 
+		return dSubNodes.get(sChildId);
 	}
 }

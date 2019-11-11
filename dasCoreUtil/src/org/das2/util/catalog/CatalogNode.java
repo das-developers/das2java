@@ -32,31 +32,37 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-/** A specific implementation of DasDirNode, uses JSON catalogs with a 
- * particular format.
+/** These nodes represent a general directory of nodes.
+ * 
+ * No particlar sub items are expected, though the data themselves must be 
+ * in a particular JSON format.  Catalog nodes can contain catalog nodes
+ * to generate a hierachy.
  * 
  * FIXME: Add reference to Catalog node JSON format documentation or JSON schema
  * once it exists
  * 
  * @author cwp
  */
-public class CatalogNode extends AbstractDirNode
+class CatalogNode extends AbstractDirNode
 {
 	private static final Logger LOGGER = LoggerManager.getLogger("das2.catalog.catalog" );
 	
 	JSONObject data;
-	public static final String TYPE = "Catalog";
+	static final String TYPE = "Catalog";
 	
 	// Static names for important data dictionary keys
 	static final String KEY_CATALOG = "catalog";
 	static final String KEY_TYPE    = "type";
 	static final String KEY_NAME    = "name";
 	static final String KEY_URLS    = "urls";
+	static final String KEY_SEPARATOR = "separator";
+	static final String KEY_TITLE   = "title";
+	static final String KEY_VERSION = "version";
 
 	// Phase 1 construction, just let super-class handle it
-	public CatalogNode(DasDirNode parent, String name, List<String> locations)
+	CatalogNode(DasDirNode parent, String name, List<String> lUrls)
 	{
-		super(parent, name, locations);
+		super(parent, name, lUrls);
 		data = null;
 	}
 	
@@ -101,9 +107,17 @@ public class CatalogNode extends AbstractDirNode
 				);
 				
 				dSubNodes.put(sChildId, child);
-				
-				//String sCheck = child.toString();
 			}
+		}
+		
+		// Work around odd implementation for the JSON library.  If an item is 
+		// explicitly set to null, optString() fails to return the actual value 
+		// in the file, instead it returns the opt value supplied to as the 
+		// default for optString().  Not sure why they made null the same as
+		// no value.  They are different.  --cwp
+		if(data.has(KEY_SEPARATOR)){
+			if(data.isNull(KEY_SEPARATOR)) sSep = null;
+			else sSep = data.getString(KEY_SEPARATOR);
 		}
 	}
 	
@@ -128,7 +142,7 @@ public class CatalogNode extends AbstractDirNode
 				String sVal = jo.getString(KEY_TYPE);
 				
 				// Using exceptions for flow control... not good.
-				if(!sVal.equals(TYPE))
+				if(!sVal.equals( type() ))
 					throw new DasResolveException("Expected type '"+TYPE+"' not '"+sVal+"'", loc.sUrl);
 				
 				initFromJson(jo);
@@ -184,15 +198,31 @@ public class CatalogNode extends AbstractDirNode
 	}
 
 	@Override
-	public DasNode get(String sChildId)
+	void parse(String sData, String sUrl) throws ParseException
 	{
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-	}
-
-	@Override
-	boolean parse(String sData, String sUrl) throws ParseException
-	{
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		
+		JSONObject jo;
+		String sType;
+		try {
+			jo = new JSONObject(sData);
+			sType = jo.getString(KEY_TYPE);
+		} catch (JSONException ex) {
+			ParseException pe = new ParseException("Error reading node data.", -1);
+			pe.initCause(ex);
+			throw pe;
+		}
+		
+		// Using exceptions for flow control... not good.
+		if(!sType.equals(TYPE))
+			throw new ParseException("Expected type '"+TYPE+"' not '"+sType+"'", -1);
+				
+		try {
+			initFromJson(jo);
+		} catch (JSONException ex) {
+			ParseException pe = new ParseException("Error reading node data.", -1);
+			pe.initCause(ex);
+			throw pe;
+		}
 	}
 	
 }

@@ -59,6 +59,12 @@ abstract class AbstractNode implements DasNode {
 			bBad = false;
 			sUrl = _sUrl;
 		}
+		@Override
+		public String toString(){
+			if(bLoaded) return sUrl + " [loaded]";
+			if(bBad) return sUrl + " [load error]";
+			return sUrl + " [unused]";
+		}
 	}
 	
 	protected List<NodeDefLoc> lLocs;
@@ -70,16 +76,16 @@ abstract class AbstractNode implements DasNode {
 	 * @param parent The parent method if any.  For root nodes this is null.
 	 * @param name   The human readable name of this object within it's parent.  May be
 	 *               null.  And the object may change it's name upon load!
-	 * @param locations A list of URLs from which the full definition of this item may
+	 * @param lUrls A list of URLs from which the full definition of this item may
 	 *               be loaded for phase-2 construction, this should *NOT* be null.
 	 */
-	AbstractNode(DasDirNode parent, String name, List<String> locations)
+	AbstractNode(DasDirNode parent, String name, List<String> lUrls)
 	{
 		this.parent = parent;
 		sName = name;
 		lLocs = new ArrayList<>();
-		if(locations != null){
-			for(String sLoc: locations){
+		if(lUrls != null){
+			for(String sLoc: lUrls){
 				lLocs.add(new NodeDefLoc(sLoc));
 			}
 		}
@@ -171,5 +177,5 @@ abstract class AbstractNode implements DasNode {
 	}
 	
 	// Side loading data
-	abstract boolean parse(String sData, String sUrl) throws ParseException;
+	abstract void parse(String sData, String sUrl) throws ParseException;
 }
