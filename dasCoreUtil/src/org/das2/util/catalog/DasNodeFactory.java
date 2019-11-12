@@ -90,11 +90,10 @@ public class DasNodeFactory
 		switch(sType){
 			case CatalogNode.TYPE:
 				return new CatalogNode(parent, sName, lLocs);
+			case CollectionNode.TYPE:
+				return new CollectionNode(parent, sName, lLocs);
 			case HttpGetSrcNode.TYPE:
 				return new HttpGetSrcNode(parent, sName, lLocs);
-			
-			// TODO: Add collection type here...
-				
 		}
 		throw new ParseException("Unknown node type '"+sType+"'.", -1);
 	}
@@ -155,22 +154,17 @@ public class DasNodeFactory
 				throw pe;
 			}
 			
-			// Could be a Catalog, Collection, or HttpStreamSrc all of which are JSON data
 			switch(sType){
-				case CatalogNode.TYPE:
-					node = new CatalogNode(null,  null, null);
-					node.parse(sData, sUrl);
-					ROOT_NODES.put(sUrl, node);
-					return node;
-					
-				case HttpGetSrcNode.TYPE:
-					node = new HttpGetSrcNode(null, null, null);
-					node.parse(sData, sUrl);
-					ROOT_NODES.put(sUrl, node);
-					return node;
+				case CatalogNode.TYPE:    node = new CatalogNode(null,  null, null);   break;
+				case CollectionNode.TYPE: node = new CollectionNode(null, null, null); break;
+				case HttpGetSrcNode.TYPE: node = new HttpGetSrcNode(null, null, null); break;
 				default:
 					throw new ParseException("Unknown node type '"+sType+"' at "+sUrl+".", -1);
 			}
+			
+			node.parse(sData, sUrl);
+			ROOT_NODES.put(sUrl, node);
+			return node;
 		}
 		
 		// Well that didn't work, try to parse it as XML.

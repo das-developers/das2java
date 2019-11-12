@@ -20,92 +20,154 @@
 
 package org.das2.util.catalog;
 
+import java.io.IOException;
 import java.text.ParseException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.util.LoggerManager;
 import org.das2.util.monitor.ProgressMonitor;
+import org.json.JSONException;
 import org.json.JSONObject;
 
-/**
+/** Engine for turning parameter settings into HTTP GET URLs
  *
  * @author cwp
  */
-public class HttpGetSrcNode extends AbstractNode implements DasSrcNode
+public class HttpGetSrcNode extends AbstractSrcNode
 {
 	private static final Logger LOGGER = LoggerManager.getLogger("das2.catalog.httpsrc");
 
-	JSONObject json = null;
+	JSONObject data;
 	public static final String TYPE = "HttpStreamSrc";
 	
-	protected String sPath;  // My name from the root location
-	protected String sName;  // My human readable name
-	protected String sSrcUrl = null;  // Where I came from (if loaded)
-	protected Map<String, String> dLocs = new HashMap<>();  // Where I can be loaded from
+	static final String KEY_TYPE    = "type";
+	static final String KEY_NAME    = "name";
+	static final String KEY_TITLE   = "title";
+	static final String KEY_VERSION = "version";
+	
+	// Top level large objects
+	static final String KEY_FORMAT = "format";
+	static final String KEY_IFACE  = "interface";
+	
+	static final String KEY_PROTO  = "protocol";
+	static final String KEY_AUTH   = "authentication";
+	static final String KEY_URLS   = "base_urls";
+	static final String KEY_STYLE  = "convertion";
+	static final String KEY_EXAMPLES = "examples";
+	
+	
+	static final String TECH_CONTACT = "tech_contacts";
 
+	
 	public HttpGetSrcNode(DasDirNode parent, String name, List<String> locations)
 	{
 		super(parent, name, locations);
+		data = null;
 	}
-
+	
 	@Override
 	public String type() { return TYPE;}
-
-	@Override
-	public boolean isSrc() { return true; }
 	
 	@Override
-	public boolean isDir(){ return false; }
-	
-	@Override
-	public boolean isInfo(){ return false; }
+	boolean isLoaded(){ return data != null; }
 
+	protected void initFromJson(JSONObject jo) throws JSONException, ParseException{
+		data = jo;
+		
+		if(! data.getString(KEY_TYPE).equals(TYPE))
+			throw new ParseException("Node type missing or not equal to " + TYPE, -1);
+		
+	}
+	
+	private void mergeFromJson(JSONObject jo) throws JSONException, ParseException
+	{
+		throw new UnsupportedOperationException("Not supported yet.");
+	}
+	
 	@Override
 	void parse(String sData, String sUrl) throws ParseException
 	{
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		JSONObject jo;
+		try {
+			jo = new JSONObject(sData);
+			initFromJson(jo);
+		} catch (JSONException ex) {
+			ParseException pe = new ParseException("Error reading node data.", -1);
+			pe.initCause(ex);
+			throw pe;
+		}
+		
+		// Save off the location
+		for(NodeDefLoc loc: lLocs){
+			if(loc.sUrl.equals(sUrl)){
+				loc.bLoaded = true;
+				return;
+			}
+		}
+		
+		NodeDefLoc loc = new NodeDefLoc(sUrl);
+		loc.bLoaded = true;
 	}
 
-	
 	@Override
-	public boolean queryVerify(Map<String, String> dQuery) {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-	}
-
-	@Override
-	public String name() {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-	}
-
-	@Override
-	boolean isLoaded()
+	void load(ProgressMonitor mon) throws DasResolveException
 	{
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-	}
-
-	@Override
-	void load(ProgressMonitor mon)
-	{
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-	}
-
-	@Override
-	boolean canMerge()
-	{
-		throw new UnsupportedOperationException("Not supported yet.");
+		for(NodeDefLoc loc: lLocs){
+			loc.bLoaded = false;
+			loc.bBad = false;
+		}
+		
+		for(int i = 0; i < lLocs.size(); i++){
+			NodeDefLoc loc = lLocs.get(i);
+			try{
+				String sData = DasNodeFactory.getUtf8NodeDef(loc.sUrl, mon);
+				JSONObject jo = new JSONObject(sData);		
+				initFromJson(jo);
+				loc.bLoaded = true;
+				return;
+				
+			} catch(IOException | JSONException | ParseException ex){
+				loc.bBad = true;
+				LOGGER.log(Level.FINE, 
+					"Catalog location {0} marked as bad because {1}", 
+					new Object[]{loc.sUrl, ex.getMessage()}
+				);
+				//If this was our last chance, go ahead and raise the exception
+				if((i + 1) == lLocs.size()){
+					DasResolveException resEx = new DasResolveException(
+						"Couldn't load catalog node because "+ex.getMessage(),
+						ex, loc.sUrl
+					);
+					throw resEx;
+				}
+			}
+		} 
 	}
 
 	@Override
 	boolean merge(ProgressMonitor mon)
 	{
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		for(NodeDefLoc loc: lLocs){
+			if(loc.bLoaded || loc.bBad) continue;
+			
+			try{
+				String sData = DasNodeFactory.getUtf8NodeDef(loc.sUrl, mon);
+				JSONObject jo = new JSONObject(sData);
+				mergeFromJson(jo);
+				loc.bLoaded = true;
+				return true;
+				
+			} catch(IOException | JSONException | ParseException ex){
+				loc.bBad = true;
+				LOGGER.log(Level.FINE, 
+					"Catalog location {0} marked as bad because {1}", 
+					new Object[]{loc.sUrl, ex.getMessage()}
+				);
+			}
+		}
+		
+		return false;
 	}
-	
-	protected enum content_fmt {
-		JSON, XML
-	}
-	protected Object oDef = null; // A pointer to the content
 
 }

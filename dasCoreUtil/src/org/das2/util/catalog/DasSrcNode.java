@@ -30,10 +30,20 @@ public interface DasSrcNode extends DasNode {
 
 	/** Determine if the given list of query parameters are valid
 	 * 
-	 * @param params A map of key, value query parameters
+	 * @param dQuery
 	 * @return True if this set of parameters is valid, false otherwise
 	 */
 	public boolean queryVerify(Map<String, String> dQuery);
 
+	/** Given a parameter query string, get the access information.  
+	 * 
+	 * In an ideal world this would just return the dataset itself.  But that is the 
+	 * point of the org.autoplot.DataSource interface and it's on the fly factory
+	 * discovery.
+	 * 
+	 * @param dQuery
+	 * @return 
+	 */
+	//QDataSet query(Map<String, String> dQuery);
 	
 }

@@ -48,6 +48,16 @@ public interface DasDirNode extends DasNode {
 	 */
 	public String childPath(DasNode child);
 	
+	/** Get the separator string to place after my path but before then names of any 
+	 * child items when generating a child path string.
+	 * 
+	 * @param mon The separator may be defined in the object data which may trigger
+	 *            Phase-2 construction.  Since this is a network operation a progress
+	 *            monitor may be supplied.
+	 * @return The path separator string, which may be zero length (and that's okay).
+	 */
+	public String pathSeparator(ProgressMonitor mon);
+	
 	/** Walk down a given sub-path and retrieve a fully constructed descendant node.
 	 *
 	 * @param sSubPath A sub-path to resolve into a fully loaded node.  If this node is a 
@@ -70,4 +80,5 @@ public interface DasDirNode extends DasNode {
 	 *         in cases where this node is a stub that can't even resolve itself.
 	 */
 	public DasNode nearest(String sSubPath, ProgressMonitor mon);
+
 }

@@ -86,6 +86,20 @@ abstract class AbstractDirNode extends AbstractNode implements DasDirNode
 	}
 	
 	@Override
+	public String pathSeparator(ProgressMonitor mon){
+		if(!isLoaded()){
+			try{
+				load(mon);
+			} catch(DasResolveException ex){
+				LOGGER.log(Level.INFO, "Can''t load full definition of {0} because: {1}", 
+					new Object[]{toString(), ex.getMessage()}
+				);
+			}
+		}
+		return sSep;
+	}
+	
+	@Override
 	public String[] list() {
 		String[] aKeys = dSubNodes.keySet().toArray(new String[0]);
 		Arrays.sort(aKeys);

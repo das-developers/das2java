@@ -36,7 +36,7 @@ import org.json.JSONObject;
  * 
  * No particlar sub items are expected, though the data themselves must be 
  * in a particular JSON format.  Catalog nodes can contain catalog nodes
- * to generate a hierachy.
+ * to generate a hierarchy.
  * 
  * FIXME: Add reference to Catalog node JSON format documentation or JSON schema
  * once it exists
@@ -83,9 +83,12 @@ class CatalogNode extends AbstractDirNode
 
 	
 	protected void initFromJson(JSONObject jo) throws JSONException, ParseException{
-		data = jo;
-		if(data.has(KEY_CATALOG)){
-			JSONObject cat = data.getJSONObject(KEY_CATALOG);
+		
+		if(! jo.getString(KEY_TYPE).equals(TYPE))
+			throw new ParseException("Node type missing or not equal to " + TYPE, -1);
+		
+		if(jo.has(KEY_CATALOG)){
+			JSONObject cat = jo.getJSONObject(KEY_CATALOG);
 			Iterator<String> keys = cat.sortedKeys();
 			while(keys.hasNext()){
 				String sChildId = keys.next();
@@ -115,17 +118,15 @@ class CatalogNode extends AbstractDirNode
 		// in the file, instead it returns the opt value supplied to as the 
 		// default for optString().  Not sure why they made null the same as
 		// no value.  They are different.  --cwp
-		if(data.has(KEY_SEPARATOR)){
-			if(data.isNull(KEY_SEPARATOR)) sSep = null;
+		if(jo.has(KEY_SEPARATOR)){
+			if(jo.isNull(KEY_SEPARATOR)) sSep = "";
 			else sSep = data.getString(KEY_SEPARATOR);
 		}
+		
+		// Data looks good enough, keep it
+		data = jo;
 	}
 	
-	protected void mergeFromJson(JSONObject jo){
-		throw new UnsupportedOperationException("Not supported yet.");
-	}
-	
-
 	@Override
 	void load(ProgressMonitor mon) throws DasResolveException {
 		for(NodeDefLoc loc: lLocs){
@@ -137,19 +138,12 @@ class CatalogNode extends AbstractDirNode
 			NodeDefLoc loc = lLocs.get(i);
 			try{
 				String sData = DasNodeFactory.getUtf8NodeDef(loc.sUrl, mon);
-				JSONObject jo = new JSONObject(sData);
-				
-				String sVal = jo.getString(KEY_TYPE);
-				
-				// Using exceptions for flow control... not good.
-				if(!sVal.equals( type() ))
-					throw new DasResolveException("Expected type '"+TYPE+"' not '"+sVal+"'", loc.sUrl);
-				
+				JSONObject jo = new JSONObject(sData);		
 				initFromJson(jo);
 				loc.bLoaded = true;
 				return;
 				
-			} catch(IOException | JSONException | ParseException | DasResolveException ex){
+			} catch(IOException | JSONException | ParseException ex){
 				loc.bBad = true;
 				LOGGER.log(Level.FINE, 
 					"Catalog location {0} marked as bad because {1}", 
@@ -166,6 +160,61 @@ class CatalogNode extends AbstractDirNode
 			}
 		} 
 	}
+	
+	protected void mergeFromJson(JSONObject jo) throws JSONException, ParseException{
+		if(! jo.getString(KEY_TYPE).equals(TYPE))
+			throw new ParseException("Node type missing or not equal to " + TYPE, -1);
+		
+		// Add extra child objects and/or extra locations for existing child objects
+		if(jo.has(KEY_CATALOG)){
+			JSONObject cat = jo.getJSONObject(KEY_CATALOG);
+			Iterator<String> keys = cat.sortedKeys();
+			while(keys.hasNext()){
+				String sChildId = keys.next();
+				JSONObject joChild = cat.getJSONObject(sChildId);
+				
+				String sChildType = joChild.getString(KEY_TYPE);  // Can't be null				
+				String sChildName = joChild.optString(KEY_NAME, null);
+				JSONArray jaLocs = joChild.optJSONArray(KEY_URLS);
+				List<String> lChildLocs = null;
+				if(jaLocs != null){
+					lChildLocs = new ArrayList<>();
+					for(int i = 0; i < jaLocs.length(); ++i){
+						lChildLocs.add(jaLocs.getString(i));
+					}
+				}
+				
+				AbstractNode child;
+				
+				if(!dSubNodes.containsKey(sChildName)){
+					// If this child doesn't exist, add it...
+					
+					child = DasNodeFactory.newNode(
+						sChildType, this, sChildName, lChildLocs
+					);
+					dSubNodes.put(sChildId, child);
+				}
+				else{
+					// already have this child, but maybe there are new locations
+					
+					child = dSubNodes.get(sChildName);
+					for(String sAvail: lChildLocs){
+						boolean bNewLoc = true;
+						for(NodeDefLoc has: child.lLocs){
+							if(has.sUrl.equals(sAvail)){
+								bNewLoc = false;
+								break;
+							}
+						}
+						if(bNewLoc) child.addLocation(sAvail);
+					}
+				}
+			}
+			
+			
+		}
+		
+	}
 
 	@Override
 	boolean merge(ProgressMonitor mon)
@@ -176,16 +225,11 @@ class CatalogNode extends AbstractDirNode
 			try{
 				String sData = DasNodeFactory.getUtf8NodeDef(loc.sUrl, mon);
 				JSONObject jo = new JSONObject(sData);
-				String sVal = jo.getString(KEY_TYPE);
-				
-				if(!sVal.equals(TYPE))
-					throw new DasResolveException("Expected type '"+TYPE+"' not '"+sVal+"'", loc.sUrl	);
-				
 				mergeFromJson(jo);
 				loc.bLoaded = true;
 				return true;
 				
-			} catch(IOException | JSONException | DasResolveException ex){
+			} catch(IOException | JSONException | ParseException ex){
 				loc.bBad = true;
 				LOGGER.log(Level.FINE, 
 					"Catalog location {0} marked as bad because {1}", 
@@ -200,29 +244,26 @@ class CatalogNode extends AbstractDirNode
 	@Override
 	void parse(String sData, String sUrl) throws ParseException
 	{
-		
 		JSONObject jo;
-		String sType;
 		try {
 			jo = new JSONObject(sData);
-			sType = jo.getString(KEY_TYPE);
-		} catch (JSONException ex) {
-			ParseException pe = new ParseException("Error reading node data.", -1);
-			pe.initCause(ex);
-			throw pe;
-		}
-		
-		// Using exceptions for flow control... not good.
-		if(!sType.equals(TYPE))
-			throw new ParseException("Expected type '"+TYPE+"' not '"+sType+"'", -1);
-				
-		try {
 			initFromJson(jo);
 		} catch (JSONException ex) {
 			ParseException pe = new ParseException("Error reading node data.", -1);
 			pe.initCause(ex);
 			throw pe;
 		}
+		
+		// Save off the location
+		for(NodeDefLoc loc: lLocs){
+			if(loc.sUrl.equals(sUrl)){
+				loc.bLoaded = true;
+				return;
+			}
+		}
+		
+		NodeDefLoc loc = new NodeDefLoc(sUrl);
+		loc.bLoaded = true;
 	}
 	
 }
