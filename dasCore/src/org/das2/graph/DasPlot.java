@@ -985,6 +985,9 @@ public class DasPlot extends DasCanvasComponent {
         if (xAxis != oldValue) {
             firePropertyChange("xAxis", oldValue, xAxis);
         }
+        if ( xAxis!=null ) {
+            xAxis.updateTickV();
+        }
     }
 
     /**
@@ -1034,6 +1037,9 @@ public class DasPlot extends DasCanvasComponent {
         }
         if (yAxis != oldValue) {
             firePropertyChange("yAxis", oldValue, yAxis);
+        }
+        if ( yAxis!=null ) {
+            yAxis.updateTickV();
         }
     }
 
