@@ -318,7 +318,10 @@ public class WebFileObject extends FileObject {
                 }
             } catch (FileNotFoundException e) {
                 return false;
+            } catch ( javax.net.ssl.SSLException e ) {
+                throw new RuntimeException(e);
             } catch (IOException e) {
+                logger.log( Level.FINE, e.getMessage(), e );
                 // I'm going to assume that it's because the file was not found. 404's from pw's server end up here
                 return false;
             }
