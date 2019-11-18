@@ -1110,7 +1110,8 @@ public class TearoffTabbedPane extends JTabbedPane {
         TabDesc desc= tabs.get(c);
         if ( desc==null ) {
             //System.err.println("here c has no desc");
-            throw new IllegalArgumentException("Component does not appear to be associated with this TearoffTabbedPane");
+            logger.fine("Component does not appear to be associated with this TearoffTabbedPane");
+            return;
         }
         if ( desc.babysitter!=null ) {
             this.dock(c);
