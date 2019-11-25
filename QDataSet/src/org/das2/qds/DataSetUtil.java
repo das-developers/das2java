@@ -909,6 +909,7 @@ public class DataSetUtil {
      * copy of properties.
      * @param ds the dataset
      * @return the properties
+     * @see #putProperties(java.util.Map, org.das2.qds.MutablePropertyDataSet) 
      */
     public static Map<String, Object> getProperties(QDataSet ds) {
         return getProperties(ds, new LinkedHashMap());
@@ -920,6 +921,7 @@ public class DataSetUtil {
      * property not found.
      * @param properties the properties
      * @param ds the mutable property dataset, which is still mutable.
+     * @see #getProperties(org.das2.qds.QDataSet) 
      */
     public static void putProperties(Map<String, Object> properties, MutablePropertyDataSet ds) {
         if ( ds.isImmutable() ) {

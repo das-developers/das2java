@@ -6827,12 +6827,24 @@ public final class Ops {
     }
     
     /**
+     * remove the fill values from the rank 1 dataset, returning a smaller dataset.
+     * This was introduced to support the mash-up dialog.
+     * @param ds
+     * @return dataset with the values removed.
+     */
+    public static WritableDataSet removeFill( QDataSet ds ) {
+        QDataSet r= where( valid(ds) );
+        return applyIndex( ds, r );
+    }
+    
+    /**
      * apply the indeces, checking for out-of-bounds values.
      * @param vv values to return, a rank 1, N-element dataset.
      * @param ds the indeces.
      * @param fillValue the value to use when the index is out-of-bounds.
      * @return data a dataset with the geometry of ds and the units of values.
      * @see #subset(org.das2.qds.QDataSet, org.das2.qds.QDataSet) subset, which does the same thing.
+     * @see #applyIndex(org.das2.qds.QDataSet, int, org.das2.qds.QDataSet) 
      */
     public static WritableDataSet applyIndex( QDataSet vv, QDataSet ds, Number fillValue ) {
         QubeDataSetIterator iter= new QubeDataSetIterator(ds);
@@ -6853,43 +6865,57 @@ public final class Ops {
     
     /**
      * apply the indeces 
-     * @param vv values to return, a rank 1, N-element dataset.
-     * @param ds the indeces.
+     * @param ds values to return, a rank 1, N-element dataset.
+     * @param r the indeces.
      * @return data a dataset with the geometry of ds and the units of values.
      * @see #subset(org.das2.qds.QDataSet, org.das2.qds.QDataSet) subset, which does the same thing.
+     * @see #applyIndex(org.das2.qds.QDataSet, int, org.das2.qds.QDataSet) 
      */
-    public static WritableDataSet applyIndex( QDataSet vv, QDataSet ds ) {
-        QubeDataSetIterator iter= new QubeDataSetIterator(ds);
+    public static WritableDataSet applyIndex( QDataSet ds, QDataSet r ) {
+        QubeDataSetIterator iter= new QubeDataSetIterator(r);
         DDataSet result= iter.createEmptyDs();
-        Number fill= (Number)vv.property( QDataSet.FILL_VALUE );
+        Number fill= (Number)ds.property( QDataSet.FILL_VALUE );
         if ( fill==null ) fill= -1e38;
         while ( iter.hasNext() ) {
             iter.next();
-            int idx= (int)( iter.getValue(ds) );
-            if ( idx<0 || idx>=vv.length() ) {
+            int idx= (int)( iter.getValue(r) );
+            if ( idx<0 || idx>=ds.length() ) {
                 iter.putValue( result, fill.doubleValue() );
             } else {
-                iter.putValue( result, vv.value(idx) );
+                iter.putValue( result, ds.value(idx) );
             }
         }
-        result.putProperty(QDataSet.UNITS,vv.property(QDataSet.UNITS));
+        result.putProperty(QDataSet.UNITS,ds.property(QDataSet.UNITS));
         result.putProperty(QDataSet.FILL_VALUE,fill);
+        
+        Map<String,Object> pp= DataSetUtil.getProperties( ds );
+        pp.remove( QDataSet.DEPEND_0 );
+        pp.remove( QDataSet.BUNDLE_0 );
+        DataSetUtil.putProperties( pp, result );
+        
+        QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
+        if ( dep0!=null ) result.putProperty(QDataSet.DEPEND_0,applyIndex( dep0, r ));
+
+        QDataSet bundle0= (QDataSet) ds.property(QDataSet.BUNDLE_0);
+        if ( bundle0!=null ) result.putProperty(QDataSet.BUNDLE_0,applyIndex( bundle0, r ));
+        
         return result;
     }
     
     /**
      * apply the indeces 
-     * @param vvo values to return, a rank 1, N-element dataset.
-     * @param ds the indices.
+     * @param dso values to return, a rank 1, N-element dataset.
+     * @param r the indices.
      * @return data a dataset with the geometry of ds and the units of values.
+     * @see #applyIndex(org.das2.qds.QDataSet, int, org.das2.qds.QDataSet) 
      */
-    public static WritableDataSet applyIndex( Object vvo, QDataSet ds ) {
-        QDataSet vv= dataset(vvo);
-        QubeDataSetIterator iter= new QubeDataSetIterator(ds);
+    public static WritableDataSet applyIndex( Object dso, QDataSet r ) {
+        QDataSet vv= dataset(dso);
+        QubeDataSetIterator iter= new QubeDataSetIterator(r);
         DDataSet result= iter.createEmptyDs();
         while ( iter.hasNext() ) {
             iter.next();
-            int idx= (int)( iter.getValue(ds) );
+            int idx= (int)( iter.getValue(r) );
             iter.putValue( result, vv.value(idx) );
         }
         result.putProperty(QDataSet.UNITS,vv.property(QDataSet.UNITS));
