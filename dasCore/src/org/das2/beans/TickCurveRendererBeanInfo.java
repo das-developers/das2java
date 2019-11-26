@@ -30,6 +30,7 @@ public class TickCurveRendererBeanInfo extends AccessLevelBeanInfo {
         new Property("LineWidth", AccessLevel.DASML, "getLineWidth", "setLineWidth", null),
         new Property("TickLength", AccessLevel.DASML, "getTickLength", "setTickLength", null),
         new Property("TickSpacing", AccessLevel.DASML, "getTickSpacing", "setTickSpacing", null),
+        new Property("TickValues",AccessLevel.DASML, "getTickValues", "setTickValues", null),
         new Property("color", AccessLevel.DASML, "getColor", "setColor", null),
     };
     

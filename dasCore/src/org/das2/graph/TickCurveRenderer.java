@@ -501,58 +501,64 @@ public final class TickCurveRenderer extends Renderer {
 
         DatumVector major, minor;
         
-        if ( tickSpacing.length()>0 ) {
-            if ( ticksDivider==null ) {
-                 ticksDivider= DomainDividerUtil.getDomainDivider( dr.min(), dr.max(), false );
-            }
-            Datum ticksSpacingD;
-            try {
-                ticksSpacingD = dr.min().getUnits().getOffsetUnits().parse(tickSpacing);
-                while ( ticksDivider.rangeContaining(dr.min()).width().gt(ticksSpacingD) ) {
+        if ( tickValues.length()>0 ) {
+            TickVDescriptor ticks= GraphUtil.calculateManualTicks( tickValues, dr, false );
+            major= ticks.getMajorTicks();
+            minor= ticks.getMinorTicks();
+        } else {
+            if ( tickSpacing.length()>0 ) {
+                if ( ticksDivider==null ) {
+                     ticksDivider= DomainDividerUtil.getDomainDivider( dr.min(), dr.max(), false );
+                }
+                Datum ticksSpacingD;
+                try {
+                    ticksSpacingD = dr.min().getUnits().getOffsetUnits().parse(tickSpacing);
+                    while ( ticksDivider.rangeContaining(dr.min()).width().gt(ticksSpacingD) ) {
+                        ticksDivider= ticksDivider.finerDivider(false);
+                    }
+
+                    while ( ticksDivider.rangeContaining(dr.min()).width().lt(ticksSpacingD) ) {
+                        ticksDivider= ticksDivider.coarserDivider(false);
+                    }
+
+                } catch (ParseException ex) {
+                    ticksDivider= DomainDividerUtil.getDomainDivider( dr.min(), dr.max(), false );
+                    logger.warning("unable to parse "+tickSpacing);
+                }
+
+            } else {
+                if ( ticksDivider==null ) {
+                     ticksDivider= DomainDividerUtil.getDomainDivider( dr.min(), dr.max(), false );
+                }
+
+                double plen= 0;
+                int ic= 1;
+                for ( int i=1; i<ddata[0].length; i++ ) {
+                    if ( Math.abs( ddata[0][i] )<10000 && Math.abs( ddata[0][i-1] )<10000 &&  Math.abs( ddata[1][i] )<10000 && Math.abs( ddata[1][i-1] )<10000 ) {
+                        double dx= ddata[0][i] - ddata[0][i-1];
+                        double dy= ddata[1][i] - ddata[1][i-1];
+                        plen += Math.sqrt( dx*dx + dy*dy );
+                        ic++;
+                    }
+                }
+
+                if ( ic>0 ) { // compensate for stuff that can't be transformed.
+                    plen= plen * ddata[0].length / ic;
+                }
+                if ( plen<100 ) plen=100;
+
+                while ( ticksDivider.boundaryCount( dr.min(), dr.max() ) < Math.ceil( plen / 100 ) ) {
                     ticksDivider= ticksDivider.finerDivider(false);
                 }
-            
-                while ( ticksDivider.rangeContaining(dr.min()).width().lt(ticksSpacingD) ) {
+                while ( ticksDivider.boundaryCount( dr.min(), dr.max() ) > Math.ceil( plen / 50 ) ) {
                     ticksDivider= ticksDivider.coarserDivider(false);
                 }
-                
-            } catch (ParseException ex) {
-                ticksDivider= DomainDividerUtil.getDomainDivider( dr.min(), dr.max(), false );
-                logger.warning("unable to parse "+tickSpacing);
-            }
-                
-        } else {
-            if ( ticksDivider==null ) {
-                 ticksDivider= DomainDividerUtil.getDomainDivider( dr.min(), dr.max(), false );
+
             }
 
-            double plen= 0;
-            int ic= 1;
-            for ( int i=1; i<ddata[0].length; i++ ) {
-                if ( Math.abs( ddata[0][i] )<10000 && Math.abs( ddata[0][i-1] )<10000 &&  Math.abs( ddata[1][i] )<10000 && Math.abs( ddata[1][i-1] )<10000 ) {
-                    double dx= ddata[0][i] - ddata[0][i-1];
-                    double dy= ddata[1][i] - ddata[1][i-1];
-                    plen += Math.sqrt( dx*dx + dy*dy );
-                    ic++;
-                }
-            }
-
-            if ( ic>0 ) { // compensate for stuff that can't be transformed.
-                plen= plen * ddata[0].length / ic;
-            }
-            if ( plen<100 ) plen=100;
-
-            while ( ticksDivider.boundaryCount( dr.min(), dr.max() ) < Math.ceil( plen / 100 ) ) {
-                ticksDivider= ticksDivider.finerDivider(false);
-            }
-            while ( ticksDivider.boundaryCount( dr.min(), dr.max() ) > Math.ceil( plen / 50 ) ) {
-                ticksDivider= ticksDivider.coarserDivider(false);
-            }
-
+            major = ticksDivider.boundaries(dr.min(), dr.max());
+            minor = ticksDivider.finerDivider(true).boundaries(dr.min(), dr.max());
         }
-        
-        major = ticksDivider.boundaries(dr.min(), dr.max());
-        minor = ticksDivider.finerDivider(true).boundaries(dr.min(), dr.max());
         
         tickv = TickVDescriptor.newTickVDescriptor(major, minor);        
         tickv.datumFormatter= DomainDividerUtil.getDatumFormatter( ticksDivider, dr );
@@ -857,6 +863,28 @@ public final class TickCurveRenderer extends Renderer {
         ticksDivider= null;
         update();
         propertyChangeSupport.firePropertyChange(PROP_TICKSPACING, oldTickSpacing, tickSpacing);
+    }
+
+    private String tickValues = "";
+
+    public static final String PROP_TICKVALUES = "tickValues";
+
+    public String getTickValues() {
+        return tickValues;
+    }
+
+    /**
+     * set like the axis control, with values like:<ul>
+     * <li>+2hr for every two hours
+     * <li>2019-11-26T00:02,2019-11-26T00:07 for explicit positions
+     * </ul>
+     * @param tickValues 
+     */
+    public void setTickValues(String tickValues) {
+        String oldTickValues = this.tickValues;
+        this.tickValues = tickValues;
+        update();
+        propertyChangeSupport.firePropertyChange(PROP_TICKVALUES, oldTickValues, tickValues);
     }
 
     /** Getter for property lineWidth.
