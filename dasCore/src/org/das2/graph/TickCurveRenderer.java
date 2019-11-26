@@ -154,6 +154,7 @@ public final class TickCurveRenderer extends Renderer {
         this.fontSize= getControl( CONTROL_KEY_FONT_SIZE, fontSize );
         this.tickLength= getControl(CONTROL_TICK_LENGTH, tickLength );
         this.tickSpacing= getControl( PROP_TICKSPACING, tickSpacing );
+        this.tickValues= getControl( PROP_TICKVALUES, tickValues );
         update();
     }
     
@@ -165,6 +166,7 @@ public final class TickCurveRenderer extends Renderer {
         controls.put( CONTROL_KEY_FONT_SIZE, fontSize );
         controls.put( CONTROL_TICK_LENGTH, tickLength );
         controls.put( PROP_TICKSPACING, tickSpacing );
+        controls.put( PROP_TICKVALUES, tickValues );
         return Renderer.formatControl(controls);
     }
     
