@@ -157,6 +157,7 @@ public final class TickCurveRenderer extends Renderer {
         this.tickSpacing= getControl( PROP_TICKSPACING, tickSpacing );
         this.tickValues= getControl( PROP_TICKVALUES, tickValues );
         this.tickDirection= getControl( PROP_TICKDIRECTION, tickDirection );
+        tickv= null;
         update();
     }
     
@@ -788,40 +789,42 @@ public final class TickCurveRenderer extends Renderer {
         QDataSet findex;
         Units tunits= SemanticOps.getUnits(tds);
 
+        TickVDescriptor ltickv= tickv;
+        
         if ( manualTickV!=null ) {
-            tickv= manualTickV;
+            ltickv= manualTickV;
         } else {
-            if ( tickv==null || !tickv.getMinorTicks().getUnits().isConvertibleTo(tunits) ) {
-                tickv= resetTickV( tds );
+            if ( ltickv==null || !ltickv.getMinorTicks().getUnits().isConvertibleTo(tunits) ) {
+                ltickv= resetTickV( tds );
             } else {
                 double check= checkTickV(tds);
                 if ( check<30 ) {
-                    tickv= resetTickV( tds );
+                    ltickv= resetTickV( tds );
                 } else if ( check>100 ) {
-                    tickv= resetTickV( tds );
+                    ltickv= resetTickV( tds );
                 }
             }
         }
         
-        DDataSet txds= DDataSet.wrap( tickv.minorTickV.toDoubleArray( tunits ), tunits );
+        DDataSet txds= DDataSet.wrap( ltickv.minorTickV.toDoubleArray( tunits ), tunits );
         findex= Ops.findex( tds, txds );
 
         setUpFont( g, fontSize );
         
         updateTickLength( g );
         
-        tickLabeller.init( tickv );
+        tickLabeller.init( ltickv );
         
-        for ( int i=0; i<tickv.minorTickV.getLength(); i++ ) {
+        for ( int i=0; i<ltickv.minorTickV.getLength(); i++ ) {
             double v= findex.value(i);
             if ( v>=0 && v<lastValid && len[(int)Math.ceil(v)]<=limit ) {
                 drawTick( g, v ); // TODO: in/out logic needs to be based on tickv index, not data point index.
             }
         }
         
-        txds= DDataSet.wrap( tickv.tickV.toDoubleArray( tunits ), tunits );
+        txds= DDataSet.wrap( ltickv.tickV.toDoubleArray( tunits ), tunits );
         findex= Ops.findex( tds, txds );
-        for ( int i=0; i<tickv.tickV.getLength(); i++ ) {            
+        for ( int i=0; i<ltickv.tickV.getLength(); i++ ) {            
             double v= findex.value(i);
             if ( findex.value(i)>=0 && findex.value(i)<lastValid && len[(int)Math.ceil(v)]<=limit) {
                 drawLabelTick( g, v, i );
@@ -916,6 +919,7 @@ public final class TickCurveRenderer extends Renderer {
         String oldTickSpacing = this.tickSpacing;
         this.tickSpacing = tickSpacing;
         ticksDivider= null;
+        tickv= null;
         update();
         propertyChangeSupport.firePropertyChange(PROP_TICKSPACING, oldTickSpacing, tickSpacing);
     }
@@ -938,6 +942,7 @@ public final class TickCurveRenderer extends Renderer {
     public void setTickValues(String tickValues) {
         String oldTickValues = this.tickValues;
         this.tickValues = tickValues;
+        this.tickv= null;
         update();
         propertyChangeSupport.firePropertyChange(PROP_TICKVALUES, oldTickValues, tickValues);
     }
