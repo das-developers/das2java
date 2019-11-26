@@ -41,6 +41,7 @@ import javax.swing.ImageIcon;
 import org.das2.dataset.NoDataInIntervalException;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
+import org.das2.datum.DatumRangeUtil;
 import org.das2.datum.DatumVector;
 import org.das2.datum.DomainDivider;
 import org.das2.datum.DomainDividerUtil;
@@ -155,6 +156,7 @@ public final class TickCurveRenderer extends Renderer {
         this.tickLength= getControl(CONTROL_TICK_LENGTH, tickLength );
         this.tickSpacing= getControl( PROP_TICKSPACING, tickSpacing );
         this.tickValues= getControl( PROP_TICKVALUES, tickValues );
+        this.tickDirection= getControl( PROP_TICKDIRECTION, tickDirection );
         update();
     }
     
@@ -167,6 +169,7 @@ public final class TickCurveRenderer extends Renderer {
         controls.put( CONTROL_TICK_LENGTH, tickLength );
         controls.put( PROP_TICKSPACING, tickSpacing );
         controls.put( PROP_TICKVALUES, tickValues );
+        controls.put( PROP_TICKDIRECTION, tickDirection );
         return Renderer.formatControl(controls);
     }
     
@@ -189,6 +192,20 @@ public final class TickCurveRenderer extends Renderer {
         String oldFontSize = this.fontSize;
         this.fontSize = fontSize;
         propertyChangeSupport.firePropertyChange(PROP_FONTSIZE, oldFontSize, fontSize);
+    }
+
+    private String tickDirection = "";
+
+    public static final String PROP_TICKDIRECTION = "tickDirection";
+
+    public String getTickDirection() {
+        return tickDirection;
+    }
+
+    public void setTickDirection(String tickDirection) {
+        String oldTickDirection = this.tickDirection;
+        this.tickDirection = tickDirection;
+        propertyChangeSupport.firePropertyChange(PROP_TICKDIRECTION, oldTickDirection, tickDirection);
     }
 
     /**
@@ -408,19 +425,35 @@ public final class TickCurveRenderer extends Renderer {
         double dy= y2-y0;
         
         if ( dx==0. && dy==0. ) throw new IllegalArgumentException("findex as at a point that repeats");
-        
-        double turnDir= turnDirAt(findex);
-        // we want the turnDir of the tick to be opposite turnDir of the curve
+
+        double turnDir;
+        switch (tickDirection) {
+            case "":
+            case "outside":
+                turnDir= turnDirAt(findex);
+                // we want the turnDir of the tick to be opposite turnDir of the curve
+                break;
+            case "left":
+                turnDir= 1.0;
+                break;
+            case "right":
+                turnDir= -1.0;
+                break;
+            default:
+                logger.warning("tickDirection must be left, right, or outside.");
+                turnDir= turnDirAt(findex);
+                break;
+        }
         
         double dxNorm= dy;
         double dyNorm= -dx;
-        
+
         double turnDirTick= -1*(dx*dyNorm-dxNorm*dy);        
-        
+
         if ( turnDir*turnDirTick < 0 ) {  // this was determined experimentally.
             dxNorm= -dy;
             dyNorm= dx;
-        }
+        } 
                         
         return normalize( new Line2D.Double(xinterp, yinterp, xinterp+dxNorm,yinterp+dyNorm ), 1. ) ;
 
@@ -504,9 +537,28 @@ public final class TickCurveRenderer extends Renderer {
         DatumVector major, minor;
         
         if ( tickValues.length()>0 ) {
+            Units u= dr.getUnits();
+            if ( UnitsUtil.isTimeLocation(u) ) {
+                dr= new DatumRange( dr.min().doubleValue(Units.us2000), dr.max().doubleValue(Units.us2000), Units.us2000 );
+            }
             TickVDescriptor ticks= GraphUtil.calculateManualTicks( tickValues, dr, false );
-            major= ticks.getMajorTicks();
-            minor= ticks.getMinorTicks();
+            tickv = ticks;
+            ticksDivider= DomainDividerUtil.getDomainDivider( dr.min(), dr.max(), false );
+            Datum ticksSpacingD;
+            if ( ticks.tickV.getLength()>1 ) {
+                ticksSpacingD= ticks.tickV.get(1).subtract(ticks.tickV.get(0));
+            } else {
+                ticksSpacingD= dr.width().divide(10);
+            }
+            while ( ticksDivider.rangeContaining(dr.min()).width().gt(ticksSpacingD) ) {
+                ticksDivider= ticksDivider.finerDivider(false);
+            }
+
+            while ( ticksDivider.rangeContaining(dr.min()).width().lt(ticksSpacingD) ) {
+                ticksDivider= ticksDivider.coarserDivider(false);
+            }
+            tickv.datumFormatter= DomainDividerUtil.getDatumFormatter( ticksDivider, dr );
+
         } else {
             if ( tickSpacing.length()>0 ) {
                 if ( ticksDivider==null ) {
@@ -525,7 +577,7 @@ public final class TickCurveRenderer extends Renderer {
 
                 } catch (ParseException ex) {
                     ticksDivider= DomainDividerUtil.getDomainDivider( dr.min(), dr.max(), false );
-                    logger.warning("unable to parse "+tickSpacing);
+                    logger.log(Level.WARNING, "unable to parse {0}", tickSpacing);
                 }
 
             } else {
@@ -560,10 +612,11 @@ public final class TickCurveRenderer extends Renderer {
 
             major = ticksDivider.boundaries(dr.min(), dr.max());
             minor = ticksDivider.finerDivider(true).boundaries(dr.min(), dr.max());
+            tickv = TickVDescriptor.newTickVDescriptor(major, minor);        
+            tickv.datumFormatter= DomainDividerUtil.getDatumFormatter( ticksDivider, dr );
         }
         
-        tickv = TickVDescriptor.newTickVDescriptor(major, minor);        
-        tickv.datumFormatter= DomainDividerUtil.getDatumFormatter( ticksDivider, dr );
+        
 
         return tickv;
     }
