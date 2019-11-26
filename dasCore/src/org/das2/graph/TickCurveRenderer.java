@@ -462,7 +462,13 @@ public final class TickCurveRenderer extends Renderer {
     
     private void updateTickLength( Graphics2D g ) {
         try {
-            double[] pos = DasDevicePosition.parseLayoutStr(this.tickLength );
+            String stickLen= this.tickLength;
+            double[] pos;
+            if ( stickLen.equals("") ) {
+                pos = DasDevicePosition.parseLayoutStr("0.66em");
+            } else {
+                pos = DasDevicePosition.parseLayoutStr(this.tickLength );
+            }
             Font f= g.getFont();
             if ( pos[0]==0 ) {
                 this.tickLen = (int) ( Math.round( pos[0]*getParent().getCanvas().getWidth() + pos[1]* f.getSize2D() + pos[2] ) );
