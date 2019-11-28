@@ -632,10 +632,78 @@ public final class Ops {
         }
         if (isCart) {
             Units u= (Units) ds.property(QDataSet.UNITS);
-            ds = pow(ds, 2);
-            ds = total(ds, r - 1);
-            ds = sqrt(ds);
-            if ( u!=null ) ((MutablePropertyDataSet)ds).putProperty(QDataSet.UNITS,u);
+            QDataSet wds= DataSetUtil.weightsDataSet(ds);
+            double fill= ((Number)wds.property( "SUGGEST_FILL" )).doubleValue();
+            switch (ds.rank()) {
+                case 2:
+                    {
+                        DDataSet result= DDataSet.create( Arrays.copyOf( DataSetUtil.qubeDims(ds), ds.rank()-1 ) );
+                        for ( int i0=0; i0<ds.length(); i0++ ) {
+                            int n= ds.length(0);
+                            double a=0;
+                            boolean valid=true;
+                            for ( int i1=0; i1<n; i1++ ) {
+                                double w= wds.value(i0,i1);
+                                if ( w==0 ) {
+                                    valid=false;
+                                    break;
+                                }
+                                double d= ds.value(i0,i1);
+                                a= a + d*d;
+                            }
+                            if ( valid ) {
+                                a= Math.sqrt(a);
+                                result.putValue( i0, a );
+                            } else {
+                                result.putValue( i0, fill );
+                            }
+                        }
+                        DataSetUtil.putProperties( DataSetUtil.getProperties(ds), result);
+                        result.putProperty( "DEPEND_"+result.rank(), null );
+                        result.putProperty( "BUNDLE_"+result.rank(), null );
+                        result.putProperty( QDataSet.FILL_VALUE, fill );
+                        ds= result;
+                        break;
+                    }
+                case 3:
+                    {
+                        DDataSet result= DDataSet.create( Arrays.copyOf( DataSetUtil.qubeDims(ds), ds.rank()-1 ) );
+                        for ( int i0=0; i0<ds.length(); i0++ ) {
+                            int n= ds.length(0,0);
+                            for ( int i1=0; i1<ds.length(0); i1++ ) {
+                                double a=0;
+                                boolean valid= true;
+                                for ( int i2=0; i2<n; i2++ ) {
+                                    double w= wds.value(i0,i1,i2);
+                                    if ( w==0 ) {
+                                        valid= false;
+                                        break;
+                                    }
+                                    double d= ds.value(i0,i1,i2);
+                                    a= a + d*d;
+                                }
+                                if ( valid ) {
+                                    a= Math.sqrt(a);
+                                    result.putValue( i0, i1, a );
+                                } else {
+                                    result.putValue( i0, fill );
+                                }
+                            }
+                        }
+                        DataSetUtil.putProperties( DataSetUtil.getProperties(ds), result);
+                        result.putProperty( "DEPEND_"+result.rank(), null );
+                        result.putProperty( "BUNDLE_"+result.rank(), null );
+                        result.putProperty( QDataSet.FILL_VALUE, fill );
+                        ds= result;
+                        break;
+                    }
+                default:
+                    ds = pow(ds, 2);
+                    ds = total(ds, r - 1);
+                    ds = sqrt(ds);
+                    if ( u!=null ) ((MutablePropertyDataSet)ds).putProperty(QDataSet.UNITS,u);
+                    break;
+            }
             return ds;
         } else {
             throw new IllegalArgumentException("last dim must have COORDINATE_FRAME property.  See also abs() method");
