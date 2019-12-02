@@ -742,6 +742,46 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
         }
     }
     
+    /**
+     * encode the plot symbol connector as a string, such as:
+     * solid, dotted
+     * @param psymConnector
+     * @return the string encoding.
+     */
+    public static String encodePlotSymbolConnectorControl( PsymConnector psymConnector ) {
+        return psymConnector.toString();
+    }
+    
+    /**
+     * decode the string into a plot symbol.
+     * @param s the symbol name, such as none, dashes, dashFine
+     * @param deflt the symbol to use when the value is not parsed.
+     * @return the parsed value.
+     */
+    public static PsymConnector decodePlotSymbolConnectorControl( String s, PsymConnector deflt ) {
+        s= s.toUpperCase();
+        switch (s) {
+            case "NONE":
+                return PsymConnector.NONE;
+            case "DASHES":
+                return PsymConnector.DASHES;
+            case "DASHFINE":
+                return PsymConnector.DASHFINE;
+            case "DOTDASHES":
+                return PsymConnector.DOTDASHES;
+            case "DOTFINE":
+                return PsymConnector.DOTFINE;
+            case "DOTS":
+                return PsymConnector.DOTS;
+            case "SOLID":
+                return PsymConnector.SOLID;
+            default:
+                logger.log(Level.FINE, "unable to parse symbol: {0}", deflt);
+                return deflt;
+        }
+    }
+    
+
     /*
      * returns the AffineTransform to transform data from the last updatePlotImage call
      * axes (if super.updatePlotImage was called), or null if the transform is not possible.

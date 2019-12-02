@@ -33,6 +33,7 @@ import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.das2.datum.DatumRange;
+import static org.das2.graph.PsymConnector.SOLID;
 import org.das2.qds.DDataSet;
 import org.das2.qds.DataSetOps;
 import org.das2.qds.DataSetUtil;
@@ -182,7 +183,7 @@ public class ContoursRenderer extends Renderer {
         if ( checkInputs(lparent) ) return;
         
         g.setColor(color);
-        g.setStroke( new BasicStroke((float)lineThick) );
+        g.setStroke( lineStyle.getStroke( (float)lineThick ) );
                 
         if (drawLabels) {
              Area labelClip = paintLabels(g);
@@ -206,28 +207,30 @@ public class ContoursRenderer extends Renderer {
     @Override
     public void setControl(String s) {
         super.setControl(s);
-        this.contours= getControl(CONTROL_KEY_LEVELS, contours );
-        this.drawLabels= getBooleanControl(CONTROL_KEY_LABELS, drawLabels );
+        this.contours= getControl( CONTROL_KEY_LEVELS, contours );
+        this.drawLabels= getBooleanControl( CONTROL_KEY_LABELS, drawLabels );
         this.lineThick= getDoubleControl( CONTROL_KEY_LINE_THICK, lineThick );
-        this.labelCadence= getControl(CONTROL_KEY_LABEL_CADENCE, labelCadence );
+        this.labelCadence= getControl( CONTROL_KEY_LABEL_CADENCE, labelCadence );
         this.color= getColorControl( CONTROL_KEY_COLOR,  color );
         this.format= getControl( CONTROL_KEY_FORMAT, format );
         setFontSize( getControl( CONTROL_KEY_FONT_SIZE, fontSize) );
         setLabelOrient( getControl( CONTROL_KEY_LABEL_ORIENT, labelOrient ) );
+        setLineStyle( Renderer.decodePlotSymbolConnectorControl( getControl( PROP_LINESTYLE, lineStyle.toString() ), lineStyle ) );
         updateContours();
     }
     
     @Override
     public String getControl() {
         Map<String,String> controls= new LinkedHashMap();
-        controls.put(CONTROL_KEY_LEVELS, contours );
-        controls.put(CONTROL_KEY_LABELS, encodeBooleanControl( drawLabels ) );
+        controls.put( CONTROL_KEY_LEVELS, contours );
+        controls.put( CONTROL_KEY_LABELS, encodeBooleanControl( drawLabels ) );
         controls.put( CONTROL_KEY_LINE_THICK, String.valueOf(lineThick) );
-        controls.put(CONTROL_KEY_LABEL_CADENCE, String.valueOf(labelCadence) );
+        controls.put( CONTROL_KEY_LABEL_CADENCE, String.valueOf(labelCadence) );
         controls.put( CONTROL_KEY_COLOR, encodeColorControl( color ) );
         controls.put( CONTROL_KEY_FORMAT, format );
         controls.put( CONTROL_KEY_FONT_SIZE, fontSize );
         controls.put( CONTROL_KEY_LABEL_ORIENT, labelOrient );
+        controls.put( PROP_LINESTYLE, String.valueOf(lineStyle) );
         return Renderer.formatControl(controls);
     }
     
@@ -753,6 +756,21 @@ public class ContoursRenderer extends Renderer {
         this.lineThick = newlineThick;
         update();
         propertyChangeSupport.firePropertyChange(PROP_LINETHICK, oldlineThick, newlineThick);
+    }
+
+    private PsymConnector lineStyle = SOLID;
+
+    public static final String PROP_LINESTYLE = "lineStyle";
+
+    public PsymConnector getLineStyle() {
+        return lineStyle;
+    }
+
+    public void setLineStyle(PsymConnector lineStyle) {
+        PsymConnector oldLineStyle = this.lineStyle;
+        this.lineStyle = lineStyle;
+        update();
+        propertyChangeSupport.firePropertyChange(PROP_LINESTYLE, oldLineStyle, lineStyle);
     }
 
 }
