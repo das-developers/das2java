@@ -8449,7 +8449,7 @@ public final class Ops {
 
         mon.setTaskSize(ds.length()*len1); // assumes all are the same length.
         mon.started();
-        mon.setProgressMessage("performing fft");
+        mon.setProgressMessage("performing ifft");
 
         boolean isMono= dep0==null ? true : DataSetUtil.isMonotonic(dep0);
 
