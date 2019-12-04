@@ -975,8 +975,17 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
      */
     private int[] getSelectedRowsInModel() {
         int[] selectedRows = table.getSelectedRows();
+        int n=0;
         for ( int i=0; i<selectedRows.length; i++ ) {
-            selectedRows[i]= table.convertRowIndexToModel(selectedRows[i]);
+            try {
+                selectedRows[i]= table.convertRowIndexToModel(selectedRows[i]);
+                n++;
+            } catch ( IndexOutOfBoundsException ex ) {
+                selectedRows[i]= -1;
+            }
+        }
+        if ( n<selectedRows.length ) {
+            selectedRows= Arrays.copyOf( selectedRows, n );
         }
         return selectedRows;
     }
@@ -1426,14 +1435,19 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                 fireSelectedDataSetUpdateListenerDataSetUpdated(new DataSetUpdateEvent(DataPointRecorder.this));
                 int selected = table.getSelectedRow(); // we could do a better job here
                 if (selected > -1) {
-                    selected= table.convertRowIndexToModel(selected);
-                    DataPoint dp = (DataPoint) dataPoints.get(selected);
-                    Map planes= new HashMap();
-                    for ( int i=2; i<planesArray.length; i++ ) {
-                        planes.put( planesArray[i], dp.getPlane(planesArray[i]) );
+                    try {
+                        selected= table.convertRowIndexToModel(selected);
+                        DataPoint dp = (DataPoint) dataPoints.get(selected);
+                        Map planes= new HashMap();
+                        for ( int i=2; i<planesArray.length; i++ ) {
+                            planes.put( planesArray[i], dp.getPlane(planesArray[i]) );
+                        }
+                        DataPointSelectionEvent e2 = new DataPointSelectionEvent(DataPointRecorder.this, dp.get(0), dp.get(1), planes );
+                        fireDataPointSelectionListenerDataPointSelected(e2);
+                    } catch ( IndexOutOfBoundsException ex ) {
+                        logger.fine("ignore out of bounds point");
+                        ex.printStackTrace();
                     }
-                    DataPointSelectionEvent e2 = new DataPointSelectionEvent(DataPointRecorder.this, dp.get(0), dp.get(1), planes );
-                    fireDataPointSelectionListenerDataPointSelected(e2);
                 }
                 Runnable run= new Runnable() {
                     @Override
