@@ -85,7 +85,6 @@ import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.TableColumn;
 import org.das2.DasApplication;
 import org.das2.dataset.DataSetAdapter;
-import org.das2.datum.DatumRangeUtil;
 import org.das2.datum.EnumerationUnits;
 import org.das2.datum.TimeLocationUnits;
 import org.das2.datum.TimeParser;
@@ -106,7 +105,7 @@ import org.das2.qds.util.DataSetBuilder;
  * 
  * @author  jbf
  */
-public class DataPointRecorder extends JPanel implements DataPointSelectionListener {
+public final class DataPointRecorder extends JPanel implements DataPointSelectionListener {
 
     /**
      * width of time column
@@ -633,6 +632,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             final List<Integer> fselectMe= selectMe;
                 
             Runnable run= new Runnable() {
+                @Override
                 public void run() {
                     showSelection( fselectMe );
                 }
@@ -665,9 +665,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             dataPoints1= new ArrayList(this.dataPoints);
         }
         FileOutputStream out = new FileOutputStream(file);
-        BufferedWriter r = new BufferedWriter(new OutputStreamWriter(out));
-
-        try {
+        try (BufferedWriter r = new BufferedWriter(new OutputStreamWriter(out))) {
             StringBuilder header = new StringBuilder();
             //header.append("## "); // don't use comment characters so that labels and units are used in Autoplot's ascii parser.
             for (int j = 0; j < planesArray.length; j++) {
@@ -721,8 +719,6 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                     prefs.put("components.DataPointRecorder.lastFileLoad", file.toString());
                 }
             }
-        } finally {
-            r.close();
         }
         modified = false;
         updateStatus();
@@ -1338,6 +1334,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         dataPoints.add( index, fill );
         modified = true;
         Runnable run= new Runnable() {
+            @Override
             public void run() {
                 updateStatus();
                 updateClients();
@@ -1446,7 +1443,6 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                         fireDataPointSelectionListenerDataPointSelected(e2);
                     } catch ( IndexOutOfBoundsException ex ) {
                         logger.fine("ignore out of bounds point");
-                        ex.printStackTrace();
                     }
                 }
                 Runnable run= new Runnable() {
