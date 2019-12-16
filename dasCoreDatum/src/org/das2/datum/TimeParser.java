@@ -817,34 +817,35 @@ public class TimeParser {
         delim[0] = ss[0];
         for (int i = 1; i < ndigits; i++) {
             int pp = 0;
-            while (Character.isDigit(ss[i].charAt(pp)) || ss[i].charAt(pp) == '-') {
+            String ssi= ss[i];
+            while ( ssi.length()>pp && ( Character.isDigit(ssi.charAt(pp)) || ssi.charAt(pp) == '-') ) {
                 pp++;
             }
             if (pp > 0) { // Note length ($5Y) is not supported in http://tsds.org/uri_templates.
-                lengths[i] = Integer.parseInt(ss[i].substring(0, pp));
+                lengths[i] = Integer.parseInt(ssi.substring(0, pp));
             } else {
                 lengths[i] = 0; // determine later by field type
             }
 
-            ss[i]= makeQualifiersCanonical(ss[i]);
+            ssi= makeQualifiersCanonical(ssi);
             
-            logger.log( Level.FINE, "ss[i]={0}", ss[i] );
-            if ( ss[i].charAt(pp)!='(' ) {
-                fc[i] = ss[i].substring(pp, pp + 1);
-                delim[i] = ss[i].substring(pp + 1);
-            } else if ( ss[i].charAt(pp) == '(') {
-                int endIndex = ss[i].indexOf(')', pp);
+            logger.log( Level.FINE, "ssi={0}", ss[i] );
+            if ( ssi.charAt(pp)!='(' ) {
+                fc[i] = ssi.substring(pp, pp + 1);
+                delim[i] = ssi.substring(pp + 1);
+            } else if ( ssi.charAt(pp) == '(') {
+                int endIndex = ssi.indexOf(')', pp);
                 if ( endIndex==-1 ) {
-                    throw new IllegalArgumentException("opening paren but no closing paren in \"" + ss[i]+ "\"");
+                    throw new IllegalArgumentException("opening paren but no closing paren in \"" + ssi+ "\"");
                 }
-                int semi= ss[i].indexOf(";", pp );
+                int semi= ssi.indexOf(";", pp );
                 if ( semi != -1) {
-                    fc[i] = ss[i].substring(pp + 1, semi );
-                    qualifiers[i]= ss[i].substring( semi+1,endIndex );
+                    fc[i] = ssi.substring(pp + 1, semi );
+                    qualifiers[i]= ssi.substring( semi+1,endIndex );
                 } else {
-                    fc[i] = ss[i].substring(pp + 1, endIndex);
+                    fc[i] = ssi.substring(pp + 1, endIndex);
                 }
-                delim[i] = ss[i].substring(endIndex + 1);
+                delim[i] = ssi.substring(endIndex + 1);
             }
         }
 
@@ -882,7 +883,7 @@ public class TimeParser {
 
             if (handler == 9999) {
                 if ( !fieldHandlers.containsKey(fc[i]) ) {
-                    throw new IllegalArgumentException("bad format code: \"" + fc[i] + "\"");
+                    throw new IllegalArgumentException("bad format code: \"" + fc[i] + "\" in \""+ formatString + "\"");
                 } else {
                     handler = 100;
                     handlers[i] = 100;
