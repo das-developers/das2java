@@ -161,8 +161,8 @@ public class LanlNNRebinner implements DataSetRebinner {
                             yds1= bins[1];
                         } else if ( yds.rank()==1 ) {
                             QDataSet bins= DataSetUtil.inferBins( yds.rank()==2 ? yds.slice(0): yds );
-                            yds0= Ops.slice1( bins, 0 );
-                            yds1= Ops.slice1( bins, 1 );
+                            yds0= Ops.copy( Ops.slice1( bins, 0 ) );
+                            yds1= Ops.copy( Ops.slice1( bins, 1 ) );
                         } else {
                             throw new UnsupportedOperationException("bad rank on ytags: "+yds.rank());
                         }
