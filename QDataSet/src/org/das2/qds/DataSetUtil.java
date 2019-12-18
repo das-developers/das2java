@@ -1474,7 +1474,7 @@ public class DataSetUtil {
      * centers are available.  This uses centers of adjacent data, and
      * extrapolates to get the edge boundaries to create an acceptable limit.
      * When the data is log-spaced, the centers are done in the ratiometric
-     * space.
+     * space.  Small (&lt;1000 element) datasets will be sorted if necessary.
      * @param yds rank 1 dataset.
      * @return rank 2 bins dataset.
      */
@@ -1482,6 +1482,12 @@ public class DataSetUtil {
         if ( yds.rank()!=1 ) throw new IllegalArgumentException("yds must be rank 1");
         QDataSet yds0,yds1;
         QDataSet dy= DataSetUtil.guessCadenceNew( yds, null );
+        if ( yds.length()<1000 && dy==null || dy.rank()>1 ) {
+            QDataSet s= Ops.sort(yds);
+            yds= Ops.applyIndex( yds, s );
+            yds= Ops.monotonicSubset(yds);
+            dy= DataSetUtil.guessCadenceNew( yds, null );
+        }
         Units dyu= SemanticOps.getUnits(dy);
         
         QDataSet delta;
