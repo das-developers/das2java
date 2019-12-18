@@ -1484,9 +1484,9 @@ public class DataSetUtil {
         QDataSet dy= DataSetUtil.guessCadenceNew( yds, null );
         if ( yds.length()<1000 && dy==null || dy.rank()>1 ) {
             QDataSet s= Ops.sort(yds);
-            yds= Ops.applyIndex( yds, s );
-            yds= Ops.monotonicSubset(yds);
-            dy= DataSetUtil.guessCadenceNew( yds, null );
+            QDataSet yds_t= Ops.applyIndex( yds, s );
+            yds_t= Ops.monotonicSubset(yds_t);
+            dy= DataSetUtil.guessCadenceNew( yds_t, null );
         }
         Units dyu= SemanticOps.getUnits(dy);
         
@@ -1524,7 +1524,7 @@ public class DataSetUtil {
                 QDataSet ddy= Ops.sqrt( Ops.add( 1., v ) );
                 yds0= Ops.divide( yds, ddy );
                 yds1= Ops.multiply( yds, ddy );
-        } else {
+            } else {
                 QDataSet diff1= yds.trim(0,yds.length()-1);
                 QDataSet diff2= yds.trim(1,yds.length());
                 delta= Ops.interpolate( Ops.subtract(diff2,diff1), Ops.linspace( -0.5,diff1.length()-0.5, diff1.length()+1 ) );
