@@ -706,7 +706,7 @@ public final class Ops {
             }
             return ds;
         } else {
-            throw new IllegalArgumentException("last dim must have COORDINATE_FRAME property.  See also abs() method");
+            throw new IllegalArgumentException("last dim must have COORDINATE_FRAME property.  See also abs() method. ds="+ds);
         }
 
     }
