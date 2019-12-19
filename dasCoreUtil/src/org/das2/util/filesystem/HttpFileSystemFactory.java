@@ -54,7 +54,10 @@ public class HttpFileSystemFactory implements FileSystemFactory {
             return result;
         } else if ( h.equals("abbith.physics.uiowa.edu") ) {
             WebFileSystem result= GitHubFileSystem.createGitHubFileSystem(root);
-            return result;            
+            return result;       
+        } else if ( h.equals("git.physics.uiowa.edu" ) ) {
+            WebFileSystem result= GitHubFileSystem.createGitHubFileSystem(root);
+            return result;       
         } else if ( h.equals("jfaden.net") && root.getPath().startsWith("/git") ) {
             WebFileSystem result= GitHubFileSystem.createGitHubFileSystem(root,1);  // TODO: detect automatically
             return result;            
