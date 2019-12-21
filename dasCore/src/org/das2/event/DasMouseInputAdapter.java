@@ -193,15 +193,18 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         resizeRenderer = new BoxRenderer(parent,false);
 
         dirtyBoundsList = new Rectangle[0];
-        this.feedback= new Feedback() {
-            @Override
-            public void setMessage(String message) {
-                // do nothing by default.
-            }
-        };
+        this.feedback= NULL_FEEDBACK;
     }
 
+    public static Feedback NULL_FEEDBACK= new Feedback() {
+        @Override
+        public void setMessage(String message) {
+            // do nothing by default.
+        }
+    };
+
     public void setFeedback( Feedback f ) {
+        if ( f==null ) throw new NullPointerException("feedback should be set to NULL_FEEDBACK");
         this.feedback= f;
     }
     

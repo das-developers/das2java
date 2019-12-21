@@ -349,7 +349,9 @@ public class HorizontalSpectrogramSlicer implements DataPointSelectionListener {
         }
         QDataSet tds = (QDataSet)ds;
 
-        showSlice( tds, xValue, yValue );
+        if ( ! showSlice( tds, xValue, yValue ) ) {
+            parentPlot.getDasMouseInputAdapter().getFeedback().setMessage("Horizontal Slice is unable to find data");
+        }
 
     }
 

@@ -55,6 +55,7 @@ import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
 import org.das2.datum.format.DatumFormatter;
 import org.das2.datum.format.TimeDatumFormatter;
+import org.das2.event.DasMouseInputAdapter;
 import org.das2.event.DataPointSelectionEvent;
 import org.das2.event.DataPointSelectionListener;
 import org.das2.event.MouseModule;
@@ -345,7 +346,9 @@ public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
         
         QDataSet tds = (QDataSet)ds;
         
-        showSlice( tds, xValue, yValue );
+        if ( ! showSlice( tds, xValue, yValue ) ) {
+            parentPlot.getDasMouseInputAdapter().getFeedback().setMessage("Vertical Slice is unable to find data");
+        }
 
     }
 
