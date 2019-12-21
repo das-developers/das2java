@@ -389,7 +389,8 @@ public class HorizontalSpectrogramSlicer implements DataPointSelectionListener {
                 && ( yunits==Units.dimensionless || yValue.getUnits()==Units.dimensionless ) ) {
                 yValue= yunits.createDatum(yValue.value());
             }
-            if (DataSetOps.boundsContains(bounds, xValue, yValue)) {
+            double v= Math.abs( ( xrange.value(1)-xrange.value(0) ) * ( yrange.value(1)-yrange.value(0) ) );
+            if ( v == 0.0 || DataSetOps.boundsContains(bounds, xValue, yValue)) {
                 tds1 = tds;
             }
         }
