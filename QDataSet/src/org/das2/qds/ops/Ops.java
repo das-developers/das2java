@@ -634,6 +634,10 @@ public final class Ops {
             Units u= (Units) ds.property(QDataSet.UNITS);
             QDataSet wds= DataSetUtil.weightsDataSet(ds);
             double fill= ((Number)wds.property( "SUGGEST_FILL" )).doubleValue();
+            Map<String,Object> props= DataSetUtil.getProperties(ds);
+            props.remove("DEPEND_"+(ds.rank()-1) );
+            props.remove("BUNDLE_"+(ds.rank()-1) );
+            props.put( QDataSet.FILL_VALUE, fill );            
             switch (ds.rank()) {
                 case 2:
                     {
@@ -658,10 +662,7 @@ public final class Ops {
                                 result.putValue( i0, fill );
                             }
                         }
-                        DataSetUtil.putProperties( DataSetUtil.getProperties(ds), result);
-                        result.putProperty( "DEPEND_"+result.rank(), null );
-                        result.putProperty( "BUNDLE_"+result.rank(), null );
-                        result.putProperty( QDataSet.FILL_VALUE, fill );
+                        DataSetUtil.putProperties( props, result);                        
                         ds= result;
                         break;
                     }
@@ -691,9 +692,6 @@ public final class Ops {
                             }
                         }
                         DataSetUtil.putProperties( DataSetUtil.getProperties(ds), result);
-                        result.putProperty( "DEPEND_"+result.rank(), null );
-                        result.putProperty( "BUNDLE_"+result.rank(), null );
-                        result.putProperty( QDataSet.FILL_VALUE, fill );
                         ds= result;
                         break;
                     }
