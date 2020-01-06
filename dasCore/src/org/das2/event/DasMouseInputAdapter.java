@@ -196,7 +196,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         this.feedback= NULL_FEEDBACK;
     }
 
-    public static Feedback NULL_FEEDBACK= new Feedback() {
+    public static final Feedback NULL_FEEDBACK= new Feedback() {
         @Override
         public void setMessage(String message) {
             // do nothing by default.
