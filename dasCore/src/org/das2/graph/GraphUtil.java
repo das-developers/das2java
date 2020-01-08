@@ -525,7 +525,7 @@ public class GraphUtil {
      * breaks where the path was continuous before.  Note this does not work
      * with quadTo etc.  This was motivated by an old version of Adobe Illustrator
      * which didn't respect the clip set in the PDF, and with the journal 
-     * Nature, which appearently uses an old version of Ill
+     * Nature, which apparently uses an old version of Illustrator.
      * @param it
      * @param result
      * @param clip
@@ -566,13 +566,7 @@ public class GraphUtil {
                     if ( clip.contains(thisP) ) {
                         result.moveTo( thisP.getX(), thisP.getY() );
                         initialMoveTo= false;
-                    } else if ( lastP==null ) {
-                        // do nothing
-                    } else {
-                        Point2D clipP= lineRectangleIntersection( lastP, thisP, clip );
-                        result.moveTo( clipP.getX(), clipP.getY() );
-                        initialMoveTo= false;
-                    }
+                    } 
                     lastP= thisP;
                 }
                     
