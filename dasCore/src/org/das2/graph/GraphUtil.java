@@ -1236,7 +1236,7 @@ public class GraphUtil {
         Point2D point2=null;
         Point2D p;
         p= lineIntersection( line, new Line2D.Double( r0.x, r0.y, r1.x, r0.y ), false );
-        if ( p!=null ) if ( point1==null ) point1= p; else point2= p;
+        if ( p!=null ) point1= p;
         p= lineIntersection( line, new Line2D.Double( r1.x, r0.y, r1.x, r1.y ), false );
         if ( p!=null ) if ( point1==null ) point1= p; else point2= p;
         p= lineIntersection( line, new Line2D.Double( r1.x, r1.y, r0.x, r1.y ), false );
