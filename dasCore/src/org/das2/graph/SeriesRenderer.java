@@ -937,6 +937,7 @@ public class SeriesRenderer extends Renderer {
                 if ( additionalClip ) {
                     GeneralPath path2= new GeneralPath(GeneralPath.WIND_NON_ZERO, pathLengthApprox );
                     int x2= GraphUtil.clipPath( path1.getPathIterator(null), path2, GraphUtil.shrinkRectangle( getParent().getAxisClip(), 90 ) );
+                    logger.log(Level.FINE, "additionalClip: {0}", x2);
                     path1= path2;
                 }
                 pathWasReduced= true;
