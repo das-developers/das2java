@@ -52,6 +52,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -119,6 +120,8 @@ import org.w3c.dom.ls.LSSerializer;
  */
 public class QdsToD2sStream {
 	
+    private static final Logger logger= LoggerManager.getLogger("qstream");
+    
 	public static final String FORMAT_2_2 = "2.2";
 	public static final String FORMAT_2_3_BASIC = "2.3-basic";
 	public static final String FORMAT_2_3_GENERAL = "2.3-general";
@@ -388,9 +391,10 @@ public class QdsToD2sStream {
 					if( dsDep != null){
 						if(dsDep1 == null) {
                                                     dsDep1 = dsDep;
+                                                    logger.log(Level.FINE, "dsDep1: {0}", dsDep1);
                                                 } else {
-							// More than one dep1 running around
-							if(dsDep != dsDep1) return false;
+                                                    // More than one dep1 running around
+                                                    if(dsDep != dsDep1) return false;
 						}
 					}
 					
@@ -400,8 +404,10 @@ public class QdsToD2sStream {
                                         if( dsDep!=null && dsDep.rank() > 1) return false;
 				}
 				if( (dsDep = (QDataSet)ds.property(QDataSet.DEPEND_0)) != null){
-					if(dsDep0 == null) dsDep0 = dsDep;
-					else{
+					if(dsDep0 == null) {
+                                            dsDep0 = dsDep;
+                                            logger.log(Level.FINE, "dsDep0: {0}", dsDep0);
+                                        } else{
 						// More than one dep0 running around
 						if(dsDep != dsDep0) return false;
 					}
