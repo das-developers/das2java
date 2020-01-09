@@ -27,7 +27,7 @@ public class PlasmaModel {
     private static class PlasmaModelSpec {
 
         double nc = 1.2; // core density 1/cm^3
-        double wcperp = 8000. * 1e5; // core thermal velocity cm/s
+        //double wcperp = 8000. * 1e5; // core thermal velocity cm/s
         double wcparl = 8000. * 1e5;
         double mass = 9.11e-28;
         boolean isotropic = true;
