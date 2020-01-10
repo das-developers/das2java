@@ -629,6 +629,7 @@ public class SeriesRenderer extends Renderer {
                     QDataSet p2= Ops.subtract( vds, deltaMinusY );
                     QDataSet w1= Ops.valid(p2);
                     QDataSet w2= Ops.valid(p1);
+                    boolean penUp= true;
                     if ( firstIndex==-1 ) return; // test140/7822
                     for (int i = firstIndex; i < lastIndex; i++) {
                         double ix = xAxis.transform( xds.value(i), xunits );
@@ -649,9 +650,10 @@ public class SeriesRenderer extends Renderer {
                                     lp.lineTo(ix+2, iyp);
                                     break;
                                 case SHADE:
-                                    if ( i==firstIndex ) {
-                                        lp.moveTo(ix, iym);
+                                    if ( penUp ) {
+                                        lp.moveTo( ix,iym );
                                         returnTo= new Point2D.Double(ix,iym);
+                                        penUp= false;
                                     } else {
                                         lp.lineTo(ix, iym);
                                     }
@@ -665,7 +667,12 @@ public class SeriesRenderer extends Renderer {
                         for (int i = lastIndex-1; i >= firstIndex; i--) {
                             double ix = xAxis.transform( xds.value(i), xunits );
                             double iyp = yAxis.transform( p2.value(i), yunits );
-                            lp.lineTo(ix, iyp);
+                            if ( penUp ) {
+                                lp.moveTo( ix,iyp );
+                                penUp= false;
+                            } else {
+                                lp.lineTo(ix, iyp);
+                            }
                         }
                         lp.lineTo( returnTo.x, returnTo.y );
                     }
