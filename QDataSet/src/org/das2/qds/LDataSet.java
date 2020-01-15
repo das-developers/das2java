@@ -467,7 +467,7 @@ public final class LDataSet extends ArrayDataSet {
      * @param <T>
      * @param clazz the class, such as WritableDataSet.class or LongReadAccess
      * @return null or the capability if exists, such as WritableDataSet
-     * @see https://github.com/autoplot/dev/blob/master/demos/20190219/demoLongReadAccess.jy
+     * @see https://github.com/autoplot/dev/blob/master/demos/2019/20190219/demoLongReadAccess.jy
      */
     @Override
     public <T> T capability(Class<T> clazz) {
