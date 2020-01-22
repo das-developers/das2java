@@ -113,7 +113,10 @@ public class DataSetOps {
     /**
      * slice on the first dimension.  Note the function ds.slice(index) was
      * added later and will typically be more efficient.  This will create a new
-     * Slice0DataSet.
+     * Slice0DataSet.  
+     * 
+     * DO NOT try to optimize this by calling native trim, some native slice
+     * implementations call this.
      * 
      * TODO: This actually needs a bit more study, because there are codes that
      * talk about not using the native slice because it copies data and they just
@@ -171,7 +174,8 @@ public class DataSetOps {
      * reduce the number of elements in the dataset to the dim 0 indeces specified.
      * This does not change the rank of the dataset.
      *
-     * DO NOT try to optimize this by calling native trim, some native trim implementations call this.
+     * DO NOT try to optimize this by calling native trim, some native trim 
+     * implementations call this.
      *
      * @param ds the dataset
      * @param offset the offset
