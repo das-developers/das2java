@@ -698,6 +698,8 @@ public class DigitalRenderer extends Renderer {
 
         char type= typeForFormat(form);
         
+        Rectangle axisBounds= parent.getAxisClip();
+        
         for (int i = firstIndexx; i < lastIndexx; i++) {
             int ix = (int) xAxis.transform( xds.value(i), xunits );
 
@@ -731,10 +733,12 @@ public class DigitalRenderer extends Renderer {
             ix+= widthSymbolOffset;
                 
             gtr.setString(g, s);
-            gtr.draw(g, ix, iy);
             Rectangle r = gtr.getBounds();
             r.translate(ix, iy);
-            shape.append(r, false);
+            if ( r.intersects( axisBounds ) ) {
+                gtr.draw(g, ix, iy);
+                shape.append(r, false);
+            }
             if ( dataSetClipped ) {
                 if ( getParent()!=null ) getParent().postMessage(this, "" + dataSetSizeLimit + " data point limit reached", DasPlot.WARNING, null, null);
                 return;
