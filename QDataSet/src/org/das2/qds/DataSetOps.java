@@ -112,7 +112,8 @@ public class DataSetOps {
 
     /**
      * slice on the first dimension.  Note the function ds.slice(index) was
-     * added later and will typically be more efficient.  
+     * added later and will typically be more efficient.  This will create a new
+     * Slice0DataSet.
      * 
      * TODO: This actually needs a bit more study, because there are codes that
      * talk about not using the native slice because it copies data and they just
