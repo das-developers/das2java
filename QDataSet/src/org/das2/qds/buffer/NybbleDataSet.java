@@ -1,14 +1,9 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package org.das2.qds.buffer;
 
 import java.nio.ByteBuffer;
 import org.das2.qds.DataSetOps;
 import org.das2.qds.QDataSet;
-
 
 /**
  * Introduced to support looking at data from LWA, which are 12 bit ints.
@@ -22,23 +17,27 @@ public final class NybbleDataSet extends BufferDataSet {
         this.makeImmutable();
     }
 
+    @Override
     protected int offset() {
         return recoffset;
     }
     
+    @Override
     protected int offset( int i0 ) {
         return recoffset + i0/2;
     }
 
+    @Override
     protected int offset( int i0, int i1 ) {
         return recoffset + reclen * i0 + i1 / 2;
     }
 
+    @Override
     public double value() {
         return back.get(offset()) & 0x0F;
     }
 
-    
+    @Override
     public double value(int i0) {
         if ( i0 % 2 == 0 ) {
             return back.get(offset(i0)) & 0x0F;
@@ -47,6 +46,7 @@ public final class NybbleDataSet extends BufferDataSet {
         }
     }
 
+    @Override
     public double value(int i0, int i1) {
         try {
             if ( i0 % 2 == 0 ) {
@@ -60,10 +60,12 @@ public final class NybbleDataSet extends BufferDataSet {
         }
     }
 
+    @Override
     public double value(int i0, int i1, int i2) {
         throw new IllegalArgumentException("not supported");
     }
 
+    @Override
     public double value(int i0, int i1, int i2, int i3) {
         throw new IllegalArgumentException("not supported");
     }
