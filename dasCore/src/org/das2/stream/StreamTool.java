@@ -609,6 +609,7 @@ public class StreamTool {
             DocumentBuilder builder;
             builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
             InputSource source = new InputSource(isr);
+            logger.fine("setting UTF-8 to input source");
             source.setEncoding("UTF-8");
             Document document = builder.parse(source);
             return document;
