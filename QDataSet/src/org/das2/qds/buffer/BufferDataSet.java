@@ -151,6 +151,7 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
      * return the number of bytes of each type (double=8, etc).
      * @param type DOUBLE, FLOAT, UBYTE, TIME28, etc.
      * @return 8, 4, 1, etc.
+     * @throws IllegalArgumentException for NYBBLE, which can only be used with bitCount.
      */
     public static int byteCount(Object type) {
         if (type.equals(DOUBLE)) {
@@ -243,10 +244,10 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         BufferDataSet result;
         if ( rank==1 && len1>1 ) throw new IllegalArgumentException("rank is 1, but len1 is not 1");
         int nperRec=  len1 * len2 * len3; // assumes unused params are "1"
-        if ( reclen < byteCount(type) ) {
+        if ( reclen*8 < bitCount(type) ) {
             throw new IllegalArgumentException("reclen " + reclen + " is smaller than length of type "+type);
         } 
-        if ( reclen < nperRec * byteCount(type) ) {
+        if ( reclen*8 < nperRec * bitCount(type) ) {
             throw new IllegalArgumentException("reclen " + reclen + " is smaller than length of " + nperRec +" type "+type);
         } 
         if ( (long)(reclen) * len0 > buf.limit() ) {

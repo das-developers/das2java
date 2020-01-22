@@ -6,19 +6,20 @@
 package org.das2.qds.buffer;
 
 import java.nio.ByteBuffer;
-import static org.das2.qds.buffer.BufferDataSet.BYTE;
-import static org.das2.qds.buffer.BufferDataSet.byteCount;
+import org.das2.qds.DataSetOps;
 import org.das2.qds.QDataSet;
+
 
 /**
  * Introduced to support looking at data from LWA, which are 12 bit ints.
  * @author jbf
  */
-public class NybbleDataSet extends BufferDataSet {
+public final class NybbleDataSet extends BufferDataSet {
 
     public NybbleDataSet(int rank, int reclenbits, int recoffsbits, int len0, int len1, int len2, int len3, ByteBuffer back ) {
         super( rank, reclenbits, recoffsbits, BufferDataSet.BITS, len0, len1, len2, len3, BufferDataSet.NYBBLE, back );        
         reclen= reclenbits/8;
+        this.makeImmutable();
     }
 
     protected int offset() {
@@ -74,39 +75,48 @@ public class NybbleDataSet extends BufferDataSet {
 
     @Override
     public int length(int i) {
-        return super.length(i); //To change body of generated methods, choose Tools | Templates.
+        return super.length(i); 
     }
 
     @Override
     public int length() {
-        return super.length(); //To change body of generated methods, choose Tools | Templates.
+        return super.length(); 
     }
 
     
     @Override
     public void putValue(double d) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet."); 
     }
 
     @Override
     public void putValue(int i0, double d) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet."); 
     }
 
     @Override
     public void putValue(int i0, int i1, double d) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet."); 
     }
 
     @Override
     public void putValue(int i0, int i1, int i2, double d) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet."); 
     }
 
     @Override
     public void putValue(int i0, int i1, int i2, int i3, double d) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet."); 
     }
     
+    @Override
+    public QDataSet slice(int i) {
+        return DataSetOps.slice0( this, i );
+    }
+
+    @Override
+    public QDataSet trim(int ist, int ien) {
+        return DataSetOps.trim( this, ist, ien );
+    }
 
 }

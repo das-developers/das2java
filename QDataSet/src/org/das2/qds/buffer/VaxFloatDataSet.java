@@ -1,7 +1,4 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package org.das2.qds.buffer;
 
 import java.nio.ByteBuffer;
@@ -13,7 +10,7 @@ import java.nio.ByteBuffer;
  *</pre></blockquote>
  * @author jbf
  */
-public class VaxFloatDataSet extends BufferDataSet {
+public final class VaxFloatDataSet extends BufferDataSet {
 // from http://www.codeproject.com/Articles/12363/Transform-between-IEEE-IBM-or-VAX-floating-point-n
 //SEF :       S        EEEEEEEE        FFFFFFF        FFFFFFFF        FFFFFFFF
 //bits :      1        2      9        10                                    32
@@ -22,6 +19,7 @@ public class VaxFloatDataSet extends BufferDataSet {
 
     public VaxFloatDataSet(int rank, int reclen, int recoffs, int len0, int len1, int len2, int len3, ByteBuffer back) {
         super(rank, reclen, recoffs, len0, len1, len2, len3, VAX_FLOAT, back);
+        this.makeImmutable();
     }
 
     /**
