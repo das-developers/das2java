@@ -598,9 +598,12 @@ public class StreamTool {
 
     private static Document getXMLDocument(ByteBuffer buffer, int contentLength) throws StreamException, IOException, SAXException {
         ByteBuffer xml = buffer.duplicate();
-        ByteBuffer xml2= buffer.duplicate();
+
+        ByteBuffer xml2=null;
+        if ( logger.isLoggable(Level.FINEST) ) xml2= buffer.duplicate(); // for debugging.
+        
         xml.limit(xml.position() + contentLength);
-        xml2.limit(xml.position() + contentLength);
+        if ( logger.isLoggable(Level.FINEST) ) xml2.limit(xml.position() + contentLength);
         
         buffer.position(buffer.position() + contentLength);
         final boolean DEBUG = false;
@@ -611,16 +614,22 @@ public class StreamTool {
             xml.position(pos);
             System.err.println(new String(bytes));
         }
-        ByteBufferInputStream bbin = new ByteBufferInputStream(xml2);
-        InputStreamReader isr = new InputStreamReader(bbin,"UTF-8");
+        
+        ByteBufferInputStream bbin;
+        InputStreamReader isr;
+        
+        if ( logger.isLoggable(Level.FINEST) ) {
+            bbin = new ByteBufferInputStream(xml2);
+            isr = new InputStreamReader(bbin,"UTF-8");
 
-        System.err.println("the encoding is "+isr.getEncoding());
-        int c= isr.read();
-        int count= 0;
-        while ( c!=-1 && count<1000 ) {
-            System.err.println( String.format( "%05d %04d %X %c", count, c, c, c ) );
-            count++;
-            c= isr.read();
+            System.err.println("the encoding is "+isr.getEncoding());
+            int c= isr.read();
+            int count= 0;
+            while ( c!=-1 && count<1000 ) {
+                System.err.println( String.format( "%05d %04d %X %c", count, c, c, c ) );
+                count++;
+                c= isr.read();
+            }
         }
         
         bbin = new ByteBufferInputStream(xml);
