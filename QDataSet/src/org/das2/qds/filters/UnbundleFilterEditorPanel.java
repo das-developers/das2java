@@ -39,7 +39,7 @@ public class UnbundleFilterEditorPanel extends AbstractFilterEditorPanel {
         jLabel1 = new javax.swing.JLabel();
         jComboBox1 = new javax.swing.JComboBox();
 
-        jLabel1.setText("Component to 'unbundle' :  ");
+        jLabel1.setText("Component to unbundle :");
 
         jComboBox1.setEditable(true);
         jComboBox1.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
@@ -52,7 +52,7 @@ public class UnbundleFilterEditorPanel extends AbstractFilterEditorPanel {
                 .addContainerGap()
                 .add(jLabel1)
                 .add(2, 2, 2)
-                .add(jComboBox1, 0, 136, Short.MAX_VALUE)
+                .add(jComboBox1, 0, 150, Short.MAX_VALUE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
