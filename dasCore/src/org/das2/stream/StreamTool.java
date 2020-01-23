@@ -167,6 +167,12 @@ public class StreamTool {
         }
     }
 
+    /**
+     * return a ByteBuffer containing just the next xml portion of the stream.
+     * @param input
+     * @return
+     * @throws IOException 
+     */
     public static ByteBuffer readXML(ByteBuffer input) throws IOException {
         int gtCount = 0;
         int tagCount = 0;
@@ -592,7 +598,10 @@ public class StreamTool {
 
     private static Document getXMLDocument(ByteBuffer buffer, int contentLength) throws StreamException, IOException, SAXException {
         ByteBuffer xml = buffer.duplicate();
+        ByteBuffer xml2= buffer.duplicate();
         xml.limit(xml.position() + contentLength);
+        xml2.limit(xml.position() + contentLength);
+        
         buffer.position(buffer.position() + contentLength);
         final boolean DEBUG = false;
         if (DEBUG) {
@@ -602,9 +611,21 @@ public class StreamTool {
             xml.position(pos);
             System.err.println(new String(bytes));
         }
-        ByteBufferInputStream bbin = new ByteBufferInputStream(xml);
+        ByteBufferInputStream bbin = new ByteBufferInputStream(xml2);
         InputStreamReader isr = new InputStreamReader(bbin,"UTF-8");
 
+        System.err.println("the encoding is "+isr.getEncoding());
+        int c= isr.read();
+        int count= 0;
+        while ( c!=-1 && count<1000 ) {
+            System.err.println( String.format( "%05d %04d %X %c", count, c, c, c ) );
+            count++;
+            c= isr.read();
+        }
+        
+        bbin = new ByteBufferInputStream(xml);
+        isr = new InputStreamReader(bbin,"UTF-8");
+        
         try {
             DocumentBuilder builder;
             builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
