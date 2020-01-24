@@ -2556,6 +2556,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 g.drawLine(DMin, topPosition, DMax, topPosition);
             }
             
+            // if there are reference lines requested, then draw them.
             if ( !(reference.length()==0) ) {
                 String[] rr= reference.split(",",-2);
                 for ( String r: rr ) {
@@ -3484,6 +3485,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                         ss= "???";
                     } else {
                         ss= (String) bds.property( QDataSet.LABEL, i );
+                        if ( ss==null ) {
+                            ss= (String) bds.property( QDataSet.NAME, i );
+                        }
                     }
                     if ( ss==null ) ss= "   ";
                     idlt.setString( tickLabelFont, ss );
