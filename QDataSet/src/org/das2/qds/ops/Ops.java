@@ -10839,6 +10839,26 @@ public final class Ops {
     }
            
     /**
+     * remove the data which is 3 sigmas from the mean.
+     * @param ds
+     * @param len
+     * @return 
+     */
+    public static QDataSet cleanData( QDataSet ds, int len ) {
+        QDataSet mean= mean(ds);
+        QDataSet sig3= multiply( stddev(ds), 3 );
+        QDataSet w= where( gt( abs( subtract( ds, mean ) ), sig3 ) );
+        WritableDataSet wds= copy(ds);
+        QubeDataSetIterator it= new QubeDataSetIterator(ds);
+        it.setIndexIteratorFactory( 0, new QubeDataSetIterator.IndexListIteratorFactory( w ) );
+        double FILL= Double.NaN;
+        while ( it.hasNext() ) {
+            it.putValue( wds, FILL );
+        }
+        return wds;
+    }
+    
+    /**
      * Mean function that returns the average of the valid elements of a rank N dataset
      * @param ds rank N dataset
      * @return rank 0 dataset
