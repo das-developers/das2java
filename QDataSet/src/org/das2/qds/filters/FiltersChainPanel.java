@@ -232,6 +232,8 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
             result= new SmoothFilterEditorPanel();
         } else if ( f.matches("\\|smoothfit\\(\\d+\\)") ) { // TODO: FilterEditorPanel might choose to accept a filter.
             result= new SmoothFilterEditorPanel();
+        } else if ( f.matches("\\|cleanData\\(\\d*\\)") ) { 
+            result= new CleanDataFilterEditorPanel();
         } else if ( f.matches("\\|histogram\\(\\)") ) { 
             result= new HistogramFilterEditorPanel();
         } else if ( f.matches("\\|histogram\\((\\S+),(\\S+),(\\S+)\\)") ) { 

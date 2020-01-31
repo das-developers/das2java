@@ -634,6 +634,18 @@ public class OperationsProcessor {
                     int icomp= Integer.parseInt(comp);
                     QDataSet x= SemanticOps.xtagsDataSet(fillDs);
                     fillDs= Ops.smoothFit(x,fillDs, icomp);
+                } else if ( cmd.equals("|cleanData") ) {
+                    if ( s.hasNext() ) {
+                        String comp= s.next();
+                        if ( comp.trim().length()>0 ) {
+                            int icomp= Integer.parseInt(comp);
+                            fillDs= Ops.cleanData(fillDs,icomp);
+                        } else {
+                            fillDs= Ops.cleanData(fillDs);
+                        }
+                    } else {
+                        fillDs= Ops.cleanData(fillDs);
+                    }
                 } else if ( cmd.equals("|medianFilter") ) {
                     String comp= s.next();
                     int icomp= Integer.parseInt(comp);
