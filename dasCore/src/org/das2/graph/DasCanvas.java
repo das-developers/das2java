@@ -414,7 +414,6 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
 
     private DasApplication application;
     private static final Logger logger = DasLogger.getLogger(DasLogger.GRAPHICS_LOG);
-    private static final Logger resizeLogger= LoggerManager.getLogger("das2.graphics.canvas.resize");
     
     private final GlassPane glassPane;
     private String dasName;
@@ -1768,7 +1767,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
      * @param width the specified width.
      */
     public void setPreferredWidth(int width) {
-        resizeLogger.log(Level.FINE, "setPreferredWidth({0,number,#})", width);
+        logger.log(Level.CONFIG, "setPreferredWidth({0,number,#})", width);
         Dimension pref = getPreferredSize();
         pref.width = width;
         setPreferredSize(pref);
@@ -1780,7 +1779,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
      * @param height the specified height
      */
     public void setPreferredHeight(int height) {
-        resizeLogger.log(Level.FINE, "setPreferredHeight({0,number,#})", height);
+        logger.log(Level.CONFIG, "setPreferredHeight({0,number,#})", height);
         Dimension pref = getPreferredSize();
         pref.height = height;
         setPreferredSize(pref);
@@ -1812,6 +1811,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
      * @param scaleFonts true if the fonts should be rescaled as the window size is changed.
      */
     public void setScaleFonts(boolean scaleFonts) {
+        logger.log(Level.CONFIG, "setScaleFonts({0})", scaleFonts);
         boolean oldScaleFonts = this.scaleFonts;
         this.scaleFonts = scaleFonts;
         setBaseFont(getBaseFont());
@@ -1844,7 +1844,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
      * @param font the font used to derive all other fonts.
      */
     public void setBaseFont(Font font) {
-        logger.log(Level.FINE, "setBaseFont({0})", font);
+        logger.log(Level.CONFIG, "setBaseFont({0})", font);
         Font oldFont = getFont();
         Font oldBaseFont= baseFont;
         this.baseFont = font;
@@ -2885,6 +2885,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
      * @param fitted value of fitted property
      */
     public void setFitted(boolean fitted) {
+        logger.log(Level.CONFIG, "setFitted({0})", fitted);
         boolean oldValue = this.fitted;
         this.fitted = fitted;
         firePropertyChange("fitted", oldValue, fitted);
