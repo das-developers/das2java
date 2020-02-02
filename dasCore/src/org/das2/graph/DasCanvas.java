@@ -1153,6 +1153,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
      */
     public void writeToPng( String filename) throws IOException {
 
+        logger.log(Level.CONFIG, "writeToPng({0})", filename);
         int w= getWidth();
         int h= getHeight();
 
@@ -1849,14 +1850,21 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         Font oldBaseFont= baseFont;
         this.baseFont = font;
         if ( scaleFonts ) {
-            setFont(getFontForSize(getWidth(), getHeight()));
+            super.setFont(getFontForSize(getWidth(), getHeight()));
         } else {
-            setFont( font );
+            super.setFont( font );
         }
         firePropertyChange("font", oldFont, getFont()); //TODO: really?
         firePropertyChange("baseFont", oldBaseFont, this.baseFont );
         repaint();
     }
+
+    @Override
+    public void setFont(Font font) {
+        logger.log(Level.CONFIG, "setFont({0})", font);
+        super.setFont(font); 
+    }
+    
     
     private static final int R_1024_X_768 = 1024 * 768;
     private static final int R_800_X_600 = 800 * 600;
