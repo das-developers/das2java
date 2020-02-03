@@ -328,6 +328,11 @@
                         <filter>|butterworth(2,500,550,True)</filter>
                         <description>Initializes the Butterworth filter</description>
                     </bookmark>                    
+                    <bookmark>
+                        <title>Clean Data</title>
+                        <filter>|cleanData(11,3.0)</filter>
+                        <description>Remove outliers from the data, more than N sigma from the mean.</description>
+                    </bookmark>                    
                 </bookmark-list>
             </bookmark-folder>
             <bookmark-folder>

@@ -6,6 +6,7 @@
 
 package org.das2.qds.filters;
 
+import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -36,6 +37,8 @@ public class CleanDataFilterEditorPanel extends AbstractFilterEditorPanel {
         sizeTF = new javax.swing.JTextField();
         boxCarTextField = new javax.swing.JCheckBox();
         jLabel2 = new javax.swing.JLabel();
+        jLabel1 = new javax.swing.JLabel();
+        nsigmaTF = new javax.swing.JTextField();
 
         jCheckBox1.setText("jCheckBox1");
 
@@ -47,7 +50,11 @@ public class CleanDataFilterEditorPanel extends AbstractFilterEditorPanel {
 
         boxCarTextField.setText("Use sliding boxcar of length:");
 
-        jLabel2.setText("Clean data by removing points which are three stddevs away from the mean");
+        jLabel2.setText("Clean data by removing points which are N stddevs away from the mean");
+
+        jLabel1.setText("Number of stddevs:");
+
+        nsigmaTF.setText("3.0");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -60,9 +67,13 @@ public class CleanDataFilterEditorPanel extends AbstractFilterEditorPanel {
                         .add(12, 12, 12)
                         .add(boxCarTextField)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(sizeTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .add(sizeTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(30, 30, 30)
+                        .add(jLabel1)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(nsigmaTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 49, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .add(jLabel2))
-                .addContainerGap(33, Short.MAX_VALUE))
+                .addContainerGap(54, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -72,33 +83,48 @@ public class CleanDataFilterEditorPanel extends AbstractFilterEditorPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(sizeTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(boxCarTextField))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .add(boxCarTextField)
+                    .add(jLabel1)
+                    .add(nsigmaTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
         );
+
+        layout.linkSize(new java.awt.Component[] {nsigmaTF, sizeTF}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
         bindingGroup.bind();
     }// </editor-fold>//GEN-END:initComponents
 
 
+    public static String PROP_REGEX= "\\|cleanData\\(([-\\d]*)(\\,([\\d\\.]+))?\\)";
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     public javax.swing.JCheckBox boxCarTextField;
     public javax.swing.JCheckBox jCheckBox1;
+    public javax.swing.JLabel jLabel1;
     public javax.swing.JLabel jLabel2;
+    public javax.swing.JTextField nsigmaTF;
     public javax.swing.JTextField sizeTF;
     private org.jdesktop.beansbinding.BindingGroup bindingGroup;
     // End of variables declaration//GEN-END:variables
 
     @Override
     public void setFilter(String filter) {
-        Pattern p= Pattern.compile("\\|cleanData\\((\\d*)\\)");
+        Pattern p= Pattern.compile(PROP_REGEX);
         Matcher m= p.matcher(filter);
         if ( m.matches() ) {
-            if ( m.group(1).trim().length()>0 ) {
+            String size= m.group(1);
+            if ( size.trim().length()>0 ) {
                 sizeTF.setText( m.group(1) );
                 boxCarTextField.setSelected(true);
             } else {
-                sizeTF.setText( "1" );
+                sizeTF.setText( "-1" );
                 boxCarTextField.setSelected(false);
+            }
+            String nsigma= m.group(3).trim();
+            if ( nsigma.length()==0 ) {
+                nsigmaTF.setText("3.");
+            } else {
+                nsigmaTF.setText( nsigma );
             }
         }
         
@@ -106,10 +132,25 @@ public class CleanDataFilterEditorPanel extends AbstractFilterEditorPanel {
 
     @Override
     public String getFilter() {
+        double nsigma=3;
+        try {
+            nsigma= Double.parseDouble( nsigmaTF.getText() );
+        } catch ( NumberFormatException ex ) {
+            logger.log(Level.WARNING, "unable to parse as double: {0}", nsigmaTF.getText());
+        }
+        
         if ( boxCarTextField.isSelected() ) {
-            return "|cleanData(" + sizeTF.getText() + ")";            
+            if ( nsigma==3.0 ) {
+                return "|cleanData(" + sizeTF.getText() + ")";
+            }else {
+                return "|cleanData(" + sizeTF.getText() + ","+ nsigmaTF.getText()+ ")";
+            }            
         } else {
-            return "|cleanData()";
+            if ( nsigma==3.0 ) {
+                return "|cleanData()";
+            } else {
+                return "|cleanData(-1,"+ nsigmaTF.getText() + ")";
+            }
         }
     }
 }
