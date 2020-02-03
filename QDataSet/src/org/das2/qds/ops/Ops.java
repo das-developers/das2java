@@ -10848,20 +10848,32 @@ public final class Ops {
     }
     
     /**
-     * remove the data which is 3 sigmas from the mean.
+     * remove the data which is N sigmas (stddev) from the mean.  This is 
+     * to replicate the "clean_data" function used by CDAWeb at NASA/Goddard.
      * @param ds rank 1 dataset.
      * @param size -1 for the whole, size for a boxcar.
      * @return cleaned dataset of the same geometry.
-     */
+     */    
     public static QDataSet cleanData( QDataSet ds, int size ) {
+        return cleanData( ds, 3, size );
+    }
+    
+    /**
+     * remove the data which is N sigmas (stddev) from the mean.
+     * @param ds rank 1 dataset.
+     * @param nsigma remove data more than this many stddevs from mean.
+     * @param size -1 for the whole, size for a boxcar.
+     * @return cleaned dataset of the same geometry.
+     */
+    public static QDataSet cleanData( QDataSet ds, double nsigma, int size ) {
         QDataSet mean;
         QDataSet sig3;
         if ( size==-1 ) {
             mean = mean(ds);
-            sig3 = multiply( stddev(ds), 3 );
+            sig3 = multiply( stddev(ds), nsigma );
         } else {
             mean = smooth(ds,size);
-            sig3 = multiply( smooth( abs( subtract( ds, mean ) ), size ), 3 );
+            sig3 = multiply( smooth( abs( subtract( ds, mean ) ), size ), nsigma );
         }
         QDataSet w= where( gt( abs( subtract( ds, mean ) ), sig3 ) );
         WritableDataSet wds= copy(ds);
