@@ -61,7 +61,9 @@ public class GitHubFileSystem extends HttpFileSystem {
             try {
                 InputStream result= HtmlUtil.getInputStream(gitHubURL); // handles redirects.
                 if ( gitHubURL.toString().endsWith(".vap") ) {
+                    System.out.println("here64--github");
                     byte[] bb= StreamUtil.inputStreamToArray(result);
+                    System.out.println("here66--github");
                     logger.log(Level.FINE, "downloaded {0} got {1} bytes.", new Object[]{result, bb.length});
                     return new ByteArrayInputStream(bb);
                 } else {
