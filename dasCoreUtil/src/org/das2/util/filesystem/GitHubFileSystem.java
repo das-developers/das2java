@@ -55,6 +55,7 @@ public class GitHubFileSystem extends HttpFileSystem {
 
         @Override
         public InputStream getInputStream(WebFileObject fo, ProgressMonitor mon) throws IOException {
+            new Exception("getInputStream uses different path").printStackTrace();
             URL gitHubURL= gitHubMapFile( root, fo.getNameExt() );
             logger.log(Level.INFO, "get InputStream from {0}", gitHubURL);
             try {
