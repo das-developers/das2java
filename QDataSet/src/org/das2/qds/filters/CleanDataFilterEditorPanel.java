@@ -120,11 +120,15 @@ public class CleanDataFilterEditorPanel extends AbstractFilterEditorPanel {
                 sizeTF.setText( "-1" );
                 boxCarTextField.setSelected(false);
             }
-            String nsigma= m.group(3).trim();
-            if ( nsigma.length()==0 ) {
-                nsigmaTF.setText("3.");
+            if ( m.group(3)!=null ) {
+                String nsigma= m.group(3).trim();
+                if ( nsigma.length()==0 ) {
+                    nsigmaTF.setText("3.");
+                } else {
+                    nsigmaTF.setText( nsigma );
+                }
             } else {
-                nsigmaTF.setText( nsigma );
+                nsigmaTF.setText("3.");
             }
         }
         
