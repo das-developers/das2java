@@ -384,7 +384,9 @@ public class AddFilterDialog extends javax.swing.JPanel {
         Bookmark result;
         int tabPreference;
         if ( jTabbedPane1.getSelectedIndex()==0 ) {
-            Object o = this.jTree1.getSelectionPath().getLastPathComponent();
+            TreePath tp= this.jTree1.getSelectionPath();
+            if ( tp==null ) return "";
+            Object o = tp.getLastPathComponent();
             DefaultMutableTreeNode tn = (DefaultMutableTreeNode) o;
             Bookmark b = (Bookmark) tn.getUserObject();
             expansionState= TreeUtil.getExpansionState( jTree1, 0 );
