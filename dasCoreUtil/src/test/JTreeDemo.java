@@ -110,7 +110,9 @@ public class JTreeDemo {
         return new AbstractAction("Delete") {
             @Override
             public void actionPerformed(ActionEvent e) {
-                MutableTreeNode n= (MutableTreeNode) jtree.getSelectionPath().getLastPathComponent();
+                TreePath tp= jtree.getSelectionPath();
+                if ( tp==null ) return;
+                MutableTreeNode n= (MutableTreeNode) tp.getLastPathComponent();
                 if ( n.getParent()!=null ) {
                     ((DefaultTreeModel)jtree.getModel()).removeNodeFromParent(n);
                 } else {
@@ -139,7 +141,9 @@ public class JTreeDemo {
         return new AbstractAction("Replace") {
             @Override
             public void actionPerformed(ActionEvent e) {
-                MutableTreeNode n= (MutableTreeNode) jtree.getSelectionPath().getLastPathComponent();
+                TreePath tp= jtree.getSelectionPath();
+                if ( tp==null ) return;
+                MutableTreeNode n= (MutableTreeNode) tp.getLastPathComponent();
                 MutableTreeNode parent= (MutableTreeNode) n.getParent();
                 if ( parent==null ) {
                     JOptionPane.showMessageDialog( jtree, "This root node cannot be replaced." );
