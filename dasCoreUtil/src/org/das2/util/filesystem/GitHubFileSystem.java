@@ -178,10 +178,10 @@ public class GitHubFileSystem extends HttpFileSystem {
             int parentLen= root.toString().length() + ( directory.length() -1 ) + 12;
             for ( URL u: listing ) {
                 String su= u.toString();
-                if ( su.contains("/blob/master/")
+                if ( su.contains("/blob/"+branch+"/")
                         && !su.endsWith(".gitkeep") ) {
                     result.add( su.substring( parentLen ) );
-                } else if ( su.contains("/tree/master/") ) {
+                } else if ( su.contains("/tree/"+branch+"/") ) {
                     if ( su.length()>parentLen ) {
                         String ss= u.toString().substring( parentLen ) + "/" ;
                         if ( ss.length()>1 
@@ -266,14 +266,14 @@ public class GitHubFileSystem extends HttpFileSystem {
             return url;
         } else {
             if ( root.getHost().equals("github.com") && filename.endsWith(".vap" ) ) { // This is an experiment
-                String n= root.getScheme() + "://raw.githubusercontent.com" + '/' + spath + "/master/" + strjoin( path, "/", 3+baseOffset, -1 ) + filename;
+                String n= root.getScheme() + "://raw.githubusercontent.com" + '/' + spath + "/"+branch+"/" + strjoin( path, "/", 3+baseOffset, -1 ) + filename;
                 if ( n.indexOf("//",8)>-1 ) {
                     n= n.substring(0,8) + n.substring(8).replaceAll("//", "/");
                 }
                 URL url= new URL( n );
                 return url;                
             } else {
-                String n= root.getScheme() + "://" + root.getHost() + '/' + spath + "/raw/master/" + strjoin( path, "/", 3+baseOffset, -1 ) + filename;
+                String n= root.getScheme() + "://" + root.getHost() + '/' + spath + "/raw/"+branch+"/" + strjoin( path, "/", 3+baseOffset, -1 ) + filename;
                 URL url= new URL( n );
                 return url;
             }
@@ -299,7 +299,7 @@ public class GitHubFileSystem extends HttpFileSystem {
         if ( path.length==(3+baseOffset) && filename.length()==1 ) {
             return root.toURL();
         } else {
-            n= root.getScheme() + "://" + root.getHost() + '/' + spath + "/tree/master/" + strjoin( path, "/", 3 + baseOffset, -1 ) + filename;
+            n= root.getScheme() + "://" + root.getHost() + '/' + spath + "/tree/"+branch+"/" + strjoin( path, "/", 3 + baseOffset, -1 ) + filename;
             URL url= new URL( n );
             return url;
         }
