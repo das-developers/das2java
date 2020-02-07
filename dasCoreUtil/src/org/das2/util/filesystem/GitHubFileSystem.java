@@ -56,7 +56,7 @@ public class GitHubFileSystem extends HttpFileSystem {
         @Override
         public InputStream getInputStream(WebFileObject fo, ProgressMonitor mon) throws IOException {
             URL gitHubURL= gitHubMapFile( root, fo.getNameExt() );
-            logger.log(Level.INFO, "get InputStream from {0}", gitHubURL);
+            logger.log(Level.FINE, "get InputStream from {0}", gitHubURL);
             try {
                 InputStream result= HtmlUtil.getInputStream(gitHubURL); // handles redirects.
                 if ( gitHubURL.toString().endsWith(".vap") ) {
