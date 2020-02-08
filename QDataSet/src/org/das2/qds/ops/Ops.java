@@ -121,8 +121,10 @@ public final class Ops {
     }
 
     /**
-     * apply the unary operation (such as "cos") to the dataset.
-     * DEPEND_[0-3] is propagated.
+     * apply the unary operation (such as "cos") to the dataset, propagating
+     * DEPEND_0 through DEPEND_3 are propagated.  TODO: This should be reviewed
+     * for speed (iterator is known to be slow) and other metadata that can 
+     * be preserved.
      * @param ds1 the argument
      * @param op the operation for each element.
      * @return the result the the same geometry.
@@ -131,31 +133,31 @@ public final class Ops {
         //TODO: handle JOIN from RPWS group, which is not a QUBE...
         DDataSet result = DDataSet.create(DataSetUtil.qubeDims(ds1));
         QDataSet wds= DataSetUtil.weightsDataSet(ds1);
-        QubeDataSetIterator it1 = new QubeDataSetIterator(ds1);
 
         double fill= -1e38;
         
-        while (it1.hasNext()) {
-            it1.next();
-            double d1 = it1.getValue(ds1);
-            double w1 = it1.getValue(wds);
-            it1.putValue(result, w1==0 ? fill : op.op(d1));
+        if ( ds1.rank()==1 ) {
+            for ( int i=0; i<ds1.length(); i++ ) {
+                double w1 = wds.value(i);
+                result.putValue( i, w1==0 ? fill : op.op(ds1.value(i)) );
+            }
+        } else {
+            QubeDataSetIterator it1 = new QubeDataSetIterator(ds1);
+            while (it1.hasNext()) {
+                it1.next();
+                double d1 = it1.getValue(ds1);
+                double w1 = it1.getValue(wds);
+                it1.putValue(result, w1==0 ? fill : op.op(d1));
+            }
         }
+        
         Map<String,Object> m= new HashMap<>();
         m.put( QDataSet.DEPEND_0, ds1.property(QDataSet.DEPEND_0) );
         m.put( QDataSet.DEPEND_1, ds1.property(QDataSet.DEPEND_1) );
         m.put( QDataSet.DEPEND_2, ds1.property(QDataSet.DEPEND_2) );
-        m.put( QDataSet.DEPEND_3, ds1.property(QDataSet.DEPEND_3) );
-        m.remove( QDataSet.VALID_MIN );
-        m.remove( QDataSet.VALID_MAX );
-        m.remove( QDataSet.TITLE );
-        m.remove( QDataSet.LABEL );
-        m.remove( QDataSet.MONOTONIC );
-        m.remove( QDataSet.METADATA_MODEL );
-        m.remove( QDataSet.METADATA );
-        m.remove( QDataSet.BUNDLE_1 ); // because this contains FILL_VALUE, etc that are no longer correct.
-        
+        m.put( QDataSet.DEPEND_3, ds1.property(QDataSet.DEPEND_3) );        
         DataSetUtil.putProperties( m, result );
+        
         result.putProperty( QDataSet.FILL_VALUE, fill );
         return result;
     }
@@ -5368,7 +5370,7 @@ public final class Ops {
      * -<i>pi</i> to <i>pi</i>."
      * <p>Note different languages have different 
      * argument order.  Microsoft Office uses atan2(x,y); IDL uses atan(y,x);  
-     * Matlab uses atan2(y,x); and NumPy uses arctan2(y,x).</p?
+     * Matlab uses atan2(y,x); and NumPy uses arctan2(y,x).</p>
      * @param y the y values
      * @param x the x values
      * @return angles between -PI and PI
@@ -13312,8 +13314,8 @@ public final class Ops {
     }
 
     /**
-     * Experiment with multi-threaded FFTPower function.  This breaks up the task into four independent tasks
-     * that can be run in parallel.
+     * Experiment with multi-threaded FFTPower function.  This breaks up the 
+     * task into four independent tasks that can be run in parallel.
      * @param ds rank 2 dataset ds(N,M) with M&gt;len
      * @param len the number of elements to have in each fft.
      * @param mon a ProgressMonitor for the process
@@ -13338,7 +13340,7 @@ public final class Ops {
                     out[0] = Ops.fftPower(ds.trim(0, length/ 4), len, mons.get(0));
                     //ScriptContext.plot( 1, out1 );
                 } catch (Exception ex) {
-                    ex.printStackTrace();
+                    logger.log( Level.WARNING, ex.getMessage(), ex );
                 }
             }
         };
@@ -13350,7 +13352,7 @@ public final class Ops {
                     out[1] = Ops.fftPower(ds.trim(length / 4, (length * 2) / 4), len, mons.get(1));
                     //ScriptContext.plot( 2, out2 );
                 } catch (Exception ex) {
-                    ex.printStackTrace();
+                    logger.log( Level.WARNING, ex.getMessage(), ex );
                 }
             }
         };
@@ -13362,7 +13364,7 @@ public final class Ops {
                     out[2] = Ops.fftPower(ds.trim((length * 2) / 4, (length * 3) / 4), len, mons.get(2));
                     //ScriptContext.plot( 3, out3 );
                 } catch (Exception ex) {
-                    ex.printStackTrace();
+                    logger.log( Level.WARNING, ex.getMessage(), ex );
                 }
             }
         };
@@ -13374,7 +13376,7 @@ public final class Ops {
                     out[3] = Ops.fftPower(ds.trim((length * 3) / 4, length), len, mons.get(3));
                     //ScriptContext.plot( 4, out4 );
                 } catch (Exception ex) {
-                    ex.printStackTrace();
+                    logger.log( Level.WARNING, ex.getMessage(), ex );
                 }
             }
         };
@@ -13395,7 +13397,7 @@ public final class Ops {
         
         QDataSet concat= null;
         for ( QDataSet out1 : out ) {
-            concat= Ops.concatenate( concat, out1 );
+            concat= Ops.append( concat, out1 );
         }
         
         return concat;
