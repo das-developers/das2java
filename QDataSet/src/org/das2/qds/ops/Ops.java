@@ -5360,12 +5360,19 @@ public final class Ops {
     }       
     
     /**
-     * element-wise atan2, 4-quadrant atan.  Note different languages have different argument order.  
-     * Microsoft office uses atan2(x,y); IDL uses atan(y,x);  Matlab uses atan2(y,x); and  
-     * NumPy uses arctan2(y,x).
+     * element-wise atan2, 4-quadrant atan.  From the Java atan2 documentation:
+     * "Returns the angle <i>theta</i> from the conversion of rectangular 
+     * coordinates ({@code x},&nbsp;{@code y}) to polar coordinates 
+     * (r,&nbsp;<i>theta</i>).  This method computes the phase <i>theta</i> 
+     * by computing an arc tangent of {@code y/x} in the range of 
+     * -<i>pi</i> to <i>pi</i>."
+     * <p>Note different languages have different 
+     * argument order.  Microsoft Office uses atan2(x,y); IDL uses atan(y,x);  
+     * Matlab uses atan2(y,x); and NumPy uses arctan2(y,x).</p?
      * @param y the y values
      * @param x the x values
      * @return angles between -PI and PI
+     * @see java.lang.Math#atan2(double, double) 
      */
     public static QDataSet atan2(QDataSet y, QDataSet x) {
          MutablePropertyDataSet result= applyBinaryOp(y, x, new BinaryOp() {
