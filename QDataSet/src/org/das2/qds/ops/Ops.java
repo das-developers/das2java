@@ -136,19 +136,50 @@ public final class Ops {
 
         double fill= -1e38;
         
-        if ( ds1.rank()==1 ) {
-            for ( int i=0; i<ds1.length(); i++ ) {
-                double w1 = wds.value(i);
-                result.putValue( i, w1==0 ? fill : op.op(ds1.value(i)) );
-            }
+        int n0;
+        if ( ds1.rank()==0 ) {
+            n0=0;
         } else {
-            QubeDataSetIterator it1 = new QubeDataSetIterator(ds1);
-            while (it1.hasNext()) {
-                it1.next();
-                double d1 = it1.getValue(ds1);
-                double w1 = it1.getValue(wds);
-                it1.putValue(result, w1==0 ? fill : op.op(d1));
-            }
+            n0= ds1.length();
+        }
+        
+        switch (ds1.rank()) {
+            case 1:
+                for ( int i=0; i<n0; i++ ) {
+                    double w1 = wds.value(i);
+                    result.putValue( i, w1==0 ? fill : op.op(ds1.value(i)) );
+                }   
+                break;
+            case 2:
+                for ( int i=0; i<n0; i++ ) {
+                    int n1= ds1.length(i);
+                    for ( int j=0; j<n1; j++ ) {
+                        double w1 = wds.value(i,j);
+                        result.putValue( i, j, w1==0 ? fill : op.op(ds1.value(i,j)) );
+                    }
+                }  
+                break;
+            case 3:
+                for ( int i=0; i<n0; i++ ) {
+                    int n1= ds1.length(i);
+                    for ( int j=0; j<n1; j++ ) {
+                        int n2= ds1.length(i,j);
+                        for ( int k=0; k<n2; k++ ) {
+                            double w1 = wds.value(i,j,k);
+                            result.putValue( i, j, k, w1==0 ? fill : op.op(ds1.value(i,j,k)) );
+                        }
+                    }
+                }
+                break;
+            default:
+                QubeDataSetIterator it1 = new QubeDataSetIterator(ds1);
+                while (it1.hasNext()) {
+                    it1.next();
+                    double d1 = it1.getValue(ds1);
+                    double w1 = it1.getValue(wds);
+                    it1.putValue(result, w1==0 ? fill : op.op(d1));
+                }   
+                break;
         }
         
         Map<String,Object> m= new HashMap<>();
@@ -220,20 +251,66 @@ public final class Ops {
 //        
         WritableDataSet result = CoerceUtil.coerce( ds1, ds2, true, operands );
 
-        QubeDataSetIterator it1 = new QubeDataSetIterator( operands[0] );
-        QubeDataSetIterator it2 = new QubeDataSetIterator( operands[1] );
+        QDataSet op1= operands[0];
+        QDataSet op2= operands[1];
 
-        QDataSet w1= DataSetUtil.weightsDataSet(operands[0]);
-        QDataSet w2= DataSetUtil.weightsDataSet(operands[1]);
+        QDataSet w1= DataSetUtil.weightsDataSet(op1);
+        QDataSet w2= DataSetUtil.weightsDataSet(op2);
 
+        int n0;
+        if ( w1.rank()>0 ) {
+            n0= w1.length();
+        } else {
+            n0= 0;
+        }
+        
         double fill= -1e38;
-        while (it1.hasNext()) {
-            it1.next();
-            it2.next();
-            double d1 = it1.getValue(operands[0]);
-            double d2 = it2.getValue(operands[1]);
-            double w= it1.getValue(w1) * it2.getValue(w2);
-            it1.putValue(result, w==0 ? fill : op.op(d1, d2));
+        
+        switch (w1.rank()) {
+            case 1:
+                for ( int i=0; i<n0; i++ ) {
+                    double d1 = op1.value(i);
+                    double d2 = op2.value(i);
+                    double w= w1.value(i) * w2.value(i);
+                    result.putValue( i, w==0 ? fill : op.op(d1, d2) );
+                }       
+                break;
+            case 2:
+                for ( int i=0; i<n0; i++ ) {
+                    int n1= w1.length(i);
+                    for ( int j=0; j<n1; j++ ) {
+                        double d1 = op1.value(i,j);
+                        double d2 = op2.value(i,j);
+                        double w= w1.value(i,j) * w2.value(i,j);
+                        result.putValue( i, j, w==0 ? fill : op.op(d1, d2) );
+                    }
+                }
+                break;
+            case 3:
+                for ( int i=0; i<n0; i++ ) {
+                    int n1= w1.length(i);
+                    for ( int j=0; j<n1; j++ ) {
+                        int n2= w1.length(i,j);
+                        for ( int k=0; k<n2; k++ ) {
+                            double d1 = op1.value(i,j,k);
+                            double d2 = op2.value(i,j,k);
+                            double w= w1.value(i,j,k) * w2.value(i,j,k);
+                            result.putValue( i, j, k, w==0 ? fill : op.op(d1, d2) );
+                        }
+                    }
+                }
+                break;                
+            default:
+                QubeDataSetIterator it1 = new QubeDataSetIterator( operands[0] );
+                QubeDataSetIterator it2 = new QubeDataSetIterator( operands[1] );
+                while (it1.hasNext()) {
+                    it1.next();
+                    it2.next();
+                    double d1 = it1.getValue(operands[0]);
+                    double d2 = it2.getValue(operands[1]);
+                    double w= it1.getValue(w1) * it2.getValue(w2);
+                    it1.putValue(result, w==0 ? fill : op.op(d1, d2));
+                }   break;
         }
 
         Map<String, Object> m1 = DataSetUtil.getProperties( operands[0], _dependProperties, null );
