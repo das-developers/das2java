@@ -3519,6 +3519,18 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
         return bounds;
     }
+    
+    /**
+     * return the number of lines that the ticks use.
+     * @return 
+     */
+    public int getTickLines() {
+        if ( tcaData!=null ) {
+            return 1+tcaData.length(0);
+        } else {
+            return 2;
+        }
+    }
 
     private Rectangle getHorizontalAxisBounds() {
 
