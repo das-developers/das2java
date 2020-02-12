@@ -365,10 +365,10 @@ public class ColorUtil {
         if ( n!=null ) {
             return n;
         } else {
-            if ( color.getAlpha()<255 ) {
-                return "#" + Integer.toHexString(color.getRGB());
+            if ( color.getAlpha()==255 ) {
+                return "#" + String.format( "%06X", color.getRGB() & 0xFFFFFF );   
             } else {
-                return "#" + Integer.toHexString(color.getRGB() & 0xFFFFFF);
+                return "#" + String.format( "%02X%06X", color.getAlpha(), color.getRGB() & 0xFFFFFF );       
             }
         }
     }
@@ -385,9 +385,9 @@ public class ColorUtil {
             return s;
         } else {
             if ( color.getAlpha()==255 ) {
-                return "#" + Integer.toHexString(color.getRGB() & 0xFFFFFF);
+                return "#" + String.format( "%06X", color.getRGB() & 0xFFFFFF );   
             } else {
-                return "#" + String.format( "%02X%06X", color.getAlpha(), color.getRGB() & 0xFFFFFF );
+                return "#" + String.format( "%02X%06X", color.getAlpha(), color.getRGB() & 0xFFFFFF );       
             }
         }
     }
