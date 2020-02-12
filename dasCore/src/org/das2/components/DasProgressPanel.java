@@ -323,6 +323,19 @@ public class DasProgressPanel implements ProgressMonitor {
         }
         return result;
     }
+    
+    /**
+     * return a progress panel which can be embedded within a GUI.  Use 
+     * getComponent() to return the component which should be embedded.
+     * @param label string label for the label.
+     * @return a new DasProgressPanel
+     * @see #getComponent() 
+     */
+    public static DasProgressPanel createComponent( String label ) {
+        DasProgressPanel result= new DasProgressPanel(label);
+        result.initComponents();
+        return result;
+    }
 
     @Override
     public void setLabel(String label) {
