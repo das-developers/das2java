@@ -369,16 +369,16 @@ public class ColorUtil {
             return n;
         } else {
             if ( color.getAlpha()==255 ) {
-                return "#" + String.format( "%06X", color.getRGB() & 0xFFFFFF );   
+                return "#" + String.format( "%06x", color.getRGB() & 0xFFFFFF );   
             } else {
-                return "#" + String.format( "%02X%06X", color.getAlpha(), color.getRGB() & 0xFFFFFF );       
+                return "#" + String.format( "%02x%06x", color.getAlpha(), color.getRGB() & 0xFFFFFF );       
             }
         }
     }
         
     /**
      * return either a named color or 
-     * "#" + Integer.toHexString( color.getRGB() &amp; 0xFFFFFF)
+     * #00aaff for opaque colors and #80aaff00 for transparent colors.
      * @param color
      * @return named color or hex string like "#FF0000" for Red.
      */
@@ -388,9 +388,9 @@ public class ColorUtil {
             return s;
         } else {
             if ( color.getAlpha()==255 ) {
-                return "#" + String.format( "%06X", color.getRGB() & 0xFFFFFF );   
+                return "#" + String.format( "%06x", color.getRGB() & 0xFFFFFF );   
             } else {
-                return "#" + String.format( "%02X%06X", color.getAlpha(), color.getRGB() & 0xFFFFFF );       
+                return "#" + String.format( "%02x%06x", color.getAlpha(), color.getRGB() & 0xFFFFFF );       
             }
         }
     }
