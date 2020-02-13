@@ -11,8 +11,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * single place to contain Color-Name mapping.  See https://sourceforge.net/p/autoplot/feature-requests/263/
+ * single place to contain Color-Name mapping.  These include
+ * an old set of 10 or so color names, plus the 130 or so web color
+ * names like "SaddleBrown" and "DarkOrchid".
  * @author jbf
+ * @see https://sourceforge.net/p/autoplot/feature-requests/263/
  */
 public class ColorUtil {
     
@@ -407,7 +410,8 @@ public class ColorUtil {
      * This also allows a color name to follow the RGB like so:<ul>
      * <li>"0xFFFF00 (Purple)"
      * </ul>
-     * to improve legibility of .vap files.  <a href="https://wikipedia.org/wiki/X11_color_names#Color_name_chart">X11 color names</a>
+     * to improve legibility of .vap files.  
+     * <a href="https://wikipedia.org/wiki/X11_color_names#Color_name_chart">X11 color names</a>
      * can be found at wikipedia.
      * @param s the string representation 
      * @return the color
