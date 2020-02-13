@@ -2120,6 +2120,7 @@ public class DataSetOps {
             case "|setDepend0Cadence":
             case "|expandToFillGaps":
             case "|expandWaveform":
+            case "|cleanData":
                 return false;
             default:
                 return true;
