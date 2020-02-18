@@ -66,6 +66,8 @@ import org.das2.graph.Renderer;
 import org.das2.graph.SeriesRenderer;
 import org.das2.qds.QDataSet;
 import org.das2.qds.SemanticOps;
+import org.das2.qds.examples.Schemes;
+import org.das2.qds.ops.Ops;
 import org.das2.util.LoggerManager;
 import org.das2.util.filesystem.FileSystemUtil;
 
@@ -273,8 +275,13 @@ public class VerticalSpectrogramAverager implements DataRangeSelectionListener {
     public void dataRangeSelected(DataRangeSelectionEvent e) {
         QDataSet ds = e.getDataSet();
 
-        if (ds==null || ! SemanticOps.isTableDataSet(ds) ) {
+        if ( ds==null ) {
             return;
+        } else if ( Schemes.isXYZScatter(ds) ) {
+            logger.fine("gridding data to support mouse module");
+            ds= Ops.grid(ds);
+        } else if ( !SemanticOps.isTableDataSet(ds) ) {
+            logger.log(Level.WARNING, "dataset scheme is not supported: {0}", ds);
         }
 
         QDataSet xtys = (QDataSet)ds;

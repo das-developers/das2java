@@ -47,6 +47,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -72,6 +73,7 @@ import org.das2.qds.DataSetUtil;
 import org.das2.qds.IDataSet;
 import org.das2.qds.QDataSet;
 import org.das2.qds.SemanticOps;
+import org.das2.qds.examples.Schemes;
 import org.das2.qds.ops.Ops;
 import org.das2.qds.util.DataSetBuilder;
 import org.das2.util.LoggerManager;
@@ -343,10 +345,15 @@ public class HorizontalSpectrogramSlicer implements DataPointSelectionListener {
         xValue = e.getX();
 
         QDataSet ds = e.getDataSet();
-        if (ds==null || ! SemanticOps.isTableDataSet(ds) ) {
-            System.err.println("dataset scheme is not supported: "+ds );
+        if ( ds==null ) {
             return;
+        } else if ( Schemes.isXYZScatter(ds) ) {
+            logger.fine("gridding data to support mouse module");
+            ds= Ops.grid(ds);
+        } else if ( !SemanticOps.isTableDataSet(ds) ) {
+            logger.log(Level.WARNING, "dataset scheme is not supported: {0}", ds);
         }
+
         QDataSet tds = (QDataSet)ds;
 
         if ( ! showSlice( tds, xValue, yValue ) ) {

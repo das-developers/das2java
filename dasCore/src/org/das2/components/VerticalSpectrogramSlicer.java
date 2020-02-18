@@ -73,6 +73,7 @@ import org.das2.qds.DataSetOps;
 import org.das2.qds.DataSetUtil;
 import org.das2.qds.QDataSet;
 import org.das2.qds.SemanticOps;
+import org.das2.qds.examples.Schemes;
 import org.das2.qds.ops.Ops;
 import org.das2.util.LoggerManager;
 
@@ -341,8 +342,14 @@ public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
         logger.log(Level.FINER, "dataPointSelected {0} {1}", new Object[] { xValue, yValue } );
 
         QDataSet ds = e.getDataSet();
-        if (ds==null || ! SemanticOps.isTableDataSet(ds) )
+        if ( ds==null ) {
             return;
+        } else if ( Schemes.isXYZScatter(ds) ) {
+            logger.fine("gridding data to support mouse module");
+            ds= Ops.grid(ds);
+        } else if ( !SemanticOps.isTableDataSet(ds) ) {
+            logger.log(Level.WARNING, "dataset scheme is not supported: {0}", ds);
+        }
         
         QDataSet tds = (QDataSet)ds;
         
