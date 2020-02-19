@@ -159,6 +159,21 @@ public class SeriesRenderer extends Renderer {
     ErrorBarRenderElement errorElement = new ErrorBarRenderElement();
     PsymConnectorRenderElement psymConnectorElement = new PsymConnectorRenderElement();
     PsymRenderElement psymsElement = new PsymRenderElement();
+
+    @Override
+    public void setDataSet(QDataSet ds) {
+        if ( ds==null || ds.rank()>0 ) {
+            super.setDataSet(ds);
+        } else {
+            QDataSet xtags= getXTags(ds);
+            QDataSet d= Ops.bundle(xtags,ds);
+            QDataSet bds= (QDataSet) d.property(QDataSet.BUNDLE_0);
+            QDataSet j= Ops.join( null, d );
+            j= Ops.putProperty( j, QDataSet.BUNDLE_1, bds ); // See https://sourceforge.net/p/autoplot/bugs/2244/
+            super.setDataSet( j );
+        }
+    }
+    
     
     /**
      * if true and the dataset contains limits information (warning range, nominal range), show these ranges.
@@ -847,6 +862,8 @@ public class SeriesRenderer extends Renderer {
         @Override
         public synchronized void update(DasAxis xAxis, DasAxis yAxis, QDataSet dataSet, ProgressMonitor mon) {
             logger.log(Level.FINE, "enter connector update" );
+            
+            if ( dataSet.rank()==0 ) return;
             QDataSet xds= SemanticOps.xtagsDataSet( dataSet );
             if ( xds.rank()==2 && xds.property( QDataSet.BINS_1 )!=null ) {
                 xds= Ops.reduceMean(xds,1);
@@ -1646,7 +1663,7 @@ public class SeriesRenderer extends Renderer {
         
         Units yunits;
         
-        QDataSet xds = SemanticOps.xtagsDataSet(dataSet);
+        QDataSet xds = getXTags(dataSet);
         xaxisUnitsOkay = SemanticOps.getUnits(xds).isConvertibleTo(xAxis.getUnits() );
         if ( !SemanticOps.isTableDataSet(dataSet) ) {
             vds= ytagsDataSet(ds);
@@ -1860,7 +1877,7 @@ public class SeriesRenderer extends Renderer {
             }
 
             if ( !dataSetReduced ) {
-                if ( ( lastIndex_v - firstIndex_v < 2 ) && dataSet.length()>1 ) { //TODO: single point would be helpful for digitizing.
+                if ( ( lastIndex_v - firstIndex_v < 2 ) && dataSet.rank()>0 && dataSet.length()>1 ) { //TODO: single point would be helpful for digitizing.
                     if ( messageCount++==0) {
                         if ( lastIndex_v<2 ) {
                             if ( firstValidIndex==lastValidIndex ) {
@@ -1877,7 +1894,7 @@ public class SeriesRenderer extends Renderer {
                     }
                 }
             } else {
-                if ( ( lastIndex_v - firstIndex_v < 1 ) && dataSet.length()>1 ) { 
+                if ( ( lastIndex_v - firstIndex_v < 1 ) && dataSet.rank()>0 && dataSet.length()>1 ) { 
                     lparent.postMessage(this, "no data is visible", DasPlot.INFO, null, null);
                 }
             }
@@ -2010,7 +2027,7 @@ public class SeriesRenderer extends Renderer {
         QDataSet tds = null;
         QDataSet vds = null;
 
-        QDataSet xds = SemanticOps.xtagsDataSet(dataSet);
+        QDataSet xds = getXTags(dataSet);
 
         Units yunits;
         
@@ -2272,6 +2289,26 @@ public class SeriesRenderer extends Renderer {
         logger.log(Level.FINE, "done updatePlotImage ({0}ms)", renderTime );
         
         setUpdatesPointsPerMillisecond(dppms);
+    }
+
+    /**
+     * return the xtags or CONTEXT_0 for rank 0.
+     * @param dataSet
+     * @return 
+     */
+    private QDataSet getXTags(QDataSet dataSet) {
+        QDataSet xds;
+        if ( dataSet.rank()==0 ) {
+            xds= (QDataSet)dataSet.property(QDataSet.CONTEXT_0);
+            if ( xds==null ) {
+                xds= DataSetUtil.asDataSet(0);
+            } else if ( xds.rank()==1 ) { // take the first one.
+                xds= xds.slice(0);
+            }
+        } else {
+            xds= SemanticOps.xtagsDataSet(dataSet);
+        }
+        return xds;
     }
 
     /**
