@@ -7792,15 +7792,23 @@ public final class Ops {
                 }
                 
                 int len1= ( ( ds.length(0)-len ) / step ) + 1;
+                int len1D= ds.length(0) / step;
                 
-                mon.setTaskSize(ds.length()*len1); // assumes all are the same length.
+                mon.setTaskSize(ds.length()*len1D); // assumes all are the same length.
                 mon.started();
                 mon.setProgressMessage("performing fftPower");
                 
                 boolean isMono= dep0==null ? true : DataSetUtil.isMonotonic(dep0);
                 
+                QDataSet nextSlice= null;
                 for ( int i=0; i<ds.length(); i++ ) {
-                    QDataSet slicei= ds.slice(i); //TODO: for DDataSet, this copies the backing array.  This shouldn't happen in DDataSet.slice, but it does...
+                    QDataSet slicei;
+                    if ( nextSlice!=null ) {
+                        slicei= nextSlice;
+                        nextSlice= null;
+                    } else {
+                        slicei= ds.slice(i);
+                    } //TODO: for DDataSet, this copies the backing array.  This shouldn't happen in DDataSet.slice, but it does...
                     QDataSet dep0i= (QDataSet) slicei.property(QDataSet.DEPEND_0);
                     if ( dep0i!=null && dep0==null ) {
                         dep0b.putProperty(QDataSet.UNITS, dep0i.property(QDataSet.UNITS) );
@@ -7811,13 +7819,50 @@ public final class Ops {
                         if ( dep0i.property(QDataSet.VALID_MAX)!=null ) maxD= ((Number)dep0i.property(QDataSet.VALID_MAX)).doubleValue(); else maxD= Double.POSITIVE_INFINITY;
                     }
                     
-                    for ( int j=0; j<len1; j++ ) {
+                    for ( int j=0; j<len1D; j++ ) {
                         
-                        mon.setTaskProgress(i*len1+j);
+                        mon.setTaskProgress(i*len1D+j);
                         
                         int istart= j*step;
                         GeneralFFT fft = GeneralFFT.newDoubleFFT(len);
-                        QDataSet wave= slicei.trim( istart,istart+len );
+                        QDataSet wave;
+                        QDataSet offs;
+                        
+                        if ( istart+len <= slicei.length() ) {
+                            wave= slicei.trim( istart,istart+len );
+                            if ( dep1.rank()==1 ) {
+                                offs= dep1.trim( istart,istart+len );
+                            } else {
+                                offs= dep1.slice(i).trim( istart,istart+len );
+                            }
+                        } else {
+                            if ( i+1<ds.length() ) { // we can get this record.
+                                if ( nextSlice==null ) {
+                                    nextSlice= ds.slice(i+1);
+                                }
+                                //TODO: check timetag
+                                QDataSet wave2= nextSlice.trim( 0, istart+len-slicei.length() );
+                                wave= append( slicei.trim( istart, slicei.length() ), wave2 );
+                                QDataSet offs1, offs2;
+                                assert dep0!=null;
+                                if ( dep1.rank()==1 ) {
+                                    offs1= dep1.trim( istart, slicei.length() );
+                                    offs2= Ops.add( Ops.subtract( dep0.slice(i+1), dep0.slice(i) ), 
+                                            dep1.trim( 0, istart+len-slicei.length() ) );
+                                } else {
+                                    offs1= dep1.slice(i).trim( istart, slicei.length() );
+                                    offs2= Ops.add( Ops.subtract( dep0.slice(i+1), dep0.slice(i) ), 
+                                            dep1.slice(i+1).trim( 0, istart+len-slicei.length() ) );
+                                }
+                                offs= append( offs1, offs2 );
+                            } else {
+                                wave= null;
+                                offs= null;
+                            }
+                        }
+                        
+                        if ( wave==null || offs==null ) continue;
+                        
                         QDataSet wds= DataSetUtil.weightsDataSet(wave);
                         
                         boolean hasFill= false;
@@ -7829,13 +7874,9 @@ public final class Ops {
                         if ( hasFill ) continue;
                         
                         double switchCadenceCheck; // the cadence at the end of the interval.
-                        if ( dep1.rank()==1 ) {
-                            currentDeltaTime= dep1.value(istart+10) - dep1.value(istart);
-                            switchCadenceCheck=  dep1.value(istart+len-1) - dep1.value(istart+len-11);
-                        } else {
-                            currentDeltaTime= dep1.value(i,istart+10) - dep1.value(i,istart);
-                            switchCadenceCheck=  dep1.value(i,istart+len-1) - dep1.value(i,istart+len-11);
-                        }
+                        currentDeltaTime= offs.value(10) - offs.value(0);
+                        switchCadenceCheck=  dep1.value(len-1) - dep1.value(len-11);
+
                         if ( Math.abs( switchCadenceCheck-currentDeltaTime ) / currentDeltaTime > 0.01 ) {
                             continue;
                         }
@@ -7887,7 +7928,7 @@ public final class Ops {
                         
                         double d0=0;
                         if ( dep0!=null ) {
-                            d0= dep0.value(i) + uc.convert( dep1.value( j*step + len/2 )  );
+                            d0= dep0.value(i) + uc.convert( offs.value( len/2 )  );
                         } else if ( dep0i!=null ) {
                             d0= dep0i.value(j*step+len/2);
                         } else {
