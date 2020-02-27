@@ -117,13 +117,17 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         super.setControl(s);
         DasColorBar cb= getColorBar();
         if ( cb!=null ) {
-            String t= getControl(CONTROL_KEY_COLOR_TABLE, cb.getType().toString() );
-            this.getColorBar().setType( DasColorBar.Type.parse( t ) );
-            t= getControl(CONTROL_KEY_REBIN, getRebinner().toString() );
-            try {
-                this.setRebinner( SpectrogramRenderer.RebinnerEnum.valueOf(t) );
-            } catch ( IllegalArgumentException ex ) {
-                logger.log(Level.INFO, "unable to find rebin for string \"{0}\"", t);
+            String t= getControl(CONTROL_KEY_COLOR_TABLE, null );
+            if ( t!=null ) {
+                this.getColorBar().setType( DasColorBar.Type.parse( t ) );
+            }
+            t= getControl(CONTROL_KEY_REBIN, null );
+            if ( t!=null ) {
+                try {
+                    this.setRebinner( SpectrogramRenderer.RebinnerEnum.valueOf(t) );
+                } catch ( IllegalArgumentException ex ) {
+                    logger.log(Level.INFO, "unable to find rebin for string \"{0}\"", t);
+                }
             }
         }
         update();

@@ -535,7 +535,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
     /**
      * Get the control.  This provides an easy way for renderers to have controls in a compact string.
      * @param key the key name.
-     * @param deft the default value.
+     * @param deft the default value (or null)
      * @return the string value of the control.
      * @see #getDoubleControl(java.lang.String, double) 
      * @see #getBooleanControl(java.lang.String, boolean) 
