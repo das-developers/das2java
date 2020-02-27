@@ -120,10 +120,10 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
             String t= getControl(CONTROL_KEY_COLOR_TABLE, cb.getType().toString() );
             this.getColorBar().setType( DasColorBar.Type.parse( t ) );
             t= getControl(CONTROL_KEY_REBIN, getRebinner().toString() );
-            if ( t.equals("triScat") ) {
-                this.setRebinner( SpectrogramRenderer.RebinnerEnum.triScat );
-            } else if ( t.equals("nnTriScat") ) {
-                this.setRebinner( SpectrogramRenderer.RebinnerEnum.nnTriScat );
+            try {
+                this.setRebinner( SpectrogramRenderer.RebinnerEnum.valueOf(t) );
+            } catch ( IllegalArgumentException ex ) {
+                logger.log(Level.INFO, "unable to find rebin for string \"{0}\"", t);
             }
         }
         update();
