@@ -7623,7 +7623,8 @@ public final class Ops {
      *
      * No normalization is done with non-unity windows.  TODO: This probably should be done.  
      * I verified this is not done, see 
-     * sftp://jbf@jfaden.net/home/jbf/ct/autoplot/script/bugs/1317/testWindowFunctionNormalization.jy
+     * https://github.com/autoplot/dev/bugs/sf/1317/testWindowFunctionNormalization.jy
+     * TODO: This should be rechecked.  I'm pretty sure it's done.
      *
      * @param ds rank 2 dataset ds(N,M) with M&gt;len, rank 3 with the same cadence, or rank 1.
      * @param window window to apply to the data before performing FFT (Hann,Unity,etc.)
@@ -7877,9 +7878,20 @@ public final class Ops {
                         currentDeltaTime= offs.value(10) - offs.value(0);
                         switchCadenceCheck=  dep1.value(len-1) - dep1.value(len-11);
 
+                        // does the cadence change?
                         if ( Math.abs( switchCadenceCheck-currentDeltaTime ) / currentDeltaTime > 0.01 ) {
+                            logger.finer("cadence changes");
                             continue;
                         }
+
+                        // is there a gap?
+                        double avgCadence= ( offs.value(len-1) - offs.value(0) ) / ( len-1 );
+                        if ( Math.abs( switchCadenceCheck/10-avgCadence ) / currentDeltaTime > 0.01 ) {
+                            logger.finer("gap detected");
+                            continue;
+                        }
+                        currentDeltaTime= offs.value(10) - offs.value(0);
+                        
                         
                         if ( Math.abs( lastDeltaTime-currentDeltaTime ) / currentDeltaTime > 0.01 ) {
                             QDataSet powxtags1= FFTUtil.getFrequencyDomainTagsForPower(dep1.trim(istart,istart+len));
