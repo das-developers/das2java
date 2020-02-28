@@ -52,6 +52,11 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
     int reclen;
     
     /**
+     * the number of bytes between records.
+     */
+    int recStride;
+    
+    /**
      * the byte offset into each record
      */
     int recoffset;
@@ -363,6 +368,7 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         this.back= back;
         this.rank = rank;
         this.reclen= reclen;
+        this.recStride= this.reclen;
         this.recoffset= recoffs;
         this.len0 = len0;
         this.len1 = len1;
@@ -382,8 +388,7 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
     /**
      * allow clients to override the cadence of data.  By default, this is
      * just the number of bytes in each field.  
-     * Warning: this was never used in production!
-     * @param bytes number of bytes between fields.
+     * @param bytes number of bytes between field beginnings.
      */
     public void setFieldStride( int bytes ) {
         if ( this.isImmutable() ) {
@@ -391,7 +396,58 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         }
         this.fieldStride= bytes;
     }
+    
+    /**
+     * return the number of bytes to advance for each field.
+     * @return the number of bytes to advance for each field.
+     */
+    public int getFieldStride() {
+        return this.fieldStride;
+    }
+    
+    /**
+     * allow clients to override the cadece of the records.  By default, this
+     * is the number of bytes in each record.
+     * @param bytes number of bytes between record beginnings.
+     */
+    public void setRecordStride( int bytes ) {
+        if ( this.isImmutable() ) {
+            throw new IllegalArgumentException("dataset is immutable");
+        }
+        this.recStride= bytes;
+    }
+    
+    /**
+     * return the number of bytes to advance for each record.
+     * @return the number of bytes to advance for each record.
+     */
+    public int getRecordStride() {
+        return this.recStride;
+    }
+    
+    /**
+     * reset the number of records.
+     * @param len0 the new number of records.
+     */
+    public void setLength(int len0) {
+        if ( this.isImmutable() ) {
+            throw new IllegalArgumentException("dataset is immutable");
+        }
+        this.len0= len0;
+    }
 
+    /**
+     * reset the length (in fields) of each record of the rank 2 dataset.
+     * @param len1 the length of each record of the rank 2 dataset.
+     * @see Ops#decimateBufferDataSet(org.das2.qds.buffer.BufferDataSet, int, int) 
+     */
+    public void setLength1(int len1) {
+        if ( this.isImmutable() ) {
+            throw new IllegalArgumentException("dataset is immutable");
+        }
+        this.len1= len1;
+    }
+    
     /**
      * constructor units are in bytes.
      */
@@ -899,6 +955,9 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         result.properties.putAll( joinProperties( ths, ds ) );
         result.properties.put( QDataSet.UNITS, u1 ); // since we resolve units when they change (bug 3469219)
 
+        result.fieldStride= ths.fieldStride;
+        result.recStride= ths.fieldStride;
+        
         return result;
     }
 
@@ -1238,7 +1297,7 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         if (RANGE_CHECK) {
             rangeCheck(i0, 0, 0, 0 );
         }
-        return recoffset + reclen * i0;
+        return recoffset + recStride * i0;
     }
         
     /**
@@ -1252,7 +1311,7 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         if (RANGE_CHECK) {
             rangeCheck(i0, i1, 0, 0 );
         }        
-        return  recoffset + reclen * i0 
+        return recoffset + recStride * i0 
                 + fieldStride * i1;
     }
 
@@ -1268,7 +1327,7 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         if (RANGE_CHECK) {
             rangeCheck(i0, i1, i2, 0);
         }
-        return recoffset + reclen * i0 
+        return recoffset + recStride * i0 
                 + fieldStride * len2 * i1 
                 + fieldStride * i2;
     }
@@ -1286,7 +1345,7 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         if (RANGE_CHECK) {
             rangeCheck(i0, i1, i2, i3);
         }
-        return recoffset + reclen * i0 
+        return recoffset + recStride * i0 
                 + fieldStride * len2 * len3 * i1  
                 + fieldStride * len3 * i2 *
                 + fieldStride * i3;
@@ -1319,6 +1378,8 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         }
         BufferDataSet result= makeDataSet( rank, reclen, offset, ien-ist, len1, len2, len3, back, type );
         DataSetUtil.putProperties( DataSetUtil.trimProperties( this, ist, ien ), result );
+        result.fieldStride= this.fieldStride;
+        result.recStride= this.recStride;
         return result;
     }
 
@@ -1328,6 +1389,7 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         Map<String,Object> props= DataSetOps.sliceProperties0(i,DataSetUtil.getProperties(this));
         props= DataSetUtil.sliceProperties( this, i, props );
         DataSetUtil.putProperties( props, result );
+        result.fieldStride= this.fieldStride;
         return result;
     }
     
@@ -1464,6 +1526,8 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         newBuf.flip();
         BufferDataSet result= makeDataSet( this.rank, recLenBytes, 0, len0, len1, len2, len3, newBuf, type );
         result.properties.putAll( Ops.copyProperties(this) );
+        result.fieldStride= this.fieldStride;
+        result.recStride= this.recStride;
         return result;
     }
 }
