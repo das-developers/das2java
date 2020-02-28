@@ -59,7 +59,7 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
     /**
      * the number of bytes of the field in each record
      */
-    int fieldLen;
+    private int fieldLen;
     
     /**
      * the field type
@@ -1232,7 +1232,8 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         if (RANGE_CHECK) {
             rangeCheck(i0, i1, 0, 0 );
         }        
-        return  recoffset + reclen * i0 + i1 * fieldLen;
+        return  recoffset + reclen * i0 
+                + fieldLen * i1;
     }
 
     /**
@@ -1247,7 +1248,9 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         if (RANGE_CHECK) {
             rangeCheck(i0, i1, i2, 0);
         }
-        return recoffset + reclen * i0 + i1 * fieldLen * len2  + i2 * fieldLen ;
+        return recoffset + reclen * i0 
+                + fieldLen * len2 * i1 
+                + fieldLen * i2;
     }
 
     /**
@@ -1263,7 +1266,10 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         if (RANGE_CHECK) {
             rangeCheck(i0, i1, i2, i3);
         }
-        return recoffset + reclen * i0 + i1 * fieldLen * len2 * len3  + i2 * fieldLen * len3 + i3 * fieldLen ;
+        return recoffset + reclen * i0 
+                + fieldLen * len2 * len3 * i1  
+                + fieldLen * len3 * i2 *
+                + fieldLen * i3;
     }
 
     @Override
