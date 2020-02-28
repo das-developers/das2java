@@ -646,6 +646,8 @@ public class DataSetOps {
         ArrayDataSet cds= ArrayDataSet.create( getComponentType(ds), qube );
         
         Map<String,Object> props= org.das2.qds.DataSetUtil.getDimensionProperties(ds,null);
+        props.remove( QDataSet.CADENCE );
+        
         org.das2.qds.DataSetUtil.putProperties(props, cds);
         
         if (deps) {
