@@ -1387,8 +1387,43 @@ public final class Ops {
     }
 
     /**
+     * BufferDataSets allow us to specify a stride so that subsampling can 
+     * be done in constant time.
+     * @param ds
+     * @param m the decimation factor for the zeroth index, e.g. 2 is every other measurement.
+     * @param n the decimation factor for the first index, e.g. 2 is every other measurement.
+     * @return 
+     */
+    private static QDataSet decimateBufferDataSet( BufferDataSet ds, int m, int n ) {
+        BufferDataSet result= BufferDataSet.copy(ds);
+        
+        QDataSet dep0= (QDataSet)ds.property(QDataSet.DEPEND_0);
+        if ( dep0!=null && m>1 ) {
+            dep0= decimate(dep0,m);
+        }        
+        QDataSet dep1= (QDataSet)ds.property(QDataSet.DEPEND_1);
+        if ( dep1!=null ) {
+            if ( dep1.rank()==1 ) {
+                dep1= decimate(dep1,n);
+            } else {
+                dep1= decimate(dep1,m,n);
+            }
+        }
+        result.setRecordStride( result.getRecordStride()*m );
+        result.setLength( result.length()/m );
+        result.setFieldStride( result.getFieldStride()*n );
+        result.setLength1( result.length(0)/n );
+        
+        if ( dep0!=null ) result.putProperty( QDataSet.DEPEND_0, dep0 );
+        if ( dep1!=null ) result.putProperty( QDataSet.DEPEND_1, dep1 );
+            
+        DataSetUtil.putProperties( DataSetUtil.getDimensionProperties( ds, null ), result );
+        return result;
+    }
+    
+    /**
      * reduce the size of the data by keeping every nth measurement (subsample). 
-     * @param ds rank 1 or more dataset.
+     * @param ds rank 2 or more dataset.
      * @param m the decimation factor for the zeroth index, e.g. 2 is every other measurement.
      * @param n the decimation factor for the first index, e.g. 2 is every other measurement.
      * @return new dataset which is ds.length()/m by ds.length(0)/n.
@@ -1397,6 +1432,9 @@ public final class Ops {
     public static QDataSet decimate( QDataSet ds, int m, int n ) {
         if ( Schemes.isIrregularJoin(ds) ) {
             throw new IllegalArgumentException("not supported");
+        }
+        if ( ds instanceof BufferDataSet && ds.rank()==2 ) {
+            return decimateBufferDataSet( (BufferDataSet)ds, m, n );
         }
         int newlen0= ds.length()/m;
         int max0= newlen0*m;
@@ -1417,7 +1455,7 @@ public final class Ops {
         result.putProperty(QDataSet.RENDER_TYPE,ds.property(QDataSet.RENDER_TYPE));
         
         return result;
-    }    
+    }
     
     /**
      * this is introduced to mimic the in-line function which reduces the dimensionality by averaging over the zeroth dimension.
