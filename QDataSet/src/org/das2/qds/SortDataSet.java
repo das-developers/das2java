@@ -136,7 +136,7 @@ public class SortDataSet extends AbstractDataSet {
         properties.put( QDataSet.CACHE_TAG, null ); // note this null needs to hide the CACHE_TAG in the source.
         
         DataSetUtil.putProperties( DataSetUtil.getDimensionProperties(source,null), this );
-
+        properties.put( QDataSet.CADENCE, null );  // cadence is no longer correct, as with decimate.
     }
 
     public int rank() {
