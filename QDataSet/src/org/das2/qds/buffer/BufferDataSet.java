@@ -62,6 +62,12 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
     private int fieldLen;
     
     /**
+     * the number of bytes between the fields in each record (for rank 2 and 
+     * higher data).
+     */
+    private int fieldStride;
+        
+    /**
      * the field type
      */
     Object type;
@@ -364,12 +370,26 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         this.len3 = len3;
         this.type= type;
         this.fieldLen= byteCount(type);
+        this.fieldStride= this.fieldLen;
         if ( rank>1 ) {
             putProperty( QDataSet.QUBE, Boolean.TRUE );
         }
         if ( reclen>0 && fieldLen>reclen ) { // negative reclen supported 9-bit floats.
             logger.warning( String.format( "field length (%d) is greater than record length (%d) for len0=%d.", (int)fieldLen, (int)reclen, (int)len0 ) );
         }
+    }
+    
+    /**
+     * allow clients to override the cadence of data.  By default, this is
+     * just the number of bytes in each field.  
+     * Warning: this was never used in production!
+     * @param bytes number of bytes between fields.
+     */
+    public void setFieldStride( int bytes ) {
+        if ( this.isImmutable() ) {
+            throw new IllegalArgumentException("dataset is immutable");
+        }
+        this.fieldStride= bytes;
     }
 
     /**
@@ -1233,7 +1253,7 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
             rangeCheck(i0, i1, 0, 0 );
         }        
         return  recoffset + reclen * i0 
-                + fieldLen * i1;
+                + fieldStride * i1;
     }
 
     /**
@@ -1249,8 +1269,8 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
             rangeCheck(i0, i1, i2, 0);
         }
         return recoffset + reclen * i0 
-                + fieldLen * len2 * i1 
-                + fieldLen * i2;
+                + fieldStride * len2 * i1 
+                + fieldStride * i2;
     }
 
     /**
@@ -1267,9 +1287,9 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
             rangeCheck(i0, i1, i2, i3);
         }
         return recoffset + reclen * i0 
-                + fieldLen * len2 * len3 * i1  
-                + fieldLen * len3 * i2 *
-                + fieldLen * i3;
+                + fieldStride * len2 * len3 * i1  
+                + fieldStride * len3 * i2 *
+                + fieldStride * i3;
     }
 
     @Override
