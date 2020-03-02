@@ -1966,6 +1966,7 @@ public class DasPlot extends DasCanvasComponent {
         Painter oldBottomDecorator = this.bottomDecorator;
         this.bottomDecorator = bottomDecorator;
         firePropertyChange(PROP_BOTTOMDECORATOR, oldBottomDecorator, bottomDecorator);
+        invalidateCacheImage();
         repaint();
     }    
     
@@ -1987,6 +1988,7 @@ public class DasPlot extends DasCanvasComponent {
         Painter oldTopDecorator = this.topDecorator;
         this.topDecorator = topDecorator;
         firePropertyChange(PROP_TOPDECORATOR, oldTopDecorator, topDecorator);
+        invalidateCacheImage();
         repaint();
     }    
     
