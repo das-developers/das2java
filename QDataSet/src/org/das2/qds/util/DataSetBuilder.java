@@ -117,6 +117,10 @@ public class DataSetBuilder {
      * @param dim2 fixed size of the third index.
      */
     public DataSetBuilder( int rank, int guessRecCount, int dim1, int dim2 ) {
+        if ( guessRecCount<4 ) {
+            logger.fine("guessRecCount cannot be less than four.");
+            guessRecCount=4;
+        }
         this.rank= rank;
         this.recCount= guessRecCount;
         this.dim1= dim1;
@@ -130,15 +134,19 @@ public class DataSetBuilder {
     }
 
     /**
-     * Create a new builder for a rank 3 dataset.
+     * Create a new builder for a rank 4 dataset.
      * guessRecCount is the guess of dim0 size.  Bad guesses will simply result in an extra array copy.
-     * @param rank must be 3.
+     * @param rank must be 4.
      * @param guessRecCount initial allocation for the first dimension.
      * @param dim1 fixed size of the second index.
      * @param dim2 fixed size of the third index.
      * @param dim3 fixed size of the fourth index.
      */
     public DataSetBuilder( int rank, int guessRecCount, int dim1, int dim2, int dim3 ) {
+        if ( guessRecCount<4 ) {
+            logger.fine("guessRecCount cannot be less than four.");
+            guessRecCount=4;
+        }
         this.rank= rank;
         this.recCount= guessRecCount;
         this.dim1= dim1;
@@ -147,7 +155,7 @@ public class DataSetBuilder {
         this.recElements= dim1 * dim2 * dim3;
         newCurrent();
         index=0;
-        properties= new HashMap<String,Object>();
+        properties= new HashMap<>();
     }
     
     /**
