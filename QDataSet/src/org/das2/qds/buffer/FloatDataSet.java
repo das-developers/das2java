@@ -13,24 +13,29 @@ public class FloatDataSet extends BufferDataSet implements WritableDataSet {
         super( rank, reclen, recoffs, len0, len1, len2, len3, FLOAT, back );
     }
 
+    @Override
     public double value() {
-        return back.getFloat(offset());
+        return this.back.getFloat(offset());
     }
 
+    @Override
     public double value(int i0) {
-        return back.getFloat(offset(i0));
+        return this.back.getFloat(offset(i0));
     }
 
+    @Override
     public double value(int i0, int i1) {
-        return back.getFloat(offset(i0, i1));
+        return this.back.getFloat(offset(i0, i1));
     }
 
+    @Override
     public double value(int i0, int i1, int i2) {
-        return back.getFloat(offset(i0, i1, i2));
+        return this.back.getFloat(offset(i0, i1, i2));
     }
     
+    @Override
     public double value(int i0, int i1, int i2, int i3) {
-        return back.getFloat(offset(i0, i1, i2,i3));
+        return this.back.getFloat(offset(i0, i1, i2,i3));
     }
 
     /**
@@ -47,29 +52,33 @@ public class FloatDataSet extends BufferDataSet implements WritableDataSet {
             }
         } 
         super.putProperty(name, value);
-        //if ( name.equals(QDataSet.FILL_VALUE) ) checkFill(); // because of rounding errors
     }
     
+    @Override
     public void putValue(double d) {
         ensureWritable();
         back.putFloat( offset(), (float)d );
     }
 
+    @Override
     public void putValue(int i0, double d) {
         ensureWritable();
         back.putFloat( offset(i0), (float)d );
     }
 
+    @Override
     public void putValue(int i0, int i1, double d) {
         ensureWritable();
         back.putFloat( offset(i0, i1), (float)d );
     }
 
+    @Override
     public void putValue(int i0, int i1, int i2, double d) {
         ensureWritable();
         back.putFloat( offset(i0, i1, i2), (float)d );
     }
 
+    @Override
     public void putValue(int i0, int i1, int i2, int i3, double d) {
         ensureWritable();
         back.putFloat( offset(i0, i1, i2, i3), (float)d );
