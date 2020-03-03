@@ -1347,7 +1347,7 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         }
         return recoffset + recStride * i0 
                 + fieldStride * len2 * len3 * i1  
-                + fieldStride * len3 * i2 *
+                + fieldStride * len3 * i2 
                 + fieldStride * i3;
     }
 
