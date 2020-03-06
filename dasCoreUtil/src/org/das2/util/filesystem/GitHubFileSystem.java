@@ -49,7 +49,7 @@ public class GitHubFileSystem extends HttpFileSystem {
     
     private String branch= "master";
     
-    private static int baseOffset= 0;
+    private int baseOffset= 0;
     
     private class GitHubHttpProtocol implements WebProtocol {
 
