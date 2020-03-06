@@ -47,7 +47,7 @@ public class GitHubFileSystem extends HttpFileSystem {
 
     private static final Logger logger= LoggerManager.getLogger("das2.filesystem.wfs.githubfs");
     
-    private static final String branch= "master";
+    private String branch= "master";
     
     private static int baseOffset= 0;
     
@@ -95,11 +95,13 @@ public class GitHubFileSystem extends HttpFileSystem {
      * in the local folder.
      * @param root the root of the filesystem
      * @param localRoot the local root where files are downloaded.
+     * @param branch the branch, typically "master".
      * @param baseOffset
      */
-    protected GitHubFileSystem(URI root, File localRoot, int baseOffset) {
+    protected GitHubFileSystem(URI root, File localRoot, String branch, int baseOffset) {
         super(root, localRoot);
         this.baseOffset= baseOffset;
+        this.branch= branch;
         this.protocol= new GitHubHttpProtocol();
     }
     
@@ -121,35 +123,43 @@ public class GitHubFileSystem extends HttpFileSystem {
     public static GitHubFileSystem createGitHubFileSystem( URI root, int baseOffset ) {
         File local;
         
+        /**
+         * code this as if well support branches, but this won't be done until 
+         * after the next production release.
+         */
+        String branch= "master";
+        
         String suri= root.toString();
-        Pattern fsp1= Pattern.compile( "(https?://[a-z.]*/)(.*)tree/"+branch+"/(.*)" );
+        Pattern fsp1= Pattern.compile( "(https?://[a-z.]*/)(.*)tree/("+branch+")/(.*)" );
         Matcher m1= fsp1.matcher( suri );
         if ( m1.matches() ) {
             String project= m1.group(2);
             if ( project.endsWith("/-/") ) { // strange bug where U. Iowa server would add extra "-/"
                 project= project.substring(0,project.length()-2);
             }
-            suri= m1.group(1)+project+m1.group(3);
+            suri= m1.group(1)+project+m1.group(4);
             try {
                 root= new URI(suri);
             } catch (URISyntaxException ex) {
                 throw new RuntimeException(ex);
             }
+            branch= m1.group(3);
         }
         
-        Pattern fsp2= Pattern.compile( "(https?://[a-z.]*/)(.*)blob/"+branch+"/(.*)" );
+        Pattern fsp2= Pattern.compile( "(https?://[a-z.]*/)(.*)blob/("+branch+")/(.*)" );
         Matcher m2= fsp2.matcher( suri );
         if ( m2.matches() ) {
             String project= m2.group(2);
             if ( project.endsWith("/-/") ) { // strange bug where U. Iowa server would add extra "-/"
                 project= project.substring(0,project.length()-2);
             }
-            suri= m2.group(1)+project+m2.group(3);
+            suri= m2.group(1)+project+m2.group(4);
             try {
                 root= new URI(suri);
             } catch (URISyntaxException ex) {
                 throw new RuntimeException(ex);
             }
+            branch= m2.group(3);
         }
         
         if (FileSystemSettings.hasAllPermission()) {
@@ -160,7 +170,7 @@ public class GitHubFileSystem extends HttpFileSystem {
             logger.log(Level.FINER, "initializing httpfs {0} in applet mode", root);
         }
 
-        return new GitHubFileSystem(root, local, baseOffset );
+        return new GitHubFileSystem(root, local, branch, baseOffset );
         
     }
     
@@ -295,7 +305,7 @@ public class GitHubFileSystem extends HttpFileSystem {
      * @return
      * @throws MalformedURLException 
      */
-    public static URL gitHubMapDir( URI root, String filename ) throws MalformedURLException {
+    public URL gitHubMapDir( URI root, String filename ) throws MalformedURLException {
         filename= toCanonicalFilename( filename );            
         // png image "https://github.com/autoplot/app/raw/master/Autoplot/src/resources/badge_ok.png"
         String[] path= root.getPath().split("/",-2);
