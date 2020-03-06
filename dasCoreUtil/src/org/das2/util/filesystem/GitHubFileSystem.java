@@ -31,15 +31,21 @@ import org.das2.util.monitor.CancelledOperationException;
 import org.das2.util.monitor.ProgressMonitor;
 
 /**
- * GitHubFileSystem allows GitHub directories to be mounted directly, even though
- * it is not a conventional filesystem with files residing in folders.  For example,
- * the file resource README.md found in https://github.com/autoplot/scripts/ is 
- * downloaded from https://github.com/autoplot/scripts/blob/master/README.md,
+ * GitHubFileSystem allows GitHub directories to be mounted directly, even 
+ * though it is not a conventional filesystem with files residing in folders.  
+ * For example, the file resource README.md found in 
+ * https://github.com/autoplot/scripts/ is downloaded from 
+ * https://github.com/autoplot/scripts/blob/master/README.md,
  * with "blob/master/" added to the URL.  Likewise directory "demos" is found
  * under "tree/master/".
  * 
- * GitHub also introduced a new problem, where dates cannot be used for evaluating
- * file freshness.  ETags are now supported in WebFileSystem to provide this functionality.
+ * GitHub also introduced a new problem, where dates cannot be used for 
+ * evaluating file freshness.  ETags are now supported in WebFileSystem to 
+ * provide this functionality.
+ * 
+ * Note, there's a strange interaction with Java and GitHub.com, where Java's
+ * caching prevents updates from appearing automatically.  See
+ * https://sourceforge.net/p/autoplot/bugs/2203/ .
  * 
  * @author jbf
  */
