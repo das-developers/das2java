@@ -136,7 +136,7 @@ public class GitHubFileSystem extends HttpFileSystem {
         String branch= "master";
         
         String suri= root.toString();
-        Pattern fsp1= Pattern.compile( "(https?://[a-z.]*/)(.*)tree/("+branch+")/(.*)" );
+        Pattern fsp1= Pattern.compile( "(https?://[a-z.]*/)(.*)tree/(.*?)/(.*)" );
         Matcher m1= fsp1.matcher( suri );
         if ( m1.matches() ) {
             String project= m1.group(2);
@@ -152,7 +152,7 @@ public class GitHubFileSystem extends HttpFileSystem {
             branch= m1.group(3);
         }
         
-        Pattern fsp2= Pattern.compile( "(https?://[a-z.]*/)(.*)blob/("+branch+")/(.*)" );
+        Pattern fsp2= Pattern.compile( "(https?://[a-z.]*/)(.*)blob/(.*?)/(.*)" );
         Matcher m2= fsp2.matcher( suri );
         if ( m2.matches() ) {
             String project= m2.group(2);
@@ -166,6 +166,10 @@ public class GitHubFileSystem extends HttpFileSystem {
                 throw new RuntimeException(ex);
             }
             branch= m2.group(3);
+        }
+        
+        if ( !branch.equals("master") ) {
+            throw new IllegalArgumentException("branch must be master (for now)");
         }
         
         if (FileSystemSettings.hasAllPermission()) {
