@@ -270,6 +270,11 @@ public class GitHubFileSystem extends HttpFileSystem {
         // png image "https://github.com/autoplot/app/raw/master/Autoplot/src/resources/badge_ok.png"
         String[] path= root.getPath().split("/",-2);
         String spath= path[0] + '/' + path[1] + '/' + path[2] ;
+        
+        for ( int i=0; i<baseOffset; i++ ) {
+            spath= spath + "/" + path[i+3];
+        }
+        
         int base;
         if ( path[3+baseOffset].equals(branch) ) {
             base= 4;
