@@ -55,6 +55,7 @@ public class GitHubFileSystem extends HttpFileSystem {
     
     private String branch= "master";
     
+    // mission statement needed.  I believe this is the offset to the first folder/file name.
     private int baseOffset= 0;
     
     private class GitHubHttpProtocol implements WebProtocol {
@@ -97,12 +98,14 @@ public class GitHubFileSystem extends HttpFileSystem {
         
     }
     /** 
-     * Create a new GitHubFileSystem mirroring the root, a URL pointing to "http" or "https", 
-     * in the local folder.
+     * Create a new GitHubFileSystem mirroring the root, a URL pointing to 
+     * "http" or "https", in the local folder.  The baseOffset is 0 for 
+     * https://github.com/autoplot/dev, because github.com is the GitLabs 
+     * instance.  The baseOffset is 1 for https://jfaden.net/git.
      * @param root the root of the filesystem
      * @param localRoot the local root where files are downloaded.
      * @param branch the branch, typically "master".
-     * @param baseOffset
+     * @param baseOffset index of the first folder of the GitLabs server.
      */
     protected GitHubFileSystem(URI root, File localRoot, String branch, int baseOffset) {
         super(root, localRoot);
@@ -136,41 +139,25 @@ public class GitHubFileSystem extends HttpFileSystem {
         String branch= "master";
         
         String suri= root.toString();
-        Pattern fsp1= Pattern.compile( "(https?://[a-z.]*/)(.*)tree/(.*?)/(.*)" );
+        Pattern fsp1= Pattern.compile( "(https?://[a-z.]*/)(.*)(tree|blob|raw)/(.*?)/(.*)" );
         Matcher m1= fsp1.matcher( suri );
         if ( m1.matches() ) {
             String project= m1.group(2);
             if ( project.endsWith("/-/") ) { // strange bug where U. Iowa server would add extra "-/"
                 project= project.substring(0,project.length()-2);
             }
-            suri= m1.group(1)+project+m1.group(4);
+            suri= m1.group(1)+project+m1.group(4)+"/" + m1.group(5);
             try {
                 root= new URI(suri);
             } catch (URISyntaxException ex) {
                 throw new RuntimeException(ex);
             }
-            branch= m1.group(3);
+            branch= m1.group(4);
         }
         
-        Pattern fsp2= Pattern.compile( "(https?://[a-z.]*/)(.*)blob/(.*?)/(.*)" );
-        Matcher m2= fsp2.matcher( suri );
-        if ( m2.matches() ) {
-            String project= m2.group(2);
-            if ( project.endsWith("/-/") ) { // strange bug where U. Iowa server would add extra "-/"
-                project= project.substring(0,project.length()-2);
-            }
-            suri= m2.group(1)+project+m2.group(4);
-            try {
-                root= new URI(suri);
-            } catch (URISyntaxException ex) {
-                throw new RuntimeException(ex);
-            }
-            branch= m2.group(3);
-        }
-        
-        if ( !branch.equals("master") ) {
-            throw new IllegalArgumentException("branch must be master (for now)");
-        }
+        //if ( !branch.equals("master") ) {
+        //    throw new IllegalArgumentException("branch must be master (for now)");
+        //}
         
         if (FileSystemSettings.hasAllPermission()) {
             local = localRoot(root);
@@ -283,25 +270,29 @@ public class GitHubFileSystem extends HttpFileSystem {
         // png image "https://github.com/autoplot/app/raw/master/Autoplot/src/resources/badge_ok.png"
         String[] path= root.getPath().split("/",-2);
         String spath= path[0] + '/' + path[1] + '/' + path[2] ;
-        for ( int i=3; i<3+baseOffset; i++ ) {
-            spath+= "/" + path[i];
+        int base;
+        if ( path[3+baseOffset].equals(branch) ) {
+            base= 4;
+        } else {
+            base= 3;
         }
+        
         if ( spath.startsWith("/") ) spath=spath.substring(1);
         
-        if ( path[3+baseOffset].equals("blob") ) {
-            String n= root.getScheme() + "://" + root.getHost() + '/' + spath + "/raw/" + strjoin( path, "/", 4+baseOffset, -1 ) + filename;
+        if ( path[ base+baseOffset].equals("blob") ) {
+            String n= root.getScheme() + "://" + root.getHost() + '/' + spath + "/raw/" + strjoin( path, "/", base + 1 + baseOffset, -1 ) + filename;
             URL url= new URL( n );
             return url;
         } else {
             if ( root.getHost().equals("github.com") && filename.endsWith(".vap" ) ) { // This is an experiment
-                String n= root.getScheme() + "://raw.githubusercontent.com" + '/' + spath + "/"+branch+"/" + strjoin( path, "/", 3+baseOffset, -1 ) + filename;
+                String n= root.getScheme() + "://raw.githubusercontent.com" + '/' + spath + "/"+branch+"/" + strjoin( path, "/", base+baseOffset, -1 ) + filename;
                 if ( n.indexOf("//",8)>-1 ) {
                     n= n.substring(0,8) + n.substring(8).replaceAll("//", "/");
                 }
                 URL url= new URL( n );
                 return url;                
             } else {
-                String n= root.getScheme() + "://" + root.getHost() + '/' + spath + "/raw/"+branch+"/" + strjoin( path, "/", 3+baseOffset, -1 ) + filename;
+                String n= root.getScheme() + "://" + root.getHost() + '/' + spath + "/raw/"+branch+"/" + strjoin( path, "/", base+baseOffset, -1 ) + filename;
                 URL url= new URL( n );
                 return url;
             }
@@ -368,6 +359,11 @@ public class GitHubFileSystem extends HttpFileSystem {
     
     @Override
     protected Map<String,String> downloadFile(String filename, File targetFile, File partFile, ProgressMonitor monitor) throws IOException {
+
+        if ( branch.equals("master") ) {
+            System.err.println("here stop");
+        }
+        
         logger.log(Level.FINE, "downloadFile({0})", filename);
         Map<String,String> result;
         
