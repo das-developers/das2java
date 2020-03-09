@@ -13365,7 +13365,7 @@ public final class Ops {
      * @return rank 2 dataset
      */
     public static QDataSet transpose(QDataSet ds) {
-        return DDataSet.copy(new TransposeRank2DataSet(ds));
+        return new TransposeRank2DataSet(ds);
     }
 
     public static QDataSet transpose( Object ds ) {
