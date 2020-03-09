@@ -305,12 +305,16 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
      * @param rank the rank (number of indeces) of the data.
      * @param reclen  length in bytes of each record
      * @param recoffs  byte offset of each record
-     * @param qube integer array of the number of elements in each index.  If rank is less than the number of elements, then ignore extra trailing elements.
-     * @param buf  ByteBuffer containing the data, which should be at least recoffs + reclen * len0 bytes long.
+     * @param qube integer array of the number of elements in each index. 
+     *   If rank is less than the number of elements, then ignore extra 
+     *   trailing elements.
+     * @param buf  ByteBuffer containing the data, which should be at least 
+     *   recoffs + reclen * len0 bytes long.
      * @param type BufferDataSet.INT, BufferDataSet.DOUBLE, etc...
      * @return BufferDataSet of the given type.
      */
-    public static BufferDataSet makeDataSet(  int rank, int reclen, int recoffs, int[] qube, ByteBuffer buf, Object type ) {
+    public static BufferDataSet makeDataSet(  int rank, int reclen, int recoffs, 
+            int[] qube, ByteBuffer buf, Object type ) {
         int len0=1;
         int len1=1;
         int len2=1;
