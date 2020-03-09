@@ -313,7 +313,8 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
      * @param type BufferDataSet.INT, BufferDataSet.DOUBLE, etc...
      * @return BufferDataSet of the given type.
      */
-    public static BufferDataSet makeDataSet(  int rank, int reclen, int recoffs, 
+    public static BufferDataSet makeDataSet(  
+            int rank, int reclen, int recoffs, 
             int[] qube, ByteBuffer buf, Object type ) {
         int len0=1;
         int len1=1;
