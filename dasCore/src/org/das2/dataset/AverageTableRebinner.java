@@ -1116,7 +1116,7 @@ public class AverageTableRebinner implements DataSetRebinner {
      * interpolate the missing pixels by scanning columns, looking for point pairs where weights &gt; 0 and that are acceptably close.
      * @param data the data, not scaled by weight.
      * @param weights 0 means ignore, positive means valid
-     * @param ddX
+     * @param ddY the description of how bins interleave.
      * @param xTagWidth the nominal cadence between measurements.  This defines acceptably close, and we apply a fudge factor.
      * @param interpolateType if NearestNeighbor, then special actions can occur.
      */
@@ -1167,15 +1167,16 @@ public class AverageTableRebinner implements DataSetRebinner {
         }
 
         double pixelSize= ddY.binWidth();
-
+        
         final double[] ySampleWidths= new double[ddY.numberOfBins()];
         for ( int j=0; j<ny; j++ ) {
             if ( ddY.isLog ) {
                 if ( ySampleWidthRatiometric ) {
                     ySampleWidths[j]= ySampleWidth + pixelSize; 
                 } else {
-                    double l0= ddY.binCenter(j,yTagUnits)-ySampleWidth/2;
-                    double l1= ddY.binCenter(j,yTagUnits)+ySampleWidth/2;
+                    double c= ddY.binCenter(j,yTagUnits);
+                    double l0= c-ySampleWidth/2;
+                    double l1= c+ySampleWidth/2;
                     int il1= Math.min( ddY.whichBin( l1, yTagUnits ), ddY.numberOfBins()-1 );
                     int il0= Math.max( ddY.whichBin( l0, yTagUnits ), 0 );
                     ySampleWidths[j]= ( yTagTemp[ il1 ] - yTagTemp[ il0 ] ) + pixelSize;
