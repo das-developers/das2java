@@ -100,10 +100,11 @@ public final class RebinDescriptor {
         }
         int result=0;
         if (isLog) x= Math.log(x);
-        if ((x<start || x>=end) && outOfBoundsAction!=EXTRAPOLATE) {
+        boolean outOfBounds= start < end ? (x<start || x>=end) : (x<end || x>=start) ;
+        if ( outOfBounds && outOfBoundsAction!=EXTRAPOLATE) {
             switch (outOfBoundsAction) {
                 case FIRSTORLAST:
-                    result= x<start ? 0 : nBin-1;
+                    result= start < end ? ( x<start ? 0 : nBin-1 ) : ( x<end ? nBin-1 : 0 );
                     break;
                 case MINUSONE:
                     result= -1;
