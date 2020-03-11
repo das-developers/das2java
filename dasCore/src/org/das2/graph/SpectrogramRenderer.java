@@ -810,14 +810,14 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                                 xAxis.invTransform(plotImageBounds2.x+plotImageBounds2.width),
                                 plotImageBounds2.width,
                                 xAxis.isLog());
-                        xRebinDescriptor.setOutOfBoundsAction( RebinDescriptor.FIRSTORLAST );
+                        xRebinDescriptor.setOutOfBoundsAction( RebinDescriptor.MINUSONE );
 
                         RebinDescriptor yRebinDescriptor = new RebinDescriptor(
                                 yAxis.invTransform(plotImageBounds2.y+plotImageBounds2.height),
                                 yAxis.invTransform(plotImageBounds2.y),
                                 plotImageBounds2.height,
                                 yAxis.isLog());
-                        yRebinDescriptor.setOutOfBoundsAction( RebinDescriptor.FIRSTORLAST );
+                        yRebinDescriptor.setOutOfBoundsAction( RebinDescriptor.MINUSONE );
                         
                         RebinDescriptor zRebinDescriptor = new RebinDescriptor(
                             lcolorBar.getDataMinimum(), 
