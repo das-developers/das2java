@@ -1178,7 +1178,8 @@ public class AverageTableRebinner implements DataSetRebinner {
                     double l0= c-ySampleWidth/2;
                     double l1= c+ySampleWidth/2;
                     int il1= Math.min( ddY.whichBin( l1, yTagUnits ), ddY.numberOfBins()-1 );
-                    int il0= Math.max( ddY.whichBin( l0, yTagUnits ), 0 );                    
+                    if ( il1==-1 ) il1=0;
+                    int il0= Math.max( ddY.whichBin( l0, yTagUnits ), 0 );
                     ySampleWidths[j]= ( yTagTemp[ il1 ] - yTagTemp[ il0 ] ) + pixelSize;
                 }
             } else {
