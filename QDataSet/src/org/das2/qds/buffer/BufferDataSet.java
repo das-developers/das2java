@@ -810,6 +810,7 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
      * See grow(newRecCount).
      * Not thread safe--we need to go through and make it so...
      * @param ds
+     * @see #grow(int) 
      */
     public synchronized void append( BufferDataSet ds ) {
         if ( ds.rank()!=this.rank ) throw new IllegalArgumentException("rank mismatch");
@@ -961,7 +962,7 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         result.properties.put( QDataSet.UNITS, u1 ); // since we resolve units when they change (bug 3469219)
 
         result.fieldStride= ths.fieldStride;
-        result.recStride= ths.fieldStride;
+        result.recStride= ths.recStride;
         
         return result;
     }
@@ -1190,6 +1191,7 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
      * dataset.  This simply grows the internal buffer, so for example length()
      * will return the same value after.
      * @param newRecCount the new record count, generally larger than the old rec count.
+     * @see #append(org.das2.qds.buffer.BufferDataSet) 
      */
     public void grow( int newRecCount ) {
         
