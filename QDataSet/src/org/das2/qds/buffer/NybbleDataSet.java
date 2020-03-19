@@ -55,7 +55,6 @@ public final class NybbleDataSet extends BufferDataSet {
                 return back.get(offset(i0,i1)) >> 4;
             }
         } catch ( IndexOutOfBoundsException ex ) {
-            System.err.println("here");
             throw ex;
         }
     }

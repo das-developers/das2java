@@ -1524,7 +1524,7 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         for ( int i=0; i<len0; i++ ) {
             int recStartBytes= offset(i);
             if ( recStartBytes+recLenBytes > back.capacity() ) {
-                System.err.println("Here mac cap");
+                logger.info("something is wrong");
             }
             lback.limit(recStartBytes+recLenBytes);
             lback.position(recStartBytes);

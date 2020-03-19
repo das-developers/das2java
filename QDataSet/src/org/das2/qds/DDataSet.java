@@ -590,9 +590,6 @@ public final class DDataSet extends ArrayDataSet {
         int srcpos1 = srcpos * src.len1 * src.len2 * src.len3;
         int destpos1 = destpos * dest.len1 * dest.len2 * dest.len3;
         int len1 = len;
-        if ( dest.rank==4 ) {
-            System.err.println("here16 "+destpos1+" "+len1);
-        }
         System.arraycopy( src.back, srcpos1, dest.back, destpos1, len1 );
     }
 
