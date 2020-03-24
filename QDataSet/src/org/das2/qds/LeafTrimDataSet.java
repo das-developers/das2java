@@ -165,7 +165,8 @@ public class LeafTrimDataSet extends AbstractDataSet {
         } else {
             LeafTrimDataSet result= new LeafTrimDataSet( ds.slice(i), this.start, this.end );
             DataSetUtil.copyDimensionProperties( this, result );
-            Map<String,Object> ps= DataSetUtil.sliceProperties( ds, i, null );
+            Map<String,Object> ps= DataSetOps.sliceProperties0(i,DataSetUtil.getProperties(this));
+            ps= DataSetUtil.sliceProperties( ds, i, ps );
             DataSetUtil.putProperties( ps, result );
             return result;
         }
