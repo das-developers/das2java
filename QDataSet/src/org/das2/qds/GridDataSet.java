@@ -1,7 +1,4 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package org.das2.qds;
 
 import java.util.HashMap;
@@ -23,17 +20,17 @@ public class GridDataSet extends AbstractDataSet {
     int ix;
     int iy;
 
-    private static final double fill= -1e31;
+    private static final double FILL= -1e31;
 
     public GridDataSet() {
-        xtags = new TreeMap<Integer, Double>();
+        xtags = new TreeMap<>();
         ix=0;
-        rxtags= new HashMap<Double,Integer>();
-        ytags = new TreeMap<Integer, Double>();
+        rxtags= new HashMap<>();
+        ytags = new TreeMap<>();
         iy=0;
-        rytags= new HashMap<Double,Integer>();
-        values = new HashMap<Integer, Double>();
-        properties.put( QDataSet.FILL_VALUE, fill );
+        rytags= new HashMap<>();
+        values = new HashMap<>();
+        properties.put( QDataSet.FILL_VALUE, FILL );
     }
 
     /**
@@ -44,30 +41,34 @@ public class GridDataSet extends AbstractDataSet {
     public void add(QDataSet slice) {
         QDataSet bds=null;
         if ( slice.rank()==1 ) {
-            double x = slice.value(0);
-            double y = slice.value(1);
-            double z = slice.value(2);
-            add( x, y, z );
+            double xx = slice.value(0);
+            double yy = slice.value(1);
+            double zz = slice.value(2);
+            add( xx, yy, zz );
             bds= (QDataSet)slice.property(QDataSet.BUNDLE_0);
         } else if ( slice.rank()==2 ) {
             for ( int i=0; i<slice.length(); i++ ) {
-                double x = slice.value(i,0);
-                double y = slice.value(i,1);
-                double z = slice.value(i,2);
-                add( x, y, z );
+                double xx = slice.value(i,0);
+                double yy = slice.value(i,1);
+                double zz = slice.value(i,2);
+                add( xx, yy, zz );
             }
             bds= (QDataSet)slice.property(QDataSet.BUNDLE_1);
         }
         if ( bds!=null ) {
             for ( int i=0;i<3;i++ ) {
                 MutablePropertyDataSet mds;
-                if ( i==0 ) {
-                    mds= x;
-                } else if ( i==1 ) {
-                    mds= y;
-                } else {
-                    mds= this;
-                } 
+                switch (i) {
+                    case 0:
+                        mds= x;
+                        break;
+                    case 1:
+                        mds= y;
+                        break; 
+                    default:
+                        mds= this;
+                        break;
+                }
                 
                 Units u;
                 String s;
@@ -125,28 +126,34 @@ public class GridDataSet extends AbstractDataSet {
 
     AbstractDataSet x = new AbstractDataSet() {
 
+        @Override
         public int rank() {
             return 1;
         }
 
+        @Override
         public double value(int i) {
             return xtags.get(i);
         }
 
+        @Override
         public int length() {
             return xtags.size();
         }
     };
     AbstractDataSet y = new AbstractDataSet() {
 
+        @Override
         public int rank() {
             return 1;
         }
 
+        @Override
         public double value(int i) {
             return ytags.get(i);
         }
 
+        @Override
         public int length() {
             return ytags.size();
         }
@@ -154,12 +161,13 @@ public class GridDataSet extends AbstractDataSet {
 
     @Override
     public Object property(String name) {
-        if (name.equals(QDataSet.DEPEND_0)) {
-            return x;
-        } else if (name.equals(QDataSet.DEPEND_1)) {
-            return y;
-        } else {
-            return super.property(name);
+        switch (name) {
+            case QDataSet.DEPEND_0:
+                return x;
+            case QDataSet.DEPEND_1:
+                return y;
+            default:
+                return super.property(name);
         }
     }
 
@@ -167,7 +175,7 @@ public class GridDataSet extends AbstractDataSet {
     public double value(int i0, int i1) {
         Double v= values.get( i1 * 10000 + i0 );
         if ( v==null ) {
-            return fill;
+            return FILL;
         } else {
             return v;
         }
