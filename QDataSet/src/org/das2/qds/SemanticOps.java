@@ -274,9 +274,11 @@ public final class SemanticOps {
     }
 
     /**
-     * Test for rank 2 waveform dataset, where DEPEND_1 is offset from DEPEND_0, and the data is the waveform.
-     *  DEPEND_1 must be at least 128 elements long.
-     *  DEPEND_1 must not be dimensionless.
+     * Test for rank 2 waveform dataset, where DEPEND_1 is offset from DEPEND_0, 
+     * and the data is the waveform.  Other rules include:<ul>
+     * <li> DEPEND_1 must be at least 128 elements long.
+     * <li> DEPEND_1 must not be dimensionless.
+     * <li> if DEPEND_1 is in the same units as DEPEND_0, then DEPEND_0 can be ignored.
      * @param fillDs
      * @return
      */
@@ -295,6 +297,8 @@ public final class SemanticOps {
                     } else {  
                         return  Units.seconds.isConvertibleTo(dep0units); // Only with time offsets is this allowed.  (http://cdaweb.gsfc.nasa.gov/data/polar/uvi/uvi_k0/2001/po_k0_uvi_20010106_v01.cdf?IMAGE_DATA, slice0.)
                     }
+                } else if ( UnitsUtil.isTimeLocation(dep0units) && dep0units==dep1units ) {
+                    return true;
                 }
             }
         }

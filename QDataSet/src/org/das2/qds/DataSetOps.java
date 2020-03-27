@@ -339,10 +339,13 @@ public class DataSetOps {
         } else {
             QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
             QDataSet result= null;
+            boolean dep1IsTimeTags= UnitsUtil.isTimeLocation( SemanticOps.getUnits(dep1) );
             for ( int i=0; i<ds.length(); i++ ) {
                 QDataSet ds1= ds.slice(i);
                 QDataSet xtags= (QDataSet)ds1.property(QDataSet.DEPEND_0);
-                xtags= Ops.add( dep0.slice(i), xtags );
+                if ( !dep1IsTimeTags ) {
+                    xtags= Ops.add( dep0.slice(i), xtags );
+                }
                 result= Ops.append( result, Ops.link( xtags, ds1 ) );
             }
             return result;
