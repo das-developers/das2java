@@ -368,6 +368,9 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
                             yAsString = "(empty dataset)";
                         } else {
                             int i = closestPointVector(vds, x, y);
+                            if ( i==-1 ) {
+                                return new Rectangle[0];
+                            }
                             x = SemanticOps.getDatum( xds, xds.value(i) );
                             y = SemanticOps.getDatum( vds, vds.value(i) );
                             xAsString = nfx.format(x);
