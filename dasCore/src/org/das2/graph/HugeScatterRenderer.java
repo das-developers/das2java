@@ -1,6 +1,7 @@
 
 package org.das2.graph;
 
+import com.sun.corba.se.spi.oa.OADefault;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -444,7 +445,11 @@ public class HugeScatterRenderer extends Renderer {
 
             ArrayDataSet xoffsets= ArrayDataSet.copy( ( QDataSet) ds.property(QDataSet.DEPEND_1) );
 
-            xoffsets= resetUnits( xoffsets, SemanticOps.getUnits(xds).getOffsetUnits() );
+            if ( !UnitsUtil.isTimeLocation( SemanticOps.getUnits(xoffsets) ) ) {
+                xoffsets= resetUnits( xoffsets, SemanticOps.getUnits(xds).getOffsetUnits() );
+            } else {
+                xds= Ops.zeros( xoffsets.length() );
+            }
             
             int xmin= xAxis.getColumn().getDMinimum()-xAxis.getColumn().getWidth();
             int xmax= xAxis.getColumn().getDMaximum()+xAxis.getColumn().getWidth();
@@ -649,26 +654,49 @@ public class HugeScatterRenderer extends Renderer {
         Units xunits= SemanticOps.getUnits( xds );
         QDataSet wds= SemanticOps.weightsDataSet( vds );
         ArrayDataSet xoffsets = ArrayDataSet.copy((QDataSet) vds.property(QDataSet.DEPEND_1));
-        //if ( xoffsets.rank()>1 ) throw new IllegalArgumentException("rank 2 DEPEND_1 not supported");
-        final UnitsConverter uc= UnitsConverter.getConverter( SemanticOps.getUnits(xoffsets), SemanticOps.getUnits(xds).getOffsetUnits() );
-        if ( !uc.equals( UnitsConverter.IDENTITY ) ) {
-            logger.fine( "units should have been converted by now" );
-            xoffsets= ArrayDataSet.maybeCopy( Ops.convertUnitsTo( xoffsets,  SemanticOps.getUnits(xds).getOffsetUnits() ) );
+        final UnitsConverter uc;
+        boolean oneRecPerPixelColumn;
+        if ( UnitsUtil.isTimeLocation( SemanticOps.getUnits(xoffsets) ) ) {
+            int ix0;
+            double dx0= xoffsets.rank()==1 ? xoffsets.value(0) : xoffsets.value(0,0);
+            ix0= ddx.whichBin( dx0, xunits );
+            int ix1;
+            int lastRec= xoffsets.length()-1;
+            double dx1= xoffsets.rank()==1 ? xoffsets.value(lastRec) : xoffsets.value(lastRec,xoffsets.length(lastRec)-1);
+            ix1= ddx.whichBin( dx1, xunits );
+            if ( ix0==-1 && first0+1<last0 ) {
+                ix0= ddx.whichBin( dx0, xunits );
+                ix1= ddx.whichBin( dx1, xunits );
+            }
+            oneRecPerPixelColumn= ix0!=-1 && ix0==ix1; 
+            if ( oneRecPerPixelColumn ) {
+                xds= Ops.slice1( xoffsets, 0 );
+            } else {
+                xds= Ops.zeros( xoffsets.length() );
+            }
+
+        } else {
+            uc= UnitsConverter.getConverter( SemanticOps.getUnits(xoffsets), SemanticOps.getUnits(xds).getOffsetUnits() );
+            if ( !uc.equals( UnitsConverter.IDENTITY ) ) {
+                logger.fine( "units should have been converted by now" );
+                xoffsets= ArrayDataSet.maybeCopy( Ops.convertUnitsTo( xoffsets,  SemanticOps.getUnits(xds).getOffsetUnits() ) );
+            }
+            int ix0;
+            double dx0;
+            dx0= xoffsets.rank()==1 ? xoffsets.value(0) : xoffsets.value(0,0);
+            ix0= ddx.whichBin(xds.value(first0) + dx0, xunits );
+            int ix1;
+            int lastRec= xoffsets.length()-1;
+            double dx1= xoffsets.rank()==1 ? xoffsets.value(lastRec) : xoffsets.value(lastRec,xoffsets.length(lastRec)-1);
+            ix1= ddx.whichBin(xds.value(first0) + dx1, xunits );
+            if ( ix0==-1 && first0+1<last0 ) {
+                ix0= ddx.whichBin(xds.value(first0+1) + dx0, xunits );
+                ix1= ddx.whichBin(xds.value(first0+1) + dx1, xunits );
+            }
+            oneRecPerPixelColumn= ix0!=-1 && ix0==ix1;
         }
-        int ix0;
-        double dx0;
-        dx0= xoffsets.rank()==1 ? xoffsets.value(0) : xoffsets.value(0,0);
-        ix0= ddx.whichBin(xds.value(first0) + dx0, xunits );
-        int ix1;
-        int lastRec= xoffsets.length()-1;
-        double dx1= xoffsets.rank()==1 ? xoffsets.value(lastRec) : xoffsets.value(lastRec,xoffsets.length(lastRec)-1);
-        ix1= ddx.whichBin(xds.value(first0) + dx1, xunits );
-        if ( ix0==-1 && first0+1<last0 ) {
-            ix0= ddx.whichBin(xds.value(first0+1) + dx0, xunits );
-            ix1= ddx.whichBin(xds.value(first0+1) + dx1, xunits );
-        }
-        boolean wowReduce= ix0!=-1 && ix0==ix1;
-        if ( wowReduce ) {
+        
+        if ( oneRecPerPixelColumn ) {
             logger.fine("wowReduce");
             for (; first0 <= last0; first0++) {
                 int ix = ddx.whichBin( xds.value(first0), xunits );
