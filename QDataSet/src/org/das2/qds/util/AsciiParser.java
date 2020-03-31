@@ -159,7 +159,11 @@ public class AsciiParser {
      * @return true if the line is a header line.
      */
     public final boolean isHeader(int iline, String lastLine, String thisLine, int recCount) {
-        return (iline < skipLines || (headerDelimiter != null && recCount == 0 && (lastLine == null || !Pattern.compile(headerDelimiter).matcher(lastLine).find())) || (commentPrefix != null && thisLine.startsWith(commentPrefix)));
+        return (iline < skipLines 
+                || (headerDelimiter != null && recCount == 0 && 
+                   (lastLine == null || !Pattern.compile(headerDelimiter).matcher(lastLine).find())) 
+                || (commentPrefix != null && thisLine.startsWith(commentPrefix))
+                );
     }
 
     /**
@@ -851,7 +855,7 @@ public class AsciiParser {
     public WritableDataSet readStream(Reader in, ProgressMonitor mon) throws IOException {
         return readStream(in, null, mon);
     }
-
+    
     /**
      * read in the stream, including the first record if non-null.
      * @param in the stream, which is not closed.
@@ -887,7 +891,7 @@ public class AsciiParser {
             line = firstRecord;
             firstRecord = null;
         } else {
-            line = reader.readLine();
+            line = recordParser.readNextRecord(reader);
         }
 
         boolean parsedMeta= false;
@@ -982,7 +986,8 @@ public class AsciiParser {
             }
 
             lastLine = line;
-            line = reader.readLine();
+            
+            line = recordParser.readNextRecord(reader);
         }
 
         mon.finished();
@@ -1297,6 +1302,14 @@ public class AsciiParser {
     }
 
     public static interface RecordParser {
+        
+        /**
+         * return the next record in a String, or null of no more records exist.
+         * @param reader
+         * @return
+         * @throws IOException 
+         */
+        String readNextRecord( BufferedReader reader ) throws IOException;
 
         /**
          * returns true if the line appears to be a record.  If it is a record,
@@ -1583,6 +1596,20 @@ public class AsciiParser {
 
         public void setShowException( boolean s ) {
             this.showException= s;
+        }
+        
+        @Override
+        public String readNextRecord( BufferedReader reader ) throws IOException {
+            String line= reader.readLine();
+            while ( line!=null && line.split("\"",-2).length % 2 == 0 ) {
+                String nextLine= reader.readLine();
+                if ( nextLine!=null ) {
+                    line= line + " " + nextLine;
+                } else {
+                    break;
+                }
+            }
+            return line;
         }
         
         @Override
@@ -1959,6 +1986,11 @@ public class AsciiParser {
         }
 
         @Override
+        public String readNextRecord(BufferedReader reader) throws IOException {
+            return reader.readLine();
+        }
+
+        @Override
         public final boolean tryParseRecord(String line, int irec, DataSetBuilder builder) {
             Matcher m;
             if (recordPattern != null && (m = recordPattern.matcher(line)).matches()) {
@@ -2061,6 +2093,11 @@ public class AsciiParser {
         @Override
         public int fieldCount() {
             return fieldCount;
+        }
+
+        @Override
+        public String readNextRecord(BufferedReader reader) throws IOException {
+            return reader.readLine();
         }
 
         @Override
