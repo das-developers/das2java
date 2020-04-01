@@ -380,6 +380,21 @@ public class AsciiParser {
                 if ( line!=null ) {
                     // for the delimParser guessed by this line, how many of the last ten lines parse?
                     p= guessDelimParser(line,iline);
+                    
+                    int enumCount= 0;
+                    int totalCount= 0;
+                    for ( int i=0; i<p.fieldCount; i++ ) {
+                        if ( fieldParsers[i]==ENUMERATION_PARSER ) {
+                            enumCount++;
+                        }
+                        totalCount++;
+                    }
+                    
+                    // There may be no more than this many ENUMERATION_PARSERS
+                    // to be considered a record.
+                    int limitEnum= totalCount / 2;
+                    boolean enumCountOkay=  enumCount<=limitEnum;
+                                        
                     if ( logger.isLoggable(Level.FINER) ) {
                         StringBuilder build= new StringBuilder();
                         for ( int i=0; i<p.fieldCount; i++ ) {
@@ -389,14 +404,15 @@ public class AsciiParser {
                         }
                         logger.finer( String.format( "line %03d: %2d %s", iline, p.fieldCount, build.toString() ) );
                     }
+                    
                     p.showException= false;
-                    if ( p.tryParseRecord(line, iline, null) ) {
+                    if ( enumCountOkay && p.tryParseRecord(line, iline, null) ) {
                         parseCount=1;
                     } else {
                         parseCount=0;
                     }
                     for (String line1 : lines) {
-                        if (p.tryParseRecord(line1, 0, null)) {
+                        if ( enumCountOkay && p.tryParseRecord(line1, 0, null)) {
                             parseCount++;
                         } else if (iline==2) {
                             String[] ff= p.fields(line);
@@ -405,7 +421,7 @@ public class AsciiParser {
                                     setUnits(j,UNIT_UTC);
                                 }
                             }
-                            if (p.tryParseRecord(line1, 0, null)) {
+                            if (enumCountOkay && p.tryParseRecord(line1, 0, null)) {
                                 parseCount++; 
                             }
                         }
@@ -1480,7 +1496,7 @@ public class AsciiParser {
      * Trailing and leading whitespace is ignored.
      * @param line a record to parse.
      * @param fieldSep separating regex such as "," or "\t" or "\s+"
-     * @param lineNum the line number, 1 is first line.
+     * @param lineNum the line number, 1 is first line, used for debugging.
      * @return
      */
     private DelimParser createDelimParser(String line, String fieldSep, int lineNum) {
@@ -1996,7 +2012,7 @@ public class AsciiParser {
      */
     private void initializeUnitsByGuessing( String[] ss, int lineNumber ) {
         
-        boolean useOldCode=true;
+        boolean useOldCode=false;
         
         if (useOldCode) {
             initializeUnitsByGuessingOld(ss, lineNumber);
