@@ -1996,7 +1996,7 @@ public class AsciiParser {
      */
     private void initializeUnitsByGuessing( String[] ss, int lineNumber ) {
         
-        boolean useOldCode=false;
+        boolean useOldCode=true;
         
         if (useOldCode) {
             initializeUnitsByGuessingOld(ss, lineNumber);
