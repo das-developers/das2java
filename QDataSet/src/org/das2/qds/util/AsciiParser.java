@@ -35,6 +35,7 @@ import org.das2.qds.QDataSet;
 import org.das2.qds.SparseDataSetBuilder;
 import org.das2.qds.WritableDataSet;
 import org.das2.qds.ops.Ops;
+import org.das2.util.LoggerManager;
 
 /**
  * Class for reading ASCII tables into a QDataSet.  This parses a file by breaking
@@ -67,7 +68,7 @@ import org.das2.qds.ops.Ops;
  */
 public class AsciiParser {
 
-    private static final Logger logger= Logger.getLogger("qdataset.ascii");
+    private static final Logger logger= LoggerManager.getLogger("qdataset.ascii");
 
     Pattern propertyPattern = null;
     String commentPrefix = "#";
@@ -417,6 +418,8 @@ public class AsciiParser {
                     if ( isIso8601Time(fields[i]) ) {
                         this.setFieldParser( i, UNITS_PARSER );
                         this.setUnits( i,Units.cdfTT2000 );
+                    } else if ( this.fieldParsers[i]==ENUMERATION_PARSER ) {
+                        this.setFieldParser( i, UNITS_PARSER );
                     }
                 }
             }
@@ -1408,7 +1411,11 @@ public class AsciiParser {
     public final FieldParser ENUMERATION_PARSER = new FieldParser() {
         @Override
         public final double parseField(String field, int columnIndex) throws ParseException {
-            EnumerationUnits u = (EnumerationUnits)AsciiParser.this.units[columnIndex];
+            Units units= AsciiParser.this.units[columnIndex];
+            if ( !( units instanceof EnumerationUnits ) ) {
+                throw new IllegalStateException("ENUMERATION_PARSER needed EnumerationUnits");
+            }
+            EnumerationUnits u = (EnumerationUnits)units;
             if ( u==null ) throw new NullPointerException("ENUMERATION_PARSER used where we don't have a unit, at columnIndex="+columnIndex );
             field= field.trim();
             if ( field.startsWith("\"") && field.endsWith("\"") ) {
@@ -1937,16 +1944,14 @@ public class AsciiParser {
         fieldNames = new String[fieldCount];
         fieldParsers = new FieldParser[fieldCount];
         fieldLabels= new String[fieldCount];
+        fieldUnits= new String[fieldCount];
+        units = new Units[fieldCount]; //this is the one place where units array is initialized
         for (int i = 0; i < fieldCount; i++) {
             fieldParsers[i] = DOUBLE_PARSER;
             fieldNames[i] = "field" + i;
             fieldLabels[i] = fieldNames[i];
-        }
-        units = new Units[fieldCount]; //this is the one place where units array is initialized
-        fieldUnits= new String[fieldCount];
-        for (int i = 0; i < fieldCount; i++) {
-            units[i] = Units.dimensionless;
             fieldUnits[i] = "";
+            units[i] = Units.dimensionless;
         }
     }
     
@@ -1972,24 +1977,47 @@ public class AsciiParser {
      * @param ss the fields.
      */
     private void initializeUnitsByGuessing( String[] ss, int lineNumber ) {
-        logger.log(Level.FINE, "guess units at line {0}", lineNumber);
-        for (int i = 0; i < ss.length; i++) {
-            Units u= guessUnits(ss[i].trim());
-            if ( UnitsUtil.isTimeLocation(u) ) {
-                units[i]= Units.t2000;
-                fieldParsers[i]= UNITS_PARSER;
-            } else if ( u==Units.dimensionless ) {
-                units[i] = u;
-                fieldParsers[i] = DOUBLE_PARSER;
-            } else if ( u instanceof EnumerationUnits ) {
-                units[i]= u;
-                fieldParsers[i]= ENUMERATION_PARSER;
-            } else {
-                units[i]= u;
-                fieldParsers[i]= UNITS_PARSER;
+        boolean useOldCode=false;
+        if (useOldCode) {
+            initializeUnitsByGuessingOld(ss, lineNumber);
+        } else {
+            logger.log(Level.FINE, "guess units at line {0}", lineNumber);
+            for (int i = 0; i < ss.length; i++) {
+                Units u= guessUnits(ss[i].trim());
+                if ( UnitsUtil.isTimeLocation(u) ) {
+                    units[i]= Units.t2000;
+                    fieldParsers[i]= UNITS_PARSER;
+                } else if ( u==Units.dimensionless ) {
+                    units[i] = u;
+                    fieldParsers[i] = DOUBLE_PARSER;
+                } else if ( u instanceof EnumerationUnits ) {
+                    units[i]= u;
+                    fieldParsers[i]= ENUMERATION_PARSER;
+                } else {
+                    units[i]= u;
+                    fieldParsers[i]= UNITS_PARSER;
+                }
             }
         }
     }
+    
+    /**
+     * initialize the units by guessing at each field.  This will
+     * only switch between dimensionless and UTC times.
+     * @param ss the fields.
+     */
+    private void initializeUnitsByGuessingOld( String[] ss, int lineNumber ) {
+        logger.log(Level.FINE, "guess units at line {0}", lineNumber);
+        for (int i = 0; i < ss.length; i++) {
+            if ( isIso8601Time(ss[i].trim()) ) {
+                units[i]= Units.t2000;
+                fieldParsers[i]= UNITS_PARSER;
+            } else {
+                units[i] = Units.dimensionless;
+                fieldParsers[i] = DOUBLE_PARSER;
+            }        
+        }
+    }    
 
     /**
      * parser uses a regular expression to match each record.
@@ -2415,6 +2443,9 @@ public class AsciiParser {
     public void setUnits(int index, Units units) {
         this.units[index] = units;
         if ( fieldParsers[index]==DOUBLE_PARSER ) setFieldParser(index,UNITS_PARSER);
+        if ( fieldParsers[index]==ENUMERATION_PARSER ) {
+            setFieldParser(index,UNITS_PARSER);
+        }
         propertyChangeSupport.firePropertyChange("units", null, null);
     }
     
@@ -2427,6 +2458,9 @@ public class AsciiParser {
         System.arraycopy(u, 0, this.units, 0, u.length);
         for ( int i=0; i<u.length; i++ ) {
             if ( fieldParsers[i]==DOUBLE_PARSER ) setFieldParser( i,UNITS_PARSER );
+            if ( fieldParsers[i]==ENUMERATION_PARSER ) {
+                setFieldParser(i,UNITS_PARSER);
+            }
         }
         propertyChangeSupport.firePropertyChange("units", null, null);
     }
