@@ -364,10 +364,6 @@ public class GitHubFileSystem extends HttpFileSystem {
     
     @Override
     protected Map<String,String> downloadFile(String filename, File targetFile, File partFile, ProgressMonitor monitor) throws IOException {
-
-        if ( branch.equals("master") ) {
-            System.err.println("here stop");
-        }
         
         logger.log(Level.FINE, "downloadFile({0})", filename);
         Map<String,String> result;
