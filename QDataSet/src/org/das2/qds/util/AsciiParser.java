@@ -328,6 +328,9 @@ public class AsciiParser {
      * @throws java.io.IOException
      */
     public DelimParser guessSkipAndDelimParser( String filename ) throws IOException {
+        
+        Logger logger= LoggerManager.getLogger("qdataset.ascii.guess");
+        
         BufferedReader reader = null;
         DelimParser result= null;
 
@@ -366,6 +369,7 @@ public class AsciiParser {
 
             int parseCount=0;
 
+            // TODO: explain operation here.  find five records that parse with the record parser  
             while ( iline<HEADER_LENGTH_LIMIT && line != null && parseCount<5 ) {
                 lines.add(line);
                 line = reader.readLine();
@@ -374,9 +378,23 @@ public class AsciiParser {
                     lines.remove(0);
                 }
                 if ( line!=null ) {
+                    // for the delimParser guessed by this line, how many of the last ten lines parse?
                     p= guessDelimParser(line,iline);
+                    if ( logger.isLoggable(Level.FINER) ) {
+                        StringBuilder build= new StringBuilder();
+                        for ( int i=0; i<p.fieldCount; i++ ) {
+                            String s= fieldParsers[i].toString();
+                            build.append( s.charAt(0) );
+                            build.append( " " );
+                        }
+                        logger.finer( String.format( "line %03d: %2d %s", iline, p.fieldCount, build.toString() ) );
+                    }
                     p.showException= false;
-                    parseCount= p.tryParseRecord(line, iline, null) ? 1 : 0;
+                    if ( p.tryParseRecord(line, iline, null) ) {
+                        parseCount=1;
+                    } else {
+                        parseCount=0;
+                    }
                     for (String line1 : lines) {
                         if (p.tryParseRecord(line1, 0, null)) {
                             parseCount++;
@@ -1977,7 +1995,9 @@ public class AsciiParser {
      * @param ss the fields.
      */
     private void initializeUnitsByGuessing( String[] ss, int lineNumber ) {
+        
         boolean useOldCode=false;
+        
         if (useOldCode) {
             initializeUnitsByGuessingOld(ss, lineNumber);
         } else {
