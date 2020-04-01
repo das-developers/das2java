@@ -1,7 +1,6 @@
 
 package org.das2.graph;
 
-import com.sun.corba.se.spi.oa.OADefault;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
