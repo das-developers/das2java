@@ -82,7 +82,7 @@ public class AsciiParser {
      */
     //AsciiHeadersParser.BundleDescriptor bundleDescriptor;
     QDataSet bundleDescriptor;
-    
+
     /**
      * units for each column.
      */
@@ -1950,6 +1950,22 @@ public class AsciiParser {
         }
     }
     
+    private static Units guessUnits( String sval ) {
+        try {
+            Units.dimensionless.parse(sval);
+            return Units.dimensionless;
+        } catch ( ParseException ex ) {
+            logger.log(Level.FINER, "fails to parse as number: {0}", sval);
+        }
+        try {
+            AsciiParser.UNIT_UTC.parse(sval);
+            return AsciiParser.UNIT_UTC;
+        } catch ( ParseException ex ) {
+            logger.log(Level.FINER, "fails to parse as time: {0}", sval);
+        }
+        return EnumerationUnits.create("enum");
+    }
+    
     /**
      * initialize the units by guessing at each field.  This will
      * only switch between dimensionless and UTC times.
@@ -1958,13 +1974,20 @@ public class AsciiParser {
     private void initializeUnitsByGuessing( String[] ss, int lineNumber ) {
         logger.log(Level.FINE, "guess units at line {0}", lineNumber);
         for (int i = 0; i < ss.length; i++) {
-            if ( isIso8601Time(ss[i].trim()) ) {
+            Units u= guessUnits(ss[i].trim());
+            if ( UnitsUtil.isTimeLocation(u) ) {
                 units[i]= Units.t2000;
                 fieldParsers[i]= UNITS_PARSER;
-            } else {
-                units[i] = Units.dimensionless;
+            } else if ( u==Units.dimensionless ) {
+                units[i] = u;
                 fieldParsers[i] = DOUBLE_PARSER;
-            }        
+            } else if ( u instanceof EnumerationUnits ) {
+                units[i]= u;
+                fieldParsers[i]= ENUMERATION_PARSER;
+            } else {
+                units[i]= u;
+                fieldParsers[i]= UNITS_PARSER;
+            }
         }
     }
 
