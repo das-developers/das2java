@@ -106,6 +106,7 @@ public class AsciiParser {
     int skipLines;
     
     int recordCountLimit = Integer.MAX_VALUE;
+    int recordStart = 0;
     int fieldCount;
     
     private Boolean isRichAscii= null;
@@ -833,11 +834,26 @@ public class AsciiParser {
 
     /**
      * limit the number of records read.  parsing will stop once this number of
-     * records is read.  This is Integer.MAX_VALUE by default.
+     * records is read into the result.  This is Integer.MAX_VALUE by default.
      * @param recordCountLimit
      */
     public void setRecordCountLimit(int recordCountLimit) {
         this.recordCountLimit = recordCountLimit;
+        if ( this.recordStart>0 ) {
+            this.recordCountLimit+= this.recordStart;
+        }
+    }
+    
+    /**
+     * set the number of records to skip before accumulating the result.
+     * @param recordStart 
+     */
+    public void setRecordStart(int recordStart) {
+        if ( recordStart<0 ) throw new IllegalArgumentException("must be positive");
+        this.recordStart= recordStart;
+        if ( this.recordCountLimit<Integer.MAX_VALUE ) {
+            this.recordCountLimit+= this.recordStart;
+        }
     }
 
     /**
@@ -1038,6 +1054,10 @@ public class AsciiParser {
         }
 
         WritableDataSet result= builder.getDataSet();
+        
+        if ( recordStart>0 ) {
+            result= (WritableDataSet)result.trim(recordStart,result.length());
+        }
         
         if ( acceptRecord==false ) {
             result= (WritableDataSet)result.trim(0,result.length()-1);
