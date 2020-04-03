@@ -7684,7 +7684,7 @@ public final class Ops {
         
         if ( ds.rank()==1 ) { // wrap to make rank 2
             QDataSet c= (QDataSet) ds.property( QDataSet.CONTEXT_0 );
-            if ( SemanticOps.getUnits(c).equals(Units.dimensionless) ) {
+            if ( c!=null && SemanticOps.getUnits(c).equals(Units.dimensionless) ) {
                 c= null;
             }
             JoinDataSet dep0;
