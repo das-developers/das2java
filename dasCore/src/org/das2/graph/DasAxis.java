@@ -2049,6 +2049,16 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     }
     
     protected void updateTickVManualTicks(String lticks) {
+        int islash= lticks.indexOf('/');
+        int minor= 0;
+        if ( islash>-1 ) {
+            try {
+                minor= Integer.parseInt(lticks.substring(islash+1));
+            } catch ( NumberFormatException ex ) {
+                logger.log(Level.INFO, "unable to parse integer after slash: {0}", lticks);
+            }
+            lticks= lticks.substring(0,islash);
+        }
         if ( lticks.startsWith("+") ) {
             try {
                 Units u= this.getUnits();
@@ -2072,9 +2082,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 if ( UnitsUtil.isTimeLocation(u) ) {
                     tickM= DatumUtil.asOrderOneUnits(tickM);
                     double dd= tickM.doubleValue(tickM.getUnits());
-                    minorTicks = updateTickVManualTicksMinor(dd);
+                    minorTicks = minor>0 ? minor : updateTickVManualTicksMinor(dd);
                 } else {
-                    minorTicks = updateTickVManualTicksMinor(dt);
+                    minorTicks = minor>0 ? minor : updateTickVManualTicksMinor(dt);
                 }
                 dt= dt/minorTicks;
                 double[] dticksMinor= new double[ ntick*minorTicks ];
@@ -2102,7 +2112,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             double[] dticksMinor;
             if ( dticks.length>2 ) {
                 double dt= DasMath.gcd( dticks, (dticks[1]-dticks[0])/100. );
-                int minorTicks= updateTickVManualTicksMinor(dt);
+                int minorTicks= minor>0 ? minor : updateTickVManualTicksMinor(dt);
                 dt= dt/minorTicks;
                 double firstTick= DasMath.min(dticks);
                 double lastTick= DasMath.max(dticks);
