@@ -2049,84 +2049,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     }
     
     protected void updateTickVManualTicks(String lticks) {
-        int islash= lticks.indexOf('/');
-        int minor= 0;
-        if ( islash>-1 ) {
-            try {
-                minor= Integer.parseInt(lticks.substring(islash+1));
-            } catch ( NumberFormatException ex ) {
-                logger.log(Level.INFO, "unable to parse integer after slash: {0}", lticks);
-            }
-            lticks= lticks.substring(0,islash);
-        }
-        if ( lticks.startsWith("+") ) {
-            try {
-                Units u= this.getUnits();
-                Datum tickM= u.getOffsetUnits().parse(lticks.substring(1));
-                double min= this.getDataMinimum( u );
-                double max= this.getDataMaximum( u );
-                double dt= tickM.doubleValue(u.getOffsetUnits());
-                if ( dt==0. ) {
-                    logger.warning("delta ticks cannot be 0.");
-                    this.tickV= null;
-                    return;
-                }
-                double firstTick= Math.floor( min/dt )*dt;
-                double lastTick= Math.ceil( max/dt )*dt;
-                int ntick= (int)( ( lastTick - firstTick ) / dt ) + 1;
-                double[] dticks= new double[ ntick ];
-                for ( int i=0; i<dticks.length; i++ ) {
-                    dticks[i]= firstTick + i*dt; // TODO: rewrite unstable
-                }
-                int minorTicks;
-                if ( UnitsUtil.isTimeLocation(u) ) {
-                    tickM= DatumUtil.asOrderOneUnits(tickM);
-                    double dd= tickM.doubleValue(tickM.getUnits());
-                    minorTicks = minor>0 ? minor : updateTickVManualTicksMinor(dd);
-                } else {
-                    minorTicks = minor>0 ? minor : updateTickVManualTicksMinor(dt);
-                }
-                dt= dt/minorTicks;
-                double[] dticksMinor= new double[ ntick*minorTicks ];
-                for ( int i=0; i<dticksMinor.length; i++ ) {
-                    dticksMinor[i]= firstTick + i*dt; // TODO: rewrite unstable
-                }
-                TickVDescriptor majorTicks= new TickVDescriptor( dticksMinor, dticks, u );
-                this.tickV= majorTicks;
-            } catch (ParseException ex) {
-                logger.log(Level.WARNING, "failed to parse delta ticks: {0}", lticks);
-                this.tickV= null;
-            }
-        } else {
-            String[] ss= lticks.split(",");
-            double[] dticks= new double[ss.length];
-            Units u= this.getUnits();
-            for ( int i=0; i<dticks.length; i++ ) {
-                try {
-                    dticks[i]= u.parse(ss[i]).doubleValue(u);
-                } catch (ParseException ex) {
-                    logger.log(Level.WARNING, "failed to parse tick: {0}", ss[i]);
-                    dticks[i]= 0;
-                }
-            }
-            double[] dticksMinor;
-            if ( dticks.length>2 ) {
-                double dt= DasMath.gcd( dticks, (dticks[1]-dticks[0])/100. );
-                int minorTicks= minor>0 ? minor : updateTickVManualTicksMinor(dt);
-                dt= dt/minorTicks;
-                double firstTick= DasMath.min(dticks);
-                double lastTick= DasMath.max(dticks);
-                int ntick= (int)(Math.ceil(lastTick-firstTick)/dt) + 1;
-                dticksMinor= new double[ ntick ];
-                for ( int i=0; i<dticksMinor.length; i++ ) {
-                    dticksMinor[i]= firstTick + i * dt;
-                }
-            } else {
-                dticksMinor= dticks;
-            }
-            TickVDescriptor majorTicks= new TickVDescriptor( dticksMinor, dticks, u );
-            this.tickV= majorTicks;
-        }
+        TickVDescriptor ticks= GraphUtil.calculateManualTicks( lticks, this.getDatumRange(), this.isLog() );
+        this.tickV= ticks; // note ticks might be null.
     }
     
     /**
