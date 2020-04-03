@@ -1551,16 +1551,27 @@ public class GraphUtil {
      * <li>+20 every 20 units, whatever the data units are.
      * <li>+20s  every 20 seconds
      * <li>0,20,40,60,100  explicit locations.
+     * <li>+20s/4 every 20 seconds, with four minor divisions.
      * </ul>
      * 
-     * @param lticks
-     * @param dr
+     * @param lticks the specification
+     * @param dr the range to cover
      * @param log
-     * @return 
+     * @return null if the string can't be parsed, or the TickVDescriptor
      */
     public static TickVDescriptor calculateManualTicks( String lticks, DatumRange dr, boolean log ) {
         TickVDescriptor result;
         Units u= dr.getUnits();
+        int islash= lticks.indexOf('/');
+        int minor= 0;
+        if ( islash>-1 ) {
+            try {
+                minor= Integer.parseInt(lticks.substring(islash+1));
+            } catch ( NumberFormatException ex ) {
+                logger.log(Level.INFO, "unable to parse integer after slash: {0}", lticks);
+            }
+            lticks= lticks.substring(0,islash);
+        }
         if ( lticks.startsWith("+") ) {
             try {
                 Datum tickM= u.getOffsetUnits().parse(lticks.substring(1));
@@ -1578,7 +1589,7 @@ public class GraphUtil {
                 for ( int i=0; i<dticks.length; i++ ) {
                     dticks[i]= firstTick + i*dt; // TODO: rewrite unstable
                 }
-                int minorTicks=updateTickVManualTicksMinor(dt);
+                int minorTicks= minor>0 ? minor : updateTickVManualTicksMinor(dt);
                 dt= dt/minorTicks;
                 double[] dticksMinor= new double[ ntick*minorTicks ];
                 for ( int i=0; i<dticksMinor.length; i++ ) {
@@ -1604,7 +1615,7 @@ public class GraphUtil {
             double[] dticksMinor;
             if ( dticks.length>2 ) {
                 double dt= DasMath.gcd( dticks, (dticks[1]-dticks[0])/100. );
-                int minorTicks= updateTickVManualTicksMinor(dt);
+                int minorTicks= minor>0 ? minor : updateTickVManualTicksMinor(dt);
                 dt= dt/minorTicks;
                 double firstTick= DasMath.min(dticks);
                 double lastTick= DasMath.max(dticks);
