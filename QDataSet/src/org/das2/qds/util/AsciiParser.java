@@ -2550,6 +2550,7 @@ public class AsciiParser {
      * @return -1 or the index of the field.
      */
     public int getFieldIndex(String string) {
+        string= string.replaceAll(" ","_");
         for (int i = 0; i < fieldNames.length; i++) {
             if (fieldNames[i].equalsIgnoreCase(string)) {
                 return i;
