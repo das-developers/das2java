@@ -375,8 +375,8 @@ public class AsciiParser {
             // Find a line with a record parser consistent with five other lines.
             while ( iline<HEADER_LENGTH_LIMIT && line != null && parseCount<5 ) {
                 lines.add(line);
-                //line= p.readNextRecord(reader);
-                line = reader.readLine(); // note this won't allow newlines.
+                line= p.readNextRecord(reader);
+                //line = reader.readLine(); // note this won't allow newlines.
                 iline++;
                 while ( lines.size()>10 ) {
                     lines.remove(0);
@@ -390,9 +390,9 @@ public class AsciiParser {
                     for ( int i=0; i<p.fieldCount; i++ ) {
                         if ( fieldParsers[i]==ENUMERATION_PARSER ) {
                             enumCount++;
-                        }
-                        totalCount++;
+                        }    
                     }
+                    totalCount= p.fieldCount;
                     
                     // There may be no more than this many ENUMERATION_PARSERS
                     // to be considered a record.
@@ -1841,7 +1841,13 @@ public class AsciiParser {
                 fields[ifield]="";
                 ifield++;
             }
-
+            for ( int i=0; i<ifield; i++ ) {
+                String s=fields[i];
+                int n= s.length();
+                if ( n>0 && s.charAt(0)=='"' && s.charAt(n-1)=='"' ) {
+                    fields[i]= s.substring(1,n-1);
+                }
+            }
             return ( ifield == fields.length && index==len ) ;
         }
 
@@ -2023,6 +2029,9 @@ public class AsciiParser {
     }
     
     private static Units guessUnits( String sval ) {
+        if ( sval.length()>0 && sval.charAt(0)=='"' && sval.charAt(sval.length()-1)=='"' ) {
+            sval= sval.substring(1,sval.length()-1);
+        }
         try {
             Units.dimensionless.parse(sval);
             return Units.dimensionless;
