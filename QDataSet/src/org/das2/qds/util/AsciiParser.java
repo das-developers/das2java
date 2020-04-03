@@ -353,6 +353,8 @@ public class AsciiParser {
             
             headerBuffer= new StringBuffer();
 
+            // skip over the beginning lines which are explicitly marked as 
+            // headers with a marker (like #) or with the skip lines control.
             while (line != null && isHeader(iline, lastLine, line, 0)) {
                 lastLine = line;
                 if ( iline<HEADER_LENGTH_LIMIT ) {
@@ -370,10 +372,11 @@ public class AsciiParser {
 
             int parseCount=0;
 
-            // TODO: explain operation here.  find five records that parse with the record parser  
+            // Find a line with a record parser consistent with five other lines.
             while ( iline<HEADER_LENGTH_LIMIT && line != null && parseCount<5 ) {
                 lines.add(line);
-                line = reader.readLine();
+                //line= p.readNextRecord(reader);
+                line = reader.readLine(); // note this won't allow newlines.
                 iline++;
                 while ( lines.size()>10 ) {
                     lines.remove(0);
@@ -426,12 +429,13 @@ public class AsciiParser {
                                 parseCount++; 
                             }
                         }
-                    }
+                    }                    
                 }
             }
             
             result= p;
 
+            // Now go back and find the first line that has this field count, to get labels.
             for (String line1 : lines) {
                 if (p.fieldCount(line1) == p.fieldCount()) {
                     line = line1;
@@ -1492,7 +1496,8 @@ public class AsciiParser {
     /**
      * hide the nuances of Java's split function.  When the string endswith the
      * regex, add an empty field.  Also, trim the string so leading and trailing
-     * whitespace is not treated as a delimiter.
+     * whitespace is not treated as a delimiter.  Last, we need to guard against
+     * commas within a string, so a,b,",",d,e has 5 fields. 
      * @param string
      * @param regex regular expression like \\s+
      * @return string array containing the fields.
@@ -1502,7 +1507,15 @@ public class AsciiParser {
         if ( regex.equals("\\s+") ) {
             ss= string.trim().split(regex); // do what you did before.
         } else {
-            ss= string.trim().split(regex,-2);
+            switch (regex) {
+                case ",":
+                case ";":
+                    ss= string.trim().split( regex + "(?=([^\"]*\"[^\"]*\")*[^\"]*$)",-2);
+                    break;
+                default:
+                    ss= string.trim().split(regex,-2);
+                    break;
+            }
         }
         return ss;
     }
