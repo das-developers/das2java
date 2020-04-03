@@ -1541,6 +1541,7 @@ public class GraphUtil {
         if ( dt==4. ) return 2;
         if ( dt==5. ) return 5;
         if ( dt==3. ) return 3;
+        if ( dt==9. ) return 3;
         if ( dt==1.5 ) return 3;
         return 1;
     }
