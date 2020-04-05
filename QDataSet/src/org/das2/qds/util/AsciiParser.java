@@ -88,6 +88,14 @@ public class AsciiParser {
      * units for each column.
      */
     Units[] units;
+    
+    /**
+     * the number of fields which are not nominal data.  Since any value
+     * is trivially valid, when deciding if a line is a record or not, this
+     * count should be used.  This will be -1 while parsing is configured,
+     * and then 0 or more once parsing has begin.
+     */
+    int nonEnumFields= -1;
 
     /** either the unit or depend 1 value associated with the column,
      * e.g. Density(cc**-3)  or  flux_C4(6.4).
@@ -937,6 +945,19 @@ public class AsciiParser {
         builder.setValidMax(validMax);
         builder.setValidMin(validMin);
 
+        int nonEnumFields=0;
+        for ( int i=0; i<units.length; i++ ) {
+            Units unit= units[i];
+            if ( UnitsUtil.isIntervalOrRatioMeasurement(unit)) {
+                nonEnumFields+=1;
+            } else {
+                if ( fieldParsers[i]==UNITS_PARSER ) {
+                    fieldParsers[i]=ENUMERATION_PARSER;
+                }                
+            }
+        }
+        this.nonEnumFields= nonEnumFields;
+        
         long bytesRead = 0;
 
         headerBuffer = new StringBuffer();
@@ -1449,12 +1470,6 @@ public class AsciiParser {
         @Override
         public final double parseField(String field, int columnIndex) throws ParseException {
             Units u = AsciiParser.this.units[columnIndex];
-            if ( u instanceof EnumerationUnits ) {
-                field= field.trim();
-                if ( field.startsWith("\"") && field.endsWith("\"") ) {
-                    return u.parse(field.substring(1,field.length()-1)).doubleValue(u);
-                }
-            }
             return u.parse(field).doubleValue(u);
         }
         @Override
@@ -1476,15 +1491,11 @@ public class AsciiParser {
             EnumerationUnits u = (EnumerationUnits)units;
             if ( u==null ) throw new NullPointerException("ENUMERATION_PARSER used where we don't have a unit, at columnIndex="+columnIndex );
             field= field.trim();
-            if ( field.startsWith("\"") && field.endsWith("\"") ) {
-                return u.parse(field.substring(1,field.length()-1)).doubleValue(u); // TODO: untested..
-            } else {
-                try {
-                    Datum d= u.createDatum(field); // rte_2038937185 that Ivar sees.
-                    return d.doubleValue(u);            
-                } catch ( NullPointerException ex ) {
-                    throw ex; // w/Ivar
-                }
+            try {
+                Datum d= u.createDatum(field); // rte_2038937185 that Ivar sees.
+                return d.doubleValue(u);            
+            } catch ( NullPointerException ex ) {
+                throw ex; // w/Ivar
             }
         }
         @Override
@@ -1728,7 +1739,15 @@ public class AsciiParser {
             
             // the record is parsable if there are two or more parsable fields.
             // it is not parsable if no fields can be parsed.
-            return ( failCount < tryCount ) && ( okayCount > 1 || failCount < 3 );
+            if ( AsciiParser.this.nonEnumFields>-1 ) {
+                if ( ( failCount < tryCount ) && ( okayCount > ( nonEnumFields + 1 ) || failCount < 3 ) ) {
+                    return true;
+                } else {
+                    return false;
+                }
+            } else {
+                return ( failCount < tryCount ) && ( okayCount > 1 || failCount < 3 );
+            }
         }
 
         @Override
