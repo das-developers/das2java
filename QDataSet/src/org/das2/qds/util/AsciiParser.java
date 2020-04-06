@@ -1740,7 +1740,8 @@ public class AsciiParser {
             // the record is parsable if there are two or more parsable fields.
             // it is not parsable if no fields can be parsed.
             if ( AsciiParser.this.nonEnumFields>-1 ) {
-                if ( ( failCount < tryCount ) && ( okayCount > ( nonEnumFields + 1 ) || failCount < 3 ) ) {
+                int enumFieldCount=  tryCount - nonEnumFields;
+                if ( ( failCount < tryCount ) && ( okayCount > ( enumFieldCount + 1 ) || failCount < 3 ) ) {
                     return true;
                 } else {
                     return false;
