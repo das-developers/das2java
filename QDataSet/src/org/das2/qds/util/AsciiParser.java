@@ -658,7 +658,7 @@ public class AsciiParser {
 
         regexBuf.append("(" + decimalRegex + ")\\s*");
 
-        recordParser = new RegexParser(regexBuf.toString());
+        recordParser = new RegexParser(this,regexBuf.toString());
         return recordParser;
     }
 
@@ -1383,6 +1383,10 @@ public class AsciiParser {
         }
     }
 
+    public void setGrep(String o) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
     public static interface RecordParser {
         
         /**
@@ -2008,7 +2012,7 @@ public class AsciiParser {
      */
     public RegexParser getRegexParserForFormat(String format) {
         String regex= getRegexForFormat(format);
-        RegexParser rp= new RegexParser(regex);
+        RegexParser rp= new RegexParser(this,regex);
         setRecordParser(rp);
         return rp;
     }
@@ -2021,7 +2025,7 @@ public class AsciiParser {
      * @return the regex parser
      */
     public RegexParser getRegexParser( String regex ) {
-        return new RegexParser(regex);
+        return new RegexParser(this,regex);
     }
 
     /**
@@ -2071,6 +2075,7 @@ public class AsciiParser {
      * initialize the units by guessing at each field.  This will
      * only switch between dimensionless and UTC times.
      * @param ss the fields.
+     * @param lineNumber the line number for reference when debugging.
      */
     private void initializeUnitsByGuessing( String[] ss, int lineNumber ) {
         
@@ -2120,18 +2125,22 @@ public class AsciiParser {
     /**
      * parser uses a regular expression to match each record.
      */
-    public final class RegexParser implements RecordParser {
+    public static final class RegexParser implements RecordParser {
 
         Pattern recordPattern;
+        AsciiParser parser;
+        boolean doGuessUnits= true;
 
-        public RegexParser(String regex) {
+        public RegexParser( AsciiParser parser, String regex) {
             recordPattern = Pattern.compile(regex);
-            initializeByFieldCount(recordPattern.matcher("").groupCount());
+            this.parser= parser;
+            parser.initializeByFieldCount(recordPattern.matcher("").groupCount());
+            
         }
 
         @Override
         public int fieldCount() {
-            return fieldCount;
+            return parser.fieldCount;
         }
 
         @Override
@@ -2143,12 +2152,20 @@ public class AsciiParser {
         public final boolean tryParseRecord(String line, int irec, DataSetBuilder builder) {
             Matcher m;
             if (recordPattern != null && (m = recordPattern.matcher(line)).matches()) {
+                if ( doGuessUnits ) {
+                    String[] ss= new String[parser.fieldCount];
+                    for ( int i=0; i< parser.fieldCount; i++ ) {
+                        ss[i]= m.group(i+1);
+                    }
+                    parser.initializeUnitsByGuessing( ss, 0 );
+                    this.doGuessUnits= false;
+                }
                 try {
                     boolean allInvalid = true;
-                    for (int i = 0; i < fieldCount; i++) {
+                    for (int i = 0; i < parser.fieldCount; i++) {
                         try {
                             String parseable= m.group(i + 1);
-                            double d= fieldParsers[i].parseField(parseable, i);
+                            double d= parser.fieldParsers[i].parseField(parseable, i);
                             if ( builder!=null ) builder.putValue(irec, i, d );
                             allInvalid = false;
                         } catch (NumberFormatException e) {
@@ -2183,7 +2200,7 @@ public class AsciiParser {
             Matcher m;
             m = recordPattern.matcher(line);
             String[] fields = new String[m.groupCount() - 1];
-            for (int i = 0; i < fieldCount; i++) {
+            for (int i = 0; i < parser.fieldCount; i++) {
                 fields[i] = m.group(i + 1);
             }
             return fields;
@@ -2194,7 +2211,7 @@ public class AsciiParser {
             Matcher m;
             m = recordPattern.matcher(line);
             if ( m.matches() ) {
-                for (int i = 0; i < fieldCount; i++) {
+                for (int i = 0; i < parser.fieldCount; i++) {
                     fields[i] = m.group(i + 1);
                 }
                 return true;
