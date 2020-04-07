@@ -14,6 +14,7 @@ import org.das2.datum.UnitsUtil;
 import org.das2.util.monitor.ProgressMonitor;
 import java.io.*;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -2131,11 +2132,41 @@ public class AsciiParser {
         AsciiParser parser;
         boolean doGuessUnits= true;
 
+        public static String[] getNamedGroups( String regex ) {
+            Pattern p= Pattern.compile("\\(\\?\\<([a-zA-Z][0-9a-zA-Z]*)\\>");
+            Pattern parenPattern= Pattern.compile("\\(");
+            List<String> result= new ArrayList<>();
+            
+            Matcher m= parenPattern.matcher(regex);
+            while ( m.find() ) {
+                if ( m.start()==0 || regex.charAt(m.start()-1)!='\\' ) {
+                    Matcher nm= p.matcher(regex.substring(m.start()));
+                    if ( nm.find() && nm.start()==0 ) {
+                        String name= nm.group(1);
+                        result.add(name);
+                    } else {
+                        result.add("");
+                    }
+                } else {
+                    logger.finer("it wasn't actually a group, it was backslash paren");
+                }
+            }
+            return result.toArray( new String[result.size()] );
+        }
+        
         public RegexParser( AsciiParser parser, String regex) {
             recordPattern = Pattern.compile(regex);
             this.parser= parser;
             parser.initializeByFieldCount(recordPattern.matcher("").groupCount());
             
+            String[] gg= getNamedGroups(regex);
+            
+            for ( int i=0; i<gg.length; i++ ) {
+                if ( gg[i].length()>0 && i<parser.fieldNames.length ) {
+                    parser.fieldNames[i]= gg[i];
+                }
+            }
+
         }
 
         @Override
