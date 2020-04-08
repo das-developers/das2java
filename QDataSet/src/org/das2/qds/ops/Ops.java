@@ -11495,6 +11495,12 @@ public final class Ops {
         if (ds.rank() > 1) {
             throw new IllegalArgumentException("only rank 1");
         }
+        Units u= (Units) ds.property(QDataSet.UNITS);
+        if ( u!=null ) {
+            if ( UnitsUtil.isNominalMeasurement(u) ) {
+                throw new IllegalArgumentException("cannot take differences of nominal or enumeration data");
+            }
+        }
         ArrayDataSet result= ArrayDataSet.createRank1( DataSetOps.getComponentType(ds), ds.length()-1 );
         QDataSet w1= DataSetUtil.weightsDataSet(ds);
         QDataSet dep0ds= (QDataSet) ds.property(QDataSet.DEPEND_0);
@@ -11517,7 +11523,6 @@ public final class Ops {
             }
         }
         result.putProperty(QDataSet.FILL_VALUE, fill );
-        Units u= (Units) ds.property(QDataSet.UNITS);
         if ( u!=null ) result.putProperty(QDataSet.UNITS, u.getOffsetUnits() );
         result.putProperty(QDataSet.NAME, null );
         result.putProperty(QDataSet.MONOTONIC, null );
