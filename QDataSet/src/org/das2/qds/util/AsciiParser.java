@@ -453,6 +453,7 @@ public class AsciiParser {
                     System.arraycopy( this.units, 0, u, 0, n );
                     result = createDelimParser(line1, p.getDelim(), -1); // set column names
                     System.arraycopy( u, 0, this.units, 0, n );
+                    result.setGuessUnits(false);
                     break;
                 }
             }
@@ -1660,6 +1661,8 @@ public class AsciiParser {
         public String header=null; // place to store the header.
         boolean showException= true;
 
+        boolean guessUnits= true;
+        
         /**
          * 
          * @param fieldCount
@@ -1686,6 +1689,15 @@ public class AsciiParser {
 
         public void setShowException( boolean s ) {
             this.showException= s;
+        }
+        
+        /**
+         * if true, then try to guess the units of the data coming in.  If most
+         * fields will be non-enumeration, then the flag is cleared.
+         * @param guess 
+         */
+        public void setGuessUnits( boolean guess ) {
+            this.guessUnits= guess;
         }
         
         @Override
@@ -1716,6 +1728,20 @@ public class AsciiParser {
             if ( !splitRecord(line, ss ) ) {
                 return false;
             }
+            
+            if ( guessUnits ) {
+                initializeUnitsByGuessing( ss, irec );
+                int nonEnumCount=0;
+                for ( j=0; j<fieldCount; j++ ) {
+                    if ( UnitsUtil.isIntervalOrRatioMeasurement(units[j]) ) {
+                        nonEnumCount++;
+                    }
+                }
+                if ( nonEnumCount>fieldCount/2 ) {
+                    guessUnits= false;
+                    parseMeta( "", builder ); // we must reset the bundle descriptor
+                }
+            }
 
             Exception firstException= null;
             for (j = 0; j < fieldCount; j++) {
@@ -1745,6 +1771,7 @@ public class AsciiParser {
             // the record is parsable if there are two or more parsable fields.
             // it is not parsable if no fields can be parsed.
             if ( AsciiParser.this.nonEnumFields>-1 ) {
+                if ( guessUnits ) return false;  // we're still trying to figure out the units.
                 int enumFieldCount=  tryCount - nonEnumFields;
                 if ( ( failCount < tryCount ) && ( okayCount > ( enumFieldCount + 1 ) || failCount < 3 ) ) {
                     return true;
