@@ -529,10 +529,15 @@ public class EventsRenderer extends Renderer {
                 if ( width!=null ) {
                     width= width.divide(2);
                 } else {
-                    QDataSet sort= Ops.sort(dep0);
-                    QDataSet diffs= Ops.diff( DataSetOps.applyIndex(dep0,0,sort,false) );
-                    QDataSet w= Ops.reduceMin( diffs,0 );
-                    width= DataSetUtil.asDatum(w);                    
+                    Units dep0units= SemanticOps.getUnits(dep0);
+                    if ( UnitsUtil.isNominalMeasurement(dep0units) ) {
+                        throw new IllegalArgumentException("dep0units are norminal units");
+                    } else {
+                        QDataSet sort= Ops.sort(dep0);
+                        QDataSet diffs= Ops.diff( DataSetOps.applyIndex(dep0,0,sort,false) );
+                        QDataSet w= Ops.reduceMin( diffs,0 );
+                        width= DataSetUtil.asDatum(w);
+                    }
                 }
                 xmins= Ops.subtract(dep0, org.das2.qds.DataSetUtil.asDataSet(width) );
                 xmaxs= Ops.add(dep0, org.das2.qds.DataSetUtil.asDataSet(width) );                
