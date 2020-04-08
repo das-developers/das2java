@@ -1661,7 +1661,7 @@ public class AsciiParser {
         public String header=null; // place to store the header.
         boolean showException= true;
 
-        boolean guessUnits= true;
+        boolean guessUnits= true; // guess the units of each field as they come in.
         
         /**
          * 
