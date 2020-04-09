@@ -1,11 +1,3 @@
-/*
- * InconvertibleUnitsException.java
- *
- * Created on December 1, 2007, 6:31 AM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
 
 package org.das2.datum;
 
@@ -15,7 +7,11 @@ package org.das2.datum;
  */
 public class InconvertibleUnitsException extends IllegalArgumentException {
     
-    /** Creates a new instance of InconvertibleUnitsException */
+    /** 
+     * Creates a new instance of InconvertibleUnitsException 
+     * @param fromUnits the original units
+     * @param toUnits the target units
+     */
     public InconvertibleUnitsException( Units fromUnits, Units toUnits ) {
         super( ( fromUnits==Units.dimensionless ? "(dimensionless)" : fromUnits.toString() ) 
             + " -> " 
