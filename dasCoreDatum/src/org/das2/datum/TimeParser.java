@@ -1495,10 +1495,20 @@ public class TimeParser {
                     if ( handler instanceof Orbits.OrbitFieldHandler ) {
                         orbitDatumRange= ((Orbits.OrbitFieldHandler)handler).getOrbitRange();
                     }
-                } else if (handlers[idigit] == 10) { // AM/PM
+                } else if (handlers[idigit] == 10) { // AM/PM -- code assumes hour has been read already
                     char ch = timeString.charAt(offs);
                     if (ch == 'P' || ch == 'p') {
-                        time.hour += 12;
+                        if ( time.hour==12 ) {
+                            // do nothing
+                        } else {
+                            time.hour += 12;
+                        }
+                    } else if (ch == 'A' || ch == 'a') {
+                        if ( time.hour==12 ) {
+                            time.hour -= 12;
+                        } else {
+                            // do nothing
+                        }
                     }
                 } else if (handlers[idigit] == 11) { // TimeZone is not supported, see code elsewhere.
                     int offset;
