@@ -23,6 +23,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 import java.util.regex.*;
 import org.das2.datum.Datum;
@@ -333,6 +334,7 @@ public class AsciiParser {
      * read in records, allowing for a header of non-records before
      * guessing the delim parser.  This will return a reference to the
      * DelimParser and set skipLines.  DelimParser header field is set as well.
+     * One must set the record parser explicitly.
      * @param filename
      * @return the record parser to use, or null if no records are found.
      * @throws java.io.IOException
@@ -499,7 +501,7 @@ public class AsciiParser {
                         if ( n!=null ) fieldLabels[j]= n;
                     }
                 } else {
-                    System.err.println( String.format("rich header buffer not the same length as the dataset (%d!=%d)", bundleDescriptor.length(), fieldNames.length) );
+                    logger.warning( String.format("rich header buffer not the same length as the dataset (%d!=%d)", bundleDescriptor.length(), fieldNames.length) );
                 }
             } catch (ParseException ex) {
                 logger.log(Level.SEVERE, ex.getMessage(), ex);
@@ -594,7 +596,7 @@ public class AsciiParser {
         }
 
         DelimParser result = createDelimParser(line, fieldSep, lineNumber);
-        this.recordParser = result;
+        this.setRecordParser( result );
 
         return result;
 
@@ -637,7 +639,7 @@ public class AsciiParser {
         }
 
         DelimParser result = createDelimParser(line, delimRegex, -1);
-        this.recordParser = result;
+        this.setRecordParser( result );
 
         return result;
 
@@ -659,8 +661,7 @@ public class AsciiParser {
         }
 
         regexBuf.append("(" + decimalRegex + ")\\s*");
-
-        recordParser = new RegexParser(this,regexBuf.toString());
+        this.setRecordParser( new RegexParser(this,regexBuf.toString()) );
         return recordParser;
     }
 
@@ -742,7 +743,7 @@ public class AsciiParser {
         System.arraycopy(columnOffsets, 0, co, 0, columnWidths.length);
 
         FixedColumnsParser p = new FixedColumnsParser(co, columnWidths);
-        this.recordParser = p;
+        this.setRecordParser(p);
 
         this.propertyPattern = null;
 
@@ -1546,7 +1547,8 @@ public class AsciiParser {
      * Trailing and leading whitespace is ignored.
      * @param line a record to parse.
      * @param fieldSep separating regex such as "," or "\t" or "\s+"
-     * @param lineNum the line number, 1 is first line, used for debugging.
+     * @param lineNum the line number, 1 is first line, used for debugging, 
+     *        -1 means the one used for parsing in production.
      * @return
      */
     private DelimParser createDelimParser(String line, String fieldSep, int lineNum) {
@@ -1641,9 +1643,11 @@ public class AsciiParser {
      */
     public DelimParser getDelimParser( int fieldCount, String delim ) {
         DelimParser result= new DelimParser(fieldCount, delim);
-        this.recordParser= result;
+        this.setRecordParser(result);
         return result;
     }
+    
+    private static AtomicInteger currentSerialNumber= new AtomicInteger(10000);
     
     /**
      * DelimParser splits the line on a regex (like "," or "\\s+") to create the fields.
@@ -1663,12 +1667,15 @@ public class AsciiParser {
 
         boolean guessUnits= true; // guess the units of each field as they come in.
         
+        int serialNumber;
+               
         /**
          * 
          * @param fieldCount
          * @param delim the delimiter pattern, such as "," or "\s+"
          */
-        public DelimParser(int fieldCount, String delim) {
+        public DelimParser( int fieldCount, String delim ) {            
+            this.serialNumber= AsciiParser.currentSerialNumber.incrementAndGet();
             this.fieldCount = fieldCount;
             this.doParseField = new boolean[fieldCount];
             for (int i = 0; i < fieldCount; i++) {
@@ -1676,9 +1683,9 @@ public class AsciiParser {
             }
             this.delimRegex = delim;
             this.delimPattern = Pattern.compile(delim);
-            this.header= ""; // call guessParser to set
+            this.header= ""; // call guessParser to set            
         }
-
+        
         /**
          * returns the delimiter, which is a regex.  Examples include "," "\t", and "\s+"
          * @return
@@ -1905,7 +1912,7 @@ public class AsciiParser {
 
         @Override
         public String toString() {
-            return "AsciiParser.DelimParser: regex="+this.delimRegex + " fieldCount="+this.fieldCount;
+            return "AsciiParser.DelimParser: delim="+this.delimRegex + " fieldCount="+this.fieldCount+ " serialNumber="+this.serialNumber;
         }
     }
 
@@ -2293,7 +2300,7 @@ public class AsciiParser {
      */
     public FixedColumnsParser setFixedColumnsParser(int[] columnOffsets, int[] columnWidths, FieldParser[] parsers) {
         FixedColumnsParser result = new FixedColumnsParser(columnOffsets, columnWidths);
-        this.recordParser = result;
+        this.setRecordParser(result);
         initializeByFieldCount(parsers.length);
         this.fieldParsers = Arrays.copyOf( parsers, parsers.length );
         return result;
