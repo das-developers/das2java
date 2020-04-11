@@ -868,6 +868,8 @@ public class TimeParser {
         //context.seconds = 0;
         //context.micros = 0;
         
+        boolean haveHour= false;
+        
         for (int i = 1; i < ndigits; i++) {
             if (pos != -1) {
                 pos += delim[i - 1].length();
@@ -881,6 +883,14 @@ public class TimeParser {
                 }
             }
 
+            if ( fc[i].equals("H") ) {
+                haveHour= true;
+            } else if ( fc[i].equals("p") ) {
+                if ( !haveHour ) {
+                    throw new IllegalArgumentException("$H must preceed $p");
+                }
+            }
+            
             if (handler == 9999) {
                 if ( !fieldHandlers.containsKey(fc[i]) ) {
                     throw new IllegalArgumentException("bad format code: \"" + fc[i] + "\" in \""+ formatString + "\"");
@@ -2357,6 +2367,9 @@ public class TimeParser {
         logger.getHandlers()[0].setLevel(Level.ALL);
         org.das2.datum.DatumRangeUtil.parseTimeRangeValid("2000-022/P1D");
         System.err.println( makeCanonical("$Y-$3{J}") );
+        testTimeParser1( "$Y-$m-$d $H:$M $p", "2019-05-03 12:00 PM", "2019-05-03T12:00/PT1M");
+        testTimeParser1( "$Y-$m-$d $H:$M $p", "2019-05-03 12:00 AM", "2019-05-03T00:00/PT1M");
+        //testTimeParser1( "$Y-$m-$d $p $H", "2019-05-03 AM 12", "2019-05-03T00:00/PT1H");
         testTimeParser1( "$Y$m$d-$(Y,end)$m$d", "20130202-20140303", "2013-02-02/2014-03-03" );
         testTimeParser1( "$Y$m$d-$(d,end)", "20130202-13", "2013-02-02/2013-02-13" );
         testTimeParser1( "$(periodic;offset=0;start=2000-001;period=P1D)", "0",  "2000-001");
