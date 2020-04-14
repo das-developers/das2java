@@ -33,6 +33,7 @@ import org.das2.datum.EnumerationUnits;
 import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.TimeParser;
 import org.das2.qds.DataSetUtil;
+import org.das2.qds.MutablePropertyDataSet;
 import org.das2.qds.QDataSet;
 import org.das2.qds.SparseDataSetBuilder;
 import org.das2.qds.WritableDataSet;
@@ -84,7 +85,7 @@ public class AsciiParser {
      * rich headers are put here.
      */
     //AsciiHeadersParser.BundleDescriptor bundleDescriptor;
-    QDataSet bundleDescriptor;
+    MutablePropertyDataSet bundleDescriptor;
 
     /**
      * units for each column.
@@ -2124,16 +2125,19 @@ public class AsciiParser {
                 Units u= guessUnits(ss[i].trim());
                 if ( UnitsUtil.isTimeLocation(u) ) {
                     units[i]= Units.t2000;
-                    fieldParsers[i]= UNITS_PARSER;
+                    fieldParsers[i] = UNITS_PARSER;
                 } else if ( u==Units.dimensionless ) {
                     units[i] = u;
                     fieldParsers[i] = DOUBLE_PARSER;
                 } else if ( u instanceof EnumerationUnits ) {
                     units[i]= u;
-                    fieldParsers[i]= ENUMERATION_PARSER;
+                    fieldParsers[i] = ENUMERATION_PARSER;
                 } else {
                     units[i]= u;
-                    fieldParsers[i]= UNITS_PARSER;
+                    fieldParsers[i] = UNITS_PARSER;
+                }
+                if ( bundleDescriptor!=null ) {
+                    bundleDescriptor.putProperty( QDataSet.UNITS, i, u );
                 }
             }
         }
