@@ -8310,7 +8310,7 @@ public final class Ops {
             return expandWaveform(ds);
         } else if ( ds.rank()==2 ) {
             QDataSet ttags= (QDataSet)ds.property(QDataSet.DEPEND_0);
-            QDataSet dts= Ops.diff(ttags);
+            QDataSet dts= Ops.abs( Ops.diff(ttags) );
             Datum cadenceMin= Ops.datum( Ops.reduceMin( dts, 0 ) );
             Datum twiceCadenceMin= cadenceMin.multiply(2);
             QDataSet r= Ops.where( Ops.gt( dts, twiceCadenceMin ) );
