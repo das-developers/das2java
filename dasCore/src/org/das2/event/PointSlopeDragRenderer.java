@@ -78,25 +78,31 @@ public class PointSlopeDragRenderer extends LabelDragRenderer {
         run= run.convertTo(xunits);
         rise= rise.convertTo(yunits);
         
-        if ( !p1.equals(p2) ) {
-            try {
-                Datum slope= rise.divide(run);
-                setLabel( "m="+slope );
-            } catch ( InconvertibleUnitsException ex ) {
-                double drise= rise.doubleValue(rise.getUnits());
-                double drun= run.doubleValue(run.getUnits());
-                double mag= drise/drun;
-                String units= "" + rise.getUnits() + " / " + run.getUnits();
-                setLabel( "m=" + nf.format(mag) + " " + units );
-            } catch ( IllegalArgumentException ex ) {  //  1/deg
-                double drise= rise.doubleValue(rise.getUnits());
-                double drun= run.doubleValue(run.getUnits());
-                double mag= drise/drun;
-                String units= "" + rise.getUnits() + " / " + run.getUnits();
-                setLabel( "m=" + nf.format(mag) + " " + units );
-            }
+        if ( xaxis.isLog() ) {
+            setLabel("xaxis is log");
+        } else if ( yaxis.isLog() ) {
+            setLabel("yaxis is log");
         } else {
-            setLabel( "" );
+            if ( !p1.equals(p2) ) {
+                try {
+                    Datum slope= rise.divide(run);
+                    setLabel( "m="+slope );
+                } catch ( InconvertibleUnitsException ex ) {
+                    double drise= rise.doubleValue(rise.getUnits());
+                    double drun= run.doubleValue(run.getUnits());
+                    double mag= drise/drun;
+                    String units= "" + rise.getUnits() + " / " + run.getUnits();
+                    setLabel( "m=" + nf.format(mag) + " " + units );
+                } catch ( IllegalArgumentException ex ) {  //  1/deg
+                    double drise= rise.doubleValue(rise.getUnits());
+                    double drun= run.doubleValue(run.getUnits());
+                    double mag= drise/drun;
+                    String units= "" + rise.getUnits() + " / " + run.getUnits();
+                    setLabel( "m=" + nf.format(mag) + " " + units );
+                }
+            } else {
+                setLabel( "" );
+            }
         }
         super.renderDrag( g, p1, p2 );
         return new Rectangle[] { dirtyBounds, myDirtyBounds } ;
