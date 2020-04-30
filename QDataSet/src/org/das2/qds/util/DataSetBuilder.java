@@ -22,7 +22,6 @@ import org.das2.datum.Units;
 import org.das2.util.LoggerManager;
 import org.das2.qds.ArrayDataSet;
 import org.das2.qds.DDataSet;
-import org.das2.qds.DataSetUtil;
 import org.das2.qds.QDataSet;
 import org.das2.qds.SemanticOps;
 import org.das2.qds.ops.Ops;
@@ -181,14 +180,21 @@ public class DataSetBuilder {
     
     private void newCurrent() {
         logger.log(Level.FINE, "creating rank {0} receiver for next {1} records", new Object[] { rank, recCount } );
-        if ( rank==1 ) {
-            current= DDataSet.createRank1( recCount );
-        } else if ( rank==2 ) {
-            current= DDataSet.createRank2( recCount, dim1 );
-        } else if ( rank==3 ) {
-            current= DDataSet.createRank3( recCount, dim1, dim2 );
-        } else if ( rank==4 ) {
-            current= DDataSet.createRank4( recCount, dim1, dim2, dim3 );
+        switch (rank) {
+            case 1:
+                current= DDataSet.createRank1( recCount );
+                break;
+            case 2:
+                current= DDataSet.createRank2( recCount, dim1 );
+                break;
+            case 3:
+                current= DDataSet.createRank3( recCount, dim1, dim2 );
+                break;
+            case 4:
+                current= DDataSet.createRank4( recCount, dim1, dim2, dim3 );
+                break;
+            default:
+                break;
         }
     }
 
