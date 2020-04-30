@@ -70,6 +70,15 @@ public class NumberUnits extends Units {
     }
     
     @Override
+    public Datum createDatum(Datum value) {
+        if ( value.getUnits()==this ) {
+            return value;
+        } else {
+            return value.convertTo(this);
+        }
+    }
+    
+    @Override
     public DatumFormatterFactory getDatumFormatterFactory() {
         return DefaultDatumFormatterFactory.getInstance();
     }
@@ -324,5 +333,5 @@ public class NumberUnits extends Units {
             return Units.dimensionless.createDatum( divide( a, uc.convert(b) ) );
         }
     }
-    
+
 }

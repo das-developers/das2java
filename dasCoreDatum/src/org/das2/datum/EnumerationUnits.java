@@ -171,6 +171,7 @@ public class EnumerationUnits extends Units {
      * it is an object 
      * @param object an object, typically a string.
      * @return Datum representing the object.
+     * @see createDatum( Datum )
      */
     public Datum createDatum(Object object) {
         if ( object instanceof String ) {
@@ -360,5 +361,14 @@ public class EnumerationUnits extends Units {
     public String toString() {
         //return this.getId() + "(ordinal "+Integer.toHexString(this.hashCode())+")";
         return this.getId() + "(ordinal)";
+    }
+
+    @Override
+    public Datum createDatum(Datum value) {
+        if ( value.getUnits()==this ) {
+            return value;
+        } else {
+            return createDatum(value.toString());
+        }
     }
 }

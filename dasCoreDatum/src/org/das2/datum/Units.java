@@ -660,6 +660,16 @@ public abstract class Units {
     public abstract Datum createDatum( long value );
     public abstract Datum createDatum( Number value );
     
+    /**
+     * create a Datum with the units.  For example, 
+     * <ul>
+     * <li>Units.cm.createDatum('5m') &rarr; '500cm'
+     * <li>eu.createDatum(datum('voyager1')) will convert to the new ordinal units.
+     * </ul>
+     * @param value
+     * @return 
+     */
+    public abstract Datum createDatum( Datum value );
     public abstract Datum createDatum( double value, double resolution );
     
     private final static double FILL_DOUBLE= -1e31;
