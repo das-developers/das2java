@@ -267,7 +267,7 @@ public class DataSetBuilder {
         checkStreamIndex(index0);
         if ( rank!=1 ) throw new IllegalArgumentException("rank 1 putValue used with rank "+rank+" dataset");
         if ( u==null ) u= d.getUnits();
-        current.putValue( this.index, d.doubleValue(u) );
+        current.putValue( this.index, u.createDatum(d).doubleValue(u) ); // support enumeration datums.
     }
     
     /**
@@ -282,7 +282,7 @@ public class DataSetBuilder {
         if ( us==null || us[index1]==null ) {
             setUnits(index1, d.getUnits());
         }
-        current.putValue( this.index, index1, d.doubleValue(us[index1]) );
+        current.putValue( this.index, index1, us[index].createDatum(d).doubleValue(us[index1]) );
     }
     
     /**
@@ -296,7 +296,7 @@ public class DataSetBuilder {
         checkStreamIndex(index0);
         if ( rank!=3 ) throw new IllegalArgumentException("rank 3 putValue used with rank "+rank+" dataset");
         if ( u==null ) u= d.getUnits();
-        current.putValue( this.index, index1, index2, d.doubleValue(u) );
+        current.putValue( this.index, index1, index2, u.createDatum(d).doubleValue(u) );
     }    
 
     /**
@@ -311,7 +311,7 @@ public class DataSetBuilder {
         checkStreamIndex(index0);
         if ( rank!=4 ) throw new IllegalArgumentException("rank 4 putValue used with rank "+rank+" dataset");
         if ( u==null ) u= d.getUnits();
-        current.putValue( this.index, index1, index2, index3, d.doubleValue(u) );
+        current.putValue( this.index, index1, index2, index3, u.createDatum(d).doubleValue(u) );
     }    
         
     /**
