@@ -282,7 +282,7 @@ public class DataSetBuilder {
         if ( us==null || us[index1]==null ) {
             setUnits(index1, d.getUnits());
         }
-        current.putValue( this.index, index1, us[index].createDatum(d).doubleValue(us[index1]) );
+        current.putValue( this.index, index1, us[index1].createDatum(d).doubleValue(us[index1]) );
     }
     
     /**
