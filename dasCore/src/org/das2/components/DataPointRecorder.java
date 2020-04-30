@@ -511,7 +511,11 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
             builder.putValue( -1, 0, dp.get(0) );
             builder.putValue( -1, 1, dp.get(1) );
             for ( int i=2; i<planesArray.length; i++ ) {
-                builder.putValue( -1, i, (Datum)dp.getPlane(planesArray[i] ) );
+                try {
+                    builder.putValue( -1, i, (Datum)dp.getPlane(planesArray[i] ) );
+                } catch ( Exception ex ) {
+                    builder.putValue( -1, i, unitsArray[i].getFillDatum() );
+                }
             }
             builder.nextRecord();
         }
