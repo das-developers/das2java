@@ -19,6 +19,7 @@ import org.das2.datum.DatumUtil;
 import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsConverter;
+import org.das2.datum.UnitsUtil;
 
 /**
  * Shows the slope from the click point to the drag point.
@@ -60,15 +61,23 @@ public class PointSlopeDragRenderer extends LabelDragRenderer {
         g.setColor(color0);
         
         g1.drawLine( p1.x, p1.y, p2.x, p2.y );
-        g1.drawOval(p1.x-1, p1.y-1, 3, 3 ) ;
+        g1.setColor(g.getBackground());
+        g1.fillOval(p1.x-2, p1.y-2, 4, 4 ) ;
+        g1.setColor(color0);
+        g1.drawOval(p1.x-2, p1.y-2, 4, 4 ) ;
         
         Rectangle myDirtyBounds= new Rectangle( p1.x-2, p1.y-2, 5, 5 );
                 
         myDirtyBounds.add(p2.x-2,p2.y-2);
         myDirtyBounds.add(p2.x+2,p2.y+2);
         
-        Datum run= xaxis.invTransform(p2.x).subtract(xaxis.invTransform(p1.x));        
-        Datum rise= yaxis.invTransform(p2.y).subtract(yaxis.invTransform(p1.y));
+        Datum x1= xaxis.invTransform(p2.x);
+        Datum x0= xaxis.invTransform(p1.x);
+        Datum run= x1.subtract(x0);
+
+        Datum y1= yaxis.invTransform(p2.y);
+        Datum y0= yaxis.invTransform(p1.y);
+        Datum rise= y1.subtract(y0);
             
         Datum xdr= xaxis.getDatumRange().width();
         Datum ydr= yaxis.getDatumRange().width();
@@ -78,10 +87,90 @@ public class PointSlopeDragRenderer extends LabelDragRenderer {
         run= run.convertTo(xunits);
         rise= rise.convertTo(yunits);
         
+        run= DatumUtil.asOrderOneUnits(run);
+        
+        Units runUnits= run.getUnits();
+        String fit;
+        if ( yaxis.isLog() && xaxis.isLog() ) {
+            double ycycles= Math.log10( y1.divide(y0).doubleValue(Units.dimensionless) );
+            double xcycles= Math.log10( x1.divide(x0).doubleValue(Units.dimensionless) );
+            NumberFormat nf= new DecimalFormat("0.00");
+            String sslope= nf.format( ycycles / xcycles );
+            fit = "y= ( x/" +x1 +" )!A"+sslope + "!n * " + y1 ;
+        } else if ( yaxis.isLog() && !xaxis.isLog() ) {
+            NumberFormat nf= new DecimalFormat("0.00");
+            Units u= run.getUnits();
+            double drise= Math.log10(y1.divide(y0).doubleValue(Units.dimensionless) );
+            double drun= x1.subtract(x0).doubleValue(u);
+            String sslope= nf.format( drise/drun );
+            String su;
+            if ( u.isConvertibleTo(Units.seconds) ) {
+                su= UnitsUtil.divideToString( Units.dimensionless.createDatum(drise), run );
+            } else if ( u==Units.dimensionless ) {
+                su= sslope;
+            } else {
+                su= sslope + "/("+u+")";
+            }
+
+            String sx0= x1.toString();
+            if ( UnitsUtil.isTimeLocation( x1.getUnits() ) ) {
+                fit= "!Cx0="+sx0+"!C";
+                fit+= "!Cy="+ "10!A( x-x0 )*"+su+"!n * " + y1;
+            } else {
+                fit= "!Cy="+ "10!A( x-("+x1+") )*"+su+"!n * " + y1;
+            }
+
+        } else if ( !yaxis.isLog() && xaxis.isLog() ) {
+            NumberFormat nf1= new DecimalFormat("0.00");
+            Units u = rise.getUnits();
+            double drise = y1.subtract(y0).doubleValue(u);
+            double drun = Math.log10(x1.divide(x0).doubleValue(Units.dimensionless));
+            String sslope = nf1.format(drise / drun);
+            String su;
+            if ( u.isConvertibleTo(Units.seconds) ) {
+                su= UnitsUtil.divideToString( rise, Units.dimensionless.createDatum(drun) );
+            } else if ( u==Units.dimensionless ) {
+                su= sslope;
+            } else {
+                su= sslope + "("+u+")";
+            }
+            fit = "y=" + "Log( x / " + x1 + " )*" + su + " + " + y1; 
+        } else {
+            Datum slope;
+            
+            if ( rise.getUnits().isConvertibleTo(runUnits ) ) {
+                slope= rise.divide(run);
+            } else {
+                slope= rise.divide(run.doubleValue(runUnits));
+            }
+            
+            NumberFormat nf1= new DecimalFormat("0.00");
+            String dx= "( x - ("+x1+") )";
+            if ( runUnits!=Units.dimensionless ) {
+                if ( UnitsUtil.isTimeLocation( x1.getUnits() ) ) {
+                    fit= "!Cx0="+x1+"!C";
+                    dx= "( x-x0 )";
+                    fit+= "!Cy="+ nf1.format(slope.value()) + "/"+runUnits +" * " + dx + " + " + y1;
+                } else {
+                    fit= "y="+ nf1.format(slope.value()) + "/"+runUnits +" * " + dx + " + " + y1;
+                }
+
+            } else {
+                
+                if ( rise.getUnits().isConvertibleTo(runUnits ) ) {
+                    slope= rise.divide(run);
+                } else {
+                    slope= rise.divide(run.doubleValue(runUnits));
+                }
+                fit= "y="+ slope + " * ( x - ("+x1+") ) + "+ y1;
+            }
+        }
+
+
         if ( xaxis.isLog() ) {
-            setLabel("xaxis is log");
+            setLabel( fit );
         } else if ( yaxis.isLog() ) {
-            setLabel("yaxis is log");
+            setLabel( fit );
         } else {
             if ( !p1.equals(p2) ) {
                 try {
