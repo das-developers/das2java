@@ -81,11 +81,12 @@ public class CleanDataFilterEditorPanel extends AbstractFilterEditorPanel {
                 .addContainerGap()
                 .add(jLabel2)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(sizeTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(boxCarTextField)
-                    .add(jLabel1)
-                    .add(nsigmaTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(nsigmaTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                        .add(sizeTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(boxCarTextField)
+                        .add(jLabel1)))
                 .addContainerGap())
         );
 
@@ -95,7 +96,7 @@ public class CleanDataFilterEditorPanel extends AbstractFilterEditorPanel {
     }// </editor-fold>//GEN-END:initComponents
 
 
-    public static String PROP_REGEX= "\\|cleanData\\(([-\\d]*)(\\,([\\d\\.]+))?\\)";
+    public static final String PROP_REGEX= "\\|cleanData\\(([-\\d]*)(\\,([\\d\\.]+))?\\)";
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     public javax.swing.JCheckBox boxCarTextField;
