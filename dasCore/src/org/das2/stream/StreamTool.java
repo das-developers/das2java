@@ -616,26 +616,25 @@ public class StreamTool {
         }
         
         ByteBufferInputStream bbin;
-        InputStreamReader isr;
         
         if ( logger.isLoggable(Level.FINEST) ) {
             bbin = new ByteBufferInputStream(xml2);
-            isr = new InputStreamReader(bbin,"UTF-8");
+            try ( InputStreamReader isr2 = new InputStreamReader(bbin,"UTF-8") ) {
 
-            System.err.println("the encoding is "+isr.getEncoding());
-            int c= isr.read();
-            int count= 0;
-            while ( c!=-1 && count<1000 ) {
-                System.err.println( String.format( "%05d %04d %X %c", count, c, c, c ) );
-                count++;
-                c= isr.read();
+                System.err.println("the encoding is "+isr2.getEncoding());
+                int c= isr2.read();
+                int count= 0;
+                while ( c!=-1 && count<1000 ) {
+                    System.err.println( String.format( "%05d %04d %X %c", count, c, c, c ) );
+                    count++;
+                    c= isr2.read();
+                }
             }
         }
         
         bbin = new ByteBufferInputStream(xml);
-        isr = new InputStreamReader(bbin,"UTF-8");
         
-        try {
+        try ( InputStreamReader isr = new InputStreamReader(bbin,"UTF-8") ) {
             DocumentBuilder builder;
             builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
             InputSource source = new InputSource(isr);
@@ -643,6 +642,7 @@ public class StreamTool {
             source.setEncoding("UTF-8");
             Document document = builder.parse(source);
             return document;
+
         } catch (ParserConfigurationException ex) {
             throw new RuntimeException(ex);
         }
