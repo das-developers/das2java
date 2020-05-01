@@ -135,7 +135,8 @@ public class LabelDragRenderer implements DragRenderer {
         // draw the translucent background
         g.setColor(new Color(255,255,255,200));
         dirtyBounds.setRect(xp,yp,dx,dy);
-        g.fill(dirtyBounds);
+        //g.fill(dirtyBounds);
+        g.fillRoundRect( xp, yp, dx, dy, 5, 5 );
         
         // draw the label
         g.setColor(new Color(20,20,20));
