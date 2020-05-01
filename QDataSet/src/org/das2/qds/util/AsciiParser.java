@@ -1497,7 +1497,6 @@ public class AsciiParser {
                 throw new IllegalStateException("ENUMERATION_PARSER needed EnumerationUnits");
             }
             EnumerationUnits u = (EnumerationUnits)units;
-            if ( u==null ) throw new NullPointerException("ENUMERATION_PARSER used where we don't have a unit, at columnIndex="+columnIndex );
             field= field.trim();
             try {
                 Datum d= u.createDatum(field); // rte_2038937185 that Ivar sees.
