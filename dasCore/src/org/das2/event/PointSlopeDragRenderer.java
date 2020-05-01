@@ -14,11 +14,9 @@ import java.awt.*;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.text.*;
-import org.das2.datum.DatumRange;
 import org.das2.datum.DatumUtil;
 import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.Units;
-import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
 
 /**
