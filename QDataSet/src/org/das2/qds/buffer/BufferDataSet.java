@@ -898,12 +898,12 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         
         if ( ths.rank()==ds.rank()-1 ) {
             Units u= SemanticOps.getUnits(ths);
-            ths= BufferDataSet.makeDataSet( ths.rank()+1, 1, 0, ths.len0, ths.len1, ths.len2, 1, ths.back, ths.type );
+            ths= BufferDataSet.makeDataSet( ths.rank()+1, ths.reclen*ths.len0, 0, 1, ths.len0, ths.len1, ths.len2, ths.back, ths.type );
             ths.putProperty( QDataSet.UNITS,u);
         }
         if ( ths.rank()-1==ds.rank() ) {
             Units u= SemanticOps.getUnits(ds);
-            ds= BufferDataSet.makeDataSet( ds.rank()+1, 1, 0, ds.len0, ds.len1, ds.len2, 1, ds.back, ds.type );
+            ds= BufferDataSet.makeDataSet( ds.rank()+1, ds.reclen*ds.len0, 0, 1, ds.len0, ds.len1, ds.len2, ds.back, ds.type );
             ds.putProperty( QDataSet.UNITS,u);
         }
         if ( ds.rank()!=ths.rank ) throw new IllegalArgumentException("rank mismatch");
@@ -994,8 +994,11 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
                 result.put( "DEPEND_"+i, djoin );
 
             } else if ( thatDep!=null && thatDep.rank()==1 ) {
-                //TODO: check properties equal.
-                result.put( "DEPEND_"+i, thatDep );
+                if ( result.get( "DEPEND_"+i)!=null ) {
+                    //TODO: check properties equal.
+                } else {
+                    result.put( "DEPEND_"+i, thatDep );
+                }
             }
             QDataSet thatBundle= (QDataSet) ds.property( "BUNDLE_"+i );
             QDataSet thisBundle= (QDataSet) ths.property("BUNDLE_"+i );
