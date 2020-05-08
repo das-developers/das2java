@@ -405,10 +405,12 @@ public class DigitalRenderer extends Renderer {
                 renderRank0( ds, g, xAxis, yAxis );
             } else if ( ! SemanticOps.isTableDataSet(ds) ) {
                 renderRank1( ds, g, xAxis, yAxis, firstIndex, lastIndex );
-            } else if ( ds.rank()!=2 ) {
-                parent.postMessage(this, "unable to render rank "+ds.rank()+" data", DasPlot.WARNING, null, null);
-            } else {
+            } else if ( ds.rank()==3 ) {
+                renderRank3( ds, g, xAxis, yAxis );
+            } else if ( ds.rank()==2 ) {
                 renderRank2( ds, g, xAxis, yAxis);
+            } else {
+                parent.postMessage(this, "unable to render rank "+ds.rank()+" data", DasPlot.WARNING, null, null);
             }
         } catch ( InconvertibleUnitsException ex ) {
             parent.postMessage(this, "inconvertible units", DasPlot.INFO, null, null);
@@ -774,6 +776,18 @@ public class DigitalRenderer extends Renderer {
         QDataSet fds= DataSetOps.flattenRank2(ds1);
 
         renderRank1( fds, g1, xAxis, yAxis, 0, fds.length() );
+    }
+    
+    private void renderRank3( QDataSet ds, Graphics2D g1, DasAxis xAxis, DasAxis yAxis ) {
+
+        for ( int i=0; i<ds.length(); i++ ) {
+            QDataSet ds1= ds.slice(i);
+
+            QDataSet fds= DataSetOps.flattenRank2(ds1);
+
+            renderRank1( fds, g1, xAxis, yAxis, 0, fds.length() );
+        }
+
     }
 
     @Override
