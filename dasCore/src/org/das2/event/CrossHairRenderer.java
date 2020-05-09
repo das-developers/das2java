@@ -37,6 +37,7 @@ import org.das2.graph.Renderer;
 import java.awt.*;
 import java.awt.geom.Point2D;
 import java.text.*;
+import org.das2.datum.DatumRange;
 import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
@@ -275,6 +276,42 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
         return bestIndex;
 
     }
+    
+    private static Datum closestCorner( DatumRange r, Datum d ) {
+        if ( r.contains(d) ) {
+            return d;
+        } else if ( r.min().gt(d) ) {
+            return r.min();
+        } else {
+            return r.max();
+        }
+    }
+    
+    /**
+     * return the table closest to the point in pixel space.
+     * @param r3table
+     * @param x
+     * @param y
+     * @return 
+     */
+    int getClosestTable( QDataSet r3table, Datum x, Datum y ) {
+        double bestDist= Double.MAX_VALUE;
+        int bestDistIndex= -1;
+        for ( int i=0; i<r3table.length(); i++ ) {
+            QDataSet table= r3table.slice(i);
+            QDataSet bounds= SemanticOps.bounds(table);
+            Datum closex= closestCorner( DataSetUtil.asDatumRange( bounds.slice(0) ), x );
+            Datum closey= closestCorner( DataSetUtil.asDatumRange( bounds.slice(1) ), y );
+            double distx= Math.abs( XAxis.transform(closex) - XAxis.transform(x) );
+            double disty= Math.abs( YAxis.transform(closey) - YAxis.transform(y) );
+            double dist= Math.sqrt( Math.pow( distx, 2 ) + Math.pow( disty, 2 ) );
+            if ( dist<bestDist ) {
+                bestDist= dist;
+                bestDistIndex= i;
+            }
+        }
+        return bestDistIndex;
+    }
 
     @Override
     public Rectangle[] renderDrag(Graphics g1, Point p1, Point p2) {
@@ -341,7 +378,10 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
                         tds= (QDataSet) ds;
                     } else {
                         tds= SemanticOps.getSimpleTableContaining( ds, x, y );
-                        if ( tds==null ) tds= ds.slice(0);
+                        if ( tds==null ) {
+                            int i= getClosestTable( ds, x, y );
+                            tds= ds.slice(i);
+                        }
                     }
                     yds= SemanticOps.ytagsDataSet(tds);
 
