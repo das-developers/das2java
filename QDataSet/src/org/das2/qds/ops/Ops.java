@@ -8913,7 +8913,7 @@ public final class Ops {
      * TODO: this could use MONOTONIC, but it doesn't.  DELTA_PLUS, DELTA_MINUS make that more difficult.
      * @see DataSetUtil#rangeOfMonotonic(org.das2.qds.QDataSet) 
      * @see AutoRangeUtil#simpleRange in Autoplot.
-     * @param ds
+     * @param ds the dataset to measure the extent
      * @return two element, rank 1 "bins" dataset.
      */
     public static QDataSet extent( QDataSet ds ) {
