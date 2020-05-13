@@ -150,6 +150,9 @@ public class BoxSelectorMouseModule extends MouseModule {
     private BoxSelectionEvent getBoxSelectionEvent(MouseDragEvent mde) {
 
         MouseBoxEvent e = (MouseBoxEvent) mde;
+        if ( e==null ) {
+            throw new NullPointerException("MouseDragEvent is null, the DragRenderer should have created it.");
+        }
 
         DatumRange xrange = null;
         DatumRange yrange = null;
