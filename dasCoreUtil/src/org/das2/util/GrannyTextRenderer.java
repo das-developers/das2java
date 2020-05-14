@@ -627,10 +627,12 @@ public class GrannyTextRenderer {
         
     }
     
-    public static String[] buildTokenArray(String str) {
+    private static String[] buildTokenArray(String str) {
         java.util.List<String> vector = new ArrayList();
         int begin;
         int end = 0;
+        str= str.replaceAll("\\<br\\>","!c");
+        
         while(end < str.length()) {
             begin = end;
             if (str.charAt(begin) == '!') {
