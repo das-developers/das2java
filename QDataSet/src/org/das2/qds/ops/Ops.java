@@ -12862,7 +12862,11 @@ public final class Ops {
         } else {
             ArrayDataSet zds = ArrayDataSet.copy(y);
             if (x != null) {
-                zds.putProperty(QDataSet.DEPEND_0, x);
+                if ( zds.rank()==0 ) {
+                    zds.putProperty(QDataSet.CONTEXT_0, x);
+                } else {
+                    zds.putProperty(QDataSet.DEPEND_0, x);
+                }
             }
             List<String> problems= new ArrayList();
             if ( !DataSetUtil.validate(zds, problems ) ) {
