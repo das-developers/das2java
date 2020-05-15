@@ -595,6 +595,8 @@ public class AsciiParser {
         } else {
             fieldSep = "\\s+";
         }
+        
+        logger.log(Level.FINER, "guessDelimParser guesses \"{0}\" for line {1}", new Object[]{fieldSep, lineNumber});
 
         DelimParser result = createDelimParser(line, fieldSep, lineNumber);
         this.setRecordParser( result );
@@ -1017,12 +1019,8 @@ public class AsciiParser {
                 try {
 
                     if (firstRecord == null) {
-                        int nonAsciiCount= 0;
                         if ( line.length()>3 ) {
-                            for ( int i=0; i<line.length(); i++ ) {
-                                char ch= line.charAt(i);
-                                if ( ( ch<32 || ch>126 ) && ch!=9 ) nonAsciiCount++;
-                            }
+                            int nonAsciiCount= getNonAsciiCount(line);
                             if ( nonAsciiCount>20 || nonAsciiCount*100/line.length()>20 ) {
                                 throw new IOException("stream does not appear to be ascii");
                             }
@@ -1387,8 +1385,18 @@ public class AsciiParser {
         }
     }
 
-    public void setGrep(String o) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    /**
+     * return the number of non-ascii characters in the line.
+     * @param line
+     * @return 
+     */
+    private static int getNonAsciiCount(String line) {
+        int nonAsciiCount= 0;
+        for ( int i=0; i<line.length(); i++ ) {
+            char ch= line.charAt(i);
+            if ( ( ch<32 || ch>126 ) && ch!=9 ) nonAsciiCount++;
+        }
+        return nonAsciiCount;
     }
 
     public static interface RecordParser {
@@ -1528,6 +1536,10 @@ public class AsciiParser {
             switch (regex) {
                 case ",":
                 case ";":
+                    if ( (int)(string.charAt(string.length()-1))==8221 ) {
+                        logger.finer("trailing right quote detected");
+                        string= string.substring(0,string.length()-1)+"\"";
+                    }
                     ss= string.trim().split( regex + "(?=([^\"]*\"[^\"]*\")*[^\"]*$)",-2);
                     break;
                 default:
@@ -1709,8 +1721,10 @@ public class AsciiParser {
         
         @Override
         public String readNextRecord( BufferedReader reader ) throws IOException {
-            String line= reader.readLine();
-            while ( line!=null && line.split("\"",-2).length % 2 == 0 ) {
+            String line= reader.readLine();                
+            char rightDoubleQuote= (char)(8221);
+            String quoteSplit= "\"|"+rightDoubleQuote;
+            while ( line!=null && line.split(quoteSplit,-2).length % 2 == 0 ) {
                 String nextLine= reader.readLine();
                 if ( nextLine!=null ) {
                     line= line + " " + nextLine;
@@ -1744,7 +1758,7 @@ public class AsciiParser {
                         nonEnumCount++;
                     }
                 }
-                if ( nonEnumCount>fieldCount/2 ) {
+                if ( nonEnumCount>=fieldCount/2 ) {
                     guessUnits= false;
                     parseMeta( "", builder ); // we must reset the bundle descriptor
                 }
