@@ -3,8 +3,6 @@ package org.das2.datum;
 
 import java.io.Serializable;
 import java.text.ParseException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * DatumRange implementation that identifies times by orbit number.  Note orbit numbers are strings, see Cassini for why.
