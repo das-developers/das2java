@@ -151,6 +151,15 @@ public class JoinDataSet extends AbstractDataSet {
 //        } else {
 //            if ( units!=ds.property(QDataSet.UNITS) ) throw new IllegalArgumentException("joined dataset has units: "+ds.property(QDataSet.UNITS)+ " and this has units: "+units );
 //        }
+        if ( ds.rank()==0 ) {
+            QDataSet context= (QDataSet) ds.property(QDataSet.CONTEXT_0);
+            if ( context!=null ) {
+                QDataSet dep0= (QDataSet) property(QDataSet.DEPEND_0);
+                if ( dep0 instanceof JoinDataSet ) {
+                    ((JoinDataSet)dep0).join(context);
+                }
+            }
+        }
         datasets.add( ds );
     }
     
