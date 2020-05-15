@@ -13099,7 +13099,7 @@ public final class Ops {
      * If the first dataset is rank N+1 JoinDataset and the other is rank N, then the rank N dataset is
      * added to the rank N+1 dataset.
      * 
-     * This is underimplemented right now, and can only join two rank N datasets or if the first dataset is the result of a join.
+     * This is under-implemented right now, and can only join two rank N datasets or if the first dataset is the result of a join.
      * 
      * @param ds1 rank N dataset, or null
      * @param ds2 rank N dataset
@@ -13113,6 +13113,13 @@ public final class Ops {
         if ( ds1==null ) {
             JoinDataSet ds= new JoinDataSet( ds2.rank()+1 );
             ds.join(ds2);
+            if ( ds2.rank()==0 ) {
+                QDataSet dep0= (QDataSet) ds2.property(QDataSet.CONTEXT_0);
+                if ( dep0!=null && dep0.rank()==0 ) {
+                    dep0= join( null, dep0 );
+                    ds.putProperty( QDataSet.DEPEND_0, dep0 );
+                }
+            }
             return ds;
         } else if (ds1.rank() == ds2.rank()) {
             JoinDataSet ds= new JoinDataSet( ds1.rank()+1 );
