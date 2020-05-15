@@ -2,6 +2,7 @@
 package org.das2.datum;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -142,7 +143,11 @@ public class Orbits {
         }
 
         if ( in==null ) {
-            throw new IllegalArgumentException("I/O Exception prevents reading orbits from \""+urls.get(0)+"\"",exfirst );
+            if ( exfirst!=null && exfirst instanceof IOException ) {
+                throw (IOException)exfirst;
+            } else {
+                throw new IllegalArgumentException("I/O Exception prevents reading orbits from \""+urls.get(0)+"\"",exfirst );
+            }
         }
 
         LinkedHashMap<String,DatumRange> result= new LinkedHashMap();
@@ -458,6 +463,10 @@ public class Orbits {
                 if ( source.size()==1 ) orbits.url= source.get(0);
                 missions.put( sc, orbits );
                 LOGGER.log(Level.INFO, "** done reading orbits for {0}", sc);
+            } catch ( FileNotFoundException ex ) {
+                LOGGER.log(Level.INFO, "** not orbits: {0}", sc);
+                nonmissions.put(sc,"Not found: "+ex.getMessage());
+                throw new IllegalArgumentException( "Unable to find orbits file for "+sc, ex );
             } catch ( IOException ex ) {
                 LOGGER.log(Level.INFO, "** not orbits: {0}", sc);
                 nonmissions.put(sc,ex.getMessage());
