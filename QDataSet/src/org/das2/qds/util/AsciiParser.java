@@ -951,18 +951,18 @@ public class AsciiParser {
         builder.setValidMax(validMax);
         builder.setValidMin(validMin);
 
-        int nonEnumFields=0;
+        int lnonEnumFields=0;
         for ( int i=0; i<units.length; i++ ) {
             Units unit= units[i];
             if ( UnitsUtil.isIntervalOrRatioMeasurement(unit)) {
-                nonEnumFields+=1;
+                lnonEnumFields+=1;
             } else {
                 if ( fieldParsers[i]==UNITS_PARSER ) {
                     fieldParsers[i]=ENUMERATION_PARSER;
                 }                
             }
         }
-        this.nonEnumFields= nonEnumFields;
+        this.nonEnumFields= lnonEnumFields;
         
         long bytesRead = 0;
 
@@ -1789,12 +1789,12 @@ public class AsciiParser {
                 }
             }
             
+            int enumFieldCount=  tryCount - nonEnumFields;
             // the record is parsable if there are two or more parsable fields.
             // it is not parsable if no fields can be parsed.
             if ( AsciiParser.this.nonEnumFields>-1 ) {
                 if ( guessUnits ) return false;  // we're still trying to figure out the units.
-                int enumFieldCount=  tryCount - nonEnumFields;
-                if ( ( failCount < tryCount ) && ( okayCount > ( enumFieldCount + 1 ) || failCount < 3 ) ) {
+                if ( ( failCount < tryCount ) && ( okayCount > ( enumFieldCount + 1 ) || (failCount < 3-enumFieldCount ) ) ) {
                     return true;
                 } else {
                     return false;
