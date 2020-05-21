@@ -176,6 +176,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         public static final RebinnerEnum binAverageNoInterpolate;
         public static final RebinnerEnum binAverageNoInterpolateNoEnlarge;
         public static final RebinnerEnum binXinterpY;
+        public static final RebinnerEnum interpXThenInterpY;
         public static final RebinnerEnum scatter;
         public static final RebinnerEnum triScat= new RebinnerEnum( new TriScatRebinner(), "triScat" );
         public static final RebinnerEnum nnTriScat;
@@ -201,6 +202,11 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
             rebinner = new AverageTableRebinner();
             rebinner.setInterpolateType( AverageTableRebinner.Interpolate.BinXInterpY );
             binXinterpY = new RebinnerEnum(rebinner, "binXinterpY");
+
+            rebinner = new AverageTableRebinner();
+            rebinner.setInterpolateType( AverageTableRebinner.Interpolate.Linear );
+            rebinner.setInterpolateXThenY(true);
+            interpXThenInterpY = new RebinnerEnum(rebinner, "interpXThenInterpY");
 
             scatter = new RebinnerEnum( new ScatterRebinner(), "scatter");
 

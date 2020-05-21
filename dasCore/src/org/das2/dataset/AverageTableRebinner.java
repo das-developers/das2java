@@ -52,6 +52,7 @@ public class AverageTableRebinner implements DataSetRebinner {
      */
     private boolean interpolate = true;
     private boolean enlargePixels = true;
+    private boolean interpolateXThenY= false;
 
     public static enum Interpolate {
         None, Linear, NearestNeighbor, BinXInterpY;
@@ -228,12 +229,21 @@ public class AverageTableRebinner implements DataSetRebinner {
 
             if ( cadenceCheck==false ) yTagWidth= null;
 
-            if (ddY != null) {
-                fillInterpolateY(rebinData, rebinWeights, ddY, yTagWidth, interpolateType);
-            }
-            
-            if (ddX != null) {
-                fillInterpolateXNew(rebinData, rebinWeights, ddX, xTagWidth, cadenceCheck, interpolateType);
+            if ( interpolateXThenY ) {
+                if (ddX != null) {
+                    fillInterpolateXNew(rebinData, rebinWeights, ddX, xTagWidth, cadenceCheck, interpolateType);
+                }
+                if (ddY != null) {
+                    fillInterpolateY(rebinData, rebinWeights, ddY, yTagWidth, interpolateType);
+                }
+                
+            } else {
+                if (ddY != null) {
+                    fillInterpolateY(rebinData, rebinWeights, ddY, yTagWidth, interpolateType);
+                }            
+                if (ddX != null) {
+                    fillInterpolateXNew(rebinData, rebinWeights, ddX, xTagWidth, cadenceCheck, interpolateType);
+                }            
             }
 
         } else if (enlargePixels) {
@@ -1349,6 +1359,18 @@ public class AverageTableRebinner implements DataSetRebinner {
      */
     public void setInterpolate(boolean interpolate) {
         this.interpolate = interpolate;
+    }
+
+    public boolean isInterpolateXThenY() {
+        return interpolateXThenY;
+    }
+
+    /**
+     * first interpolate over gaps in X then gaps in Y.
+     * @param interpolateXThenY 
+     */
+    public void setInterpolateXThenY(boolean interpolateXThenY) {
+        this.interpolateXThenY = interpolateXThenY;
     }
 
     public void setEnlargePixels(boolean enlargePixels) {
