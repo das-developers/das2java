@@ -695,13 +695,36 @@ public abstract class Units {
         return !Double.isNaN(value) && value>FILL_DOUBLE/10 ;
     }
     
+    /**
+     * return the formatter factor for this Datum.
+     * @return 
+     */
     public abstract DatumFormatterFactory getDatumFormatterFactory();
     
+    /**
+     * parse the string in the context of these units.  The unit may
+     * throw a parse exception if it cannot be parsed, or may return
+     * a 
+     * @param s
+     * @return
+     * @throws ParseException 
+     */
     public abstract Datum parse(String s) throws ParseException;
     
+    /**
+     * format the Datum.
+     * @param datum the Datum
+     * @return the Datum formatted as a string.
+     */
     public String format( Datum datum ) {
         return getDatumFormatterFactory().defaultFormatter().format(datum);
     }
+    
+    /**
+     * format the Datum, allowing use of subscripts and superscripts interpretted by GrannyTextRenderer.
+     * @param datum the Datum
+     * @return the Datum formatted as a string, possibly containing control sequences like !A and !n, etc.
+     */
     public String grannyFormat( Datum datum ) {
         return getDatumFormatterFactory().defaultFormatter().grannyFormat(datum);
     }
