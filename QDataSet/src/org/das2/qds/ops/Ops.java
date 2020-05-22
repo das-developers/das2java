@@ -1371,7 +1371,8 @@ public final class Ops {
     }
      
     /**
-     * reduce the size of the data by keeping every nth measurement (subsample). 
+     * reduce the size of the data by keeping every nth measurement (subsample), starting
+     * at the 0th measurement.
      * @param ds rank 1 or more dataset.
      * @param m the decimation factor, e.g. 2 is every other measurement.
      * @return 
@@ -12425,6 +12426,26 @@ public final class Ops {
         return reform( dataset(ds),qube );
     }
 
+    /**
+     * return the xtags of the dataset. 
+     * @param ds the dataset
+     * @return the dataset for the xtags.
+     * @see SemanticOps#xtagsDataSet(org.das2.qds.QDataSet) 
+     */
+    public static QDataSet xtags( QDataSet ds ) {
+        return SemanticOps.xtagsDataSet(ds);
+    }
+
+    /**
+     * return the ytags of the dataset. 
+     * @param ds the dataset
+     * @return the dataset for the xtags.
+     * @see SemanticOps#ytagsDataSet(org.das2.qds.QDataSet) 
+     */
+    public static QDataSet ytags( QDataSet ds ) {
+        return SemanticOps.ytagsDataSet(ds);
+    }
+    
     /**
      * bundle the dataset, making an initial bundle, adding a bundle dimension.  
      * @param ds a rank N dataset
