@@ -1689,8 +1689,10 @@ public class DataSetUtil {
             if ( yds.rank()==1 ) {
                 // if yds is actually found to be another set of tags, then look for cadence in x based on this.
                 int i= repeatingSignal( yds );
-                xds= Ops.decimate( xds, i );
-                yds= Ops.decimate( yds, i );
+                if ( i>0 ) {
+                    xds= Ops.decimate( xds, i );
+                    yds= Ops.decimate( yds, i );
+                }
             }
         }
         
