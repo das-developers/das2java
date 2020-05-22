@@ -3174,6 +3174,71 @@ public final class Ops {
     }    
     
     /**
+     * return a QDataSet containing empty strings.  This is used in Jython to create
+     * an array-like dataset where different strings are assigned after the array
+     * is made.
+     * @param len0 the number of elements.
+     * @return QDataSet with EnumerationUnits and all elements containing the value for "".
+     */
+    public static QDataSet strarr( int len0 ) {
+        String context= "default";
+        EnumerationUnits u;
+        try {
+            Units uu= Units.getByName(context);
+            if ( uu!=null && uu instanceof EnumerationUnits ) {
+                u= (EnumerationUnits)uu;
+            } else {
+                u = new EnumerationUnits(context);
+            }
+        } catch ( IllegalArgumentException ex ) {
+            u = new EnumerationUnits(context);
+        }
+        IDataSet result = IDataSet.createRank1(len0);
+        Datum d = u.createDatum("");
+        double dval= d.doubleValue(u);
+        for (int i = 0; i < len0; i++) {            
+            result.putValue(i, dval);
+        }
+        result.putProperty(QDataSet.UNITS, u);
+        return result;
+
+    }
+    
+    /**
+     * return a rank 2 QDataSet containing empty strings.  This is used in Jython to create
+     * an array-like dataset where different strings are assigned after the array
+     * is made.
+     * @param len0 the number of elements in the first index.
+     * @param len1 the number of elements in the second index.
+     * @return QDataSet with EnumerationUnits and all elements containing the value for "".
+     */
+    public static QDataSet strarr( int len0, int len1 ) {
+        String context= "default";
+        EnumerationUnits u;
+        try {
+            Units uu= Units.getByName(context);
+            if ( uu!=null && uu instanceof EnumerationUnits ) {
+                u= (EnumerationUnits)uu;
+            } else {
+                u = new EnumerationUnits(context);
+            }
+        } catch ( IllegalArgumentException ex ) {
+            u = new EnumerationUnits(context);
+        }
+        IDataSet result = IDataSet.createRank2(len0,len1);
+        Datum d = u.createDatum("");
+        double dval= d.doubleValue(u);
+        for (int i=0; i<len0; i++) {            
+            for ( int j=0; j<len1; j++ ) {
+                result.putValue(i, j, dval);
+            }
+        }
+        result.putProperty(QDataSet.UNITS, u);
+        return result;
+
+    }
+    
+    /**
      * create a dataset filled with zeros, stored in 4-byte floats.
      * @param len0 the zeroth dimension length
      * @return rank 1 dataset filled with zeros.
