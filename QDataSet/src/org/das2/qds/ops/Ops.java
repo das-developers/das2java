@@ -3211,6 +3211,7 @@ public final class Ops {
      * @param len0 the number of elements in the first index.
      * @param len1 the number of elements in the second index.
      * @return QDataSet with EnumerationUnits and all elements containing the value for "".
+     * @see #dblarr(int) 
      */
     public static QDataSet strarr( int len0, int len1 ) {
         String context= "default";
@@ -3244,6 +3245,7 @@ public final class Ops {
      * @return rank 1 dataset filled with zeros.
      * @see #zeros(int) 
      * @see #dblarr(int) 
+     * @see #strarr(int) 
      */
     public static QDataSet fltarr(int len0) {
         return Ops.replicate(0.f, len0);
