@@ -7,10 +7,10 @@ import java.util.TreeMap;
 import org.das2.datum.Units;
 
 /**
- * grids (X,Y,Z) data into a table Z(X,Y)
+ * grids a bundle of (X,Y,Z) data into a table Z(X,Y).
  * @author jbf
  */
-public class GridDataSet extends AbstractDataSet {
+public final class GridDataSet extends AbstractDataSet {
 
     TreeMap<Integer, Double> xtags;
     TreeMap<Integer, Double> ytags;
@@ -22,6 +22,9 @@ public class GridDataSet extends AbstractDataSet {
 
     private static final double FILL= -1e31;
 
+    /**
+     * creates the dataset, initially length is zero.
+     */
     public GridDataSet() {
         xtags = new TreeMap<>();
         ix=0;
@@ -36,7 +39,7 @@ public class GridDataSet extends AbstractDataSet {
     /**
      * add either rank 1 slice ( x,y,z ) or
      * add rank 2 dataset ( *,3 )
-     * @param slice
+     * @param slice rank 1 or rank 2 bundle
      */
     public void add(QDataSet slice) {
         QDataSet bds=null;
@@ -84,6 +87,12 @@ public class GridDataSet extends AbstractDataSet {
 
     }
 
+    /**
+     * add the tuple to the data for gridding.  If the x tag or y tag has already been used, then start a new column or row.
+     * @param x the x tag
+     * @param y the y tag
+     * @param z the z value at x,y.
+     */
     public void add( double x, double y, double z ) {
 
         int iix, iiy;
@@ -124,7 +133,7 @@ public class GridDataSet extends AbstractDataSet {
         return ytags.size();
     }
 
-    AbstractDataSet x = new AbstractDataSet() {
+    private AbstractDataSet x = new AbstractDataSet() {
 
         @Override
         public int rank() {
@@ -141,7 +150,8 @@ public class GridDataSet extends AbstractDataSet {
             return xtags.size();
         }
     };
-    AbstractDataSet y = new AbstractDataSet() {
+    
+    private AbstractDataSet y = new AbstractDataSet() {
 
         @Override
         public int rank() {
