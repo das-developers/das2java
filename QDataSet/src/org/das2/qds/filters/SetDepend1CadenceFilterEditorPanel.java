@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 
 package org.das2.qds.filters;
 
@@ -18,11 +13,10 @@ import org.das2.qds.SemanticOps;
 /**
  *
  * @author jbf
- * 
  */
 public class SetDepend1CadenceFilterEditorPanel extends AbstractFilterEditorPanel {
 
-    public static final String PROP_REGEX = "\\|setDepend1Cadence\\('?(\\d+)\\s*(\\w*)'?\\)";
+    public static final String PROP_REGEX = "\\|setDepend1Cadence\\('?([\\+\\d.e]+)\\s*(\\w*)'?\\)";
 
     /**
      * Creates new form SetDepend1CadenceFilterEditorPanel
@@ -51,13 +45,13 @@ public class SetDepend1CadenceFilterEditorPanel extends AbstractFilterEditorPane
         scalarTF.setPreferredSize(new java.awt.Dimension(50, 27));
 
         List<Units> units = getAllUnits();
-        Units[] array = units.toArray(new Units[units.size()]);
+        String[] array = units.toArray(new String[units.size()]);
         unitsCB.setEditable(true);
         unitsCB.setModel(new javax.swing.DefaultComboBoxModel(array));
         unitsCB.setMinimumSize(new java.awt.Dimension(200, 27));
         unitsCB.setPreferredSize(new java.awt.Dimension(200, 27));
 
-        msgLabel.setText("<html><i>Explicity set the cadence of the measurements");
+        msgLabel.setText("<html><i>Explicity set the cadence of the measurements, typically corresponding to vertical position.");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);

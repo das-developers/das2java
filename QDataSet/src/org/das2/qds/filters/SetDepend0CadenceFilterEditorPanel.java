@@ -22,7 +22,7 @@ import org.das2.qds.SemanticOps;
  */
 public class SetDepend0CadenceFilterEditorPanel extends AbstractFilterEditorPanel {
 
-    public static final String PROP_REGEX = "\\|setDepend0Cadence\\('?(\\d+)\\s*(\\w+)'?\\)";
+    public static final String PROP_REGEX = "\\|setDepend0Cadence\\('?([\\+\\d.e]+)\\s*(\\w*)'?\\)";
 
     /**
      * Creates new form SetDepend0CadenceFilterEditorPanel

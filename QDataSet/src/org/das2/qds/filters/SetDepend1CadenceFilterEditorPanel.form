@@ -82,7 +82,7 @@
     </Component>
     <Component class="javax.swing.JLabel" name="msgLabel">
       <Properties>
-        <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;i&gt;Explicity set the cadence of the measurements"/>
+        <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;i&gt;Explicity set the cadence of the measurements, typically corresponding to vertical position."/>
       </Properties>
     </Component>
   </SubComponents>
