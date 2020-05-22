@@ -1685,6 +1685,13 @@ public class DataSetUtil {
             if ( xds.length()!=yds.length() ) {
                throw new IllegalArgumentException("xds.length()!=yds.length()");
             }
+            
+            if ( yds.rank()==1 ) {
+                // if yds is actually found to be another set of tags, then look for cadence in x based on this.
+                int i= repeatingSignal( yds );
+                xds= Ops.decimate( xds, i );
+                yds= Ops.decimate( yds, i );
+            }
         }
         
         if ( yds.rank()>1 ) { //TODO: check for fill columns.  Note the fill check was to support a flakey dataset.
@@ -4310,6 +4317,38 @@ public class DataSetUtil {
                 }
             }
         }
+    }
+
+    /**
+     * return 0 or the number of values after which the signal repeats.  For example,
+     * <code>
+     * ds= dataset([1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4,1,2])
+     * assert repeatingSignal(ds)==4
+     * </code>
+     * if the data contains fill, then it is also not repeating.
+     * @param yds the rank 1 dataset.
+     * @return the number of samples before a repeat, or 0 if the signal is not repeating.
+     * @see #guessCadenceNew
+     */
+    public static int repeatingSignal(QDataSet yds) {
+        QDataSet valid= Ops.valid(yds);
+        if ( valid.value(0)==0 ) {
+            return 0; 
+        }
+        double lookfor= yds.value(0);
+        int candidate=0;
+        for ( int i=1; i<yds.length(); i++ ) {
+            if ( yds.value(i)==lookfor ) {
+                candidate= i;
+                break;
+            }
+        }
+        for ( int i=candidate; i<yds.length(); i++ ) {
+            if ( yds.value(i)!=yds.value(i-candidate) ) {
+                return 0;
+            }
+        }
+        return candidate;
     }
 
 }
