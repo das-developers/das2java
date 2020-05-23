@@ -18,10 +18,11 @@ import org.das2.datum.DatumUtil;
 import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
+import org.das2.graph.DasPlot;
 
 /**
  * Shows the slope from the click point to the drag point.
- * @author  Owner
+ * @author  Jeremy
  */
 public class PointSlopeDragRenderer extends LabelDragRenderer {
     
@@ -29,12 +30,22 @@ public class PointSlopeDragRenderer extends LabelDragRenderer {
     DasAxis xaxis, yaxis;    
     NumberFormat nf;
     
-    /** Creates a new instance of PointSlopeDragRenderer */
+    /** Creates a new instance of PointSlopeDragRenderer
+     * @param parent
+     * @param xaxis
+     * @param yaxis 
+     */
     public PointSlopeDragRenderer(DasCanvasComponent parent, DasAxis xaxis, DasAxis yaxis ) {
         super( parent );
-        this.parent= parent;
-        this.xaxis= xaxis;
-        this.yaxis= yaxis;    
+        
+        if ( parent instanceof DasPlot ) {
+            DasPlot plot= (DasPlot)parent;
+            this.xaxis = xaxis==null ? plot.getXAxis() : xaxis;
+            this.yaxis = yaxis==null ? plot.getYAxis() : yaxis;
+        } else {
+            this.xaxis= xaxis;
+            this.yaxis= yaxis;    
+        }
         
         gtr= new GrannyTextRenderer();
         nf= new DecimalFormat( "0.00E0" );       
