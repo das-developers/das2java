@@ -45,26 +45,39 @@ public interface DragRenderer
      * Rectangles covering the rendering.  If nothing is drawn, then an 
      * array of length zero should be returned, and nulls are allowed in the
      * array. p1 and p2, and g are in the canvas frame of reference.
+     * @param g the graphics context for rendering
+     * @param p1 the click point
+     * @param p2 the current mouse position during drag and release.
+     * @return 
      */
     public abstract Rectangle[] renderDrag(Graphics g, Point p1, Point p2);
     
     /** clears whatever renderDrag rendered.  This is not used by the DasMouseInputAdapter,
-     * but must still be supported for now.
+     * but must still be supported for now.  Originally the drag renderer would have
+     * to unpaint itself as well, but this is no longer used.
+     * @param g the graphics context
      */
     public abstract void clear(Graphics g);
     
     /**
      * promotes the drag begin and end into a mouseDragEvent.
+     * @param source
+     * @param p1 the click point
+     * @param p2 the current mouse position during drag and release.
+     * @param isModified
+     * @return 
      */
     public abstract MouseDragEvent getMouseDragEvent( Object source, Point p1, Point p2, boolean isModified ); 
     
     /**
-     * indicates that MM.mousePointSelected() should called as new mouse events come in.
+     * indicates that the mouse module's mousePointSelected() should be called as new mouse events come in.
+     * @return true if the mouse module should receive events during the drag.
      */
     public boolean isPointSelection();
     
     /**
      * range selection events should be fired during drag.
+     * @return true if selection events should be fired during drag.
      */
     public boolean isUpdatingDragSelection();
     
