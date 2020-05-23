@@ -18,14 +18,15 @@ import javax.swing.SwingUtilities;
 import org.das2.graph.DasCanvas;
 
 /**
- *
+ * LabelDragRenderer draws a label at the current mouse location.  Typically
+ * this one overrides this class and calls the setLabel and super.renderDrag
+ * classes.
  * @author  Jeremy
  */
-public class LabelDragRenderer implements DragRenderer {
+public class LabelDragRenderer extends AbstractDragRenderer {
     
     String label="Label not set";
     GrannyTextRenderer gtr;
-    DasCanvasComponent parent;
     InfoLabel infoLabel;
     
     int labelPositionX=1; // 1=right, -1=left
@@ -40,12 +41,16 @@ public class LabelDragRenderer implements DragRenderer {
     
     @Override
     public void clear(Graphics g) {
-        if ( dirtyBounds!=null ) parent.paintImmediately(dirtyBounds);
+        if ( dirtyBounds!=null ) getParent().paintImmediately(dirtyBounds);
         dirtyBounds= null;
     }
     
+    /**
+     * create an instance.
+     * @param parent component sourcing the mouse events, typically a DasPlot.
+     */
     public LabelDragRenderer( DasCanvasComponent parent ) {
-        this.parent= parent;
+        super(parent);
         this.dirtyBounds= new Rectangle();
         gtr= new GrannyTextRenderer();
     }
@@ -54,11 +59,13 @@ public class LabelDragRenderer implements DragRenderer {
      * This method is called by the DMIA on mouse release.  We use this to infer the mouse release
      * and hide the Window.  Note this assumes isUpdatingDragSelection is false!
      * TODO: DMIA should call clear so this is more explicit.
+     * @return the DragEvent
      */
+    @Override
     public MouseDragEvent getMouseDragEvent(Object source, java.awt.Point p1, java.awt.Point p2, boolean isModified) {
         maxLabelWidth= 0;
         if ( tooltip ) {
-            if ( infoLabel!=null ) infoLabel.hide(parent);
+            if ( infoLabel!=null ) infoLabel.hide(getParent());
         }
         return null;
     }
@@ -84,6 +91,8 @@ public class LabelDragRenderer implements DragRenderer {
         Graphics2D g= (Graphics2D)g1;
         g.setClip(null);
         g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
+        
+        DasCanvasComponent parent= getParent();
         
         if ( parent==null ) return null;
         if ( parent.getCanvas()==null ) {
@@ -150,6 +159,9 @@ public class LabelDragRenderer implements DragRenderer {
     @Override
     public Rectangle[] renderDrag(Graphics g, Point p1, Point p2) {
         logger.log(Level.FINEST, "renderDrag {0}", p2);
+        
+        DasCanvasComponent parent= getParent();
+        
         Rectangle[] result;
         if ( tooltip ) {
             if ( infoLabel==null ) infoLabel= new InfoLabel();

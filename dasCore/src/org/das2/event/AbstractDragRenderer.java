@@ -25,6 +25,7 @@ package org.das2.event;
 
 import java.awt.Graphics;
 import java.awt.Point;
+import org.das2.graph.DasCanvasComponent;
 
 /**
  * Do-nothing drag renderer and extension point for other DragRenderers.
@@ -34,7 +35,11 @@ public abstract class AbstractDragRenderer implements DragRenderer
 {
  
     public AbstractDragRenderer(){}
-        
+       
+    public AbstractDragRenderer(DasCanvasComponent parent) {
+        this.parent= parent;
+    }
+    
     /**
      * return the event for the gesture.  A mouse box event is returned.
      * @param source
@@ -43,6 +48,7 @@ public abstract class AbstractDragRenderer implements DragRenderer
      * @param isModified
      * @return 
      */
+    @Override
     public MouseDragEvent getMouseDragEvent(Object source, Point p1, Point p2, boolean isModified) {
         return new MouseBoxEvent( source, p1, p2, isModified );
     }
@@ -51,6 +57,7 @@ public abstract class AbstractDragRenderer implements DragRenderer
      * this is not used, and is left over from an old version of the library.
      * @param g 
      */
+    @Override
     public void clear(Graphics g) {
     }
     
@@ -58,6 +65,7 @@ public abstract class AbstractDragRenderer implements DragRenderer
      * indicates that MM.mousePointSelected() should called as new mouse events 
      * come in.  
      */
+    @Override
     public boolean isPointSelection() {
         return true;
     }
@@ -65,8 +73,18 @@ public abstract class AbstractDragRenderer implements DragRenderer
     /**
      * range selection events should be fired during drag.
      */
+    @Override
     public boolean isUpdatingDragSelection() {
         return false;
     }    
     
+    private DasCanvasComponent parent;
+    
+    public DasCanvasComponent getParent() {
+        return this.parent;
+    }
+    
+    public void setParent( DasCanvasComponent parent ) {
+        this.parent= parent;
+    }
 }

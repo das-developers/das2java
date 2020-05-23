@@ -26,7 +26,7 @@ package org.das2.event;
 import java.awt.*;
 
 /** A DragRenderer provides the feedback to the human operator
- * of what his or her mousing is doing.  It applies constraints to the
+ * of what their mousing is doing.  It applies constraints to the
  * drag as well. It promotes the awt mouse events into events
  * that represent the operation, implementing for example mouse
  * gestures.
@@ -80,5 +80,5 @@ public interface DragRenderer
      * @return true if selection events should be fired during drag.
      */
     public boolean isUpdatingDragSelection();
-    
+
 }

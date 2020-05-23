@@ -32,19 +32,27 @@ import java.awt.*;
 public class EmptyDragRenderer implements DragRenderer
 {
     public static final EmptyDragRenderer renderer = new EmptyDragRenderer();
+    
     private EmptyDragRenderer(){}
+    
+    @Override
     public Rectangle[] renderDrag(Graphics g, Point p1, Point p2) { return new Rectangle[0]; }
+    
+    @Override
     public MouseDragEvent getMouseDragEvent(Object source, Point p1, Point p2, boolean isModified) {
         return null;
     }
     
+    @Override
     public void clear(Graphics g) {
     }
     
+    @Override
     public boolean isPointSelection() {
         return true;
     }
 
+    @Override
     public boolean isUpdatingDragSelection() {
         return false;
     }    

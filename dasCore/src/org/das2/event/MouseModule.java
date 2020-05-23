@@ -34,7 +34,6 @@ import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
 import org.das2.datum.DatumRangeUtil;
 import org.das2.datum.DomainDivider;
-//import org.das2.datum.DomainDividerUtil;
 import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.LoggerManager;
 import org.das2.datum.UnitsUtil;
@@ -59,7 +58,6 @@ import org.das2.system.DasLogger;
 public class MouseModule implements Editable, Displayable, KeyListener, MouseListener, MouseMotionListener, MouseWheelListener  {
 
     protected static final Logger logger= LoggerManager.getLogger(DasLogger.GUI_LOG.toString() );
-    //protected DasCanvasComponent parent;
     protected DragRenderer dragRenderer;
     private String label;
     private String directions;
@@ -71,15 +69,37 @@ public class MouseModule implements Editable, Displayable, KeyListener, MouseLis
         dragRenderer= EmptyDragRenderer.renderer;
     }
     
+    /**
+     * create the mouse module for the parent component.  This is 
+     * without a drag renderer, and the class name is used
+     * for the label.
+     * paint graphic feedback to the human operator.  
+     * @param parent the component, such as a DasPlot for the crosshair digitizer or the DasAxis for zoom.
+     */    
     public MouseModule(DasCanvasComponent parent) {
         this( parent, EmptyDragRenderer.renderer, "unlabelled MM" );
         setLabel(this.getClass().getName());
     }
     
+    /**
+     * create the mouse module for the parent component using the dragRenderer to
+     * paint graphic feedback to the human operator.  For example, the 
+     * dragRenderer might draw a box during the click-drag-release mouse action,
+     * and then on release this mouse module creates the event used elsewhere.
+     * @param parent the component, such as a DasPlot for the crosshair digitizer or the DasAxis for zoom.
+     * @param dragRenderer the drag renderer to provide feedback 
+     * @param label label for the mouse module.
+     */
     public MouseModule(DasCanvasComponent parent, DragRenderer dragRenderer, String label) {
         this.parent= parent;
         this.dragRenderer= dragRenderer;
         this.label= label;
+        if ( dragRenderer instanceof AbstractDragRenderer ) {
+            AbstractDragRenderer adr= ((AbstractDragRenderer)dragRenderer);
+            if ( adr.getParent()==null ) {
+                adr.setParent(parent);
+            }
+        }
     }
     
     /**
@@ -113,6 +133,12 @@ public class MouseModule implements Editable, Displayable, KeyListener, MouseLis
      */
     public void setDragRenderer( DragRenderer d ) {
         this.dragRenderer= d;
+        if ( d instanceof AbstractDragRenderer ) {
+            AbstractDragRenderer adr= ((AbstractDragRenderer)dragRenderer);
+            if ( adr.getParent()==null ) {
+                adr.setParent(parent);
+            }
+        }
         parent.repaint();
     }
     
