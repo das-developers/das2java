@@ -56,6 +56,15 @@ public class LabelDragRenderer extends AbstractDragRenderer {
     }
     
     /**
+     * create an instance, and presumably the mouse module will set the parent.
+     */
+    public LabelDragRenderer(  ) {
+        super();
+        this.dirtyBounds= new Rectangle();
+        gtr= new GrannyTextRenderer();
+    }
+
+    /**
      * This method is called by the DMIA on mouse release.  We use this to infer the mouse release
      * and hide the Window.  Note this assumes isUpdatingDragSelection is false!
      * TODO: DMIA should call clear so this is more explicit.
@@ -80,6 +89,12 @@ public class LabelDragRenderer extends AbstractDragRenderer {
         return false;
     }
     
+    /**
+     * set the label to be drawn.  This should be done before this object's renderDrag is called.
+     * 
+     * @param s the label, which can contain Granny control sequences like !A and !n.
+     * @see http://autoplot.org/help#Granny_Strings
+     */
     public void setLabel( String s ) {
         this.label= s;
     }
@@ -144,7 +159,6 @@ public class LabelDragRenderer extends AbstractDragRenderer {
         // draw the translucent background
         g.setColor(new Color(255,255,255,200));
         dirtyBounds.setRect(xp,yp,dx,dy);
-        //g.fill(dirtyBounds);
         g.fillRoundRect( xp, yp, dx, dy, 5, 5 );
         
         // draw the label
@@ -161,6 +175,7 @@ public class LabelDragRenderer extends AbstractDragRenderer {
         logger.log(Level.FINEST, "renderDrag {0}", p2);
         
         DasCanvasComponent parent= getParent();
+        if ( parent==null ) return new Rectangle[0];
         
         Rectangle[] result;
         if ( tooltip ) {
