@@ -34,7 +34,7 @@ public class RendererBeanInfo extends AccessLevelBeanInfo {
         new Property("dataSet", AccessLevel.DASML, "getDataSet", null, null),
         new Property("lastException", AccessLevel.DASML, "getLastException", null, null),
         new Property("dataLoader", AccessLevel.DASML, "getDataLoader", null, null),
-        new Property("lengendLabel", AccessLevel.DASML, "getLegendLabel", "setLegendLabel", null),
+        new Property("legendLabel", AccessLevel.DASML, "getLegendLabel", "setLegendLabel", null),
         //new Property("overLoading", AccessLevel.DASML, "isOverloading", "setOverloading", null),
     };
     
