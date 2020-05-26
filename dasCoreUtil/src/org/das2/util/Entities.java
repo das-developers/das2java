@@ -295,7 +295,7 @@ public class Entities {
         add("&minus", 8722);
         add("&lowast", 8727);
         add("&radic", 8730);
-        add("&prop", 8733);
+        add("&prop", 8733); // a.k.a Proportional
         add("&infin", 8734);
         add("&ang", 8736);
         add("&and", 8743);
