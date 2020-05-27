@@ -62,6 +62,7 @@ import org.das2.datum.Datum;
 import org.das2.datum.LocationUnits;
 import org.das2.qds.DataSetUtil;
 import org.das2.qds.QDataSet;
+import org.das2.qds.RankZeroDataSet;
 import org.das2.qds.SemanticOps;
 import org.das2.qds.ops.Ops;
 
@@ -505,7 +506,15 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
         public QDataSet rebin(QDataSet ds, RebinDescriptor x, RebinDescriptor y, RebinDescriptor z) throws IllegalArgumentException, DasException {
             QDataSet xds= SemanticOps.xtagsDataSet(ds);
             Datum xwidth= SemanticOps.guessXTagWidth(xds,null);
-            if ( xwidth==null ) xwidth= DataSetUtil.asDatum(DataSetUtil.guessCadenceNew(xds,null));
+            
+            if ( xwidth==null ) {
+                RankZeroDataSet xwidthds= DataSetUtil.guessCadenceNew(xds,null);
+                if ( xwidthds==null ) {
+                    logger.finer("unable to guess cadence.");
+                } else {
+                    xwidth= DataSetUtil.asDatum(xwidthds);
+                }
+            }
 
             try {
                 QDataSet result;
