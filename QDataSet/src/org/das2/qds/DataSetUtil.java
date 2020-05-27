@@ -1488,7 +1488,7 @@ public class DataSetUtil {
             yds_t= Ops.monotonicSubset(yds_t);
             dy= DataSetUtil.guessCadenceNew( yds_t, null );
         }
-        Units dyu= SemanticOps.getUnits(dy);
+        Units dyu= dy==null ? null : SemanticOps.getUnits(dy);
         
         QDataSet delta;
         // check to see that dy is reasonable.
@@ -1554,7 +1554,7 @@ public class DataSetUtil {
      * different than the cadence typically quoted, which is the cadence between
      * waveform records.
      * @param ds
-     * @return the cadence
+     * @return the cadence, possibly null.
      */
     public static RankZeroDataSet getCadenceWaveform( QDataSet ds ) {
         RankZeroDataSet xlimit;
@@ -1643,8 +1643,11 @@ public class DataSetUtil {
                 for ( int i=0; i<yds.length(); i++ ) {
                     QDataSet yds1= yds.slice(i);
                     QDataSet xds1= (QDataSet)yds1.property(QDataSet.DEPEND_0);
-                    Datum t1= DataSetUtil.asDatum( guessCadenceNew(xds1,yds1) );
-                    dresult= dresult==null ? t1 : ( dresult.lt(t1) ? t1 : dresult );
+                    QDataSet cadence= guessCadenceNew(xds1,yds1);
+                    if ( cadence!=null ) {
+                        Datum t1= DataSetUtil.asDatum( cadence );
+                        dresult= dresult==null ? t1 : ( dresult.lt(t1) ? t1 : dresult );
+                    }
                 }
                 return DataSetUtil.asDataSet(dresult);
             }
