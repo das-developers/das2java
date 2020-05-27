@@ -333,6 +333,11 @@ public class DasColorBar extends DasAxis {
          */
         public static final Type MATLAB_JET_BLACK0 = new Type("matlab_jet_black0");
         
+        /**
+         * Mimic the default Matlab colorbar HSV.
+         */
+        public static final Type MATLAB_HSV = new Type("matlab_hsv");
+
         public static final Type BLUE_TO_ORANGE = new Type("blue_to_orange");
 
         /**
@@ -592,6 +597,8 @@ public class DasColorBar extends DasAxis {
                 initializeMatlabJet(size, bottom, top, false);
             } else if (this == MATLAB_JET_BLACK0 ) {
                 initializeMatlabJet(size, bottom, top, true);
+            } else if (this == MATLAB_HSV ) {
+                initializeMatlabHSV(size, bottom, top);
             } else if (this == GRAYSCALE) {
                 initializeGrayScale(size, bottom, top);
             } else if (this == INVERSE_GRAYSCALE) {
@@ -751,6 +758,14 @@ public class DasColorBar extends DasAxis {
             colorTable = makeColorTable( index, red, green, blue, size, bottom, top );
         }   
    
+        private void initializeMatlabHSV( int size, int bottom, int top ) {
+            int [] index= { 0,4,8,12,16,20,24,28,32,36,40,45,49,53,57,61,65,69,73,77,81,85,89,93,97,101,105,109,113,117,121,125,130,134,138,142,146,150,154,158,162,166,170,174,178,182,186,190,194,198,202,206,210,215,219,223,227,231,235,239,243,247,251,255};
+            int [] red= { 255,255,255,255,255,255,255,255,255,255,255,247,223,199,175,151,127,103,79,55,31,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,31,55,79,103,127,151,175,199,223,247,255,255,255,255,255,255,255,255,255,255};
+            int [] green= { 0,23,47,71,95,119,143,167,191,215,239,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,231,207,183,159,135,111,87,63,39,15,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+            int [] blue= { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,15,39,63,87,111,135,159,183,207,231,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,239,215,191,167,143,119,95,71,47,23};
+            colorTable = makeColorTable( index, red, green, blue, size, bottom, top );
+        }
+        
         private void initializeWhiteRed( int size, int bottom, int top ) {
             int [] index= { 0, 255 };
             int [] red= { 0, 255 };
