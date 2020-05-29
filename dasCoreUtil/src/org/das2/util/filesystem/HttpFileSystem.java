@@ -559,16 +559,16 @@ public class HttpFileSystem extends WebFileSystem {
     /**
      * 
      * @param filename filename within the filesystem.
-     * @param f the target filename where the file is to be download.
+     * @param targetFile the target filename where the file is to be download.
      * @param partFile  use this file to stage the download
      * @param monitor  monitor the progress.
      * @return metadata containing ETag if available.
      * @throws IOException 
      */
     @Override
-    protected Map<String,String> downloadFile(String filename, File f, File partFile, ProgressMonitor monitor) throws IOException {
+    protected Map<String,String> downloadFile(String filename, File targetFile, File partFile, ProgressMonitor monitor) throws IOException {
 
-        Lock lock = getDownloadLock(filename, f, monitor);
+        Lock lock = getDownloadLock(filename, targetFile, monitor);
         
         if (lock == null) {
             return Collections.EMPTY_MAP;
@@ -584,12 +584,12 @@ public class HttpFileSystem extends WebFileSystem {
             URL remoteURL = getURL( filename );
             
             try {
-                meta= doDownload( filename, remoteURL, f, partFile, monitor );
+                meta= doDownload( filename, remoteURL, targetFile, partFile, monitor );
             } catch ( FileNotFoundException ex ) {
                 if ( !filename.endsWith("/") ) {
                     remoteURL= new URL(root.toString() + filename.substring(1) + ".gz" );
                     try {
-                        doDownload( filename, remoteURL, f, partFile, monitor );
+                        doDownload( filename, remoteURL, targetFile, partFile, monitor );
                     } catch ( FileNotFoundException exgz ) {
                         throw ex;
                     }
