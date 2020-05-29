@@ -425,92 +425,13 @@ public class WebFileObject extends FileObject {
             }
         }
 
-        if ( isLocal() ) { // isLocal does a careful check of timestamps, and minds the limits on access.
-            remoteDate = new Date(localFile.lastModified());
-            remoteLength= localFile.length();
-             // TODO: I don't understand this code. jbf
-        } else if (wfs instanceof HttpFileSystem && !wfs.isOffline() ) {
-            URL url = wfs.getURL(this.getNameExt());
-
-            String userInfo= null;
-
-            try {
-                userInfo = KeyChain.getDefault().getUserInfo( url );
-            } catch (CancelledOperationException ex) {
-                throw new FileSystemOfflineException("user cancelled credentials");
-            }
-            
-            Map<String,String> requestProperties= new HashMap<>();
-            
-            if ( userInfo != null) {
-                String encode = Base64.getEncoder().encodeToString( userInfo.getBytes());
-                requestProperties.put( "Authorization", "Basic " + encode );
-            }
-
-            String cookie= ((HttpFileSystem)wfs).getCookie();
-            if ( cookie!=null ) {
-                requestProperties.put( "Cookie", cookie  );
-            }
-
-            Map<String,String> meta= HttpUtil.getMetadata( url, requestProperties );
-            
-            long lastModified= Long.parseLong( meta.get( WebProtocol.META_LAST_MODIFIED ) );
-            remoteDate = new Date(lastModified); // here bug 1393 w/webstart https://sourceforge.net/p/autoplot/bugs/1393/
-            logger.log(Level.FINE, "HEAD request reports connection.getLastModified()={0}", remoteDate);
-            long contentLength= Long.parseLong( meta.get( WebProtocol.META_CONTENT_LENGTH ) );
-            if ( contentLength>-1 ) remoteLength= contentLength;
-            if ( "application/x-gzip".equals( meta.get("ContentType") ) ) {
-                String contentLocation= meta.get("Content-Location");
-                if ( contentLocation!=null && contentLocation.endsWith(".gz") ) {
-                    remoteLength=-1;
-                }
-            }
-            
-        } else {
-            if ( this.lastModified().getTime()==0 || this.lastModified().getTime()==Long.MAX_VALUE ) {
-                DirectoryEntry result= wfs.maybeUpdateDirectoryEntry( this.getNameExt(), true ); // trigger load of the modifiedDate
-                if ( result==null ) {
-                    logger.fine("file does not exist on remote filesystem"); 
-                } else {
-                    result= wfs.maybeUpdateDirectoryEntry( this.getNameExt(), true );
-                    remoteDate= new Date( result.modified );
-                    remoteLength= result.size;
-                    this.setLastModified( remoteDate );
-                    this.setSize( remoteLength );
-                }
-                if ( !( wfs instanceof HttpFileSystem ) ) {
-                    download= true;
-                } //FTP filesystem timetags are very course.
-            }
-            remoteDate = this.lastModified();
-            remoteLength= this.getSize();
-        }
-
-        if (localFile.exists()) {
-            Date localFileLastModified = new Date(localFile.lastModified()); 
-            if ( this.lastModified().getTime()==0 ) { // force metadata load. 
-                logger.fine("server doesn't provide dates, download unless etag suggests otherwise");
-                download = true;
-            }
-            if ( remoteDate.after(localFileLastModified) || ( remoteLength>-1 && remoteLength!=localFile.length() ) ) {
-                logger.log(Level.FINE, "remote file length is different or is newer than local copy of {0}, download.", this.getNameExt());
-                download = true;
-            }
-            
-            // check for ETag.
-            String remoteETag= metadata==null ? null : metadata.get( WebProtocol.META_ETAG );
-            if ( download && remoteETag!=null ) {
-                String localETag= getLocalETag( getLocalFile() );
-                if ( localETag.length()>0 && localETag.equals(remoteETag ) ) {
-                    logger.fine("etag hasn't changed, don't download.");
-                    download= false;
-                }
-            }
-            
-        } else {
-            download = true;
-        }
-
+        Map<String,Object> firstMeta= new HashMap<>();
+        
+        download= doCheckFreshness(firstMeta);
+        
+        remoteDate= (Date)firstMeta.get("remoteDate");
+        remoteLength= (Long)firstMeta.get("remoteLength");
+        
         //check readonly cache for file.
         if ( download && this.wfs.getReadOnlyCache()!=null ) {
             File cacheFile= new File( this.wfs.getReadOnlyCache(), this.getNameExt() );
@@ -670,5 +591,103 @@ public class WebFileObject extends FileObject {
         if ( !localFileMetaTemp.renameTo(localFileMeta) ) {
             logger.log(Level.WARNING, "unable to rename metadata file: {0}", localFileMetaTemp);
         }
+    }
+
+    private synchronized boolean doCheckFreshness( Map<String,Object> firstMeta ) throws FileSystemOfflineException, IOException {
+        boolean download= true;
+        
+        Date remoteDate;
+        long remoteLength=0;
+        
+        if ( isLocal() ) { // isLocal does a careful check of timestamps, and minds the limits on access.
+            remoteDate = new Date(localFile.lastModified());
+            remoteLength= localFile.length();
+             // TODO: I don't understand this code. jbf
+        } else if (wfs instanceof HttpFileSystem && !wfs.isOffline() ) {
+            URL url = wfs.getURL(this.getNameExt());
+
+            String userInfo= null;
+
+            try {
+                userInfo = KeyChain.getDefault().getUserInfo( url );
+            } catch (CancelledOperationException ex) {
+                throw new FileSystemOfflineException("user cancelled credentials");
+            }
+            
+            Map<String,String> requestProperties= new HashMap<>();
+            
+            if ( userInfo != null) {
+                String encode = Base64.getEncoder().encodeToString( userInfo.getBytes());
+                requestProperties.put( "Authorization", "Basic " + encode );
+            }
+
+            String cookie= ((HttpFileSystem)wfs).getCookie();
+            if ( cookie!=null ) {
+                requestProperties.put( "Cookie", cookie  );
+            }
+
+            Map<String,String> meta= HttpUtil.getMetadata( url, requestProperties );
+            
+            long lastModified= Long.parseLong( meta.get( WebProtocol.META_LAST_MODIFIED ) );
+            remoteDate = new Date(lastModified); // here bug 1393 w/webstart https://sourceforge.net/p/autoplot/bugs/1393/
+            logger.log(Level.FINE, "HEAD request reports connection.getLastModified()={0}", remoteDate);
+            long contentLength= Long.parseLong( meta.get( WebProtocol.META_CONTENT_LENGTH ) );
+            if ( contentLength>-1 ) remoteLength= contentLength;
+            if ( "application/x-gzip".equals( meta.get("ContentType") ) ) {
+                String contentLocation= meta.get("Content-Location");
+                if ( contentLocation!=null && contentLocation.endsWith(".gz") ) {
+                    remoteLength=-1;
+                }
+            }
+            
+        } else {
+            if ( this.lastModified().getTime()==0 || this.lastModified().getTime()==Long.MAX_VALUE ) {
+                DirectoryEntry result= wfs.maybeUpdateDirectoryEntry( this.getNameExt(), true ); // trigger load of the modifiedDate
+                if ( result==null ) {
+                    logger.fine("file does not exist on remote filesystem"); 
+                } else {
+                    result= wfs.maybeUpdateDirectoryEntry( this.getNameExt(), true );
+                    remoteDate= new Date( result.modified );
+                    remoteLength= result.size;
+                    this.setLastModified( remoteDate );
+                    this.setSize( remoteLength );
+                }
+                if ( !( wfs instanceof HttpFileSystem ) ) {
+                    download= true;
+                } //FTP filesystem timetags are very course.
+            }
+            remoteDate = this.lastModified();
+            remoteLength= this.getSize();
+        }
+
+        if (localFile.exists()) {
+            Date localFileLastModified = new Date(localFile.lastModified()); 
+            if ( this.lastModified().getTime()==0 ) { // force metadata load. 
+                logger.fine("server doesn't provide dates, download unless etag suggests otherwise");
+                download = true;
+            }
+            if ( remoteDate.after(localFileLastModified) || ( remoteLength>-1 && remoteLength!=localFile.length() ) ) {
+                logger.log(Level.FINE, "remote file length is different or is newer than local copy of {0}, download.", this.getNameExt());
+                download = true;
+            }
+            
+            // check for ETag.
+            String remoteETag= metadata==null ? null : metadata.get( WebProtocol.META_ETAG );
+            if ( download && remoteETag!=null ) {
+                String localETag= getLocalETag( getLocalFile() );
+                if ( localETag.length()>0 && localETag.equals(remoteETag ) ) {
+                    logger.fine("etag hasn't changed, don't download.");
+                    download= false;
+                }
+            }
+            
+        } else {
+            download = true;
+        }
+
+        firstMeta.put( "remoteDate", remoteDate );
+        firstMeta.put( "remoteLength", remoteLength );
+        
+        return download;
     }
 }
