@@ -1065,6 +1065,10 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
                         if (j.dragRenderer.isUpdatingDragSelection()) {
                             // Really it should be the DMM that indicates it wants updates...whoops...
                             MouseDragEvent de = j.dragRenderer.getMouseDragEvent(parent, dSelectionStart, dSelectionEnd, e.isShiftDown());
+                            if ( de==null ) {
+                                logger.info("dragRenderer isUpdatingDragSelection()==True, but no dragEvent was produced.");
+                                return;
+                            }
                             logger.finest("mouseRangeSelected");
                             j.mouseRangeSelected(de);
                         }
