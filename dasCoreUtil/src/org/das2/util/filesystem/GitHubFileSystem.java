@@ -15,9 +15,11 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.Lock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -363,7 +365,15 @@ public class GitHubFileSystem extends HttpFileSystem {
     
     
     @Override
-    protected Map<String,String> downloadFile(String filename, File targetFile, File partFile, ProgressMonitor monitor) throws IOException {
+    protected synchronized Map<String,String> downloadFile(String filename, File targetFile, File partFile, ProgressMonitor monitor) throws IOException {
+        
+        Lock lock = getDownloadLock(filename, targetFile, monitor);
+        
+        if (lock == null) {
+            return Collections.EMPTY_MAP;
+        }
+        
+        logger.log(Level.WARNING, "Thread {0} downloading {1}", new Object[]{Thread.currentThread(), filename});
         
         logger.log(Level.FINE, "downloadFile({0})", filename);
         Map<String,String> result;
@@ -394,6 +404,9 @@ public class GitHubFileSystem extends HttpFileSystem {
                 }
             }
             if ( ! partFile.renameTo( targetFile ) ) {
+                if ( ! partFile.renameTo( targetFile ) ) {
+                    throw new IllegalArgumentException("unable to rename "+partFile+" to "+targetFile );
+                }
                 throw new IllegalArgumentException("unable to rename "+partFile+" to "+targetFile );
             }
             
@@ -404,7 +417,10 @@ public class GitHubFileSystem extends HttpFileSystem {
                 throw new IllegalArgumentException("unable to delete "+partFile );
             }
             throw e;
+        } finally {
+            lock.unlock();
         }
+        
         return result;
     }
     
