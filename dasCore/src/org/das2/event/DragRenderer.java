@@ -27,7 +27,7 @@ import java.awt.*;
 
 /** A DragRenderer provides the feedback to the human operator
  * of what their mousing is doing.  It applies constraints to the
- * drag as well. It promotes the awt mouse events into events
+ * drag as well. It promotes the AWT mouse events into events
  * that represent the operation, implementing for example mouse
  * gestures.
  *
