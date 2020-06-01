@@ -793,10 +793,7 @@ public class DasPlot extends DasCanvasComponent {
         }
         
         if ( this.topDecorator!=null ) {
-            Graphics2D g= (Graphics2D)plotGraphics.create();
-            g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
-            this.topDecorator.paint(g);
-            g.dispose();
+            drawDecorator( plotGraphics, this.topDecorator );
         }
 
         if ( this.isPlotVisible() ) {
