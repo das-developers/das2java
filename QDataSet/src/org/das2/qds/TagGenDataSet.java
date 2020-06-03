@@ -21,10 +21,23 @@ public class TagGenDataSet extends AbstractRank1DataSet {
     
     double scale, offset;
 
+    /**
+     * create new dimensionless TagGenDataSet
+     * @param length number of elements 
+     * @param scale the increment between elements
+     * @param offset the value for the zeroth element.
+     */    
     public TagGenDataSet( int length, double scale, double offset ) {
         this( length, scale, offset, null );
     }
     
+    /**
+     * create new TagGenDataSet
+     * @param length number of elements 
+     * @param scale the increment between elements
+     * @param offset the value for the zeroth element.
+     * @param units the units of the data.
+     */
     public TagGenDataSet( int length, double scale, double offset, Units units ) {
         super(length);
         this.scale= scale;
