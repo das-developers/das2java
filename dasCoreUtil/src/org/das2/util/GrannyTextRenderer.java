@@ -133,6 +133,16 @@ public class GrannyTextRenderer {
         return new Rectangle( r ); // defensive copy
     }
 
+    /**
+     * return a rectangle backed by floating point numbers.
+     * @return Rectangle2D.Double
+     */
+    public Rectangle2D getBounds2D() {
+        Rectangle r= getBounds();
+        Rectangle2D result= new Rectangle2D.Double( r.x, r.y, r.width, r.height );
+        return result;
+    }
+    
     private Rectangle calculateBounds( ArrayList<Rectangle> llineBounds ) {
         Rectangle lbounds;
         if ( lineBounds==null ) {
