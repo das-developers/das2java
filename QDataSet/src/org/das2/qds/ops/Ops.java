@@ -3005,23 +3005,37 @@ public final class Ops {
     }
     
     /**
-     * mimic the Jython xrange function for use in loops.  This creates
-     * an dataset which has no storage.  Note this also takes double
+     * mimic the Jython xrange function for use in loops.  The returns
+     * the integers in the sequence, like xrange, but avoids the confusing 
+     * "xrange" name and this also takes double
      * values so that it can be used in graphics routines which use double.
      * @param min the first value
      * @param max the last value, plus one (exclusive).
      * @param step the increment between elements.
-     * @return a dataset representing the numbers in the interval.
+     * @return an iterator for the numbers in the interval.
      */
-    public static QDataSet irange( double min, double max, int step ) {
+    public static Iterator<Integer> irange( double min, double max, int step ) {
         double imin= Math.floor(min);
         double imax= Math.floor(max);
         double istep= step;
         if ( istep % 1. != 0.0 ) throw new IllegalArgumentException("step must be an integer");
         int length= (int)( ( imax - imin ) / istep );
-        TagGenDataSet result= new TagGenDataSet( length, istep, imin );
+        final TagGenDataSet result= new TagGenDataSet( length, istep, imin );
         result.putProperty( QDataSet.FORMAT, "%d" );
-        return result;
+        return new Iterator<Integer>() {
+            int p= 0;
+            @Override
+            public boolean hasNext() {
+                return p < result.length();
+            }
+
+            @Override
+            public Integer next() {
+                p++;
+                return (int)result.value(p);
+            }
+        };
+        
     }
 
     /**
@@ -3029,9 +3043,9 @@ public final class Ops {
      * an dataset which has no storage.
      * @param min the first value
      * @param max the last value, plus one (exclusive).
-     * @return a dataset representing the numbers in the interval.
+     * @return an iterator for the numbers in the interval.
      */
-    public static QDataSet irange( double min, double max ) {
+    public static Iterator<Integer> irange( double min, double max ) {
         return irange( min, max, 1 );
     }
     
@@ -3039,9 +3053,9 @@ public final class Ops {
      * mimic the Jython xrange function for use in loops.  This creates
      * an dataset which has no storage.
      * @param max the last value, plus one (exclusive).
-     * @return a dataset representing the numbers in the interval.
+     * @return an iterator for the numbers in the interval.
      */
-    public static QDataSet irange( double max ) {
+    public static Iterator<Integer> irange( double max ) {
         return irange( 0, max, 1 );
     }    
 
