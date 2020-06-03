@@ -76,6 +76,7 @@ import org.das2.qds.IndexListDataSetIterator;
 import org.das2.qds.SortDataSet;
 import org.das2.qds.SparseDataSet;
 import org.das2.qds.SubsetDataSet;
+import org.das2.qds.TagGenDataSet;
 import org.das2.qds.TailBundleDataSet;
 import org.das2.qds.TrimStrideWrapper;
 import org.das2.qds.WeightsDataSet;
@@ -3003,6 +3004,47 @@ public final class Ops {
         return not( dataset(ds1) );
     }
     
+    /**
+     * mimic the Jython xrange function for use in loops.  This creates
+     * an dataset which has no storage.  Note this also takes double
+     * values so that it can be used in graphics routines which use double.
+     * @param min the first value
+     * @param max the last value, plus one (exclusive).
+     * @param step the increment between elements.
+     * @return a dataset representing the numbers in the interval.
+     */
+    public static QDataSet irange( double min, double max, int step ) {
+        double imin= Math.floor(min);
+        double imax= Math.floor(max);
+        double istep= step;
+        if ( istep % 1. != 0.0 ) throw new IllegalArgumentException("step must be an integer");
+        int length= (int)( ( imax - imin ) / istep );
+        TagGenDataSet result= new TagGenDataSet( length, istep, imin );
+        result.putProperty( QDataSet.FORMAT, "%d" );
+        return result;
+    }
+
+    /**
+     * mimic the Jython xrange function for use in loops.  This creates
+     * an dataset which has no storage.
+     * @param min the first value
+     * @param max the last value, plus one (exclusive).
+     * @return a dataset representing the numbers in the interval.
+     */
+    public static QDataSet irange( double min, double max ) {
+        return irange( min, max, 1 );
+    }
+    
+    /**
+     * mimic the Jython xrange function for use in loops.  This creates
+     * an dataset which has no storage.
+     * @param max the last value, plus one (exclusive).
+     * @return a dataset representing the numbers in the interval.
+     */
+    public static QDataSet irange( double max ) {
+        return irange( 0, max, 1 );
+    }    
+
     // IDL,Matlab - inspired routines
     /**
      * returns rank 1 dataset with values [0,1,2,...]
