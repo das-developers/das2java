@@ -1606,6 +1606,11 @@ public class SeriesRenderer extends Renderer {
             if ( lparent!=null ) lparent.postException(this, lastException);
             return;
         }
+        
+        if ( renderException!=null ) {
+            if ( lparent!=null ) lparent.postException(this, renderException);
+            return;
+        }
 
         //renderCount++;
         //reportCount();
@@ -2116,7 +2121,8 @@ public class SeriesRenderer extends Renderer {
 
                 try {
                     updateFirstLast(xAxis, yAxis, xds, vds );
-                } catch ( InconvertibleUnitsException ex ) {
+                } catch ( IllegalArgumentException ex ) { // InconvertibleUnitsException, data all fill.
+                    renderException= ex;
                     logger.log( Level.INFO, ex.getMessage(), ex );
                     return;
                 }
