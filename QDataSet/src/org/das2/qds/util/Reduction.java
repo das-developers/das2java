@@ -158,6 +158,32 @@ public class Reduction {
      * @return the reduced dataset, or null if the input dataset was null.
      */
     public static QDataSet reducex( QDataSet ds, QDataSet xLimit ) {
+        return reducex(ds, xLimit, true);
+    }   
+    
+    /**
+     * produce a simpler version of the dataset by averaging data adjacent in X.
+     * code taken from org.das2.graph.GraphUtil.reducePath.  Adjacent points are
+     * averaged together until a point is found that is not in the bin, and then
+     * a new bin is started.  The bin's lower bounds are integer multiples
+     * of xLimit.
+     *
+     * xLimit is a rank 0 dataset.
+     *
+     * 2015-06-18: xcadence and bins are now regular.
+     * 
+     * Because of high-resolution magnetometer data, this is extended to support this data type.
+     * 
+     * This will set the DELTA_PLUS and DELTA_MINUS variables to the extremes of 
+     * each bin.  To remove these, use putProperty( QDataSet.DELTA_MINUS, None ) 
+     * (None in Jython, null for Java) and putProperty( QDataSet.DELTA_PLUS, None ).
+     * 
+     * @param ds rank 1 or rank 2 dataset.  Must have DEPEND_0 (presently) and be a qube.  If this is null, then the result is null.
+     * @param xLimit the size of the bins or null to indicate no limit.
+     * @param xregular return averages of x as well, and don't grid x.
+     * @return the reduced dataset, or null if the input dataset was null.
+     */    
+    public static QDataSet reducex( QDataSet ds, QDataSet xLimit, boolean xregular ) {
         long t0= System.currentTimeMillis();
         logger.entering( "Reduction", "reducex" );
         if ( ds==null ) return ds; // Craig 2038937185
@@ -215,6 +241,7 @@ public class Reduction {
 
         double x0 = Float.MAX_VALUE;
         double sx0 = 0;
+        double basex= -1e31;
         double nx= 0;  // number in X average.
         double[] sy0 = new double[ny];
         double[] nn0 = new double[ny];
@@ -243,66 +270,68 @@ public class Reduction {
 
         double fill= Double.NaN;
 
+        if ( basex==-1e31 ) {
+            basex= x.value(0);
+        }
+        
+        Units tu= (Units)x.property(QDataSet.UNITS);
+        
         while ( i<x.length() ) {
             //inCount++;
-
+            
             double xx= x.value(i);
             QDataSet yy= ds.slice(i);
             QDataSet ww= wds.slice(i);
 
             double pxx = xx;
-
+            
             double wx= 1; // weight to use for x.
 
-            sx0 += pxx*wx; //TODO: to avoid numerical noise, remove delta before accumulating
-            nx+= 1;
-
-            if ( x0==Float.MAX_VALUE ) x0= Math.floor( xx / dxLimit ) * dxLimit;
-            double dx = pxx - x0;
-
-            for ( int j=0; j<ny; j++ ) {
-                if ( ww.value(j)==0 ) {
-                    continue;
-                }
-
-                if ( dx>= 0 && dx < dxLimit ) {
-                    double pyy = yy.value(j);
-
-                    sy0[j] += pyy*ww.value(j);
-                    nn0[j] += ww.value(j);
-                    if ( ww.value(j)>0 ) {
-                        miny0[j] = Math.min( miny0[j], pyy );
-                        maxy0[j] = Math.max( maxy0[j], pyy );
-                    }
+            if ( x0==Float.MAX_VALUE ) {
+                if ( xregular ) {
+                    x0= Math.floor( xx / dxLimit ) * dxLimit;
+                } else {
+                    x0= pxx;
                 }
             }
-
+            
+            double dx = pxx - x0;
+            
             if ( dx<0 || dx>= dxLimit ) { // clear the accumulators
-
-                x0 = Math.floor(pxx/dxLimit) * dxLimit;
 
                 for ( int j=0; j<ny; j++ ) {
 
                     if ( nx>0 ) {
+                        if (j==0 ) {
+                            if ( xregular ) {
+                                ax0 = x0 + dxLimit/2;
+                                x0 = Math.floor(pxx/dxLimit) * dxLimit;
+                            } else {
+                                ax0 = basex + sx0/nx;
+                                x0 = pxx;
+                            }
+                            System.err.println("out: "+ax0 + " " +nx + " ("+tu.createDatum(ax0)+")");
+                            xbuilder.putValue( points, ax0 );
+                        } 
                         boolean nv= nn0[j]==0;
-                        //ax0 = sx0 / nx;
-                        ax0 = x0 + dxLimit/2;
                         ay0[j] = nv ? fill : sy0[j] / nn0[j];
-                        if (j==0 ) xbuilder.putValue( points, ax0 );
                         ybuilder.putValue( points, j, ay0[j] );
                         yminbuilder.putValue( points, j, nv ? fill : miny0[j] );
                         ymaxbuilder.putValue( points, j, nv ? fill : maxy0[j] );
                         wbuilder.putValue( points, j, nn0[j] );
-
+                        
                     }
 
                     double pyy = yy.value(j);
                     double wwj= ww.value(j);
 
-                    if ( j==0 ) sx0 = pxx*wx;
-                    sy0[j] = pyy*wwj;
-                    nn0[j] = wwj;
-                    nx= 1;
+                    if ( j==0 ) {
+                        sx0 = 0.0;
+                        nx= 0;
+                    }
+                    sy0[j] = 0.;
+                    nn0[j] = 0.;
+                    
                     if ( wwj>0 ) {
                         miny0[j] = pyy;
                         maxy0[j] = pyy;
@@ -312,21 +341,49 @@ public class Reduction {
                     }
 
                 }
-                if ( nx>0 ) points++;
+                points++;
 
+            }
+            
+            System.err.println(" in: "+pxx+ " ("+tu.createDatum(pxx)+")");
+
+            { // Here is the accumulation.
+                sx0 += (pxx-basex)*wx; 
+                nx+= 1;
+
+                for ( int j=0; j<ny; j++ ) {
+                    double ww1= ww.value(j);
+                    if ( ww1==0 ) {
+                        continue;
+                    }
+                    double pyy = yy.value(j);
+                    sy0[j] += pyy*ww1;
+                    nn0[j] += ww1;
+                    if ( ww1>0 ) {
+                        miny0[j] = Math.min( miny0[j], pyy );
+                        maxy0[j] = Math.max( maxy0[j], pyy );
+                    }
+
+                }
             }
 
             i++;
 
-        }
-
-        if ( nx>0 ) {
+        } // end loop over all records
+            
+        if ( nx>0 ) { // clean up any remaining data.
             for ( int j=0; j<ny; j++ ) {
+                if (j==0 ) {
+                    if ( xregular ) {
+                        ax0 = x0 + dxLimit/2;
+                    } else {
+                        ax0 = basex + sx0/nx;
+                    }
+                    System.err.println("out: "+ax0 + " " +nx + " ("+tu.createDatum(ax0)+")");
+                    xbuilder.putValue( points, ax0 );
+                } 
                 boolean nv= nn0[j]==0;
-                //ax0 = sx0 / nx;
-                ax0 = x0 + dxLimit/2;
                 ay0[j] = nv ? fill : sy0[j] / nn0[j];
-                if ( j==0 ) xbuilder.putValue( points, ax0 );
                 ybuilder.putValue( points, j, ay0[j] );
                 yminbuilder.putValue( points, j, nv ? fill : miny0[j] );
                 ymaxbuilder.putValue( points, j, nv ? fill : maxy0[j] );
@@ -519,7 +576,7 @@ public class Reduction {
             }
 
 
-        }
+        } //loop over all records
 
         if ( nn0>0 ) {
             ax0 = sx0 / nn0;
