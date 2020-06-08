@@ -299,36 +299,35 @@ public class Reduction {
             
             if ( dx<0 || dx>= dxLimit ) { // clear the accumulators
 
+                if ( nx>0 ) {
+                     if ( xregular ) {
+                        ax0 = x0 + dxLimit/2;
+                        x0 = Math.floor(pxx/dxLimit) * dxLimit;
+                    } else {
+                        ax0 = basex + sx0/nx;
+                        x0 = pxx;
+                    }
+                    if ( logger.isLoggable(Level.FINEST) ) {
+                        logger.log(Level.FINEST, "out: {0} {1} ({2})", new Object[]{ax0, nx, tu.createDatum(ax0)});
+                    }
+                    xbuilder.putValue( points, ax0 );
+                              
+                    sx0 = 0.0;
+                    nx= 0;
+                }
+
                 for ( int j=0; j<ny; j++ ) {
 
-                    if ( nx>0 ) {
-                        if (j==0 ) {
-                            if ( xregular ) {
-                                ax0 = x0 + dxLimit/2;
-                                x0 = Math.floor(pxx/dxLimit) * dxLimit;
-                            } else {
-                                ax0 = basex + sx0/nx;
-                                x0 = pxx;
-                            }
-                            System.err.println("out: "+ax0 + " " +nx + " ("+tu.createDatum(ax0)+")");
-                            xbuilder.putValue( points, ax0 );
-                        } 
-                        boolean nv= nn0[j]==0;
-                        ay0[j] = nv ? fill : sy0[j] / nn0[j];
-                        ybuilder.putValue( points, j, ay0[j] );
-                        yminbuilder.putValue( points, j, nv ? fill : miny0[j] );
-                        ymaxbuilder.putValue( points, j, nv ? fill : maxy0[j] );
-                        wbuilder.putValue( points, j, nn0[j] );
-                        
-                    }
+                    boolean nv= nn0[j]==0;
+                    ay0[j] = nv ? fill : sy0[j] / nn0[j];
+                    ybuilder.putValue( points, j, ay0[j] );
+                    yminbuilder.putValue( points, j, nv ? fill : miny0[j] );
+                    ymaxbuilder.putValue( points, j, nv ? fill : maxy0[j] );
+                    wbuilder.putValue( points, j, nn0[j] );
 
                     double pyy = yy.value(j);
                     double wwj= ww.value(j);
 
-                    if ( j==0 ) {
-                        sx0 = 0.0;
-                        nx= 0;
-                    }
                     sy0[j] = 0.;
                     nn0[j] = 0.;
                     
@@ -345,8 +344,10 @@ public class Reduction {
 
             }
             
-            System.err.println(" in: "+pxx+ " ("+tu.createDatum(pxx)+")");
-
+            if ( logger.isLoggable(Level.FINEST) ) {
+                logger.log(Level.FINEST, " in: {0} ({1})", new Object[]{pxx, tu.createDatum(pxx)});
+            }
+            
             { // Here is the accumulation.
                 sx0 += (pxx-basex)*wx; 
                 nx+= 1;
@@ -372,16 +373,18 @@ public class Reduction {
         } // end loop over all records
             
         if ( nx>0 ) { // clean up any remaining data.
+            if ( nx>0 ) {
+                if ( xregular ) {
+                    ax0 = x0 + dxLimit/2;
+                } else {
+                    ax0 = basex + sx0/nx;
+                }
+                if ( logger.isLoggable(Level.FINEST) ) {
+                    logger.log(Level.FINEST, "out: {0} {1} ({2})", new Object[]{ax0, nx, tu.createDatum(ax0)});
+                }
+                xbuilder.putValue( points, ax0 );                
+            }
             for ( int j=0; j<ny; j++ ) {
-                if (j==0 ) {
-                    if ( xregular ) {
-                        ax0 = x0 + dxLimit/2;
-                    } else {
-                        ax0 = basex + sx0/nx;
-                    }
-                    System.err.println("out: "+ax0 + " " +nx + " ("+tu.createDatum(ax0)+")");
-                    xbuilder.putValue( points, ax0 );
-                } 
                 boolean nv= nn0[j]==0;
                 ay0[j] = nv ? fill : sy0[j] / nn0[j];
                 ybuilder.putValue( points, j, ay0[j] );
