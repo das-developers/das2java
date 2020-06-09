@@ -510,7 +510,12 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
             if ( xwidth==null ) {
                 RankZeroDataSet xwidthds= DataSetUtil.guessCadenceNew(xds,null);
                 if ( xwidthds==null ) {
-                    logger.finer("unable to guess cadence.");
+                    if ( xds.length()>40 ) {
+                        xwidthds= DataSetUtil.guessCadenceNew(xds.trim(0,xds.length()/4),null);
+                    }
+                    if ( xwidthds==null ) {
+                        logger.finer("unable to guess cadence.");
+                    }
                 } else {
                     xwidth= DataSetUtil.asDatum(xwidthds);
                 }
@@ -520,7 +525,7 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
                 QDataSet result;
                 QDataSet binMax= (QDataSet) ds.property(QDataSet.BIN_MAX);
                 QDataSet binPlus= (QDataSet) ds.property(QDataSet.BIN_PLUS);
-                if ( binPlus==null && binMax==null && x.binWidthDatum().lt( xwidth ) ) {
+                if ( binPlus==null && binMax==null && ( xwidth==null || x.binWidthDatum().lt( xwidth ) ) ) {
                     logger.log(Level.FINE, "using rebinner {0}", highResRebinner);
                     result= highResRebinner.rebin( ds, x, y, z ); //Plasma Wave Group will have to update this
                 } else {
