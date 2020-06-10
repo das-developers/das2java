@@ -365,7 +365,7 @@ public class GitHubFileSystem extends HttpFileSystem {
     
     
     @Override
-    protected synchronized Map<String,String> downloadFile(String filename, File targetFile, File partFile, ProgressMonitor monitor) throws IOException {
+    protected Map<String,String> downloadFile(String filename, File targetFile, File partFile, ProgressMonitor monitor) throws IOException {
         
         Lock lock = getDownloadLock(filename, targetFile, monitor);
         
