@@ -3031,8 +3031,9 @@ public final class Ops {
 
             @Override
             public Integer next() {
+                int i= (int)result.value(p);
                 p++;
-                return (int)result.value(p);
+                return i;
             }
         };
         
