@@ -1312,6 +1312,7 @@ public class DatumRangeUtil {
      * <li> 1972/now-P10D, immediately resolved into static time range.
      * <li> 1972/2002  ISO8601 time ranges
      * <li> 1972 to 2002  legacy das2 colloquial time ranges.
+     * <li> lasthour/lasthour+P1H  the hour we are within. 
      * </ul>
      * @param string
      * @return the range interpreted.
@@ -1348,7 +1349,13 @@ public class DatumRangeUtil {
         } else {
             if ( string.contains("now") || 
                     ( string.contains("last") && 
-                    ( string.contains("lastday" ) || string.contains("lasthour") || string.contains("lastmonth") || string.contains("lastyear") ) ) ) {
+                        ( string.contains("lastminute" ) 
+                        || string.contains("lasthour") 
+                        || string.contains("lastday") 
+                        || string.contains("lastmonth") 
+                        || string.contains("lastyear") ) 
+                    ) 
+                ) {
                 String[] ss= string.split("/");
                 String delim="/";
                 if ( ss.length!=2 ) {
@@ -1487,6 +1494,29 @@ public class DatumRangeUtil {
                         Datum lastDay= TimeUtil.toDatum(d);
                         String lastDayString= TimeParser.create(TimeParser.TIMEFORMAT_Z).format(lastDay, null);
                         snew.append( s.replace("lasthour",lastDayString) );
+                    } else if ( s.contains("lastminute-") ) { 
+                        int[] tt= TimeUtil.fromDatum(now);
+                        tt[5]=0;
+                        tt[6]=0;
+                        int[] dt= parseISO8601Duration(s.substring(11));
+                        for ( int i=0; i<tt.length; i++ ) tt[i]= tt[i] - dt[i];
+                        time= TimeUtil.toDatum(tt);
+                        snew.append( TimeParser.create(TimeParser.TIMEFORMAT_Z).format(time,null) );
+                    } else if ( s.contains("lastminute+") ) {
+                        int[] tt= TimeUtil.fromDatum(now);
+                        tt[5]=0;
+                        tt[6]=0;
+                        int[] dt= parseISO8601Duration(s.substring(11));
+                        for ( int i=0; i<tt.length; i++ ) tt[i]= tt[i] + dt[i];
+                        time= TimeUtil.toDatum(tt);
+                        snew.append( TimeParser.create(TimeParser.TIMEFORMAT_Z).format(time,null) );
+                    } else if ( s.contains("lastminute") ) {
+                        int[] d= TimeUtil.fromDatum(now);
+                        d[5]=0;
+                        d[6]=0;
+                        Datum lastDay= TimeUtil.toDatum(d);
+                        String lastDayString= TimeParser.create(TimeParser.TIMEFORMAT_Z).format(lastDay, null);
+                        snew.append( s.replace("lastminute",lastDayString) );
                     } else {
                         snew.append(s);
                     }
