@@ -3944,9 +3944,22 @@ public final class Ops {
      * @param val the rank N dataset
      * @param len0 the number of times to repeat
      * @return rank N+1 dataset.
+     * TODO: support rank N
      */
     public static MutablePropertyDataSet replicate( final QDataSet val, final int len0 ) {
         return new ReplicateDataSet( val, len0 );
+    }
+    
+    /**
+     * returns a rank N+2 dataset by repeating the rank N dataset, so
+     * all records will have the same value. E.g. result.value(i,j)= val.value()
+     * @param val the rank N dataset
+     * @param len0 the number of times to repeat
+     * @param len1 the length of the second index.
+     * @return rank N+2 dataset.
+     */
+    public static MutablePropertyDataSet replicate( final QDataSet val, final int len0, final int len1 ) {
+        return new ReplicateDataSet( new ReplicateDataSet( val, len1 ), len0 );
     }
     
     /**
