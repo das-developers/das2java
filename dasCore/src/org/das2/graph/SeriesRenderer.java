@@ -417,7 +417,7 @@ public class SeriesRenderer extends Renderer {
             
             QDataSet colorByDataSet = colorByDataSet(ds);
             boolean rgbColor= colorByDataSet!=null && Units.rgbColor.equals( colorByDataSet.property(QDataSet.UNITS) );
-            
+                        
             if ( stampPsyms && !rgbColor && !lparent.getCanvas().isPrintingThread()) {
                 i = renderStamp(graphics, xAxis, yAxis, vds, mon);
             } else {
@@ -847,6 +847,16 @@ public class SeriesRenderer extends Renderer {
             if ( !b.intersects(canvasRect) ) {
                 logger.log(Level.FINE, "all data is off-page ({0}ms)", ( t-t0  ) );
                 return 0;
+            }
+            
+            if ( backgroundWidth.length()>0 ) {
+                Color color0= g.getColor();
+                Color backgroundColor= g.getBackground();
+                g.setColor(backgroundColor);
+                double backWidth= GraphUtil.parseLayoutLength(backgroundWidth, xAxis.getColumn().getWidth(), lineWidth );
+                psymConnector.draw(g, lpath1, (float)backWidth);
+                g.setBackground(backgroundColor);
+                g.setColor(color0);
             }
                     
             //dumpPath();
@@ -1808,12 +1818,28 @@ public class SeriesRenderer extends Renderer {
                 errorElement.render( (Graphics2D)graphics.create(), xAxis, yAxis, vds, monitor.getSubtaskMonitor("errorElement.render"));
             }
 
+            if ( backgroundWidth.length()>0 ) {
+                Color color0= graphics.getColor();
+                Color backgroundColor= graphics.getBackground();
+                graphics.setColor(backgroundColor);
+
+                double backLineWidth= GraphUtil.parseLayoutLength(backgroundWidth, xAxis.getColumn().getWidth(), lineWidth );
+                graphics.setStroke(new BasicStroke((float) backLineWidth));
+                double backWidth= GraphUtil.parseLayoutLength(backgroundWidth, xAxis.getColumn().getWidth(), symSize );
+                //for (int i1 = 0; i1 < count; i1++) {
+                //    psym.draw(graphics, dpsymsPathX[i1], dpsymsPathY[i1], (float)backWidth, fillStyle );
+                //}
+
+                graphics.setBackground(backgroundColor);
+                graphics.setColor(color0);
+            }
+            
             int connectCount= psymConnectorElement.render(graphics, xAxis, yAxis, vds, monitor.getSubtaskMonitor("psymConnectorElement.render")); // vds is only to check units
             logger.log(Level.FINEST, "connectCount: {0}", connectCount);
 
             int symCount;
             if (psym != DefaultPlotSymbol.NONE) {
-
+                            
                 symCount= psymsElement.render( (Graphics2D)graphics.create(), xAxis, yAxis, vds, monitor.getSubtaskMonitor("psymsElement.render"));
                 logger.log(Level.FINEST, "symCount: {0}", symCount);
                 
@@ -2628,6 +2654,30 @@ public class SeriesRenderer extends Renderer {
             propertyChangeSupport.firePropertyChange("lineWidth", old, f );
         }
 
+    }
+
+    private String backgroundWidth = "";
+
+    public static final String PROP_BACKGROUNDWIDTH = "backgroundWidth";
+
+    public String getBackgroundWidth() {
+        return backgroundWidth;
+    }
+
+    /**
+     * set the width of background lines, for example "2em" is twice the 
+     * thickness of the line.
+     * 
+     * @param backgroundWidth 
+     */
+    public void setBackgroundWidth(String backgroundWidth) {
+        String oldBackgroundWidth = this.backgroundWidth;
+        this.backgroundWidth = backgroundWidth;
+        if ( !oldBackgroundWidth.equals(backgroundWidth) ) {
+            updatePsym();
+            refreshRender();
+        }
+        propertyChangeSupport.firePropertyChange(PROP_BACKGROUNDWIDTH, oldBackgroundWidth, backgroundWidth);
     }
 
     /** Getter for property antiAliased.
