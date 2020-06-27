@@ -206,7 +206,14 @@ public class SeriesRenderer extends Renderer {
     boolean haveValidColor= true;
 
     interface RenderElement {
-
+        
+        /**
+         * render a background on which the element is to be rendered.  All
+         * backgrounds are drawn first, then all elements.
+         * @param g 
+         */
+        void renderBackground( Graphics2D g );
+        
         int render(Graphics2D g, DasAxis xAxis, DasAxis yAxis, QDataSet vds, ProgressMonitor mon);
 
         void update(DasAxis xAxis, DasAxis yAxis, QDataSet vds, ProgressMonitor mon);
@@ -406,6 +413,22 @@ public class SeriesRenderer extends Renderer {
 
         }
 
+        public synchronized void renderBackground( Graphics2D graphics ) {
+            Color color0= graphics.getColor();
+            Color backgroundColor= graphics.getBackground();
+            graphics.setColor(backgroundColor);
+
+            double backLineWidth= GraphUtil.parseLayoutLength(backgroundThick, lineWidth, symSize );
+            graphics.setStroke(new BasicStroke((float) backLineWidth));
+            double backWidth= GraphUtil.parseLayoutLength(backgroundThick, symSize, symSize );
+            for (int i1 = 0; i1 < count; i1++) {
+                psym.draw(graphics, dpsymsPathX[i1], dpsymsPathY[i1], (float)backWidth, fillStyle );
+            }
+
+            graphics.setBackground(backgroundColor);
+            graphics.setColor(color0);   
+        }
+        
         @Override
         public synchronized int render(Graphics2D graphics, DasAxis xAxis, DasAxis yAxis, QDataSet vds, ProgressMonitor mon) {
             int i;
@@ -418,22 +441,6 @@ public class SeriesRenderer extends Renderer {
             QDataSet colorByDataSet = colorByDataSet(ds);
             boolean rgbColor= colorByDataSet!=null && Units.rgbColor.equals( colorByDataSet.property(QDataSet.UNITS) );
         
-            if ( backgroundThick.length()>0 ) {
-                Color color0= graphics.getColor();
-                Color backgroundColor= graphics.getBackground();
-                graphics.setColor(backgroundColor);
-
-                double backLineWidth= GraphUtil.parseLayoutLength(backgroundThick, lineWidth, symSize );
-                graphics.setStroke(new BasicStroke((float) backLineWidth));
-                double backWidth= GraphUtil.parseLayoutLength(backgroundThick, symSize, symSize );
-                for (int i1 = 0; i1 < count; i1++) {
-                    psym.draw(graphics, dpsymsPathX[i1], dpsymsPathY[i1], (float)backWidth, fillStyle );
-                }
-
-                graphics.setBackground(backgroundColor);
-                graphics.setColor(color0);
-            }
-
             if ( stampPsyms && !rgbColor && !lparent.getCanvas().isPrintingThread()) {
                 i = renderStamp(graphics, xAxis, yAxis, vds, mon);
             } else {
@@ -596,6 +603,11 @@ public class SeriesRenderer extends Renderer {
 
         GeneralPath p;
 
+        @Override
+        public void renderBackground(Graphics2D g) {
+            // do nothing for now.
+        }
+        
         @Override
         public int render(Graphics2D g, DasAxis xAxis, DasAxis yAxis, QDataSet vds, ProgressMonitor mon) {
             GeneralPath lp= getPath();
@@ -832,6 +844,21 @@ public class SeriesRenderer extends Renderer {
         private boolean pathWasReduced= true; // true if the path was reduced
    
         @Override
+        public void renderBackground( Graphics2D g ) {
+            GeneralPath lpath1= getPath();
+            if (lpath1 == null) {
+                return;
+            }
+            Color color0= g.getColor();
+            Color backgroundColor= g.getBackground();
+            g.setColor(backgroundColor);
+            double backWidth= GraphUtil.parseLayoutLength(backgroundThick, lineWidth, symSize );
+            psymConnector.draw(g, lpath1, (float)backWidth);
+            g.setBackground(backgroundColor);
+            g.setColor(color0);
+        }
+        
+        @Override
         public int render(Graphics2D g, DasAxis xAxis, DasAxis yAxis, QDataSet vds, ProgressMonitor mon) {
             //if ( pathWasReduced && !dataIsMonotonic ) return 0;
             long t0= System.currentTimeMillis();
@@ -863,16 +890,6 @@ public class SeriesRenderer extends Renderer {
             if ( !b.intersects(canvasRect) ) {
                 logger.log(Level.FINE, "all data is off-page ({0}ms)", ( t-t0  ) );
                 return 0;
-            }
-            
-            if ( backgroundThick.length()>0 ) {
-                Color color0= g.getColor();
-                Color backgroundColor= g.getBackground();
-                g.setColor(backgroundColor);
-                double backWidth= GraphUtil.parseLayoutLength(backgroundThick, lineWidth, symSize );
-                psymConnector.draw(g, lpath1, (float)backWidth);
-                g.setBackground(backgroundColor);
-                g.setColor(color0);
             }
                     
             //dumpPath();
@@ -1130,6 +1147,11 @@ public class SeriesRenderer extends Renderer {
 
         private GeneralPath fillToRefPath1;
 
+        @Override
+        public void renderBackground(Graphics2D g) {
+            // do nothing for now.
+        }
+        
         @Override
         public int render(Graphics2D g, DasAxis xAxis, DasAxis yAxis, QDataSet vds, ProgressMonitor mon) {
             if ( fillToRefPath1==null ) {
@@ -1788,7 +1810,16 @@ public class SeriesRenderer extends Renderer {
         
         monitor.started();
         
+        boolean drawBackground= backgroundThick.length()>0;
+                
         if ( SemanticOps.isRank2Waveform(dataSet) ) {
+            
+            if ( drawBackground ) { 
+                psymConnectorElement.renderBackground(graphics);
+                if ( drawError ) {
+                    errorElement.renderBackground(graphics);
+                }
+            }
             
             graphics.setColor(color);
             logger.log(Level.FINEST, "drawing psymConnector in {0}", color);
@@ -1810,6 +1841,14 @@ public class SeriesRenderer extends Renderer {
             
             
         } else if (tds != null ) {
+            
+            if ( drawBackground ) { 
+                psymConnectorElement.renderBackground(graphics);
+                if ( drawError ) {
+                    errorElement.renderBackground(graphics);
+                }
+            }
+            
             graphics.setColor(color);
             logger.log(Level.FINEST, "drawing psymConnector in {0}", color);
 
@@ -1822,7 +1861,18 @@ public class SeriesRenderer extends Renderer {
             }
 
         } else {
-
+            
+            if ( drawBackground ) {
+                fillElement.renderBackground(g);
+                psymConnectorElement.renderBackground(graphics);
+                if ( drawError ) {
+                    errorElement.renderBackground(graphics);
+                }
+                if (psym != DefaultPlotSymbol.NONE) {
+                    psymsElement.renderBackground( graphics );
+                }
+            }
+            
             if (this.fillToReference) {
                 fillElement.render( (Graphics2D)graphics.create(), xAxis, yAxis, vds, monitor.getSubtaskMonitor("fillElement.render"));
             }
@@ -1846,8 +1896,7 @@ public class SeriesRenderer extends Renderer {
             }
         }
         
-        // Kludge where we peek in the METADATA to see if there is LIMITS_WARN_MIN and other flags.  These are still experimental,
-        // and would become part of QDataSet.
+        // Peek in the METADATA to see if there is LIMITS_WARN_MIN and other flags.
         Map<String,Object> meta;
         meta= (Map<String,Object>) this.ds.property(QDataSet.METADATA);
 
