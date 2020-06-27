@@ -418,14 +418,14 @@ public class SeriesRenderer extends Renderer {
             QDataSet colorByDataSet = colorByDataSet(ds);
             boolean rgbColor= colorByDataSet!=null && Units.rgbColor.equals( colorByDataSet.property(QDataSet.UNITS) );
         
-            if ( backgroundWidth.length()>0 ) {
+            if ( backgroundThick.length()>0 ) {
                 Color color0= graphics.getColor();
                 Color backgroundColor= graphics.getBackground();
                 graphics.setColor(backgroundColor);
 
-                double backLineWidth= GraphUtil.parseLayoutLength(backgroundWidth, xAxis.getColumn().getWidth(), lineWidth );
+                double backLineWidth= GraphUtil.parseLayoutLength(backgroundThick, lineWidth, symSize );
                 graphics.setStroke(new BasicStroke((float) backLineWidth));
-                double backWidth= GraphUtil.parseLayoutLength(backgroundWidth, xAxis.getColumn().getWidth(), symSize );
+                double backWidth= GraphUtil.parseLayoutLength(backgroundThick, symSize, symSize );
                 for (int i1 = 0; i1 < count; i1++) {
                     psym.draw(graphics, dpsymsPathX[i1], dpsymsPathY[i1], (float)backWidth, fillStyle );
                 }
@@ -865,11 +865,11 @@ public class SeriesRenderer extends Renderer {
                 return 0;
             }
             
-            if ( backgroundWidth.length()>0 ) {
+            if ( backgroundThick.length()>0 ) {
                 Color color0= g.getColor();
                 Color backgroundColor= g.getBackground();
                 g.setColor(backgroundColor);
-                double backWidth= GraphUtil.parseLayoutLength(backgroundWidth, xAxis.getColumn().getWidth(), lineWidth );
+                double backWidth= GraphUtil.parseLayoutLength(backgroundThick, lineWidth, symSize );
                 psymConnector.draw(g, lpath1, (float)backWidth);
                 g.setBackground(backgroundColor);
                 g.setColor(color0);
@@ -2656,28 +2656,28 @@ public class SeriesRenderer extends Renderer {
 
     }
 
-    private String backgroundWidth = "";
+    private String backgroundThick = "";
 
     public static final String PROP_BACKGROUNDWIDTH = "backgroundWidth";
 
-    public String getBackgroundWidth() {
-        return backgroundWidth;
+    public String getBackgroundThick() {
+        return backgroundThick;
     }
 
     /**
      * set the width of background lines, for example "2em" is twice the 
      * thickness of the line.
      * 
-     * @param backgroundWidth 
+     * @param backgroundThick 
      */
-    public void setBackgroundWidth(String backgroundWidth) {
-        String oldBackgroundWidth = this.backgroundWidth;
-        this.backgroundWidth = backgroundWidth;
-        if ( !oldBackgroundWidth.equals(backgroundWidth) ) {
+    public void setBackgroundThick(String backgroundThick) {
+        String oldBackgroundWidth = this.backgroundThick;
+        this.backgroundThick = backgroundThick;
+        if ( !oldBackgroundWidth.equals(backgroundThick) ) {
             updatePsym();
             refreshRender();
         }
-        propertyChangeSupport.firePropertyChange(PROP_BACKGROUNDWIDTH, oldBackgroundWidth, backgroundWidth);
+        propertyChangeSupport.firePropertyChange(PROP_BACKGROUNDWIDTH, oldBackgroundWidth, backgroundThick);
     }
 
     /** Getter for property antiAliased.
