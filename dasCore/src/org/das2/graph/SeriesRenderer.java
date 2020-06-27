@@ -417,7 +417,23 @@ public class SeriesRenderer extends Renderer {
             
             QDataSet colorByDataSet = colorByDataSet(ds);
             boolean rgbColor= colorByDataSet!=null && Units.rgbColor.equals( colorByDataSet.property(QDataSet.UNITS) );
-                        
+        
+            if ( backgroundWidth.length()>0 ) {
+                Color color0= graphics.getColor();
+                Color backgroundColor= graphics.getBackground();
+                graphics.setColor(backgroundColor);
+
+                double backLineWidth= GraphUtil.parseLayoutLength(backgroundWidth, xAxis.getColumn().getWidth(), lineWidth );
+                graphics.setStroke(new BasicStroke((float) backLineWidth));
+                double backWidth= GraphUtil.parseLayoutLength(backgroundWidth, xAxis.getColumn().getWidth(), symSize );
+                for (int i1 = 0; i1 < count; i1++) {
+                    psym.draw(graphics, dpsymsPathX[i1], dpsymsPathY[i1], (float)backWidth, fillStyle );
+                }
+
+                graphics.setBackground(backgroundColor);
+                graphics.setColor(color0);
+            }
+
             if ( stampPsyms && !rgbColor && !lparent.getCanvas().isPrintingThread()) {
                 i = renderStamp(graphics, xAxis, yAxis, vds, mon);
             } else {
@@ -1816,22 +1832,6 @@ public class SeriesRenderer extends Renderer {
             
             if ( drawError ) { // error bars
                 errorElement.render( (Graphics2D)graphics.create(), xAxis, yAxis, vds, monitor.getSubtaskMonitor("errorElement.render"));
-            }
-
-            if ( backgroundWidth.length()>0 ) {
-                Color color0= graphics.getColor();
-                Color backgroundColor= graphics.getBackground();
-                graphics.setColor(backgroundColor);
-
-                double backLineWidth= GraphUtil.parseLayoutLength(backgroundWidth, xAxis.getColumn().getWidth(), lineWidth );
-                graphics.setStroke(new BasicStroke((float) backLineWidth));
-                double backWidth= GraphUtil.parseLayoutLength(backgroundWidth, xAxis.getColumn().getWidth(), symSize );
-                //for (int i1 = 0; i1 < count; i1++) {
-                //    psym.draw(graphics, dpsymsPathX[i1], dpsymsPathY[i1], (float)backWidth, fillStyle );
-                //}
-
-                graphics.setBackground(backgroundColor);
-                graphics.setColor(color0);
             }
             
             int connectCount= psymConnectorElement.render(graphics, xAxis, yAxis, vds, monitor.getSubtaskMonitor("psymConnectorElement.render")); // vds is only to check units
