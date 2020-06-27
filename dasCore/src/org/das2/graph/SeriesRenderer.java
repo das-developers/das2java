@@ -1435,8 +1435,13 @@ public class SeriesRenderer extends Renderer {
         int sx = 6+(int) Math.ceil(symSize + 2 * lineWidth);
         int sy = 6+(int) Math.ceil(symSize + 2 * lineWidth);
         double dcmx, dcmy;
-        dcmx = (lineWidth + (int) Math.ceil( ( symSize ) / 2)) +2 ;
-        dcmy = (lineWidth + (int) Math.ceil( ( symSize ) / 2)) +2 ;
+        if ( fillStyle==FillStyle.STYLE_OUTLINE ) {
+            dcmx = (lineWidth + (int) Math.ceil( ( symSize ) / 2)) +2 ;
+            dcmy = (lineWidth + (int) Math.ceil( ( symSize ) / 2)) +2 ;
+        } else {
+            dcmx = ( (int) Math.ceil( ( symSize ) / 2)) +2.5 ;
+            dcmy = ( (int) Math.ceil( ( symSize ) / 2)) +2.5 ;
+        }
         BufferedImage image = new BufferedImage(sx, sy, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = (Graphics2D) image.getGraphics();
 
@@ -1458,7 +1463,7 @@ public class SeriesRenderer extends Renderer {
         if (  colorByDataSetId != null && !colorByDataSetId.equals("") && lcolorBar!=null ) {
             initColoredPsyms(sx, sy, image, g, lparent, lcolorBar, rendering, dcmx, dcmy);
         }
-
+        
         cmx = (int) dcmx;
         cmy = (int) dcmy;
 
