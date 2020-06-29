@@ -3415,6 +3415,28 @@ public final class Ops {
     }
     
     /**
+     * create a dataset filled with zeros, stored in 8-byte longs, suitable for
+     * storing cdf_tt2000 times..  
+     * @param len0 the zeroth dimension length
+     * @return rank 1 dataset filled with zeros.
+     * @see #zeros(int) 
+     * @see #dblarr(int) 
+     */
+    public static QDataSet lonarr(int len0) {
+        return Ops.replicate(0L, len0);
+    }
+
+    /**
+     * create a rank 2 dataset filled with zeros, stored in 8-byte longs.
+     * @param len0 the length of the zeroth dimension.
+     * @param len1 the length of the first dimension.
+     * @return rank 2 dataset filled with zeros.
+     */
+    public static QDataSet lonarr(int len0, int len1) {
+        return Ops.replicate(0L, len0, len1);
+    }
+        
+    /**
      * create a rank 1 dataset filled with zeros, stored in 8-byte doubles.
      * @param len0 the length of the zeroth dimension.
      * @return rank 1 dataset filled with zeros.
@@ -3423,6 +3445,7 @@ public final class Ops {
      * @see #bytarr(int)
      * @see #shortarr(int) 
      * @see #intarr(int) 
+     * @see #lonarr(int) 
      */
     public static QDataSet dblarr(int len0) {
         return Ops.replicate(0., len0);
