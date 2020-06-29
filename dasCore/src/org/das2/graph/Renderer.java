@@ -356,7 +356,8 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
         boolean update= lastException!=null || oldDs!=ds ;
         
         this.lastException = null;
-
+        this.renderException = null;
+        
         if ( update ) {
             synchronized(this) {
                 updateFirstLastValid();
@@ -1193,8 +1194,8 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
                 l.append(" (").append(this.getDataSetDescriptor()).append( ")");
             }
         }
-        if ( l.length()==0 ) {
-            l.append( this.getClass().getName() );
+        if ( this.id!=null && this.id.length()>0 ) {
+            return id;
         }
         return l.toString();
     }
