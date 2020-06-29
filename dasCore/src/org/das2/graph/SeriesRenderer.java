@@ -2582,7 +2582,7 @@ public class SeriesRenderer extends Renderer {
 
     @Override
     public String getListLabel() {
-        return String.valueOf(this.getDataSetDescriptor());
+        return "series";
     }
 
     /**
