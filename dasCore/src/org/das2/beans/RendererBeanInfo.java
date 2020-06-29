@@ -28,6 +28,7 @@ package org.das2.beans;
 public class RendererBeanInfo extends AccessLevelBeanInfo {
     
     private static final Property[] properties = {
+        new Property("id", AccessLevel.DASML, "getId", null, null ),
         new Property("active", AccessLevel.DASML, "isActive", "setActive", null),
         new Property("dataSetID", AccessLevel.DASML, "getDataSetID", "setDataSetID", null),
         new Property("dumpDataSet", AccessLevel.DASML, "isDumpDataSet", "setDumpDataSet", null),        

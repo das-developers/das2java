@@ -25,7 +25,8 @@ package org.das2.beans;
 
 public class TickCurveRendererBeanInfo extends AccessLevelBeanInfo {
     
-    private static Property[] properties = {        
+    private static Property[] properties = {      
+        new Property("id", AccessLevel.DASML, "getId", null, null ),
         new Property("TickStyle", AccessLevel.DASML, "getTickStyle", "setTickStyle", null),
         new Property("LineWidth", AccessLevel.DASML, "getLineWidth", "setLineWidth", null),
         new Property("TickLength", AccessLevel.DASML, "getTickLength", "setTickLength", null),

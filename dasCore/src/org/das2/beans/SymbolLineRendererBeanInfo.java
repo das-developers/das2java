@@ -29,6 +29,7 @@ import org.das2.components.propertyeditor.EnumerationEditor;
 public class SymbolLineRendererBeanInfo extends AccessLevelBeanInfo {
     
     private static final Property[] properties = {
+        new Property("id", AccessLevel.DASML, "getId", null, null ),
         new Property("psym", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getPsym", "setPsym", EnumerationEditor.class),
         new Property("psymConnector", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getPsymConnector", "setPsymConnector", EnumerationEditor.class),
         new Property("histogram", AccessLevel.DASML, "isHistogram", "setHistogram", null),

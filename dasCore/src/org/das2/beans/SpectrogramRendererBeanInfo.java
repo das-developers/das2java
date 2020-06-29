@@ -29,6 +29,7 @@ import org.das2.components.propertyeditor.EnumerationEditor;
 public class SpectrogramRendererBeanInfo extends AccessLevelBeanInfo {
     
     private static final Property[] properties = {
+        new Property("id", AccessLevel.DASML, "getId", null, null ),
         new Property("rebinner", AccessLevel.DASML,  PersistenceLevel.PERSISTENT, "getRebinner", "setRebinner", EnumerationEditor.class),  
         new Property("colorBar", AccessLevel.DASML,  PersistenceLevel.PERSISTENT, "getColorBar", "setColorBar", null),
         new Property("cadenceCheck", AccessLevel.DASML, "isCadenceCheck", "setCadenceCheck", null),

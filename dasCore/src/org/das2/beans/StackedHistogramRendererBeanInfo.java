@@ -34,6 +34,7 @@ import org.das2.components.propertyeditor.EnumerationEditor;
 public class StackedHistogramRendererBeanInfo extends AccessLevelBeanInfo {
     
     private static final Property[] properties  = {
+        new Property("id", AccessLevel.DASML, "getId", null, null ),
         new Property("ZAxis", AccessLevel.DASML, "getZAxis", "setZAxis", null),
         new Property("PeaksIndicator", AccessLevel.DASML, "getPeaksIndicator", "setPeaksIndicator", EnumerationEditor.class ),
         new Property("sliceRebinnedData", AccessLevel.DASML, "isSliceRebinnedData", "setSliceRebinnedData", null),
