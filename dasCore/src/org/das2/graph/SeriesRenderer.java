@@ -2460,6 +2460,9 @@ public class SeriesRenderer extends Renderer {
 
         try {
             if ( this.psymConnector==PsymConnector.NONE || ds2.length()>10000 ) {
+                if ( ds2.property(QDataSet.DEPEND_0)==null ) {
+                    ds2= Ops.putProperty( ds2, QDataSet.DEPEND_0, xds );
+                }
                 QDataSet reduce= doDataSetReduce( xaxis, yaxis, ds2, 5, 5 );
 
                 logger.fine( String.format( "reduce path in calcSelectionArea: %s\n", reduce ) );
