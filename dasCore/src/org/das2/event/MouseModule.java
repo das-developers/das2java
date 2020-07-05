@@ -167,6 +167,15 @@ public class MouseModule implements Editable, Displayable, KeyListener, MouseLis
     }
     
     /**
+     * return the canvas component (for example, a DasPlot) where this
+     * MouseModule is listening.
+     * @return the canvas component.
+     */
+    public DasCanvasComponent getParent() {
+        return this.parent;
+    }
+    
+    /**
      * round to the nearest nice interval by looking for a DomainDivider in the axis.
      * 
      * @param xAxis the axis
