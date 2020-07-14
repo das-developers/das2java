@@ -763,9 +763,26 @@ public class DasAnnotation extends DasCanvasComponent {
                     }
                 }
             }
-            
+            if ( splitAnchorType ) {
+                if ( verticalAnchorType==AnchorType.CANVAS ) {
+                    anchorRect.y= getRow().getDMinimum();
+                    anchorRect.height= getRow().getHeight();
+                }
+            }
         } else {
             anchorRect= DasDevicePosition.toRectangle( getRow(), getColumn() );
+            if ( splitAnchorType ) {
+                if ( verticalAnchorType==AnchorType.DATA ) {
+                    anchorRect.y= (int)(plot.getYAxis().transform(yrange.min()));
+                    int y1= (int)(plot.getYAxis().transform(yrange.max()));
+                    if ( y1<anchorRect.y ) {
+                        int t= anchorRect.y;
+                        anchorRect.y= y1;
+                        y1= t;
+                    }
+                    anchorRect.height= y1- anchorRect.y;
+                }
+            }
         }
         return anchorRect;
     }
@@ -1200,6 +1217,39 @@ public class DasAnnotation extends DasCanvasComponent {
         AnchorType oldAnchorType = this.anchorType;
         this.anchorType = anchorType;
         firePropertyChange(PROP_ANCHORTYPE, oldAnchorType, anchorType);
+    }
+    
+    private boolean splitAnchorType = false;
+
+    public static final String PROP_SPLITANCHORTYPE = "splitAnchorType";
+
+    public boolean isSplitAnchorType() {
+        return splitAnchorType;
+    }
+
+    public void setSplitAnchorType(boolean splitAnchorType) {
+        boolean oldSplitAnchorType = this.splitAnchorType;
+        this.splitAnchorType = splitAnchorType;
+        firePropertyChange(PROP_SPLITANCHORTYPE, oldSplitAnchorType, splitAnchorType);
+    }
+
+    private AnchorType verticalAnchorType = AnchorType.CANVAS;
+
+    public static final String PROP_VERTICALANCHORTYPE = "verticalAnchorType";
+
+    public AnchorType getVerticalAnchorType() {
+        return verticalAnchorType;
+    }
+
+    /**
+     * when splitAnchorType==True, use this for the vertical position instead
+     * of the anchorType property.  
+     * @param verticalAnchorType 
+     */
+    public void setVerticalAnchorType(AnchorType verticalAnchorType) {
+        AnchorType oldVerticalAnchorType = this.verticalAnchorType;
+        this.verticalAnchorType = verticalAnchorType;
+        firePropertyChange(PROP_VERTICALANCHORTYPE, oldVerticalAnchorType, verticalAnchorType);
     }
     
     private Arrow.HeadStyle arrowStyle = Arrow.HeadStyle.DRAFTING;
