@@ -704,64 +704,8 @@ public class DasAnnotation extends DasCanvasComponent {
                 anchorRect.width= 1;
                 anchorRect.height= 1;
             } else {
-                try {
-                    anchorRect.x= (int)(plot.getXAxis().transform(xrange.min()));
-                    int x1= (int)(plot.getXAxis().transform(xrange.max()));
-                    if ( x1<anchorRect.x ) {
-                        int t= anchorRect.x;
-                        anchorRect.x= x1;
-                        x1= t;
-                    }
-                    anchorRect.width= x1- anchorRect.x;
-                } catch ( InconvertibleUnitsException ex ) {
-                    if ( xrange.getUnits()==Units.dimensionless && UnitsUtil.isRatioMeasurement(plot.getXAxis().getUnits())  ) {
-                        anchorRect.x= (int)(plot.getXAxis().transform(xrange.min().value(),plot.getXAxis().getUnits()));
-                        int x1= (int)(plot.getXAxis().transform(xrange.max().value(),plot.getXAxis().getUnits()));
-                        if ( x1<anchorRect.x ) {
-                            int t= anchorRect.x;
-                            anchorRect.x= x1;
-                            x1= t;
-                        }                
-                        anchorRect.width= x1- anchorRect.x;
-                    } else {
-                        if ( xrange.min().getUnits()==Units.dimensionless && xrange.min().value()==0.0 ) {
-                            logger.fine("unable to convert x units for annotation, transitional state");
-                        } else {
-                            logger.info("unable to convert x units for annotation");
-                        }
-                        anchorRect.x= getColumn().getDMinimum();
-                        anchorRect.width= getColumn().getWidth();
-                    }
-                }
-                try {
-                    anchorRect.y= (int)(plot.getYAxis().transform(yrange.min()));
-                    int y1= (int)(plot.getYAxis().transform(yrange.max()));
-                    if ( y1<anchorRect.y ) {
-                        int t= anchorRect.y;
-                        anchorRect.y= y1;
-                        y1= t;
-                    }
-                    anchorRect.height= y1- anchorRect.y;
-                } catch ( InconvertibleUnitsException ex ) {
-                    if ( yrange.getUnits()==Units.dimensionless && UnitsUtil.isRatioMeasurement(plot.getYAxis().getUnits())  ) {
-                        anchorRect.y= (int)(plot.getYAxis().transform(yrange.min().value(),plot.getYAxis().getUnits()));
-                        int y1= (int)(plot.getYAxis().transform(yrange.max().value(),plot.getYAxis().getUnits()));
-                        if ( y1<anchorRect.y ) {
-                            int t= anchorRect.y;
-                            anchorRect.y= y1;
-                            y1= t;
-                        }                
-                        anchorRect.height= y1- anchorRect.y;
-                    } else {
-                        if ( yrange.min().getUnits()==Units.dimensionless && yrange.min().value()==0.0 ) {
-                            logger.fine("unable to convert y units for annotation, transitional state");
-                        } else {
-                            logger.info("unable to convert y units for annotation");
-                        }
-                        anchorRect.y= getRow().getDMinimum();
-                        anchorRect.height= getRow().getHeight();
-                    }
-                }
+                anchorXToData(anchorRect);
+                anchorYToData(anchorRect);
             }
             if ( splitAnchorType ) {
                 if ( verticalAnchorType==AnchorType.CANVAS ) {
@@ -773,18 +717,84 @@ public class DasAnnotation extends DasCanvasComponent {
             anchorRect= DasDevicePosition.toRectangle( getRow(), getColumn() );
             if ( splitAnchorType ) {
                 if ( verticalAnchorType==AnchorType.DATA ) {
-                    anchorRect.y= (int)(plot.getYAxis().transform(yrange.min()));
-                    int y1= (int)(plot.getYAxis().transform(yrange.max()));
-                    if ( y1<anchorRect.y ) {
-                        int t= anchorRect.y;
-                        anchorRect.y= y1;
-                        y1= t;
-                    }
-                    anchorRect.height= y1- anchorRect.y;
+                    anchorYToData(anchorRect);
                 }
             }
         }
         return anchorRect;
+    }
+
+            
+    /**
+     * Anchor the horizontal components of the bounding box to the xrange value.
+     * @param anchorRect 
+     */
+    private void anchorXToData(Rectangle anchorRect) {
+        try {
+            anchorRect.x= (int)(plot.getXAxis().transform(xrange.min()));
+            int x1= (int)(plot.getXAxis().transform(xrange.max()));
+            if ( x1<anchorRect.x ) {
+                int t= anchorRect.x;
+                anchorRect.x= x1;
+                x1= t;
+            }
+            anchorRect.width= x1- anchorRect.x;
+        } catch ( InconvertibleUnitsException ex ) {
+            if ( xrange.getUnits()==Units.dimensionless && UnitsUtil.isRatioMeasurement(plot.getXAxis().getUnits())  ) {
+                anchorRect.x= (int)(plot.getXAxis().transform(xrange.min().value(),plot.getXAxis().getUnits()));
+                int x1= (int)(plot.getXAxis().transform(xrange.max().value(),plot.getXAxis().getUnits()));
+                if ( x1<anchorRect.x ) {
+                    int t= anchorRect.x;
+                    anchorRect.x= x1;
+                    x1= t;
+                }
+                anchorRect.width= x1- anchorRect.x;
+            } else {
+                if ( xrange.min().getUnits()==Units.dimensionless && xrange.min().value()==0.0 ) {
+                    logger.fine("unable to convert x units for annotation, transitional state");
+                } else {
+                    logger.info("unable to convert x units for annotation");
+                }
+                anchorRect.x= getColumn().getDMinimum();
+                anchorRect.width= getColumn().getWidth();
+            }
+        }
+    }
+        
+    /**
+     * Anchor the vertical components of the bounding box to the yrange value.
+     * @param anchorRect 
+     */
+    private void anchorYToData(Rectangle anchorRect) {
+        try {
+            anchorRect.y= (int)(plot.getYAxis().transform(yrange.min()));
+            int y1= (int)(plot.getYAxis().transform(yrange.max()));
+            if ( y1<anchorRect.y ) {
+                int t= anchorRect.y;
+                anchorRect.y= y1;
+                y1= t;
+            }
+            anchorRect.height= y1- anchorRect.y;
+        } catch ( InconvertibleUnitsException ex ) {
+            if ( yrange.getUnits()==Units.dimensionless && UnitsUtil.isRatioMeasurement(plot.getYAxis().getUnits())  ) {
+                anchorRect.y= (int)(plot.getYAxis().transform(yrange.min().value(),plot.getYAxis().getUnits()));
+                int y1= (int)(plot.getYAxis().transform(yrange.max().value(),plot.getYAxis().getUnits()));
+                if ( y1<anchorRect.y ) {
+                    int t= anchorRect.y;
+                    anchorRect.y= y1;
+                    y1= t;
+                }
+                anchorRect.height= y1- anchorRect.y;
+            } else {
+                if ( yrange.min().getUnits()==Units.dimensionless && yrange.min().value()==0.0 ) {
+                    logger.fine("unable to convert y units for annotation, transitional state");
+                } else {
+                    logger.info("unable to convert y units for annotation");
+                }
+                anchorRect.y= getRow().getDMinimum();
+                anchorRect.height= getRow().getHeight();
+            }
+        }
     }
     
     /**
