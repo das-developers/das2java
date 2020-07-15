@@ -680,7 +680,7 @@ public class DasAnnotation extends DasCanvasComponent {
     /**
      * return the bounds of that thing we are anchored to.  Note 
      * AnchorType.DATA is treated the same as AnchorType.PLOT, but the thought
-     * is that it could look at the render's click 
+     * is that it could look at the renderer's data.
      * @return the bounds of that thing we are anchored to.
      */
     private Rectangle getAnchorBounds() {
