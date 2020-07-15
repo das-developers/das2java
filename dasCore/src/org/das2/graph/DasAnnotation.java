@@ -650,7 +650,13 @@ public class DasAnnotation extends DasCanvasComponent {
             if ( anchorBorderType!=BorderType.NONE ) {
                 Rectangle anchorRect= getAnchorBounds();
                 if ( anchorBorderType== BorderType.RECTANGLE ) {
-                    g.draw(anchorRect);
+                    if ( anchorRect.width==0 ) {
+                        g.draw( new Line2D.Double( anchorRect.x, anchorRect.y, anchorRect.x, anchorRect.y+anchorRect.height ) );
+                    } else if ( anchorRect.height==0 ) {
+                        g.draw( new Line2D.Double( anchorRect.x, anchorRect.y, anchorRect.x+anchorRect.width, anchorRect.y ) );
+                    } else {
+                        g.draw(anchorRect);
+                    }
                 } else if ( anchorBorderType==BorderType.ROUNDED_RECTANGLE ) {
                     g.drawRoundRect(anchorRect.x, anchorRect.y, anchorRect.width, anchorRect.height, em * 2, em * 2);
                 }
