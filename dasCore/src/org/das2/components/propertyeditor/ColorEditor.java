@@ -32,7 +32,7 @@ import org.das2.util.DesktopColorChooserPanel;
  *
  * @author eew
  */
-public class ColorEditor extends AbstractCellEditor implements java.beans.PropertyEditor, TableCellEditor {
+public final class ColorEditor extends AbstractCellEditor implements java.beans.PropertyEditor, TableCellEditor {
 
     private static final List colors = new ArrayList();
     static {
@@ -86,6 +86,7 @@ public class ColorEditor extends AbstractCellEditor implements java.beans.Proper
         choice.setRenderer(new ColorCellRenderer());
         choice.setBorder(null);
         choice.addItemListener(new ItemListener() {
+            @Override
             public void itemStateChanged(ItemEvent e) {
                 if (e.getStateChange() == ItemEvent.SELECTED
                         && choice.isDisplayable()) {
@@ -106,8 +107,10 @@ public class ColorEditor extends AbstractCellEditor implements java.beans.Proper
         setValue(init);
     }
 
+    @Override
     public boolean supportsCustomEditor() { return true; }
     
+    @Override
     public String getAsText() { 
         int rgb= ((Color)editorSupport.getValue()).getRGB();
         String hex;
@@ -122,6 +125,7 @@ public class ColorEditor extends AbstractCellEditor implements java.beans.Proper
     private void initCustom() {
             custom= new JColorChooser();
             custom.addPropertyChangeListener("color", new PropertyChangeListener() {
+                @Override
                 public void propertyChange(PropertyChangeEvent e) {
                     setValue(e.getNewValue());
                 }
@@ -131,6 +135,7 @@ public class ColorEditor extends AbstractCellEditor implements java.beans.Proper
             custom.addChooserPanel(new DesktopColorChooserPanel()); 
     }
 
+    @Override
     public Component getCustomEditor() {
         Color c = (Color)getValue();
         if ( custom==null ) {
@@ -140,42 +145,52 @@ public class ColorEditor extends AbstractCellEditor implements java.beans.Proper
         return custom;
     }
 
+    @Override
     public void addPropertyChangeListener(PropertyChangeListener l) {
         editorSupport.addPropertyChangeListener(l);
     }
 
+    @Override
     public Object getCellEditorValue() {
         return editorSupport.getValue();
     }
 
+    @Override
     public String getJavaInitializationString() {
         return "???";
     }
 
+    @Override
     public String[] getTags() {
         return null;
     }
 
+    @Override
     public Object getValue() {
         return editorSupport.getValue();
     }
 
+    @Override
     public boolean isPaintable() {
         return false;
     }
 
+    @Override
     public void paintValue(Graphics graphics, Rectangle rectangle) {
     }
 
+    @Override
     public void removePropertyChangeListener(PropertyChangeListener l) {
         editorSupport.removePropertyChangeListener(l);
     }
 
+    @Override
     public void setAsText(String str) throws IllegalArgumentException {
         Color c= Color.decode(str);
         setValue(c);
     }
 
+    @Override
     public void setValue(Object obj) {
         Object oldValue= this.editorSupport.getValue();
         editorSupport.setValue(obj);
@@ -186,6 +201,7 @@ public class ColorEditor extends AbstractCellEditor implements java.beans.Proper
         }
     }
 
+    @Override
     public Component getTableCellEditorComponent(JTable table, Object value, boolean selected, int row, int column) {
         setValue(value);
         ((ColorChoiceModel)choice.getModel()).setSelectedItem(value);
@@ -203,6 +219,7 @@ public class ColorEditor extends AbstractCellEditor implements java.beans.Proper
         
         private final static String CUSTOM_LABEL = "custom...";
         
+        @Override
         public Object getElementAt(int index) {
             if (index < colors.size()) {
                 return colors.get(index);
@@ -215,14 +232,17 @@ public class ColorEditor extends AbstractCellEditor implements java.beans.Proper
             }
         }
 
+        @Override
         public Object getSelectedItem() {
             return getValue();
         }
 
+        @Override
         public int getSize() {
             return colors.size() + 1;
         }
 
+        @Override
         public void setSelectedItem(Object obj) {
             if (obj instanceof Color) {
                 setValue(obj);
