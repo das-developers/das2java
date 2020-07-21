@@ -180,6 +180,7 @@ public class ColorEditor extends AbstractCellEditor implements java.beans.Proper
         Object oldValue= this.editorSupport.getValue();
         editorSupport.setValue(obj);
         if ( oldValue!=obj ) {
+            choice.setSelectedItem(obj);
             ((ColorChoiceModel)choice.getModel()).setSelectedItem(obj);
             choice.repaint();
         }
