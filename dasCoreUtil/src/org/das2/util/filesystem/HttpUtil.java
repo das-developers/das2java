@@ -1,8 +1,4 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package org.das2.util.filesystem;
 
 import java.io.IOException;
@@ -39,12 +35,14 @@ public final class HttpUtil {
     }
     
     
-    private static final Map<String, MetadataRecord> cache = Collections.synchronizedMap(new HashMap<String, MetadataRecord>());
+    private static final Map<String, MetadataRecord> cache = 
+            Collections.synchronizedMap(new HashMap<String, MetadataRecord>());
 
     /**
      * nice clients consume both the stderr and stdout coming from websites.
      * This reads everything off of the stream and closes it.
-     * http://docs.oracle.com/javase/1.5.0/docs/guide/net/http-keepalive.html suggests that you "do not abandon connection"
+     * http://docs.oracle.com/javase/1.5.0/docs/guide/net/http-keepalive.html 
+     * suggests that you "do not abandon connection"
      * @param err the input stream
      * @throws IOException
      */
@@ -67,13 +65,17 @@ public final class HttpUtil {
     /**
      * return the metadata about a URL.  This will support http, https,
      * and ftp, and will check for redirects.  This will
-     * allow caching of head requests.
+     * allow caching of head requests.  
      * @param url ftp,https, or http URL
      * @param props if non-null, may be a map containing cookie.
      * @return the metadata
      * @throws java.io.IOException when HEAD requests are made.
+     * @see WebProtocol#META_EXIST
+     * @see WebProtocol#HTTP_RESPONSE_CODE
      */
-    public static Map<String, String> getMetadata(URL url, Map<String, String> props) throws IOException {
+    public static Map<String, String> getMetadata(
+            URL url, 
+            Map<String, String> props) throws IOException {
         long ageMillis = Long.MAX_VALUE;
         String surl = url.toString();
         MetadataRecord mr;
@@ -114,7 +116,8 @@ public final class HttpUtil {
                 connect.setRequestMethod("HEAD");
                 //connect.setDefaultUseCaches(false);
                 //connect.setUseCaches(false);
-                //connect.setRequestProperty("Cache-Control", "max-age=0"); // attempts to get github.com to send fresh headers.
+                //connect.setRequestProperty("Cache-Control", "max-age=0"); 
+                     // attempts to get github.com to send fresh headers.
                 try {
                     String encode = KeyChain.getDefault().getUserInfoBase64Encoded(url);
                     if (encode != null) {
@@ -135,7 +138,9 @@ public final class HttpUtil {
                 FileSystem.loggerUrl.log(Level.FINE, "HEAD to get metadata: {0}", new Object[]{url});
                 connect.connect();
                 int responseCode= connect.getResponseCode();
-                if (responseCode == HttpURLConnection.HTTP_MOVED_PERM || responseCode == HttpURLConnection.HTTP_MOVED_TEMP || responseCode == HttpURLConnection.HTTP_SEE_OTHER) {
+                if (responseCode == HttpURLConnection.HTTP_MOVED_PERM 
+                        || responseCode == HttpURLConnection.HTTP_MOVED_TEMP 
+                        || responseCode == HttpURLConnection.HTTP_SEE_OTHER) {
                     connect= (HttpURLConnection) HttpUtil.checkRedirect(connect);
                 }
                 exists = connect.getResponseCode() != 404;
@@ -143,9 +148,12 @@ public final class HttpUtil {
                 Map<String, List<String>> fields = connect.getHeaderFields();
                 for (Map.Entry<String, List<String>> e : fields.entrySet()) {
                     String key = e.getKey();
-                    List<String> value = e.getValue();
-                    result.put(key, value.get(0));
+                    if ( key!=null ) {
+                        List<String> value = e.getValue();
+                        result.put(key, value.get(0));
+                    }
                 }
+                result.put(WebProtocol.HTTP_RESPONSE_CODE,String.valueOf(responseCode));
                 result.put(WebProtocol.META_EXIST, String.valueOf(exists));
                 result.put(WebProtocol.META_LAST_MODIFIED, String.valueOf(connect.getLastModified()));
                 result.put(WebProtocol.META_CONTENT_LENGTH, String.valueOf(connect.getContentLength()));
@@ -191,19 +199,25 @@ public final class HttpUtil {
             huc.setReadTimeout( FileSystem.settings().getReadTimeoutMs() );
             loggerUrl.log(Level.FINEST, "getResponseCode {0}", urlConnection.getURL());
             int responseCode = huc.getResponseCode();
-            if (responseCode == HttpURLConnection.HTTP_MOVED_PERM || responseCode == HttpURLConnection.HTTP_MOVED_TEMP || responseCode == HttpURLConnection.HTTP_SEE_OTHER) {
+            if (responseCode == HttpURLConnection.HTTP_MOVED_PERM 
+                    || responseCode == HttpURLConnection.HTTP_MOVED_TEMP
+                    || responseCode == HttpURLConnection.HTTP_SEE_OTHER) {
                 String newUrl = huc.getHeaderField("Location");
                 if (responseCode == HttpURLConnection.HTTP_MOVED_PERM) {
-                    logger.log(Level.INFO, "URL {0} permanently moved to {1}", new Object[]{urlConnection.getURL(), newUrl});
+                    logger.log(Level.INFO, "URL {0} permanently moved to {1}", 
+                            new Object[]{urlConnection.getURL(), newUrl});
                 } else {
-                    loggerUrl.log(Level.FINE, "{0} redirect to {1}", new Object[] { responseCode, newUrl } );
+                    loggerUrl.log(Level.FINE, "{0} redirect to {1}", 
+                            new Object[] { responseCode, newUrl } );
                 }
                 String cookie = huc.getHeaderField("Cookie");
                 String acceptEncoding = huc.getRequestProperty("Accept-Encoding");
                 String authorization = huc.getRequestProperty("Authorization");
                 String requestMethod = huc.getRequestMethod();
-                HttpURLConnection newUrlConnection = (HttpURLConnection) new URL(newUrl).openConnection();
-                newUrlConnection.addRequestProperty("Referer", urlConnection.getURL().toString());
+                HttpURLConnection newUrlConnection = 
+                        (HttpURLConnection) new URL(newUrl).openConnection();
+                newUrlConnection.addRequestProperty("Referer", 
+                        urlConnection.getURL().toString());
                 if (cookie != null) {
                     newUrlConnection.setRequestProperty("Cookie", cookie);
                 }
