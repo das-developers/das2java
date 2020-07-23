@@ -22,6 +22,11 @@ public interface WebProtocol {
     public static final String META_ETAG= "ETag";
     
     /**
+     * kludge in place where the response code (200,302,401,etc) can be stored.
+     */
+    public static final String HTTP_RESPONSE_CODE= "_ResponseCode";
+    
+    /**
      * get an inputStream for the resource.  The client using the stream must make sure the stream is closed.
      * @param fo the resource
      * @param mon monitor for the stream.
