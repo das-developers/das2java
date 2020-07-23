@@ -608,25 +608,38 @@ public class WebFileObject extends FileObject {
 
             String userInfo= null;
 
-            try {
-                userInfo = KeyChain.getDefault().getUserInfo( url );
-            } catch (CancelledOperationException ex) {
-                throw new FileSystemOfflineException("user cancelled credentials");
-            }
-            
-            Map<String,String> requestProperties= new HashMap<>();
-            
-            if ( userInfo != null) {
-                String encode = Base64.getEncoder().encodeToString( userInfo.getBytes());
-                requestProperties.put( "Authorization", "Basic " + encode );
-            }
+            Map<String,String> meta;
+            int responseCode;
+            do {
 
-            String cookie= ((HttpFileSystem)wfs).getCookie();
-            if ( cookie!=null ) {
-                requestProperties.put( "Cookie", cookie  );
-            }
+                try {
+                    userInfo = KeyChain.getDefault().getUserInfo( url );
+                } catch (CancelledOperationException ex) {
+                    throw new FileSystemOfflineException("user cancelled credentials");
+                }
+            
+                Map<String,String> requestProperties= new HashMap<>();
+            
+                if ( userInfo != null) {
+                    String encode = Base64.getEncoder().encodeToString( userInfo.getBytes());
+                    requestProperties.put( "Authorization", "Basic " + encode );
+                }
 
-            Map<String,String> meta= HttpUtil.getMetadata( url, requestProperties );
+                String cookie= ((HttpFileSystem)wfs).getCookie();
+                if ( cookie!=null ) {
+                    requestProperties.put( "Cookie", cookie  );
+                }
+
+                meta= HttpUtil.getMetadata( url, requestProperties );
+                if ( meta.containsKey(WebProtocol.HTTP_RESPONSE_CODE) ) {
+                    responseCode= Integer.parseInt( meta.get(WebProtocol.HTTP_RESPONSE_CODE) );
+                    if ( responseCode==401 ) {
+                        KeyChain.getDefault().clearUserPassword( url );
+                    }
+                } else {
+                    responseCode= 200;
+                }
+            } while ( responseCode==401 ); // loop until cancel or correct password is entered.
             
             long lastModified= Long.parseLong( meta.get( WebProtocol.META_LAST_MODIFIED ) );
             remoteDate = new Date(lastModified); // here bug 1393 w/webstart https://sourceforge.net/p/autoplot/bugs/1393/
@@ -639,7 +652,7 @@ public class WebFileObject extends FileObject {
                     remoteLength=-1;
                 }
             }
-            
+          
         } else {
             if ( this.lastModified().getTime()==0 || this.lastModified().getTime()==Long.MAX_VALUE ) {
                 DirectoryEntry result= wfs.maybeUpdateDirectoryEntry( this.getNameExt(), true ); // trigger load of the modifiedDate

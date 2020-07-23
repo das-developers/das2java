@@ -379,6 +379,13 @@ public class HttpFileSystem extends WebFileSystem {
         Map<String,String> result= new HashMap<>();
         result.put( WebProtocol.META_ETAG, connect.getHeaderField( WebProtocol.META_ETAG ) );
         result.put( WebProtocol.META_CONTENT_TYPE, connect.getHeaderField( WebProtocol.META_CONTENT_TYPE ) );
+        if ( connect instanceof HttpURLConnection ) {
+            try {
+                result.put( WebProtocol.HTTP_RESPONSE_CODE, String.valueOf(((HttpURLConnection)connect).getResponseCode()) );
+            } catch ( IOException ex ) {
+                // do nothing as before.
+            }
+        }
         return result;
     }
     
@@ -395,7 +402,7 @@ public class HttpFileSystem extends WebFileSystem {
      */
     private Map<String,String> doDownload( String filename, URL remoteURL, File f, File partFile, ProgressMonitor monitor ) throws IOException, FileNotFoundException {
         
-        Map<String,String> result;
+        Map<String,String> result=null;
         
         URLConnection urlc = remoteURL.openConnection();
         urlc.setConnectTimeout( FileSystem.settings().getConnectTimeoutMs() );
@@ -545,6 +552,17 @@ public class HttpFileSystem extends WebFileSystem {
             } else {
                 throw new IOException("could not create local file: " + f);
             }
+            
+        } catch ( IOException ex ) {
+            if ( urlc instanceof HttpURLConnection ) {
+                if ( ((HttpURLConnection)urlc).getResponseCode()==401 ) {
+                    if ( result==null ) result= new HashMap<>();
+                    result.put( WebProtocol.HTTP_RESPONSE_CODE, String.valueOf( ((HttpURLConnection) urlc).getResponseCode() ) );
+                }
+            } else {
+                throw ex;
+            }
+            
         } finally {
             if ( urlc instanceof HttpURLConnection ) {
                 if ( remoteURL.getPath().endsWith("/") ) {
@@ -554,7 +572,7 @@ public class HttpFileSystem extends WebFileSystem {
                 }
             }
         }
-        return Collections.EMPTY_MAP;
+        return result;
     }
     /**
      * 
@@ -583,7 +601,7 @@ public class HttpFileSystem extends WebFileSystem {
         try {
             URL remoteURL = getURL( filename );
             
-            try {
+            try { 
                 meta= doDownload( filename, remoteURL, targetFile, partFile, monitor );
             } catch ( FileNotFoundException ex ) {
                 if ( !filename.endsWith("/") ) {
@@ -814,8 +832,15 @@ public class HttpFileSystem extends WebFileSystem {
             try {
                 File listing= listingFile( directory );
 
-                downloadFile( directory, listing, getPartFile(listing), new NullProgressMonitor() );
+                Map<String,String> metaz= downloadFile( directory, listing, getPartFile(listing), new NullProgressMonitor() );
 
+                String code= metaz.get( WebProtocol.HTTP_RESPONSE_CODE );
+                if ( code!=null && Integer.parseInt(code)==401 ) {
+                    URL remoteURL = getURL( directory );
+                    KeyChain.getDefault().clearUserPassword(remoteURL);
+                    continue;
+                }
+                
                 if ( !listing.setLastModified( System.currentTimeMillis() ) ) {
                     logger.log(Level.WARNING, "failed to setLastModified: {0}", listing);
                 }
