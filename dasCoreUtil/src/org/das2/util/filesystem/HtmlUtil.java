@@ -23,7 +23,6 @@
 
 package org.das2.util.filesystem;
 
-import com.itextpdf.text.io.StreamUtil;
 import java.util.logging.Level;
 import org.das2.util.monitor.CancelledOperationException;
 import org.das2.util.Base64;
@@ -181,8 +180,9 @@ public class HtmlUtil {
     }
     
     /**
-     * get the inputStream, following redirects if a 301 or 302 is encountered.  The scientist may be
-     * prompted for a password.  
+     * get the inputStream, following redirects if a 301 or 302 is encountered.  
+     * The scientist may be prompted for a password, but only if "user@" is
+     * in the URL.
      * 
      * Note this does not explicitly close the connections
      * to the server, and Java may not know to release the resources.  
