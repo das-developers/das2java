@@ -427,9 +427,11 @@ public class ArgumentList {
                 String[] keys= (String[])requireOneOfList.get(i);
                 boolean haveValue=false;
                 for ( int j=0;j<keys.length;j++ ) {
-                    if ( !values.get(keys[j]).equals(UNSPECIFIED) &&  //TODO: De Morgan's law should clarify
-                            !values.get(keys[j]).equals(UNDEFINED_SWITCH) &&
-                            !values.get(keys[j]).equals(REFERENCEWITHOUTVALUE) ) haveValue=true;
+                    String v= values.get(keys[j]);
+                    if ( v!=null &&
+                            !v.equals(UNSPECIFIED) &&  //TODO: De Morgan's law should clarify
+                            !v.equals(UNDEFINED_SWITCH) &&
+                            !v.equals(REFERENCEWITHOUTVALUE) ) haveValue=true;
                 }
                 if ( !haveValue ) {
                     StringBuilder list= new StringBuilder( (String)reverseNames.get( keys[0] ) );
