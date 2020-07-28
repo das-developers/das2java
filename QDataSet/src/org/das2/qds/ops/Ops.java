@@ -12751,6 +12751,62 @@ public final class Ops {
     }
 
     /**
+     * bundle five datasets, making them share their zeroth index, typically time,
+     * unlike join.  This is just like bundle(ds1,ds2), in fact this just calls
+     * bundle( bundle( bundle( ds1,ds2 ), ds3 ), ds4 )
+     * @param ds1 rank 1 (for now) dataset with n records or rank 2 bundle dataset
+     * @param ds2 rank 1 (for now) dataset with n records
+     * @param ds3 rank 1 (for now) dataset with n records
+     * @param ds4 rank 1 (for now) dataset with n records
+     * @param ds5 rank 1 (for now) dataset with n records
+     * @return rank 2 [n,4] bundle dataset
+     * @see #join(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
+     */
+    public static QDataSet bundle( QDataSet ds1, QDataSet ds2, QDataSet ds3, 
+            QDataSet ds4, QDataSet ds5 ) {
+        return bundle( bundle( bundle( bundle( ds1, ds2 ), ds3 ), ds4 ), ds5 );
+    }
+    
+    /**
+     * bundle six datasets, making them share their zeroth index, typically time,
+     * unlike join.  This is just like bundle(ds1,ds2), in fact this just calls
+     * bundle( bundle( bundle( ds1,ds2 ), ds3 ), ds4 )
+     * @param ds1 rank 1 (for now) dataset with n records or rank 2 bundle dataset
+     * @param ds2 rank 1 (for now) dataset with n records
+     * @param ds3 rank 1 (for now) dataset with n records
+     * @param ds4 rank 1 (for now) dataset with n records
+     * @param ds5 rank 1 (for now) dataset with n records
+     * @param ds6 rank 1 (for now) dataset with n records
+     * @return rank 2 [n,4] bundle dataset
+     * @see #join(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
+     */
+    public static QDataSet bundle( QDataSet ds1, QDataSet ds2, QDataSet ds3, 
+            QDataSet ds4, QDataSet ds5, QDataSet ds6 ) {
+        return bundle( bundle( bundle( bundle( bundle( ds1, ds2 ), ds3 )
+                , ds4 ), ds5 ), ds6 );
+    }
+
+    /**
+     * bundle seven datasets, making them share their zeroth index, typically time,
+     * unlike join.  This is just like bundle(ds1,ds2), in fact this just calls
+     * bundle( bundle( bundle( ds1,ds2 ), ds3 ), ds4 )
+     * @param ds1 rank 1 (for now) dataset with n records or rank 2 bundle dataset
+     * @param ds2 rank 1 (for now) dataset with n records
+     * @param ds3 rank 1 (for now) dataset with n records
+     * @param ds4 rank 1 (for now) dataset with n records
+     * @param ds5 rank 1 (for now) dataset with n records
+     * @param ds6 rank 1 (for now) dataset with n records
+     * @param ds7 rank 1 (for now) dataset with n records
+     * @return rank 2 [n,4] bundle dataset
+     * @see #join(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
+     */
+    public static QDataSet bundle( QDataSet ds1, QDataSet ds2, QDataSet ds3, 
+            QDataSet ds4, QDataSet ds5, QDataSet ds6, QDataSet ds7 ) {
+        return bundle( bundle( bundle( bundle( bundle( bundle( ds1, ds2 ), ds3 )
+                , ds4 ), ds5 ), ds6 ), ds7 );
+    }
+    
+    /**
      * Extract the named bundled dataset.  For example, extract B_x from bundle of components.
      * @param ds the bundle of datasets, often rank 2 with BUNDLE_1 property
      * @param name the name of the bundled dataset, or "ch_&lt;i&gt;" where i is the dataset number
