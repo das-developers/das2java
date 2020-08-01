@@ -79,7 +79,7 @@ import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.TableColumn;
@@ -1054,19 +1054,7 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
      */
     public boolean saveAs() {
         JFileChooser jj = new JFileChooser();
-        jj.setFileFilter( new FileFilter() {
-            @Override
-            public boolean accept(File pathname) {
-                if ( pathname==null ) return false; //            rte_1178734273_20140402_133610_wsk, I think this happens on Windows.
-                if ( pathname.isDirectory() ) return true;
-                String fn= pathname.getName();
-                return fn.endsWith(".dat") || fn.endsWith(".txt");
-            }
-            @Override
-            public String getDescription() {
-                return "Flat Ascii Tables";
-            }
-        });
+        jj.setFileFilter( new FileNameExtensionFilter( "Flat Ascii Tables", "dat", "txt" ) );
         String lastFileString = prefs.get("components.DataPointRecorder.lastFileSave", "");
         if (lastFileString.length()>0) {
             File lastFile= new File(lastFileString);

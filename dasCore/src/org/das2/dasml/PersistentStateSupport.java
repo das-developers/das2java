@@ -27,7 +27,6 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.prefs.Preferences;
-import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JFileChooser;
@@ -35,7 +34,7 @@ import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
-import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -156,17 +155,6 @@ public class PersistentStateSupport {
         setRecentFiles( recentFileString );
     }
     
-    private FileFilter simpleFilter( final String glob ) {
-        final Pattern pattern= Glob.getPattern(glob);
-        return new FileFilter() {
-            public boolean accept( File pathname ) {
-                if ( pathname.toString()==null ) return false;
-                return pathname.isDirectory() || pattern.matcher(pathname.getName()).matches();
-            }
-            public String getDescription() { return glob; }
-        };
-    }
-    
     public Action createSaveAsAction() {
         return new AbstractAction("Save As...") {
             public void actionPerformed( ActionEvent e ) {
@@ -179,7 +167,7 @@ public class PersistentStateSupport {
         JFileChooser chooser= new JFileChooser();
         if ( getCurrentFile()!=null ) chooser.setCurrentDirectory(getCurrentFile().getParentFile());
         if ( getCurrentFile()!=null ) chooser.setSelectedFile( getCurrentFile());
-        chooser.setFileFilter( simpleFilter("*"+ext ) );
+        chooser.setFileFilter( new FileNameExtensionFilter( "*"+ext, ext.substring(1) ) );
         int result= chooser.showSaveDialog(this.component);
         if ( result==JFileChooser.APPROVE_OPTION ) {
             File f= chooser.getSelectedFile();
@@ -341,7 +329,7 @@ public class PersistentStateSupport {
                 try {
                     JFileChooser chooser = new JFileChooser();
                     if ( getCurrentFile()!=null ) chooser.setCurrentDirectory(getCurrentFile().getParentFile());
-                    chooser.setFileFilter( simpleFilter( "*"+ext ) );
+                    chooser.setFileFilter( new FileNameExtensionFilter( "*"+ext, ext.substring(1) ) );
                     int result = chooser.showOpenDialog(component);
                     if (result == JFileChooser.APPROVE_OPTION) {
                         open( chooser.getSelectedFile() );

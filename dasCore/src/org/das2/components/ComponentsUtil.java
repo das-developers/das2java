@@ -34,8 +34,8 @@ import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import org.das2.datum.LoggerManager;
-import org.das2.util.filesystem.FileSystemUtil;
 
 /**
  * Utilities for managing components.
@@ -125,7 +125,7 @@ public class ComponentsUtil {
                 final JFileChooser fileChooser = new JFileChooser();
                 String ext= "pdf";
                 fileChooser.setDialogTitle("Print to "+ext.toUpperCase());
-                fileChooser.setFileFilter( FileSystemUtil.getFileNameExtensionFilter( ext + " files", ext ));
+                fileChooser.setFileFilter( new FileNameExtensionFilter( ext + " files", ext ) );
                 Preferences prefs = Preferences.userRoot().node("org.das2");
                 String savedir = prefs.get("savedir", null);
                 if (savedir != null) fileChooser.setCurrentDirectory(new File(savedir));

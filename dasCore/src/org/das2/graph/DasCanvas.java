@@ -106,7 +106,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.event.MouseInputAdapter;
 import javax.swing.event.MouseInputListener;
-import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import org.das2.components.propertyeditor.Editable;
 import org.das2.components.propertyeditor.PropertyEditor;
 import org.das2.datum.Datum;
@@ -182,25 +182,13 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         }
     }
 
-    private static FileFilter getFileNameExtensionFilter(final String description, final String ext) {
-        return new FileFilter() {
-            @Override
-            public boolean accept(File f) {
-                return f.isDirectory() || f.getName().endsWith(ext);
-            }
-            @Override
-            public String getDescription() {
-                return description;
-            }
-        };
-    }
     private static File currentFile;
     public static final Action SAVE_AS_PNG_ACTION = new CanvasAction("Save as PNG") {
         @Override
         public void actionPerformed(ActionEvent e) {
             final JFileChooser fileChooser = new JFileChooser();
             fileChooser.setDialogTitle("Write to PNG");
-            fileChooser.setFileFilter(getFileNameExtensionFilter("png files", "png"));
+            fileChooser.setFileFilter( new FileNameExtensionFilter("png files", "png"));
             Preferences prefs = Preferences.userNodeForPackage(DasCanvas.class);
             String savedir = prefs.get("savedir", null);
             if (savedir != null)
@@ -234,7 +222,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
             final JFileChooser fileChooser = new JFileChooser();
             fileChooser.setApproveButtonText("Select File");
             fileChooser.setDialogTitle("Write to SVG");
-            fileChooser.setFileFilter(getFileNameExtensionFilter("svg files", "svg"));
+            fileChooser.setFileFilter( new FileNameExtensionFilter("svg files", "svg") );
             Preferences prefs = Preferences.userNodeForPackage(DasCanvas.class);
             String savedir = prefs.get("savedir", null);
             if (savedir != null)
@@ -268,7 +256,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
             final JFileChooser fileChooser = new JFileChooser();
             fileChooser.setApproveButtonText("Select File");
             fileChooser.setDialogTitle("Write to PDF");
-            fileChooser.setFileFilter(getFileNameExtensionFilter("pdf files", "pdf"));
+            fileChooser.setFileFilter( new FileNameExtensionFilter("pdf files", "pdf"));
             Preferences prefs = Preferences.userNodeForPackage(DasCanvas.class);
             String savedir = prefs.get("savedir", null);
             if (savedir != null)

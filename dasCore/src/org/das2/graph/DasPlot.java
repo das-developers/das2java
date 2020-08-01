@@ -72,6 +72,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import org.das2.DasException;
 import org.das2.dataset.DataSetAdapter;
 import org.das2.datum.DatumRangeUtil;
@@ -910,16 +911,7 @@ public class DasPlot extends DasCanvasComponent {
             }
             Renderer renderer = (Renderer) renderers1.get(0);
             JFileChooser chooser = new JFileChooser();
-            chooser.setFileFilter( new javax.swing.filechooser.FileFilter() {
-                @Override
-                public boolean accept(File pathname) {
-                    return pathname.getName().endsWith(".d2s");
-                }
-                @Override
-                public String getDescription() {
-                    return "das2streams";
-                } 
-            });
+            chooser.setFileFilter( new FileNameExtensionFilter( "das2streams", "d2s" ) );
             int result = chooser.showSaveDialog(DasPlot.this);
             if (result == JFileChooser.APPROVE_OPTION) {
                 File selected = chooser.getSelectedFile();
