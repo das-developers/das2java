@@ -32,8 +32,8 @@ public class LinFit {
     /**
      * do fit with uniform weights or weight=0 where fill is found.
      *
-     * @param x
-     * @param y
+     * @param x the x data
+     * @param y the y data
      */
     public LinFit(QDataSet x, QDataSet y) {
         FDataSet wds = FDataSet.createRank1(x.length());
@@ -46,7 +46,7 @@ public class LinFit {
     }
 
     /**
-     * do fit with weights. X and Y must not contain fill. where sig&gt;0.
+     * do fit with weights. X and Y must not contain fill where sig&gt;0.
      *
      * @param x the x data
      * @param y the y data
@@ -134,7 +134,7 @@ public class LinFit {
     }
 
     /**
-     * return the result A of the fit y = A + B * x
+     * return the result A, the intercept, of the fit y = A + B * x
      *
      * @return the result A of the fit y = A + B * x
      */
@@ -146,7 +146,7 @@ public class LinFit {
     }
 
     /**
-     * return the result B of the fit y = A + B * x
+     * return the result B, the slope, of the fit y = A + B * x
      *
      * @return the result B of the fit y = A + B * x
      */
@@ -158,10 +158,10 @@ public class LinFit {
     }
 
     /**
-     * return the slope as a datum with units of Yunits/Xunits. Note the current
+     * return the slope (B of linear fit equation) as a datum with units of Yunits/Xunits. Note the current
      * version of the library is unable to do many unit calculations.
      *
-     * @return
+     * @return the slope as a Datum with units.
      */
     public Datum getSlope() {
         Units xunits = SemanticOps.getUnits(x).getOffsetUnits();
@@ -170,7 +170,7 @@ public class LinFit {
     }
 
     /**
-     * return the intercept as a datum with units of y.
+     * return the intercept (A of linear fit equation) as a datum with units of y.
      *
      * @return
      */
@@ -180,7 +180,8 @@ public class LinFit {
     }
 
     /**
-     * return Chi-Squared result from the fit.
+     * return the Chi-Squared result from the fit.
+     * @return the Chi-Squared result from the fit.
      */
     public double getChi2() {
         if (doneErrors == false) {
