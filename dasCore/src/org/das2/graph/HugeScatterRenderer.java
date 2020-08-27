@@ -907,10 +907,10 @@ public class HugeScatterRenderer extends Renderer {
         }
         
         QDataSet xds;
-        if ( ds.rank()==3 ) {
-            xds= SemanticOps.xtagsDataSet( ds.slice(0) );
+        if ( ds1.rank()==3 ) {
+            xds= SemanticOps.xtagsDataSet( ds1.slice(0) );
         } else {
-            xds= SemanticOps.xtagsDataSet( ds );
+            xds= SemanticOps.xtagsDataSet( ds1 );
         }
         
         DasPlot parent= getParent();
@@ -930,7 +930,7 @@ public class HugeScatterRenderer extends Renderer {
 
         boolean xmono = SemanticOps.isMonotonic(xds);
 
-        if ( ds.rank()==3 ) xmono= false;
+        if ( ds1.rank()==3 ) xmono= false;
         
         int firstIndex, lastIndex;
         if ( xmono ) {
@@ -995,10 +995,10 @@ public class HugeScatterRenderer extends Renderer {
 
         int nj= 1;
         if ( SemanticOps.isRank2Waveform(ds1) ) nj= ds1.length(0);
-        else if ( SemanticOps.isRank3JoinOfRank2Waveform(ds) ) {
-            nj= ds.length(0,0);
-            for ( int k=1; k<ds.length(); k++ ) {
-                nj+= ds.length(k,0);
+        else if ( SemanticOps.isRank3JoinOfRank2Waveform(ds1) ) {
+            nj= ds1.length(0,0);
+            for ( int k=1; k<ds1.length(); k++ ) {
+                nj+= ds1.length(k,0);
             }
         }
         
@@ -1022,7 +1022,7 @@ public class HugeScatterRenderer extends Renderer {
                     renderPointsOfRank2Waveform( image, xAxis, yAxis, ds1.slice(k), plotImageBounds);
                 }
             } else {
-                if ( ds.rank()==1 || ( ds.rank()==2 && SemanticOps.isBundle(ds) ) ) {
+                if ( ds1.rank()==1 || ( ds1.rank()==2 && SemanticOps.isBundle(ds1) ) ) {
                     renderPointsOfRank1( xAxis, yAxis, ds1, plotImageBounds);
                 } else {
                     parent.postMessage(this, "dataset must be rank 1, rank 2 waveform, or rank 2 bundle", DasPlot.INFO, null, null);
