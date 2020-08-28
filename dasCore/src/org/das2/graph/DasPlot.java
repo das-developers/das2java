@@ -146,6 +146,11 @@ public class DasPlot extends DasCanvasComponent {
 			PLOT_CUSTOMIZERS.remove(key);
 		}
 	}
+        
+    /**
+     * width of plot required to show the legend labels.
+     */
+    final int LEGEND_X_SIZE_LIMIT=100;
 
 	/**
      * title for the plot
@@ -1523,7 +1528,7 @@ public class DasPlot extends DasCanvasComponent {
         }
 
         List<LegendElement> llegendElements= this.legendElements==null ? null : new ArrayList(this.legendElements);
-        if ( llegendElements!=null && llegendElements.size() > 0 && displayLegend ) {
+        if ( llegendElements!=null && llegendElements.size() > 0 && displayLegend && xSize>LEGEND_X_SIZE_LIMIT ) {
             drawLegend(graphics,llegendElements);
         }
         
