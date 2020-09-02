@@ -717,7 +717,9 @@ public class SeriesRenderer extends Renderer {
                                 lp.lineTo(ix, iyp);
                             }
                         }
-                        lp.lineTo( returnTo.x, returnTo.y );
+                        if ( returnTo!=null ) {
+                            lp.lineTo( returnTo.x, returnTo.y );
+                        }
                     }
                 } catch ( IllegalArgumentException ex ) {
                     if ( getParent()!=null ) getParent().postException(SeriesRenderer.this,ex);
