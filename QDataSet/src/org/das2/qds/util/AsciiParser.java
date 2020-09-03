@@ -1170,7 +1170,7 @@ public class AsciiParser {
                     Units u= (Units) bundleDescriptor.property( QDataSet.UNITS, j );
                     if ( u!=null ) {
                         this.fieldParsers[j]= UNITS_PARSER;
-                        this.units[j]= u;
+                        _setUnits(j, u);
                     }
                 }
                 if ( bundleDescriptor.length()!=this.fieldParsers.length ) {
@@ -2098,7 +2098,7 @@ public class AsciiParser {
             fieldNames[i] = "field" + i;
             fieldLabels[i] = fieldNames[i];
             fieldUnits[i] = "";
-            units[i] = Units.dimensionless;
+            _setUnits( i, Units.dimensionless );
         }
     }
     
@@ -2136,18 +2136,20 @@ public class AsciiParser {
         } else {
             logger.log(Level.FINE, "guess units at line {0}", lineNumber);
             for (int i = 0; i < ss.length; i++) {
-                Units u= guessUnits(ss[i].trim());
+                String field= ss[i].trim();
+                if ( field.length()==0 ) continue;
+                Units u= guessUnits(field);
                 if ( UnitsUtil.isTimeLocation(u) ) {
-                    units[i]= Units.t2000;
+                    _setUnits( i, Units.t2000 );
                     fieldParsers[i] = UNITS_PARSER;
                 } else if ( u==Units.dimensionless ) {
-                    units[i] = u;
+                    _setUnits( i, u );
                     fieldParsers[i] = DOUBLE_PARSER;
                 } else if ( u instanceof EnumerationUnits ) {
-                    units[i]= u;
+                    _setUnits( i, u );
                     fieldParsers[i] = ENUMERATION_PARSER;
                 } else {
-                    units[i]= u;
+                    _setUnits( i, u );
                     fieldParsers[i] = UNITS_PARSER;
                 }
                 if ( bundleDescriptor!=null ) {
@@ -2166,15 +2168,28 @@ public class AsciiParser {
         logger.log(Level.FINE, "guess units at line {0}", lineNumber);
         for (int i = 0; i < ss.length; i++) {
             if ( isIso8601Time(ss[i].trim()) ) {
-                units[i]= Units.t2000;
+                _setUnits( i, Units.t2000 );
                 fieldParsers[i]= UNITS_PARSER;
             } else {
-                units[i] = Units.dimensionless;
+                _setUnits( i, Units.dimensionless );
                 fieldParsers[i] = DOUBLE_PARSER;
             }        
         }
     }    
 
+    /**
+     * private a single place where the units array is modified, so that it
+     * is easier to debug.
+     * @param i the column number
+     * @param u the unit
+     */
+    private void _setUnits( int i, Units u ) {
+        //if ( i==20 ) {
+        //    System.err.println("here we are at 2180");
+        //}
+        this.units[i]= u;
+    }
+    
     /**
      * parser uses a regular expression to match each record.
      */
@@ -2638,8 +2653,8 @@ public class AsciiParser {
      * @param index Index of the property.
      * @param units New value of the property at <CODE>index</CODE>.
      */
-    public void setUnits(int index, Units units) {
-        this.units[index] = units;
+    public void setUnits( int index, Units units) {
+        _setUnits( index, units );
         if ( fieldParsers[index]==DOUBLE_PARSER ) setFieldParser(index,UNITS_PARSER);
         if ( fieldParsers[index]==ENUMERATION_PARSER ) {
             setFieldParser(index,UNITS_PARSER);
