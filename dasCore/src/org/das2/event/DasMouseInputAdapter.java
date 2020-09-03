@@ -1286,11 +1286,17 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         MenuElement[] ele = primaryPopup.getSubElements();
         int index = -1;
         for (int i = 0; i < numInserted; i++) {
-            if (ele[i] instanceof JMenuItem) {
-                if (((JMenuItem) ele[i]).getText().contains(label)) {
-                    index = i;
-                    break;
+            if ( i<ele.length ) { // rte_1750311951_20200901_163911
+                if ( ele[i] instanceof JMenuItem) { 
+                    if (((JMenuItem) ele[i]).getText().contains(label)) {
+                        index = i;
+                        break;
+                    }
                 }
+            } else {
+                System.err.println("Suppressing old index out of bounds:");
+                new IndexOutOfBoundsException("in removeMenuItem, index out of bounds").printStackTrace();
+                break;
             }
         }
         if (index != -1) {
