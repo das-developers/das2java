@@ -1,7 +1,4 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package org.das2.qds;
 
 /**
@@ -12,7 +9,7 @@ package org.das2.qds;
  * 
  * @author jbf
  */
-public class Slice3DataSet extends AbstractDataSet {
+public final class Slice3DataSet extends AbstractDataSet {
 
     QDataSet ds;
     int index;
@@ -80,6 +77,18 @@ public class Slice3DataSet extends AbstractDataSet {
                 }
             } else {
                 break;
+            }
+        }
+        
+        String[] props= DataSetUtil.correlativeProperties();
+        for (String prop : props) {
+            QDataSet s = (QDataSet) ds.property( prop );
+            if (s != null) {
+                if ( s.rank()<4 ) {
+                    putProperty( prop, s );
+                } else {
+                    putProperty( prop, new Slice3DataSet( s, index, addContext ) );
+                }
             }
         }
         

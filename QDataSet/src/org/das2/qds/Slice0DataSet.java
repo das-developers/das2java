@@ -5,6 +5,7 @@
 package org.das2.qds;
 
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.util.LoggerManager;
 
@@ -20,7 +21,7 @@ import org.das2.util.LoggerManager;
  *
  * @author jbf
  */
-public class Slice0DataSet extends AbstractDataSet implements RankZeroDataSet {
+public final class Slice0DataSet extends AbstractDataSet implements RankZeroDataSet {
 
     private static final Logger logger= LoggerManager.getLogger("qdataset");
     
@@ -138,15 +139,15 @@ public class Slice0DataSet extends AbstractDataSet implements RankZeroDataSet {
         }
 
         String[] p= DataSetUtil.correlativeProperties();
-        for ( int i=0; i<p.length; i++ ) {
-            Object o=  ds.property( p[i] );
-            if ( o!=null && !(o instanceof QDataSet ) ) {
-                logger.warning("dropping property "+p[i]+" because it is not a QDataSet");
+        for (String p1 : p) {
+            Object o = ds.property(p1);
+            if (o!=null && !(o instanceof QDataSet )) {
+                logger.log(Level.WARNING, "dropping property {0} because it is not a QDataSet", p1);
                 continue;
             }
             QDataSet delta= (QDataSet) o;
-            if ( delta!=null && delta.rank()>0 ) {
-                putProperty( p[i], new Slice0DataSet(delta,index,addContext) );
+            if (delta!=null && delta.rank()>0) {
+                putProperty(p1, new Slice0DataSet(delta,index,addContext));
             }
         }
 
@@ -156,6 +157,7 @@ public class Slice0DataSet extends AbstractDataSet implements RankZeroDataSet {
         DataSetUtil.maybeCopyRenderType( ds, this );
     }
 
+    @Override
     public int rank() {
         return ds.rank() - 1;
     }

@@ -20,7 +20,7 @@ import org.das2.datum.Units;
  * 
  * @author jbf
  */
-public class Slice1DataSet extends AbstractDataSet {
+public final class Slice1DataSet extends AbstractDataSet {
 
     QDataSet ds;
     int index;
@@ -82,19 +82,22 @@ public class Slice1DataSet extends AbstractDataSet {
                 DataSetUtil.putProperties( o, this ); 
             }
         } else if ( dep1!=null ) {
-            if ( dep1.rank()==1 ) {
-                if ( label!=null ) {
-                    putProperty( QDataSet.LABEL, label ); // special code is like unbundle operator
-                    putProperty( QDataSet.NAME, org.das2.qds.ops.Ops.safeName(label) );
-                    if ( addContext ) DataSetUtil.addContext( this, new Slice0DataSet(dep1,index,false) );
-                } else {
-                    if ( addContext ) DataSetUtil.addContext( this, new Slice0DataSet(dep1,index,false) );
-                }
-            } else if ( dep1.rank()==2 ) {
-                if ( addContext ) DataSetUtil.addContext( this, new Slice1DataSet(dep1,index,false) );
-            } else {
-                System.err.println( "slice on non-qube, dep1 has rank="+dep1.rank() );
-            } 
+            switch (dep1.rank()) {
+                case 1:
+                    if ( label!=null ) {
+                        putProperty( QDataSet.LABEL, label ); // special code is like unbundle operator
+                        putProperty( QDataSet.NAME, org.das2.qds.ops.Ops.safeName(label) );
+                        if ( addContext ) DataSetUtil.addContext( this, new Slice0DataSet(dep1,index,false) );
+                    } else {
+                        if ( addContext ) DataSetUtil.addContext( this, new Slice0DataSet(dep1,index,false) );
+                    }   break;
+                case 2:
+                    if ( addContext ) DataSetUtil.addContext( this, new Slice1DataSet(dep1,index,false) );
+                    break;
+                default: 
+                    System.err.println( "slice on non-qube, dep1 has rank="+dep1.rank() );
+                    break;
+            }
         } else {
             DRank0DataSet context= DataSetUtil.asDataSet(index);
             context.putProperty( QDataSet.NAME, "slice1" );
@@ -145,17 +148,14 @@ public class Slice1DataSet extends AbstractDataSet {
         }
 
         String[] props= DataSetUtil.correlativeProperties();
-        for ( int i=0; i<props.length; i++ ) {
-           String prop= props[i];
-           QDataSet s = (QDataSet) ds.property( prop );
-           if (s != null) {
-               if ( s.rank()<2 ) {
-                   putProperty( prop, s );
-               } else {
-                   putProperty( prop, new Slice1DataSet( s, index, addContext ) );
-               }
-            } else {
-                continue;
+        for (String prop : props) {
+            QDataSet s = (QDataSet) ds.property( prop );
+            if (s != null) {
+                if ( s.rank()<2 ) {
+                    putProperty( prop, s );
+                } else {
+                    putProperty( prop, new Slice1DataSet( s, index, addContext ) );
+                }
             }
         }
         
@@ -166,6 +166,7 @@ public class Slice1DataSet extends AbstractDataSet {
                 
     }
 
+    @Override
     public int rank() {
         return ds.rank() - 1;
     }
