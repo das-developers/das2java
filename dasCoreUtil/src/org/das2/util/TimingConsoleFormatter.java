@@ -1,6 +1,7 @@
 package org.das2.util;
 
 import java.text.MessageFormat;
+import java.util.Date;
 import java.util.Locale;
 import java.util.logging.Formatter;
 import java.util.logging.LogRecord;
@@ -12,6 +13,7 @@ import java.util.logging.LogRecord;
 public class TimingConsoleFormatter extends Formatter {
     
     long t0= System.currentTimeMillis();
+    boolean haveReportedTime= false;
     
     @Override
     public String format( LogRecord rec ) {
@@ -66,7 +68,12 @@ public class TimingConsoleFormatter extends Formatter {
             // no message.  breakpoint here for debugging.
             int i=0;
         }
-        return String.format( Locale.US, "%9.3f %s: %s\n", dt/1000., rec.getLoggerName(), recMsg );
+        String st0= "";
+        if ( !haveReportedTime ) {
+            st0= "#logging started at "+new Date(t0).toGMTString()+"\n";
+            haveReportedTime= true;
+        }
+        return String.format( Locale.US, "%s%9.3f %s: %s\n", st0, dt/1000., rec.getLoggerName(), recMsg );
     }
         
     public TimingConsoleFormatter() {
