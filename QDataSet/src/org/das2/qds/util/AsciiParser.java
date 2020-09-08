@@ -2445,7 +2445,11 @@ public class AsciiParser {
      * @return
      */
     public String[] getFieldNames() {
-        return Arrays.copyOf( this.fieldNames, this.fieldNames.length );
+        if ( this.fieldNames==null ) {
+           throw new IllegalArgumentException("unable to identify fields");
+        } else {
+            return Arrays.copyOf( this.fieldNames, this.fieldNames.length );
+        }
     }
 
     /**
