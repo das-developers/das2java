@@ -1,11 +1,14 @@
 
 package org.das2.graph;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.util.LinkedList;
 import org.das2.datum.Units;
 import org.das2.qds.JoinDataSet;
 import org.das2.qds.QDataSet;
@@ -19,6 +22,23 @@ import org.das2.qds.ops.Ops;
 public class ColorSeriesRenderer extends Renderer {
 
     DasAxis xaxis=null, yaxis=null;
+    Units u;
+    
+    private String lineThick = "";
+
+    public static final String PROP_LINETHICK = "lineThick";
+
+    public String getLineThick() {
+        return lineThick;
+    }
+
+    public void setLineThick(String lineThick) {
+        String oldLineThick = this.lineThick;
+        this.lineThick = lineThick;
+        getParent().invalidateCacheImage();
+        propertyChangeSupport.firePropertyChange(PROP_LINETHICK, oldLineThick, lineThick);
+    }
+
     
     public static QDataSet doAutorange( QDataSet ds ) {
 
@@ -90,6 +110,23 @@ public class ColorSeriesRenderer extends Renderer {
         }
     }
 
+    private void popNext( Graphics2D g, LinkedList<Point2D.Double> list, double c ) {
+        GeneralPath p= new GeneralPath( GeneralPath.WIND_EVEN_ODD, 3 );
+        Point2D.Double p1= list.pop();
+        p.moveTo( p1.x, p1.y );
+        Point2D.Double p2= list.pop();
+        p.lineTo( p2.x, p2.y );
+        Point2D.Double p3= list.peek();
+        p.lineTo( p3.x, p3.y );
+        if ( u==Units.rgbColor ) {
+            g.setColor( new Color((int)c) );
+        } else {
+            int ic= colorBar.rgbTransform( c, u );
+            g.setColor( new Color(ic) );
+        }
+        g.draw( p );
+        
+    }
     
     @Override
     public void render(Graphics2D g, DasAxis xAxis, DasAxis yAxis) {
@@ -101,50 +138,58 @@ public class ColorSeriesRenderer extends Renderer {
                     new IllegalArgumentException("colorbar has not been set") );
             return;
         }
-        Units u= (Units) ds.slice(0).slice(2).property(QDataSet.UNITS);
+        
+        double thick= this.lineThick.trim().length()==0 ? 
+                1.0 :
+                GraphUtil.parseLayoutLength( this.lineThick, xAxis.getDLength(), getParent().getEmSize() );
+        
+        g.setStroke( new BasicStroke((float)thick) );
+        
+        u= (Units) ds.slice(0).slice(2).property(QDataSet.UNITS);
         Units xu= (Units) ds.slice(0).slice(0).property(QDataSet.UNITS);
         xu= xu==null ? Units.dimensionless : xu;
         Units yu= (Units) ds.slice(0).slice(1).property(QDataSet.UNITS);
         yu= yu==null ? Units.dimensionless : yu;
         Line2D.Double line= new Line2D.Double();
+        Point2D.Double p0= new Point2D.Double();
+        
+        LinkedList<Point2D.Double> list= new LinkedList<>();
+        
         double x0;
         double y0;
         if ( ds.length()>0 ) {
             x0= xAxis.transform( ds.value(0,0), xu );
             y0= yAxis.transform( ds.value(0,1), yu );
+            list.add( new Point2D.Double( x0, y0 ) );
         } else {
             return;
         }
+        double c;
         for ( int i=1; i<ds.length(); i++ ) {
-            double c= ds.value(i-1, 2);
-            if ( u==Units.rgbColor ) {
-                g.setColor( new Color((int)c) );
-            } else {
-                int ic= colorBar.rgbTransform( c, u );
-                g.setColor( new Color(ic) );
-            }
-            line.x1= x0;
-            line.y1= y0;
-            line.x2= xAxis.transform( (ds.value(i,0)+ds.value(i-1,0))/2, xu );
-            line.y2= yAxis.transform( (ds.value(i,1)+ds.value(i-1,1))/2, yu );
-            g.draw( line );
+            c= ds.value(i-1, 2);
+            x0= xAxis.transform( (ds.value(i,0)+ds.value(i-1,0))/2, xu );
+            y0= yAxis.transform( (ds.value(i,1)+ds.value(i-1,1))/2, yu );
+            list.add( new Point2D.Double( x0, y0 ) );
             
-            c= ds.value(i,2);
-            if ( u==Units.rgbColor ) {
-                g.setColor( new Color((int)c) );
-            } else {
-                int ic= colorBar.rgbTransform( c, u );
-                g.setColor( new Color(ic) );
+            if ( i==1 ) {
+                list.add( new Point2D.Double( x0, y0 ) );
+                popNext( g, list, ds.value(0, 2) );
             }
-            line.x1= line.x2;
-            line.y1= line.y2;
-            line.x2= xAxis.transform( ds.value(i,0), xu );
-            line.y2= yAxis.transform( ds.value(i,1), yu );
-            x0= line.x2;
-            y0= line.y2;
-            g.draw( line );
+            if ( list.size()>=3 ) {
+                popNext( g, list, c );
+            }
+            
+            x0= xAxis.transform( ds.value(i,0), xu );
+            y0= yAxis.transform( ds.value(i,1), yu );
+            list.add( new Point2D.Double( x0, y0 ) );
             
         }
+        
+        c= ds.value(ds.length()-1, 2);
+        while ( list.size()<3 ) {
+            list.add( new Point2D.Double( x0, y0 ) );
+        }
+        popNext( g, list, c );
     }
     
 }
