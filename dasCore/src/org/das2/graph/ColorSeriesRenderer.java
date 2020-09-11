@@ -76,6 +76,7 @@ public class ColorSeriesRenderer extends Renderer {
     @Override
     public boolean acceptContext(int x, int y) {
         QDataSet ds= makeDataCanonical( getDataSet() );
+        if ( ds==null ) return false;
         QDataSet xds= Ops.slice1( ds, 0 );
         QDataSet yds= Ops.slice1( ds, 1 );
         GeneralPath path= GraphUtil.getPath( 
@@ -89,6 +90,7 @@ public class ColorSeriesRenderer extends Renderer {
      * @return 
      */
     private static QDataSet makeDataCanonical( QDataSet ds ) {
+        if ( ds==null ) return ds;
         if ( ds.rank()==2 ) {
             return ds;
         } else {
@@ -102,6 +104,7 @@ public class ColorSeriesRenderer extends Renderer {
     public void setDataSet(QDataSet ds) {
         super.setDataSet(ds); 
         QDataSet ds1= makeDataCanonical(ds);
+        if ( ds1==null ) return;
         if ( ds1.rank()!=2 ) {
             throw new IllegalArgumentException("data should be rank 2");
         }
@@ -131,6 +134,9 @@ public class ColorSeriesRenderer extends Renderer {
     @Override
     public void render(Graphics2D g, DasAxis xAxis, DasAxis yAxis) {
         QDataSet ds= makeDataCanonical(getDataSet());
+        if ( ds==null ) {
+            return;
+        }
         this.xaxis= xAxis;
         this.yaxis= yAxis;
         if ( colorBar==null ) {
