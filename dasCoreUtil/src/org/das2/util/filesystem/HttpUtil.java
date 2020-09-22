@@ -4,6 +4,7 @@ package org.das2.util.filesystem;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.net.ProtocolException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Collections;
@@ -184,6 +185,31 @@ public final class HttpUtil {
     }
 
     /**
+     * copy over connection properties like Cookie and Accept-Encoding.
+     * @param urlc
+     * @param newConnection 
+     */
+    public static void copyConnectProperties(HttpURLConnection urlc, HttpURLConnection newConnection) {
+        String s;
+        s= urlc.getHeaderField("Referer");
+        if ( s!=null ) newConnection.addRequestProperty( "Referer", s );
+        s= urlc.getHeaderField("Cookie");
+        if ( s!=null ) newConnection.addRequestProperty( "Cookie", s );
+        s= urlc.getHeaderField("Accept-Encoding");
+        if ( s!=null ) newConnection.addRequestProperty( "Accept-Encoding", s );
+        s= urlc.getHeaderField("Authorization");
+        if ( s!=null ) newConnection.addRequestProperty( "Authorization", s );
+        try {
+            String requestMethod = urlc.getRequestMethod();
+            if ( requestMethod!=null ) {
+                newConnection.setRequestMethod( requestMethod );
+            }
+        } catch (ProtocolException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+    
+    /**
      * check for 301, 302 or 303 redirects, and return a new connection in this case.
      * This should be called immediately before the urlConnection.connect call,
      * as this must connect to get the response code.
@@ -210,26 +236,12 @@ public final class HttpUtil {
                     loggerUrl.log(Level.FINE, "{0} redirect to {1}", 
                             new Object[] { responseCode, newUrl } );
                 }
-                String cookie = huc.getHeaderField("Cookie");
-                String acceptEncoding = huc.getRequestProperty("Accept-Encoding");
-                String authorization = huc.getRequestProperty("Authorization");
-                String requestMethod = huc.getRequestMethod();
+
                 HttpURLConnection newUrlConnection = 
                         (HttpURLConnection) new URL(newUrl).openConnection();
+                copyConnectProperties( huc, newUrlConnection );
                 newUrlConnection.addRequestProperty("Referer", 
                         urlConnection.getURL().toString());
-                if (cookie != null) {
-                    newUrlConnection.setRequestProperty("Cookie", cookie);
-                }
-                if (acceptEncoding != null) {
-                    newUrlConnection.setRequestProperty("Accept-Encoding", acceptEncoding);
-                }
-                if (authorization != null) {
-                    newUrlConnection.setRequestProperty("Authorization", authorization);
-                }
-                if (requestMethod != null) {
-                    newUrlConnection.setRequestMethod(requestMethod);
-                }
                 ((HttpURLConnection) urlConnection).disconnect();
                 urlConnection = newUrlConnection;
             }
