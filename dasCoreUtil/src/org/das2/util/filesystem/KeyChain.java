@@ -402,6 +402,10 @@ public class KeyChain {
         }
     }
     
+    /**
+     * remove all keys starting within path.  path should not contain a username.
+     * @param path 
+     */
     private void clearUserInfo( String path ) {
         int stop= path.indexOf("://")+3;
         int i=path.lastIndexOf('/');
@@ -566,17 +570,21 @@ public class KeyChain {
      */
     public void clearUserPassword(URL url) {
 
-        String userInfo= url.getUserInfo();
-        if ( userInfo==null ) return;
-
         String userName=null;
-        String[] ss= userInfo.split(":",-2);
-        if ( !ss[0].equals("user") ) {
-            userName= ss[0];
-            if ( userName.contains("%40") ) {
-                userName= userName.replaceAll( "%40", "@" );
+        
+        String userInfo= url.getUserInfo();
+        if ( userInfo==null ) {
+            userInfo= lookupStoredUserInfo(url.toString());
+        } else {
+            String[] ss= userInfo.split(":",-2);
+            if ( !ss[0].equals("user") ) {
+                userName= ss[0];
+                if ( userName.contains("%40") ) {
+                    userName= userName.replaceAll( "%40", "@" );
+                }
             }
         }
+        if ( userInfo==null ) return;
         
         String hash= url.getProtocol() + "://" + ( userName!=null ? userName+"@" : "" ) + url.getHost() + url.getPath();
 
