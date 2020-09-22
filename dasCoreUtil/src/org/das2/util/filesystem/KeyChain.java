@@ -119,6 +119,10 @@ public class KeyChain {
                             }
                             String storedUserInfo= ss[1].trim();
                             //TODO: shouldn't "http://ectsoc@www.rbsp-ect.lanl.gov" match "http://www.rbsp-ect.lanl.gov    ectsoc:..."
+                            if ( !hash.endsWith("/") ) {
+                                int k=hash.lastIndexOf("/");
+                                hash= hash.substring(0,k+1);
+                            }
                             keys.put( hash, storedUserInfo );
                         }
                     }
@@ -276,6 +280,7 @@ public class KeyChain {
      * @param uri
      * @return
      * @throws CancelledOperationException
+     * @see #getUserInfo(java.net.URL) 
      */
     public String getUserInfo( URI uri ) throws CancelledOperationException {
         try {
@@ -287,14 +292,37 @@ public class KeyChain {
 
     /**
      * return the user info (username:password) associated with this URL.
+     * Note if there is no user info in the URI, this will return null!  
+     * 
      * @param url the URL
      * @return null or the user info.
      * @throws CancelledOperationException 
+     * @see #getUserInfo(java.net.URL, java.lang.String) which will always check and prompt.
+     * 
      */
     public String getUserInfo( URL url ) throws CancelledOperationException {
         String userInfo= url.getUserInfo();
         if ( userInfo==null ) return null;
         return getUserInfo( url, userInfo );
+    }
+    
+    /**
+     * return null or the stored user info.  This allows clients to attempt to
+     * use stored user info without bothering the scientist if the info isn't 
+     * needed.
+     * @param url the URL
+     * @return the user info (user:password) associated, or null if the user info isn't found.
+     */
+    public String checkUserInfo( URL url ) {
+        String userInfo= url.getUserInfo();
+        String userName= null;
+        if ( userInfo!=null ) {
+            String[] ss= userInfo.split(":",2);
+            userName= ss[0];
+        }
+        String path= url.getProtocol() + "://" + ( userName!=null ? userName+"@" : "" ) + url.getHost() + url.getPath();
+        String storedUserInfo= lookupStoredUserInfo(path);
+        return storedUserInfo;
     }
     
     /**
@@ -304,7 +332,7 @@ public class KeyChain {
      * @param userInfo 
      */
     public void setUserInfo( URL url, String userInfo ) {
-        String hash= url.getProtocol() + "://" + url.getHost(); //TODO: whah?  This still doesn't use the path!
+        String hash= url.getProtocol() + "://" + url.getHost() + "/"; //TODO: whah?  This still doesn't use the path!
         keys.put( hash, userInfo );
     }
     
@@ -373,7 +401,7 @@ public class KeyChain {
         int stop= path.indexOf("://");
         int i=path.lastIndexOf('/');
         while( i>stop ) {
-            String hash= path.substring(0,i);
+            String hash= path.substring(0,i+1);
             String storedUserInfo= keys.get(hash);
             if ( storedUserInfo!=null ) {
                 return storedUserInfo;
@@ -394,7 +422,7 @@ public class KeyChain {
         int stop= path.indexOf("://")+3;
         int i=path.lastIndexOf('/');
         while( i>stop ) {
-            String hash= path.substring(0,i);
+            String hash= path.substring(0,i+1);
             if ( keys.get(hash)==null ) {
                 keys.put( hash, storedUserInfo );
             }
@@ -471,7 +499,7 @@ public class KeyChain {
         }
 
         String proto= url.getProtocol();
-        String s= ( userName!=null ? userName+"@" : "" ) + url.getHost() + url.getFile();
+        String s= proto + "://" +( userName!=null ? userName+"@" : "" ) + url.getHost() + url.getFile();
         
         if ( ss.length<2 || ss[1].length()==0 || userInfo.endsWith(":pass") || userInfo.endsWith(":password" ) ) {
             if ( !FileSystemSettings.hasAllPermission() || !"true".equals( System.getProperty("java.awt.headless") ) ) {
