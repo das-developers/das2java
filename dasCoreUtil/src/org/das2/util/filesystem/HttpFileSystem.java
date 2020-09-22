@@ -36,6 +36,7 @@ import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.ProtocolException;
 import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -389,6 +390,141 @@ public class HttpFileSystem extends WebFileSystem {
         return result;
     }
     
+    private Map<String,String> doTryDownload( URLConnection urlc, 
+            URL remoteURL, 
+            String filename,
+            File f, 
+            File partFile, 
+            ProgressMonitor monitor ) throws IOException {
+        
+        Map<String,String> result;
+        InputStream in;
+
+        if ( loggerUrl.isLoggable(Level.FINE) && urlc.getURL().getPath().endsWith("/") ) {
+            loggerUrl.log(Level.FINE, "GET to get listing {0}", new Object[] { urlc.getURL() } );
+        } else {
+            loggerUrl.log(Level.FINE, "GET to get data {0}", new Object[] { urlc.getURL() } );
+        }
+
+        in= urlc.getInputStream();
+
+        HttpURLConnection hurlc = (HttpURLConnection) urlc;
+        if (hurlc.getResponseCode() == 404) {
+            logger.log(Level.INFO, "{0} URL: {1}", new Object[]{hurlc.getResponseCode(), remoteURL});
+            throw new FileNotFoundException("not found: " + remoteURL);
+        } else if (hurlc.getResponseCode() != 200) {
+            logger.log(Level.INFO, "{0} URL: {1}", new Object[]{hurlc.getResponseCode(), remoteURL});
+            throw new IOException( hurlc.getResponseCode()+": "+ hurlc.getResponseMessage() + "\n"+remoteURL );
+        }
+
+        Date d;
+        List<String> sd= urlc.getHeaderFields().get("Last-Modified");
+        if ( sd!=null && sd.size()>0 ) {
+            d= new Date( sd.get(sd.size()-1) );
+        } else {
+            d= new Date();
+        }
+
+        monitor.setTaskSize(urlc.getContentLength());
+
+        if (!f.getParentFile().exists()) {
+            logger.log(Level.FINER, "make dirs {0}", f.getParentFile());
+            FileSystemUtil.maybeMkdirs( f.getParentFile() );
+        }
+        if (partFile.exists()) {
+            logger.log(Level.FINER, "partFile exists {0}", partFile);
+            long ageMillis= System.currentTimeMillis() - partFile.lastModified(); // TODO: this is where OS-level locking would be nice...
+            if ( ageMillis<FileSystemSettings.allowableExternalIdleMs ) { // if it's been modified less than sixty seconds ago, then wait to see if it goes away, then check again.
+                if ( waitDownloadExternal( f, partFile, monitor ) ) {
+                    return Collections.EMPTY_MAP; // success
+                } else {
+                    if ( monitor.isCancelled() ) {
+                        throw new InterruptedIOException("interrupt while waiting for external process to download "+partFile);
+                    } else {
+                        throw new IOException( "timeout waiting for external process to download "+partFile );
+                    }
+                }
+            } else {
+                if (!partFile.delete()) {
+                    logger.log(Level.INFO, "Unable to delete part file {0}, using new name for part file.", partFile ); //TODO: review this
+                    partFile= new File( f.toString()+".part."+System.currentTimeMillis() );
+                }
+            }
+        }
+
+        if (partFile.createNewFile()) {
+            //InputStream in;
+            //in = urlc.getInputStream();
+
+            logger.log(Level.FINER, "transferring bytes of {0}", filename);
+            FileOutputStream out = new FileOutputStream(partFile);
+            monitor.setLabel("downloading file");
+            monitor.started();
+            try {
+                // https://sourceforge.net/p/autoplot/bugs/1229/
+                String contentLocation= urlc.getHeaderField("Content-Location");
+                String contentType= urlc.getHeaderField("Content-Type");
+                result= reduceMeta( urlc );
+
+                boolean doUnzip= !filename.endsWith(".gz" ) && "application/x-gzip".equals( contentType ) && ( contentLocation==null || contentLocation.endsWith(".gz") );
+                if ( doUnzip ) {
+                    in= new GZIPInputStream( in );
+                }
+
+                copyStream(in, out, monitor);
+                monitor.finished();
+                out.close();
+                in.close();                    
+
+                try {
+                    partFile.setLastModified(d.getTime()+HTTP_CHECK_TIMESTAMP_LIMIT_MS);
+                } catch ( Exception ex ) {
+                    logger.log( Level.SEVERE, "unable to setLastModified", ex );
+                }
+
+                if ( f.exists() ) {
+                    if ( f.isDirectory() ) {
+                        logger.finer("file was once a directory.");
+                        if ( !FileUtil.deleteFileTree(f) ) {
+                            throw new IllegalArgumentException("unable to folder to make way for file: "+f );
+                        }
+                    } else {
+                        if ( f.length()==partFile.length() ) {
+                            if ( OsUtil.contentEquals(f, partFile ) ) {
+                                logger.finer("another thread must have downloaded file.");
+                                if ( !partFile.delete() ) {
+                                    throw new IllegalArgumentException("unable to delete "+partFile );
+                                }
+                                return result;
+                            } else {
+                                logger.finer("another thread must have downloaded different file.");
+                            }
+                        }
+                        logger.log(Level.FINER, "deleting old file {0}", f);
+                        if ( !f.delete() ) {
+                            throw new IllegalArgumentException("unable to delete "+f );
+                        }
+                    }
+                }
+                if ( !partFile.renameTo(f) ) {
+                    logger.log(Level.WARNING, "rename failed {0} to {1}", new Object[]{partFile, f});
+                    throw new IllegalArgumentException( "rename failed " + partFile + " to "+f );
+                }
+            } catch (IOException e) {
+                out.close();
+                in.close();
+                logger.log( Level.FINER, "deleting partial download file {0}", partFile);
+                if ( partFile.exists() && !partFile.delete() ) {
+                    throw new IllegalArgumentException("unable to delete "+partFile );
+                }
+                throw e;
+            }
+        } else {
+            throw new IOException("could not create local file: " + f);
+        }
+        return result;
+    }
+    
     /**
      * 
      * @param filename identifier for the resource, and should this end in gz, then the stream will probably be unzipped.
@@ -402,15 +538,17 @@ public class HttpFileSystem extends WebFileSystem {
      */
     private Map<String,String> doDownload( String filename, URL remoteURL, File f, File partFile, ProgressMonitor monitor ) throws IOException, FileNotFoundException {
         
+        logger.log(Level.FINE, "doDownload {0}", remoteURL);
         Map<String,String> result=null;
         
-        URLConnection urlc = remoteURL.openConnection();
+        loggerUrl.log(Level.FINE, "open connection to {0}", remoteURL);
+        HttpURLConnection urlc = (HttpURLConnection)remoteURL.openConnection();
         urlc.setConnectTimeout( FileSystem.settings().getConnectTimeoutMs() );
         urlc.setReadTimeout( FileSystem.settings().getReadTimeoutMs() );
 
         //bug http://sourceforge.net/p/autoplot/bugs/1393/ shows where this is necessary.
         urlc.setUseCaches(false);
-
+        
         String userInfo;
         try {
             userInfo = KeyChain.getDefault().getUserInfo(root);
@@ -425,144 +563,56 @@ public class HttpFileSystem extends WebFileSystem {
         if ( cookie!=null ) {
             urlc.addRequestProperty("Cookie", cookie );
         }
+        
+        URLConnection oldurlc= urlc;
+        urlc= (HttpURLConnection)HttpUtil.checkRedirect(urlc);
+
+        if ( !urlc.equals(oldurlc) ) {
+            try {
+                URI rootu=urlc.getURL().toURI();
+                userInfo= KeyChain.getDefault().checkUserInfo( urlc.getURL() );
+                if ( userInfo!=null ) {
+                    String encode = Base64.getEncoder().encodeToString(userInfo.getBytes());
+                    urlc.setRequestProperty("Authorization", "Basic " + encode);
+                }
+            } catch (URISyntaxException ex) {
+                throw new RuntimeException(ex);
+            }
+        }
+
         try {
-            urlc= HttpUtil.checkRedirect(urlc);
-
-            InputStream in;
-
-            if ( loggerUrl.isLoggable(Level.FINE) && urlc.getURL().getPath().endsWith("/") ) {
-                loggerUrl.log(Level.FINE, "GET to get listing {0}", new Object[] { urlc.getURL() } );
-            } else {
-                loggerUrl.log(Level.FINE, "GET to get data {0}", new Object[] { urlc.getURL() } );
-            }
-            
-            in= urlc.getInputStream();
-
-            HttpURLConnection hurlc = (HttpURLConnection) urlc;
-            if (hurlc.getResponseCode() == 404) {
-                logger.log(Level.INFO, "{0} URL: {1}", new Object[]{hurlc.getResponseCode(), remoteURL});
-                throw new FileNotFoundException("not found: " + remoteURL);
-            } else if (hurlc.getResponseCode() != 200) {
-                logger.log(Level.INFO, "{0} URL: {1}", new Object[]{hurlc.getResponseCode(), remoteURL});
-                throw new IOException( hurlc.getResponseCode()+": "+ hurlc.getResponseMessage() + "\n"+remoteURL );
-            }
-
-            Date d;
-            List<String> sd= urlc.getHeaderFields().get("Last-Modified");
-            if ( sd!=null && sd.size()>0 ) {
-                d= new Date( sd.get(sd.size()-1) );
-            } else {
-                d= new Date();
-            }
-
-            monitor.setTaskSize(urlc.getContentLength());
-
-            if (!f.getParentFile().exists()) {
-                logger.log(Level.FINER, "make dirs {0}", f.getParentFile());
-                FileSystemUtil.maybeMkdirs( f.getParentFile() );
-            }
-            if (partFile.exists()) {
-                logger.log(Level.FINER, "partFile exists {0}", partFile);
-                long ageMillis= System.currentTimeMillis() - partFile.lastModified(); // TODO: this is where OS-level locking would be nice...
-                if ( ageMillis<FileSystemSettings.allowableExternalIdleMs ) { // if it's been modified less than sixty seconds ago, then wait to see if it goes away, then check again.
-                    if ( waitDownloadExternal( f, partFile, monitor ) ) {
-                        return Collections.EMPTY_MAP; // success
-                    } else {
-                        if ( monitor.isCancelled() ) {
-                            throw new InterruptedIOException("interrupt while waiting for external process to download "+partFile);
-                        } else {
-                            throw new IOException( "timeout waiting for external process to download "+partFile );
-                        }
-                    }
-                } else {
-                    if (!partFile.delete()) {
-                        logger.log(Level.INFO, "Unable to delete part file {0}, using new name for part file.", partFile ); //TODO: review this
-                        partFile= new File( f.toString()+".part."+System.currentTimeMillis() );
-                    }
-                }
-            }
-
-            if (partFile.createNewFile()) {
-                //InputStream in;
-                //in = urlc.getInputStream();
-
-                logger.log(Level.FINER, "transferring bytes of {0}", filename);
-                FileOutputStream out = new FileOutputStream(partFile);
-                monitor.setLabel("downloading file");
-                monitor.started();
+        
+            boolean haveIt= false;
+            while ( !haveIt ) {
                 try {
-                    // https://sourceforge.net/p/autoplot/bugs/1229/
-                    String contentLocation= urlc.getHeaderField("Content-Location");
-                    String contentType= urlc.getHeaderField("Content-Type");
-                    result= reduceMeta( urlc );
-
-                    boolean doUnzip= !filename.endsWith(".gz" ) && "application/x-gzip".equals( contentType ) && ( contentLocation==null || contentLocation.endsWith(".gz") );
-                    if ( doUnzip ) {
-                        in= new GZIPInputStream( in );
+                    result= doTryDownload( urlc, remoteURL, filename, f, partFile, monitor );
+                    haveIt= true;
+                    
+                } catch ( IOException ex ) {
+                    if ( ex.getCause()!=null && ex.getCause() instanceof CancelledOperationException ) {
+                        throw ex;
                     }
-
-                    copyStream(in, out, monitor);
-                    monitor.finished();
-                    out.close();
-                    in.close();                    
-
-                    try {
-                        partFile.setLastModified(d.getTime()+HTTP_CHECK_TIMESTAMP_LIMIT_MS);
-                    } catch ( Exception ex ) {
-                        logger.log( Level.SEVERE, "unable to setLastModified", ex );
-                    }
-
-                    if ( f.exists() ) {
-                        if ( f.isDirectory() ) {
-                            logger.finer("file was once a directory.");
-                            if ( !FileUtil.deleteFileTree(f) ) {
-                                throw new IllegalArgumentException("unable to folder to make way for file: "+f );
-                            }
-                        } else {
-                            if ( f.length()==partFile.length() ) {
-                                if ( OsUtil.contentEquals(f, partFile ) ) {
-                                    logger.finer("another thread must have downloaded file.");
-                                    if ( !partFile.delete() ) {
-                                        throw new IllegalArgumentException("unable to delete "+partFile );
-                                    }
-                                    return result;
-                                } else {
-                                    logger.finer("another thread must have downloaded different file.");
-                                }
-                            }
-                            logger.log(Level.FINER, "deleting old file {0}", f);
-                            if ( !f.delete() ) {
-                                throw new IllegalArgumentException("unable to delete "+f );
-                            }
+                    if ( ((HttpURLConnection)urlc).getResponseCode()==401 ) {
+                        if ( result==null ) result= new HashMap<>();
+                        result.put( WebProtocol.HTTP_RESPONSE_CODE, String.valueOf( ((HttpURLConnection) urlc).getResponseCode() ) );
+                        URL theUrl= urlc.getURL();
+                        try {
+                            KeyChain.getDefault().clearUserPassword( theUrl );
+                            userInfo= KeyChain.getDefault().getUserInfo( theUrl, "user:pass" ); // mark this as a URL which needs credentials.
+                        } catch (CancelledOperationException ex1) {
+                            throw ex;
                         }
+                        HttpURLConnection newConnection= (HttpURLConnection)theUrl.openConnection();
+                        HttpUtil.copyConnectProperties( urlc, newConnection );
+                        String encode = Base64.getEncoder().encodeToString(userInfo.getBytes());
+                        newConnection.setRequestProperty("Authorization", "Basic " + encode);
+                        urlc.disconnect();
+                        urlc= newConnection;
+                    } else {
+                        throw ex;
                     }
-                    if ( !partFile.renameTo(f) ) {
-                        logger.log(Level.WARNING, "rename failed {0} to {1}", new Object[]{partFile, f});
-                        throw new IllegalArgumentException( "rename failed " + partFile + " to "+f );
-                    }
-                } catch (IOException e) {
-                    out.close();
-                    in.close();
-                    logger.log( Level.FINER, "deleting partial download file {0}", partFile);
-                    if ( partFile.exists() && !partFile.delete() ) {
-                        throw new IllegalArgumentException("unable to delete "+partFile );
-                    }
-                    throw e;
                 }
-            } else {
-                throw new IOException("could not create local file: " + f);
             }
-            
-        } catch ( IOException ex ) {
-            if ( urlc instanceof HttpURLConnection ) {
-                if ( ((HttpURLConnection)urlc).getResponseCode()==401 ) {
-                    if ( result==null ) result= new HashMap<>();
-                    result.put( WebProtocol.HTTP_RESPONSE_CODE, String.valueOf( ((HttpURLConnection) urlc).getResponseCode() ) );
-                }
-            } else {
-                throw ex;
-            }
-            
         } finally {
             if ( urlc instanceof HttpURLConnection ) {
                 if ( remoteURL.getPath().endsWith("/") ) {
