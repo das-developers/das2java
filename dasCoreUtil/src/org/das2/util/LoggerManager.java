@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
@@ -89,6 +90,7 @@ public final class LoggerManager {
     public static final class TimeTaggingLogger extends Logger {
         
         public long lastTime= 0;
+        public long lastLoggedTime= 0;
         
         private TimeTaggingLogger( String id ) {
             super(id,null);
@@ -105,26 +107,15 @@ public final class LoggerManager {
 //            }
             return this.getName(); // + " @ " + l;
         }
-
-        //TODO: Note this is not a complete list of all the log methods which need to be overriden.
-        
-        @Override
-        public void log(Level level, String msg) {
-            super.log(level, msg);
-            this.lastTime= System.currentTimeMillis();
-        }
-
-        @Override
-        public void log(Level level, String msg, Object param1) {
-            super.log(level, msg, param1); //To change body of generated methods, choose Tools | Templates.
-            this.lastTime= System.currentTimeMillis();
-        }
-        
         
         @Override
         public void log(LogRecord record) {
             super.log(record);
-            this.lastTime= record.getMillis();
+            long t= record.getMillis();
+            if ( isLoggable(record.getLevel()) ) {
+                this.lastLoggedTime= t;
+            }
+            this.lastTime= t;
         }
         
         /**
