@@ -796,8 +796,7 @@ public class QdsToDas23 extends QdsToD2sStream {
 		// Add coordinate dimensions, if this is a set.  Need to add planes
 		// in here if offsets can be in multiple directions
 		String[][] aCoordProps = {
-			{QDataSet.DEPEND_1, OFFSET_1, "x"}, {QDataSet.DEPEND_2, OFFSET_2, "y"}, 
-			{QDataSet.DEPEND_3, OFFSET_3, "z"}
+			{QDataSet.DEPEND_1, OFFSET_1, "y"}, {QDataSet.DEPEND_2, OFFSET_2, "z"}
 		};
 		for(String[] aProps: aCoordProps){
 			String sDep     = aProps[0];
@@ -807,11 +806,10 @@ public class QdsToDas23 extends QdsToD2sStream {
 			Element elCoord = null;
 			Element elProps = null;
 			
-			// Cascade these, depe
+			// Cascade these, depepends go first 
 			if((dsCoords = (QDataSet)ds.property(sDep)) != null){
 				if(elCoord == null) elCoord = doc.createElement(sCoordAx + "coord");
-				QDataSet dsDep = (QDataSet)ds.property(REFERENCE);
-				elCoord.setAttribute("pdim", _getPhysDim(elPkt, dsDep, sCoordAx));
+				elCoord.setAttribute("pdim", _getPhysDim(elPkt, dsCoords, sCoordAx));
 				_addValsToCoord(elCoord, dsCoords, "center");
 				elProps = doc.createElement("properties");
 				
@@ -882,8 +880,8 @@ public class QdsToDas23 extends QdsToD2sStream {
 		elVals.setAttribute("use", sUse);
 		elVals.setAttribute("units", sUnits);
 		String sVals = _getValueSet(ds);
-		elVals.setNodeValue(sVals);
-		
+		elVals.setTextContent(sVals);
+		el.appendChild(elVals);
 		return 1;
 	}
 		

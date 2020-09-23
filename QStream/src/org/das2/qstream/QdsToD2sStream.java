@@ -58,6 +58,7 @@ import org.das2.qds.DataSetOps;
 import org.das2.qds.MutablePropertyDataSet;
 import org.das2.qds.QDataSet;
 import org.das2.qds.SemanticOps;
+import org.das2.qds.ops.Ops;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 import org.w3c.dom.ls.DOMImplementationLS;
@@ -223,17 +224,14 @@ abstract public class QdsToD2sStream {
 						else transtype = new LongTransferType();
 					}
 					else{
-						// Need to know the biggest value in the dataset to determine
-						// the length.  Get Jeremy's attention intstead of writing a 
-						// new one.
+						// Yea, couldn't be something like QDataSet.max()
+						QDataSet dsExt = Ops.extent(qds);
+						double rMax = Math.abs(dsExt.value(0));
+						double rMin = Math.abs(dsExt.value(1));
+						if(rMin > rMax) rMax = rMin;
 						
-						//double rMaxVal = some_function_here(qds);
-						//nChars = Math.ceil( Math.log10( Math.abs(rMaxVal))) + 2;
-						//transtype = new AsciiIntegerTransferType(nChars);
-						
-						throw new RuntimeException(
-							"Jeremy: What function returns the max value of a qdataset?"
-						);	
+						int nChars = (int)(Math.ceil( Math.log10( rMax) ) + 2);
+						transtype = new AsciiIntegerTransferType(nChars);
 					}
 				}
 				else{
