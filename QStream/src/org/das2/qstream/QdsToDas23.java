@@ -820,9 +820,10 @@ public class QdsToDas23 extends QdsToD2sStream {
 			}
 			
 			if((dsCoords = (QDataSet)ds.property(sOff)) != null){
-				if(elCoord == null) elCoord = doc.createElement(sCoordAx + "coord");
-				QDataSet dsRef = (QDataSet)ds.property(REFERENCE);
-				String sDim = _getPhysDim(elPkt, dsRef, (String)dsRef.property(AXIS));
+				QDataSet dsRef = (QDataSet)dsCoords.property(REFERENCE);
+				String sCoordName = (String)dsCoords.property(AXIS) + "coord";
+				String sDim = _getPhysDim(elPkt, dsRef, (String)dsCoords.property(AXIS));
+				if(elCoord == null) elCoord = doc.createElement(sCoordName);
 				elCoord.setAttribute("pdim", sDim);
 				_addValsToCoord(elCoord, dsCoords, "offset");
 				
