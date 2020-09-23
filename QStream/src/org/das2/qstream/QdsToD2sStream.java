@@ -216,21 +216,83 @@ abstract public class QdsToD2sStream {
 			}
 			else{
 				//Non epoch stuff
-				if(nGenSigDigit < 0)
-					transtype = new FloatTransferType();
-				else
-					transtype = new TransferSciNotation(nGenSigDigit);
+				Class c = DataSetOps.getComponentType(qds);
+				if((c == int.class)||(c == long.class)){
+					if(bBinary){
+						if(c == int.class) transtype = new IntegerTransferType();
+						else transtype = new LongTransferType();
+					}
+					else{
+						// Need to know the biggest value in the dataset to determine
+						// the length.  Get Jeremy's attention intstead of writing a 
+						// new one.
+						
+						//double rMaxVal = some_function_here(qds);
+						//nChars = Math.ceil( Math.log10( Math.abs(rMaxVal))) + 2;
+						//transtype = new AsciiIntegerTransferType(nChars);
+						
+						throw new RuntimeException(
+							"Jeremy: What function returns the max value of a qdataset?"
+						);	
+					}
+				}
+				else{
+					if(nGenSigDigit < 0)
+						transtype = new FloatTransferType();
+					else
+						transtype = new TransferSciNotation(nGenSigDigit);
+				}
 			}
 		}
 		
 		/** Get a size independent type name 
 		 * @return  the type with any size information stripped off */
 		public String name(){
-			return transtype.name().replaceAll("\\d","");
+			// Since float and double indicate size, use integer names
+			// that indicate size as well for consistency.
+			if(transtype.name().equals("int8")) return "long";
+			else return transtype.name().replaceAll("\\d","");
 		}
 		
 		/** @return the size in bytes of each output value */
 		public int size(){ return transtype.sizeBytes(); }
+		
+		/** Get the number items in a single X-axis slice of this dataset the
+		 * X-axis is synonymous with the QDataSet 0th axis for now.
+		 * @param i - The X point at which to get the items
+		 * @return 
+		 */
+		public int xSliceItems(int i) throws IOException{
+			int nItems = 0;
+			switch(qds.rank()){
+			case 1: return 1;
+			case 2: return qds.length(i);
+			case 3:
+				for(int j=0; j < qds.length(i); ++j)
+					nItems += qds.length(i,j);
+				return nItems;
+			case 4:
+				// Das2 can't really do this, but calc anyway
+				for(int j=0; j < qds.length(i); ++j){
+					for(int k=0; k < qds.length(i,j); ++k)
+						nItems += qds.length(i,j,k);
+				}
+				return nItems;
+			default:
+				throw new IOException(String.format(
+					"Can't stream rank %d data with this format.", qds.rank()
+				));
+			}
+		}
+		
+		/** Get the number of bytes needed to hold an x-slice of a single
+		 * 
+		 * @param i
+		 * @return 
+		 */
+		public int xSliceBytes(int i) throws IOException{
+			return transtype.sizeBytes() * xSliceItems(i);
+		}
 	}
 	
 	// Hold the information for serializing a single packet and it's dependencies
@@ -246,14 +308,10 @@ abstract public class QdsToD2sStream {
 		
 		// Calc length of buffer needed to hold a single slice in the 0th
 		// dimension across all qdatasets.
-		int slice0Length() {
+		int xSliceBytes() throws IOException {
 			int nLen = 0;
-			int nCoSets = 0;
-			for(QdsXferInfo qi: lDsXfer){ 
-				int nItems = 1;
-				if(qi.qds.rank() > 1) nItems = qi.qds.length(0);				
-				nLen += qi.transtype.sizeBytes() * nItems * (1 + nCoSets);
-			}
+			for(QdsXferInfo qi: lDsXfer) 
+				nLen += qi.xSliceBytes(0);
 			return nLen;
 		}
 	}	
@@ -265,18 +323,12 @@ abstract public class QdsToD2sStream {
 		
 		WritableByteChannel channel = Channels.newChannel(out);
 						
-		// Make the Xslice record tag
+		// Make the Xslice record tag.  For now these all have the same length
+		// if das2/general format is ever introduced will have to check the 
+		// length for each X-slice.
 		String sRecTag;
 		if(nTagType == VAR_PKT_TAGS){
-			QdsXferInfo qi = null;
-			int nWidth = 0;
-			for(int iDs = 0; iDs < pktXfer.datasets(); ++iDs){
-				qi = pktXfer.lDsXfer.get(iDs);
-				int nSzEa = qi.transtype.sizeBytes();
-				if(qi.qds.rank() == 1) nWidth += nSzEa;
-				else nWidth += qi.qds.length(0) * nSzEa;
-			}
-			sRecTag = String.format("|Dx|%d|%d|", iPktId, nWidth);
+			sRecTag = String.format("|Dx|%d|%d|", iPktId, pktXfer.xSliceBytes());
 		}
 		else{
 			sRecTag = String.format(":%02d:", iPktId);
@@ -284,7 +336,7 @@ abstract public class QdsToD2sStream {
 		
 		byte[] aRecTag = sRecTag.getBytes(StandardCharsets.US_ASCII);
 		
-		int nBufLen = pktXfer.slice0Length() + aRecTag.length;
+		int nBufLen = pktXfer.xSliceBytes() + aRecTag.length;
 		byte[] aBuf = new byte[nBufLen];
 		ByteBuffer buffer = ByteBuffer.wrap(aBuf);
 		buffer.order(ByteOrder.nativeOrder());        // Since we have a choice, use native
@@ -363,12 +415,6 @@ abstract public class QdsToD2sStream {
 		return true;
 	}
 	
-
-	// List of properties that should generate a plane
-	static protected final String[] aStdPlaneProps = {
-		QDataSet.BIN_MIN, QDataSet.BIN_MAX, QDataSet.BIN_MINUS, QDataSet.BIN_PLUS
-	};
-	
 	static String xmlDocToStr(Document doc)
 	{ 	
 		DOMImplementation imp = doc.getImplementation();
@@ -434,15 +480,7 @@ abstract public class QdsToD2sStream {
 
 	///////////////////////////////////////////////////////////////////////////
 	// Das2 specific dataset properties and functions that could just be an add
-	// on for qdataset.  These could be move somewhere else.
-	
-	// Property strings for offset and reference arrays, could be a general
-	// QDataSet thing if someone wanted it
-	
-	public static final String OFFSET_0 = "OFFSET_0";
-	public static final String OFFSET_1 = "OFFSET_1";
-	public static final String OFFSET_2 = "OFFSET_2";
-	
+	// on for qdataset.  These could be move somewhere else.	
 	
 	/** Determine the name of the das2 axis on which values from a dataset
 	 * would typically be plotted.

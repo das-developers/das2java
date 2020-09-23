@@ -39,14 +39,13 @@ package org.das2.qstream;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.imageio.IIOException;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
 import org.das2.datum.LoggerManager;
@@ -63,7 +62,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import static org.das2.qstream.QdsToD2sStream.getQdsAxis;
 
  // though many multi-element items may collapse to a single item:
  //
@@ -104,8 +102,20 @@ public class QdsToDas23 extends QdsToD2sStream {
 	
 	private static final Logger log = LoggerManager.getLogger("qstream");
 	
+	// Property strings for offset and reference arrays, could be a general
+	// QDataSet thing if someone wanted it
+	
+	// Goes in the place of depend_0, says values are an offset the offset 
+	// values should have a property call reference that points to the 
+	// dataset they offset
+	public static final String OFFSET_1 = "OFFSET_1";   
+	public static final String OFFSET_2 = "OFFSET_2";
+	public static final String OFFSET_3 = "OFFSET_3";
+	public static final String REFERENCE = "REFERENCE";
+	public static final String AXIS      = "AXIS";
+	
 	// List of transmitted Hx hdrs, index is the packet ID.
-	private List<String> lHdrsSent = new ArrayList<>();
+	List<String> lHdrsSent = new ArrayList<>();
 	
 	public QdsToDas23(){
 		super();
@@ -218,7 +228,7 @@ public class QdsToDas23 extends QdsToD2sStream {
 	
 	// Top level helper functions and structures //////////////////////////////
 	
-	protected boolean _canWriteNonJoin(QDataSet qds){
+	boolean _canWriteNonJoin(QDataSet qds){
 		// Bundles are used all over the place.  They aren't real datasets just
 		// collections of real datasets that are covarying in thier depents.
 		// To determine this, bust the bundle apart and track dependencies. 
@@ -252,7 +262,7 @@ public class QdsToDas23 extends QdsToD2sStream {
 	
 	// Would like to just return a dataset here, but bundles are too
 	// restrictive to work here.
-	private List<QDataSet> _maybeCollapseSeprableJoin(QDataSet dsJoin)
+	List<QDataSet> _maybeCollapseSeprableJoin(QDataSet dsJoin) throws IOException
 	{
 		List<QDataSet> lDs = new ArrayList<>();
 		lDs.add(dsJoin);
@@ -299,8 +309,11 @@ public class QdsToDas23 extends QdsToD2sStream {
 			nTotalLen += ds.length();
 		}
 		
-		List<QDataSet> lSep = _separable0(dsAllDep1, 1e-5);
-		if(lSep == null) return lDs;
+		SeparablePair pair = _separable0(dsAllDep1, 1e-5);
+		if(pair == null) return lDs;
+		
+		// The offset is an X coordinate, save that fact
+		pair.offset.putProperty(AXIS, "x");
 		
 		// Okay, it's separable into reference + offset, so collapse the join
 		// TODO: Check for property loss.
@@ -309,7 +322,7 @@ public class QdsToDas23 extends QdsToD2sStream {
 		);
 		
 		ArrayDataSet dsRef = ArrayDataSet.createRank1(
-			DataSetOps.getComponentType(lSep.get(0)), nTotalLen
+			DataSetOps.getComponentType(pair.reference), nTotalLen
 		);
 		
 		ArrayDataSet dsAllDep0 = null;
@@ -329,7 +342,7 @@ public class QdsToDas23 extends QdsToD2sStream {
 				}
 				if(dsAllDep0 != null)
 					dsAllDep0.putValue(i + nOffset, dep0.value(i));  // indivdual dep0
-				dsRef.putValue(i + nOffset, lSep.get(0).value(J));  // repeated ref vals
+				dsRef.putValue(i + nOffset, pair.reference.value(J));  // repeated ref vals
 			}
 			nOffset += ds.length();
 		}
@@ -339,7 +352,11 @@ public class QdsToDas23 extends QdsToD2sStream {
 			dsRef.putProperty(QDataSet.DEPEND_0, dsAllDep0);
 			dsAll.putProperty(QDataSet.DEPEND_0, dsAllDep0);
 		}
-		dsAll.putProperty(OFFSET_1, lSep.get(1));
+		if(dsAll.property(OFFSET_1) != null)
+				throw new IOException(String.format("dataset %s already has an "+
+					"offset_1, looks like we need to use planes", dsAll.toString()
+				));
+		dsAll.putProperty(OFFSET_1, pair.offset);
 		
 		// Output a bundle of <y><zset>?  I would like too.  They are co-varying
 		// in depend 0, so it would be handy.  But bundles imply that the rank of
@@ -351,6 +368,16 @@ public class QdsToDas23 extends QdsToD2sStream {
 		lDs.add(dsAll);
 		lDs.add(dsRef);
 		return lDs;
+	}
+	
+	static class SeparablePair {
+		ArrayDataSet reference;
+		ArrayDataSet offset;
+		SeparablePair(ArrayDataSet dsRef, ArrayDataSet dsOffset){
+			reference = dsRef;
+			offset = dsOffset;
+			offset.putProperty(REFERENCE, dsRef);
+		}
 	}
 		
 	/** see if a dataset is separable into a rank1 reference dataset
@@ -370,7 +397,7 @@ public class QdsToDas23 extends QdsToD2sStream {
 	 *         separable.  The second object with be of a rank one 
 	 *         lower than the initial dataset.
 	 */
-	private List<QDataSet> _separable0(QDataSet ds, double rMaxJitter){
+	SeparablePair _separable0(QDataSet ds, double rMaxJitter){
 		if(ds.rank() < 2) return null;
 		
 		// Save all the J index deltas.  We want to average over them to
@@ -420,10 +447,7 @@ public class QdsToDas23 extends QdsToD2sStream {
 			dsOffset.putProperty(QDataSet.UNITS, units.getOffsetUnits());
 		}
 		
-		List<QDataSet> lSep = new ArrayList<>();
-		lSep.add(dsRef);
-		lSep.add(dsOffset);
-		return lSep;
+		return new SeparablePair(dsRef, dsOffset);
 	}	
 	
 	// Make header for join, <stream>
@@ -432,7 +456,7 @@ public class QdsToDas23 extends QdsToD2sStream {
 	// stream header and it's common to do so.  I am not using any of the 
 	// defined strings from org.das2.DataSet since I'm assuming that package
 	// is going away.
-	private Document _makeStreamHdr(QDataSet qds) {
+	Document _makeStreamHdr(QDataSet qds) {
 		Document doc = newXmlDoc();
 		
 		Element stream = doc.createElement("stream");
@@ -493,7 +517,7 @@ public class QdsToDas23 extends QdsToD2sStream {
 	//
 	//      Rank 3: Use <wset>   
 	
-	private PacketXferInfo _makePktXferInfo(QDataSet qds, QDataSet dsRef)
+	PacketXferInfo _makePktXferInfo(QDataSet qds, QDataSet dsRef)
 		throws IOException {
 		
 		List<QdsXferInfo> lDsXfer = new ArrayList<>();
@@ -527,11 +551,22 @@ public class QdsToDas23 extends QdsToD2sStream {
 		for(QDataSet ds: lDsToRead){
 			// Maybe the bundle's members depend_0 is <x>
 			if( (dep0 = (QDataSet) ds.property(QDataSet.DEPEND_0)) != null){
-				_addPhysicalDimension(elPkt, lDsXfer, "x", dep0);
+				
+				if(lDsXfer.isEmpty()){
+					_addPhysicalDimension(elPkt, lDsXfer, "x", dep0);
+				}
+				else{
+					if(dep0 != lDsXfer.get(0).qds){
+						// This is weird, but go ahead...
+						_addPhysicalDimension(elPkt, lDsXfer, "x", dep0);
+					}
+				}
+				
 				lDsRemain.add(ds);  // Used the depend0, but keep top level dataset
 			}
 			else{
-				if(ds.rank() == 1)  // Rank 1 with no depend 0 is an <x> physdim
+				if((ds.rank() == 1)&&(ds.property(QDataSet.DEPEND_0) == null))
+					// Rank 1 with no depend 0 is an extra <x> physdim
 					_addPhysicalDimension(elPkt, lDsXfer, "x", ds);
 			}
 		}
@@ -542,9 +577,22 @@ public class QdsToDas23 extends QdsToD2sStream {
 		//         becames accepted as a qds property.
 		lDsToRead = lDsRemain;
 		lDsRemain = new ArrayList<>();
+		MutablePropertyDataSet dep1Swap;
 		for(QDataSet ds: lDsToRead){
-			if(SemanticOps.isRank2Waveform(ds))
-				_addPhysicalDimension(elPkt, lDsXfer, "yset", ds);
+			if(SemanticOps.isRank2Waveform(ds)){
+				//Rename the DEPEND_1 property to OFFSET_1
+				// TODO: Find out if this is changing the original dataset
+				dsSwap = DataSetOps.makePropertiesMutable(ds);
+				
+				dep1 = (QDataSet)dsSwap.property(QDataSet.DEPEND_1);
+				dep1Swap = DataSetOps.makePropertiesMutable(dep1);
+				dsSwap.putProperty(QDataSet.DEPEND_1, null);
+				dep1Swap.putProperty(AXIS, "x");
+				dep1Swap.putProperty(REFERENCE, dsSwap.property(QDataSet.DEPEND_0));
+				dsSwap.putProperty(OFFSET_1, dep1Swap);
+				
+				_addPhysicalDimension(elPkt, lDsXfer, "yset", dsSwap);
+			}
 			else
 				lDsRemain.add(ds);
 		}
@@ -566,15 +614,20 @@ public class QdsToDas23 extends QdsToD2sStream {
 			} 
 			if((dep1.rank() < 2)){ lDsRemain.add(ds); continue;}
 			
-			List<QDataSet> lSep = _separable0(dep1, 1e-5);
-			if( lSep != null){
-				_addPhysicalDimension(elPkt, lDsXfer, "y", lSep.get(0));
+			SeparablePair pair = _separable0(dep1, 1e-5);
+			if( pair != null){
+				_addPhysicalDimension(elPkt, lDsXfer, "y", pair.reference);
+				pair.offset.putProperty(AXIS, "y");
 							
 				// TODO: Find out if this is changing the original dataset, because we
 				//       don't want to do that!
 				dsSwap = DataSetOps.makePropertiesMutable(ds);
 				dsSwap.putProperty(QDataSet.DEPEND_1, null);
-				dsSwap.putProperty(OFFSET_1, lSep.get(1));
+				if(dsSwap.property(OFFSET_1) != null)
+					throw new IOException(String.format("dataset %s already has an "+
+						"offset_1, looks like we need to use planes", dsSwap.toString()
+					));
+				dsSwap.putProperty(OFFSET_1, pair.offset);
 				lDsRemain.add(dsSwap);  // Still need to output data part.
 			}
 		}
@@ -625,15 +678,20 @@ public class QdsToDas23 extends QdsToD2sStream {
 			} 
 			if((dep2.rank() < 2)){ lDsRemain.add(ds); continue;}
 			
-			List<QDataSet> lSep = _separable0(dep2, 1e-5);
-			if( lSep != null){
-				_addPhysicalDimension(elPkt, lDsXfer, "z", lSep.get(0));
+			SeparablePair pair = _separable0(dep2, 1e-5);
+			if( pair != null){
+				_addPhysicalDimension(elPkt, lDsXfer, "z", pair.reference);
 							
 				// TODO: Find out if this is changing the original dataset, because we
 				//       don't want to do that!
 				dsSwap = DataSetOps.makePropertiesMutable(ds);
 				dsSwap.putProperty(QDataSet.DEPEND_2, null);
-				dsSwap.putProperty(OFFSET_2, lSep.get(1));
+				if(dsSwap.property(OFFSET_2) != null)
+					throw new IOException(String.format("dataset %s already has an "+
+						"offset_2, looks like we need to use planes", dsSwap.toString()
+					));
+				dsSwap.putProperty(OFFSET_2, pair.offset);
+				pair.offset.putProperty(AXIS, "z");
 				lDsRemain.add(dsSwap);  // Still need to output data part.
 			}
 		}
@@ -657,6 +715,8 @@ public class QdsToDas23 extends QdsToD2sStream {
 			if(ds.rank() != 3){ lDsRemain.add(ds); continue; }
 			
 			_addPhysicalDimension(elPkt, lDsXfer, "wset", ds);
+			
+			// TODO: Check for separability
 		}
 		
 		// If I had saved off <w> sets, they would be output here...
@@ -673,7 +733,7 @@ public class QdsToDas23 extends QdsToD2sStream {
 	}
 	
 	/** Add a new phys-dim to the packet header and record the transfer info for the
-	 * corresponding data packets
+	 * corresponding data packets.
 	 * 
 	 * @param elPkt
 	 * @param lXfer
@@ -682,13 +742,216 @@ public class QdsToDas23 extends QdsToD2sStream {
 	 * @return
 	 * @throws IOException 
 	 */
-	private int _addPhysicalDimension(
+	int _addPhysicalDimension(
 		Element elPkt, List<QdsXferInfo> lXfer, String sAxis, QDataSet ds
 	) throws IOException {
+		int nArrays = 0;
 		
-		return 0;
+		boolean bSet = sAxis.endsWith("set");
+		
+		Document doc = elPkt.getOwnerDocument();
+		Element elPdim = doc.createElement(sAxis);
+		elPkt.appendChild(elPdim);
+		QdsXferInfo xfer = new QdsXferInfo(ds, bBinary, nSigDigit, nSecDigit);
+		lXfer.add(xfer);
+		
+		String sPdim = _getPhysDim(elPkt, ds, sAxis);
+		elPdim.setAttribute("pdim", sPdim);
+		
+		if(bSet) elPdim.setAttribute("nitems", String.format("%d",xfer.xSliceItems(0)));
+		
+		// make the first array
+		Element elAry = doc.createElement("array");
+		elAry.setAttribute("type", _makeTypeFromXfer(xfer));
+		Units units = (Units)ds.property(QDataSet.UNITS);
+		elAry.setAttribute("units", units != null ? units.toString() : "");
+		elAry.setAttribute("use", "center"); // check on this.
+		elPdim.appendChild(elAry);
+		nArrays += 1;
+		
+		// Add arrays for the stats planes, if present
+		QDataSet dsStats;
+		QdsXferInfo xferStats;
+		
+		for(String sProp: aStdPlaneProps){
+			if((dsStats = (QDataSet)ds.property(sProp)) == null) continue;
+			
+			// TODO: Some of these properties aren't covaring datasets, add checks
+			// here and insert values into properties array instead.
+			if(dsStats.rank() != ds.rank()){ 
+				throw new IOException(String.format(
+					"Statistics dataset '%s' for main dataset '%s' is not the same rank",
+					ds.toString(), dsStats.toString()
+				));
+			}
+			
+			xferStats = new QdsXferInfo(dsStats, bBinary, nSigDigit, nSecDigit);
+			elAry = doc.createElement("array");
+			elAry.setAttribute("use", _statsName(sProp));
+			elAry.setAttribute("type", _makeTypeFromXfer(xferStats));
+			elPdim.appendChild(elAry);
+			nArrays += 1;
+		}
+		
+		// Add coordinate dimensions, if this is a set.  Need to add planes
+		// in here if offsets can be in multiple directions
+		String[][] aCoordProps = {
+			{QDataSet.DEPEND_1, OFFSET_1, "x"}, {QDataSet.DEPEND_2, OFFSET_2, "y"}, 
+			{QDataSet.DEPEND_3, OFFSET_3, "z"}
+		};
+		for(String[] aProps: aCoordProps){
+			String sDep     = aProps[0];
+			String sOff     = aProps[1];
+			String sCoordAx = aProps[2];
+			QDataSet dsCoords;
+			Element elCoord = null;
+			Element elProps = null;
+			
+			// Cascade these, depe
+			if((dsCoords = (QDataSet)ds.property(sDep)) != null){
+				if(elCoord == null) elCoord = doc.createElement(sCoordAx + "coord");
+				QDataSet dsDep = (QDataSet)ds.property(REFERENCE);
+				elCoord.setAttribute("pdim", _getPhysDim(elPkt, dsDep, sCoordAx));
+				_addValsToCoord(elCoord, dsCoords, "center");
+				elProps = doc.createElement("properties");
+				
+				if( _addSimpleProps(elProps, dsCoords, sCoordAx) == 0)
+					elProps = null;
+				
+				// TODO: Add statistics such as bandwidth etc.
+			}
+			
+			if((dsCoords = (QDataSet)ds.property(sOff)) != null){
+				if(elCoord == null) elCoord = doc.createElement(sCoordAx + "coord");
+				QDataSet dsRef = (QDataSet)ds.property(REFERENCE);
+				String sDim = _getPhysDim(elPkt, dsRef, (String)dsRef.property(AXIS));
+				elCoord.setAttribute("pdim", sDim);
+				_addValsToCoord(elCoord, dsCoords, "offset");
+				
+				// TODO: Check for offset planes (or whatever mechanisim holds
+				// offsets in more than one physicsal dimension.
+				
+				// If depend_N didn't have properties, add mine if I have them
+				if(elProps == null){
+					elProps = doc.createElement("properties");
+					if(_addSimpleProps(elProps, dsCoords, sCoordAx) == 0)
+						elProps = null;
+				}
+			}
+			
+			if((elCoord != null)&&(elProps != null)) 
+				elCoord.appendChild(elProps);
+			if(elCoord != null)
+				elPdim.appendChild(elCoord);
+		}
+			
+		// Now for the properties
+		Element elProps = doc.createElement("properties");
+		if(_addSimpleProps(elProps, ds, sAxis.substring(0, 1)) != 0)
+			elPdim.appendChild(elProps);
+		
+		return nArrays;
 	}
-
+	
+	// Return 1 if a coordinate set was added to the give element
+	// If the data values look like a sequence then a sequence is attached,
+	// otherwise the values are dumped
+	int _addValsToCoord(Element el, QDataSet ds, String sUse
+	) throws IOException{
+		Document doc = el.getOwnerDocument();
+		Units units = (Units)ds.property(QDataSet.UNITS);
+		String sUnits = (units != null ? units.toString() : "");
+			
+		//TODO: Handle rank2 sequences.  These may have a repeat count
+		if(ds.rank() > 1){
+			throw new IOException("TODO: Handle N-D coordinates");
+		}
+		Sequence1D seq = getSequenceRank1(ds, 1e-4);
+		if(seq != null){
+			Element elSeq = doc.createElement("sequence");
+			elSeq.setAttribute("use", sUse);
+			elSeq.setAttribute("minval", seq.sMinval);
+			elSeq.setAttribute("interval", seq.sInterval);
+			elSeq.setAttribute("units", sUnits);
+			el.appendChild(elSeq);
+			return 1;
+		}
+		
+		// Not a sequence, have to print the values
+		Element elVals = doc.createElement("values");
+		elVals.setAttribute("use", sUse);
+		elVals.setAttribute("units", sUnits);
+		String sVals = _getValueSet(ds);
+		elVals.setNodeValue(sVals);
+		
+		return 1;
+	}
+		
+	String _getPhysDim(Element elPkt, QDataSet ds, String sAxis) throws IOException
+	{
+		// Insure we have a name: ds.NAME -> Units -> just number
+		// If the name is empty, make one up based on the units if you can
+		
+		String sName = (String)ds.property(QDataSet.NAME);
+		if(sName != null) return sName;
+		
+		Units units = (Units)ds.property(QDataSet.UNITS);
+		sName = makeNameFromUnits(units);
+		if(sName.length() >= 0) return sName;
+		
+		if((sAxis == null)||(sAxis.length() == 0)){
+			throw new IOException(
+				"Can't find physical dimension name by axis search, no axis specified"
+			);
+		}
+		int n = elPkt.getElementsByTagName(sAxis).getLength();
+		return String.format("%s_%d", sAxis.toUpperCase(), n);
+	}
+	
+	String _makeTypeFromXfer(QdsXferInfo xfer) throws IOException
+	{
+		String sName = xfer.name();
+		int nSz = xfer.size();
+		String sReal = ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN ? 
+					     "little_endian_real" : "big_endian_real";
+		String sInt = ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN ? 
+					     "little_endian_int" : "big_endian_int";
+		
+		switch(sName){
+			case "double": return String.format("%s8", sReal);
+			case "float":  return String.format("%s4", sReal);
+			case "ascii":  return String.format("ascii%d", nSz);
+			case "time":   return String.format("time%d", nSz);
+			case "char":   return String.format("char%d", nSz);
+			case "int":    return String.format("%s4", sInt);
+			case "long":   return String.format("%s8", sInt);
+			default:
+				// TODO: What kind of exception should I throw here?
+				throw new IOException(String.format(
+					"das2.3 streams cannot transmit data values of type %s%d",
+					sName, nSz
+				));
+		}
+	}
+	
+	// List of properties that should generate a plane
+	static final String[] aStdPlaneProps = {
+		QDataSet.BIN_MIN, QDataSet.BIN_MAX, QDataSet.BIN_MINUS, QDataSet.BIN_PLUS,
+		QDataSet.DELTA_MINUS, QDataSet.DELTA_PLUS, QDataSet.WEIGHTS
+	};
+	
+	static String _statsName(String sProp){
+		switch(sProp){
+		case QDataSet.BIN_MIN: return "min";
+		case QDataSet.BIN_MAX: return "max";
+		case QDataSet.BIN_MINUS: return "min";
+		case QDataSet.BIN_PLUS: return "max";
+		case QDataSet.DELTA_MINUS: return "min_error";
+		case QDataSet.DELTA_PLUS:  return "max_error";
+		case QDataSet.WEIGHTS:     return "count";
+		default: return "unknown";
+		}
+	}
 	
 	String _getValueSet(QDataSet ds){
 		String sFmt = String.format("%%.%de", nSigDigit);
@@ -705,17 +968,6 @@ public class QdsToDas23 extends QdsToD2sStream {
 		}
 		sb.append("\n        ");
 		return sb.toString();
-	}
-	
-	void _valueListChild(
-		Element elPlane, String sElement, String sUnits, String sValues
-	){
-		Document doc = elPlane.getOwnerDocument();
-		Element el = doc.createElement(sElement);
-		el.setAttribute("units", sUnits);
-		Node text = doc.createTextNode(sValues);
-		el.appendChild(text);
-		elPlane.appendChild(el);
 	}
 	
 	int _addBoolProp(Element props, String sName, Object oValue){
@@ -881,11 +1133,17 @@ public class QdsToDas23 extends QdsToD2sStream {
 			if(bStripDot && sKey.contains(".")) continue;
 			
 			//for das2.3 ask about child elements
-			NodeList nl = props.getElementsByTagName("prop");
+			NodeList nl = props.getElementsByTagName("p");
 			boolean bHasItAlready = false;
 			for(int i = 0; i < nl.getLength(); ++i){
 				Element el = (Element)nl.item(i);
-				if(el.hasAttribute(sKey)){ bHasItAlready = true; break; }
+				if(el.hasAttribute("name")){
+					String sName = el.getAttribute("name");
+					if(sKey.equals(sName)){
+						bHasItAlready = true; 
+						break; 
+					}
+				}
 			}
 			if(bHasItAlready) continue;
 						
@@ -894,16 +1152,16 @@ public class QdsToDas23 extends QdsToD2sStream {
 				nAdded += _addBoolProp(props, sKey, oVal);
 			else
 				if(oVal instanceof String)
-					nAdded += QdsToDas23.this._addStrProp(props, sKey, oVal);
+					nAdded += _addStrProp(props, sKey, oVal);
 				else
 					if(oVal instanceof Number)
-						nAdded += QdsToDas23.this._addRealProp(props, sKey, oVal);
+						nAdded += _addRealProp(props, sKey, oVal);
 					else
 						if(oVal instanceof Datum)
-							nAdded += QdsToDas23.this._addDatumProp(props, sKey, oVal);
+							nAdded += _addDatumProp(props, sKey, oVal);
 						else
 							if(oVal instanceof DatumRange)
-								nAdded += QdsToDas23.this._addRngProp(props, sKey, oVal);
+								nAdded += _addRngProp(props, sKey, oVal);
 			
 		}
 		return nAdded;

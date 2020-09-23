@@ -58,7 +58,6 @@ import org.das2.qds.QDataSet;
 import org.das2.qds.SemanticOps;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import static org.das2.qstream.QdsToD2sStream.getQdsAxis;
 
  // In general QDataSet conglomerations have the following possible structure
  // though many multi-element items may collapse to a single item:
@@ -104,10 +103,10 @@ public class QdsToDas22 extends QdsToD2sStream {
 	private static final Logger log = LoggerManager.getLogger("qstream");
 	
 	// A das2 limitation, not an arbitrary choice
-	private static final int MAX_HDRS = 100;
+	static final int MAX_HDRS = 100;
 
 	// List of transmitted packet hdrs, index is the packet ID.
-	private List<String> lHdrsSent = new ArrayList<>();
+	List<String> lHdrsSent = new ArrayList<>();
 	
 	public QdsToDas22(){
 		super();
@@ -216,7 +215,7 @@ public class QdsToDas22 extends QdsToD2sStream {
 	
 	// Top level helper functions and structures //////////////////////////////
 	
-	protected boolean _canWriteNonJoin(QDataSet qds) {
+	boolean _canWriteNonJoin(QDataSet qds) {
 		// Bundles are used all over the place.  They just represent items that 
 		// are covarying in the depend coordinates.  To determine this, bust the
 		// bundle apart and track dependencies. 
@@ -297,7 +296,7 @@ public class QdsToDas22 extends QdsToD2sStream {
 	// stream header and it's common to do so.  I am not using any of the 
 	// defined strings from org.das2.DataSet since I'm assuming that package
 	// is going away.
-	private Document _makeStreamHdr(QDataSet qds) {
+	Document _makeStreamHdr(QDataSet qds) {
 		Document doc = newXmlDoc();
 		
 		Element stream = doc.createElement("stream");
@@ -367,7 +366,7 @@ public class QdsToDas22 extends QdsToD2sStream {
 	//    SOURCE and (if needed yTags) properties
 	
 	
-	private PacketXferInfo _makePktXferInfo(QDataSet qds) throws IOException {
+	PacketXferInfo _makePktXferInfo(QDataSet qds) throws IOException {
 		
 		List<QdsXferInfo> lDsXfer = new ArrayList<>();
 		Document doc = newXmlDoc();
@@ -499,7 +498,7 @@ public class QdsToDas22 extends QdsToD2sStream {
 	 * @return
 	 * @throws IOException 
 	 */
-	private int _addPhysicalDimension(
+	int _addPhysicalDimension(
 		Element elPkt, List<QdsXferInfo> lXfer, String sAxis, QDataSet ds
 	) throws IOException {
 		
@@ -520,7 +519,7 @@ public class QdsToDas22 extends QdsToD2sStream {
 		String sTag = sAxis.equals("yscan") ? "zUnits" : "units";
 		el.setAttribute(sTag, units != null ? units.toString() : "");
 		
-		// Now handle the properties, add in extras if specified
+		// Now handle the properties
 		Element elProps = doc.createElement("properties");
 		int nProps = 0;
 		if(sAxis.equals("yscan")){
@@ -580,7 +579,7 @@ public class QdsToDas22 extends QdsToD2sStream {
 		return nArrays;
 	}
 	
-	private String _getName(Element elPkt, QDataSet ds, String sPlane)
+	String _getName(Element elPkt, QDataSet ds, String sPlane)
 	{
 		// Insure we have a name: ds.NAME -> Units -> just number
 		// If the name is empty, make one up based on the units if you can
@@ -596,7 +595,7 @@ public class QdsToDas22 extends QdsToD2sStream {
 		return String.format("%s_%d", sPlane.toUpperCase(), n);
 	}
 	
-	private String _makeTypeFromXfer(QdsXferInfo xfer) throws IOException
+	String _makeTypeFromXfer(QdsXferInfo xfer) throws IOException
 	{
 		String sName = xfer.name();
 		int nSz = xfer.size();
@@ -617,12 +616,17 @@ public class QdsToDas22 extends QdsToD2sStream {
 		}
 	}
 	
-	private String _statsName(String sProp){
+	// List of properties that should generate a plane
+	static final String[] aStdPlaneProps = {
+		QDataSet.BIN_MIN, QDataSet.BIN_MAX, QDataSet.BIN_MINUS, QDataSet.BIN_PLUS
+	};
+	
+	static String _statsName(String sProp){
 		switch(sProp){
 		case QDataSet.BIN_MIN: return "min";
 		case QDataSet.BIN_MAX: return "max";
-		case QDataSet.BIN_MINUS: return "minus";
-		case QDataSet.BIN_PLUS: return "plus";
+		case QDataSet.BIN_MINUS: return "min";
+		case QDataSet.BIN_PLUS: return "max";
 		default: return "unknown";
 		}
 	}
@@ -634,7 +638,7 @@ public class QdsToDas22 extends QdsToD2sStream {
 	 * @param elProps - The element to get the y properties
 	 * @return The number of properties added
 	 */
-	private int _yTagsNProps(QDataSet ds, Element el, Element elProps) throws IOException
+	int _yTagsNProps(QDataSet ds, Element el, Element elProps) throws IOException
 	{
 		int nItems = ds.length(0);
 		el.setAttribute("nitems", String.format("%d", nItems));
