@@ -28,6 +28,7 @@ import org.das2.util.monitor.CancelledOperationException;
 import org.das2.util.Base64;
 import java.io.*;
 import java.net.*;
+import java.nio.charset.Charset;
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -221,6 +222,26 @@ public class HtmlUtil {
         
         return ins;
         
+    }
+    
+    /**
+     * read the contents of the URL into a string, assuming UTF-8 encoding.
+     * @param url
+     * @return
+     * @throws IOException
+     * @throws CancelledOperationException 
+     */
+    public static String readToString( URL url ) throws IOException, CancelledOperationException {
+        InputStream ins= getInputStream( url );
+        StringBuilder build= new StringBuilder();
+        byte[] buf= new byte[2048];
+        int i= ins.read(buf);
+        Charset charset= Charset.forName("UTF-8");
+        while ( i>-1 ) {
+            build.append( new String( buf, 0, i, charset ) );
+            i= ins.read(buf);
+        }
+        return build.toString();
     }
 
     /**
