@@ -489,7 +489,8 @@ public class QdsToDas22 extends QdsToD2sStream {
 		return new PacketXferInfo(doc, lDsXfer); /* Headers and data xfer */
 	}
 	
-	/**
+	/** Add a new phys-dim to the packet header and record the transfer info for the
+	 * corresponding data packets
 	 * 
 	 * @param elPkt
 	 * @param lXfer

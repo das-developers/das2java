@@ -45,31 +45,21 @@ import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import org.das2.datum.Datum;
-import org.das2.datum.DatumRange;
 import org.das2.datum.LoggerManager;
 import org.das2.datum.TimeLocationUnits;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
 import org.das2.qds.DataSetOps;
+import org.das2.qds.MutablePropertyDataSet;
 import org.das2.qds.QDataSet;
 import org.das2.qds.SemanticOps;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.LSSerializer;
 
@@ -424,10 +414,12 @@ abstract public class QdsToD2sStream {
 		double rNextInterval, rAvg, rJitter;
 		for(int i = 2; i < qds.length(); ++i){
 			rNextInterval = qds.value(i) - qds.value(i - 1);
-			rAvg = Math.abs(rNextInterval + rInterval)/2;
-			rJitter = Math.abs(rNextInterval - rInterval) / rAvg;
-			if(rJitter > rMaxJitter)
-				return null;
+			if(rNextInterval != rInterval){
+				rAvg = Math.abs(rNextInterval + rInterval)/2;
+				if(rAvg == 0.0) return null;
+				rJitter = Math.abs(rNextInterval - rInterval) / rAvg;
+				if(rJitter > rMaxJitter) return null;
+			}
 		}
 		
 		// Get my format string
@@ -441,11 +433,16 @@ abstract public class QdsToD2sStream {
 	
 
 	///////////////////////////////////////////////////////////////////////////
-	// Das2 specific dataset information functions that could just be an add on
-	// for qdataset.  These could be move somewhere else.  If we were writing
-	// in D universal function call syntax would allow for:
-	//   
-	//   qds.qd2DataAxis();
+	// Das2 specific dataset properties and functions that could just be an add
+	// on for qdataset.  These could be move somewhere else.
+	
+	// Property strings for offset and reference arrays, could be a general
+	// QDataSet thing if someone wanted it
+	
+	public static final String OFFSET_0 = "OFFSET_0";
+	public static final String OFFSET_1 = "OFFSET_1";
+	public static final String OFFSET_2 = "OFFSET_2";
+	
 	
 	/** Determine the name of the das2 axis on which values from a dataset
 	 * would typically be plotted.
@@ -513,6 +510,42 @@ abstract public class QdsToD2sStream {
 			return "z";
 		}
 		return null;
-	}	
+	}
+	
+	private static final List<String> lSimpleKeys;
+	static {
+		lSimpleKeys = new ArrayList<>();
+		lSimpleKeys.add(QDataSet.NAME);
+		lSimpleKeys.add(QDataSet.UNITS);
+		lSimpleKeys.add(QDataSet.FORMAT);
+		lSimpleKeys.add(QDataSet.SCALE_TYPE);
+		lSimpleKeys.add(QDataSet.LABEL);
+		lSimpleKeys.add(QDataSet.DESCRIPTION);
+		lSimpleKeys.add(QDataSet.FILL_VALUE);
+		lSimpleKeys.add(QDataSet.VALID_MIN);
+		lSimpleKeys.add(QDataSet.VALID_MAX);
+		lSimpleKeys.add(QDataSet.TYPICAL_MIN);
+		lSimpleKeys.add(QDataSet.TYPICAL_MAX);
+		lSimpleKeys.add(QDataSet.USER_PROPERTIES);
+	}
+	
+	/** Could have been named copyProps if I wasn't being snarky.
+	 * 
+	 * @param dsDest
+	 * @param dsSrc
+	 * @return 
+	 */
+	protected int _copySimpleProps(MutablePropertyDataSet dsDest, QDataSet dsSrc)
+	{
+		int nAdded = 0;
+		Object oVal;
+		for(String sKey: lSimpleKeys){
+			if( (oVal = dsSrc.property(sKey)) != null){
+				dsDest.putProperty(sKey, oVal);
+				nAdded += 1;
+			}
+		}
+		return nAdded;
+	}
 		
 }

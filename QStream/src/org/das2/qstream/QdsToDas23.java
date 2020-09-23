@@ -46,13 +46,17 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.imageio.IIOException;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
 import org.das2.datum.LoggerManager;
 import org.das2.datum.TimeLocationUnits;
 import org.das2.datum.Units;
+import org.das2.datum.UnitsUtil;
+import org.das2.qds.ArrayDataSet;
 import org.das2.qds.BundleDataSet;
 import org.das2.qds.DataSetOps;
+import org.das2.qds.MutablePropertyDataSet;
 import org.das2.qds.QDataSet;
 import org.das2.qds.SemanticOps;
 import org.w3c.dom.Document;
@@ -128,7 +132,7 @@ public class QdsToDas23 extends QdsToD2sStream {
 		return _canWriteNonJoin(qds);
 	}
 	
-	/** Write a QDataSet as a das2 stream
+	/** Write a QDataSet as a das2.3 stream
 	 * 
 	 * To test whether it looks like this code could stream a dataset use the
 	 * canWrite() function.  This function may be called multiple times to add
@@ -170,17 +174,25 @@ public class QdsToDas23 extends QdsToD2sStream {
 		PacketXferInfo pi;
 		List<PacketXferInfo> lPi = new ArrayList<>();
 	
+		// See if the join dataset can be dropped to just a normal dataset
+		// by introducing references and offests
+		List<QDataSet> lDs = _maybeCollapseSeprableJoin(qds);
+		qds = lDs.get(0);  // This is silly, but I can't use a bundle here
+		QDataSet dsRef = null;
+		if(lDs.size() > 1) dsRef = lDs.get(1);
+			
 		if(SemanticOps.isJoin(qds)){
+			
 			for(int i = 0; i < qds.length(); ++i){
 				QDataSet ds = DataSetOps.slice0(qds, i);
-				if((pi = _makePktHdr(ds)) == null) return false;
+				if((pi = _makePktXferInfo(ds, null)) == null) return false;
 				else lPi.add(pi);
 				sPktHdr = xmlDocToStr(pi.doc);
 				if(!lHdrsSent.contains(sPktHdr)) lHdrsToSend.add(sPktHdr);
 			}
 		}
 		else{
-			if((pi = _makePktHdr(qds)) == null) return false;
+			if((pi = _makePktXferInfo(qds, dsRef)) == null) return false;
 			else lPi.add(pi);
 			sPktHdr = xmlDocToStr(pi.doc);
 			if(!lHdrsSent.contains(sPktHdr)) lHdrsToSend.add(sPktHdr);
@@ -232,6 +244,187 @@ public class QdsToDas23 extends QdsToD2sStream {
 		return true;  // We ran the gauntlet, though not much was tested
 	}
 	
+	// See if a join dataset is only a join because the depend_1 keeps changing
+	// due to a reference point change, not due to a depend_1 length change, or
+	// the deltas between depend_1 points.  This is common for MEX/MARSIS
+	// radargrams and Juno/Waves HFWBR spectra.  It likely occurs in other 
+	// datasets as well.
+	
+	// Would like to just return a dataset here, but bundles are too
+	// restrictive to work here.
+	private List<QDataSet> _maybeCollapseSeprableJoin(QDataSet dsJoin)
+	{
+		List<QDataSet> lDs = new ArrayList<>();
+		lDs.add(dsJoin);
+		
+		if(!SemanticOps.isJoin(dsJoin)) return lDs;
+		if(dsJoin.length() < 2) return lDs;  
+		
+		QDataSet dsBeg = DataSetOps.slice0(dsJoin, 0);
+		
+		// TODO: Deal with higher ranks, depend2 etc.
+		if(dsBeg.rank() != 2) return lDs;
+		
+		// TODO: Make work with bundles
+		if(dsBeg instanceof BundleDataSet) return lDs; 
+		
+		// Collect the depend_1's as a rank2 array, then see if it's separable
+		QDataSet dsBegDep1 = (QDataSet)dsBeg.property(QDataSet.DEPEND_1);
+		if((dsBegDep1 == null)||(dsBegDep1.rank() != 1)) return lDs;
+		
+		ArrayDataSet dsAllDep1 = ArrayDataSet.createRank2(
+			DataSetOps.getComponentType(dsBegDep1), dsJoin.length(), 
+			dsBeg.length(0)
+		);
+		
+		for(int j = 0; j < dsBegDep1.length(); ++j)      // First set of dep1
+			dsAllDep1.putValue(0, j, dsBegDep1.value(j));
+		
+		int nTotalLen = dsBeg.length();
+		for(int J = 1; J < dsJoin.length(); ++J){        // Loop over the rest
+			QDataSet ds = DataSetOps.slice0(dsJoin, J);
+			
+			if((ds.rank() != dsBeg.rank()) || (ds.length(0) != dsBeg.length(0)))
+				return lDs;
+			
+			QDataSet dep1 = (QDataSet)ds.property("DEPEND_1");
+			
+			//If dep1 missing or has a different shape than first dep1
+			if((dep1 == null) || (dep1.rank() != dsBegDep1.rank()) || 
+			   (dep1.length() != dsAllDep1.length(0)) )  return lDs;
+			
+			for(int j = 0; j < dsBegDep1.length(); ++j) 
+				dsAllDep1.putValue(J, j, dsBegDep1.value(j));
+			
+			nTotalLen += ds.length();
+		}
+		
+		List<QDataSet> lSep = _separable0(dsAllDep1, 1e-5);
+		if(lSep == null) return lDs;
+		
+		// Okay, it's separable into reference + offset, so collapse the join
+		// TODO: Check for property loss.
+		ArrayDataSet dsAll = ArrayDataSet.createRank2(
+			DataSetOps.getComponentType(dsBeg), nTotalLen, dsBeg.length(0)
+		);
+		
+		ArrayDataSet dsRef = ArrayDataSet.createRank1(
+			DataSetOps.getComponentType(lSep.get(0)), nTotalLen
+		);
+		
+		ArrayDataSet dsAllDep0 = null;
+		QDataSet dsDep0 = (QDataSet)dsBeg.property(QDataSet.DEPEND_0); 
+		if( dsDep0 != null)
+			dsAllDep0 = ArrayDataSet.createRank1(
+				DataSetOps.getComponentType(dsDep0), nTotalLen
+			);
+		
+		int nOffset = 0;
+		for(int J = 0; J < dsJoin.length(); ++J){
+			QDataSet ds = DataSetOps.slice0(dsJoin, J);
+			QDataSet dep0 = (QDataSet)ds.property(QDataSet.DEPEND_0);
+			for(int i = 0; i < ds.length(); ++i){
+				for(int j = 0; j < ds.length(0); ++j){
+					dsAll.putValue(i + nOffset, j, ds.value(i, j));
+				}
+				if(dsAllDep0 != null)
+					dsAllDep0.putValue(i + nOffset, dep0.value(i));  // indivdual dep0
+				dsRef.putValue(i + nOffset, lSep.get(0).value(J));  // repeated ref vals
+			}
+			nOffset += ds.length();
+		}
+		
+		_copySimpleProps(dsAll, dsBeg);
+		if(dsAllDep0 != null){
+			dsRef.putProperty(QDataSet.DEPEND_0, dsAllDep0);
+			dsAll.putProperty(QDataSet.DEPEND_0, dsAllDep0);
+		}
+		dsAll.putProperty(OFFSET_1, lSep.get(1));
+		
+		// Output a bundle of <y><zset>?  I would like too.  They are co-varying
+		// in depend 0, so it would be handy.  But bundles imply that the rank of
+		// each sub-item is the same (see TailBundleDataSet.bundle(), 
+		// BundleDataSet.bundle() ).  This restriction breaks the simple co-varying
+		// collection mentality that is needed here, so we can't use a bundle. 
+		// --cwp
+		lDs.clear();
+		lDs.add(dsAll);
+		lDs.add(dsRef);
+		return lDs;
+	}
+		
+	/** see if a dataset is separable into a rank1 reference dataset
+	 * and a rank N-1 offset dataset.  This check is made so that we can
+	 * put N + M values into the stream instead of N*M.  For datasets
+	 * like the Juno waves HFWBR spectra this cuts the size of the stream
+	 * in half, without compression
+	 * 
+	 * @param ds The dataset to check, must be rank 2 or higher
+	 * 
+	 * @param rMaxJitter how close must comparable second index be 
+	 *        as a fraction of the average be considered the same value.
+	 *        This is called epsilon in many numerical functions.  If you
+	 *        don't have a preference try 1e-5.
+	 * 
+	 * @return null if not separable, a list of two qdataset objects if
+	 *         separable.  The second object with be of a rank one 
+	 *         lower than the initial dataset.
+	 */
+	private List<QDataSet> _separable0(QDataSet ds, double rMaxJitter){
+		if(ds.rank() < 2) return null;
+		
+		// Save all the J index deltas.  We want to average over them to
+		// make as smooth a final sequence as possible.
+		double[][] aDeltas = new double[ds.length()][ds.length(0) - 1];
+		ArrayDataSet dsRef = ArrayDataSet.createRank1(double.class, ds.length());
+		
+		dsRef.putValue(0, ds.value(0,0));
+		
+		for(int j = 1; j < ds.length(0); ++j)
+			aDeltas[0][j - 1] = ds.value(0, j ) - ds.value(0, j-1);
+		
+		double rDelta;
+		double rAvg;
+		double rJitter;
+		for(int i = 1; i < ds.length(); ++i){
+			for(int j = 1; j < ds.length(0); ++j){
+				rDelta = ds.value(i,j) - ds.value(i, j-1);
+				if(rDelta != aDeltas[0][j-1]){
+					rAvg = Math.abs(aDeltas[0][j-1] + rDelta)/2;
+					if(rAvg == 0.0) return null;
+					rJitter = Math.abs(rDelta - aDeltas[0][j-1]) / rAvg;
+					if(rJitter > rMaxJitter) return null;
+				}
+				aDeltas[i][j-1] = rDelta;
+			}
+			dsRef.putValue(i, ds.value(i,0));
+		}
+		
+		// Looks to be separable, smooth the deltas
+		ArrayDataSet dsOffset = ArrayDataSet.createRank1(double.class, ds.length(0));
+		dsOffset.putValue(0, 0.0);
+		double rSum;
+		for(int j = 1; j < ds.length(0); ++j){
+			rSum = 0;
+			for(int i = 0; i < ds.length(); ++i)
+				rSum += aDeltas[i][j-1];
+			dsOffset.putValue(j, rSum / ds.length());
+		}
+		
+		_copySimpleProps(dsRef, ds);
+		_copySimpleProps(dsOffset, ds);
+		// If we are using times for the reference points, then get the offset units
+		// for the time values
+		Units units = (Units)ds.property(QDataSet.UNITS);
+		if((units != null)&&(UnitsUtil.isTimeLocation(units))){
+			dsOffset.putProperty(QDataSet.UNITS, units.getOffsetUnits());
+		}
+		
+		List<QDataSet> lSep = new ArrayList<>();
+		lSep.add(dsRef);
+		lSep.add(dsOffset);
+		return lSep;
+	}	
 	
 	// Make header for join, <stream>
 	
@@ -248,21 +441,21 @@ public class QdsToDas23 extends QdsToD2sStream {
 		Element props = doc.createElement("properties");
 		int nProps = 0;
 		
-		nProps += addStrProp(props, qds, QDataSet.TITLE, "title");
-		nProps += addStrProp(props, qds, QDataSet.DESCRIPTION, "summary");
-		nProps += addStrProp(props, qds, QDataSet.RENDER_TYPE, "renderer");
+		nProps += _addStrProp(props, qds, QDataSet.TITLE, "title");
+		nProps += _addStrProp(props, qds, QDataSet.DESCRIPTION, "summary");
+		nProps += _addStrProp(props, qds, QDataSet.RENDER_TYPE, "renderer");
 		
 		String sAxis = getQdsAxis(qds);
 		if(sAxis == null) return null;
 		
-		nProps += addSimpleProps(props, qds, sAxis);
+		nProps += _addSimpleProps(props, qds, sAxis);
 		
 		// If the user_properties are present, add them in
 		Map<String, Object> dUser;
 		dUser = (Map<String, Object>)qds.property(QDataSet.USER_PROPERTIES);
 		
 		boolean bStripDot = _stripDotProps(qds);
-		if(dUser != null) nProps += addPropsFromMap(props, dUser, bStripDot);
+		if(dUser != null) nProps += _addPropsFromMap(props, dUser, bStripDot);
 		
 		// If the ISTP-CDF metadata weren't so long, we'd include these as well
 		// maybe a Das 2.3 sub tag is appropriate for them, ignore for now...
@@ -274,190 +467,229 @@ public class QdsToDas23 extends QdsToD2sStream {
 	}
 	
 	// Make header for bundle, <packet>
-	
-	// To do this we need to find all the physical dimension in play.  This is 
-	// difficult as multiple physdims can be glopped together into a bundle and
-	// there are three different types of bundles and some of these have planes!
 	//
-	// Most of the logic here is from the 2.2 converter, even though 2.3 has more
-	// output capabilities.  It will have to grow case-by-case over time since I
-	// just can't make sense out of the QDataSet conglomerations.
-	
 	// For each real dataset (not a bundle)
 	//
-	// 1. Get it's depend0, this is the X axis.  If there is more than one X-axis
-	//    then use xcoord attributes to reference the right one.
+	// 1. inspect it's dependencies  
+	//    Save off dependencies as follows:
+	//       dep0 --> <x>
 	//
-	// 2. If the member has no depend0 then it is an extra X axis
+	//       dep1 --> If depend_1 is rank 2 and separable into a reference and 
+	//             offset.  Save the reference as <y>, make the offset the
+	//             <ycoords>, otherwise ignore, it will be in the packet header
 	//
-	// 2. If it has a depend1, it is either a <yset>, <zset> or <wset>
-	//
-	// <yset><zset> branch
-	//
-	//    a. See if depend1 has a depend0, we don't have a way to save these
-	//       at this time.
-	//
-	//    b. See if it has a plane_0, this would mean it's a 4-D dataset,
-	//       we don't have a way to deal with those at this time.
-	//
-	//    c. See if the depend1's can be saved as a sequence, if not save
-	//       as ytags
+	//       dep2 --> If depend 2 is rank 2 or above, through a "fixme" error,
+	//             otherwise ignore, it will be in the packet header
 	// 
-	// <y> branch
+	// 2. Look at the rank of the dataset.
+	//      Rank 1: Look for the plane_0 ds.  Save the regular dataset as
+	//              <y>, the plane_0 as <z>.  Some third plane would be
+	//              needed for <w>.  Maybe if the plane_0 had a plane_0?
 	//
-	//    a. See if it has a plane_0, if so plane_0 is a <z> item.  I don't
-	//       think there is a pattern established yet for multi <z>'s but check
-	//       that <z> is not a bundle.
+	//      Rank 2: Run SemanticOps.isRank2Waveform()  If true use <yset>
+	//              with <xcoord use="offset" from depend_1
+	//              If false use <zset> with <ycoord use="center", unless
+	//              determined as separable in step 1 above
 	//
-	// 4. If it has a BIN_MAX, BIN_MIN, DELTA_PLUS, DELTA_MINUS properties.  
-	//    all these cause the creation of extra <y> or <yscans> with the same
-	//    SOURCE and (if needed yTags) properties
+	//      Rank 3: Use <wset>   
 	
-	
-	private PacketXferInfo _makePktHdr(QDataSet qds) {
+	private PacketXferInfo _makePktXferInfo(QDataSet qds, QDataSet dsRef)
+		throws IOException {
 		
 		List<QdsXferInfo> lDsXfer = new ArrayList<>();
+		Document doc = newXmlDoc();
+		Element elPkt = doc.createElement("packet");
+		doc.appendChild(elPkt);
 		
 		assert(!SemanticOps.isJoin(qds));  //Don't call this for join datasets
 		
 		QDataSet dep0;
-		List<QDataSet> lDsIn = new ArrayList<>();
-		List<QDataSet> lDsOut = new ArrayList<>();
+		QDataSet dep1;
+		QDataSet dep2;
+		MutablePropertyDataSet dsSwap;
 		
-		// Bundle is usually short for BUNDLE_1
-		if(SemanticOps.isBundle(qds)){
-			// Primary <X> handling: Maybe the bundle's depend_0 is <x>
-			if( (dep0 = (QDataSet) qds.property(QDataSet.DEPEND_0)) != null)
-				lDsXfer.add(new QdsXferInfo(dep0, bBinary, nSigDigit, nSecDigit));
-			
+		// We go through the list of datasets multiple times, picking out the 
+		// items we care about.  In each stage lDsToRead is the list to process,
+		// lDsRemain are the remaining items
+		List<QDataSet> lDsToRead = new ArrayList<>();
+		List<QDataSet> lDsRemain = new ArrayList<>(); 
+		
+		// A) Break out the bundles
+		if(qds instanceof BundleDataSet){
 			for(int i = 0; i < qds.length(0); ++i)
-				lDsIn.add( DataSetOps.slice1(qds, i) );
+				lDsToRead.add( ((BundleDataSet)qds).unbundle(i) );
 		}
 		else{
-			lDsIn.add(qds);
+			lDsToRead.add(qds);
 		}
 		
-		// Handle <x> planes
-		for(QDataSet ds: lDsIn){
+		// <x>: Handle depend_0, does not remove any datasets
+		for(QDataSet ds: lDsToRead){
 			// Maybe the bundle's members depend_0 is <x>
 			if( (dep0 = (QDataSet) ds.property(QDataSet.DEPEND_0)) != null){
-				
-				if(lDsXfer.isEmpty()){
-					lDsXfer.add(new QdsXferInfo(dep0, bBinary, nSigDigit, nSecDigit));
-				}
-				else{
-					if(dep0 != lDsXfer.get(0).qds){
-						log.warning("Multiple independent depend_0 datasets in bundle");
-						return null;
-					}
-				}
-				lDsOut.add(ds);  // Used the depend0, but keep top level dataset
+				_addPhysicalDimension(elPkt, lDsXfer, "x", dep0);
+				lDsRemain.add(ds);  // Used the depend0, but keep top level dataset
 			}
 			else{
-				// Rank 1 with no depend 0 is an <x> plane
-				if(lDsXfer.isEmpty() && (ds.rank() == 1))
-					lDsXfer.add(new QdsXferInfo(ds, bBinary, nSigDigit, nSecDigit));
-				// no-add
+				if(ds.rank() == 1)  // Rank 1 with no depend 0 is an <x> physdim
+					_addPhysicalDimension(elPkt, lDsXfer, "x", ds);
 			}
 		}
 		
-		// Handle <y> & <z> planes, these are always rank 1 and have a depend 0, if
-		// you see a PLANE_0 save it out as a Z plane.
-		String sFallBackSrcName;  // Correlating source fallback name
-		int nNewPlanes;
-		lDsIn = lDsOut;
-		lDsOut = new ArrayList<>();
-		QDataSet dsZ = null;
-		QDataSet dsSubZ = null;
-		int nYs = 0;
-		int nZs = 0;
-		for(QDataSet ds: lDsIn){
-			if(ds.rank() > 1){ lDsOut.add(ds);  continue; }  //<yscan>
-			
-			assert(ds.property(QDataSet.DEPEND_0) != null);
-			
-			// Once we hit a Z plane we're done with y's and yscans
-			if(dsZ != null){
-				log.warning("Multiple Y planes encountered in X,Y,Z dataset");
-				return null;
-			}
-			
-			//nNewPlanes = _addPlaneWithStats(
-			//	lDsXfer, ds, nSigDigit, nSecDigit, Y_EL, sFallBackSrcName
-			//);
-			//if(nNewPlanes == 0) return null;
-			//nYs += nNewPlanes;
+		// <yset>, handle anything with OFFSET_1.  Since the only way to tell 
+		//         that a ds should have OFFSET_1 is to check the waveform flag
+		//         this is basically just waveform handling.  Rework if OFFSET_1
+		//         becames accepted as a qds property.
+		lDsToRead = lDsRemain;
+		lDsRemain = new ArrayList<>();
+		for(QDataSet ds: lDsToRead){
+			if(SemanticOps.isRank2Waveform(ds))
+				_addPhysicalDimension(elPkt, lDsXfer, "yset", ds);
+			else
+				lDsRemain.add(ds);
+		}
 		
+		// <y> part0, Grab our out-of-band join collapse reference if one was
+		//    supplied.  Again, I know this is a kludgy way to get this done.
+		if(dsRef != null){
+			_addPhysicalDimension(elPkt, lDsXfer, "y", dsRef);
+		}
+		
+		// <y> part1, Check for separable rank > 1 depend1 
+		//            (i.e. wandering spectrograms).
+		lDsToRead = lDsRemain;
+		lDsRemain = new ArrayList<>();
+		for(QDataSet ds: lDsToRead){
+			if((dep1 = (QDataSet) ds.property(QDataSet.DEPEND_1)) == null){
+				lDsRemain.add(ds);
+				continue;
+			} 
+			if((dep1.rank() < 2)){ lDsRemain.add(ds); continue;}
+			
+			List<QDataSet> lSep = _separable0(dep1, 1e-5);
+			if( lSep != null){
+				_addPhysicalDimension(elPkt, lDsXfer, "y", lSep.get(0));
+							
+				// TODO: Find out if this is changing the original dataset, because we
+				//       don't want to do that!
+				dsSwap = DataSetOps.makePropertiesMutable(ds);
+				dsSwap.putProperty(QDataSet.DEPEND_1, null);
+				dsSwap.putProperty(OFFSET_1, lSep.get(1));
+				lDsRemain.add(dsSwap);  // Still need to output data part.
+			}
+		}
+		
+		// <y> part2, Output or save for later remaining rank 1 datasets
+		lDsToRead = lDsRemain;
+		lDsRemain = new ArrayList<>();
+		QDataSet dsZ = null;
+		QDataSet dsSubZ;
+		for(QDataSet ds: lDsToRead){
+			if(ds.rank() > 1){ lDsRemain.add(ds); continue; } 
+			
+			_addPhysicalDimension(elPkt, lDsXfer, "y", ds);
+			
+			// Look for hidden Z's
 			if( (dsZ = (QDataSet) ds.property(QDataSet.PLANE_0)) != null){
 				// If plane0 is a bundle we have multiple Z's
 				if(SemanticOps.isBundle(dsZ)){
 					for(int i = 0; i < dsZ.length(); ++i){
 						dsSubZ = DataSetOps.slice0(dsZ, i);
-						sFallBackSrcName = String.format("Z_%d", nZs);
-						//nNewPlanes = _addPlaneWithStats(
-						//	 lDsXfer, dsSubZ, nSigDigit, nSecDigit, Z_EL, sFallBackSrcName
-						//);
-				//		if(nNewPlanes == 0) return null;
-//						nZs += nNewPlanes;
+						lDsRemain.add(dsSubZ);
 					}
 				}
 				else{
-					sFallBackSrcName = String.format("Z_%d", nZs);
-//					nNewPlanes = _addPlaneWithStats(
-//						lDsXfer, dsZ, nSigDigit, nSecDigit, Z_EL, sFallBackSrcName
-//					);
-//					if(nNewPlanes == 0) return null;
-//					nZs += nNewPlanes;
+					lDsRemain.add(dsZ);
 				}
 			}
 		}
 		
-		// Handle <yscan> planes.
-		lDsIn = lDsOut;
-		QDataSet dsYTags = null;
-		QDataSet dep1;
-		int nYScans = 0;
-		for(QDataSet ds: lDsIn){
-			if(ds.rank() > 2){ assert(false); return null; }
-			if(dsZ != null){
-				log.warning("YScan planes not allowed in the same packets as Z planes");
-				return null;
-			}
-			
-			if( (dep1 = (QDataSet)ds.property(QDataSet.DEPEND_1)) != null){
-				if(dsYTags == null){ 
-					dsYTags = dep1;
-				}
-				else{
-					if(dsYTags != dep1){
-						log.warning("Independent Y values for different rank-2 "
-								      + " datasets in the same bundle");
-						return null;
-					}
-				}
-			}
-			
-			// Have our YTags
-			//sFallBackSrcName = String.format("%s_%d", bDas23 ? "Zset":"YScan", nYScans);
-			//nNewPlanes = _addPlaneWithStats(
-			//	lDsXfer, ds, nSigDigit, nSecDigit, ZSET_EL, sFallBackSrcName
-			//);
-			//if(nNewPlanes < 1) return null;
-			//nYScans += nNewPlanes;
+		// <zset>, Output or save for later remaining rank 2 datasets
+		lDsToRead = lDsRemain;
+		lDsRemain = new ArrayList<>();
+		for(QDataSet ds: lDsToRead){
+			if(ds.rank() == 2) 
+				_addPhysicalDimension(elPkt, lDsXfer, "zset", ds);
+			else
+				lDsRemain.add(ds);
+			// Look for bundle here???
 		}
 		
-		// Now make the packet header
-		Document doc;
-		//doc = _make23PktHdrFromXfer(lDsXfer, dsYTags);
-		//if(doc == null) return null;
+		// <z> part1, Check for separable rank > 1 (i.e. wandering volumes)
+		lDsToRead = lDsRemain;
+		lDsRemain = new ArrayList<>();
+		for(QDataSet ds: lDsToRead){
+			if((dep2 = (QDataSet) ds.property(QDataSet.DEPEND_2)) == null){
+				lDsRemain.add(ds);
+				continue;
+			} 
+			if((dep2.rank() < 2)){ lDsRemain.add(ds); continue;}
+			
+			List<QDataSet> lSep = _separable0(dep2, 1e-5);
+			if( lSep != null){
+				_addPhysicalDimension(elPkt, lDsXfer, "z", lSep.get(0));
+							
+				// TODO: Find out if this is changing the original dataset, because we
+				//       don't want to do that!
+				dsSwap = DataSetOps.makePropertiesMutable(ds);
+				dsSwap.putProperty(QDataSet.DEPEND_2, null);
+				dsSwap.putProperty(OFFSET_2, lSep.get(1));
+				lDsRemain.add(dsSwap);  // Still need to output data part.
+			}
+		}
 		
+		// <z> part2, Output any saved <z> sets
+		lDsToRead = lDsRemain;
+		lDsRemain = new ArrayList<>();
+		for(QDataSet ds: lDsToRead){
+			if(ds.rank() > 1){ lDsRemain.add(ds); continue; } 
+			
+			_addPhysicalDimension(elPkt, lDsXfer, "z", ds);
+			
+			// Look for hidden w's?  nah, not yet.
+			// QDataSet dsW = (QDataSet) ds.property(QDataSet.PLANE_0)
+		}
 		
-		//return new PacketXferInfo(doc, lDsXfer);
-		return null;
+		// <wset> Output any rank 3 datasets
+		lDsToRead = lDsRemain;
+		lDsRemain = new ArrayList<>();
+		for(QDataSet ds: lDsToRead){
+			if(ds.rank() != 3){ lDsRemain.add(ds); continue; }
+			
+			_addPhysicalDimension(elPkt, lDsXfer, "wset", ds);
+		}
+		
+		// If I had saved off <w> sets, they would be output here...
+		
+		// Check to see if anything was forgotten
+		if(!lDsRemain.isEmpty()){
+			throw new IOException(
+				"das2.3 output bug, the following dataset (and maybe more) were not "+
+				"output: '" + lDsRemain.get(0).toString() + "'"
+			);
+		}
+		
+		return new PacketXferInfo(doc, lDsXfer); /* Headers and data xfer */
+	}
+	
+	/** Add a new phys-dim to the packet header and record the transfer info for the
+	 * corresponding data packets
+	 * 
+	 * @param elPkt
+	 * @param lXfer
+	 * @param sAxis - one of x, yset, y, zset, z, wset, w
+	 * @param ds
+	 * @return
+	 * @throws IOException 
+	 */
+	private int _addPhysicalDimension(
+		Element elPkt, List<QdsXferInfo> lXfer, String sAxis, QDataSet ds
+	) throws IOException {
+		
+		return 0;
 	}
 
 	
-
 	String _getValueSet(QDataSet ds){
 		String sFmt = String.format("%%.%de", nSigDigit);
 		StringBuilder sb = new StringBuilder();
@@ -475,7 +707,7 @@ public class QdsToDas23 extends QdsToD2sStream {
 		return sb.toString();
 	}
 	
-	void valueListChild(
+	void _valueListChild(
 		Element elPlane, String sElement, String sUnits, String sValues
 	){
 		Document doc = elPlane.getOwnerDocument();
@@ -486,19 +718,19 @@ public class QdsToDas23 extends QdsToD2sStream {
 		elPlane.appendChild(el);
 	}
 	
-	int addBoolProp(Element props, String sName, Object oValue){
+	int _addBoolProp(Element props, String sName, Object oValue){
 		String sValue = (Boolean)oValue ? "true" : "false";
 		_addChildProp(props, sName, "boolean", sValue);
 		return 1;
 	}
 	
-	int addStrProp(Element props, QDataSet qds, String qkey, String d2key){
+	int _addStrProp(Element props, QDataSet qds, String qkey, String d2key){
 		Object oProp;
 		if((oProp = qds.property(qkey)) != null)
-			return addStrProp(props, d2key, oProp);
+			return QdsToDas23.this._addStrProp(props, d2key, oProp);
 		return 0;
 	}
-	int addStrProp(Element props, String sName, Object oValue){
+	int _addStrProp(Element props, String sName, Object oValue){
 		
 		// Special handling for substitutions, Das2 Streams flatten metadata
 		// so if a %{USER_PROPERTIES.thing} substitution string is being saved, 
@@ -516,32 +748,32 @@ public class QdsToDas23 extends QdsToD2sStream {
 		return 1;
 	}
 	
-	int addRealProp(Element props, QDataSet qds, String qkey, String d2key){
+	int _addRealProp(Element props, QDataSet qds, String qkey, String d2key){
 		Object oProp;
 		if((oProp = qds.property(qkey)) != null)
-			return addRealProp(props, d2key, oProp);
+			return QdsToDas23.this._addRealProp(props, d2key, oProp);
 		return 0;
 	}
-	int addRealProp(Element props, String sName, Object oValue){
+	int _addRealProp(Element props, String sName, Object oValue){
 		Number num = (Number)oValue;
 		String sVal = String.format("%.6e", num.doubleValue());
 		_addChildProp(props, sName, "double", sVal);
 		return 1;
 	}
 	
-	int addDatumProp(Element props, QDataSet qds, String qkey, String d2key){
+	int _addDatumProp(Element props, QDataSet qds, String qkey, String d2key){
 		Object oProp;
 		if((oProp = qds.property(qkey)) != null)
-			return addDatumProp(props, d2key, oProp);
+			return QdsToDas23.this._addDatumProp(props, d2key, oProp);
 		return 0;
 	}
-	int addDatumProp(Element props, String sName, Object oValue){
+	int _addDatumProp(Element props, String sName, Object oValue){
 		Datum datum = (Datum)oValue;
 		_addChildProp(props, sName, "Datum", datum.toString());
 		return 1;
 	}
 	
-	int addRngProp(Element props, QDataSet qds, String sMinKey, String sMaxKey,
+	int _addRngProp(Element props, QDataSet qds, String sMinKey, String sMaxKey,
 			         String sUnitsKey, String d2key){
 		Object oMin, oMax, oUnits;
 		oMin = qds.property(sMinKey); oMax = qds.property(sMaxKey);
@@ -563,7 +795,7 @@ public class QdsToDas23 extends QdsToD2sStream {
 		_addChildProp(props, d2key, "DatumRange", sValue);
 		return 1;
 	}
-	int addRngProp(Element props, String sName, Object oValue){
+	int _addRngProp(Element props, String sName, Object oValue){
 		DatumRange rng = (DatumRange)oValue;
 		
 		// Work around a bug in DatumRange.  DatumRange can not read it's own
@@ -602,23 +834,23 @@ public class QdsToDas23 extends QdsToD2sStream {
 	}
 	
 	// Get all the simple standard properties of a dataset and add these to the
-	// attributes of a property element.  Complex properties dependencies and 
+	// children to a property element.  Complex properties dependencies and 
 	// associated datasets are not handled here.  Returns the number of props
 	// added.
-	int addSimpleProps(Element props, QDataSet qds, String sAxis)
+	int _addSimpleProps(Element props, QDataSet qds, String sAxis)
 	{
 		int nProps = 0;
 		
-		nProps += addStrProp(props, qds, QDataSet.FORMAT, sAxis + "Format");
-		nProps += addStrProp(props, qds, QDataSet.SCALE_TYPE, sAxis + "ScaleType");
-		nProps += addStrProp(props, qds, QDataSet.LABEL, sAxis + "Label");
-		nProps += addStrProp(props, qds, QDataSet.DESCRIPTION, sAxis + "Summary");
+		nProps += _addStrProp(props, qds, QDataSet.FORMAT, sAxis + "Format");
+		nProps += _addStrProp(props, qds, QDataSet.SCALE_TYPE, sAxis + "ScaleType");
+		nProps += _addStrProp(props, qds, QDataSet.LABEL, sAxis + "Label");
+		nProps += _addStrProp(props, qds, QDataSet.DESCRIPTION, sAxis + "Summary");
 		
-		nProps += addRealProp(props, qds, QDataSet.FILL_VALUE, sAxis + "Fill");
-		nProps += addRealProp(props, qds, QDataSet.VALID_MIN, sAxis + "ValidMin");
-		nProps += addRealProp(props, qds, QDataSet.VALID_MAX, sAxis + "ValidMax");
+		nProps += _addRealProp(props, qds, QDataSet.FILL_VALUE, sAxis + "Fill");
+		nProps += _addRealProp(props, qds, QDataSet.VALID_MIN, sAxis + "ValidMin");
+		nProps += _addRealProp(props, qds, QDataSet.VALID_MAX, sAxis + "ValidMax");
 		
-		nProps += addRngProp(props, qds, QDataSet.TYPICAL_MIN, QDataSet.TYPICAL_MAX,
+		nProps += _addRngProp(props, qds, QDataSet.TYPICAL_MIN, QDataSet.TYPICAL_MAX,
 		                     QDataSet.UNITS, sAxis + "Range");
 		
 		// The cadence is an odd bird, a QDataSet with 1 item, handle special
@@ -639,7 +871,7 @@ public class QdsToDas23 extends QdsToD2sStream {
 	// Get all the user_data properties that don't conflict with any properties
 	// already present.  These don't care about prepending x,y,z axis identifiers
 	// to the attribute tag, though they may have them and that's okay.
-	int addPropsFromMap(Element props, Map<String, Object> dMap, boolean bStripDot){
+	int _addPropsFromMap(Element props, Map<String, Object> dMap, boolean bStripDot){
 		
 		if(dMap == null) return 0;
 		int nAdded = 0;
@@ -659,19 +891,19 @@ public class QdsToDas23 extends QdsToD2sStream {
 						
 			Object oVal = ent.getValue();
 			if(oVal instanceof Boolean)
-				nAdded += addBoolProp(props, sKey, oVal);
+				nAdded += _addBoolProp(props, sKey, oVal);
 			else
 				if(oVal instanceof String)
-					nAdded += addStrProp(props, sKey, oVal);
+					nAdded += QdsToDas23.this._addStrProp(props, sKey, oVal);
 				else
 					if(oVal instanceof Number)
-						nAdded += addRealProp(props, sKey, oVal);
+						nAdded += QdsToDas23.this._addRealProp(props, sKey, oVal);
 					else
 						if(oVal instanceof Datum)
-							nAdded += addDatumProp(props, sKey, oVal);
+							nAdded += QdsToDas23.this._addDatumProp(props, sKey, oVal);
 						else
 							if(oVal instanceof DatumRange)
-								nAdded += addRngProp(props, sKey, oVal);
+								nAdded += QdsToDas23.this._addRngProp(props, sKey, oVal);
 			
 		}
 		return nAdded;
