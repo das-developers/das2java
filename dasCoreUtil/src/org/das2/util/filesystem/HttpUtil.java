@@ -111,10 +111,13 @@ public final class HttpUtil {
                 boolean exists;
                 
                 HttpURLConnection connect = (HttpURLConnection) url.openConnection();
+                
                 //connect.setDefaultUseCaches(false);
                 //connect.setUseCaches(false);
                 
                 connect.setRequestMethod("HEAD");
+                connect= (HttpURLConnection) HttpUtil.checkRedirect(connect);
+
                 //connect.setDefaultUseCaches(false);
                 //connect.setUseCaches(false);
                 //connect.setRequestProperty("Cache-Control", "max-age=0"); 
