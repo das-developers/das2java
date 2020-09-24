@@ -55,11 +55,9 @@ import org.das2.datum.UnitsUtil;
 import org.das2.qds.ArrayDataSet;
 import org.das2.qds.BundleDataSet;
 import org.das2.qds.DataSetOps;
-import org.das2.qds.DataSetUtil;
 import org.das2.qds.MutablePropertyDataSet;
 import org.das2.qds.QDataSet;
 import org.das2.qds.SemanticOps;
-import org.das2.qds.ops.Ops;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -339,8 +337,8 @@ public class QdsToDas23 extends QdsToD2sStream {
 		// Yay! The accumlated dep1's are separable... collapse the Join.
 		// ///
 		
-		// The offset is an X coordinate, save that fact
-		pair.offset.putProperty(AXIS, "x");
+		// The offset is an Y coordinate, save that fact
+		pair.offset.putProperty(AXIS, "y");
 		
 		ArrayDataSet dsAll = ArrayDataSet.createRank2(
 			DataSetOps.getComponentType(dsBeg), nTotalLen, dsBeg.length(0)
