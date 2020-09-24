@@ -413,6 +413,7 @@ public class SeriesRenderer extends Renderer {
 
         }
 
+        @Override
         public synchronized void renderBackground( Graphics2D graphics ) {
             Color color0= graphics.getColor();
             Color backgroundColor= graphics.getBackground();
@@ -855,7 +856,7 @@ public class SeriesRenderer extends Renderer {
             Color backgroundColor= g.getBackground();
             g.setColor(backgroundColor);
             double backWidth= GraphUtil.parseLayoutLength(backgroundThick, lineWidth, symSize );
-            psymConnector.draw(g, lpath1, (float)backWidth);
+            PsymConnector.SOLID.draw(g, lpath1, (float)backWidth);
             g.setBackground(backgroundColor);
             g.setColor(color0);
         }
