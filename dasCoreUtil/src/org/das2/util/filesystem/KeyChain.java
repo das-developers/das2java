@@ -438,7 +438,7 @@ public class KeyChain {
         int stop= path.indexOf("://")+3;
         int i=path.lastIndexOf('/');
         while( i>stop ) {
-            String hash= path.substring(0,i);
+            String hash= path.substring(0,i+1);
             if ( keys.get(hash)!=null ) {
                 keys.remove(hash);
             }
@@ -615,6 +615,9 @@ public class KeyChain {
         if ( userInfo==null ) return;
         
         String hash= url.getProtocol() + "://" + ( userName!=null ? userName+"@" : "" ) + url.getHost() + url.getPath();
+        if ( hash.endsWith("/") ) {
+            
+        }
 
         clearUserInfo( hash );
 
