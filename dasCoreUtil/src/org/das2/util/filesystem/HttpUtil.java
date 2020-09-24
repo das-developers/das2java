@@ -116,7 +116,7 @@ public final class HttpUtil {
                 //connect.setUseCaches(false);
                 
                 connect.setRequestMethod("HEAD");
-                connect= (HttpURLConnection) HttpUtil.checkRedirect(connect);
+                //connect= (HttpURLConnection) HttpUtil.checkRedirect(connect);
 
                 //connect.setDefaultUseCaches(false);
                 //connect.setUseCaches(false);
