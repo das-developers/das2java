@@ -391,7 +391,21 @@ abstract public class QdsToD2sStream {
 		if(units.isConvertibleTo(Units.bytes)) return "size";
 		if(units.isConvertibleTo(Units.cm_2s_1keV_1)) return "flux";
 		if(units.isConvertibleTo(Units.kelvin)) return "temperature";
-		// So where is spectral density? 
+		
+		String sUnits = units.toString();
+		
+		// I wish there was some sort of units canonicalization function
+		// Get frequency typo's
+		if(sUnits.equalsIgnoreCase("mhz")) return "frequency";
+		if(sUnits.equalsIgnoreCase("khz")) return "frequency";
+		if(sUnits.equalsIgnoreCase("hz")) return "frequency";
+		
+		// So where is spectral density? Try some wierd stuff 
+		if(sUnits.equalsIgnoreCase("V!a2!nm!a-2!nHz!a-1!n")) // yes, this happens
+			return "e_spec_dens";
+		if(sUnits.equalsIgnoreCase("nT!a2!nHz!a-1!n"))      // yes, this happens too
+			return "b_spec_dens";
+		
 		return "";
 	}
 	

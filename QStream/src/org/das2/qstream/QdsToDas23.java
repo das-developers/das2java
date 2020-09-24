@@ -114,7 +114,7 @@ public class QdsToDas23 extends QdsToD2sStream {
 	public static final String REFERENCE = "REFERENCE";
 	public static final String AXIS      = "AXIS";
 	
-	public static final double DEF_SEQ_JITTER = 1e-4;
+	public static final double DEF_SEQ_JITTER = 1e-3;
 	
 	public QdsToDas23(){
 		super();
@@ -496,6 +496,10 @@ public class QdsToDas23 extends QdsToD2sStream {
 		Element stream = doc.createElement("stream");
 		stream.setAttribute("version", FORMAT_2_3_BASIC);
 		
+		
+		//TODO: make props class that has a parent so that ycoords
+		//     (for example) can consult "y" which can consult <stream>
+		//     to see if a property has already been applied.
 		Element props = doc.createElement("properties");
 		int nProps = 0;
 		
@@ -651,7 +655,8 @@ public class QdsToDas23 extends QdsToD2sStream {
 			} 
 			if((dep1.rank() < 2)){ lDsRemain.add(ds); continue;}
 			
-			SeparablePair pair = _separable0(dep1, 1e-4);
+			// Sequence jitter is expected to be lower than separation jitter
+			SeparablePair pair = _separable0(dep1, rMaxSeqJitter*10);
 			if( pair != null){
 				_addPhysicalDimension(elStreamProp, elPkt, lDsXfer, "y", pair.reference);
 				pair.offset.putProperty(AXIS, "y");
@@ -670,6 +675,14 @@ public class QdsToDas23 extends QdsToD2sStream {
 				// Since we separated coordinates, allow more jitter in sequence
 				// conversion
 				if(rMaxSeqJitter < 0.02) rMaxSeqJitter = 0.02;
+			}
+			else{
+				// <yset> revisited - Depend_1 is rank 2 and could not be
+				// separated, output it as a <yset>
+				_addPhysicalDimension(
+					elStreamProp, elPkt, lDsXfer, "yset", dep1, rMaxSeqJitter
+				);
+				lDsRemain.add(ds); 
 			}
 		}
 		
