@@ -453,8 +453,10 @@ public class WebFileObject extends FileObject {
                 if ( meta!=null && meta.size()>0 ) {
                     cacheMeta( getLocalFile(), meta );
                 }
-                if ( !localFile.setLastModified(remoteDate.getTime()) ) {
-                    logger.log(Level.FINE, "unable to modify date of {0}", localFile);
+                if ( remoteDate.getTime()>0 ) { // 401 might have prevented getting a timestamp for the file
+                    if ( !localFile.setLastModified(remoteDate.getTime()) ) {
+                        logger.log(Level.FINE, "unable to modify date of {0}", localFile);
+                    }
                 }
 
                 logger.log(Level.FINE, "downloaded local file has date {0}", new Date(localFile.lastModified()));
@@ -509,13 +511,13 @@ public class WebFileObject extends FileObject {
                     synchronized ( wfs ) {
                         DirectoryEntry remoteMeta= (DirectoryEntry) wfs.accessCache.doOp( this.getNameExt() );
                         long localFileLastModified = localFile.lastModified();
-                        setLastModified( new Date(remoteMeta.modified) );
-                        setSize( remoteMeta.size );
+                        if ( remoteMeta.modified>0 ) setLastModified( new Date(remoteMeta.modified) );
+                        if ( remoteMeta.size>-1 ) setSize( remoteMeta.size );
                         if ( remoteMeta.modified > localFileLastModified ) {
                             logger.log(Level.FINE, "remote file is newer than local copy of {0}, download.", this.getNameExt());
                             download = true;
                         } else {
-                            download = remoteMeta.size!= localFile.length();
+                            download = remoteMeta.size>-1 && remoteMeta.size!= localFile.length();
                         }
                     }
                 } catch ( Exception ex ) {
@@ -594,7 +596,7 @@ public class WebFileObject extends FileObject {
     }
 
     private synchronized boolean doCheckFreshness( Map<String,Object> firstMeta ) throws FileSystemOfflineException, IOException {
-        boolean download= true;
+        boolean download;
         
         Date remoteDate;
         long remoteLength=0;
@@ -665,15 +667,13 @@ public class WebFileObject extends FileObject {
                     this.setLastModified( remoteDate );
                     this.setSize( remoteLength );
                 }
-                if ( !( wfs instanceof HttpFileSystem ) ) {
-                    download= true;
-                } //FTP filesystem timetags are very course.
             }
             remoteDate = this.lastModified();
             remoteLength= this.getSize();
         }
 
         if (localFile.exists()) {
+            download = false;
             Date localFileLastModified = new Date(localFile.lastModified()); 
             if ( this.lastModified().getTime()==0 ) { // force metadata load. 
                 logger.fine("server doesn't provide dates, download unless etag suggests otherwise");
@@ -700,7 +700,7 @@ public class WebFileObject extends FileObject {
 
         firstMeta.put( "remoteDate", remoteDate );
         firstMeta.put( "remoteLength", remoteLength );
-        
+        logger.log(Level.FINE, "doCheckFreshness says download={0}", download);
         return download;
     }
 }
