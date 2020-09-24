@@ -454,15 +454,19 @@ abstract public class QdsToD2sStream {
 		
 		// Try to use sequence representation if we can, allow for jitter in
 		// intervals of one part in the max jitter
-		double rInterval = qds.value(1) - rMin;
-		double rNextInterval, rAvg, rJitter;
+		double rInterval = (qds.value( qds.length() - 1) - rMin)/(qds.length() - 1);
+		double rNextInterval, rAvg, rDelta, rJitter;
 		for(int i = 2; i < qds.length(); ++i){
 			rNextInterval = qds.value(i) - qds.value(i - 1);
 			if(rNextInterval != rInterval){
 				rAvg = Math.abs(rNextInterval + rInterval)/2;
-				if(rAvg == 0.0) return null;
-				rJitter = Math.abs(rNextInterval - rInterval) / rAvg;
-				if(rJitter > rMaxJitter) return null;
+				rDelta = Math.abs(rNextInterval - rInterval);
+				if(rDelta == 0.0) continue;
+				if(rAvg == 0.0)
+					return null;
+				rJitter =  rDelta/ rAvg;
+				if(rJitter > rMaxJitter)
+					return null;
 			}
 		}
 		
@@ -565,13 +569,14 @@ abstract public class QdsToD2sStream {
 		lSimpleKeys.add(QDataSet.USER_PROPERTIES);
 	}
 	
-	/** Could have been named copyProps if I wasn't being snarky.
+	/** Only copy over the simple properties of a dataset, ignore the structural
+	 * items such as depend, offset, axis, reference, bundle etc.
 	 * 
 	 * @param dsDest
 	 * @param dsSrc
 	 * @return 
 	 */
-	protected int _copySimpleProps(MutablePropertyDataSet dsDest, QDataSet dsSrc)
+	protected int copySimpleProps(MutablePropertyDataSet dsDest, QDataSet dsSrc)
 	{
 		int nAdded = 0;
 		Object oVal;
