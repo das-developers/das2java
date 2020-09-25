@@ -492,6 +492,10 @@ public class HttpFileSystem extends WebFileSystem {
                         if ( f.length()==partFile.length() ) {
                             if ( OsUtil.contentEquals(f, partFile ) ) {
                                 logger.finer("another thread must have downloaded file.");
+                                if ( f.lastModified()==0 ) {
+                                    logger.finer("existing file didn't have a proper timetag, copy timetag from part file.");
+                                    f.setLastModified( partFile.lastModified() );
+                                }
                                 if ( !partFile.delete() ) {
                                     throw new IllegalArgumentException("unable to delete "+partFile );
                                 }
