@@ -44,6 +44,16 @@
                         <description>Average over the first dimension to reduce the dimensionality</description>
                     </bookmark>
                     <bookmark>
+                        <title>Collapse Second Dimension</title>
+                        <filter>|collapse2()</filter>
+                        <description>Average over the second dimension to reduce the dimensionality</description>
+                    </bookmark>                    
+                    <bookmark>
+                        <title>Collapse a Range of Indeces of Second Dimension</title>
+                        <filter>|trim(2,0,4)|collapse2()</filter>
+                        <description>Average over a subset of second dimension to reduce the dimensionality</description>
+                    </bookmark>        
+                    <bookmark>
                         <title>Apply Index</title>
                         <filter>|applyIndex1(0)</filter>
                         <description>Extract a subset of the data, along an index.</description>
