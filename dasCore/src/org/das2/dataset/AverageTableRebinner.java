@@ -306,7 +306,12 @@ public class AverageTableRebinner implements DataSetRebinner {
             if ( xds==null ) {
                 return xunits.createDatum(1);
             } else if ( xds.length()>2 ) {
-                QDataSet r= DataSetUtil.guessCadenceNew( xds, yds );
+                QDataSet r;
+                if ( tds.length(0)==3 && xds.length()==yds.length() ) {
+                    r= DataSetUtil.guessCadenceNew( xds, yds );
+                } else {
+                    r= DataSetUtil.guessCadenceNew( xds, null );
+                }
                 if ( r==null ) return xunits.getOffsetUnits().createDatum(0);
                 Datum rd= DataSetUtil.asDatum(r);
                 return rd;
