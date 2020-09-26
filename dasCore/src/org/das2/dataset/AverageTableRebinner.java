@@ -302,10 +302,11 @@ public class AverageTableRebinner implements DataSetRebinner {
             }
         } else {
             xds= SemanticOps.xtagsDataSet(tds);
+            QDataSet yds= SemanticOps.ytagsDataSet(tds);
             if ( xds==null ) {
                 return xunits.createDatum(1);
             } else if ( xds.length()>2 ) {
-                QDataSet r= DataSetUtil.guessCadenceNew( xds, null );
+                QDataSet r= DataSetUtil.guessCadenceNew( xds, yds );
                 if ( r==null ) return xunits.getOffsetUnits().createDatum(0);
                 Datum rd= DataSetUtil.asDatum(r);
                 return rd;
