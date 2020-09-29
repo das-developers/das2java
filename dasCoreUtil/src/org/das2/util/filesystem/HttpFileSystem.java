@@ -279,7 +279,9 @@ public class HttpFileSystem extends WebFileSystem {
                     if ( responseCode != HttpURLConnection.HTTP_OK && responseCode != HttpURLConnection.HTTP_FORBIDDEN) {
                         if ( responseCode==HttpURLConnection.HTTP_UNAUTHORIZED ) {
                             // might be nice to modify URL so that credentials are used.
-                            KeyChain.getDefault().clearUserPassword(root);
+                            if ( userInfo!=null ) {
+                                KeyChain.getDefault().clearUserPassword(root);
+                            }
                             if ( userInfo==null ) {
                                 String port=  root.getPort()==-1 ? "" : ( ":" +root.getPort() );
                                 URL rootAuth= new URL( root.getProtocol() + "://" + "user@" + root.getHost() + port + root.getFile() );
