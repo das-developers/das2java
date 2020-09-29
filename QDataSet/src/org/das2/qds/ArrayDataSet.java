@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 
 package org.das2.qds;
 
@@ -22,9 +18,15 @@ import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
 import org.das2.util.LoggerManager;
 import org.das2.qds.ops.Ops;
-import static org.das2.qds.ops.Ops.append;
 
 /**
+ * ArrayDataSet is the abstract base class for QDataSets which are backed by
+ * Java arrays  For example, DDataSet is a QDataSet which uses a double array
+ * to store its data.  Data is stored in 1-D Java arrays for performance, 
+ * inspired by https://www.cs.cmu.edu/~artigas/papers/cacm01.pdf.  Note for 
+ * modern versions of Java, Arrays of Arrays are implemented with no performance
+ * cost.
+ * 
  * A number of static methods were initially defined in DDataSet, then
  * copied into FDataSet and others when they were made.  This super implementation
  * will parent all such datasets and provide common methods.
