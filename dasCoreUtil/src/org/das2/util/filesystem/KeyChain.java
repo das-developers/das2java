@@ -24,6 +24,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
@@ -114,9 +115,6 @@ public class KeyChain {
                             logger.log( Level.WARNING, "skipping line because wrong number of fields: {0}", line);
                         } else {
                             String hash= ss[0].trim();
-                            if ( hash.endsWith("/") ) {
-                                hash= hash.substring(0,hash.length()-1);
-                            }
                             String storedUserInfo= ss[1].trim();
                             //TODO: shouldn't "http://ectsoc@www.rbsp-ect.lanl.gov" match "http://www.rbsp-ect.lanl.gov    ectsoc:..."
                             if ( !hash.endsWith("/") ) {
@@ -262,7 +260,7 @@ public class KeyChain {
     /**
      * map from URL, without trailing slash, to key.
      */
-    private final Map<String,String> keys= new HashMap<>();
+    private final Map<String,String> keys= new LinkedHashMap<>();
     
     /**
      * map from URL, without trailing slash, to cookie.
