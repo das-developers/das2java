@@ -23,25 +23,31 @@
 
 package org.das2.util.filesystem;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLDecoder;
 import java.util.logging.Level;
 import org.das2.util.monitor.CancelledOperationException;
 import org.das2.util.Base64;
-import java.io.*;
-import java.net.*;
 import java.nio.charset.Charset;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Map;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.das2.util.LoggerManager;
 
 /**
- *
+ * HTML utilities, such as getting a directory listing, where a "file" is a link
+ * below the directory we are listing, and read a URL into a String.
  * @author  Jeremy
  */
 public class HtmlUtil {
 
-    private final static Logger logger= LoggerManager.getLogger( "das2.filesystem" );
+    private final static Logger logger= LoggerManager.getLogger( "das2.filesystem.htmlutil" );
     /**
      * this logger is for opening connections to remote sites.
      */
@@ -107,7 +113,7 @@ public class HtmlUtil {
 
         if ( numRead!=-1 ) contentBuffer.append( new String( b, 0, numRead, "UTF-8" ) );
         while (numRead != -1) {
-            FileSystem.logger.finest("download listing");
+            logger.finest("download listing");
             numRead = urlStream.read(b);
             if (numRead != -1) {
                 String newContent = new String(b, 0, numRead, "UTF-8");
@@ -129,8 +135,8 @@ public class HtmlUtil {
         String surl= url.toString();
 
         while ( matcher.find() ) {
-            FileSystem.logger.finest("parse listing");
             String strLink= matcher.group(2);
+            logger.log(Level.FINEST, "parse listing {0}", strLink);
             URL urlLink;
 
             try {
@@ -168,7 +174,7 @@ public class HtmlUtil {
      */
     public static URL[] getDirectoryListing( URL url ) throws IOException, CancelledOperationException {
 
-        FileSystem.logger.log(Level.FINER, "listing {0}", url);
+        logger.log(Level.FINER, "listing {0}", url);
         
         String file= url.getFile();
         if ( file.charAt(file.length()-1)!='/' ) {
