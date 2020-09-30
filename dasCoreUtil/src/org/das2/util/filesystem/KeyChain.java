@@ -146,12 +146,16 @@ public class KeyChain {
 
     /**
      * append to the keys file.
-     * @param url
-     * @param key
+     * @param url web file or folder 
+     * @param key the key
      * @throws IOException 
      * @see #writeKeysFile(java.lang.String, java.lang.String) 
      */
     private void appendKeysFile( String url, String key ) throws IOException {
+        
+        int i= url.lastIndexOf('/');
+        url= url.substring(0,i+1);  // remove file to attach to folder.
+        
         File keysFile= new File( FileSystem.settings().getLocalCacheDir(), "keychain.txt" );
         PrintWriter w= null;
         try {
@@ -546,9 +550,8 @@ public class KeyChain {
                 if ( "true".equals( System.getProperty("java.awt.headless") ) ) { 
                     Console c= System.console();
                     if ( c==null ) {
-                        System.err.println("** java.awt.headless=true: HEADLESS MODE means needed credentials cannot be queried");
                         logger.log( Level.WARNING, "** java.awt.headless=true: HEADLESS MODE means needed credentials cannot be queried" );
-                        return userInfo;
+                        throw new CancelledOperationException("HEADLESS MODE means needed credentials cannot be queried");
                     } else {
                         c.printf( "Enter Login details to access \n%s on\n%s\n", n, s );
                         String user;
