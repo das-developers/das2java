@@ -81,27 +81,37 @@ public class WebFileObject extends FileObject {
             localMetadata= this.metadata;
         }
         if ( localMetadata==null ) {
+            logger.log(Level.FINER, "loading new metadata for {0}", this.pathname);
             synchronized (this) {
                 if ( this.metadata==null ) { // double-check
                     if ( this.wfs.offline ) {
                         if ( FileSystem.settings().isOffline() ) { //bug https://sourceforge.net/p/autoplot/bugs/932/
+                            logger.finer("offline check of metadata based on local file");
                             metadata= new HashMap();
                             metadata.put( WebProtocol.META_EXIST, isLocal() ? "true" : "false" );
                         } else {
                             if ( wfs.protocol!=null ) {
-                               metadata= wfs.protocol.getMetadata( this );
+                                logger.finer("offline check of metadata based on wfs.protocol");
+                                metadata= wfs.protocol.getMetadata( this );
+                            } else {
+                                logger.finer("no load of metadata");
                             }
                         }
                     } else {
                         if ( wfs.protocol!=null ) {
+                            logger.finer("wfs.protocol used to get metadata");
                             metadata= wfs.protocol.getMetadata( this );
+                        } else {
+                            logger.finer("no load of metadata");
                         }
                     }
                     metaFresh= System.currentTimeMillis();
+                } else {
+                    logger.finer("double check says we have metadata now");
                 }
             }
         } else {
-            logger.finer("using fresh metadata");
+            logger.finer("using local metadata");
         }
     }
     
