@@ -36,6 +36,13 @@ public class SerializeRegistry {
     
     private static NumberArraySerializeDelegate numsd= new NumberArraySerializeDelegate();
 
+    /**
+     * Clients like SerializeUtil are able to register methods for
+     * serializing additional classes.
+     * @param clas the class
+     * @param sd the delegate
+     * @see org.autoplot.state.SerializeUtil in the Autoplot project.
+     */
     public static void register( Class clas, SerializeDelegate sd ) {
         delegates.put(clas, sd);
         sdelegates.put(sd.typeId(clas), sd);
@@ -43,8 +50,8 @@ public class SerializeRegistry {
     
     /**
      * returns a delegate or null if the class is not supported.
-     * @param clas
-     * @return
+     * @param clas the class
+     * @return the delegate which can be used to format and parse the class
      */
     public static SerializeDelegate getDelegate( Class clas ) {
         if ( clas.isArray() && clas.getComponentType().isPrimitive() ) {
@@ -54,6 +61,11 @@ public class SerializeRegistry {
         }
     }
     
+    /**
+     * return the delegate without using a class instance.
+     * @param name class name like "org.das2.
+     * @return 
+     */
     public static SerializeDelegate getByName( String name ) {
         if ( name.equals(NumberArraySerializeDelegate.TYPE_NUMBER_ARRAY) ) {
             return numsd;
