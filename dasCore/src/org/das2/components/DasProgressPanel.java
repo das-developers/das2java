@@ -57,6 +57,7 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.border.LineBorder;
 import org.das2.graph.DasCanvas;
 import org.das2.util.LoggerManager;
 import org.das2.util.monitor.NullProgressMonitor;
@@ -670,11 +671,12 @@ public class DasProgressPanel implements ProgressMonitor {
 
         if (showProgressRate && elapsedTimeMs > 1000 && transferRateString != null) {
             kbLabel.setText(bytesReadLabel + " " + transferRateString);
+            kbLabel.setToolTipText(bytesReadLabel + " " + transferRateString);
         } else {
             kbLabel.setText(bytesReadLabel);
+            kbLabel.setToolTipText(bytesReadLabel);
         }
-        kbLabel.setToolTipText(""+kb+"/"+maximumTaskPosition);
-
+        
         boolean cancelEnabled = cancelCheckFailures < 2;
         if (cancelEnabled != cancelButton.isEnabled()) {
             cancelButton.setEnabled(cancelEnabled);
