@@ -1287,7 +1287,7 @@ public class DatumRangeUtil {
                 try {
                     return new MonthDatumRange( ts1, ts2 );
                 } catch ( IllegalArgumentException e ) {
-                    ParseException eNew= new ParseException( "fails to parse due to MonthDatumRange: "+stringIn+ " ("+format+")", 0 );
+                    ParseException eNew= new ParseException( "fails to parse due to MonthDatumRange: "+stringIn+ " ("+format+") " + e.getMessage(), 0 );
                     eNew.initCause(e);
                     throw eNew;
                 }
