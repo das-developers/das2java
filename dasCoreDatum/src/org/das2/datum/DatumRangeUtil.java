@@ -1297,7 +1297,7 @@ public class DatumRangeUtil {
                 if ( time1.le(time2) ) {
                     return new DatumRange( time1, time2 );
                 } else {
-                    throw new ParseException( String.format( "First time is after second time: $s after $s", time1, time2 ), 0 );
+                    throw new ParseException( String.format( "First time is after second time: %s after %s", time1, time2 ), 0 );
                 }
             }
         }
