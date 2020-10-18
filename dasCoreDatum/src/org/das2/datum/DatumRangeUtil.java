@@ -567,6 +567,11 @@ public class DatumRangeUtil {
         }
     }
     
+    /**
+     * true true for parseable ISO8601 time ranges.
+     * @param stringIn
+     * @return 
+     */
     public static boolean isISO8601Range( String stringIn ) {
         int i= stringIn.indexOf('/');
         if ( i==-1 ) return false;
