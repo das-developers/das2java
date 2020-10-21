@@ -17,8 +17,8 @@ import org.das2.qds.QDataSet;
  * @author mmclouth
  */
 public class UnbundleFilterEditorPanel extends AbstractFilterEditorPanel {
-
-    public static final String PROP_REGEX = "\\|unbundle\\('?(\\S+)'?\\)";
+    
+    public static final String PROP_REGEX = "\\|unbundle\\((.+)\\)";
 
     /**
      * Creates new form UnbundleFilterEditorPanel
@@ -92,7 +92,11 @@ public class UnbundleFilterEditorPanel extends AbstractFilterEditorPanel {
         Pattern p= Pattern.compile(PROP_REGEX);
         Matcher m= p.matcher(filter);
         if ( m.matches() ) {
-            jComboBox1.setSelectedItem(m.group(1));
+            String s= m.group(1);
+            if ( s.startsWith("'")&& s.endsWith("'") ) {
+                s= s.substring(1,s.length()-1);
+            }
+            jComboBox1.setSelectedItem(s);
         } else {
             jComboBox1.setSelectedItem("'Bx'");
         }
@@ -100,7 +104,15 @@ public class UnbundleFilterEditorPanel extends AbstractFilterEditorPanel {
 
     @Override
     public String getFilter() {
-         return "|unbundle('" + jComboBox1.getSelectedItem().toString() + "')";
+        String s=  jComboBox1.getSelectedItem().toString().trim();
+        if ( s.length()>0 && s.charAt(0)=='\'' && s.charAt(s.length()-1)=='\'') {
+            s= s.substring(1,s.length()-1);
+        }
+        if ( s.length()>0 && ( s.charAt(0)>='0' && s.charAt(0)<='9' || s.charAt(0)=='-') ) {
+            return "|unbundle("+s+")";
+        } else {
+            return "|unbundle('" + s + "')";
+        }
     }
     
     /**
