@@ -2022,16 +2022,36 @@ public class SeriesRenderer extends Renderer {
      */
     private QDataSet doDataSetReduce( DasAxis xAxis, DasAxis yAxis, QDataSet vds, int xlimit, int ylimit ) {
         DatumRange xdr= xAxis.getDatumRange();
-        QDataSet xxx= xAxis.isLog() ? Ops.exp10( Ops.linspace( Math.log10( xdr.min().doubleValue(xdr.getUnits()) ), Math.log10( xdr.max().doubleValue(xdr.getUnits()) ), 2*xAxis.getDLength() ) ) :
-                Ops.linspace( xdr.min().doubleValue(xdr.getUnits()), xdr.max().doubleValue(xdr.getUnits() ), Math.max( 2, 2*xAxis.getDLength()/xlimit ) );
+        QDataSet xxx;
+        if ( xAxis.isLog() ) {
+            final int nstep= Math.max( 2, 2*xAxis.getDLength() );
+            final double min = Math.log10( xdr.min().doubleValue(xdr.getUnits()) );
+            final double max = Math.log10( xdr.max().doubleValue(xdr.getUnits()) );
+            xxx= Ops.exp10( Ops.linspace( min, max, nstep ) );
+        } else {
+            final int nstep= Math.max( 2, 2*xAxis.getDLength()/xlimit );
+            final double min = xdr.min().doubleValue(xdr.getUnits());
+            final double max = xdr.max().doubleValue(xdr.getUnits() );
+            xxx= Ops.linspace( min, max, nstep );
+        }
         MutablePropertyDataSet mxxx= DataSetOps.makePropertiesMutable(xxx);  // it is already
         mxxx.putProperty( QDataSet.UNITS, xdr.getUnits() );
         if ( xAxis.isLog() ) {
             mxxx.putProperty( QDataSet.SCALE_TYPE, QDataSet.VALUE_SCALE_TYPE_LOG ); //TODO: cheat
         }
         DatumRange ydr= yAxis.getDatumRange();
-        QDataSet yyy= yAxis.isLog() ? Ops.exp10( Ops.linspace( Math.log10( ydr.min().doubleValue(ydr.getUnits()) ), Math.log10( ydr.max().doubleValue(ydr.getUnits()) ), 2*yAxis.getDLength() ) ) :
-                Ops.linspace( ydr.min().doubleValue(ydr.getUnits()), ydr.max().doubleValue(ydr.getUnits() ), Math.max( 2, 2*yAxis.getDLength()/ylimit ) );
+        QDataSet yyy;
+        if ( yAxis.isLog() ) {
+            final int nstep= Math.max( 2, 2*yAxis.getDLength() );
+            final double min= Math.log10( ydr.min().doubleValue(ydr.getUnits()) );
+            final double max = Math.log10( ydr.max().doubleValue(ydr.getUnits()) );
+            yyy= Ops.exp10( Ops.linspace(min, max, nstep ) );
+        } else {
+            final int nstep= Math.max( 2, 2*yAxis.getDLength()/ylimit );
+            final double min = ydr.min().doubleValue(ydr.getUnits());
+            final double max = ydr.max().doubleValue(ydr.getUnits() );
+            yyy= Ops.linspace( min, max, nstep );
+        }
         MutablePropertyDataSet myyy= DataSetOps.makePropertiesMutable(yyy);  // it is already
         myyy.putProperty( QDataSet.UNITS, ydr.getUnits() );
         if ( yAxis.isLog() ) {
