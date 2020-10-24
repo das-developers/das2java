@@ -253,10 +253,10 @@ public class Schemes {
     }
     
     /**
-     * return a rank 1 scalar time series with errors.
-     * @return  a rank 1 scalar time series with errors.
+     * return a rank 1 scalar series with errors.
+     * @return  a rank 1 scalar series with errors.
      */
-    public static QDataSet scalarTimeSeriesWithErrors() {
+    public static QDataSet scalarSeriesWithErrors() {
         QDataSet x= Ops.add( 1, Ops.divide( Ops.findgen(41),2 ) );
         QDataSet y= Ops.exp( Ops.multiply( -1, Ops.pow( Ops.subtract(x,10), 2 ) ) );
         MutablePropertyDataSet result= Ops.maybeCopy( Ops.link( x, y ) );
@@ -266,12 +266,12 @@ public class Schemes {
     }
     
     /**
-     * return true is the data is a  simple time series of scalars with errors.
+     * return true is the data is a simple series of scalars with errors.
      * @param ds dataset
-     * @return true is the data is a simple time series of scalars with errors.
+     * @return true is the data is a simple series of scalars with errors.
      */
-    public static boolean isScalarTimeSeriesWithErrors( QDataSet ds ) {
-        return isScalarTimeSeries(ds) 
+    public static boolean isScalarSeriesWithErrors( QDataSet ds ) {
+        return ds.rank()==1
                 && ds.property(QDataSet.DELTA_PLUS)!=null 
                 && ds.property(QDataSet.DELTA_MINUS)!=null;
     }
