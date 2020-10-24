@@ -244,12 +244,36 @@ public class Schemes {
     }
     
     /**
-     * return true if the data is a simple spectrogram.
+     * return true if the data is a simple time series of scalars.
      * @param ds a dataset
      * @return  true if the data is a simple spectrogram.
      */
     public static boolean isScalarTimeSeries( QDataSet ds ) {
         return ds.rank()==1 && isTimeSeries(ds);
+    }
+    
+    /**
+     * return a rank 1 scalar time series with errors.
+     * @return  a rank 1 scalar time series with errors.
+     */
+    public static QDataSet scalarTimeSeriesWithErrors() {
+        QDataSet x= Ops.add( 1, Ops.divide( Ops.findgen(41),2 ) );
+        QDataSet y= Ops.exp( Ops.multiply( -1, Ops.pow( Ops.subtract(x,10), 2 ) ) );
+        MutablePropertyDataSet result= Ops.maybeCopy( Ops.link( x, y ) );
+        result.putProperty( QDataSet.DELTA_PLUS, Ops.replicate(0.04,41) );
+        result.putProperty( QDataSet.DELTA_MINUS, Ops.replicate(0.04,41) );
+        return result;
+    }
+    
+    /**
+     * return true is the data is a  simple time series of scalars with errors.
+     * @param ds dataset
+     * @return true is the data is a simple time series of scalars with errors.
+     */
+    public static boolean isScalarTimeSeriesWithErrors( QDataSet ds ) {
+        return isScalarTimeSeries(ds) 
+                && ds.property(QDataSet.DELTA_PLUS)!=null 
+                && ds.property(QDataSet.DELTA_MINUS)!=null;
     }
     
     /**
