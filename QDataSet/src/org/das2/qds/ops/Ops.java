@@ -11527,7 +11527,14 @@ public final class Ops {
             for ( int j=0; j<ds.length(0); j++ ) {
                 QDataSet in1= Ops.slice1(ds,j);
                 QDataSet r= where(valid(in1)); // note rank 2 supports fill.
-                in1= applyIndex(in1,r);
+                if ( r.length()<=ds.length()/2 ) {
+                    for ( int i=0; i<in1.length(); i++ ) {
+                        res.putValue(i,j,in1.value(i));
+                    }
+                    continue;
+                } else if ( r.length()<in1.length() ) {
+                    in1= applyIndex(in1,r);
+                }
                 QDataSet d1= medianFilter( in1, size );
                 for ( int i=0; i<in1.length(); i++ ) {
                    res.putValue((int)r.value(i),j,d1.value(i));
@@ -11535,8 +11542,12 @@ public final class Ops {
             }
             return res;
         }
-        if ( Ops.reduceMin( Ops.valid(ds), 0 ).value()==0 ) throw new IllegalArgumentException("fill data is not supported");
-        if ( size>ds.length()/2 ) throw new IllegalArgumentException("size cannot be greater than ds.length()/2");
+        if ( Ops.reduceMin( Ops.valid(ds), 0 ).value()==0 ){
+            throw new IllegalArgumentException("fill data is not supported");
+        }
+        if ( size>ds.length()/2 ) {
+            throw new IllegalArgumentException("size cannot be greater than ds.length()/2");
+        }
         if ( size<3 ) throw new IllegalArgumentException("size cannot be less than 3");
         
         ArrayDataSet res= ArrayDataSet.copy(ds);
