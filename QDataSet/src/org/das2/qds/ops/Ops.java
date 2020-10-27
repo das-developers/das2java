@@ -11635,6 +11635,133 @@ public final class Ops {
         }
         return res;
     }
+
+    /**
+     * 2-D median filter with a boxcar of the given size.  The first size/2
+     * elements, and the last size/2 elements are copied from the input.
+     * This is just coded and is not working.  It should either be finished in
+     * the next couple of months or abandoned.
+     * @param ds rank 1 or rank 2 dataset.  Future implementations may support higher rank data.
+     * @param size1 the boxcar size in the first dimension
+     * @param size2 the boxcar size in the second dimension
+     * @return rank 2 dataset.
+     * @see #smooth(org.das2.qds.QDataSet, int) 
+     */
+    private static QDataSet medianFilter2d( QDataSet ds, int size1, int size2 ) {
+        
+        if ( ds.rank()!=2 ) {
+            throw new IllegalArgumentException("dataset must be rank 2");
+        }
+        
+        int n1= ds.length();
+        int n2= ds.length(0);
+
+        if ( size1>n1/2 ) {
+            throw new IllegalArgumentException("size1 cannot be greater than ds.length()/2");
+        }
+        if ( size2>n2/2) {
+            throw new IllegalArgumentException("size2 cannot be greater than ds.length(0)/2");
+        }
+        if ( size1<3 ) throw new IllegalArgumentException("size1 cannot be less than 3");
+        if ( size2<3 ) throw new IllegalArgumentException("size2 cannot be less than 3");
+        
+        ArrayDataSet res= ArrayDataSet.copy(ds);
+
+        LinkedList<Double> less;
+        LinkedList<Double> more;
+        LinkedList<Double> vv= new LinkedList();
+        int hsize1= size1/2; // half-size
+        int hsize2= size2/2;
+
+        // copy "left" edge
+        for ( int i=0; i<size1-1; i++ ) {
+            for ( int j=0; j<size2-1; j++ ) {
+                double d=ds.value(i,j);
+                res.putValue(i,j,d);
+            }
+        }
+        // do middle columns
+        for ( int i=hsize1; i<n1-hsize1; i++ ) {
+            less= new LinkedList();
+            more= new LinkedList();
+            for ( int i1=0; i1<size1-1; i1++ ) {
+                for ( int j=0; j<size2-1; j++ ) {
+                    double d=ds.value(i1,j);
+                    vv.add(d);
+                    if ( less.isEmpty() ) {
+                        less.add(d);
+                    } else if ( less.getLast()<d ) {
+                        int index= Collections.binarySearch( more,d );
+                        if ( index<0 ) index= ~index;
+                        more.add(index,d);
+                    } else {
+                        int index= Collections.binarySearch( less,d );
+                        if ( index<0 ) index= ~index;
+                        less.add(index,d);
+                    }
+                    // balance the two sets, so that they are within one in size.
+                    if ( less.size()<more.size()-1 ) {
+                        double mv= more.getFirst();
+                        less.add( mv );
+                        more.remove( 0 );
+                    } else if ( less.size()-1>more.size() ) {
+                        double mv= less.getLast();
+                        more.add( 0, mv );
+                        less.remove( less.size()-1 );
+                    }
+                    res.putValue(i1,j,d);
+                }
+            }
+            
+            for ( int j=hsize2; j<n2-hsize2; j++ ) {
+                
+                double d=ds.value(i+hsize1,j+hsize2);
+                vv.add(d);
+                if ( less.getLast()<d ) {
+                    int index= Collections.binarySearch( more,d ); // not terribly efficient, but not inefficient... O(1), presuming hsize<<n1
+                    if ( index<0 ) index= ~index;
+                    more.add(index,d);
+                } else {
+                    int index= Collections.binarySearch( less,d );
+                    if ( index<0 ) index= ~index;
+                    less.add(index,d);
+                }
+                if ( less.size()>more.size() ) {
+                    res.putValue(i,j,less.getLast());
+                } else {
+                    res.putValue(i,j,more.getFirst());
+                }
+                double rm= vv.remove(0);
+                if ( less.getLast()>=rm ) {
+                    less.remove(rm);
+                } else {
+                    more.remove(rm);
+                }
+
+                // balance the two sets, so that they are within one in size.
+                if ( less.size()<more.size()-1 ) {
+                    double mv= more.getFirst();
+                    less.add( mv );
+                    more.remove( 0 );
+                } else if ( less.size()-1>more.size() ) {
+                    double mv= less.getLast();
+                    more.add( 0, mv );
+                    less.remove( less.size()-1 );
+                }
+            }
+            for ( int j=n2-hsize2; j<n2; j++ ) {
+                double d=ds.value(i,j);
+                res.putValue(i,j,d);
+            }
+        }
+        for ( int i=n1-hsize1; i<n1; i++ ) {
+            for ( int j=n2-hsize2; j<n2; j++ ) {
+                double d=ds.value(i,j);
+                res.putValue(i,j,d);
+            }
+        }
+        return res;
+    }
     
     /**
      * contour the data in rank 2 table tds at rank 0 vv.  The result
