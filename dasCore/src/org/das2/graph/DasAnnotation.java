@@ -812,7 +812,8 @@ public class DasAnnotation extends DasCanvasComponent {
         int em = (int) getEmSize();
         
         Rectangle anchor= getAnchorBounds();
-                        
+        DasCanvas canvas= getCanvas();
+        
         Rectangle r;
         if ( gtr==null ) {
             if ( img==null ) {
@@ -832,10 +833,15 @@ public class DasAnnotation extends DasCanvasComponent {
             if ( ss.length==2 ) {
                 double[] dd;
                 try {
-                    dd= DasDevicePosition.parseLayoutStr(ss[0]);
-                    xoffset= (int)( getCanvas().getWidth() * dd[0] + em * dd[1] + dd[2] );
-                    dd= DasDevicePosition.parseLayoutStr(ss[1]);
-                    yoffset= (int)( getCanvas().getHeight() * dd[0] + em * dd[1] + dd[2] );
+                    if ( canvas==null ) {
+                        xoffset= 0;
+                        yoffset= 0;
+                    } else {
+                        dd= DasDevicePosition.parseLayoutStr(ss[0]);
+                        xoffset= (int)( canvas.getWidth() * dd[0] + em * dd[1] + dd[2] );
+                        dd= DasDevicePosition.parseLayoutStr(ss[1]);
+                        yoffset= (int)( canvas.getHeight() * dd[0] + em * dd[1] + dd[2] );
+                    }
                 } catch ( NumberFormatException | ParseException ex ) {
                     logger.log( Level.WARNING, null, ex );
                     xoffset= 0;
