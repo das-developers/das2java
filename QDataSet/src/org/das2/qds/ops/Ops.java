@@ -7811,7 +7811,7 @@ public final class Ops {
             logger.log(Level.WARNING, "ds property is not of the correct type: {0}", propertyName);
             return null;
         }
-    }
+    } 
     
     /**
      * create a power spectrum on the dataset by breaking it up and
