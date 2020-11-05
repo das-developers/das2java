@@ -976,8 +976,8 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
      * @param ds
      * @return the two sets combined.
      */
-    protected static Map joinProperties( BufferDataSet ths, BufferDataSet ds ) {
-        Map result= new HashMap();
+    protected static Map<String,Object> joinProperties( BufferDataSet ths, BufferDataSet ds ) {
+        Map<String,Object> result= new HashMap<>();
         for ( int i=0; i<ds.rank(); i++ ) {
             QDataSet thatDep= (QDataSet) ds.property( "DEPEND_"+i );
             if ( thatDep!=null && ( i==0 || thatDep.rank()>1 ) ) {
