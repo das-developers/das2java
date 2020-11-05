@@ -377,7 +377,7 @@ public final class Ops {
      * @return the subset of two groups of properties that are equal
      */
     public static HashMap<String, Object> equalProperties(Map<String, Object> m1, Map<String, Object> m2) {
-        HashMap result = new HashMap();
+        HashMap<String,Object> result = new HashMap<>();
         for ( Entry<String,Object> e : m1.entrySet()) {
             String k= e.getKey();
             Object v = e.getValue();
@@ -402,18 +402,13 @@ public final class Ops {
      * @param properties the result properties
      * @return the BinaryOp that handles the addition operation.
      */
-    private static BinaryOp addGen( QDataSet ds1, QDataSet ds2, Map properties ) {
+    private static BinaryOp addGen( QDataSet ds1, QDataSet ds2, Map<String,Object> properties ) {
         Units units1 = SemanticOps.getUnits( ds1 );
         Units units2 = SemanticOps.getUnits( ds2 );
         BinaryOp result;
         if ( units2.isConvertibleTo(units1) && UnitsUtil.isRatioMeasurement(units1) ) {
             final UnitsConverter uc= UnitsConverter.getConverter( units2, units1);
-            result= new BinaryOp() {
-                @Override
-                public double op(double d1, double d2) {
-                    return d1 + uc.convert(d2);
-                }
-            };
+            result= (double d1, double d2) -> d1 + uc.convert(d2);
             if ( units1!=Units.dimensionless ) properties.put( QDataSet.UNITS, units1 );
         } else if ( UnitsUtil.isIntervalMeasurement(units1) ) {
             if ( UnitsUtil.isIntervalMeasurement(units2) ) {
@@ -423,29 +418,14 @@ public final class Ops {
                 units2= units1.getOffsetUnits();
             }
             final UnitsConverter uc= UnitsConverter.getConverter( units2, units1.getOffsetUnits() );
-            result= new BinaryOp() {
-                @Override
-                public double op(double d1, double d2) {
-                    return d1 + uc.convert(d2);
-                }
-            };
+            result= (double d1, double d2) -> d1 + uc.convert(d2);
             properties.put( QDataSet.UNITS, units1 );
         } else if ( UnitsUtil.isIntervalMeasurement(units2) ) {
             final UnitsConverter uc= UnitsConverter.getConverter( units1, units2.getOffsetUnits() );
-            result= new BinaryOp() {
-                @Override
-                public double op(double d1, double d2) {
-                    return uc.convert(d1) + d2;
-                }
-            };
+            result= (double d1, double d2) -> uc.convert(d1) + d2;
             properties.put( QDataSet.UNITS, units2 );
         } else if ( UnitsUtil.isRatioMeasurement(units1) && units2.isConvertibleTo(Units.dimensionless)  ) {
-            result= new BinaryOp() {
-                @Override
-                public double op(double d1, double d2) {
-                    return d1 + d2;
-                }
-            };
+            result= (double d1, double d2) -> d1 + d2;
             properties.put( QDataSet.UNITS, units1 );
         } else {
             throw new IllegalArgumentException("units cannot be added: " + units1 + ", "+ units2 );
@@ -468,7 +448,7 @@ public final class Ops {
      * @see #addGen(org.das2.qds.QDataSet, org.das2.qds.QDataSet, java.util.Map) addGen, which shows how units are resolved.
      */
     public static QDataSet add(QDataSet ds1, QDataSet ds2) {
-        Map<String,Object> props= new HashMap();
+        Map<String,Object> props= new HashMap<>();
         BinaryOp b= addGen( ds1, ds2, props );
         MutablePropertyDataSet result= applyBinaryOp( ds1, ds2, b );
         result.putProperty( QDataSet.UNITS, props.get(QDataSet.UNITS) );
@@ -5282,9 +5262,9 @@ public final class Ops {
      * @return a map of the properties.
      * @see DataSetUtil#getProperties(org.das2.qds.QDataSet) 
      */
-    public static Map copyProperties( QDataSet ds ) {
-        Map result = new HashMap();
-        Map srcProps= DataSetUtil.getProperties(ds);
+    public static Map<String,Object> copyProperties( QDataSet ds ) {
+        Map<String,Object> result = new HashMap<>();
+        Map<String,Object> srcProps= DataSetUtil.getProperties(ds);
 
         result.putAll(srcProps);
 
@@ -5785,7 +5765,7 @@ public final class Ops {
      * @return the n dimensions of each index of the array.
      */
     public static int[] getQubeDimsForArray( Object arg0 ) {
-        List<Integer> qqube= new ArrayList( );
+        List<Integer> qqube= new ArrayList<>( );
         qqube.add( Array.getLength(arg0) );
         if ( qqube.get(0)>0 ) {
             Object slice= Array.get(arg0, 0);
@@ -5956,7 +5936,7 @@ public final class Ops {
             return q;            
         } else if ( arg0.getClass().isArray() ) { // convert Java array into QDataSet.  Assumes qube.
             //return DataSetUtil.asDataSet(arg0); // I think this is probably a better implementation.
-            List<Integer> qqube= new ArrayList( );
+            List<Integer> qqube= new ArrayList<>( );
             qqube.add( Array.getLength(arg0) );
             if ( qqube.get(0)>0 ) {
                 Object slice= Array.get(arg0, 0);
@@ -7830,6 +7810,7 @@ public final class Ops {
      * @param stepFraction size, expressed as a fraction of the length (1 for no slide, 2 for half steps, 4 for quarters)
      * @param mon a ProgressMonitor for the process
      * @return rank 2 FFT spectrum, or rank 3 if the rank 3 input has differing cadences.
+     * @SuppressWarnings("unchecked") 
      */
     public static QDataSet fftPower( QDataSet ds, QDataSet window, int stepFraction, ProgressMonitor mon ) {
         if ( mon==null ) {
@@ -7841,7 +7822,11 @@ public final class Ops {
             title= "FFTPower of "+title;
         }
         
-        Map<String,Object> userProperties= (Map<String,Object>) ds.property(QDataSet.USER_PROPERTIES);
+        Object o= ds.property(QDataSet.USER_PROPERTIES);
+        Map<String,Object> userProperties=null;
+        if ( o!=null && ( o instanceof Map ) ) {
+            userProperties= (Map<String,Object>) o;
+        }
         
         if ( ds.rank()==1 ) { // wrap to make rank 2
             QDataSet c= (QDataSet) ds.property( QDataSet.CONTEXT_0 );
@@ -7962,8 +7947,9 @@ public final class Ops {
                 UnitsConverter uc= UnitsConverter.IDENTITY;
                 
                 QDataSet translation= null;
-                Map<String,Object> user= (Map<String, Object>) dep1.property(QDataSet.USER_PROPERTIES );
-                if ( user!=null ) {
+                Object ouser= dep1.property(QDataSet.USER_PROPERTIES );
+                if ( ouser!=null && ouser instanceof Map ) {
+                    Map<String,Object> user= (Map<String,Object>)ouser;
                     translation= (QDataSet) user.get( "FFT_Translation" ); // kludge for Plasma Wave Group
                     if ( translation!=null && translation.rank()==1 ) {
                         if ( dep0!=null && translation.length()!=dep0.length() ) {
@@ -9890,7 +9876,7 @@ public final class Ops {
         boolean hasFill= false;
         
         DDataSet result = DDataSet.createRank2(ds1.length(), ds2.length());
-        Map<String,Object> props= new HashMap();
+        Map<String,Object> props= new HashMap<>();
         BinaryOp b= addGen( ds1, ds2, props );
         for (int i = 0; i < ds1.length(); i++) {
             for (int j = 0; j < ds2.length(); j++) {
@@ -11273,7 +11259,7 @@ public final class Ops {
      */
     public static QDataSet mode( QDataSet ds ) {
         
-        Map<Double,Integer> m= new HashMap();
+        Map<Double,Integer> m= new HashMap<>();
         DataSetIterator it= new QubeDataSetIterator(ds);
         QDataSet wds= valid(ds);
         
@@ -11321,8 +11307,8 @@ public final class Ops {
      */
     public static QDataSet median( QDataSet ds ) {
         
-        LinkedList<Double> less= new LinkedList();
-        LinkedList<Double> more= new LinkedList();
+        LinkedList<Double> less= new LinkedList<>();
+        LinkedList<Double> more= new LinkedList<>();
         
         QDataSet wds= valid(ds);
         DataSetIterator iter= new QubeDataSetIterator(ds);
@@ -11552,9 +11538,9 @@ public final class Ops {
         
         ArrayDataSet res= ArrayDataSet.copy(ds);
 
-        LinkedList<Double> less= new LinkedList();
-        LinkedList<Double> more= new LinkedList();
-        LinkedList<Double> vv= new LinkedList();
+        LinkedList<Double> less= new LinkedList<>();
+        LinkedList<Double> more= new LinkedList<>();
+        LinkedList<Double> vv= new LinkedList<>();
         int hsize= size/2;
         for ( int i=0; i<size-1; i++ ) {
             double d=ds.value(i);
@@ -11669,7 +11655,7 @@ public final class Ops {
 
         LinkedList<Double> less;
         LinkedList<Double> more;
-        LinkedList<Double> vv= new LinkedList();
+        LinkedList<Double> vv= new LinkedList<>();
         int hsize1= size1/2; // half-size
         int hsize2= size2/2;
 
@@ -11682,8 +11668,8 @@ public final class Ops {
         }
         // do middle columns
         for ( int i=hsize1; i<n1-hsize1; i++ ) {
-            less= new LinkedList();
-            more= new LinkedList();
+            less= new LinkedList<>();
+            more= new LinkedList<>();
             for ( int i1=0; i1<size1-1; i1++ ) {
                 for ( int j=0; j<size2-1; j++ ) {
                     double d=ds.value(i1,j);
@@ -13228,7 +13214,7 @@ public final class Ops {
         if (y.rank() == 1) {
             ArrayDataSet yds= ArrayDataSet.copy(y);
             yds.putProperty(QDataSet.DEPEND_0, x);
-            List<String> problems= new ArrayList();
+            List<String> problems= new ArrayList<>();
             if ( !DataSetUtil.validate(yds, problems ) ) {
                 throw new IllegalArgumentException( problems.get(0) );
             } else {
@@ -13243,7 +13229,7 @@ public final class Ops {
                     zds.putProperty(QDataSet.DEPEND_0, x);
                 }
             }
-            List<String> problems= new ArrayList();
+            List<String> problems= new ArrayList<>();
             if ( !DataSetUtil.validate(zds, problems ) ) {
                 throw new IllegalArgumentException( problems.get(0) );
             } else {
@@ -13287,7 +13273,7 @@ public final class Ops {
 //            DDataSet yds = DDataSet.copy(y);
 //            yds.putProperty(QDataSet.DEPEND_0, x);
 //            yds.putProperty(QDataSet.PLANE_0, z);
-            List<String> problems= new ArrayList();
+            List<String> problems= new ArrayList<>();
             if ( DataSetUtil.validate(result, problems ) ) {
                 return result;
             } else {
@@ -13317,7 +13303,7 @@ public final class Ops {
         if (y != null || zds.property(QDataSet.DEPEND_1)!=null ) {
             zds.putProperty(QDataSet.DEPEND_1, y);
         }
-        List<String> problems= new ArrayList();
+        List<String> problems= new ArrayList<>();
         if ( !DataSetUtil.validate(zds, problems ) ) {
             throw new IllegalArgumentException( problems.get(0) );
         } else {
@@ -13353,7 +13339,7 @@ public final class Ops {
             bds.putProperty( QDataSet.NAME, 2, a3name );
             bds.putProperty( QDataSet.NAME, 3, a4name );
 
-            List<String> problems= new ArrayList();
+            List<String> problems= new ArrayList<>();
             if ( DataSetUtil.validate(result, problems ) ) {
                 return result;
             } else {
@@ -13371,7 +13357,7 @@ public final class Ops {
             if (d2 != null ) {
                 zds.putProperty(QDataSet.DEPEND_2, d2);
             }
-            List<String> problems= new ArrayList();
+            List<String> problems= new ArrayList<>();
             if ( !DataSetUtil.validate(zds, problems ) ) {
                 throw new IllegalArgumentException( problems.get(0) );
             } else {
@@ -14128,7 +14114,7 @@ public final class Ops {
         yinterp= yy1.trim(inn,l);
         zinterp= zz1.trim(inn,l);
                 
-        List<ProGAL.geom3d.PointWeighted> points= new ArrayList(xyz.length());
+        List<ProGAL.geom3d.PointWeighted> points= new ArrayList<>(xyz.length());
         for ( int i=0; i<xyz.length(); i++ ) {
             points.add( new PointWeightedInt( 
                 xx.value(i), yy.value(i), zz.value(i), 1.0, i
@@ -14243,7 +14229,7 @@ public final class Ops {
             yinterp= yy1.trim(inn,l);
         }
         
-        List<ProGAL.geom2d.Point> points= new ArrayList(xy.length());
+        List<ProGAL.geom2d.Point> points= new ArrayList<>(xy.length());
         for ( int i=0; i<xy.length(); i++ ) {
             points.add( new VertexInt( xx.value(i), yy.value(i), i ) );
         }
