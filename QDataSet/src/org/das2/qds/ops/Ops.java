@@ -7790,6 +7790,30 @@ public final class Ops {
     }
     
     /**
+     * return the property, issuing a warning and returning null when the 
+     * property value is not of the correct type.
+     * @param <T> the property value
+     * @param ds the dataset
+     * @param propertyName the property name
+     * @param clazz the class of the property.
+     * @return the property, guaranteed to be of the correct type, or null.
+     * @throws IllegalArgumentException if the class given is not of the right type for the property.
+     */
+    public static <T> T getProperty( QDataSet ds, String propertyName, Class<T> clazz) {
+        Class correctClass= DataSetUtil.getPropertyClass(propertyName);
+        if ( !clazz.isInstance(correctClass) ) {
+            throw new IllegalArgumentException("requested class is not of correct type: "+clazz+" (should be "+correctClass+")" );
+        }
+        Object o= ds.property( propertyName );
+        if ( clazz.isInstance(o) ) {
+            return clazz.cast(o);
+        } else {
+            logger.log(Level.WARNING, "ds property is not of the correct type: {0}", propertyName);
+            return null;
+        }
+    }
+    
+    /**
      * create a power spectrum on the dataset by breaking it up and
      * doing FFTs on each segment.
      *
@@ -7822,11 +7846,7 @@ public final class Ops {
             title= "FFTPower of "+title;
         }
         
-        Object o= ds.property(QDataSet.USER_PROPERTIES);
-        Map<String,Object> userProperties=null;
-        if ( o!=null && ( o instanceof Map ) ) {
-            userProperties= (Map<String,Object>) o;
-        }
+        Map userProperties= getProperty( ds, QDataSet.USER_PROPERTIES, Map.class );
         
         if ( ds.rank()==1 ) { // wrap to make rank 2
             QDataSet c= (QDataSet) ds.property( QDataSet.CONTEXT_0 );
@@ -7947,9 +7967,8 @@ public final class Ops {
                 UnitsConverter uc= UnitsConverter.IDENTITY;
                 
                 QDataSet translation= null;
-                Object ouser= dep1.property(QDataSet.USER_PROPERTIES );
-                if ( ouser!=null && ouser instanceof Map ) {
-                    Map<String,Object> user= (Map<String,Object>)ouser;
+                Map user= getProperty( ds, QDataSet.USER_PROPERTIES, Map.class );
+                if ( user!=null ) {
                     translation= (QDataSet) user.get( "FFT_Translation" ); // kludge for Plasma Wave Group
                     if ( translation!=null && translation.rank()==1 ) {
                         if ( dep0!=null && translation.length()!=dep0.length() ) {
