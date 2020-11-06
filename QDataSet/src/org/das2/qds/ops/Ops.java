@@ -7801,7 +7801,7 @@ public final class Ops {
      */
     public static <T> T getProperty( QDataSet ds, String propertyName, Class<T> clazz) {
         Class correctClass= DataSetUtil.getPropertyClass(propertyName);
-        if ( !clazz.isInstance(correctClass) ) {
+        if ( !clazz.isAssignableFrom(correctClass) ) {
             throw new IllegalArgumentException("requested class is not of correct type: "+clazz+" (should be "+correctClass+")" );
         }
         Object o= ds.property( propertyName );
