@@ -539,55 +539,28 @@ public class DasAnnotation extends DasCanvasComponent {
         }
         
         if ( showArrow ) {
-
-            int headx= 0;
-            int heady= 0;
-            if ( plot!=null ) {
-                try {
-                    headx= (int)plot.getXAxis().transform(pointAtX);
-                } catch ( InconvertibleUnitsException ex ) {
-                    headx= (int)plot.getXAxis().transform(pointAtX.doubleValue(pointAtX.getUnits()),plot.getXAxis().getUnits());
-                }   
-                try {
-                    heady= (int)plot.getYAxis().transform(pointAtY);
-                } catch ( InconvertibleUnitsException ex ) {
-                    heady= (int)plot.getYAxis().transform(pointAtY.doubleValue(pointAtY.getUnits()),plot.getYAxis().getUnits());
-                }   
+            paintOneArrow(g, r, em2, stroke0, fore, pointAtX, pointAtY );
+        }
+        
+        if ( referenceX.length()>0 || referenceY.length()>0 ) {
+            String[] xx= referenceX.split(";",-2);
+            String[] yy= referenceY.split(";",-2);
+            int n= Math.max( xx.length, yy.length );
+            if ( xx.length>1 && yy.length>1 && xx.length!=yy.length ) {
+                logger.warning("x and y reference count is different");
+            } else {
+                for ( int i=0; i<n; i++ ) {
+                    try {
+                        String xs= ( xx.length==1 ) ? xx[0] : xx[i];
+                        Datum xd= xrange.getUnits().parse( xs );
+                        String ys= ( yy.length==1 ) ? yy[0] : yy[i];
+                        Datum yd= yrange.getUnits().parse( ys );
+                        paintOneArrow(g, r, em2, stroke0, fore, xd, yd );
+                    } catch (ParseException ex) {
+                        logger.log(Level.SEVERE, null, ex);
+                    }
+                }
             }
-            
-            Point head = new Point(headx,heady);
-            
-            Graphics2D g2 = (Graphics2D) g.create();
-            
-//            if ( anchorType==AnchorType.CANVAS ) {
-//                g2.setClip(null);
-//            } else {
-//                g2.setClip( g.getClip() );
-//            }
-            Point2D tail2d= new Point2D.Double( r.x + r.width/2, r.y + r.height/2 );
-            Point2D head2d= new Point2D.Double( head.x, head.y );
-            Rectangle2D rect2d= new Rectangle2D.Double(r.x, r.y, r.width, r.height );
-            Point2D p2d= GraphUtil.lineRectangleIntersection( tail2d, head2d, rect2d );
-            Point p= p2d==null ? head : new Point( (int)p2d.getX(), (int)p2d.getY() );
-            
-            g2.setStroke( new BasicStroke( (float) (em2/4), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ) );
-            
-            if ( pointAtOffset.length()>0 ) {
-                Line2D line= new Line2D.Double( head.x, head.y, p.x, p.y );
-                double lengthPixels= GraphUtil.parseLayoutLength( pointAtOffset, line.getP1().distance(line.getP2()), getEmSize() );
-                Line2D newLine= GraphUtil.shortenLine(line, lengthPixels, 0 );
-                head= new Point( (int)newLine.getP1().getX(), (int)newLine.getP1().getY() );
-            }
-                                    
-            Color glowColor= getCanvas().getBackground();
-            g2.setColor( new Color( glowColor.getRed(), glowColor.getGreen(), glowColor.getBlue(), 128 ) );
-            Arrow.paintArrow(g2, head, p, em2, this.arrowStyle );
-
-            g2.setStroke( stroke0 );            
-            g2.setColor( fore );
-            Arrow.paintArrow(g2, head, p, em2, this.arrowStyle );
-
-            g2.dispose();
         }
 
         g.setColor(back);
@@ -675,6 +648,57 @@ public class DasAnnotation extends DasCanvasComponent {
         
         getDasMouseInputAdapter().paint(g1);
 
+    }
+
+    private void paintOneArrow(Graphics2D g, Rectangle r, double em2, Stroke stroke0, Color fore, Datum x, Datum y ) {
+        int headx= 0;
+        int heady= 0;
+        if ( plot!=null ) {
+            try {
+                headx= (int)plot.getXAxis().transform(x);
+            } catch ( InconvertibleUnitsException ex ) {
+                headx= (int)plot.getXAxis().transform(x.doubleValue(x.getUnits()),plot.getXAxis().getUnits());
+            }
+            try {
+                heady= (int)plot.getYAxis().transform(y);
+            } catch ( InconvertibleUnitsException ex ) {
+                heady= (int)plot.getYAxis().transform(y.doubleValue(y.getUnits()),plot.getYAxis().getUnits());
+            }
+        }
+        
+        Point head = new Point(headx,heady);
+        
+        Graphics2D g2 = (Graphics2D) g.create();
+
+        Point2D tail2d= new Point2D.Double( r.x + r.width/2, r.y + r.height/2 );
+        Point2D head2d= new Point2D.Double( head.x, head.y );
+        Rectangle2D rect2d= new Rectangle2D.Double(r.x, r.y, r.width, r.height );
+        Point2D p2d= GraphUtil.lineRectangleIntersection( tail2d, head2d, rect2d );
+        Point p= p2d==null ? head : new Point( (int)p2d.getX(), (int)p2d.getY() );
+
+        g2.setStroke( new BasicStroke( (float) (em2/4), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ) );
+
+        Point head0 = new Point( head );
+        if ( pointAtOffset.length()>0 ) {
+            Line2D line= new Line2D.Double( head.x, head.y, p.x, p.y );
+            double lengthPixels= GraphUtil.parseLayoutLength( pointAtOffset, line.getP1().distance(line.getP2()), getEmSize() );
+            Line2D newLine= GraphUtil.shortenLine(line, lengthPixels, 0 );
+            head= new Point( (int)newLine.getP1().getX(), (int)newLine.getP1().getY() );
+        }
+
+        Color glowColor= getCanvas().getBackground();
+        g2.setColor( new Color( glowColor.getRed(), glowColor.getGreen(), glowColor.getBlue(), 128 ) );
+        Arrow.paintArrow(g2, head, p, em2, this.arrowStyle );
+
+        g2.setStroke( stroke0 );
+        g2.setColor( fore );
+        Arrow.paintArrow(g2, head, p, em2, this.arrowStyle );
+
+        if ( DefaultPlotSymbol.NONE!=symbol ) {
+            symbol.draw( g2, head0.x, head0.y, fontSize/3.f, FillStyle.STYLE_SOLID );
+        }
+        
+        g2.dispose();
     }
 
     /**
@@ -1182,6 +1206,56 @@ public class DasAnnotation extends DasCanvasComponent {
         Datum oldPointAtY = this.pointAtY;
         this.pointAtY = pointAtY;
         firePropertyChange(PROP_POINTATY, oldPointAtY, pointAtY);
+    }
+    
+    private String referenceX = "";
+
+    public static final String PROP_REFERENCEX = "referenceX";
+
+    public String getReferenceX() {
+        return referenceX;
+    }
+
+    /**
+     * single or semicolon-separated list of values.
+     * @param referenceX 
+     */
+    public void setReferenceX(String referenceX) {
+        String oldReferenceX = this.referenceX;
+        this.referenceX = referenceX;
+        firePropertyChange(PROP_REFERENCEX, oldReferenceX, referenceX);
+    }
+
+    private String referenceY = "";
+
+    public String getReferenceY() {
+        return referenceY;
+    }
+
+    /**
+     * single or semicolon-separated list of values.
+     * @param referenceY 
+     */
+    public void setReferenceY(String referenceY) {
+        this.referenceY = referenceY;
+    }
+    
+    private PlotSymbol symbol = DefaultPlotSymbol.NONE;
+
+    public static final String PROP_SYMBOL = "symbol";
+
+    public PlotSymbol getSymbol() {
+        return symbol;
+    }
+
+    /**
+     * set the symbol used to mark the reference locations
+     * @param symbol 
+     */
+    public void setSymbol(PlotSymbol symbol) {
+        PlotSymbol oldSymbol = this.symbol;
+        this.symbol = symbol;
+        firePropertyChange(PROP_SYMBOL, oldSymbol, symbol);
     }
     
     private String pointAtOffset="";
