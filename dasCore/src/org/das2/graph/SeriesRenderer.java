@@ -1847,6 +1847,48 @@ public class SeriesRenderer extends Renderer {
                 
             }
             
+        } else if ( dataSet.rank()==2 && dataSet.length(0)==3 && !SemanticOps.isRank2Waveform(dataSet) ) {
+            // TODO: Copy of code below!
+            
+            QDataSet xx= SemanticOps.xtagsDataSet(dataSet);
+            QDataSet yy= SemanticOps.ytagsDataSet(dataSet);
+            QDataSet zz= Ops.slice1( dataSet, 2);
+            
+            QDataSet theDs= Ops.link( xx, yy );
+            theDs= Ops.putProperty( theDs, QDataSet.PLANE_0, zz );
+            
+            if ( drawBackground ) {
+                fillElement.renderBackground(g);
+                psymConnectorElement.renderBackground(graphics);
+                if ( drawError ) {
+                    errorElement.renderBackground(graphics);
+                }
+                if (psym != DefaultPlotSymbol.NONE) {
+                    psymsElement.renderBackground( graphics );
+                }
+            }
+            
+            if (this.fillToReference) {
+                fillElement.render( (Graphics2D)graphics.create(), xAxis, yAxis, theDs, monitor.getSubtaskMonitor("fillElement.render"));
+            }
+
+            graphics.setColor(color);
+            logger.log(Level.FINEST, "drawing psymConnector in {0}", color);
+            
+            if ( drawError ) { // error bars
+                errorElement.render( (Graphics2D)graphics.create(), xAxis, yAxis, theDs, monitor.getSubtaskMonitor("errorElement.render"));
+            }
+            
+            int connectCount= psymConnectorElement.render(graphics, xAxis, yAxis, theDs, monitor.getSubtaskMonitor("psymConnectorElement.render")); // vds is only to check units
+            logger.log(Level.FINEST, "connectCount: {0}", connectCount);
+
+            int symCount;
+            if (psym != DefaultPlotSymbol.NONE) {
+                            
+                symCount= psymsElement.render( (Graphics2D)graphics.create(), xAxis, yAxis, theDs, monitor.getSubtaskMonitor("psymsElement.render"));
+                logger.log(Level.FINEST, "symCount: {0}", symCount);
+                
+            }
             
         } else if (tds != null ) {
             
