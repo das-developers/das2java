@@ -565,6 +565,24 @@ public class DasAnnotation extends DasCanvasComponent {
 
         g.setColor(back);
 
+        if ( anchorBackground.getAlpha()>0 ) {
+            Color c0= g.getColor();
+            g.setColor( anchorBackground );
+            Rectangle anchorRect= getAnchorBounds();
+            if ( anchorBorderType== BorderType.RECTANGLE || anchorBorderType==BorderType.NONE ) {
+                if ( anchorRect.width==0 ) {
+                    g.fill( new Line2D.Double( anchorRect.x, anchorRect.y, anchorRect.x, anchorRect.y+anchorRect.height ) );
+                } else if ( anchorRect.height==0 ) {
+                    g.fill( new Line2D.Double( anchorRect.x, anchorRect.y, anchorRect.x+anchorRect.width, anchorRect.y ) );
+                } else {
+                    g.fill(anchorRect);
+                }
+            } else if ( anchorBorderType==BorderType.ROUNDED_RECTANGLE ) {
+                g.fillRoundRect(anchorRect.x, anchorRect.y, anchorRect.width, anchorRect.height, em * 2, em * 2);
+            }
+            g.setColor( c0 );
+         }
+            
         if ( gtr==null || !getString().equals("") ) {
             if (borderType == BorderType.RECTANGLE || borderType == BorderType.NONE) {
                 g.fill(r);
@@ -619,7 +637,7 @@ public class DasAnnotation extends DasCanvasComponent {
                     g.drawRoundRect(r.x, r.y, r.width, r.height, em * 2, em * 2);
                 }
             }
-
+            
             if ( anchorBorderType!=BorderType.NONE ) {
                 Rectangle anchorRect= getAnchorBounds();
                 if ( anchorBorderType== BorderType.RECTANGLE ) {
@@ -1298,9 +1316,25 @@ public class DasAnnotation extends DasCanvasComponent {
     public void setAnchorBorderType(BorderType anchorBorderType) {
         BorderType oldAnchorBorderType = this.anchorBorderType;
         this.anchorBorderType = anchorBorderType;
+        repaint();
         firePropertyChange(PROP_ANCHORBORDERTYPE, oldAnchorBorderType, anchorBorderType);
     }
 
+    private Color anchorBackground = new Color(0, 0, 0, 0);
+
+    public static final String PROP_ANCHORBACKGROUND = "anchorBackground";
+
+    public Color getAnchorBackground() {
+        return anchorBackground;
+    }
+
+    public void setAnchorBackground(Color anchorBackground) {
+        Color oldAnchorBackground = this.anchorBackground;
+        this.anchorBackground = anchorBackground;
+        repaint();
+        firePropertyChange(PROP_ANCHORBACKGROUND, oldAnchorBackground, anchorBackground);
+    }
+    
     private AnchorType anchorType = AnchorType.CANVAS;
 
     public static final String PROP_ANCHORTYPE = "anchorType";
@@ -1345,6 +1379,7 @@ public class DasAnnotation extends DasCanvasComponent {
     public void setVerticalAnchorType(AnchorType verticalAnchorType) {
         AnchorType oldVerticalAnchorType = this.verticalAnchorType;
         this.verticalAnchorType = verticalAnchorType;
+        repaint();
         firePropertyChange(PROP_VERTICALANCHORTYPE, oldVerticalAnchorType, verticalAnchorType);
     }
     
