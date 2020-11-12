@@ -176,9 +176,15 @@ public class SeriesRenderer extends Renderer {
             j= Ops.putProperty( j, QDataSet.BUNDLE_1, bds ); // See https://sourceforge.net/p/autoplot/bugs/2244/
             super.setDataSet( j );
         }
-        xds= getXTags(ds);
-        yds= ytagsDataSet(ds);
-        zds= colorByDataSet(ds);
+        if ( ds==null ) {
+            xds= null;
+            yds= null;
+            zds= null;
+        } else {
+            xds= getXTags(ds);
+            yds= ytagsDataSet(ds);
+            zds= colorByDataSet(ds);
+        }
     }
     
     
