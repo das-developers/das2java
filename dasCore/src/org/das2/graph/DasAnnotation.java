@@ -543,8 +543,8 @@ public class DasAnnotation extends DasCanvasComponent {
         }
         
         if ( referenceX.length()>0 || referenceY.length()>0 ) {
-            String[] xx= referenceX.split(";",-2);
-            String[] yy= referenceY.split(";",-2);
+            String[] xx= referenceX.split("[;,]",-2);
+            String[] yy= referenceY.split("[;,]",-2);
             int n= Math.max( xx.length, yy.length );
             if ( xx.length>1 && yy.length>1 && xx.length!=yy.length ) {
                 logger.warning("x and y reference count is different");
@@ -1241,10 +1241,13 @@ public class DasAnnotation extends DasCanvasComponent {
     public void setReferenceX(String referenceX) {
         String oldReferenceX = this.referenceX;
         this.referenceX = referenceX;
+        repaint();
         firePropertyChange(PROP_REFERENCEX, oldReferenceX, referenceX);
     }
 
     private String referenceY = "";
+
+    public static final String PROP_REFERENCEY = "referenceY";
 
     public String getReferenceY() {
         return referenceY;
@@ -1255,7 +1258,10 @@ public class DasAnnotation extends DasCanvasComponent {
      * @param referenceY 
      */
     public void setReferenceY(String referenceY) {
+        String oldReferenceY = this.referenceX;
         this.referenceY = referenceY;
+        repaint();        
+        firePropertyChange(PROP_REFERENCEY, oldReferenceY, referenceY);
     }
     
     private PlotSymbol symbol = DefaultPlotSymbol.NONE;
