@@ -158,8 +158,10 @@ public class HistogramFilterEditorPanel extends AbstractFilterEditorPanel {
 
     @Override
     public void setFilter(String filter) {
-        Pattern p1= Pattern.compile("\\|histogram\\((\\d),(\\d+),(\\d+)\\)");
-        Pattern p2= Pattern.compile("\\|histogram\\(\\)");
+        String dec= FilterEditorPanelUtil.decimalRegexSloppy();
+        String decw= "\\s*("+dec+")\\s*";
+        Pattern p1= Pattern.compile("\\|histogram\\("+decw+","+decw+","+decw+"\\)");
+        Pattern p2= Pattern.compile("\\|histogram\\(\\s*\\)");
         Matcher m= p1.matcher(filter);
         Matcher n= p2.matcher(filter);
         if ( m.matches() ) {
