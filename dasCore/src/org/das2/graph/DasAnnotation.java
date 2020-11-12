@@ -704,13 +704,15 @@ public class DasAnnotation extends DasCanvasComponent {
             head= new Point( (int)newLine.getP1().getX(), (int)newLine.getP1().getY() );
         }
 
-        Color glowColor= getCanvas().getBackground();
-        g2.setColor( new Color( glowColor.getRed(), glowColor.getGreen(), glowColor.getBlue(), 128 ) );
-        Arrow.paintArrow(g2, head, p, em2, this.arrowStyle );
+        if ( showArrow ) {
+            Color glowColor= getCanvas().getBackground();
+            g2.setColor( new Color( glowColor.getRed(), glowColor.getGreen(), glowColor.getBlue(), 128 ) );
+            Arrow.paintArrow(g2, head, p, em2, this.arrowStyle );
 
-        g2.setStroke( stroke0 );
-        g2.setColor( fore );
-        Arrow.paintArrow(g2, head, p, em2, this.arrowStyle );
+            g2.setStroke( stroke0 );
+            g2.setColor( fore );
+            Arrow.paintArrow(g2, head, p, em2, this.arrowStyle );
+        }
 
         if ( DefaultPlotSymbol.NONE!=symbol ) {
             symbol.draw( g2, head0.x, head0.y, fontSize/3.f, FillStyle.STYLE_SOLID );
