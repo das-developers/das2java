@@ -55,6 +55,11 @@ public class DasAnnotation extends DasCanvasComponent {
     String templateString;
     GrannyTextRenderer gtr;
     BufferedImage img;
+    
+    /**
+     * if true, then a resize has been posted.
+     */
+    boolean boundsCalculated= false;
 
     private Map<String,GrannyTextRenderer.Painter> painters= new HashMap<>();
     
@@ -438,7 +443,24 @@ public class DasAnnotation extends DasCanvasComponent {
     public boolean contains(int x, int y) {
         return acceptContext( x+getX(), y+getY() );
     }
-    
+
+    private Rectangle calcBoundForPoint( Rectangle r, Datum pointAtX, Datum pointAtY ) {
+        double headx, heady;
+        try {
+            headx= (int)plot.getXAxis().transform(pointAtX);
+        } catch ( InconvertibleUnitsException ex ) {
+            headx= (int)plot.getXAxis().transform(pointAtX.value(),plot.getXAxis().getUnits());
+        }
+        try {
+            heady= (int)plot.getYAxis().transform(pointAtY);
+        } catch ( InconvertibleUnitsException ex ) {
+            heady= (int)plot.getYAxis().transform(pointAtY.value(),plot.getYAxis().getUnits());
+        }          
+        float s= fontSize;
+        r.add( headx-s, heady-s );
+        r.add( headx+s, heady+s );
+        return r;
+    }
 
     /**
      * calculate the bounds in the canvas coordinate system.
@@ -456,24 +478,36 @@ public class DasAnnotation extends DasCanvasComponent {
             r.add(anchorRect);
         }
         if ( showArrow ) {
-            int headx;
-            int heady;
             if ( plot!=null ) {
-                try {
-                    headx= (int)plot.getXAxis().transform(pointAtX);
-                } catch ( InconvertibleUnitsException ex ) {
-                    headx= (int)plot.getXAxis().transform(pointAtX.value(),plot.getXAxis().getUnits());
-                }
-                try {
-                    heady= (int)plot.getYAxis().transform(pointAtY);
-                } catch ( InconvertibleUnitsException ex ) {
-                    heady= (int)plot.getYAxis().transform(pointAtY.value(),plot.getYAxis().getUnits());
-                }                    
-                r.add( headx, heady );
+                r= calcBoundForPoint( r, pointAtX, pointAtY );
             }
         }
+        
+        if ( referenceX.trim().length()>0 || referenceY.trim().length()>0 ) {
+            String[] xx= referenceX.split("[;,]",-2);
+            String[] yy= referenceY.split("[;,]",-2);
+            int n= Math.max( xx.length, yy.length );
+            if ( xx.length>1 && yy.length>1 && xx.length!=yy.length ) {
+                logger.warning("x and y reference count is different");
+            } else {
+                for ( int i=0; i<n; i++ ) {
+                    try {
+                        String xs= ( xx.length==1 ) ? xx[0] : xx[i];
+                        Datum xd= xrange.getUnits().parse( xs );
+                        String ys= ( yy.length==1 ) ? yy[0] : yy[i];
+                        Datum yd= yrange.getUnits().parse( ys );
+                        r= calcBoundForPoint( r, xd, yd );
+                    } catch (ParseException ex) {
+                        logger.log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
+        }
+        
         int s= Math.max( getFont().getSize()/5, 3 );
         Rectangle result= new Rectangle( r.x-s, r.y-s, r.width+s*2+1, r.height+s*2+1 );
+        
+        boundsCalculated= true;
         
         logger.exiting( "DasAnnotation","calcBounds", result);
         return result;
@@ -1243,7 +1277,18 @@ public class DasAnnotation extends DasCanvasComponent {
     public void setReferenceX(String referenceX) {
         String oldReferenceX = this.referenceX;
         this.referenceX = referenceX;
-        repaint();
+        if ( !oldReferenceX.equals(this.referenceX) ) { 
+            if ( boundsCalculated==true ) {
+                boundsCalculated= false;
+                SwingUtilities.invokeLater( new Runnable() {
+                    @Override
+                    public void run() {
+                        resize();
+                    }
+                } );
+            }
+            repaint();
+        }
         firePropertyChange(PROP_REFERENCEX, oldReferenceX, referenceX);
     }
 
@@ -1260,9 +1305,20 @@ public class DasAnnotation extends DasCanvasComponent {
      * @param referenceY 
      */
     public void setReferenceY(String referenceY) {
-        String oldReferenceY = this.referenceX;
+        String oldReferenceY = this.referenceY;
         this.referenceY = referenceY;
-        repaint();        
+        if ( !oldReferenceY.equals(this.referenceY ) ) { 
+            if ( boundsCalculated==true ) {
+                boundsCalculated= false;
+                SwingUtilities.invokeLater( new Runnable() {
+                    @Override
+                    public void run() {
+                        resize();
+                    }
+                } );
+            }
+            repaint();
+        }
         firePropertyChange(PROP_REFERENCEY, oldReferenceY, referenceY);
     }
     
