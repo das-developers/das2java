@@ -619,7 +619,7 @@ public class DasProgressPanel implements ProgressMonitor {
      * a future version of this might look for the bit that's changing.
      * @param s the unabbreviated string.  This is any length, and contains a message
      * @param lenLimit
-     * @return a string of no more that lenLimit+2 chars.  (why +2?  because the ellipse used is short.)
+     * @return a string of no more that lenLimit+2 chars.  (Why +2?  because the ellipsis used is short.)
      */
     private String abbrevateStringEllipsis( String s, int lenLimit ) {
         if (s.length() > lenLimit ) {
