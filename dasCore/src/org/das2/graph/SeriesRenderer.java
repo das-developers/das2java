@@ -160,6 +160,10 @@ public class SeriesRenderer extends Renderer {
     PsymConnectorRenderElement psymConnectorElement = new PsymConnectorRenderElement();
     PsymRenderElement psymsElement = new PsymRenderElement();
 
+    QDataSet xds;
+    QDataSet yds;
+    QDataSet zds;
+    
     @Override
     public void setDataSet(QDataSet ds) {
         if ( ds==null || ds.rank()>0 ) {
@@ -172,6 +176,9 @@ public class SeriesRenderer extends Renderer {
             j= Ops.putProperty( j, QDataSet.BUNDLE_1, bds ); // See https://sourceforge.net/p/autoplot/bugs/2244/
             super.setDataSet( j );
         }
+        xds= getXTags(ds);
+        yds= ytagsDataSet(ds);
+        zds= colorByDataSet(ds);
     }
     
     
@@ -877,9 +884,7 @@ public class SeriesRenderer extends Renderer {
             }
             logger.log(Level.FINE, "enter connector render" );
             logger.log(Level.FINER, "path was reduced: {0}", pathWasReduced);
-            if ( vds.rank()>1 && !SemanticOps.isRank2Waveform(vds) && !SemanticOps.isRank3JoinOfRank2Waveform(vds)) {
-                renderException( g, xAxis, yAxis, new IllegalArgumentException("dataset is not rank 1"));
-            }
+
             GeneralPath lpath1= getPath();
             if (lpath1 == null) {
                 return 0;
