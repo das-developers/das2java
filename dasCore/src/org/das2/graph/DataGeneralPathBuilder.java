@@ -5,6 +5,8 @@ import java.awt.Point;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
+import java.util.Formatter;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.datum.Datum;
@@ -187,7 +189,7 @@ public final class DataGeneralPathBuilder {
     
     private void lineTo( double x, double y ) {
         if ( name.length()>0 ) {
-            System.err.println(String.format( "%s.lineTo(%.2f,%.2f)", name, x, y ) );
+            System.err.println(new Formatter().format( Locale.US, "%s.lineTo(%.2f,%.2f)", name, x, y ).toString());
         }
         gp.lineTo( x,y );
         penPositionX= x;
@@ -196,7 +198,7 @@ public final class DataGeneralPathBuilder {
     
     private void moveTo( double x, double y ) {
         if ( name.length()>0 ) {
-           System.err.println(String.format( "%s.moveTo(%.2f,%.2f)", name, x, y ) );
+           System.err.println(new Formatter().format( Locale.US, "%s.moveTo(%.2f,%.2f)", name, x, y ).toString()); 
         }
         gp.moveTo( x,y );
         penPositionX= x;

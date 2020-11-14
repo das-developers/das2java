@@ -17,6 +17,7 @@ import java.awt.image.Kernel;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
+import java.util.Formatter;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -1422,7 +1423,7 @@ public class GraphUtil {
         
         public void lineTo(double fx, double fy) {
             if ( printRoute ) {
-                System.err.println(String.format("lineTo(%5.1f,%5.1f) %d",fx,fy,count));
+                System.err.println(new Formatter().format( Locale.US, "lineTo(%5.1f,%5.1f) %d",fx,fy,count ).toString());
             }
             if ( arrows ) {
                 if ( inity==lastfy0 && initx==lastfx0 ) {
@@ -1455,7 +1456,7 @@ public class GraphUtil {
 
         public void moveTo(double fx, double fy) {
             if ( printRoute ) {
-                System.err.println(String.format("moveTo(%5.1f,%5.1f) %d",fx,fy,count));
+                System.err.println(new Formatter().format( Locale.US, "moveTo(%5.1f,%5.1f) %d",fx,fy,count ).toString());
             }
             //if ( count==3 ) {
             //    System.err.println("here1112");
