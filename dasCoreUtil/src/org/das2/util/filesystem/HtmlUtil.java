@@ -25,6 +25,7 @@ package org.das2.util.filesystem;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -34,6 +35,7 @@ import org.das2.util.monitor.CancelledOperationException;
 import org.das2.util.Base64;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -125,6 +127,8 @@ public class HtmlUtil {
         logger.log(Level.FINER, "read listing data in {0} millis", (System.currentTimeMillis() - t0));
         String content= contentBuffer.toString();
 
+        //TODO: use getLinks to get all the links.
+        
         String hrefRegex= "(?i)href\\s*=\\s*([\"'])(.+?)\\1";
         Pattern hrefPattern= Pattern.compile( hrefRegex );
 
@@ -277,6 +281,39 @@ public class HtmlUtil {
     @Deprecated
     public static URLConnection checkRedirect( URLConnection urlConnection ) throws IOException {
         return HttpUtil.checkRedirect(urlConnection);
+    }
+
+    /**
+     * return the links found in the content, using url as the context.
+     * @param url null or the url for the context.
+     * @param content the html content.
+     * @return a list of URLs.
+     */
+    public static List<URL> getLinks( URL url, String content ) {
+        String hrefRegex= "(?i)href\\s*=\\s*([\"'])(.+?)\\1";
+        Pattern hrefPattern= Pattern.compile( hrefRegex );
+
+        Matcher matcher= hrefPattern.matcher( content );
+
+        ArrayList urlList= new ArrayList();
+
+        while ( matcher.find() ) {
+            String strLink= matcher.group(2);
+            logger.log(Level.FINEST, "parse listing {0}", strLink);
+            URL urlLink;
+
+            try {
+                urlLink = new URL(url, URLDecoder.decode(strLink,"UTF-8") );
+                urlList.add( urlLink );
+            } catch (MalformedURLException e) {
+                logger.log(Level.SEVERE, "bad URL: {0} {1}", new Object[]{url, strLink});
+                continue;
+            } catch (UnsupportedEncodingException ex) {
+                Logger.getLogger(HtmlUtil.class.getName()).log(Level.SEVERE, null, ex);
+            }
+
+        }
+        return urlList;
     }
     
 }
