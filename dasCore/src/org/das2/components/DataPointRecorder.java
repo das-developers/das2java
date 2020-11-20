@@ -449,16 +449,42 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
     
     /**
      * returns a entire set of data points as a rank 2 bundle.
-     * This is the same as getBundleDataSet.
-     * @return 
+     * This is the same as getBundleDataSet, and just calls it.
+     * @see #getSelectedDataPoints() which returns the selected records.
+     * @return rank 2 bundle
+     * @see #getBundleDataSet() which is the old name for this routine.
      */
     public QDataSet getDataPoints() {
-        return getBundleDataSet();
+        if ( unitsArray[0]==null ) return null;
+        DataSetBuilder builder= new DataSetBuilder( 2, dataPoints.size(), planesArray.length );
+        builder.setName( 0, "x" );
+        builder.setName( 1, "y" );
+        builder.setFillValue( -1e31 );
+        for ( int i=2; i<planesArray.length; i++ ) {
+            builder.setName( i, planesArray[i] );
+        }
+        for ( int irow = 0; irow < dataPoints.size(); irow++) {
+            DataPoint dp = (DataPoint) dataPoints.get(irow);
+            builder.putValue( -1, 0, dp.get(0) );
+            builder.putValue( -1, 1, dp.get(1) );
+            for ( int i=2; i<planesArray.length; i++ ) {
+                try {
+                    builder.putValue( -1, i, (Datum)dp.getPlane(planesArray[i] ) );
+                } catch ( Exception ex ) {
+                    builder.putValue( -1, i, unitsArray[i].getFillDatum() );
+                }
+            }
+            builder.nextRecord();
+        }
+        return builder.getDataSet();
+
     }
     
     /**
      * return the subset of the data points which are selected, as a rank 2 bundle.
-     * @return 
+     * @return rank 2 dataset 
+     * @see #getSelectedDataSet() which returns the selection in a different form 
+     * @see #getDataPoints() which returns all points.
      */
     public QDataSet getSelectedDataPoints() {
         if ( unitsArray[0]==null ) return null;
@@ -496,30 +522,11 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
      * return ds[n,m] with n rows and m columns, where ds[:,0] is the x, ds[:,1] 
      * is the y, and ds[:,2:] are the additional data.
      * @return a rank 2 dataset of the table data.
+     * @see #getDataPoints which just makes this call name more consistent.
+     * @deprecated use getDataPoints.
      */
     public QDataSet getBundleDataSet() {
-        if ( unitsArray[0]==null ) return null;
-        DataSetBuilder builder= new DataSetBuilder( 2, dataPoints.size(), planesArray.length );
-        builder.setName( 0, "x" );
-        builder.setName( 1, "y" );
-        builder.setFillValue( -1e31 );
-        for ( int i=2; i<planesArray.length; i++ ) {
-            builder.setName( i, planesArray[i] );
-        }
-        for ( int irow = 0; irow < dataPoints.size(); irow++) {
-            DataPoint dp = (DataPoint) dataPoints.get(irow);
-            builder.putValue( -1, 0, dp.get(0) );
-            builder.putValue( -1, 1, dp.get(1) );
-            for ( int i=2; i<planesArray.length; i++ ) {
-                try {
-                    builder.putValue( -1, i, (Datum)dp.getPlane(planesArray[i] ) );
-                } catch ( Exception ex ) {
-                    builder.putValue( -1, i, unitsArray[i].getFillDatum() );
-                }
-            }
-            builder.nextRecord();
-        }
-        return builder.getDataSet();
+        return getDataPoints();
     }
     
     /**
@@ -529,6 +536,8 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
      * n is the number of records.
      * @return a data set of the selected table data.
      * @see #select(org.das2.datum.DatumRange, org.das2.datum.DatumRange) which selects part of the dataset.
+     * @see #getSelectedDataPoints() which returns a bundle dataset for the selected points.
+     * @deprecated getSelectedDataPoints returns data as a simple bundle of x,y,...
      */
     public synchronized QDataSet getSelectedDataSet() {
         int[] selectedRows = getSelectedRowsInModel();
@@ -970,7 +979,8 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
     }
 
     /**
-     * return the index into the model for the selection
+     * return the index into the model for the selection.  The table can 
+     * be sorted by column, but this will return indices to the original model.
      * @return 
      */
     private int[] getSelectedRowsInModel() {
