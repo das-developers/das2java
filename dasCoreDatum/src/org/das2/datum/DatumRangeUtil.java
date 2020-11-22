@@ -1928,8 +1928,10 @@ public class DatumRangeUtil {
     }
 
     /**
-     * rescale the DatumRange with a specification like "50%,150%" or "0%-1hr,100%+1hr".  The string is spit on the comma
-     * the each is split on the % sign.  This was originally introduced to support CreatePngWalk in Autoplot.
+     * rescale the DatumRange with a specification like "50%,150%" or
+     * "0%-1hr,100%+1hr".  The string is split on the comma the each is split on
+     * the % sign.  This was originally introduced to support CreatePngWalk in 
+     * Autoplot.
      * @param dr
      * @param rescale
      * @return
