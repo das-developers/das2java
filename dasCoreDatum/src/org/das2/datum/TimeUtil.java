@@ -433,56 +433,110 @@ public final class TimeUtil {
     
     /**
      * splits the time location datum into y,m,d,etc components, using the full
-     * precision of the Long backing the Datum.
+     * precision of the Long backing the Datum.  The datum can have the units
+     * of ms1970 or cdf_tt2000, and 
      * @param datum with time location units.
      * @return TimeStruct containing the time components.
      */
     public static TimeStruct toTimeStruct( Datum.Long datum ) {
-        Units u= Units.cdfTT2000;
-        long l= datum.longValue(u);
+        Units u= datum.getUnits();
         
-        int leapSeconds;
-        try {
-            leapSeconds= LeapSecondsConverter.getLeapSecondCountForTT2000(l);
-        } catch ( IOException ex ) {
-            throw new RuntimeException(ex); // this should not happen.
-        }
-        // convert to a new time format, nanoseconds since 2000-Jan-01 00:00:00.000Z.
-        // Units.cdfTT2000's 0 is 2000-Jan-01 11:58:55.816000000,
-        // so -43135816000000 is 2000-Jan-01 00:00:00.000000000.
-        
-        // calculate the number of days passed since 2000-01-01.
-        long mn= ( ( l + 43135816000000L ) - (leapSeconds-32)*1000000000L );
-        if ( mn<0 ) {
-            mn= mn / 86400000000000L - 1;
+        if ( u==Units.ms1970 || u==Units.us2000 ) {
+            long l= datum.longValue(u);
+
+            long base;
+            int nsMult; // multiplier to make units into nanoseconds
+            
+            if ( u==Units.ms1970 ) {
+                base = 946684800000L;
+                nsMult = 1000000;        
+            } else if ( u==Units.us2000 ) {
+                base = 0L;
+                nsMult = 1000;        
+            } else {
+                throw new IllegalArgumentException("units must be cdfTT2000 or ms1970");
+            }
+            // calculate the number of days passed since 2000-01-01.
+            long mn= l - base;
+            if ( mn<0 ) {
+                mn= mn / (86400000000L/nsMult) - 1;
+            } else {
+                mn= mn / (86400000000L/nsMult);            
+            }
+            
+            int julianDay= 2451545 + (int)mn;
+
+            long midnightDay= base + mn*(86400000000000L/nsMult); 
+
+            TimeStruct result= julianToGregorian( julianDay );
+
+            long sinceMidnight= l-midnightDay;
+
+            long nanoseconds= sinceMidnight*nsMult;
+
+            int hour = (int)(nanoseconds/(3600000000000L));
+            if ( hour>23 ) hour= 23;
+            int minute = (int)((nanoseconds - hour*3600000000000L)/60000000000L);
+            if ( minute>59 ) minute= 59;
+            long justNanoSeconds = nanoseconds - hour*3600000000000L - minute*60000000000L;
+            
+            result.doy = dayOfYear(result.month, result.day, result.year);
+            result.hour= hour;
+            result.minute= minute;
+            result.seconds= justNanoSeconds / 1e9;
+
+            result.isLocation= true;
+
+            return result;
+                        
+        } else if ( u==Units.cdfTT2000 ) {
+            long l= datum.longValue(u);
+            int leapSeconds;
+            try {
+                leapSeconds= LeapSecondsConverter.getLeapSecondCountForTT2000(l);
+            } catch ( IOException ex ) {
+                throw new RuntimeException(ex); // this should not happen.
+            }
+            // convert to a new time format, nanoseconds since 2000-Jan-01 00:00:00.000Z.
+            // Units.cdfTT2000's 0 is 2000-Jan-01 11:58:55.816000000,
+            // so -43135816000000 is 2000-Jan-01 00:00:00.000000000.
+
+            // calculate the number of days passed since 2000-01-01.
+            long mn= ( ( l + 43135816000000L ) - (leapSeconds-32)*1000000000L );
+            if ( mn<0 ) {
+                mn= mn / 86400000000000L - 1;
+            } else {
+                mn= mn / 86400000000000L;            
+            }
+
+            int julianDay= 2451545 + (int)mn;
+
+            long midnightCdfTT2000= mn * 86400000000000L + ( leapSeconds-32 ) *1000000000L - 43135816000000L; 
+
+            TimeStruct result= julianToGregorian( julianDay );
+
+            long sinceMidnight= l-midnightCdfTT2000;
+
+            long nanoseconds= sinceMidnight;
+
+            int hour = (int)(nanoseconds/3600000000000L);
+            if ( hour>23 ) hour= 23;
+            int minute = (int)((nanoseconds - hour*3600000000000L)/60000000000L);
+            if ( minute>59 ) minute= 59;
+            long justNanoSeconds = nanoseconds - hour*3600000000000L - minute*60000000000L;
+
+            result.doy = dayOfYear(result.month, result.day, result.year);
+            result.hour= hour;
+            result.minute= minute;
+            result.seconds= justNanoSeconds / 1e9;
+
+            result.isLocation= true;
+
+            return result;
         } else {
-            mn= mn / 86400000000000L;            
+            throw new IllegalArgumentException("units must be cdfTT2000 or ms1970");
+
         }
-        
-        int julianDay= 2451545 + (int)mn;
-
-        long midnightCdfTT2000= mn * 86400000000000L + ( leapSeconds-32 ) *1000000000L - 43135816000000L; 
-        
-        TimeStruct result= julianToGregorian( julianDay );
-        
-        long sinceMidnight= l-midnightCdfTT2000;
-        
-        long nanoseconds= sinceMidnight;
-
-        int hour = (int)(nanoseconds/3600000000000L);
-        if ( hour>23 ) hour= 23;
-        int minute = (int)((nanoseconds - hour*3600000000000L)/60000000000L);
-        if ( minute>59 ) minute= 59;
-        long justNanoSeconds = nanoseconds - hour*3600000000000L - minute*60000000000L;
-
-        result.doy = dayOfYear(result.month, result.day, result.year);
-        result.hour= hour;
-        result.minute= minute;
-        result.seconds= justNanoSeconds / 1e9;
-
-        result.isLocation= true;
-        
-        return result;
     }
 
 
@@ -495,11 +549,14 @@ public final class TimeUtil {
      */
     public static TimeStruct toTimeStruct( Datum datum ) {
         
+        Units u= datum.getUnits();
+        
         if ( datum instanceof Datum.Long ) {
-            return toTimeStruct((Datum.Long)datum);
+            if ( u==Units.cdfTT2000 || u==Units.ms1970 || u==Units.us2000 ) {
+                return toTimeStruct((Datum.Long)datum);
+            }
         }
         
-        Units u= datum.getUnits();
         if ( u==Units.decimalYear ) {
             datum= datum.convertTo(Units.us2000);
             u= Units.us2000;
