@@ -503,9 +503,9 @@ public final class TimeUtil {
             // calculate the number of days passed since 2000-01-01.
             long mn= l - base;
             if ( mn<0 ) {
-                mn= mn / (86400000000L/nsMult) - 1;
+                mn= mn / (86400000000000L/nsMult) - 1;
             } else {
-                mn= mn / (86400000000L/nsMult);            
+                mn= mn / (86400000000000L/nsMult);            
             }
             
             int julianDay= 2451545 + (int)mn;
