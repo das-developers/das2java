@@ -595,7 +595,7 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
      */
     public int select(DatumRange xrange, DatumRange yrange, boolean xOrY ) {
         if ( xOrY && yrange==null ) throw new IllegalArgumentException("yrange is null with or condition--this would select all points.");
-        Datum mid= xrange.middle();
+        Datum mid= xrange==null ? null : xrange.middle();
         synchronized (dataPoints) {
             List<Integer> selectMe = new ArrayList();
             int iclosest= -1;
@@ -604,22 +604,24 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
                 DataPoint p = (DataPoint) dataPoints.get(i);
                 if ( xOrY ) {
                     assert yrange!=null;
-                    if ( xrange.contains(p.data[0]) || ( yrange.contains(p.data[1]) ) ) {
+                    if ( ( xrange==null || xrange.contains(p.data[0]) ) || ( yrange.contains(p.data[1]) ) ) {
                         selectMe.add( i );
                     }
                 } else {
-                    if ( xrange.contains(p.data[0]) && ( yrange==null || yrange.contains(p.data[1]) ) ) {
+                    if ( ( xrange==null || xrange.contains(p.data[0]) ) && ( yrange==null || yrange.contains(p.data[1]) ) ) {
                         selectMe.add( i );
                     }
                 }
                 if ( closestDist==null || p.data[0].subtract(mid).abs().lt( closestDist ) ) {
                     iclosest= i;
+                    if ( mid==null ) mid=p.data[0];
                     closestDist= p.data[0].subtract(mid).abs();
+                    
                 }
             }
             if ( iclosest!=-1 && selectMe.isEmpty() ) {
                 assert closestDist!=null;
-                if ( closestDist.gt( xrange.width() ) ) {
+                if ( xrange!=null && closestDist.gt( xrange.width() ) ) {
                     return -1;
                 } else {
                     if ( sorted ) {
@@ -654,6 +656,28 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
             return fiselect;
         }
         
+    }
+    
+    /**
+     * Selects the points in the GUI specified, using indices in the model,
+     * where 0 is the first index.
+     * 
+     * @param selection 
+     */
+    public void select( List<Integer> selection ) {
+        final List<Integer> c= new ArrayList(selection);
+        table.getSelectionModel().clearSelection();
+        Runnable run= new Runnable() {
+            @Override
+            public void run() {
+                showSelection( c );
+            }
+        };
+        if ( SwingUtilities.isEventDispatchThread() ) {
+            run.run();
+        } else {
+            SwingUtilities.invokeLater(run);
+        }
     }
 
     private int showSelection( List<Integer> selectMe ) {
