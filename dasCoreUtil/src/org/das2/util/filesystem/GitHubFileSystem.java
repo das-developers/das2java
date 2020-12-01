@@ -2,11 +2,14 @@
 package org.das2.util.filesystem;
 
 import com.itextpdf.text.io.StreamUtil;
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.InterruptedIOException;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -29,6 +32,7 @@ import static org.das2.util.filesystem.FileSystem.loggerUrl;
 import static org.das2.util.filesystem.FileSystem.toCanonicalFilename;
 import static org.das2.util.filesystem.HtmlUtil.getInputStream;
 import static org.das2.util.filesystem.WebFileSystem.localRoot;
+import static org.das2.util.filesystem.WebFileSystem.logger;
 import org.das2.util.monitor.CancelledOperationException;
 import org.das2.util.monitor.ProgressMonitor;
 
@@ -111,6 +115,13 @@ public class GitHubFileSystem extends HttpFileSystem {
      */
     protected GitHubFileSystem(URI root, File localRoot, String branch, int baseOffset) {
         super(root, localRoot);
+        File f= this.getReadOnlyCache( );
+        if ( f!=null ) {
+            File localRoCache= lookForROCacheGH(localRoot);
+            if ( localRoCache!=null ) {
+                setReadOnlyCache( localRoCache );
+            }
+        }
         this.baseOffset= baseOffset;
         this.branch= branch;
         this.protocol= new GitHubHttpProtocol();
@@ -252,6 +263,74 @@ public class GitHubFileSystem extends HttpFileSystem {
         return result.toString();
     }
     
+    /**
+     * With the GitHubFileSystem, we have to take into account that the 
+     * FileSystem cache will have the branch name while the local copy
+     * will not.  <em>Note that this assumes the rocache copy is on the same
+     * branch.</em>
+     * @param start
+     * @return the rocache location if available.
+     */
+    private File lookForROCacheGH( File start ) {
+        // This is a copy of WebFileSystem.lookForROCache.  This differs where
+        // we inspect tail to look for the branch name: tail.substring(1).startsWith(branch) 
+        File localRoot= start;
+        File stopFile= FileSystem.settings().getLocalCacheDir();
+        File result= null;
+
+        if ( !localRoot.toString().startsWith(stopFile.toString()) ) {
+            throw new IllegalArgumentException("localRoot filename ("+stopFile+") must be parent of local root: "+start);
+        }
+        
+        while ( !( localRoot.equals(stopFile) ) ) {
+            File f= new File( localRoot, "ro_cache.txt" );
+            if ( f.exists() ) {
+                BufferedReader read = null;
+                try {
+                    read = new BufferedReader( new InputStreamReader( new FileInputStream(f), "UTF-8" ) );
+                    String s = read.readLine();
+                    while (s != null) {
+                        int i= s.indexOf("#");
+                        if ( i>-1 ) s= s.substring(0,i);
+                        if ( s.trim().length()>0 ) {
+                            if ( s.startsWith("http:") || s.startsWith("https:") || s.startsWith("ftp:") ) {
+                                throw new IllegalArgumentException("ro_cache should contain the name of a local folder");
+                            }
+                            String sf= s.trim();
+                            result= new File(sf);
+                            break;
+                        }
+                        s = read.readLine();
+                    }
+                } catch (IOException ex) {
+                    logger.log(Level.SEVERE, ex.getMessage(), ex);
+                } finally {
+                    try {
+                        if ( read!=null ) read.close();
+                    } catch (IOException ex) {
+                        logger.log(Level.SEVERE, ex.getMessage(), ex);
+                    }
+                }
+                break;
+            } else {
+                localRoot= localRoot.getParentFile();
+            }
+        }
+        if ( result==null ) {
+            return result;
+        } else {
+            String tail= start.getAbsolutePath().substring(localRoot.getAbsolutePath().length());
+            if ( tail.length()>0 ) {
+                if ( tail.substring(1).startsWith(branch) ) { // 1 is for the initial slash
+                    tail= tail.substring( 1+branch.length() );
+                }
+                return new File( result, tail );
+            } else {
+                return result;
+            }
+        }
+    }
+            
     /**
      * github puts directories for each project under "raw/master".
      * @param root
