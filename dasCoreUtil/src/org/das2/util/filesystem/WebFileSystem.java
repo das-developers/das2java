@@ -183,11 +183,10 @@ public abstract class WebFileSystem extends FileSystem {
 
     /**
      * return the name of the folder containing a local copy of the cache.
-     * @param localRoot the root which will typically be a subfolder of 
+     * @param start the root which will typically be a subfolder of 
      * FileSystem.settings().getLocalCacheDir();
      * @return null or ...
      */
-    
      private static File lookForROCache( File start ) {
 
         File localRoot= start;
