@@ -457,11 +457,12 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
     public QDataSet getDataPoints() {
         if ( unitsArray[0]==null ) return null;
         DataSetBuilder builder= new DataSetBuilder( 2, dataPoints.size(), planesArray.length );
-        builder.setName( 0, "x" );
-        builder.setName( 1, "y" );
         builder.setFillValue( -1e31 );
-        for ( int i=2; i<planesArray.length; i++ ) {
+        for ( int i=0; i<planesArray.length; i++ ) {
             builder.setName( i, planesArray[i] );
+        }
+        for ( int i=0; i<unitsArray.length; i++ ) {
+            builder.setUnits( i, unitsArray[i] );
         }
         for ( int irow = 0; irow < dataPoints.size(); irow++) {
             DataPoint dp = (DataPoint) dataPoints.get(irow);
