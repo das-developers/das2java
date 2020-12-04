@@ -129,9 +129,14 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
     protected Units[] unitsArray;
     
     /**
-     * array of plane names that are also the column headers. planesArray[0]="x", planesArray[1]="y"
+     * array of plane names that are also the column headers. namesArray[0]="x", namesArray[1]="y"
      */
-    protected String[] planesArray;
+    protected String[] namesArray;
+    
+    /**
+     * value to use when the dataset input does not contain the bundled dataset (plane).
+     */
+    protected Datum[] defaultsArray;
     
     protected AbstractTableModel myTableModel;
     private File saveFile;
@@ -236,17 +241,17 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
         }
     }
 
-    private final Object planesArrayLock;
+    private final Object namesArrayLock;
     
     private class MyTableModel extends AbstractTableModel {
         @Override
         public int getColumnCount() {
             //TODO: System.err.println("===> " + Thread.currentThread().getName());
-            synchronized (planesArrayLock) {
-                if (unitsArray == null) {
+            synchronized (namesArrayLock) {
+                if (namesArray == null) {
                     return 2;
                 } else {
-                    return planesArray.length;
+                    return namesArray.length;
                 }
             }
         }
@@ -254,8 +259,8 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
         @Override
         public String getColumnName(int j) {
             //System.err.println("===> " + Thread.currentThread().getName());
-            synchronized (planesArrayLock) {
-                String result = planesArray[j];
+            synchronized (namesArrayLock) {
+                String result = namesArray[j];
                 if (unitsArray[j] != null) {
                     if ( unitsArray[j] instanceof EnumerationUnits ) {
                         result += "(ordinal)";
@@ -303,7 +308,7 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
                     }
                 }
             } else {
-                Object o = x.getPlane(planesArray[j]);
+                Object o = x.getPlane(namesArray[j]);
                 if (o instanceof Datum) {
                     Datum d = (Datum) o;
                     if ( d.isFill() ) {
@@ -456,10 +461,10 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
      */
     public QDataSet getDataPoints() {
         if ( unitsArray[0]==null ) return null;
-        DataSetBuilder builder= new DataSetBuilder( 2, dataPoints.size(), planesArray.length );
+        DataSetBuilder builder= new DataSetBuilder( 2, dataPoints.size(), namesArray.length );
         builder.setFillValue( -1e31 );
-        for ( int i=0; i<planesArray.length; i++ ) {
-            builder.setName( i, planesArray[i] );
+        for ( int i=0; i<namesArray.length; i++ ) {
+            builder.setName(i, namesArray[i] );
         }
         for ( int i=0; i<unitsArray.length; i++ ) {
             builder.setUnits( i, unitsArray[i] );
@@ -468,12 +473,9 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
             DataPoint dp = (DataPoint) dataPoints.get(irow);
             builder.putValue( -1, 0, dp.get(0) );
             builder.putValue( -1, 1, dp.get(1) );
-            for ( int i=2; i<planesArray.length; i++ ) {
-                try {
-                    builder.putValue( -1, i, (Datum)dp.getPlane(planesArray[i] ) );
-                } catch ( Exception ex ) {
-                    builder.putValue( -1, i, unitsArray[i].getFillDatum() );
-                }
+            for ( int i=2; i<namesArray.length; i++ ) {
+                Datum d= (Datum)dp.getPlane(namesArray[i] );
+                builder.putValue(-1, i, d==null ? defaultsArray[i] : d );
             }
             builder.nextRecord();
         }
@@ -489,12 +491,12 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
      */
     public QDataSet getSelectedDataPoints() {
         if ( unitsArray[0]==null ) return null;
-        DataSetBuilder builder= new DataSetBuilder( 2, dataPoints.size(), planesArray.length );
+        DataSetBuilder builder= new DataSetBuilder( 2, dataPoints.size(), namesArray.length );
         builder.setName( 0, "x" );
         builder.setName( 1, "y" );
         builder.setFillValue( -1e31 );
-        for ( int i=2; i<planesArray.length; i++ ) {
-            builder.setName( i, planesArray[i] );
+        for ( int i=2; i<namesArray.length; i++ ) {
+            builder.setName(i, namesArray[i] );
         }
         int[] selectedRows = getSelectedRowsInModel();        
         for ( int isrow = 0; isrow < selectedRows.length; isrow++) {
@@ -502,16 +504,16 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
             DataPoint dp = (DataPoint) dataPoints.get(irow);
             builder.putValue( -1, 0, dp.get(0) );
             builder.putValue( -1, 1, dp.get(1) );
-            for ( int i=2; i<planesArray.length; i++ ) {
+            for ( int i=2; i<namesArray.length; i++ ) {
                 if ( unitsArray[i] instanceof EnumerationUnits ) {
                     EnumerationUnits eu= (EnumerationUnits)unitsArray[i];
                     if ( eu==unitsArray[i] ) {
-                        builder.putValue( -1, i, eu.createDatum(((Datum)dp.getPlane(planesArray[i])).toString()) );
+                        builder.putValue(-1, i, eu.createDatum(((Datum)dp.getPlane(namesArray[i])).toString()) );
                     } else {
-                        builder.putValue( -1, i, (Datum)dp.getPlane(planesArray[i]) );
+                        builder.putValue(-1, i, (Datum)dp.getPlane(namesArray[i]) );
                     }
                 } else {
-                    builder.putValue( -1, i, (Datum)dp.getPlane(planesArray[i] ) );
+                    builder.putValue(-1, i, (Datum)dp.getPlane(namesArray[i] ) );
                 }
             }
             builder.nextRecord();
@@ -548,18 +550,18 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
         } else {
             VectorDataSetBuilder builder = new VectorDataSetBuilder(unitsArray[0], unitsArray[1]);
             synchronized (dataPoints) {
-                for (int j = 2; j < planesArray.length; j++) {
-                    builder.addPlane(planesArray[j], unitsArray[j]);
+                for (int j = 2; j < namesArray.length; j++) {
+                    builder.addPlane(namesArray[j], unitsArray[j]);
                 }
                 for (int i = 0; i < selectedRows.length; i++) {
                     int irow = selectedRows[i];
                     if ( irow<dataPoints.size() ) {
                         DataPoint dp = (DataPoint) dataPoints.get(irow);
                         builder.insertY(dp.get(0), dp.get(1));
-                        for (int j = 2; j < planesArray.length; j++) {
+                        for (int j = 2; j < namesArray.length; j++) {
                             builder.insertY(dp.get(0).doubleValue(unitsArray[0]),
-                                ((Datum) dp.getPlane(planesArray[j])).doubleValue(unitsArray[j]),
-                                planesArray[j]);
+                                ((Datum) dp.getPlane(namesArray[j])).doubleValue(unitsArray[j]),
+                                namesArray[j]);
                         }
                     }
                 }
@@ -697,6 +699,44 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
         }        
     }
     
+    /**
+     * explicitly declare the number of columns.  Call this and then 
+     * setColumn to define each column.
+     * @param count the number of columns.
+     */
+    public void setColumnCount( int count ) {
+        namesArray= new String[count];
+        unitsArray= new Units[count];
+        defaultsArray= new Datum[count];
+        for ( int i=0; i<count; i++ ) {
+            namesArray[i]= "field"+i;
+            unitsArray[i]= Units.dimensionless;
+            defaultsArray[i]= unitsArray[i].getFillDatum();
+        }
+    }
+    
+    /**
+     * identify the name and unit for each column.
+     * @param i the column number 
+     * @param name a Java identifier for the column, e.g. "StartTime"
+     * @param units units for the column, or null for dimensionless.
+     * @param deft default value to use when data is not provided.
+     */
+    public void setColumn( int i, String name, Units units, Datum deft ) {
+        if ( units==null ) units= Units.dimensionless;
+        if ( namesArray==null ) {
+            throw new IllegalArgumentException("call setColumnCount first.");
+        }
+        if ( i>=namesArray.length ) {
+            throw new IndexOutOfBoundsException("column index is out of bounds (and 0 is the first column)");
+        }
+        namesArray[i]= name;
+        unitsArray[i]= units;
+        defaultsArray[i]= deft;
+        
+        myTableModel.fireTableStructureChanged();
+    }
+    
     public void saveToFile(File file) throws IOException {
         List<DataPoint> dataPoints1;
         synchronized (this.dataPoints) {
@@ -706,7 +746,7 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
         try (BufferedWriter r = new BufferedWriter(new OutputStreamWriter(out))) {
             StringBuilder header = new StringBuilder();
             //header.append("## "); // don't use comment characters so that labels and units are used in Autoplot's ascii parser.
-            for (int j = 0; j < planesArray.length; j++) {
+            for (int j = 0; j < namesArray.length; j++) {
                 String s= myTableModel.getColumnName(j);
                 if ( !s.endsWith(")") ) {
                     s= s+"()"; // backward compatibility
@@ -737,11 +777,11 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
                             s.append(formatter.format(x.get(j), unitsArray[j])).append("\t");
                         }
                     }
-                    for (int j = 2; j < planesArray.length; j++) {
-                        Object o = x.getPlane(planesArray[j]);
+                    for (int j = 2; j < namesArray.length; j++) {
+                        Object o = x.getPlane(namesArray[j]);
                         if ( o==null ) {
                             //x.getPlane(planesArray[j]); // for debugging
-                            throw new IllegalArgumentException("unable to find plane: "+planesArray[j]);
+                            throw new IllegalArgumentException("unable to find plane: "+namesArray[j]);
                         }
                         if (unitsArray[j] == null) {
                             s.append("\"").append(o).append("\"\t");
@@ -1282,7 +1322,7 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
         int i=0;
         JComboBox[] cbs= new JComboBox[unitsArray.length];
         for ( Units u: unitsArray ) {
-            JLabel l= new JLabel("column "+planesArray[i]+": "+u) ;
+            JLabel l= new JLabel("column "+namesArray[i]+": "+u) ;
             
             p.add(l);
             
@@ -1343,7 +1383,7 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
     private void insertFill( boolean appendToEnd ) { 
         Map planes= new LinkedHashMap<>();
         int icol=0;
-        for ( String p: planesArray ) {
+        for ( String p: namesArray ) {
             planes.put( p, unitsArray[icol].getFillDatum() );
             icol++;
         }
@@ -1395,7 +1435,7 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
     /** Creates a new instance of DataPointRecorder */
     public DataPointRecorder() {
         super();
-        this.planesArrayLock = new Object();
+        this.namesArrayLock = new Object();
         dataPoints = new ArrayList();
         myTableModel = new MyTableModel();
         this.setLayout(new BorderLayout());
@@ -1427,7 +1467,7 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
 
         this.add(menuBar, BorderLayout.NORTH);
 
-        planesArray = new String[]{"X", "Y"};
+        namesArray = new String[]{"X", "Y"};
         unitsArray = new Units[]{null, null};
 
         table = new JTable(myTableModel);
@@ -1438,14 +1478,14 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
 
             @Override
             public int getColumnCount() {
-                synchronized ( planesArrayLock ) {
+                synchronized ( namesArrayLock ) {
                     return super.getColumnCount(); //To change body of generated methods, choose Tools | Templates.
                 }
             }
 
             @Override
             public TableColumn getColumn(int columnIndex) {
-                synchronized ( planesArrayLock ) {
+                synchronized ( namesArrayLock ) {
                     return super.getColumn(columnIndex); //To change body of generated methods, choose Tools | Templates.
                 }
             }
@@ -1463,8 +1503,8 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
                         selected= table.convertRowIndexToModel(selected);
                         DataPoint dp = (DataPoint) dataPoints.get(selected);
                         Map planes= new HashMap();
-                        for ( int i=2; i<planesArray.length; i++ ) {
-                            planes.put( planesArray[i], dp.getPlane(planesArray[i]) );
+                        for ( int i=2; i<namesArray.length; i++ ) {
+                            planes.put(namesArray[i], dp.getPlane(namesArray[i]) );
                         }
                         DataPointSelectionEvent e2 = new DataPointSelectionEvent(DataPointRecorder.this, dp.get(0), dp.get(1), planes );
                         fireDataPointSelectionListenerDataPointSelected(e2);
@@ -1572,6 +1612,15 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
         }
     }
 
+    private int indexOf( String name ) {
+        for ( int i=0; i<namesArray.length; i++ ) {
+            if ( name.equals(namesArray[i]) ) {
+                return i;
+            }
+        }
+        return -1;
+    }
+    
     /**
      * insert the point into the data points.  If the dataset is sorted, then we
      * replace any point that is within 10milliseconds of the point.
@@ -1584,6 +1633,8 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
             int ikey=2;
             for ( String key: keys ) {
                 Object o= newPoint.planes.get(key);
+                int lookupIKey= indexOf( key );
+                if ( lookupIKey>-1 ) ikey= lookupIKey;
                 if ( o instanceof QDataSet ) {
                     QDataSet qds= (QDataSet)o;
                     if ( qds.rank()>0 ) {
@@ -1612,6 +1663,14 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
                 }
                 ikey++;
             }
+            
+            // check for defaults
+            for ( int i=2; i<namesArray.length; i++ ) {
+                if ( !newPoint.planes.containsKey(namesArray[i]) ) {
+                    newPoint.planes.put(namesArray[i],defaultsArray[i]);
+                }
+            }
+            
             if (sorted) {
                 if ( dataPoints.size()>2 ) { // this checks out, it is sorted...
                     Units off= ((DataPoint)(dataPoints.get(0))).data[0].getUnits().getOffsetUnits();
@@ -1761,18 +1820,18 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
     public void addDataPoint( Datum x, Datum y, Map planes ) {
         synchronized (dataPoints) {
             if ( planes==null ) planes= new LinkedHashMap();
-            if (dataPoints.isEmpty()) {
+            if (dataPoints.isEmpty() && namesArray==null ) {
                 unitsArray    = new Units[2 + planes.size()];
                 unitsArray[0] = x.getUnits();
                 unitsArray[1] = y.getUnits();
-                planesArray    = new String[2 + planes.size()];
-                planesArray[0] = "x";
-                planesArray[1] = "y";
+                namesArray    = new String[2 + planes.size()];
+                namesArray[0] = "x";
+                namesArray[1] = "y";
                 int index = 2;
                 for ( Iterator i = planes.entrySet().iterator(); i.hasNext();) {
                     Entry entry= (Entry)i.next();
                     Object key = entry.getKey();
-                    planesArray[index] = String.valueOf(key).trim();
+                    namesArray[index] = String.valueOf(key).trim();
                     Object value = entry.getValue();
                     if (value instanceof String) {
                         unitsArray[index] = EnumerationUnits.create("default");
