@@ -547,7 +547,7 @@ public class EventsRenderer extends Renderer {
                 return null;
             }
             Color c0= getColor();
-            Color c1= new Color( c0.getRed(), c0.getGreen(), c0.getBlue(), c0.getAlpha()==255 ? 128 : c0.getAlpha() );
+            Color c1= new Color( c0.getRed(), c0.getGreen(), c0.getBlue(), ( !opaque && c0.getAlpha()==255 ) ? 128 : c0.getAlpha() );
             int irgb= c1.getRGB();
             
             colors= Ops.replicate( irgb, xmins.length() );
@@ -556,7 +556,7 @@ public class EventsRenderer extends Renderer {
             xmins= Ops.replicate(vds,1); // increase rank from 0 to 1.
             xmaxs= xmins;
             Color c0= getColor();
-            Color c1= new Color( c0.getRed(), c0.getGreen(), c0.getBlue(), c0.getAlpha()==255 ? 128 : c0.getAlpha() );
+            Color c1= new Color( c0.getRed(), c0.getGreen(), c0.getBlue(), ( !opaque && c0.getAlpha()==255 ) ? 128 : c0.getAlpha() );
             int irgb= c1.getRGB();
             colors= Ops.replicate( irgb, xmins.length() );
             msgs= Ops.replicate(vds,1);
@@ -909,6 +909,9 @@ public class EventsRenderer extends Renderer {
     public void setLineStyle(PsymConnector lineStyle) {
         PsymConnector oldLineStyle = this.lineStyle;
         this.lineStyle = lineStyle;
+        if ( !oldLineStyle.equals(lineStyle) ) {
+            super.invalidateParentCacheImage();
+        }
         propertyChangeSupport.firePropertyChange(PROP_LINESTYLE, oldLineStyle, lineStyle);
     }
 
@@ -927,7 +930,28 @@ public class EventsRenderer extends Renderer {
     public void setLineThick(String lineThick) {
         String oldLineThick = this.lineThick;
         this.lineThick = lineThick;
+        if ( !oldLineThick.equals(lineThick) ) {
+            super.invalidateParentCacheImage();
+        }
         propertyChangeSupport.firePropertyChange(PROP_LINETHICK, oldLineThick, lineThick);
+    }
+    
+    private boolean opaque = false;
+
+    public static final String PROP_OPAQUE = "opaque";
+
+    public boolean isOpaque() {
+        return opaque;
+    }
+
+    public void setOpaque(boolean opaque) {
+        boolean oldOpaque = this.opaque;
+        this.opaque = opaque;
+        if ( oldOpaque!=opaque ) {
+            makeCanonical(ds);
+            super.invalidateParentCacheImage();
+        }
+        propertyChangeSupport.firePropertyChange( PROP_OPAQUE, oldOpaque, opaque );
     }
     
     /**
@@ -938,9 +962,11 @@ public class EventsRenderer extends Renderer {
     public void setColor( Color color ) {
         Color old= this.color;
         this.color= color;
-        cds= makeCanonical(getDataSet());
-        propertyChangeSupport.firePropertyChange(  PROP_COLOR, old , color);
-        super.invalidateParentCacheImage();
+        if ( !old.equals(color) ) {
+            cds= makeCanonical(ds);
+            super.invalidateParentCacheImage();
+        }
+        propertyChangeSupport.firePropertyChange( PROP_COLOR, old, color);
     }
 
     public int getRenderTimeLimitMs() {
