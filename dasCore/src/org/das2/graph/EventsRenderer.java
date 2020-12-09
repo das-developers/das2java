@@ -31,6 +31,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
@@ -48,6 +49,7 @@ import org.das2.qds.TagGenDataSet;
 import org.das2.qds.WritableDataSet;
 import org.das2.qds.ops.Ops;
 import org.das2.qds.util.DataSetBuilder;
+import org.das2.util.LoggerManager;
 
 
 /**
@@ -75,6 +77,7 @@ public class EventsRenderer extends Renderer {
      */
     private boolean useOnlyEventsMap= false;
     
+    private static Logger logger= LoggerManager.getLogger("das2.graphics.renderer.events");
     /**
      * return bounding cube 
      * @param ds
@@ -427,7 +430,7 @@ public class EventsRenderer extends Renderer {
      * @return rank 2 N by 4 dataset.
      */
     private QDataSet makeCanonical( QDataSet vds ) {
-
+        logger.entering( "EventsRenderer", "makeCanonical" );
         QDataSet xmins;
         QDataSet xmaxs;
         QDataSet colors;
@@ -446,6 +449,7 @@ public class EventsRenderer extends Renderer {
                 } catch ( IndexOutOfBoundsException ex ) {
                     if ( vds.length()==0 ) {
                         //TODO: unbundle should be able to handle this.
+                        logger.exiting( "EventsRenderer", "makeCanonical", "null");
                         return null;
                     } else {
                         throw ex;
@@ -474,6 +478,7 @@ public class EventsRenderer extends Renderer {
                     }
                 } else {
                     parent.postMessage( this, "DEPEND_0 is rank 2 but not bins", DasPlot.WARNING, null, null );
+                    logger.exiting( "EventsRenderer", "makeCanonical", "null" );
                     return null;
                 }
                 
@@ -493,6 +498,7 @@ public class EventsRenderer extends Renderer {
 
             } else {
                 parent.postMessage( this, "rank 2 dataset must have dep0 of rank 1 or rank 2 bins", DasPlot.WARNING, null, null );
+                logger.exiting( "EventsRenderer", "makeCanonical", "null");
                 return null;
             }
 
@@ -522,6 +528,7 @@ public class EventsRenderer extends Renderer {
                     msgs= vds;
                 } else {
                     parent.postMessage( this, "DEPEND_0 is rank 2 but not bins", DasPlot.WARNING, null, null );
+                    logger.exiting( "EventsRenderer", "makeCanonical", "null");
                     return null;
                 }
             } else if ( dep0.rank() == 1 ) {
@@ -544,24 +551,32 @@ public class EventsRenderer extends Renderer {
                 msgs= vds;
             } else {
                 parent.postMessage( this, "dataset is not correct form", DasPlot.WARNING, null, null );
+                logger.exiting( "EventsRenderer", "makeCanonical", "null");
                 return null;
             }
             Color c0= getColor();
-            Color c1= new Color( c0.getRed(), c0.getGreen(), c0.getBlue(), ( !opaque && c0.getAlpha()==255 ) ? 128 : c0.getAlpha() );
+            int alpha= c0.getAlpha()==255 ? 
+                    ( opaque ? 255 : 128 ) :
+                    c0.getAlpha();
+            Color c1= new Color( c0.getRed(), c0.getGreen(), c0.getBlue(), alpha );
             int irgb= c1.getRGB();
             
             colors= Ops.replicate( irgb, xmins.length() );
-
+            
         } else if ( vds.rank()==0 ) {
             xmins= Ops.replicate(vds,1); // increase rank from 0 to 1.
             xmaxs= xmins;
             Color c0= getColor();
-            Color c1= new Color( c0.getRed(), c0.getGreen(), c0.getBlue(), ( !opaque && c0.getAlpha()==255 ) ? 128 : c0.getAlpha() );
+            int alpha= c0.getAlpha()==255 ? 
+                    ( opaque ? 255 : 128 ) :
+                    c0.getAlpha();
+            Color c1= new Color( c0.getRed(), c0.getGreen(), c0.getBlue(), alpha );
             int irgb= c1.getRGB();
             colors= Ops.replicate( irgb, xmins.length() );
             msgs= Ops.replicate(vds,1);
         } else {            
             parent.postMessage( this, "dataset must be rank 0, 1 or 2", DasPlot.WARNING, null, null );
+            logger.exiting( "EventsRenderer", "makeCanonical", "null");
             return null;
         }
 
@@ -582,6 +597,7 @@ public class EventsRenderer extends Renderer {
         }
 
         QDataSet lds= Ops.bundle( xmins, xmaxs, colors, msgs );
+        logger.exiting( "EventsRenderer", "makeCanonical", "lds");
         
         return lds;
 
@@ -860,6 +876,9 @@ public class EventsRenderer extends Renderer {
 
     @Override
     public void setControl(String s) {
+        if ( this.control.equals(s) ) {
+            return;
+        }
         super.setControl(s);
         this.setShowLabels( getBooleanControl( "showLabels", false ) );
         this.setOrbitMode( getBooleanControl( "orbitMode", false ));
@@ -867,6 +886,7 @@ public class EventsRenderer extends Renderer {
         this.setGanttMode( getBooleanControl( "ganttMode", false ));
         this.setLineStyle( Renderer.decodePlotSymbolConnectorControl( getControl( PROP_LINESTYLE, lineStyle.toString() ), lineStyle ) );
         this.setLineThick( getControl( Renderer.CONTROL_KEY_LINE_THICK, "" ) );
+        this.setOpaque( getBooleanControl( "opaque", false ) );
         if ( hasControl("color") ) {
             this.setColor( getColorControl( Renderer.CONTROL_KEY_COLOR,color) );
             this.useColor= true;
@@ -884,6 +904,7 @@ public class EventsRenderer extends Renderer {
         controls.put( "ganttMode", encodeBooleanControl( isGanttMode() ) );
         controls.put( Renderer.CONTROL_KEY_LINE_STYLE, getLineStyle().toString() );
         controls.put("lineThick", getLineThick() );
+        controls.put("opaque", encodeBooleanControl( isOpaque() ) );
         if ( this.useColor ) {
             controls.put( Renderer.CONTROL_KEY_COLOR, encodeColorControl(color) );
         }
@@ -948,7 +969,7 @@ public class EventsRenderer extends Renderer {
         boolean oldOpaque = this.opaque;
         this.opaque = opaque;
         if ( oldOpaque!=opaque ) {
-            makeCanonical(ds);
+            cds= makeCanonical(ds);
             super.invalidateParentCacheImage();
         }
         propertyChangeSupport.firePropertyChange( PROP_OPAQUE, oldOpaque, opaque );

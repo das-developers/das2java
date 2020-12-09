@@ -72,17 +72,22 @@ public class PsymConnector implements Enumeration, Displayable {
     
     protected Stroke getStroke( float width ) {
         if ( width!=cacheWidth ) {
-            float[] dashArray= stroke.getDashArray();
-            float[] dashArrayWidth=null;
-            if ( dashArray!=null ) {
-                dashArrayWidth= new float[dashArray.length];
-                for ( int i=0; i<dashArray.length; i++ ) {
-                    dashArrayWidth[i]= dashArray[i] * width;
+            if ( this==NONE ) {
+                cacheStroke= new BasicStroke( width );
+                cacheWidth= width;
+            } else {
+                float[] dashArray= stroke.getDashArray();
+                float[] dashArrayWidth=null;
+                if ( dashArray!=null ) {
+                    dashArrayWidth= new float[dashArray.length];
+                    for ( int i=0; i<dashArray.length; i++ ) {
+                        dashArrayWidth[i]= dashArray[i] * width;
+                    }
                 }
+                cacheStroke= new BasicStroke( width, stroke.getEndCap(), stroke.getLineJoin(),
+                stroke.getMiterLimit(), dashArrayWidth, stroke.getDashPhase()*width );
+                cacheWidth= width;
             }
-            cacheStroke= new BasicStroke( width, stroke.getEndCap(), stroke.getLineJoin(),
-            stroke.getMiterLimit(), dashArrayWidth, stroke.getDashPhase()*width );
-            cacheWidth= width;
         }
         return cacheStroke;
     }
