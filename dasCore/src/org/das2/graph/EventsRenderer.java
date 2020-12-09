@@ -16,7 +16,6 @@ import org.das2.datum.DatumUtil;
 import org.das2.event.LabelDragRenderer;
 import org.das2.event.MouseModule;
 import org.das2.system.DasLogger;
-import org.das2.util.monitor.ProgressMonitor;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -24,6 +23,7 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.GeneralPath;
+import java.awt.geom.Line2D;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -692,6 +692,11 @@ public class EventsRenderer extends Renderer {
                 int imin= xAxis.getColumn().getDMinimum();
                 int imax= xAxis.getColumn().getDMaximum();
                 
+                boolean drawLineThick= lineThick.trim().length()>0;
+                if ( drawLineThick ) {
+                    double t= DasDevicePosition.parseLayoutStr( this.lineThick, f.getSize2D(), getParent().getWidth(), 1.0 );
+                    g.setStroke( lineStyle.getStroke( (float)t ) );
+                }
                 for ( int i=ivds0; i<ivds1; i++ ) {
 
                     long dt= System.currentTimeMillis()-t0;
@@ -748,9 +753,18 @@ public class EventsRenderer extends Renderer {
                             //int iymax= row.getDMinimum() + row.getHeight() * (1+(int)msgs.value(i)-gymin) / ( gymax - gymin + 1 ) - 1;
                             r1= new Rectangle( ixmin, iymin, iwidth, Math.max( iymax-iymin, 2 ) );
                             g.fill( r1 );
-                        } else {                
-                            r1= new Rectangle( ixmin, row.getDMinimum(), iwidth, row.getHeight() );
-                            g.fill( r1 );
+                        } else {
+                            if ( iwidth<=1 && drawLineThick ) {
+                                r1= new Rectangle( ixmin, row.getDMinimum(), iwidth, row.getHeight() );
+                                Line2D.Double l1= new Line2D.Double( ixmin, row.getDMinimum(), ixmin, row.getDMaximum() );
+                                g.draw( l1 );
+                            } else {
+                                r1= new Rectangle( ixmin, row.getDMinimum(), iwidth, row.getHeight() );
+                                g.fill( r1 );
+                                if ( drawLineThick ) {
+                                    g.draw( r1 );
+                                }
+                            }
                         }
                         r1.x= r1.x-2;
                         r1.y= r1.y-2;
@@ -851,6 +865,8 @@ public class EventsRenderer extends Renderer {
         this.setOrbitMode( getBooleanControl( "orbitMode", false ));
         this.setFontSize( getControl( Renderer.CONTROL_KEY_FONT_SIZE, "1em" ));
         this.setGanttMode( getBooleanControl( "ganttMode", false ));
+        this.setLineStyle( Renderer.decodePlotSymbolConnectorControl( getControl( PROP_LINESTYLE, lineStyle.toString() ), lineStyle ) );
+        this.setLineThick( getControl( Renderer.CONTROL_KEY_LINE_THICK, "" ) );
         if ( hasControl("color") ) {
             this.setColor( getColorControl( Renderer.CONTROL_KEY_COLOR,color) );
             this.useColor= true;
@@ -866,6 +882,8 @@ public class EventsRenderer extends Renderer {
         controls.put( "orbitMode", encodeBooleanControl( isOrbitMode() ) );
         controls.put( Renderer.CONTROL_KEY_FONT_SIZE, getFontSize() );
         controls.put( "ganttMode", encodeBooleanControl( isGanttMode() ) );
+        controls.put( Renderer.CONTROL_KEY_LINE_STYLE, getLineStyle().toString() );
+        controls.put("lineThick", getLineThick() );
         if ( this.useColor ) {
             controls.put( Renderer.CONTROL_KEY_COLOR, encodeColorControl(color) );
         }
@@ -878,6 +896,38 @@ public class EventsRenderer extends Renderer {
     
     public Color getColor() {
         return color;
+    }
+    
+    private PsymConnector lineStyle = PsymConnector.SOLID;
+
+    public static final String PROP_LINESTYLE = "lineStyle";
+
+    public PsymConnector getLineStyle() {
+        return lineStyle;
+    }
+
+    public void setLineStyle(PsymConnector lineStyle) {
+        PsymConnector oldLineStyle = this.lineStyle;
+        this.lineStyle = lineStyle;
+        propertyChangeSupport.firePropertyChange(PROP_LINESTYLE, oldLineStyle, lineStyle);
+    }
+
+    private String lineThick = "";
+
+    public static final String PROP_LINETHICK = "lineThick";
+
+    /**
+     * the line thickness, examples include "5pt" and "0.1em"
+     * @return 
+     */
+    public String getLineThick() {
+        return lineThick;
+    }
+
+    public void setLineThick(String lineThick) {
+        String oldLineThick = this.lineThick;
+        this.lineThick = lineThick;
+        propertyChangeSupport.firePropertyChange(PROP_LINETHICK, oldLineThick, lineThick);
     }
     
     /**
