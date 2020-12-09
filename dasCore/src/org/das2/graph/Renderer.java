@@ -1243,6 +1243,20 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
     }
     
     /**
+     * return the size encoded as normalized by the container size and em size.
+     * @param sizeStr spec like "5em" or "50%"
+     * @param nsize the dimension for percents, for example the size of the canvas or column.
+     * @param emSize the size of the current font, for ems.
+     * @param fail value to return if the spec cannot be parsed.
+     * @return the size in pixels
+     * @throws ParseException 
+     * @see DasDevicePosition#parseLayoutStr(java.lang.String, double, int, double) 
+     */
+    public static double parseLayoutString( String sizeStr, int nsize, double emSize, double fail ) throws ParseException {
+        return DasDevicePosition.parseLayoutStr( sizeStr, emSize, nsize, fail );
+    }
+    
+    /**
      * handle the fontSize property, which has values like "1em" and "7px"
      * @param g1
      * @param fontSize fontSize property, for example "1em" and "7px"
