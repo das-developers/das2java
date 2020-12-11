@@ -1820,7 +1820,7 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
     public void addDataPoint( Datum x, Datum y, Map planes ) {
         synchronized (dataPoints) {
             if ( planes==null ) planes= new LinkedHashMap();
-            if (dataPoints.isEmpty() && namesArray==null ) {
+            if (dataPoints.isEmpty() && unitsArray[0]==null ) {
                 unitsArray    = new Units[2 + planes.size()];
                 unitsArray[0] = x.getUnits();
                 unitsArray[1] = y.getUnits();
@@ -1862,7 +1862,7 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
                 }
 
             }
-
+            
             if (!x.getUnits().isConvertibleTo(unitsArray[0])) {
                 throw new RuntimeException("inconvertible units: got \"" + x.getUnits() + "\", expected \"" + unitsArray[0] + "\"");
             }
