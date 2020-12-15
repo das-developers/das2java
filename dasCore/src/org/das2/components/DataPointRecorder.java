@@ -844,7 +844,7 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
             dataPoints.clear();
             String[] planesArray1 = null;
             Units[] unitsArray1 = null;
-
+            
             Datum x;
             Datum y;
             Map planes;// = new LinkedHashMap();
@@ -869,7 +869,10 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
                 if ( tline.length()==0 ) {
                     continue;
                 }
-                
+                if ( line.startsWith("# Generated") ) {
+                    // I'd skip them all, but some files have commented field names.
+                    continue;
+                }
                 if ( delimCheck && !line.contains("\t") ) {
                     Pattern p= Pattern.compile("([\\s\\,\\;])");
                     Matcher m= p.matcher(line);
@@ -917,7 +920,7 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
                             }
                         } else {
                             planesArray1[i] = s[i].trim();
-                            unitsArray1[i] = Units.dimensionless;
+                            unitsArray1[i] = null;
                         }
                     }
                     continue;
@@ -950,23 +953,39 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
                     planes = new LinkedHashMap();
 
                     for (int i = 2; i < unitsArray1.length; i++) {
-                        if (unitsArray1[i] == null) {
+                        Units u= unitsArray1[i];
+                        String si= s[i];
+                        if ( u == null) {
                             Pattern p = Pattern.compile("\"(.*)\".*");
-                            Matcher m = p.matcher(s[i]);
+                            Matcher m = p.matcher(si);
                             if (m.matches()) {
                                 EnumerationUnits eu= EnumerationUnits.create("ordinal");
                                 unitsArray1[i]= eu;
                                 planes.put(planesArray1[i], eu.createDatum( m.group(1) ) );
                             } else {
-                                throw new ParseException("parse error, expected \"\"", 0);
+                                try {
+                                    u= Units.dimensionless;
+                                    planes.put(planesArray1[i], u.parse(si));
+                                    unitsArray1[i]= u;
+                                } catch ( ParseException ex ) {
+                                    try {
+                                        u= Units.cdfTT2000;
+                                        planes.put(planesArray1[i], u.parse(si));
+                                        unitsArray1[i]= u;
+                                    } catch ( ParseException ex2 ) {
+                                        EnumerationUnits eu= EnumerationUnits.create("default");
+                                        planes.put(planesArray1[i], eu.createDatum(si));
+                                        unitsArray1[i]= eu;
+                                    }
+                                }
                             }
                         } else {
                             try {
-                                if ( unitsArray1[i] instanceof EnumerationUnits ) {
+                                if ( u instanceof EnumerationUnits ) {
                                     EnumerationUnits eu= (EnumerationUnits)unitsArray1[i];
-                                    planes.put(planesArray1[i], eu.createDatum( s[i] ));
+                                    planes.put(planesArray1[i], eu.createDatum( si ));
                                 } else {
-                                    planes.put(planesArray1[i], unitsArray1[i].parse(s[i]));
+                                    planes.put(planesArray1[i], u.parse(si));
                                 }
                             } catch (ParseException e) {
                                 throw new RuntimeException(e);
