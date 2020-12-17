@@ -150,7 +150,7 @@ public class OperationsProcessor {
                     int[] dims= DataSetUtil.qubeDims(fillDs);
                     Pattern skipPattern= Pattern.compile("\\'\\:?\\'");
                     Pattern skipPattern2= Pattern.compile("\\:");
-                    List<Object> args= new ArrayList();
+                    List<Object> args= new ArrayList<>();
                     while ( s.hasNextInt() || s.hasNext( skipPattern ) || s.hasNext(skipPattern2) ) {
                         if ( s.hasNextInt() ) {
                             args.add( s.nextInt() );
@@ -607,6 +607,20 @@ public class OperationsProcessor {
                     } catch ( NumberFormatException ex ) {
                         fillDs= DataSetOps.unbundle( fillDs, comp );
                     }
+                } else if ( cmd.equals("|rebundle" ) ) {
+                    if ( s.hasNextInt() ) {
+                        List<Integer> args= new ArrayList<>();
+                        args.add( s.nextInt() );
+                        while ( s.hasNextInt() ) args.add( s.nextInt() );
+                        int[] indeces= new int[args.size()];
+                        for ( int ii=0; ii<indeces.length; ii++ ) indeces[ii]= args.get(ii);
+                        fillDs= Ops.rebundle( fillDs, indeces );                        
+                    } else {
+                        List<String> args= new ArrayList<>();
+                        while ( s.hasNext() ) args.add( s.next() );
+                        fillDs= Ops.rebundle( fillDs, args.toArray(new String[args.size()]) );
+                    }
+                        
                 } else if ( cmd.equals("|negate") ) {
                     fillDs= Ops.negate(fillDs);
                 } else if ( cmd.equals("|cos") ) {
@@ -651,9 +665,7 @@ public class OperationsProcessor {
                     int icomp= Integer.parseInt(comp);
                     fillDs= Ops.medianFilter(fillDs, icomp);
                 } else if ( cmd.equals("|contour") ) {
-
-                    List<Double> args= new ArrayList();
-
+                    List<Double> args= new ArrayList<>();
                     args.add( s.nextDouble() );
                     while ( s.hasNextDouble() ) {
                         args.add( s.nextDouble() );

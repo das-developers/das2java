@@ -13046,6 +13046,42 @@ public final class Ops {
     }
     
     /**
+     * unbundle the names from the bundle, and rebundle them in the order 
+     * specified.
+     * @param bundle1 a bundle of datasets
+     * @param names the bundled dataset names
+     * @return the new bundle
+     * @see #unbundle(org.das2.qds.QDataSet, java.lang.String) 
+     * @since v2020a_15
+     */
+    public static QDataSet rebundle( QDataSet bundle1, String[] names ) {
+        QDataSet result= null;
+        for ( String s: names ) {
+            QDataSet b= Ops.unbundle( bundle1, s );
+            result= Ops.bundle( result, b );
+        }
+        return result;
+    }
+    
+    /**
+     * unbundle datasets by index from the bundle, and rebundle them in the order 
+     * specified.
+     * @param bundle1 a bundle of datasets
+     * @param ii the index of each dataset
+     * @return the new bundle
+     * @see #unbundle(org.das2.qds.QDataSet, java.lang.String) 
+     * @since v2020a_15
+     */
+    public static QDataSet rebundle( QDataSet bundle1, int[] ii ) {
+        QDataSet result= null;
+        for ( int i: ii ) {
+            QDataSet b= Ops.unbundle( bundle1, i );
+            result= Ops.bundle( result, b );
+        }
+        return result;
+    }
+    
+    /**
      * return true if DEPEND_1 is set and its units are EnumerationUnits.  This
      * was the pre-bundle way of representing a bundle of datasets.  It might
      * be supported indefinitely, because it has some nice rules about the data.
