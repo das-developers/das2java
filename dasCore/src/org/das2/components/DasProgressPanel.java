@@ -57,7 +57,6 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-import javax.swing.border.LineBorder;
 import org.das2.graph.DasCanvas;
 import org.das2.util.LoggerManager;
 import org.das2.util.monitor.NullProgressMonitor;
@@ -185,8 +184,8 @@ public class DasProgressPanel implements ProgressMonitor {
     Exception source;
     Exception consumer;
 
-    ImageIcon cancel= new ImageIcon( DasProgressPanel.class.getResource("/images/icons/cancel14.png") );
-    ImageIcon cancelGrey= new ImageIcon( DasProgressPanel.class.getResource("/images/icons/cancelGrey14.png") );
+    private static final ImageIcon cancel= new ImageIcon( DasProgressPanel.class.getResource("/images/icons/cancel14.png") );
+    private static final ImageIcon cancelGrey= new ImageIcon( DasProgressPanel.class.getResource("/images/icons/cancelGrey14.png") );
     
     protected DasProgressPanel(String label) {
         logger.log(Level.FINE, "create monitor: \"{0}\"", label);
