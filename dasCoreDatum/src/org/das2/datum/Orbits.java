@@ -143,7 +143,7 @@ public class Orbits {
         }
 
         if ( in==null ) {
-            if ( exfirst!=null && exfirst instanceof IOException ) {
+            if ( exfirst!=null ) {
                 throw (IOException)exfirst;
             } else {
                 throw new IllegalArgumentException("I/O Exception prevents reading orbits from \""+urls.get(0)+"\"",exfirst );
