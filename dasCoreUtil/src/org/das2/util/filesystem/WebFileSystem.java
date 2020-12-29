@@ -161,6 +161,7 @@ public abstract class WebFileSystem extends FileSystem {
     private File readOnlyCache= null;
 
     public final void setReadOnlyCache( File f ) {
+        logger.log(Level.INFO, "using read only cache at {0}", f.getPath());
         File oldValue= this.readOnlyCache;
         this.readOnlyCache= f;
         propertyChangeSupport.firePropertyChange(PROP_READ_ONLY_CACHE, oldValue, readOnlyCache );

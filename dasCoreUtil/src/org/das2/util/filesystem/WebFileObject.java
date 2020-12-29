@@ -420,33 +420,37 @@ public class WebFileObject extends FileObject {
 //            }
 //        }
 
-        boolean download = false;
 
         if ( monitor==null ) throw new NullPointerException("monitor may not be null");
-        Date remoteDate;
-        long remoteLength=0;
 
         //check readonly cache for file.  For the Github filesystem, this could be used to verify local modifications.
         if ( this.wfs.getReadOnlyCache()!=null ) {
             File cacheFile= new File( this.wfs.getReadOnlyCache(), this.getNameExt() );
             if ( cacheFile.exists() ) {
-                logger.log(Level.FINE, "using file from ro_cache: {0}", this.getNameExt());
+                logger.log(Level.FINE, "using file from ro_cache: {0}", cacheFile.getPath() );
                 return cacheFile;
             }
         }
 
         Map<String,Object> firstMeta= new HashMap<>();
         
+        boolean download;
+        Date remoteDate;
+        long remoteLength;
+
         download= doCheckFreshness(firstMeta);
         
         remoteDate= (Date)firstMeta.get("remoteDate");
         remoteLength= (Long)firstMeta.get("remoteLength");
         
+        logger.log(Level.FINER, "remoteDate: {0}", remoteDate);
+        logger.log(Level.FINER, "remoteLength: {0}", remoteLength);
+        
         //check readonly cache for file.
         if ( download && this.wfs.getReadOnlyCache()!=null ) {
             File cacheFile= new File( this.wfs.getReadOnlyCache(), this.getNameExt() );
             if ( cacheFile.exists() ) {
-                logger.log(Level.FINE, "using file from ro_cache: {0}", this.getNameExt());
+                logger.log(Level.FINE, "using file from ro_cache: {0}", cacheFile.getPath() );
                 return cacheFile;
             }
         }
