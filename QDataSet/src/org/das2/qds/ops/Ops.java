@@ -13423,6 +13423,68 @@ public final class Ops {
     }
 
     /**
+     * like bundle, but declare the last dataset is dependent on the first three.
+     *
+     * @param d0 rank 1 dataset
+     * @param d1 rank 1 dataset
+     * @param d2 rank 1 dataset
+     * @param d3 rank 1 dataset
+     * @param z rank 1 or rank 4 dataset.
+     * @return rank 2 bundle when z is rank 1, or a rank 3 dataset when z is rank 3.
+     */
+    public static QDataSet link( QDataSet d0, QDataSet d1, QDataSet d2, QDataSet d3, QDataSet z ) {
+        if (z.rank() == 1) {
+            String a1name= (String) d0.property(QDataSet.NAME);
+            String a2name= (String) d1.property(QDataSet.NAME);
+            String a3name= (String) d2.property(QDataSet.NAME);
+            String a4name= (String) d3.property(QDataSet.NAME);
+            String a5name= (String) z.property(QDataSet.NAME);
+            if ( a1name==null ) a1name="data0";
+            if ( a2name==null ) a2name="data1";
+            if ( a3name==null ) a3name="data2";
+            if ( a4name==null ) a4name="data3";
+            if ( a5name==null ) a5name="data4";
+
+            QDataSet result= bundle( d0, d1, d2, d3, z );
+            BundleDataSet.BundleDescriptor bds= (BundleDescriptor) result.property(QDataSet.BUNDLE_1);
+            bds.putProperty( QDataSet.NAME, 0, a1name );
+            bds.putProperty( QDataSet.NAME, 1, a2name );
+            bds.putProperty( QDataSet.NAME, 2, a3name );
+            bds.putProperty( QDataSet.NAME, 3, a4name );
+            bds.putProperty( QDataSet.NAME, 4, a5name );
+            
+            List<String> problems= new ArrayList<>();
+            if ( DataSetUtil.validate(result, problems ) ) {
+                return result;
+            } else {
+                throw new IllegalArgumentException( problems.get(0) );
+            }
+
+        } else {
+            ArrayDataSet zds = ArrayDataSet.copy(z);
+            if (d0 != null) {
+                zds.putProperty(QDataSet.DEPEND_0, d0);
+            }
+            if (d1 != null ) {
+                zds.putProperty(QDataSet.DEPEND_1, d1);
+            }
+            if (d2 != null ) {
+                zds.putProperty(QDataSet.DEPEND_2, d2);
+            }
+            if (d3 != null ) {
+                zds.putProperty(QDataSet.DEPEND_3, d3);
+            }
+            List<String> problems= new ArrayList<>();
+            if ( !DataSetUtil.validate(zds, problems ) ) {
+                throw new IllegalArgumentException( problems.get(0) );
+            } else {
+                return zds;
+            }
+        }
+
+    }
+    
+    /**
      * @see #link(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      * @param x object which can be converted to a QDataSet
      * @param y object which can be converted to a QDataSet
