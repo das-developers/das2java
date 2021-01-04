@@ -1,12 +1,6 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package org.das2.qds.filters;
 
-import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseWheelEvent;
@@ -65,11 +59,8 @@ public class SlicesFilterEditorPanel extends AbstractFilterEditorPanel implement
         cb1.setToolTipText("slice on this dimension");
         p1.add( cb1 );
         checkboxs[i]=cb1;
-        cb1.addActionListener( new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                spinners[i].setEnabled( cb1.isSelected() );
-            }
+        cb1.addActionListener((ActionEvent e) -> {
+            spinners[i].setEnabled( cb1.isSelected() );
         });
         p1.add( Box.createHorizontalStrut(14) );
         JSpinner sp1= new JSpinner();
@@ -119,11 +110,27 @@ public class SlicesFilterEditorPanel extends AbstractFilterEditorPanel implement
         if ( m.matches() ) {
             String arg= m.group(1);
             String[] ss= arg.split(",");
-            rank= ss.length;
-            this.removeAll();
-            this.setLayout( new BoxLayout( this, BoxLayout.Y_AXIS )  );
-            for ( int i=0; i<rank; i++ ) {
-                add( getDimensionPanel(i, ss[i]) );
+            if ( ss.length==rank ) {
+                for ( int i=0; i<rank; i++ ) {
+                    String s= ss[i];
+                    JCheckBox cb1= checkboxs[i];
+                    JSpinner sp1= spinners[i];
+                    if ( s.startsWith("'") && s.endsWith("'") ) s= s.substring(1,s.length()-1);
+                    if ( s.equals(":") ) {
+                        sp1.setEnabled(false);
+                        cb1.setSelected(false);
+                    } else {
+                        sp1.setValue(Integer.parseInt(s));
+                        cb1.setSelected(true);
+                    }
+                }
+            } else {
+                rank= ss.length;
+                this.removeAll();
+                this.setLayout( new BoxLayout( this, BoxLayout.Y_AXIS )  );
+                for ( int i=0; i<rank; i++ ) {
+                    add( getDimensionPanel(i, ss[i]) );
+                }
             }
         }
     }
