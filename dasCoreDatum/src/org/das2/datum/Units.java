@@ -938,6 +938,32 @@ public abstract class Units {
         return result;
     }
 
+    /**
+     * return unit for identifying nominal data.  Strings are enumerated using
+     * this unit using the result's create(string) method, which returns a datum
+     * representing the string.  This method allocates
+     * a number for the string if one hasn't already, and the name is unique
+     * within the namespace "default".
+     * @return an EnumerationUnit with the namespace "default"
+     */
+    public static EnumerationUnits nominal() {
+        return nominal("default");
+    }
+    
+    /**
+     * return unit for identifying nominal data.  Strings are enumerated using
+     * this unit using the result's create(string) method, which returns a datum
+     * representing the string.  This method allocates
+     * a number for the string if one hasn't already, and the name is unique
+     * within a namespace.
+     * @param nameSpace
+     * @return an EnumerationUnit.
+     */
+    public static EnumerationUnits nominal( String nameSpace ) {
+        return EnumerationUnits.create(nameSpace);
+    }
+    
+    
     public static void main( String[] args ) throws java.text.ParseException {
         //Datum ratio = Datum.create(100);
         Datum ratio = Units.ampRatio.createDatum(100);
