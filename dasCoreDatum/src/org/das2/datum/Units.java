@@ -942,8 +942,8 @@ public abstract class Units {
      * return unit for identifying nominal data.  Strings are enumerated using
      * this unit using the result's create(string) method, which returns a datum
      * representing the string.  This method allocates
-     * a number for the string if one hasn't already, and the name is unique
-     * within the namespace "default".
+     * a number for the string if one hasn't already been allocated, and the 
+     * name is unique within the namespace "default".
      * @return an EnumerationUnit with the namespace "default"
      */
     public static EnumerationUnits nominal() {
@@ -954,8 +954,8 @@ public abstract class Units {
      * return unit for identifying nominal data.  Strings are enumerated using
      * this unit using the result's create(string) method, which returns a datum
      * representing the string.  This method allocates
-     * a number for the string if one hasn't already, and the name is unique
-     * within a namespace.
+     * a number for the string if one hasn't already been allocated, and the 
+     * name is unique within the namespace named.
      * @param nameSpace
      * @return an EnumerationUnit.
      */
