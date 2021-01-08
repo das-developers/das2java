@@ -12193,7 +12193,7 @@ public final class Ops {
      * monotonic subset of its points will be used.
     
      * @param ds1 the dataset providing timetags, or the timetags themselves.
-     * @param dss the N datasets, each either rank 1 or rank 2.
+     * @param dss the N datasets, each either rank 1 or rank 2, all should have DEPEND_0 which is monotonic.
      * @return a list of N datasets, synchronized
      * @see #synchronize(org.das2.qds.QDataSet, org.das2.qds.QDataSet...)      
      * @see #synchronizeNN(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
