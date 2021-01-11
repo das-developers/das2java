@@ -12403,51 +12403,34 @@ public final class Ops {
      * @param labels array of string labels
      * @param context the namespace for the labels, to provide control over String&rarr;int mapping.
      * @return rank 1 QDataSet
-     * @deprecated use labelsDataSet
+     * @deprecated use labelsDataset
      * @see #labelsDataset(java.lang.String[]) 
      */
     public static QDataSet labels(String[] labels, String context) {
-        EnumerationUnits u;
-        try {
-            Units uu= Units.getByName(context);
-            if ( uu!=null && uu instanceof EnumerationUnits ) {
-                u= (EnumerationUnits)uu;
-            } else {
-                u = new EnumerationUnits(context);
-            }
-        } catch ( IllegalArgumentException ex ) {
-            u = new EnumerationUnits(context);
-        }
-        SDataSet result = SDataSet.createRank1(labels.length);
-        for (int i = 0; i < labels.length; i++) {
-            Datum d = u.createDatum(labels[i]);
-            result.putValue(i, d.doubleValue(u));
-        }
-        result.putProperty(QDataSet.UNITS, u);
-        return result;
+        return labelsDataset(labels,context);
     }
 
     /**
      * create a labels dataset for tagging rows of a dataset.
      * Example:
-     * <tt>dep1= labels( ["red","greed","blue"] )</tt>
+     * <tt>dep1= labels( ["red","green","blue"] )</tt>
      * @param labels array of string labels
      * @return rank 1 QDataSet
      * @deprecated use labelsDataSet
      * @see #labelsDataset(java.lang.String[]) 
      */
     public static QDataSet labels(String[] labels) {
-        return labels(labels, "default");
+        return labelsDataset(labels, "default");
     }
     
     /**
      * create a labels dataset for tagging rows of a dataset.  If the context
      * has been used already, including "default", then the EnumerationUnit
-     * for the data will be preserved.  labels(["red","green","blue"],"default")
+     * for the data will be preserved.  labelsDataset(['red','green','blue'],'default')
      * will always return an equivalent (and comparable) result during a session.
      *
      * Example:
-     * <tt>dep1= labels( ["X","Y","Z"], "GSM" )</tt>
+     * <tt>dep1= labelsDataset( ['X','Y','Z'], 'GSM' )</tt>
      * @param labels array of string labels
      * @param context the namespace for the labels, to provide control over String&rarr;int mapping.
      * @return rank 1 QDataSet
@@ -12476,7 +12459,7 @@ public final class Ops {
     /**
      * create a labels dataset for tagging rows of a dataset.
      * Example: array of string labels
-     * <tt>dep1= labels( ["red","greed","blue"] )</tt>
+     * <tt>dep1= labelsDataset( ['red','green','blue'] )</tt>
      * @param labels
      * @return rank 1 QDataSet
      */    
@@ -12484,6 +12467,42 @@ public final class Ops {
         return labelsDataset( labels, "default" );
     }
 
+    /**
+     * create a rank 0 label dataset.
+     * <tt>dep1= labelsDataset( 'Chicago' )</tt>
+     * @param label the string label
+     * @return rank 0 QDataSet
+     */    
+    public static QDataSet labelsDataset(String label) {
+        return labelsDataset( label, "default" );
+    }    
+
+    /**
+     * create a rank 0 label dataset.
+     * <tt>dep1= labelsDataset( 'Chicago', 'cities' )</tt>
+     * @param label the string label
+     * @param context the namespace for the labels, to provide control over String&rarr;int mapping.
+     * @return rank 0 QDataSet
+     */      
+    public static QDataSet labelsDataset(String label, String context) {
+        EnumerationUnits u;
+        try {
+            Units uu= Units.getByName(context);
+            if ( uu!=null && uu instanceof EnumerationUnits ) {
+                u= (EnumerationUnits)uu;
+            } else {
+                u = new EnumerationUnits(context);
+            }
+        } catch ( IllegalArgumentException ex ) {
+            u = new EnumerationUnits(context);
+        }
+        IDataSet result = IDataSet.createRank0();
+        Datum d = u.createDatum(label);
+        result.putValue(d.doubleValue(u));
+        result.putProperty(QDataSet.UNITS, u);
+        return result;
+    }
+    
     /**
      * create a dataset of RGB colors.  The output is
      * int(red)*256*256 + int(green)*256 + int(blue)
