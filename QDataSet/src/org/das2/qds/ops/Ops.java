@@ -2718,12 +2718,8 @@ public final class Ops {
      */
     public static QDataSet ge(QDataSet ds1, QDataSet ds2) {
         final UnitsConverter uc= SemanticOps.getLooseUnitsConverter( ds1, ds2 );
-        return applyBinaryOp(ds1, ds2, new BinaryOp() {
-            @Override
-            public double op(double d1, double d2) {
-                return uc.convert(d1) >= d2 ? 1.0 : 0.0;
-            }
-        });
+        return applyBinaryOp(ds1, ds2, 
+                (BinaryOp) (double d1, double d2) -> uc.convert(d1) >= d2 ? 1.0 : 0.0);
     }
 
     public static QDataSet ge( Object ds1, Object ds2 ) {
@@ -2738,12 +2734,8 @@ public final class Ops {
      */
     public static QDataSet lt(QDataSet ds1, QDataSet ds2) {
         final UnitsConverter uc= SemanticOps.getLooseUnitsConverter( ds1, ds2 );
-        return applyBinaryOp(ds1, ds2, new BinaryOp() {
-            @Override
-            public double op(double d1, double d2) {
-                return uc.convert(d1) < d2 ? 1.0 : 0.0;
-            }
-        });
+        return applyBinaryOp(ds1, ds2, 
+                (BinaryOp) (double d1, double d2) -> uc.convert(d1) < d2 ? 1.0 : 0.0);
     }
     
     public static QDataSet lt( Object ds1, Object ds2 ) {
@@ -2759,12 +2751,8 @@ public final class Ops {
      */
     public static QDataSet le(QDataSet ds1, QDataSet ds2) {
         final UnitsConverter uc= SemanticOps.getLooseUnitsConverter( ds1, ds2 );
-        return applyBinaryOp(ds1, ds2, new BinaryOp() {
-            @Override
-            public double op(double d1, double d2) {
-                return uc.convert(d1) <= d2 ? 1.0 : 0.0;
-            }
-        });
+        return applyBinaryOp(ds1, ds2, 
+                (BinaryOp) (double d1, double d2) -> uc.convert(d1) <= d2 ? 1.0 : 0.0);
     }
 
     public static QDataSet le( Object ds1, Object ds2 ) {
@@ -2781,12 +2769,8 @@ public final class Ops {
      * @see #bitwiseOr(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      */
     public static QDataSet or(QDataSet ds1, QDataSet ds2) {
-        return applyBinaryOp(ds1, ds2, new BinaryOp() {
-            @Override
-            public double op(double d1, double d2) {
-                return d1 != 0 || d2 != 0 ? 1.0 : 0.0;
-            }
-        });
+        return applyBinaryOp(ds1, ds2, 
+                (BinaryOp) (double d1, double d2) -> d1 != 0 || d2 != 0 ? 1.0 : 0.0);
     }
     
     public static QDataSet or( Object ds1, Object ds2 ) {
@@ -2802,12 +2786,8 @@ public final class Ops {
      * @see #bitwiseAnd(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      */
     public static QDataSet and(QDataSet ds1, QDataSet ds2) {
-        return applyBinaryOp(ds1, ds2, new BinaryOp() {
-            @Override
-            public double op(double d1, double d2) {
-                return d1 != 0 && d2 != 0 ? 1.0 : 0.0;
-            }
-        });
+        return applyBinaryOp(ds1, ds2, 
+                (BinaryOp) (double d1, double d2) -> d1 != 0 && d2 != 0 ? 1.0 : 0.0);
     }
     
     public static QDataSet and( Object ds1, Object ds2 ) {
@@ -2823,12 +2803,8 @@ public final class Ops {
      * @return bit-wise AND.
      */
     public static QDataSet bitwiseAnd( QDataSet ds1, QDataSet ds2 ) {
-        return applyBinaryOp(ds1, ds2, new BinaryOp() {
-            @Override
-            public double op(double d1, double d2) {
-                return (long)d1 & (long)d2;
-            }
-        });
+        return applyBinaryOp(ds1, ds2, 
+                (BinaryOp) (double d1, double d2) -> (long)d1 & (long)d2);
     }
     
     public static QDataSet bitwiseAnd( Object ds1, Object ds2 ) {
@@ -2843,12 +2819,8 @@ public final class Ops {
      * @return bit-wise OR.
      */
     public static QDataSet bitwiseOr( QDataSet ds1, QDataSet ds2 ) {
-        return applyBinaryOp(ds1, ds2, new BinaryOp() {
-            @Override
-            public double op(double d1, double d2) {
-                return (long)d1 | (long)d2;
-            }
-        });
+        return applyBinaryOp(ds1, ds2, 
+                (BinaryOp) (double d1, double d2) -> (long)d1 | (long)d2);
     }
     
     public static QDataSet bitwiseOr( Object ds1, Object ds2 ) {
@@ -2863,14 +2835,11 @@ public final class Ops {
      * @param ds1 
      * @param ds2
      * @return bit-wise XOR.
+     * @see #not(org.das2.qds.QDataSet) 
      */
     public static QDataSet bitwiseXor( QDataSet ds1, QDataSet ds2 ) {
-        return applyBinaryOp(ds1, ds2, new BinaryOp() {
-            @Override
-            public double op(double d1, double d2) {
-                return (long)d1 ^ (long)d2;
-            }
-        });
+        return applyBinaryOp(ds1, ds2, 
+                (BinaryOp) (double d1, double d2) -> (long)d1 ^ (long)d2);
     }
     
     public static QDataSet bitwiseXor( Object ds1, Object ds2 ) {
@@ -2884,12 +2853,7 @@ public final class Ops {
      * @see #bitwiseXor(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      */
     public static QDataSet not(QDataSet ds1) {
-        return applyUnaryOp(ds1, new UnaryOp() {
-            @Override
-            public double op(double d1) {
-                return d1 != 0 ? 0.0 : 1.0;
-            }
-        });
+        return applyUnaryOp(ds1, (UnaryOp) (double d1) -> d1 != 0 ? 0.0 : 1.0);
     }
 
     public static QDataSet not( Object ds1 ) {
