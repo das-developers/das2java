@@ -197,6 +197,8 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
             return 1;
         } else if (type.toString().startsWith("time") ) {
             return Integer.parseInt( type.toString().substring(4) );
+        } else if (type.toString().startsWith("ascii") ) {
+            return Integer.parseInt( type.toString().substring(5) );
         } else {
             throw new IllegalArgumentException("bad type: " + type);
         }
@@ -294,6 +296,8 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
             result=new UByteDataSet( rank, reclen, recoffs, len0, len1, len2, len3, buf );
         } else if (type.toString().startsWith("time") ) {
             result= new TimeDataSet( rank, reclen, recoffs, len0, len1, len2, len3, buf, type );
+        } else if (type.toString().startsWith("ascii") ) {
+            result= new AsciiDataSet( rank, reclen, recoffs, len0, len1, len2, len3, buf, type );
         } else {
             throw new IllegalArgumentException("bad data type: "+type);
         }

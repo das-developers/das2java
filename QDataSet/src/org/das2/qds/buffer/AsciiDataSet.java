@@ -3,24 +3,21 @@ package org.das2.qds.buffer;
 
 import java.nio.ByteBuffer;
 import java.text.ParseException;
-import org.das2.datum.TimeUtil;
 import org.das2.datum.Units;
 import org.das2.qds.QDataSet;
 
 /**
- * Often we see where time is left decoded in binary streams, occupying ~21 
- * bytes (ASCII characters) instead of 8 bytes to represent them as a double.  This extension
- * allows this sort of data to be read in as well, making the data available 
- * as Units.us2000.
- * 
+ * Sometimes you might just have numbers encoded in ASCII within a binary stream, 
+ * or fixed-length fields allow such parsing.
  * @author jbf
  */
-public class TimeDataSet extends BufferDataSet {
-
+public class AsciiDataSet extends BufferDataSet {
+    
     int lenBytes;
     double fill= -1e38;
-    private final Units UNITS= Units.us2000;
-
+    
+    private final Units UNITS= Units.dimensionless;
+    
     /**
      * Like the other constructors, but the type is needed as well to get the 
      * number of bytes.  
@@ -32,14 +29,13 @@ public class TimeDataSet extends BufferDataSet {
      * @param len2
      * @param len3
      * @param back
-     * @param type string "timeXX" where XX is number of bytes, between 20 and 24.
+     * @param type string "asciiXX" where XX is number of bytes, between 1 and 24.
      */
-    public TimeDataSet(int rank, int reclen, int recoffs, int len0, int len1, int len2, int len3, ByteBuffer back, Object type ) {
+    public AsciiDataSet(int rank, int reclen, int recoffs, int len0, int len1, int len2, int len3, ByteBuffer back, Object type ) {
         super(rank, reclen, recoffs, len0, len1, len2, len3, type, back );
-        this.lenBytes= Integer.parseInt( type.toString().substring(4) );
-        if ( this.lenBytes<16 ) throw new IllegalArgumentException("time16 is the shortest time supported.");
-        if ( this.lenBytes>24 ) throw new IllegalArgumentException("time24 is the longest time supported.");
-        putProperty( QDataSet.UNITS, UNITS );
+        this.lenBytes= Integer.parseInt( type.toString().substring(5) );
+        if ( this.lenBytes<1 ) throw new IllegalArgumentException("ascii1 is the shortest field supported.");
+        if ( this.lenBytes>32 ) throw new IllegalArgumentException("ascii24 is the longest field supported.");
         putProperty( QDataSet.FILL_VALUE, fill );
     }
     
@@ -47,12 +43,12 @@ public class TimeDataSet extends BufferDataSet {
         this.lenBytes= length;
     }
     
-    private double parseTime( ByteBuffer back, int offset ) {
+    private double parseDouble( ByteBuffer back, int offset ) {
         byte[] buff= new byte[lenBytes];
         for ( int i=0; i<lenBytes; i++ ) buff[i]= back.get(i+offset);
         String s= new String(buff);
         try {
-            return TimeUtil.create( s ).doubleValue( UNITS );
+            return Units.dimensionless.parse(s).doubleValue( Units.dimensionless );
         } catch (ParseException ex) {
             return fill;
         }
@@ -60,27 +56,27 @@ public class TimeDataSet extends BufferDataSet {
     
     @Override
     public double value() {
-        return parseTime(back, offset());
+        return parseDouble(back, offset());
     }
 
     @Override
     public double value(int i0) {
-        return parseTime(back, offset(i0));
+        return parseDouble(back, offset(i0));
     }
 
     @Override
     public double value(int i0, int i1) {
-        return parseTime(back, offset(i0, i1));
+        return parseDouble(back, offset(i0, i1));
     }
 
     @Override
     public double value(int i0, int i1, int i2) {
-        return parseTime(back, offset(i0, i1, i2));
+        return parseDouble(back, offset(i0, i1, i2));
     }
 
     @Override
     public double value(int i0, int i1, int i2, int i3) {
-        return parseTime(back, offset(i0, i1, i2, i3));
+        return parseDouble(back, offset(i0, i1, i2, i3));
     }
 
     private byte[] getBytes( double d ) {
@@ -127,5 +123,4 @@ public class TimeDataSet extends BufferDataSet {
         byte[] bb= getBytes( d );
         for ( int i=0; i<lenBytes; i++ ) back.put( offs+i, bb[i] );
     }
-    
 }
