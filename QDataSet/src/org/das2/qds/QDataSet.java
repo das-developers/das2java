@@ -385,8 +385,8 @@ public interface QDataSet {
      * values are an RGB image, a rank 3 dataset [w,h,3] or [w,h,4].  The
      * "3" should be R,G, and B channels, and when "4" is used, ARGB is the
      * default.  There can be a DEPEND_2 that is a QDataSet with ordinal data,
-     * specifying the channels like so Ops.labelsDataSet("r","b","g","a") or
-     * Ops.labelsDataSet("a","b","g","r").  Only bgr or rgb models are supported
+     * specifying the channels like so Ops.labelsDataset(['a','b','g','r']) or
+     * Ops.labelsDataset(['a','b','g','r']).  Only bgr or rgb models are supported
      * in the RGBImageRenderer, but future versions could support other color
      * models.
      */
