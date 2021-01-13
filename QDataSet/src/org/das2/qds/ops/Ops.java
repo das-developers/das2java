@@ -71,6 +71,7 @@ import org.das2.qds.SemanticOps;
 import org.das2.qds.TransposeRank2DataSet;
 import org.das2.qds.DataSetAnnotations;
 import static org.das2.qds.DataSetUtil.propertyNames;
+import org.das2.qds.DataSetWrapper;
 import org.das2.qds.IndexGenDataSet;
 import org.das2.qds.IndexListDataSetIterator;
 import org.das2.qds.SortDataSet;
