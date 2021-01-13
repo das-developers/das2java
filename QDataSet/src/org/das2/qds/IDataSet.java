@@ -27,6 +27,14 @@ public final class IDataSet extends ArrayDataSet {
     public static final String version="20150219";
     
     /**
+     * create a rank 0 dataset backed by array of ints.
+     * @return rank 0 dataset backed by double.
+     */
+    public static IDataSet createRank0() {
+        return new IDataSet(0, 1, 1, 1, 1);
+    }
+    
+    /**
      * create a rank 1 dataset backed by array of ints.
      * @param len0 length of the dimension
      * @return rank 1 qube dataset of backed by array of ints.
