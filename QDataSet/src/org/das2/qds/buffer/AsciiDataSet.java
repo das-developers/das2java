@@ -46,6 +46,7 @@ public class AsciiDataSet extends BufferDataSet {
     private double parseDouble( ByteBuffer back, int offset ) {
         byte[] buff= new byte[lenBytes];
         for ( int i=0; i<lenBytes; i++ ) buff[i]= back.get(i+offset);
+        if ( buff[lenBytes-1]==',' ) buff[lenBytes-1]=' '; // allow the field to contain delimiter.
         String s= new String(buff);
         try {
             return Units.dimensionless.parse(s).doubleValue( Units.dimensionless );
