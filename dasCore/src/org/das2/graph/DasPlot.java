@@ -1518,6 +1518,15 @@ public class DasPlot extends DasCanvasComponent {
 //                graphics.fillRoundRect( r.x, r.y, r.width, r.height, 3, 3 );
 //                graphics.setColor( c );
 //            }
+            boolean drawBack=isOpaqueBackground();
+            if ( drawBack ) {
+                Rectangle2D back= gtr.getBounds2D();
+                back= new Rectangle2D.Double( titleX+back.getX(), titleY+back.getY(), back.getWidth(), back.getHeight() );
+                Color c0= graphics.getColor();
+                graphics.setColor(Color.WHITE);
+                graphics.fill(back);
+                graphics.setColor(c0);
+            }
             gtr.draw(graphics, (float) titleX, (float) titleY);
         }
 

@@ -52,6 +52,7 @@ import javax.swing.border.*;
 
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
+import java.awt.geom.Rectangle2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.*;
@@ -2595,6 +2596,16 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 if (bottomLabel) {
                     leftEdge = DMin + (DMax - DMin - titleWidth) / 2;
                     baseline = bottomPosition + titlePositionOffset;
+
+                    boolean drawBack=isOpaqueBackground();
+                    if ( drawBack ) {
+                        Rectangle2D back= gtr.getBounds2D();
+                        back= new Rectangle2D.Double( leftEdge+back.getX(), baseline+back.getY(), back.getWidth(), back.getHeight() );
+                        Color c0= g2.getColor();
+                        g2.setColor(Color.WHITE);
+                        g2.fill(back);
+                        g2.setColor(c0);
+                    }
                     gtr.draw(g2, (float) leftEdge, (float) baseline);
                 }
                 if ( debugBoundsBox ) {
@@ -2870,16 +2881,17 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             x += tick_label_gap;
             y += ascent - height / 2;
         }
-//        
-//        if ( false ) { // if we were to prevent ticks from clobbering the background...
-//            Color c= g.getColor();
-//            g.setColor( g.getBackground() );
-//            Rectangle r= idlt.getBounds();
-//            r.translate( x, y );
-//            g.fillRoundRect( r.x, r.y, r.width, r.height, 3, 3 );
-//            g.setColor( c );
-//        }
-//        
+        
+        boolean drawBack=true;
+        if ( drawBack ) { // if we were to prevent ticks from clobbering the background...
+            Color c= g.getColor();
+            g.setColor( g.getBackground() );
+            Rectangle r= idlt.getBounds();
+            r.translate( x, y );
+            g.fillRoundRect( r.x, r.y, r.width, r.height, 3, 3 );
+            g.setColor( c );
+        }
+        
         idlt.draw(g, x, y);
         if (orientation == BOTTOM && drawTca && tcaData != null) {
             drawTCAItems(g, value, x, y, width);

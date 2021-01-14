@@ -393,6 +393,20 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
         return lineThicknessFloat;
     }
     
+    private boolean opaqueBackground = false;
+
+    public static final String PROP_OPAQUEBACKGROUND = "opaqueBackground";
+
+    public boolean isOpaqueBackground() {
+        return opaqueBackground;
+    }
+
+    public void setOpaqueBackground(boolean opaqueBackground) {
+        boolean oldOpaqueBackground = this.opaqueBackground;
+        this.opaqueBackground = opaqueBackground;
+        firePropertyChange(PROP_OPAQUEBACKGROUND, oldOpaqueBackground, opaqueBackground);
+    }
+
     private final Set dirty = new HashSet<>();
     
     /**
