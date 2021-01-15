@@ -2868,21 +2868,26 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
         if ( tick_label_gap<TICK_LABEL_GAP_MIN ) tick_label_gap= TICK_LABEL_GAP_MIN;
         
-        if (orientation == BOTTOM) {
-            x -= width / 2;
-            y += getTickLabelFont().getSize() + tick_label_gap;
-        } else if (orientation == TOP) {
-            x -= width / 2;
-            y -= tick_label_gap + idlt.getDescent();
-        } else if (orientation == LEFT) {
-            x -= (width + tick_label_gap);
-            y += ascent - height / 2;
-        } else {
-            x += tick_label_gap;
-            y += ascent - height / 2;
+        switch (orientation) {
+            case BOTTOM:
+                x -= width / 2;
+                y += getTickLabelFont().getSize() + tick_label_gap;
+                break;
+            case TOP:
+                x -= width / 2;
+                y -= tick_label_gap + idlt.getDescent();
+                break;
+            case LEFT:
+                x -= (width + tick_label_gap);
+                y += ascent - height / 2;
+                break;
+            default:
+                x += tick_label_gap;
+                y += ascent - height / 2;
+                break;
         }
         
-        boolean drawBack=true;
+        boolean drawBack=isOpaqueBackground();
         if ( drawBack ) { // if we were to prevent ticks from clobbering the background...
             Color c= g.getColor();
             g.setColor( g.getBackground() );
