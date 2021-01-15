@@ -927,35 +927,42 @@ public class DataSetUtil {
         if ( ds.isImmutable() ) {
             logger.warning( "ds is immutable, an exception will be thrown.");
         }
-        for ( Map.Entry<String,Object> e : properties.entrySet() ) {
-            if ( e.getKey().startsWith("DEPEND_") && e.getValue() instanceof Map ) {
-                QDataSet dep= (QDataSet) ds.property(e.getKey());
-                if ( dep instanceof MutablePropertyDataSet ) {
-                    MutablePropertyDataSet mdep= (MutablePropertyDataSet)dep;
-                    putProperties( (Map<String,Object>)e.getValue(), mdep );
-                }
-            } else if ( e.getKey().startsWith("PLANE_") && e.getValue() instanceof Map ) {
-                QDataSet dep= (QDataSet) ds.property(e.getKey());
-                if ( dep instanceof MutablePropertyDataSet ) {
-                    MutablePropertyDataSet mdep= (MutablePropertyDataSet)dep;
-                    putProperties( (Map<String,Object>)e.getValue(), mdep );
-                }
-            } else if ( e.getKey().startsWith("BUNDLE_") && e.getValue() instanceof Map ) {
-                QDataSet dep= (QDataSet) ds.property(e.getKey());
-                if ( dep instanceof MutablePropertyDataSet ) {
-                    MutablePropertyDataSet mdep= (MutablePropertyDataSet)dep;
-                    putProperties( (Map<String,Object>)e.getValue(), mdep );
-                }
-            } else if ( e.getKey().startsWith("CONTEXT_") && e.getValue() instanceof Map ) {
-                QDataSet dep= (QDataSet) ds.property(e.getKey());
-                if ( dep instanceof MutablePropertyDataSet ) {
-                    MutablePropertyDataSet mdep= (MutablePropertyDataSet)dep;
-                    putProperties( (Map<String,Object>)e.getValue(), mdep );
+        properties.entrySet().forEach((e) -> {
+            String k= e.getKey();
+            Object v= e.getValue();
+            boolean m= v instanceof Map;
+            if ( m ) {
+                if ( k.startsWith("DEPEND_") ) {
+                    QDataSet dep= (QDataSet) ds.property(k);
+                    if ( dep instanceof MutablePropertyDataSet ) {
+                        MutablePropertyDataSet mdep= (MutablePropertyDataSet)dep;
+                        putProperties( (Map<String,Object>)v, mdep );
+                    }
+                } else if ( k.startsWith("PLANE_") ) {
+                    QDataSet dep= (QDataSet) ds.property(k);
+                    if ( dep instanceof MutablePropertyDataSet ) {
+                        MutablePropertyDataSet mdep= (MutablePropertyDataSet)dep;
+                        putProperties( (Map<String,Object>)v, mdep );
+                    }
+                } else if ( k.startsWith("BUNDLE_") ) {
+                    QDataSet dep= (QDataSet) ds.property(k);
+                    if ( dep instanceof MutablePropertyDataSet ) {
+                        MutablePropertyDataSet mdep= (MutablePropertyDataSet)dep;
+                        putProperties( (Map<String,Object>)v, mdep );
+                    }
+                } else if ( k.startsWith("CONTEXT_") ) {
+                    QDataSet dep= (QDataSet) ds.property(k);
+                    if ( dep instanceof MutablePropertyDataSet ) {
+                        MutablePropertyDataSet mdep= (MutablePropertyDataSet)dep;
+                        putProperties( (Map<String,Object>)v, mdep );
+                    }
+                } else {
+                    if ( v!=null ) ds.putProperty( k, v );
                 }
             } else {
-                if ( e.getValue()!=null ) ds.putProperty((String) e.getKey(), e.getValue());
+                if ( v!=null ) ds.putProperty( k, v );
             }
-        }
+        });
     }
     
     /**
