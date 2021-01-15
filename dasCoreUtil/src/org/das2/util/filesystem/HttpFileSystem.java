@@ -275,6 +275,10 @@ public class HttpFileSystem extends WebFileSystem {
                     offlineResponseCode= code;
                 }
 
+                if ( responseCode==HttpURLConnection.HTTP_NOT_FOUND ) {
+                    throw new FileNotFoundException("root returns 404, indicating it does not exist");
+                }
+                
                 if ( responseCode!=HttpURLConnection.HTTP_GATEWAY_TIMEOUT ) {
                     if ( responseCode != HttpURLConnection.HTTP_OK && responseCode != HttpURLConnection.HTTP_FORBIDDEN) {
                         if ( responseCode==HttpURLConnection.HTTP_UNAUTHORIZED ) {
