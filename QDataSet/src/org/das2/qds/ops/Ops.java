@@ -9927,7 +9927,36 @@ public final class Ops {
         return multiply( abs(dataset(x)), signum( dataset(y) ) );
     }
     
-    
+    /**
+     * return a list of indeces, similar to the where result.
+     * @param ds rank 1 dataset of length N
+     * @param seq rank 1 dataset, with length much less than N.
+     * @return rank 1 list of indeces.
+     */
+    public static QDataSet whereSequence( QDataSet ds, QDataSet seq ) {
+        
+        DataSetBuilder result= new DataSetBuilder(1,100);
+        
+        int n=ds.length();
+
+        int ifind=0;
+        int nfind= seq.length();
+        for ( int i=0; i<n; i++ )  {
+            if ( ds.value(i)==seq.value(ifind) ) {
+                ifind++;
+                if ( ifind==nfind ) {
+                    result.nextRecord(i-nfind+1);
+                    ifind= 0;
+                }
+            } else if ( ds.value(i)==seq.value(0) ) {
+                ifind= 1;
+            } else {
+                ifind= 0;
+            }
+        }
+        return result.getDataSet();
+        
+    }
     
     /**
      * returns the "floating point index" of each element of vv within the monotonically
