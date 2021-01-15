@@ -9936,7 +9936,7 @@ public final class Ops {
      */
     public static QDataSet whereSequence( QDataSet ds, QDataSet seq ) {
         
-        DataSetBuilder result= new DataSetBuilder(1,100);
+        DataSetBuilder builder= new DataSetBuilder(1,100);
         
         int n=ds.length();
 
@@ -9946,7 +9946,7 @@ public final class Ops {
             if ( ds.value(i)==seq.value(ifind) ) {
                 ifind++;
                 if ( ifind==nfind ) {
-                    result.nextRecord(i-nfind+1);
+                    builder.nextRecord(i-nfind+1);
                     ifind= 0;
                 }
             } else if ( ds.value(i)==seq.value(0) ) {
@@ -9955,7 +9955,10 @@ public final class Ops {
                 ifind= 0;
             }
         }
-        return result.getDataSet();
+
+        builder.putProperty( QDataSet.CADENCE, DataSetUtil.asDataSet(1.0) );
+        builder.putProperty( QDataSet.FORMAT, "%d" );
+        return builder.getDataSet();
         
     }
     
