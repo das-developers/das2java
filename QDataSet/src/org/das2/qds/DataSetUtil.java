@@ -999,11 +999,11 @@ public class DataSetUtil {
 
         if ( ds.rank()==0 ) {
             try {
+                Datum d= DataSetUtil.asDatum(ds);
                 if ( name.equals("dataset") ) {
-                    Datum d= DataSetUtil.asDatum(ds);
                     return String.valueOf( d );
                 } else {
-                    return name + "=" + DataSetUtil.asDatum(ds) ;
+                    return name + "=" + d ;
                 }
             } catch ( IllegalArgumentException ex ) {
                 return "Error: "+ex;
