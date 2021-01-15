@@ -9932,6 +9932,7 @@ public final class Ops {
      * @param ds rank 1 dataset of length N
      * @param seq rank 1 dataset, with length much less than N.
      * @return rank 1 list of indeces.
+     * @see https://github.com/autoplot/dev/blob/master/demos/2021/20210115/whereSequence.jy
      */
     public static QDataSet whereSequence( QDataSet ds, QDataSet seq ) {
         
