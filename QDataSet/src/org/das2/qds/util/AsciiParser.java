@@ -1775,8 +1775,12 @@ public class AsciiParser {
                         if ( builder!=null ) builder.putValue(irec, j, d );
                         okayCount++;
                     } catch (ParseException | NumberFormatException e) {
-                        if ( firstException==null ) firstException= e;
-                        failCount++;
+                        if ( irec==0 ) {
+                            logger.fine("ignore fails on the first line");
+                        } else {
+                            if ( firstException==null ) firstException= e;
+                            failCount++;
+                        }
                         if ( builder!=null ) builder.putValue(irec, j, -1e31 ); //TODO
                     }
                     //TODO
