@@ -90,6 +90,8 @@ public final class TickCurveRenderer extends Renderer {
         
     TickLabeller tickLabeller;
     
+    public static final String PROP_TICK_STYLE = "tickStyle";
+
     private TickStyle tickStyle= TickCurveRenderer.TickStyle.OUTER;
     
     private double lineWidth=  1.0f;
@@ -150,6 +152,7 @@ public final class TickCurveRenderer extends Renderer {
     @Override
     public void setControl(String s) {
         super.setControl(s);
+        logger.log(Level.FINE, "setControl({0})", s);
         this.lineWidth= getDoubleControl( PROP_LINETHICK, lineWidth );
         this.color= getColorControl( CONTROL_KEY_COLOR, color );
         this.fontSize= getControl( CONTROL_KEY_FONT_SIZE, fontSize );
@@ -157,6 +160,8 @@ public final class TickCurveRenderer extends Renderer {
         this.tickSpacing= getControl( PROP_TICKSPACING, tickSpacing );
         this.tickValues= getControl( PROP_TICKVALUES, tickValues );
         this.tickDirection= getControl( PROP_TICKDIRECTION, tickDirection );
+        String sstyle= getControl( PROP_TICK_STYLE, tickStyle.toString() );
+        this.tickStyle= sstyle.equals("both") ? TickStyle.BOTH : TickStyle.OUTER;
         tickv= null;
         update();
     }
@@ -171,7 +176,10 @@ public final class TickCurveRenderer extends Renderer {
         controls.put( PROP_TICKSPACING, tickSpacing );
         controls.put( PROP_TICKVALUES, tickValues );
         controls.put( PROP_TICKDIRECTION, tickDirection );
-        return Renderer.formatControl(controls);
+        controls.put( PROP_TICK_STYLE, tickStyle.toString().equals("both") ? "both" : "oneSided" );
+        String s= Renderer.formatControl(controls);
+        logger.log(Level.FINE, "getControl()->{0}", s);
+        return s;
     }
     
     public static final String CONTROL_TICK_LENGTH = "tickLength";
