@@ -1371,7 +1371,7 @@ public class DasPlot extends DasCanvasComponent {
             synchronized (this) {
                 Graphics2D plotGraphics;
                 if (getCanvas().isPrintingThread() || disableImageCache) {
-                    plotGraphics = (Graphics2D) graphics.create(x - 1, y - 1, xSize + 2, ySize + 2);
+                    plotGraphics = (Graphics2D) graphics.create(x, y, xSize, ySize);
                     int w= getWidth();
                     int h= getHeight();
                     if ( w==0 || h==0 ) {
@@ -1402,7 +1402,7 @@ public class DasPlot extends DasCanvasComponent {
                     plotGraphics.setFont(getFont());
                     plotGraphics.setRenderingHints(org.das2.DasProperties.getRenderingHints());
                     if (overSize) {
-                        plotGraphics.translate(x - lcacheImageBounds.x - 1, y - lcacheImageBounds.y - 1);
+                        plotGraphics.translate(x - lcacheImageBounds.x, y - lcacheImageBounds.y);
                     }
 
                     
@@ -1410,7 +1410,7 @@ public class DasPlot extends DasCanvasComponent {
 
                 }
 
-                plotGraphics.translate(-x + 1, -y + 1);
+                plotGraphics.translate(-x, -y);
                 plotGraphics.clip(cacheImageClip);
                 
                 // check mementos before drawing.  They should all be the same.  See https://sourceforge.net/tracker/index.php?func=detail&aid=3075655&group_id=199733&atid=970682
@@ -1476,7 +1476,7 @@ public class DasPlot extends DasCanvasComponent {
         graphics.setColor(getForeground());
         
         if ( plotVisible ) {
-            graphics.drawRect(x - 1, y - 1, xSize + 1, ySize + 1);
+            graphics.drawRect(x, y, xSize, ySize);
         }
         
         if ( displayTitle && localPlotTitle != null && localPlotTitle.length() != 0) {
