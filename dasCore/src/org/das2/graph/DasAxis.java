@@ -2435,7 +2435,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             boolean topTickLabels = ((orientation == TOP && tickLabelsVisible) && trLabelRect != null && trLabelRect.intersects(clip));
             boolean topLabel = ((orientation == TOP && !axisLabel.equals("")) && trTitleRect != null && trTitleRect.intersects(clip));
 
-            int topPosition = getRow().getDMinimum() - 1;
+            int topPosition = getRow().getDMinimum();
             int bottomPosition = getRow().getDMaximum();
             int DMax = getColumn().getDMaximum();
             int DMin = getColumn().getDMinimum();
@@ -2485,9 +2485,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             }
             
             if (bottomLine) {
+                logger.log(Level.FINER, "draw H bottomLine at {0}", bottomPosition);
                 g.drawLine(DMin, bottomPosition, DMax, bottomPosition);
             }
             if (topLine) {
+                logger.log(Level.FINER, "draw H topLine at {0}", topPosition);
                 g.drawLine(DMin, topPosition, DMax, topPosition);
             }
             
@@ -2530,6 +2532,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 if (DMin <= ftickPosition && ftickPosition <= DMax) {
                     tickLength = tickLengthMajor;
                     if (bottomTicks && tickLength!=0 ) {
+                        logger.log(Level.FINER, "draw H tick at {0}", ftickPosition);
                         g.draw( new Line2D.Float(ftickPosition, bottomPosition, ftickPosition, bottomPosition + tickLength) );
                         //g.drawLine(tickPosition, bottomPosition, tickPosition, bottomPosition + tickLength);                        
                     }
@@ -2646,7 +2649,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             boolean rightTickLabels = ((orientation == RIGHT && tickLabelsVisible) && trLabelRect != null && trLabelRect.intersects(clip));
             boolean rightLabel = ((orientation == RIGHT && !axisLabel.equals("")) && trTitleRect != null && trTitleRect.intersects(clip));
 
-            int leftPosition = getColumn().getDMinimum() - 1;
+            int leftPosition = getColumn().getDMinimum();
             int rightPosition = getColumn().getDMaximum();
             int DMax = getRow().getDMaximum();
             int DMin = getRow().getDMinimum();
@@ -2658,9 +2661,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             }
             
             if (leftLine) {
+                logger.log(Level.FINER, "draw V leftline at {0}", leftPosition);
                 g.drawLine(leftPosition, DMin, leftPosition, DMax);
             }
             if (rightLine) {
+                logger.log(Level.FINER, "draw V rightline at {0}", rightPosition);
                 g.drawLine(rightPosition, DMin, rightPosition, DMax);
             }
             
@@ -2691,12 +2696,13 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             String[] labels = tickFormatter(ticks.tickV, getDatumRange());
             for (int i = 0; i < ticks.tickV.getLength(); i++) {
                 Datum tick1 = ticks.tickV.get(i);
-                float ftickPosition= (float)( transform(tick1)+0.0001 );
+                float ftickPosition= (float)( transform(tick1) );
                 int tickPosition = (int) Math.floor( ftickPosition );
                 if (DMin <= tickPosition && tickPosition <= DMax) {
 
                     tickLength = tickLengthMajor;
                     if (leftTicks && tickLength!=0 ) {
+                        logger.log(Level.FINER, "draw V tick at {0}", ftickPosition);
                         g.draw( new Line2D.Float( leftPosition, ftickPosition, leftPosition - tickLength, ftickPosition) );
                         //g.drawLine(leftPosition, tickPosition, leftPosition - tickLength, tickPosition);
                     }
