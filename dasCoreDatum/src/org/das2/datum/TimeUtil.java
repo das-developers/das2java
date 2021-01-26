@@ -549,6 +549,10 @@ public final class TimeUtil {
      */
     public static TimeStruct toTimeStruct( Datum datum ) {
         
+        if ( datum.isFill() ) {
+            throw new IllegalArgumentException("datum is not valid");
+        }
+        
         Units u= datum.getUnits();
         
         if ( datum instanceof Datum.Long ) {
