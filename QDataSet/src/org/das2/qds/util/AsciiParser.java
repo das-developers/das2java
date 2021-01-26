@@ -1777,6 +1777,7 @@ public class AsciiParser {
                     } catch (ParseException | NumberFormatException e) {
                         if ( irec==0 ) {
                             logger.fine("ignore fails on the first line");
+                            failCount++;
                         } else {
                             if ( firstException==null ) firstException= e;
                             failCount++;
