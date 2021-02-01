@@ -417,14 +417,12 @@ public class DataSetOps {
                 i0++;
             }
         }
-        final Comparator<Integer> c = new Comparator<Integer>() {
-            @Override
-            public int compare(Integer o1, Integer o2) {
-                int i1 = o1;
-                int i2 = o2;
-                return Double.compare(ds.value(i1), ds.value(i2));
-            }
+        final Comparator<Integer> c = (Integer o1, Integer o2) -> {
+            int i1 = o1;
+            int i2 = o2;
+            return Double.compare(ds.value(i1), ds.value(i2));
         };
+        
         Arrays.sort(indeces, 0, i0, c);
         final int[] data = new int[i0];
         
@@ -442,6 +440,9 @@ public class DataSetOps {
         
         MutablePropertyDataSet result = IDataSet.wrap(data);
         result.putProperty(QDataSet.NAME, "sort" + ds.length());
+        result.putProperty(QDataSet.VALID_MIN,0);
+        result.putProperty(QDataSet.VALID_MAX,ds.length());
+                
         if ( monotonic ) result.putProperty( QDataSet.MONOTONIC, Boolean.TRUE );
         logger.exiting( "org.das2.qds.DataSetOps","sort",ds);
         return result;
