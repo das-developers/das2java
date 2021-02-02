@@ -214,6 +214,24 @@ public final class QubeDataSetIterator implements DataSetIterator {
     }
 
     /**
+     * return the current line in the Jython script as &lt;filename&gt;:&lt;linenum&gt;
+     * or ??? if this cannot be done.  Note calls to this will collect a stack
+     * trace and will affect performance.
+     * @return the current line or ???
+     */
+    public static String currentJythonLine() {
+        StackTraceElement[] sts= new Exception().getStackTrace();
+        int i= 0;
+        while ( i<sts.length ) {
+            if ( sts[i].getClassName().startsWith("org.python.pycode") ) {
+                return sts[i].getFileName()+":"+ sts[i].getLineNumber();
+            }
+            i=i+1;
+        }
+        return "???";
+    }
+
+    /**
      * Factory for iterator that goes through a list of indeces.
      */
     public static class IndexListIteratorFactory implements DimensionIteratorFactory {
@@ -227,6 +245,19 @@ public final class QubeDataSetIterator implements DataSetIterator {
             this.ds = ds;
             if ( ds.rank()!=1 ) {
                 throw new IllegalArgumentException("list of indeces dataset must be rank 1");
+            }
+            // check the first hundred indeces to see if they are non-integer.
+            for ( int i=0; i<Math.min( ds.length(), 100 ); i++ ) {
+                double v= ds.value(i);
+                if ( v!=Math.floor(v) ) {
+                    String jythonLine= currentJythonLine();
+                    if ( jythonLine.equals("???") ) {
+                        logger.warning( "indices should be integers, which might indicate there's a bug" );
+                    } else {
+                        logger.log(Level.WARNING, "indices should be integers, which might indicate there''s a bug at {0}", jythonLine);
+                    }
+                    break;
+                }
             }
         }
 
