@@ -1133,7 +1133,7 @@ public class DasPlot extends DasCanvasComponent {
             lcacheImageBounds.width = 16 * width / 10;
             lcacheImageBounds.height = height;
             lcacheImageBounds.x = x - 3 * width / 10;
-            lcacheImageBounds.y = y - 1;
+            lcacheImageBounds.y = y;
             this.cacheImageBounds= lcacheImageBounds;
             
         } else {
@@ -1155,8 +1155,8 @@ public class DasPlot extends DasCanvasComponent {
             }
             logger.log( Level.FINE, "create cacheImage {0}x{1}", new Object[]{lcacheImageBounds.width, lcacheImageBounds.height});
             BufferedImage lcacheImage = new BufferedImage(lcacheImageBounds.width, lcacheImageBounds.height, BufferedImage.TYPE_4BYTE_ABGR);
-            lcacheImageBounds.x = x - 1;
-            lcacheImageBounds.y = y - 1;
+            lcacheImageBounds.x = x;
+            lcacheImageBounds.y = y;
 
             this.cacheImageBounds= lcacheImageBounds;
             this.cacheImage= lcacheImage;

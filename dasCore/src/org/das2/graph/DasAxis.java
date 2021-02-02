@@ -2540,7 +2540,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                         drawLabel(g, tick1, labels[i], i, tickPosition, bottomPosition + Math.max(0,tickLength) );
                     }
                     if (topTicks && tickLength!=0 ) {
-                        g.draw( new Line2D.Float( ftickPosition, topPosition, ftickPosition, topPosition - tickLength) );
+                        g.draw( new Line2D.Float( ftickPosition, topPosition, ftickPosition, topPosition - tickLength + 1 ) );
                         //g.drawLine(tickPosition, topPosition, tickPosition, topPosition - tickLength);
                     }
                     if (topTickLabels) {
@@ -3498,7 +3498,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         boolean topTickLabels = (orientation == TOP && tickLabelsVisible);
         boolean topLabel = (topTickLabels && !axisLabel.equals(""));
 
-        int topPosition = getRow().getDMinimum() - 1;
+        int topPosition = getRow().getDMinimum();
         int bottomPosition = getRow().getDMaximum();
         DasDevicePosition range = getColumn();
         int DMax = range.getDMaximum();
@@ -3641,7 +3641,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         boolean rightTickLabels = (orientation == RIGHT && tickLabelsVisible);
         boolean rightLabel = (orientation == RIGHT && !axisLabel.equals(""));
 
-        int leftPosition = getColumn().getDMinimum() - 1;
+        int leftPosition = getColumn().getDMinimum();
         int rightPosition = getColumn().getDMaximum();
         int DMax = getRow().getDMaximum();
         int DMin = getRow().getDMinimum();
