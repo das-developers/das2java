@@ -64,11 +64,13 @@ import java.util.Map;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import org.das2.components.HorizontalSpectrogramAverager;
 import org.das2.dataset.LanlNNRebinner;
 import org.das2.dataset.ScatterRebinner;
 import org.das2.dataset.TriScatRebinner;
 import org.das2.datum.Datum;
 import org.das2.datum.UnitsUtil;
+import org.das2.event.VerticalDragRangeSelectorMouseModule;
 import static org.das2.graph.Renderer.formatControl;
 import org.das2.util.LoggerManager;
 import org.das2.qds.DataSetOps;
@@ -109,6 +111,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     private VerticalSpectrogramSlicer vSlicer;
     private HorizontalSpectrogramSlicer hSlicer;
     private VerticalSpectrogramAverager vAverager;
+    private HorizontalSpectrogramAverager hAverager;
     
     public static final String CONTROL_KEY_REBIN= "rebin";
 
@@ -1018,6 +1021,12 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                     vrl.setLabel("Interval Average");
                     vrl.addDataRangeSelectionListener(vAverager);
                     mouseAdapter.addMouseModule(vrl);
+
+                    hAverager = HorizontalSpectrogramAverager.createAverager(parent, this);
+                    VerticalDragRangeSelectorMouseModule hrl = new VerticalDragRangeSelectorMouseModule(parent, this, parent.getYAxis());
+                    hrl.setLabel("Horizontal Interval Average");
+                    hrl.addDataRangeSelectionListener(hAverager);
+                    mouseAdapter.addMouseModule(hrl);
 
                     MouseModule ch = new CrossHairMouseModule(parent, this, parent.getXAxis(), parent.getYAxis());
                     mouseAdapter.addMouseModule(ch);
