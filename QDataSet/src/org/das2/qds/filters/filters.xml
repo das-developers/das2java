@@ -207,7 +207,17 @@
                         <title>Set Fill Value</title>
                         <filter>|setFillValue(-1e38)</filter>
                         <description>Set the numerical value marking invalid data.</description>
-                    </bookmark>                
+                    </bookmark>
+                    <bookmark>
+                        <title>Monotonic Subset</title>
+                        <filter>|monotonicSubset()</filter>
+                        <description>Ensure the data is monotonically increasing by removing records.</description>
+                    </bookmark>                    
+                    <bookmark>
+                        <title>Sort In Time</title>
+                        <filter>|sortInTime()</filter>
+                        <description>Sort data by the time (or tags) found in DEPEND_0.</description>
+                    </bookmark>
                 </bookmark-list>
             </bookmark-folder>
             <bookmark-folder>

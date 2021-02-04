@@ -777,6 +777,10 @@ public class OperationsProcessor {
                 } else if ( cmd.equals("|monotonicSubset") ) {
                     WritableDataSet ds= Ops.copy(fillDs);
                     fillDs= Ops.monotonicSubset(ds);
+
+                } else if ( cmd.equals("|sortInTime") ) {
+                    fillDs= Ops.sortInTime(fillDs);
+                    
                 } else if ( cmd.equals("|decimate") ) {
                     if ( s.hasNext() ) {
                         String arg0= getStringArg( s.next() );
@@ -818,7 +822,7 @@ public class OperationsProcessor {
 
                 } else if ( cmd.equals("|polarToCartesian") ) {
                     fillDs= Ops.polarToCartesian(fillDs);
-                    
+
                 } else {
                     if ( !cmd.equals("") ) throw new ParseException( c + " (command not recognized: \""+cmd +"\")", i );
                 }
