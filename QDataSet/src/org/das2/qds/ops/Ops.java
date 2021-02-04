@@ -5239,6 +5239,21 @@ public final class Ops {
         }
     }    
     
+    /**
+     * pick out the timetags and sort the data based on these.  This
+     * only works when a dataset has DEPEND_0.
+     * @param ds
+     * @return the data sorted by DEPEND_0.
+     */
+    public static QDataSet sortInTime( QDataSet ds ) {
+        QDataSet t= (QDataSet) ds.property(QDataSet.DEPEND_0);
+        if ( t==null ) {
+            throw new IllegalArgumentException("data does not contain DEPEND_0");
+        }
+        QDataSet s= sort( t );
+        return applyIndex( ds, s );
+        
+    }
     
     /**
      * ensure that there are no non-monotonic or repeat records, by removing
