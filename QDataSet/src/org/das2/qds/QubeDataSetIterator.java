@@ -273,6 +273,23 @@ public final class QubeDataSetIterator implements DataSetIterator {
         public QDataSet getList() {
             return this.ds;
         }
+        
+        /**
+         * return the maximum possible index, plus one, or -1 if this is not declared.  
+         * This will be the VALID_MAX of ds.  This is to support rfe737, where the
+         * "where" command can keep track of the size of the data it tested.
+         * For example, for where(findgen(10).lt(5)) would return "10" here, because
+         * findgen(10) has 10 elements.
+         * @return -1 or 
+         */
+        private int getMaxIndexExclusive() {
+            Number validMax= (Number)ds.property(QDataSet.VALID_MAX);
+            if ( validMax!=null ) {
+                return validMax.intValue();
+            } else {
+                return -1;
+            }
+        }
     }
 
     /**
@@ -357,14 +374,14 @@ public final class QubeDataSetIterator implements DataSetIterator {
      */
     public QubeDataSetIterator( QDataSet ds ) {
         logger.log(Level.FINE, "new dataset iterator for {0}", ds);
-        List<String> problems= new ArrayList();
+        List<String> problems= new ArrayList<>();
         if ( ! DataSetUtil.validate(ds,problems) ) {
             throw new IllegalArgumentException("data doesn't validate: "+problems );
         }
         it= new DimensionIterator[ ds.rank() ];
         fit= new DimensionIteratorFactory[ ds.rank() ];
         
-        if (Boolean.TRUE.equals(ds.property(QDataSet.QUBE))) {
+        if ( DataSetUtil.isQube(ds) ) {
             this.qube = DataSetUtil.qubeDims(ds);
             this.ds = ds;
         } else {
@@ -455,6 +472,22 @@ public final class QubeDataSetIterator implements DataSetIterator {
     public void setIndexIteratorFactory(int dim, DimensionIteratorFactory fit) {
         if ( dim >= this.rank ) {
             throw new IllegalArgumentException( String.format( "rank limit: rank %d dataset %s has no index %d", ds.rank(), ds, dim ) );
+        }
+        if ( fit instanceof IndexListIteratorFactory ) {
+            IndexListIteratorFactory ffit= (IndexListIteratorFactory)fit;
+            int max= ffit.getMaxIndexExclusive();
+            if ( max>-1 ) {
+                if ( this.qube!=null ) {
+                    if ( this.qube[dim]!=max ) {
+                        String jythonLine= currentJythonLine();
+                        if ( jythonLine.equals("???") ) {
+                            logger.log(Level.WARNING, "index list appears to be for dimensions of length VALID_MAX={0} but is indexing dimension length={1}, which may indicate there''s a bug.", new Object[]{max, this.qube[dim]});
+                        } else {
+                            logger.log(Level.WARNING, "index list appears to be for dimensions of length VALID_MAX={0} but is indexing dimension length={1}, which may indicate there''s a bug at {2}.", new Object[]{max, this.qube[dim], jythonLine});
+                        }
+                    }
+                }
+            }
         }
         this.fit[dim] = fit;
         initialize();
