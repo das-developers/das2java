@@ -46,21 +46,11 @@ public class HttpFileSystemFactory implements FileSystemFactory {
         } catch ( MalformedURLException ex ) {
             h= "";  // handle as before github addition.
         }
-        if ( h.equals("github.com") ) {
-            WebFileSystem result= GitHubFileSystem.createGitHubFileSystem(root);
-            return result;
-        } else if ( h.equals("git.uiowa.edu") ) {
-            WebFileSystem result= GitHubFileSystem.createGitHubFileSystem(root);
-            return result;
-        } else if ( h.equals("abbith.physics.uiowa.edu") ) {
-            WebFileSystem result= GitHubFileSystem.createGitHubFileSystem(root);
-            return result;       
-        } else if ( h.equals("git.physics.uiowa.edu" ) ) {
-            WebFileSystem result= GitHubFileSystem.createGitHubFileSystem(root);
-            return result;       
-        } else if ( h.equals("jfaden.net") && root.getPath().startsWith("/git") ) {
-            WebFileSystem result= GitHubFileSystem.createGitHubFileSystem(root,1);  // TODO: detect automatically
-            return result;            
+        String githubPath=GitHubFileSystem.isGithubFileSystem( h, root.getPath() );
+        if ( githubPath!=null ) {
+            int offset = githubPath.split("/").length-1;
+            WebFileSystem result= GitHubFileSystem.createGitHubFileSystem(root,offset);
+            return result;                          
         } else {
             HttpFileSystem hfs = HttpFileSystem.createHttpFileSystem(root);
             //TODO: In the response, there's: <meta content="GitLab" property="og:site_name">

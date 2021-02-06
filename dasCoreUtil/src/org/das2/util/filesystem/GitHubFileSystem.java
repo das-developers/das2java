@@ -32,7 +32,6 @@ import static org.das2.util.filesystem.FileSystem.loggerUrl;
 import static org.das2.util.filesystem.FileSystem.toCanonicalFilename;
 import static org.das2.util.filesystem.HtmlUtil.getInputStream;
 import static org.das2.util.filesystem.WebFileSystem.localRoot;
-import static org.das2.util.filesystem.WebFileSystem.logger;
 import org.das2.util.monitor.CancelledOperationException;
 import org.das2.util.monitor.ProgressMonitor;
 
@@ -135,6 +134,68 @@ public class GitHubFileSystem extends HttpFileSystem {
     public static GitHubFileSystem createGitHubFileSystem( URI root ) {
         return createGitHubFileSystem(root,0);
     }
+    
+    /**
+     * return the location within the file cache of this GitHub filesystem.
+     * TODO: There's something with branches that still needs work.  Also the constructor
+     * does not use this.
+     * @param root
+     * @return the directory containing the resource.
+     */
+    public static File getLocalRoot( URI root ) {
+        String branch= "master";
+        
+        String suri= root.toString();
+        Pattern fsp1= Pattern.compile( "(https?://[a-z.]*/)(.*)(tree|blob|raw)/(.*?)/(.*)" );
+        Matcher m1= fsp1.matcher( suri );
+        if ( m1.matches() ) {
+            String project= m1.group(2);
+            if ( project.endsWith("/-/") ) { // strange bug where U. Iowa server would add extra "-/"
+                project= project.substring(0,project.length()-2);
+            }
+            suri= m1.group(1)+project+m1.group(4)+"/" + m1.group(5);
+            try {
+                root= new URI(suri);
+            } catch (URISyntaxException ex) {
+                throw new RuntimeException(ex);
+            }
+            branch= m1.group(4);
+        }
+        
+        //if ( !branch.equals("master") ) {
+        //    throw new IllegalArgumentException("branch must be master (for now)");
+        //}
+        
+        File local;
+
+        local = localRoot(root);
+        logger.log(Level.FINER, "initializing httpfs {0} at {1}", new Object[]{root, local});
+
+        return local;
+    }
+    
+    /**
+     * one place that lists the GitHub (GitLab) filesystems.
+     * @param h the host, 
+     * @param path
+     * @return null if it is not a GitHub filesystem, or the initial path otherwise
+     */
+    public static String isGithubFileSystem( String h, String path ) {
+        if ( h.equals("github.com") ) {
+            return "";
+        } else if ( h.equals("git.uiowa.edu") ) {
+            return "";
+        } else if ( h.equals("abbith.physics.uiowa.edu") ) {
+            return "";
+        } else if ( h.equals("git.physics.uiowa.edu" ) ) {
+            return "";
+        } else if ( h.equals("jfaden.net") && path.startsWith("/git") ) {
+            return "/git";
+        } else {
+            return null;
+        }
+    }
+
     
     /**
      * @param root the root
