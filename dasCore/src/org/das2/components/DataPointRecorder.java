@@ -1468,8 +1468,21 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
         fireSelectedDataSetUpdateListenerDataSetUpdated(new DataSetUpdateEvent(this));        
     }
     
-    /** Creates a new instance of DataPointRecorder */
+    /**
+     * create a DataPointRecorder which will collect data such that X
+     * values are sorted and unique.
+     */    
     public DataPointRecorder() {
+        this(true);
+    }
+
+    /**
+     * create a DataPointRecorder.  When sorted is true, the data point recorder will only allow
+     * one point per X value, and the data will be sorted as it is collected.  When it is 
+     * false, the data will be stored in the order it arrives.
+     * @param sorted true if X values should be unique and ordered.
+     */
+    public DataPointRecorder( boolean sorted ) {
         super();
         this.namesArrayLock = new Object();
         dataPoints = new ArrayList();
@@ -1596,9 +1609,11 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
         controlPanel.setAlignmentX(JLabel.LEFT_ALIGNMENT);
         controlStatusPanel.add(controlPanel);
 
-        this.add(controlStatusPanel, BorderLayout.SOUTH);
+        this.add(controlStatusPanel, BorderLayout.SOUTH);        
+        
+        this.setSorted(sorted);
     }
-
+    
     public static DataPointRecorder createFramed() {
         DataPointRecorder result;
         JFrame frame = new JFrame("Data Point Recorder");
