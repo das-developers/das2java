@@ -285,6 +285,9 @@ public class HorizontalSpectrogramAverager implements DataRangeSelectionListener
                 DatumRange yrange= DataSetUtil.asDatumRange( bounds.slice(1), true );
                 if ( yrange.contains(yValue1) ) {
                     tds1 = xtys.slice(i);
+                    yrange= new DatumRange( yValue1, yValue2 ).intersection( yrange );
+                    yValue1= yrange.min();
+                    yValue2= yrange.max();
                     break;
                 }
             }
