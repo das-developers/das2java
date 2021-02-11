@@ -1120,12 +1120,16 @@ public class DataSetUtil {
             //don't add anything to this.  ds[8,time=50*,freq=20*]
         }
 
+        boolean isBundle= false;
+        
         if ( ds.property(QDataSet.BUNDLE_0)!=null && depNames[0].length()==0  ) {
             depNames[0]= "BUNDLE_0=";
+            isBundle= true;
         }
 
         if ( ds.property(QDataSet.BUNDLE_1)!=null && depNames[0].length()==0 ) {
             depNames[1]= "BUNDLE_1=";    // TODO: consider  ds[time=1440,density,b_gsm=5] vs ds[time=1440,BUNDLE_1=5]
+            isBundle= true;
         }
 
         int[] qubeDims;
@@ -1158,7 +1162,11 @@ public class DataSetUtil {
             su = "dimensionless";
         }
         
-        return name + "[" + dimStr.toString() + "] (" + su + ")";
+        if ( isBundle ) {
+            return name + "[" + dimStr.toString() + "]";
+        } else {
+            return name + "[" + dimStr.toString() + "] (" + su + ")";
+        }
        
     }
 
