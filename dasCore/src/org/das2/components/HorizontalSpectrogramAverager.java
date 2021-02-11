@@ -1,25 +1,3 @@
-/* File: VerticalSpectrogramAverager.java
- * Copyright (C) 2002-2003 The University of Iowa
- * Created by: Jeremy Faden <jbf@space.physics.uiowa.edu>
- *             Jessica Swanner <jessica@space.physics.uiowa.edu>
- *             Edward E. West <eew@space.physics.uiowa.edu>
- *
- * This file is part of the das2 library.
- *
- * das2 is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- */
 
 package org.das2.components;
 
@@ -59,6 +37,8 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.das2.graph.Renderer;
 import org.das2.graph.SeriesRenderer;
+import org.das2.qds.DataSetOps;
+import org.das2.qds.DataSetUtil;
 import org.das2.qds.QDataSet;
 import org.das2.qds.SemanticOps;
 import org.das2.qds.examples.Schemes;
@@ -297,23 +277,25 @@ public class HorizontalSpectrogramAverager implements DataRangeSelectionListener
         
         RebinDescriptor ddY = new RebinDescriptor(yValue1, yValue2, 1, false);
         ddY.setOutOfBoundsAction(RebinDescriptor.MINUSONE);
-        AverageTableRebinner rebinner = new AverageTableRebinner();
-        try {
-            if ( xtys.rank()==3 ) {
-                QDataSet jds= null;
-                for ( int i=0; i<xtys.length(); i++ ) {
-                    QDataSet rebinned = (QDataSet)rebinner.rebin(xtys.slice(i), ddY, null, null);
-                    QDataSet ds1 = rebinned.slice(0);
-                    jds= org.das2.qds.ops.Ops.concatenate( jds, ds1 );
+        
+        if ( xtys.rank()==3 ) {
+            QDataSet tds1= null;
+            for ( int i=0; i<xtys.length(); i++ ) {
+                QDataSet bounds = DataSetOps.dependBounds(xtys.slice(i));
+                DatumRange yrange= DataSetUtil.asDatumRange( bounds.slice(1), true );
+                if ( yrange.contains(yValue1) ) {
+                    tds1 = xtys.slice(i);
+                    break;
                 }
-                renderer.setDataSet(jds);                
-            } else {
-                QDataSet rebinned = Ops.reduceMean( Ops.trim1( ds, Ops.dataset(yValue1), Ops.dataset(yValue2) ), 1 );
-                QDataSet ds1 = Ops.link( ds.property(QDataSet.DEPEND_0), rebinned );
-                renderer.setDataSet(ds1);
             }
-        } catch (DasException de) {
-            //Do nothing.
+            if ( tds1==null ) return;
+            QDataSet rebinned = Ops.reduceMean( Ops.trim1( tds1, Ops.dataset(yValue1), Ops.dataset(yValue2) ), 1 );
+            QDataSet ds1 = Ops.link( tds1.property(QDataSet.DEPEND_0), rebinned );
+            renderer.setDataSet(ds1);                
+        } else {
+            QDataSet rebinned = Ops.reduceMean( Ops.trim1( ds, Ops.dataset(yValue1), Ops.dataset(yValue2) ), 1 );
+            QDataSet ds1 = Ops.link( ds.property(QDataSet.DEPEND_0), rebinned );
+            renderer.setDataSet(ds1);
         }
 
         value= e.getReference();
