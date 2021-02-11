@@ -1983,7 +1983,9 @@ public final class Ops {
             QDataSet bundle1= (QDataSet) ds.property(QDataSet.BUNDLE_1);
             if ( bundle1!=null ) bundle1= bundle1.trim(st,en);
             ds= DataSetOps.leafTrim( ds, st, en );
-            if ( bundle1!=null ) ds= putProperty( ds, QDataSet.BUNDLE_1, bundle1 );
+            if ( bundle1!=null ) {
+                ds= putProperty( ds, QDataSet.BUNDLE_1, bundle1 );
+            }
             return ds;
         } else {
             TrimStrideWrapper tsw= new TrimStrideWrapper(ds);

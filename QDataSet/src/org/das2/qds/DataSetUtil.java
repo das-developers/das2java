@@ -1122,12 +1122,12 @@ public class DataSetUtil {
 
         boolean isBundle= false;
         
-        if ( ds.property(QDataSet.BUNDLE_0)!=null && depNames[0].length()==0  ) {
+        if ( ds.property(QDataSet.BUNDLE_0)!=null && ( depNames[0].length()==0 || depNames[0].equals("DEPEND_0=") ) ) {
             depNames[0]= "BUNDLE_0=";
             isBundle= true;
         }
 
-        if ( ds.property(QDataSet.BUNDLE_1)!=null && depNames[0].length()==0 ) {
+        if ( ds.property(QDataSet.BUNDLE_1)!=null && ( depNames[1].length()==0 || depNames[1].equals("DEPEND_1=") )  ) {
             depNames[1]= "BUNDLE_1=";    // TODO: consider  ds[time=1440,density,b_gsm=5] vs ds[time=1440,BUNDLE_1=5]
             isBundle= true;
         }
