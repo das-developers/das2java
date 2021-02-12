@@ -1121,17 +1121,31 @@ public class DataSetUtil {
         }
 
         boolean isBundle= false;
+        Units bundleUnits= null; // if all bundled data has the same unit, then indicate the unit (for example Bz,By,Bz in nT)
         
-        if ( ds.property(QDataSet.BUNDLE_0)!=null && ( depNames[0].length()==0 || depNames[0].equals("DEPEND_0=") ) ) {
+        QDataSet bds= (QDataSet) ds.property(QDataSet.BUNDLE_0);
+        
+        if ( bds!=null && ( depNames[0].length()==0 || depNames[0].equals("DEPEND_0=") ) ) {
             depNames[0]= "BUNDLE_0=";
             isBundle= true;
         }
 
-        if ( ds.property(QDataSet.BUNDLE_1)!=null && ( depNames[1].length()==0 || depNames[1].equals("DEPEND_1=") )  ) {
+        bds= (QDataSet) ds.property(QDataSet.BUNDLE_1);
+        if ( bds!=null && ( depNames[1].length()==0 || depNames[1].equals("DEPEND_1=") )  ) {
             depNames[1]= "BUNDLE_1=";    // TODO: consider  ds[time=1440,density,b_gsm=5] vs ds[time=1440,BUNDLE_1=5]
             isBundle= true;
         }
 
+        if ( bds!=null ) {
+            Units bu= (Units) bds.property(QDataSet.UNITS,0);
+            for ( int i=1; bu!=null && i<bds.length(); i++ ) {
+                if ( bu!=(Units) bds.property(QDataSet.UNITS,i) ) {
+                    bu= null;
+                }
+            }
+            bundleUnits= bu;
+        }
+        
         int[] qubeDims;
         if ( DataSetUtil.isQube(ds) ) {
             try {
@@ -1163,7 +1177,11 @@ public class DataSetUtil {
         }
         
         if ( isBundle ) {
-            return name + "[" + dimStr.toString() + "]";
+            if ( bundleUnits!=null ) {
+                return name + "[" + dimStr.toString() + "] (" + bundleUnits + ")";
+            } else {
+                return name + "[" + dimStr.toString() + "]";
+            }
         } else {
             return name + "[" + dimStr.toString() + "] (" + su + ")";
         }
