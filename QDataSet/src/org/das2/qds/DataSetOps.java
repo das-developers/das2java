@@ -635,6 +635,8 @@ public class DataSetOps {
         }
                 
         if ( idim==0 ) {
+            QDataSet ss= new SortDataSet( ds, sort );
+            ss.property(QDataSet.NAME,0);
             return ArrayDataSet.copy( getComponentType(ds), new SortDataSet( ds, sort ) );
         }
 

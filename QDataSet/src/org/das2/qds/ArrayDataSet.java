@@ -669,6 +669,9 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
                 throw new IllegalArgumentException("bad rank");
         }
         result.properties.putAll( Ops.copyProperties(ds) );
+        if ( result.properties.containsKey("NAME__0") ) {
+            result.hasIndexedProperties= true;
+        }
         result.checkFill();
 
         return result;

@@ -694,8 +694,8 @@ public final class QubeDataSetIterator implements DataSetIterator {
      */
     @Override
     public DDataSet createEmptyDs() {
-        List<Integer> qqube = new ArrayList<Integer>();
-        List<Integer> dimMap= new ArrayList<Integer>();  //e.g. [0,1,2,3]
+        List<Integer> qqube = new ArrayList<>();
+        List<Integer> dimMap= new ArrayList<>();  //e.g. [0,1,2,3]
         for (int i = 0; i < this.it.length; i++) {
             if ( this.it[i]==null ) {
                 continue;
@@ -769,10 +769,10 @@ public final class QubeDataSetIterator implements DataSetIterator {
                     if ( sssi.step==1 && sssi.start==0 && sssi.stop==bund.length() ) {
                         result.putProperty( "BUNDLE_"+i, bund );
                     } else if ( sssi.step==1 ) {
-                        //result.putProperty( "BUNDLE_"+i, bund.trim( sssi.start, sssi.stop ) );
+                        result.putProperty( "BUNDLE_"+i, bund.trim( sssi.start, sssi.stop ) );
                     } else {
-                        //QDataSet bundSlice= DataSetOps.trim( bund, sssi.start, sssi.stop, sssi.step );
-                        //result.putProperty( "BUNDLE_"+i, bundSlice );
+                        QDataSet bundSlice= DataSetOps.trim( bund, sssi.start, sssi.stop, sssi.step );
+                        result.putProperty( "BUNDLE_"+i, bundSlice );
                     }
                 }
                 if ( bins!=null && it[idim].length()==bins.split(",").length ) { //TODO: verify this
@@ -804,6 +804,10 @@ public final class QubeDataSetIterator implements DataSetIterator {
                 } else if ( dep!=null ) {
                     IndexListIteratorFactory sssi= (IndexListIteratorFactory)fit[idim];
                     result.putProperty( "DEPEND_"+i, DataSetOps.applyIndex( dep, 0, sssi.getList(), false ) );
+                }
+                if ( bund!=null ) {
+                    IndexListIteratorFactory sssi= (IndexListIteratorFactory)fit[idim];
+                    result.putProperty( "BUNDLE_"+i, DataSetOps.applyIndex( bund, 0, sssi.getList(), false ) );
                 }
             }
         }
