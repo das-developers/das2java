@@ -5145,6 +5145,32 @@ public final class Ops {
         Map<String,Object> result = new HashMap<>();
         Map<String,Object> srcProps= DataSetUtil.getProperties(ds);
 
+        // is this a bundle descriptor?
+        if ( ds.rank()==2 ) {
+            boolean isBundle= false;
+            String n= (String) ds.property( QDataSet.NAME );
+            if ( n==null && ds.length()>0 ) {
+                n= (String) ds.property( QDataSet.NAME, 0 );
+            }
+            for ( int i=0; i<ds.length(); i++ ) {
+                if ( n!=ds.property( QDataSet.NAME, i ) ) {
+                    isBundle= true;
+                    break;
+                }
+            }
+            if ( isBundle ) {
+                String[] nn= new String[] { "NAME", "UNITS", "LABEL" };
+                for ( int i=0; i<ds.length(); i++ ) {
+                    for (String nn1 : nn) {
+                        Object val = ds.property(nn1, i);
+                        if (val!=null) {
+                            result.put(nn1 + "__" + i, val);
+                        }
+                    }
+                }
+            }
+        }
+        
         result.putAll(srcProps);
 
         for ( int i=0; i < ds.rank(); i++) {
