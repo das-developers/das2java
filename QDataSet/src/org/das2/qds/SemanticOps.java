@@ -154,23 +154,22 @@ public final class SemanticOps {
 
 
     /**
-     * return the labels for a dataset where DEPEND_1 is a bundle dimension.
-     * Look for the BUNDLE_1.
-     * @param ds
-     * @return
+     * return the labels for a dataset using BUNDLE_1 and DEPEND_1.  If BUNDLE_1 is defined and contains a LABEL,
+     * then it is used, otherwise a string value of the data is used, supporting legacy bundles, and if no DEPEND_1 is found
+     * then use the NAME properties from the bundle, or "ch_<em>i</em>" for each channel.
+     * @param ds the dataset, with a BUNDLE_1 or DEPEND_1 dimension which could be used.
+     * @return labels for each bundled dataset.
      */
     public static String[] getComponentLabels(QDataSet ds) {
         int n = ds.length(0);
         QDataSet bdesc= (QDataSet) ds.property(QDataSet.BUNDLE_1);
+        String[] bundleLabels= new String[n];
+        String[] bundleNames= new String[n];
         if ( bdesc!=null && bdesc.rank()==2 ) {
-            String[] result= new String[n];
-                for ( int i=0; i<n; i++ ) {
-                    //result[i]= (String) bdesc.property(QDataSet.NAME, i);
-                    result[i]= (String) bdesc.property(QDataSet.LABEL, i);
-                    if ( result[i]==null ) result[i]= (String) bdesc.property(QDataSet.NAME, i); // whoops!  It was like this for years!
-                    if ( result[i]==null ) result[i]="ch_"+i;
-                }
-            return result;
+            for ( int i=0; i<n; i++ ) {
+                bundleLabels[i]= (String) bdesc.property(QDataSet.LABEL, i);
+                bundleNames[i]= (String)bdesc.property(QDataSet.NAME, i);
+            }
         }
         QDataSet labels;
         if ( bdesc!=null && bdesc.rank()==1 ) {
@@ -179,24 +178,34 @@ public final class SemanticOps {
             labels= (QDataSet) ds.property(QDataSet.DEPEND_1);
         }
          
+        String[] slabels = new String[n];
         if (labels == null) {
-            String[] result = new String[n];
             for (int i = 0; i < n; i++) {
-                result[i] = "ch_" + i;
-            }
-            return result;
-        } else {
-            Units u = getUnits(labels);
-            String[] slabels = new String[n];
-            for (int i = 0; i < n; i++) {
-                if ( labels.rank()>1 ) {
-                    slabels[i] = "ch_"+i;
+                if ( bundleLabels[i]!=null ) {
+                    slabels[i]= bundleLabels[i];
                 } else {
-                    slabels[i] = String.valueOf(u.createDatum(labels.value(i)));
+                    if ( bundleNames[i]!=null ) {
+                        slabels[i]= bundleNames[i];
+                    } else {
+                        slabels[i]= "ch_"+i;
+                    }
                 }
             }
-            return slabels;
+        } else {
+            Units u = getUnits(labels);
+            for (int i = 0; i < n; i++) {
+                if ( bundleLabels[i]!=null ) {
+                    slabels[i]= bundleLabels[i];
+                } else {
+                    if ( labels.rank()>1 ) {
+                        slabels[i] = "ch_"+i;
+                    } else {
+                        slabels[i] = String.valueOf(u.createDatum(labels.value(i)));
+                    }
+                }
+            }
         }
+        return slabels;
     }
 
     /**
