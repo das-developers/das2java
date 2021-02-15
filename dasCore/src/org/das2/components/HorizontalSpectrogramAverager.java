@@ -23,6 +23,8 @@ import org.das2.event.DataRangeSelectionEvent;
 import org.das2.event.DataRangeSelectionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -32,7 +34,9 @@ import javax.swing.Action;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JDialog;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.das2.graph.Renderer;
@@ -109,6 +113,41 @@ public class HorizontalSpectrogramAverager implements DataRangeSelectionListener
             buttonPanel.add(b,0);
         }
     }    
+
+    private String mode = "average";
+
+    public static final String PROP_MODE = "mode";
+
+    public String getMode() {
+        return mode;
+    }
+
+    public void setMode(String mode) {
+        String oldMode = this.mode;
+        this.mode = mode;
+        propertyChangeSupport.firePropertyChange(PROP_MODE, oldMode, mode);
+    }
+
+    private transient final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+
+    /**
+     * Add PropertyChangeListener.
+     *
+     * @param listener
+     */
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.addPropertyChangeListener(listener);
+    }
+
+    /**
+     * Remove PropertyChangeListener.
+     *
+     * @param listener
+     */
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.removePropertyChangeListener(listener);
+    }
+
 
     protected void setDataSet( QDataSet ds ) {
        renderer.setDataSet(ds);
@@ -238,6 +277,14 @@ public class HorizontalSpectrogramAverager implements DataRangeSelectionListener
             yy= r.y;
         }
         
+        JComboBox modeCB= new JComboBox( new String[] {"average","sum" } ); //,"integrate" } );
+        modeCB.addActionListener((ActionEvent e) -> {
+            HorizontalSpectrogramAverager.this.setMode((String) modeCB.getSelectedItem());
+            JOptionPane.showConfirmDialog( buttonPanel, "Re-slice to update.", "mode updated", JOptionPane.OK_OPTION );
+        });
+        buttonPanel.add( modeCB );
+        
+                
         popupWindow.setLocation(xx,yy);
     }
     
@@ -278,7 +325,13 @@ public class HorizontalSpectrogramAverager implements DataRangeSelectionListener
         RebinDescriptor ddY = new RebinDescriptor(yValue1, yValue2, 1, false);
         ddY.setOutOfBoundsAction(RebinDescriptor.MINUSONE);
         
+        String title= parentPlot.getTitle().trim();
+        
         if ( xtys.rank()==3 ) {
+            if ( !mode.equals("average" ) ) {
+                renderer.setException( new Exception("only average supported for rank 3 data: "+mode) );
+                return;
+            }
             QDataSet tds1= null;
             for ( int i=0; i<xtys.length(); i++ ) {
                 QDataSet bounds = DataSetOps.dependBounds(xtys.slice(i));
@@ -296,16 +349,39 @@ public class HorizontalSpectrogramAverager implements DataRangeSelectionListener
             QDataSet ds1 = Ops.link( tds1.property(QDataSet.DEPEND_0), rebinned );
             renderer.setDataSet(ds1);                
         } else {
-            QDataSet rebinned = Ops.reduceMean( Ops.trim1( ds, Ops.dataset(yValue1), Ops.dataset(yValue2) ), 1 );
+            QDataSet rebinned;
+            switch (mode) {
+                case "average":
+                    rebinned = Ops.reduceMean( Ops.trim1( ds, Ops.dataset(yValue1), Ops.dataset(yValue2) ), 1 );
+                    title= "Averaged " + title;
+                    break;
+                case "sum":
+                    rebinned = Ops.reduceSum( Ops.trim1( ds, Ops.dataset(yValue1), Ops.dataset(yValue2) ), 1 );
+                    title= "Summed " + title;
+                    break;
+                case "integrate":
+                    QDataSet trimmed= Ops.trim1( ds, Ops.dataset(yValue1), Ops.dataset(yValue2) );
+                    QDataSet dep1= (QDataSet) ds.property(QDataSet.DEPEND_1);
+                    if ( dep1==null ) dep1= Ops.indgen(ds.length(0));
+                    QDataSet normalize= Ops.reduceSum( Ops.diff( dep1 ), 1 );
+                    renderer.setException( new Exception("integrate is not implemented.") );
+                    return;
+                    //rebinned = Ops.reduceSum( trimmed, 1 );
+                    //rebinned= Ops.divide( rebinned, normalize );
+                    //title= "Integrated " + title;
+                    //break;
+                default:
+                    renderer.setException( new Exception("unknown mode in averager: "+mode) );
+                    return;
+            }
             QDataSet ds1 = Ops.link( ds.property(QDataSet.DEPEND_0), rebinned );
             renderer.setDataSet(ds1);
         }
 
         value= e.getReference();
 
-        String title= parentPlot.getTitle().trim();
         if ( title.length()>0 ) {
-            title= "Averaged " + title+"!c";
+            title= title +"!c";
         }
         
         myPlot.setTitle( title + new DatumRange( yValue1, yValue2 ).toString() );
