@@ -2088,6 +2088,21 @@ public class DasPlot extends DasCanvasComponent {
         return this.yAxis;
     }
 
+    /**
+     * return the colorbar associated with this DasPlot.  This loops
+     * through the renderers, from the top most to the bottom most,
+     * looking for the first with a non-null colorBar property.
+     * @return null if not found or the dasColorBar most visible.
+     */
+    public DasColorBar getDasColorBar() {
+        Renderer[] rr= getRenderers();
+        for ( int i=rr.length-1; i>=0; i++ ) {
+            DasColorBar cb= rr[i].getColorBar();
+            if ( cb!=null ) return cb;
+        }
+        return null;
+    }
+    
     protected class RebinListener implements java.beans.PropertyChangeListener {
         @Override
         public void propertyChange(java.beans.PropertyChangeEvent e) {
