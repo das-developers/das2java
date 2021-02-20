@@ -866,6 +866,17 @@ public class DataSetBuilder {
     }
     
     /**
+     * get the units for the column.
+     * @param i
+     * @return the units or null.
+     * @throws IllegalArgumentException if the bundle has not been initialized.
+     * @throws IllegalArgumentException if the rank
+     */
+    public Units getUnits( int i ) {
+        return this.us[i];    
+    }
+    
+    /**
      * set the label (short, descriptive label for human consumption) 
      * for the column, for rank 2 bundle datasets.
      * @param i the column number
