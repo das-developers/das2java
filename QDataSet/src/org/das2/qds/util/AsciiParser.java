@@ -29,6 +29,7 @@ import java.util.regex.*;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
 import org.das2.datum.DatumRangeUtil;
+import org.das2.datum.DatumUtil;
 import org.das2.datum.EnumerationUnits;
 import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.TimeParser;
@@ -1774,7 +1775,7 @@ public class AsciiParser {
                         double d= fieldParsers[j].parseField(parseable, j);
                         if ( builder!=null ) builder.putValue(irec, j, d );
                         okayCount++;
-                    } catch (ParseException | NumberFormatException e) {
+                    } catch (ParseException | NumberFormatException | InconvertibleUnitsException e) {
                         if ( irec==0 ) {
                             logger.fine("ignore fails on the first line");
                             failCount++;
@@ -2116,6 +2117,13 @@ public class AsciiParser {
             return Units.dimensionless;
         } catch ( ParseException ex ) {
             logger.log(Level.FINER, "fails to parse as number: {0}", sval);
+        } catch ( InconvertibleUnitsException ex ) {
+            try {
+                Datum d= DatumUtil.parse(sval);
+                return d.getUnits();
+            } catch (ParseException ex1) {
+                return Units.dimensionless;
+            }
         }
         try {
             AsciiParser.UNIT_UTC.parse(sval);
