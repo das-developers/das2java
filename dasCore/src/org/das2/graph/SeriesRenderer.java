@@ -661,12 +661,10 @@ public class SeriesRenderer extends Renderer {
             
             QDataSet xds= SemanticOps.xtagsDataSet(dataSet);
 
-            QDataSet deltaPlusY = (QDataSet) vds.property( QDataSet.DELTA_PLUS );
-            QDataSet deltaMinusY = (QDataSet) vds.property( QDataSet.DELTA_MINUS );
-
-            QDataSet deltaPlusX = (QDataSet) xds.property( QDataSet.DELTA_PLUS );
-            QDataSet deltaMinusX = (QDataSet) xds.property( QDataSet.DELTA_MINUS );
-
+            QDataSet[] binMinMax= getMinMax( vds );
+            QDataSet binMax=binMinMax[1];
+            QDataSet binMin=binMinMax[0];
+            
             GeneralPath lp;
 
             Units xunits = SemanticOps.getUnits(xds);
@@ -679,11 +677,11 @@ public class SeriesRenderer extends Renderer {
             
             Point2D.Double returnTo= null;
             
-            if ( deltaPlusY!=null && deltaMinusY!=null ) {
+            if ( binMax!=null && binMin!=null ) {
                 try {
                     lp = new GeneralPath();
-                    QDataSet p1= Ops.add( vds, deltaPlusY );
-                    QDataSet p2= Ops.subtract( vds, deltaMinusY );
+                    QDataSet p1= binMax;
+                    QDataSet p2= binMin;
                     QDataSet w1= Ops.valid(p2);
                     QDataSet w2= Ops.valid(p1);
                     boolean penUp= true;
@@ -740,11 +738,15 @@ public class SeriesRenderer extends Renderer {
                 }
             }
             
-            if ( deltaPlusX!=null && deltaMinusX!=null ) {
+            binMinMax= getMinMax( xds );
+            QDataSet xbinMax=binMinMax[1];
+            QDataSet xbinMin=binMinMax[0];
+            
+            if ( xbinMax!=null && xbinMin!=null ) {
                 try {
                     if ( lp==null ) lp= new GeneralPath();
-                    QDataSet p1= Ops.subtract( xds, deltaMinusX );
-                    QDataSet p2= Ops.add( xds, deltaPlusX );
+                    QDataSet p1= xbinMin;
+                    QDataSet p2= xbinMax;
                     QDataSet w1= Ops.valid(p1);
                     QDataSet w2= Ops.valid(p2);
                     for (int i = firstIndex; i < lastIndex; i++) {
@@ -789,6 +791,37 @@ public class SeriesRenderer extends Renderer {
             GeneralPath gp= getPath();
             return gp != null && gp.contains(dp.x - 2, dp.y - 2, 5, 5);
 
+        }
+
+        /**
+         * return the min and the max extent of each data point, or null.
+         * @param vds
+         * @return the extent of each data point in a two-element QDataSet array, or [ null,null ].
+         */
+        private QDataSet[] getMinMax(QDataSet vds) {
+            QDataSet binMin=null;
+            QDataSet binMax=null;
+            
+            QDataSet deltaPlusY = (QDataSet) vds.property( QDataSet.DELTA_PLUS );
+            QDataSet deltaMinusY = (QDataSet) vds.property( QDataSet.DELTA_MINUS );
+            
+            if ( deltaPlusY==null ) {
+                QDataSet m= (QDataSet) vds.property(QDataSet.BIN_PLUS);
+                if ( m!=null ) deltaPlusY= m;
+                m= (QDataSet) vds.property(QDataSet.BIN_MINUS);
+                if ( m!=null ) deltaMinusY= m;
+            }
+            if ( deltaPlusY==null ) {
+                QDataSet m= (QDataSet) vds.property(QDataSet.BIN_MAX);
+                if ( m!=null ) binMax= m;
+                m= (QDataSet) vds.property(QDataSet.BIN_MIN);
+                if ( m!=null ) binMin= m;
+            } else {
+                binMax= Ops.add( vds, deltaPlusY );
+                binMin= Ops.subset( vds, deltaMinusY );
+            } 
+            
+            return new QDataSet[] { binMin, binMax } ;
         }
     }
 
