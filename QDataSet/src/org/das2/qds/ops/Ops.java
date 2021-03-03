@@ -12706,6 +12706,7 @@ public final class Ops {
      * @param ds2 rank N dataset.
      * @return rank N+1 bundle dataset, presently with mutable properties.
      * @see #join(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
+     * @see DataSetOps#unbundle(org.das2.qds.QDataSet, java.lang.String) 
      */
     public static QDataSet bundle( QDataSet ds1, QDataSet ds2 ) {
         if ( ds1==null && ds2==null ) {
@@ -12753,19 +12754,19 @@ public final class Ops {
             return ds1;
         } else if ( ds1.rank()-1==ds2.rank() ) {
             switch (ds1.rank()) {
-                case 3:
+                case 4:
                 {
                     TailBundleDataSet bds= new TailBundleDataSet(ds1.rank());
-                    for ( int i=0; i<ds1.length(0,0); i++ ) {
+                    for ( int i=0; i<ds1.length(0,0,0); i++ ) {
                         bds.bundle( DataSetOps.unbundle(ds1,i) );
                     }
                     bds.bundle( ds2 );
                     return bds;
                 }
-                case 4:
+                case 3:
                 {
                     TailBundleDataSet bds= new TailBundleDataSet(ds1.rank());
-                    for ( int i=0; i<ds1.length(0,0,0); i++ ) {
+                    for ( int i=0; i<ds1.length(0,0); i++ ) {
                         bds.bundle( DataSetOps.unbundle(ds1,i) );
                     }
                     bds.bundle( ds2 );
