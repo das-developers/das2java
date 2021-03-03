@@ -866,7 +866,7 @@ public class DataSetOps {
      * @return the properties after the slice.
      */
     public static Map<String,Object> sliceProperties0( int index, Map<String,Object> props ) {
-        Map<String,Object> result= new LinkedHashMap();
+        Map<String,Object> result= new LinkedHashMap<>();
 
         QDataSet dep0= (QDataSet) props.get( QDataSet.DEPEND_0 );
         QDataSet dep1= (QDataSet) props.get( QDataSet.DEPEND_1 );
@@ -1016,7 +1016,7 @@ public class DataSetOps {
      * @return the properties after the slice.
      */
     public static Map<String,Object> sliceProperties( Map<String,Object> properties, int sliceDimension ) {
-        Map<String,Object> result = new LinkedHashMap();
+        Map<String,Object> result = new LinkedHashMap<>();
         String[] ss= DataSetUtil.dimensionProperties();
         for ( String s: ss ) {
             Object val= properties.get(s);
@@ -1027,9 +1027,9 @@ public class DataSetOps {
             throw new IllegalArgumentException("sliceDimension > MAX_HIGH_RANK");
         }
 
-        List<Object> deps = new ArrayList(QDataSet.MAX_HIGH_RANK);
-        List<Object> bund = new ArrayList(QDataSet.MAX_HIGH_RANK);
-        List<Object> bins = new ArrayList(QDataSet.MAX_HIGH_RANK);
+        List<Object> deps = new ArrayList<>(QDataSet.MAX_HIGH_RANK);
+        List<Object> bund = new ArrayList<>(QDataSet.MAX_HIGH_RANK);
+        List<Object> bins = new ArrayList<>(QDataSet.MAX_HIGH_RANK);
         
         for (int i = 0; i < QDataSet.MAX_RANK; i++) {
             deps.add(i, properties.get("DEPEND_" + i));
@@ -1081,8 +1081,8 @@ public class DataSetOps {
     public static QDataSet flattenBundleDescriptor( QDataSet bundle1 ) {
 
         int nr1= 0;
-        final List<String> names= new ArrayList();
-        final List<Units> units= new ArrayList();
+        final List<String> names= new ArrayList<>();
+        final List<Units> units= new ArrayList<>();
 
         for ( int j=0; j<bundle1.length(); j++ ) {
 
@@ -1167,7 +1167,7 @@ public class DataSetOps {
      */
     public static String[] bundleNames( QDataSet bundleDs ) {
         
-        List<String> result= new ArrayList(bundleDs.length(0));
+        List<String> result= new ArrayList<>(bundleDs.length(0));
         
         QDataSet bundle1= (QDataSet) bundleDs.property(QDataSet.BUNDLE_1);
 
@@ -1441,6 +1441,7 @@ public class DataSetOps {
      * @throws IndexOutOfBoundsException if the index is invalid.
      * @throws IllegalArgumentException if the dataset is not a bundle dataset, with either BUNDLE_1 or DEPEND_1 set.
      * @return the ib-th dataset from the bundle.
+     * @see Ops#bundle(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      */
     public static QDataSet unbundle(QDataSet bundleDs, int ib, boolean highRank ) {
         
@@ -1497,18 +1498,20 @@ public class DataSetOps {
             throw new IndexOutOfBoundsException("in "+bundleDs+" no such data set at index="+ib +" bundle.length()="+bundle.length() );
         }
 
-        if ( bundle.rank()==1 ) { //simple legacy bundle was once DEPEND_1.
-            MutablePropertyDataSet result= bundleDs.rank()==2 ? DataSetOps.slice1(bundleDs,ib) : DataSetOps.slice0(bundleDs,ib);
-            Units enumunits= (Units) bundle.property(QDataSet.UNITS);
-            if ( enumunits==null ) enumunits= Units.dimensionless;
-            String label=  String.valueOf(enumunits.createDatum(bundle.value(ib)));
-            result.putProperty(QDataSet.NAME, Ops.safeName(label) ); //TODO: make safe java-identifier eg: org.virbo.dsops.Ops.safeName(label)
-            result.putProperty(QDataSet.LABEL, label );
-            return result;
-        } else if ( bundle.rank()==2 ) {
-
-        } else {
-            throw new IllegalArgumentException("rank limit: >2 not supported");
+        switch (bundle.rank()) {
+            case 1:
+                //simple legacy bundle was once DEPEND_1.
+                MutablePropertyDataSet result= bundleDs.rank()==2 ? DataSetOps.slice1(bundleDs,ib) : DataSetOps.slice0(bundleDs,ib);
+                Units enumunits= (Units) bundle.property(QDataSet.UNITS);
+                if ( enumunits==null ) enumunits= Units.dimensionless;
+                String label=  String.valueOf(enumunits.createDatum(bundle.value(ib)));
+                result.putProperty(QDataSet.NAME, Ops.safeName(label) ); //TODO: make safe java-identifier eg: org.virbo.dsops.Ops.safeName(label)
+                result.putProperty(QDataSet.LABEL, label );
+                return result;
+            case 2:
+                break;
+            default:
+                throw new IllegalArgumentException("rank limit: >2 not supported");
         }
 
         int len=1;  // total number of elements per record of the dataset
@@ -1582,6 +1585,23 @@ public class DataSetOps {
                         result.putProperty(names11, v);
                     }
                 }
+                
+                String[] planeNames= new String[] { QDataSet.BIN_MAX_NAME, QDataSet.BIN_MIN_NAME, 
+                    QDataSet.BIN_MINUS_NAME, QDataSet.BIN_PLUS_NAME,
+                    QDataSet.DELTA_MINUS_NAME, QDataSet.DELTA_PLUS_NAME } ;
+                for ( String s: planeNames ) {
+                    String o;                    
+                    o = (String)bundle.property( s,j);
+                    if ( o!=null ) {
+                        QDataSet dss1= unbundle( bundleDs, o ); // TODO: check for infinite loop.
+                        if ( dss1==null ) {
+                            logger.log(Level.WARNING, "bundled dataset refers to {0} but this is not found in bundle", o);
+                        } else {
+                            result.putProperty( s.substring(0,s.length()-5), dss1 );
+                        }
+                    }
+                }
+                
                 // allow unindexed properties to define property for all bundled datasets, for example USER_PROPERTIES or FILL
                 Map<String,Object> props3= DataSetUtil.getProperties(bundle, DataSetUtil.globalProperties(), null );
                 for ( Map.Entry<String, Object> ss1: props3.entrySet() ) {
