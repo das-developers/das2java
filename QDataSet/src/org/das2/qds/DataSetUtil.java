@@ -500,10 +500,19 @@ public class DataSetUtil {
      * @param name the property name, e.g. QDataSet.TITLE
      * @return String.class
      * @see #getPropertyType(java.lang.String) 
+     * //TODO: super inefficient, this needs to be rewritten as switch
      */
     public static Class getPropertyClass( String name ) {
         if ( name.equals(QDataSet.TITLE) 
-                || name.equals(QDataSet.LABEL) ) {
+                || name.equals(QDataSet.LABEL) 
+                || name.equals(QDataSet.BIN_MAX_NAME)
+                || name.equals( QDataSet.BIN_MIN_NAME )
+                || name.equals(QDataSet.BIN_PLUS_NAME)
+                || name.equals(QDataSet.BIN_MINUS_NAME)
+                || name.equals(QDataSet.DELTA_PLUS_NAME )
+                || name.equals( QDataSet.DELTA_MINUS_NAME )
+                || name.equals( QDataSet.DEPENDNAME_0 )
+                || name.equals( QDataSet.DEPENDNAME_1 ) ) {
             return String.class;
         } else if (  name.equals(QDataSet.UNITS) ) {
             return Units.class;
@@ -561,6 +570,14 @@ public class DataSetUtil {
             case QDataSet.LABEL:
             case QDataSet.TITLE:
             case QDataSet.DESCRIPTION:
+            case QDataSet.BIN_MAX_NAME:
+            case QDataSet.BIN_MIN_NAME:
+            case QDataSet.BIN_PLUS_NAME:
+            case QDataSet.BIN_MINUS_NAME:
+            case QDataSet.DELTA_PLUS_NAME:
+            case QDataSet.DELTA_MINUS_NAME:
+            case QDataSet.DEPENDNAME_0:
+            case QDataSet.DEPENDNAME_1:
                 return PROPERTY_TYPE_STRING;
             case QDataSet.UNITS:
                 return PROPERTY_TYPE_UNITS;
