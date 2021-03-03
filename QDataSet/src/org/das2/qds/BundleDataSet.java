@@ -28,6 +28,9 @@ public final class BundleDataSet extends AbstractDataSet {
     private static final Logger logger= LoggerManager.getLogger("qdataset");
     
     List<QDataSet> datasets;
+    
+    private BundleDescriptor bundleDescriptor;
+    
     /**
      * rank of the dataset.
      */
@@ -71,11 +74,12 @@ public final class BundleDataSet extends AbstractDataSet {
     public BundleDataSet( int rank ) {
         this.rank= rank;
         datasets= new ArrayList<>();
+        bundleDescriptor= new BundleDescriptor();
         if ( rank>=2 ) {
-            putProperty( QDataSet.BUNDLE_1, new BundleDescriptor() );
+            putProperty( QDataSet.BUNDLE_1, bundleDescriptor );
             putProperty( QDataSet.QUBE, Boolean.TRUE );
         } else {
-            putProperty( QDataSet.BUNDLE_0, new BundleDescriptor() );
+            putProperty( QDataSet.BUNDLE_0, bundleDescriptor );
         }
 
     }
@@ -90,6 +94,22 @@ public final class BundleDataSet extends AbstractDataSet {
         bundle(ds);
     }
 
+    private void checkProps( int index, QDataSet ds1, QDataSet ds, String name ) {
+        String[] nn= new String[] { QDataSet.BIN_MIN, QDataSet.BIN_MAX, 
+            QDataSet.BIN_MINUS, QDataSet.BIN_PLUS, 
+            QDataSet.DELTA_MINUS, QDataSet.DELTA_PLUS };
+        for (String n : nn) {
+            QDataSet d12= (QDataSet) ds1.property(n);
+            if ( d12==ds ) { // they must be one and the same, not a copy.
+                bundleDescriptor.putProperty( n+"_NAME", index, name );
+            }
+        }
+        QDataSet d12= (QDataSet) ds1.property(QDataSet.DEPEND_0);
+        if ( d12==ds ) { // they must be one and the same, not a copy.
+            bundleDescriptor.putProperty( "DEPENDNAME_0", index, name );
+        }
+    }
+    
     /**
      * add the dataset to the bundle of datasets.  Currently this implementation only supports rank N-1 datasets (N is this
      * dataset's rank), but the QDataSet spec allows for qube datasets of any rank&gt;1 to be bundled.  This limitation will be removed
@@ -120,6 +140,11 @@ public final class BundleDataSet extends AbstractDataSet {
 //                logger.warning("bundled datasets do not have the same timetags");
 //            }
 //        }
+        for ( int i=0; i<datasets.size(); i++ ) {
+            QDataSet ds1= datasets.get(i);
+            checkProps( i, ds1, ds, Ops.guessName(ds) );
+            checkProps( datasets.size(), ds, ds1, Ops.guessName(ds1) ); 
+        }
         datasets.add( ds );
         
     }
