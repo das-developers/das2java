@@ -346,6 +346,36 @@ public interface QDataSet {
     public final static String BIN_MIN="BIN_MIN";
     
     /**
+     * name of the dataset in a bundle to be connected to BIN_MIN.
+     */
+    public final static String BIN_MIN_NAME="BIN_MIN_NAME";
+    
+    /**
+     * name of the dataset in a bundle to be connected to BIN_MAX.
+     */
+    public final static String BIN_MAX_NAME="BIN_MAX_NAME";
+
+    /**
+     * name of the dataset in a bundle to be connected to BIN_MINUS.
+     */
+    public final static String BIN_MINUS_NAME="BIN_MINUS_NAME";
+    
+    /**
+     * name of the dataset in a bundle to be connected to BIN_PLUS.
+     */
+    public final static String BIN_PLUS_NAME="BIN_PLUS_NAME";
+
+    /**
+     * name of the dataset in a bundle to be connected to DELTA_PLUS.
+     */
+    public final static String DELTA_PLUS_NAME="DELTA_PLUS_NAME";
+    
+    /**
+     * name of the dataset in a bundle to be connected to DELTA_MINUS.
+     */
+    public final static String DELTA_MINUS_NAME="DELTA_MINUS_NAME";
+    
+    /**
      * CacheTag, indicating the coverage and resolution of a dimension.  This is 
      * an object that represents
      * the coverage and resolution of the interval covered.  For example, in Autoplot
