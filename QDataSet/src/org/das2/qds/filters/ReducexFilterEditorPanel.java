@@ -24,7 +24,7 @@ public class ReducexFilterEditorPanel extends AbstractFilterEditorPanel {
         initComponents();
         Units tu= Units.seconds;
         Units[] array= tu.getOffsetUnits().getConvertibleUnits();
-        unitsCB.setModel(new javax.swing.DefaultComboBoxModel(array));  
+        unitsCB.setModel(new javax.swing.DefaultComboBoxModel<>(array));  
     }
 
     /**
@@ -121,7 +121,7 @@ public class ReducexFilterEditorPanel extends AbstractFilterEditorPanel {
         Units tu= SemanticOps.getUnits(dep0);
         Units[] array= tu.getOffsetUnits().getConvertibleUnits();
         Object u= unitsCB.getSelectedItem();
-        unitsCB.setModel(new javax.swing.DefaultComboBoxModel(array));  
+        unitsCB.setModel(new javax.swing.DefaultComboBoxModel<>(array));  
         unitsCB.setSelectedItem(u);
     }
 
