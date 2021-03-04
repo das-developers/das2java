@@ -83,8 +83,77 @@ public class DataSetAdapter {
         
 		// X-Y Datasets
 		if (ds instanceof VectorDataSet) {
-			VectorDataSet vds = (VectorDataSet) ds;
-			return createVectorQds(vds);
+                    boolean newCodeWhichSupportsPlanes= false;
+                    if (newCodeWhichSupportsPlanes) {
+                        VectorDataSet vds = (VectorDataSet) ds;
+                        return createVectorQds(vds);
+                    } else {
+                        if (ds.getPlaneIds().length <= 1) {
+                            //Handle x single y as a simple vector
+                            Vector v = new Vector((VectorDataSet) ds);
+                            String sname = (String) ds.getProperty("name");
+                            if (sname == null) {
+                                sname = "y";
+                            }
+                            v.putProperty(QDataSet.NAME, sname);
+                            return v;
+
+                        } else {
+                            //Handle x multi y as a bundle
+                            VectorDataSet vds = (VectorDataSet) ds;
+                            Vector v = new Vector(vds);
+                            String sname = (String) ds.getProperty("name");
+                            if (sname == null) {
+                                sname = "y";
+                            }
+                            v.putProperty(QDataSet.NAME, sname);
+                            AbstractDataSet bds = (AbstractDataSet) Ops.bundle(null, v);
+                            String[] planes = ds.getPlaneIds();
+                            Units unitsY = null;
+                            boolean bCommonYUnits = false;
+                            for (int i = 1; i < planes.length; i++) {
+                                // Arg, everything we want to get at is hidden behind 7 levels of
+                                // interfaces.  As a bonus, class names repeat in different packages from
+                                // the same dev group.
+                                org.das2.dataset.AbstractDataSet.ViewDataSet view
+                                        = (org.das2.dataset.AbstractDataSet.ViewDataSet) vds.getPlanarView(planes[i]);
+                                if (unitsY == null) {
+                                    unitsY = view.getYUnits();
+                                } else {
+                                    bCommonYUnits = (unitsY == view.getYUnits());
+                                }
+
+                                v = new Vector((VectorDataSet) vds.getPlanarView(planes[i]), planes[i]);
+                                v.putProperty(QDataSet.NAME, planes[i]);
+                                Ops.bundle(bds, v);
+                            }
+
+                            // Convert Das2 property substitutions to USER_PROPERTIES substitutions
+                            Map<String, Object> dasProps = adaptSubstitutions(vds.getProperties());
+                            bds.putProperty(QDataSet.USER_PROPERTIES, dasProps);
+
+                            bds.putProperty(QDataSet.DEPEND_0, new XTagsDataSet(vds));
+                            bds.putProperty(QDataSet.TITLE, dasProps.get(DataSet.PROPERTY_TITLE));
+
+                            // If all Y elements of the bundle have the same units, put those units
+                            // on the Y axis, that way something identifies Y.
+                            if (bCommonYUnits) {
+                                bds.putProperty(QDataSet.UNITS, unitsY);
+                                bds.putProperty(QDataSet.LABEL, unitsY.toString());
+                            }
+
+                            // Copy more properties into the overall bundle dataset, wow this really
+                            // needs to be refactored.
+                            bds.putProperty(QDataSet.SCALE_TYPE, vds.getProperty(DataSet.PROPERTY_Y_SCALETYPE));
+                            DatumRange yRng = (DatumRange) vds.getProperty(DataSet.PROPERTY_Y_RANGE);
+                            if (yRng != null) {
+                                bds.putProperty(QDataSet.TYPICAL_MIN, yRng.min().value());
+                                bds.putProperty(QDataSet.TYPICAL_MAX, yRng.max().value());
+                            }
+
+                            return DDataSet.copy(bds);
+                        }
+                        }
 		}
 
 		// X-YScan Datasets
