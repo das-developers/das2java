@@ -83,8 +83,8 @@ public class DataSetAdapter {
         
 		// X-Y Datasets
 		if (ds instanceof VectorDataSet) {
-                    boolean newCodeWhichSupportsPlanes= false;
-                    if (newCodeWhichSupportsPlanes) {
+                    boolean newCodeWhichSupportsBinMinPlanes= false;
+                    if (newCodeWhichSupportsBinMinPlanes) {
                         VectorDataSet vds = (VectorDataSet) ds;
                         return createVectorQds(vds);
                     } else {
