@@ -482,9 +482,9 @@ public final class QubeDataSetIterator implements DataSetIterator {
                     if ( this.qube[dim]!=max ) {
                         String jythonLine= currentJythonLine();
                         if ( jythonLine.equals("???") ) {
-                            logger.log(Level.WARNING, "index list appears to be for dimensions of length {0} (see VALID_MAX) but is indexing dimension length {1}, which may indicate there''s a bug.", new Object[]{max, this.qube[dim]});
+                            logger.log(Level.WARNING, "rfe737: index list appears to be for dimensions of length {0} (see VALID_MAX) but is indexing dimension length {1}, which may indicate there''s a bug.", new Object[]{max, this.qube[dim]});
                         } else {
-                            logger.log(Level.WARNING, "index list appears to be for dimensions of length {0} (see VALID_MAX) but is indexing dimension length {1}, which may indicate there''s a bug at {2}.", new Object[]{max, this.qube[dim], jythonLine});
+                            logger.log(Level.WARNING, "rfe737: index list appears to be for dimensions of length {0} (see VALID_MAX) but is indexing dimension length {1}, which may indicate there''s a bug at {2}.", new Object[]{max, this.qube[dim], jythonLine});
                         }
                     }
                 }
