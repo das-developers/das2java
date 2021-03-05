@@ -46,19 +46,7 @@ public class SortDataSet extends AbstractDataSet {
             logger.log(Level.FINE, "sort is zero-length for {0}", source);
 
         } else {
-        
-            Number max= (Number)sort.property(QDataSet.VALID_MAX);
-            if ( max!=null ) {
-                if ( max.intValue()!=source.length() ) {
-                    String jythonLine= currentJythonLine();
-                    if ( jythonLine.equals("???") ) {
-                        logger.log(Level.WARNING, "rfe737: index list appears to be for dimensions of length {0} (see VALID_MAX) but is indexing dimension length {1}, which may indicate there''s a bug.", new Object[]{max, source.length() });
-                    } else {
-                        logger.log(Level.WARNING, "rfe737: index list appears to be for dimensions of length {0} (see VALID_MAX) but is indexing dimension length {1}, which may indicate there''s a bug at {2}.", new Object[]{max, source.length(), jythonLine});
-                    }
-                }
-            }
-            
+            QubeDataSetIterator.checkValidIndexList(sort,source.length());
             QDataSet range= Ops.extent(sort);
 
             if ( range.value(0)< 0 ) throw new IndexOutOfBoundsException("sort index contains out-of-bounds element: "+range.value(0) );

@@ -232,6 +232,44 @@ public final class QubeDataSetIterator implements DataSetIterator {
         return "???";
     }
 
+    public static void checkValidIndexList( QDataSet ds, int indexSize ) {
+        if ( indexSize>-1 ) {
+            Number max= (Number)ds.property(QDataSet.VALID_MAX);
+            if ( max!=null ) {
+                if ( max.intValue()!=indexSize ) {
+                    String jythonLine= currentJythonLine();
+                    if ( jythonLine.equals("???") ) {
+                        if ( max instanceof Integer || max instanceof Long ) {
+                            logger.log(Level.WARNING, "rfe737: index list appears to be for dimensions of length {0} (see VALID_MAX) but is indexing dimension length {1}, which may indicate there''s a bug.", new Object[]{max, indexSize });
+                        } else {
+                            if ( max.doubleValue()>1e100 ) {
+                                
+                            } else {
+                                logger.log(Level.WARNING, "rfe737: VALID_MAX is not an integer but data is used as an index list, which may indicate there''s a bug.", new Object[]{max, indexSize });
+                            }
+                        }
+                    } else {
+                        logger.log(Level.WARNING, "rfe737: index list appears to be for dimensions of length {0} (see VALID_MAX) but is indexing dimension length {1}, which may indicate there''s a bug at {2}.", new Object[]{max, indexSize, jythonLine});
+                    }
+                }
+            }
+        }
+        // check the first hundred indeces to see if they are non-integer.
+        int n= Math.min( ds.length(), 100 );
+        for ( int i=0; i<n; i++ ) {
+            double v= ds.value(i);
+            if ( v!=Math.floor(v) ) {
+                String jythonLine= currentJythonLine();
+                if ( jythonLine.equals("???") ) {
+                    logger.warning( "rfe737: indices should be integers, which might indicate there's a bug" );
+                } else {
+                    logger.log(Level.WARNING, "rfe737: indices should be integers, which might indicate there''s a bug at {0}", jythonLine);
+                }
+                break;
+            }
+        }
+    }
+    
     /**
      * Factory for iterator that goes through a list of indeces.
      */
@@ -247,19 +285,7 @@ public final class QubeDataSetIterator implements DataSetIterator {
             if ( ds.rank()!=1 ) {
                 throw new IllegalArgumentException("list of indeces dataset must be rank 1");
             }
-            // check the first hundred indeces to see if they are non-integer.
-            for ( int i=0; i<Math.min( ds.length(), 100 ); i++ ) {
-                double v= ds.value(i);
-                if ( v!=Math.floor(v) ) {
-                    String jythonLine= currentJythonLine();
-                    if ( jythonLine.equals("???") ) {
-                        logger.warning( "indices should be integers, which might indicate there's a bug" );
-                    } else {
-                        logger.log(Level.WARNING, "indices should be integers, which might indicate there''s a bug at {0}", jythonLine);
-                    }
-                    break;
-                }
-            }
+            checkValidIndexList(ds,-1);
         }
 
         @Override
