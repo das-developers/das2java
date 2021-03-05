@@ -818,7 +818,7 @@ public class SeriesRenderer extends Renderer {
                 if ( m!=null ) binMin= m;
             } else {
                 binMax= Ops.add( vds, deltaPlusY );
-                binMin= Ops.subset( vds, deltaMinusY );
+                binMin= Ops.subtract( vds, deltaMinusY );
             } 
             
             return new QDataSet[] { binMin, binMax } ;
