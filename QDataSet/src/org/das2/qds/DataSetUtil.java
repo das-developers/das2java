@@ -1980,6 +1980,7 @@ public class DataSetUtil {
             if ( repeatValues>0 ) {
                 QDataSet r= Ops.where( Ops.ne( diffs2,DataSetUtil.asDataSet(0) ) );
                 diffs2= DataSetOps.applyIndex( diffs2, 0, r, false );
+                r= Ops.putProperty( r, QDataSet.VALID_MAX, null ); // rfe737: clear out the warning, since we know what we are doing.
                 yy= DataSetOps.applyIndex( yy, 0, r, false );
             }
             QDataSet loghist= ah.doit( diffs2,yy ); //TODO: sloppy!
