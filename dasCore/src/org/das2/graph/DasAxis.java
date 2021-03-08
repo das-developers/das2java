@@ -2515,7 +2515,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             int tickLength;
 
             if ( ticks==null ) {
-                logger.info("ticks are not ready--custom ticks?");
+                logger.fine("ticks are not ready");
                 return;
             }
             
@@ -2653,6 +2653,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             TickVDescriptor ticks = getTickV();
 
             if ( DMax-DMin<2 ) {
+                return;
+            }
+            
+            if ( ticks==null ) {
+                logger.fine("ticks are not ready");
                 return;
             }
             
