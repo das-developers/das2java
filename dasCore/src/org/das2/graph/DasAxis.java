@@ -693,13 +693,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             logger.log(Level.WARNING, "invalid range ignored: {0}", dr);
             return;
         }
-        synchronized ( tickLock ) {
-            if (getUnits().isConvertibleTo(dr.getUnits())) {
-                //this.setDataRange(dr.min(), dr.max());
-                this.dataRange.setRange(dr);
-            } else {
-                this.resetRange(dr);
-            }
+        if (getUnits().isConvertibleTo(dr.getUnits())) {
+            //this.setDataRange(dr.min(), dr.max());
+            this.dataRange.setRange(dr);
+        } else {
+            this.resetRange(dr);
         }
         if ( oldUnits!=dr.getUnits() ) {
             firePropertyChange(PROP_UNITS, oldUnits, dr.getUnits());
@@ -1031,13 +1029,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     public synchronized void resetRange(DatumRange range) {
         DatumRange oldRange= this.getDatumRange();
         if (range.getUnits() != this.getUnits()) {
-            synchronized ( tickLock ) {
-                if (dasPlot != null) {
-                    dasPlot.invalidateCacheImage();
-                }
-                logger.log(Level.FINEST, "replaceRange({0})", range);
-                dataRange.resetRange(range);
+            if (dasPlot != null) {
+                dasPlot.invalidateCacheImage();
             }
+            logger.log(Level.FINEST, "replaceRange({0})", range);
+            dataRange.resetRange(range);
             setScanRange(null);
         } else {
             dataRange.setRange(range);
@@ -2094,7 +2090,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                     TickMaster.getInstance().offerTickV( this, newTicks );
                 } else {
                     TickVDescriptor newTicks;
-                    synchronized ( tickLock ) { // deadlock observed here with JMC.
+                    //synchronized ( tickLock ) { // deadlock observed here with JMC.
                         if (getUnits() instanceof TimeLocationUnits) {
                             newTicks= updateTickVTime(dr);
                         } else if (dataRange.isLog()) {
@@ -2102,7 +2098,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                         } else {
                             newTicks= updateTickVLinear(dr);
                         }
-                    }
+                    //}
                     //resetTickV(newTicks);
                     if ( this.tickV==null ) resetTickV( newTicks );  // transition cases, pngwalk.
                     TickMaster.getInstance().offerTickV( this, newTicks );
