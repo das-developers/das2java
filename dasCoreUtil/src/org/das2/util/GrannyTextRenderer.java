@@ -349,6 +349,11 @@ public class GrannyTextRenderer {
         
         logger.entering( "GrannyTextRenderer", "draw", new Object[] { baseFont, ix, iy, draw, str } );
         
+        boolean debug= false;
+        if ( debug && !draw && this.tokens.length>1 ) {
+            logger.info("draw debug");
+        }
+        
         ArrayList<Rectangle> llineBounds= new ArrayList<>();  // work on a local copy
         
         Graphics2D g = null;
@@ -629,6 +634,14 @@ public class GrannyTextRenderer {
             this.lineBounds= llineBounds;
             this.bounds= calculateBounds(llineBounds);
         }
+        
+        if ( debug && draw && this.bounds!=null ) {
+            Rectangle r = new Rectangle(this.bounds);
+            r.translate( (int)current.x-r.width,(int)current.y );
+            g.setColor( new Color( 150, 100, 100, 100 ) );
+            g.fill( r );
+        }
+        
         if (draw) {
             g.dispose();
         }
