@@ -7700,12 +7700,16 @@ public final class Ops {
             throw new IllegalArgumentException("requested class is not of correct type: "+clazz+" (should be "+correctClass+")" );
         }
         Object o= ds.property( propertyName );
-        if ( clazz.isInstance(o) ) {
-            return clazz.cast(o);
-        } else {
-            logger.log(Level.WARNING, "ds property is not of the correct type: {0} have {1}, want {2}", 
-                    new Object[] { propertyName, o.getClass(), clazz } );
+        if ( o==null ) {
             return null;
+        } else {
+            if ( clazz.isInstance(o) ) {
+                return clazz.cast(o);
+            } else {
+                logger.log(Level.WARNING, "ds property is not of the correct type: {0} have {1}, want {2}", 
+                        new Object[] { propertyName, o.getClass(), clazz } );
+                return null;
+            }
         }
     } 
     
