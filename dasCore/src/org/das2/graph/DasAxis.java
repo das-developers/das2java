@@ -2791,12 +2791,20 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     /**
      * explicitly set the position of the label from the axis.
      * For example, "4em" will position the y-axis label 4ems away from the
-     * axis.
+     * axis.  Empty string is default automatic behavior.
      * @param spec offset string like "5em+5px"
      */
     public void setLabelOffset( String spec ) {
         this.labelOffset= spec;
         update();
+    }
+    
+    /**
+     * 
+     * @return the label offset.
+     */
+    public String getLabelOffset( ) {
+        return this.labelOffset;
     }
 
     /** 
