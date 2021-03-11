@@ -55,6 +55,7 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.reflect.InvocationTargetException;
 import java.text.*;
 import javax.swing.*;
 import java.util.*;
@@ -662,16 +663,21 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      */
     private void setOrientationInternal(int orientation) {
         this.orientation = orientation;
-        if (orientation == TOP) {
-            setTickDirection(UP);
-        } else if (orientation == BOTTOM) {
-            setTickDirection(DOWN);
-        } else if (orientation == LEFT) {
-            setTickDirection(RIGHT);
-        } else if (orientation == RIGHT) {
-            setTickDirection(LEFT);
-        } else {
-            throw new IllegalArgumentException("Invalid value for orientation");
+        switch (orientation) {
+            case TOP:
+                setTickDirection(UP);
+                break;
+            case BOTTOM:
+                setTickDirection(DOWN);
+                break;
+            case LEFT:
+                setTickDirection(RIGHT);
+                break;
+            case RIGHT:
+                setTickDirection(LEFT);
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid value for orientation");
         }
     }
 
@@ -1166,23 +1172,21 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                     // class:org.autoplot.tca.AutoplotTCASource:vap+file:/tmp/foo.txt?rank2=field1-field4&depend0=field0
                     int argPos= dataset.indexOf(':',6);
                     String className;
-                    String arg= null;
                     if ( argPos==-1 ) {
                         className= dataset.substring(6);
                         result = (QFunction) Class.forName(className).newInstance();
                     } else {
+                        String arg;
                         className= dataset.substring(6,argPos);
                         arg= dataset.substring(argPos+1);
                         try {
                             result = (QFunction) Class.forName(className).getConstructor(String.class).newInstance(arg);
-                        } catch ( Exception ex ) { //TODO: more precise
+                        } catch ( ClassNotFoundException | IllegalArgumentException | NoSuchMethodException | SecurityException | InvocationTargetException ex ) {
                             throw new DasException(ex);
                         }
                     }
                     
-                } catch (InstantiationException ex) {
-                    logger.log(Level.SEVERE, ex.getMessage(), ex);
-                } catch (IllegalAccessException ex) {
+                } catch (InstantiationException | IllegalAccessException ex) {
                     logger.log(Level.SEVERE, ex.getMessage(), ex);
                 }
             } catch (ClassNotFoundException ex) {
@@ -1401,7 +1405,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
             this.tcaData= ltcaData;
             update();
-        } catch ( Exception ex ) { //TODO: provide some feedback!
+        } catch ( IllegalArgumentException ex ) { //TODO: provide some feedback!
             //EnumerationUnits eu= EnumerationUnits.create("tcafeedback");
             //QDataSet result= Ops.bundle(null,Ops.replicate( Ops.dataset(eu.createDatum("err")), dep0.length() ));
             //this.tcaData= Ops.link( dep0, result );
@@ -1418,14 +1422,15 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * @return the orientation BOTTOM TOP LEFT RIGHT.
      */
     public final int getDevicePosition() {
-        if (orientation == BOTTOM) {
-            return getRow().getDMaximum();
-        } else if (orientation == TOP) {
-            return getRow().getDMinimum();
-        } else if (orientation == LEFT) {
-            return getColumn().getDMinimum();
-        } else {
-            return getColumn().getDMaximum();
+        switch (orientation) {
+            case BOTTOM:
+                return getRow().getDMaximum();
+            case TOP:
+                return getRow().getDMinimum();
+            case LEFT:
+                return getColumn().getDMinimum();
+            default:
+                return getColumn().getDMaximum();
         }
     }
 
@@ -1694,8 +1699,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         String[] granny = tdf.axisFormat(tickV.tickV, getDatumRange());
         GrannyTextRenderer idlt = new GrannyTextRenderer();
         Rectangle bounds = new Rectangle();
-        for (int i = 0; i < granny.length; i++) {
-            idlt.setString(this.getTickLabelFont(), granny[i]);
+        for (String granny1 : granny) {
+            idlt.setString(this.getTickLabelFont(), granny1);
             bounds.add(idlt.getBounds());
         }
         return bounds;
@@ -1953,11 +1958,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             logger.fine("...got lock.");
             final DasProgressWheel tcaProgress= new DasProgressWheel();
             tcaProgress.started();
-            Runnable run= new Runnable() {
-                @Override
-                public void run() {
-                    tcaProgress.getPanel(DasAxis.this);
-                }
+            Runnable run= () -> {
+                tcaProgress.getPanel(DasAxis.this);
             };
             SwingUtilities.invokeLater(run);
             
@@ -2824,25 +2826,29 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
         int offset;
 
-        if (orientation == BOTTOM) {
-            offset = tickLabelFont.getSize() + zeroOrPosTickLen + fm.stringWidth(" ") + labelFont.getSize() + labelFont.getSize() / 2;
-            if ( drawTca && tcaData != null ) {
-                offset += Math.min( MAX_TCA_LINES, tcaData.length(0) ) * (tickLabelFont.getSize() + getLineSpacing());
-            }
-            if ( labelOffset.length()>0 && axisLabel.length()>0 ) {
-                offset= tickLabelFont.getSize() + (int)DasDevicePosition.parseLayoutStr( labelOffset, getEmSize(), getRow().getHeight(), 0 );
-            }
-        } else if (orientation == TOP) {
-            offset = zeroOrPosTickLen + fm.stringWidth(" ") + labelFont.getSize() + labelFont.getSize() / 2 + (int) gtr.getDescent();
-        } else if (orientation == LEFT) {
-            //offset = zeroOrPosTickLen + (int)this.blLabelRect.getWidth() + fm.stringWidth(" ") + labelFont.getSize() / 2 + (int) gtr.getDescent();
-            offset = getColumn().getDMinimum() - blLabelRect.x + labelFont.getSize() / 2 + (int) gtr.getDescent();
-        } else {
-            if ( trLabelRect==null ) {
-                offset= 20;
-            } else {
-                offset = this.trLabelRect.x + this.trLabelRect.width - getColumn().getDMaximum() + labelFont.getSize() / 2 + (int) (flipLabel ? gtr.getAscent() : gtr.getDescent());
-            }
+        switch (orientation) {
+            case BOTTOM:
+                offset = tickLabelFont.getSize() + zeroOrPosTickLen + fm.stringWidth(" ") + labelFont.getSize() + labelFont.getSize() / 2;
+                if ( drawTca && tcaData != null ) {
+                    offset += Math.min( MAX_TCA_LINES, tcaData.length(0) ) * (tickLabelFont.getSize() + getLineSpacing());
+                }   if ( labelOffset.length()>0 && axisLabel.length()>0 ) {
+                    offset= tickLabelFont.getSize() + (int)DasDevicePosition.parseLayoutStr( labelOffset, getEmSize(), getRow().getHeight(), 0 );
+                }
+                break;
+            case TOP:
+                offset = zeroOrPosTickLen + fm.stringWidth(" ") + labelFont.getSize() + labelFont.getSize() / 2 + (int) gtr.getDescent();
+                break;
+            case LEFT:
+                //offset = zeroOrPosTickLen + (int)this.blLabelRect.getWidth() + fm.stringWidth(" ") + labelFont.getSize() / 2 + (int) gtr.getDescent();
+                offset = getColumn().getDMinimum() - blLabelRect.x + labelFont.getSize() / 2 + (int) gtr.getDescent();
+                break;
+            default:
+                if ( trLabelRect==null ) {
+                    offset= 20;
+                } else {
+                    offset = this.trLabelRect.x + this.trLabelRect.width - getColumn().getDMaximum() + labelFont.getSize() / 2 + (int) (flipLabel ? gtr.getAscent() : gtr.getDescent());
+                }   
+                break;
         }
         return offset;
     }
@@ -3232,12 +3238,17 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     }
 
     private void setTickDirection(int direction) {
-        if (direction == UP || direction == RIGHT) {
-            tickDirection = -1;
-        } else if (direction == DOWN || direction == LEFT) {
-            tickDirection = 1;
-        } else {
-            throw new IllegalArgumentException("Invalid tick direction");
+        switch (direction) {
+            case UP:
+            case RIGHT:
+                tickDirection = -1;
+                break;
+            case DOWN:
+            case LEFT:
+                tickDirection = 1;
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid tick direction");
         }
     }
 
@@ -4142,13 +4153,6 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
     }
 
-    /** 
-     * @deprecated use isTickLabelsVisible
-     */
-    public boolean areTickLabelsVisible() {
-        return tickLabelsVisible;
-    }
-
     /**
      * true if the tick labels should be drawn.
      * @return true if the tick labels should be drawn.
@@ -4697,7 +4701,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     }
     
     
-    private class ScanButton extends JButton {
+    private final class ScanButton extends JButton {
 
         private boolean hover;
         private boolean pressed;
@@ -5060,6 +5064,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * final propertyChangeEvent after the lock is released.  (note it's not
      * clear who is responsible for this.
      * See http://das2.org/wiki/index.php/Das2.valueIsAdjusting)
+     * @return true if valueIsAdjusting
      */
     public boolean valueIsAdjusting() {
         return dataRange.valueIsAdjusting();
