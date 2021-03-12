@@ -336,7 +336,7 @@ public class DataRange implements Cloneable {
         //reportHistory();
         if (!history.isEmpty()) {
             DatumRange newRange= (DatumRange) history.peek();
-            if ( newRange.getUnits().isConvertibleTo(range.getUnits()) ) {
+            if ( !newRange.getUnits().isConvertibleTo(range.getUnits()) ) {
                 logger.fine("history would cause a units error");
                 return;
             }
@@ -351,7 +351,7 @@ public class DataRange implements Cloneable {
         //reportHistory();
         if (!forwardHistory.isEmpty()) {
             DatumRange newRange= (DatumRange) forwardHistory.peek();
-            if ( newRange.getUnits().isConvertibleTo(range.getUnits()) ) {
+            if ( !newRange.getUnits().isConvertibleTo(range.getUnits()) ) {
                 logger.fine("forwardhistory would cause a units error");
                 return;
             }
