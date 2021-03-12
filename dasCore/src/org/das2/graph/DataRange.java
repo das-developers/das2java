@@ -36,9 +36,13 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.*;
 import java.util.Stack;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.das2.util.LoggerManager;
 
 public class DataRange implements Cloneable {
+    
+    private static final Logger logger= LoggerManager.getLogger("dass2.graph.axis");
     
     /** 
      * danger!  axes share this object
@@ -71,7 +75,7 @@ public class DataRange implements Cloneable {
     
     private boolean log;
     
-    private EventListenerList listenerList = new EventListenerList();
+    private final EventListenerList listenerList = new EventListenerList();
     
     private Stack history;
     
@@ -232,16 +236,6 @@ public class DataRange implements Cloneable {
         }
     }
     
-    private void reportHistory() {
-        Logger log= DasLogger.getLogger( DasLogger.GUI_LOG );
-        log.finest("history: "+history.size());
-        for ( int i=0; i<history.size(); i++ ) {
-            log.finest("   "+history.get(i));
-        }
-        log.finest("forwardHistory: "+forwardHistory.size());
-        log.finest("-------------");
-    }
-    
     protected void clearHistory() {
         ArrayList oldHistory= new ArrayList( history );
         history.removeAllElements();
@@ -305,14 +299,14 @@ public class DataRange implements Cloneable {
         }
         
         if ( pushHistory && !valueIsAdjusting ) {
-            if ( history.size()==0 || !this.range.equals(history.peek()) ) {
+            if ( history.isEmpty() || !this.range.equals(history.peek()) ) {
                 history.push(this.range);
                 while ( history.size()>HISTORY_DEPTH ) {
                     history.remove(0);
                 }
 
             }
-            DasLogger.getLogger( DasLogger.GUI_LOG ).fine( "push history: "+range );
+            logger.log(Level.FINE, "push history: {0}", range);
             forwardHistory.removeAllElements();
             firePropertyChange( "history", new ArrayList(), new ArrayList(history) );
         }
@@ -339,18 +333,28 @@ public class DataRange implements Cloneable {
     }
     
     public void setRangePrev() {
-        reportHistory();
+        //reportHistory();
         if (!history.isEmpty()) {
+            DatumRange newRange= (DatumRange) history.peek();
+            if ( newRange.getUnits().isConvertibleTo(range.getUnits()) ) {
+                logger.fine("history would cause a units error");
+                return;
+            }
+            newRange= (DatumRange) history.pop();
             forwardHistory.push( range );
-            DatumRange newRange= (DatumRange) history.pop();
             setRange( newRange, false );
             firePropertyChange( "history", null, new ArrayList(history) );
         }
     }
     
     public void setRangeForward() {
-        reportHistory();
+        //reportHistory();
         if (!forwardHistory.isEmpty()) {
+            DatumRange newRange= (DatumRange) forwardHistory.peek();
+            if ( newRange.getUnits().isConvertibleTo(range.getUnits()) ) {
+                logger.fine("forwardhistory would cause a units error");
+                return;
+            }
             List oldHistory= new ArrayList( history );
             history.push( range );
             DatumRange h= (DatumRange) forwardHistory.pop();
@@ -399,6 +403,7 @@ public class DataRange implements Cloneable {
     
     /**
      * pop ipop items off the history list.  This is used by the history menu
+     * @param ipop number of items to pop off the list.
      */
     protected void popHistory( int ipop ) {
         for ( int i=0; i<ipop; i++ ) {
@@ -414,12 +419,16 @@ public class DataRange implements Cloneable {
         public Animation( DatumRange range, boolean log ) {
             super( null, range.min(), range.max(), log );
         }
+        @Override
         protected void fireUpdate() {};
+        @Override
         public void setRange( double min, double max ) {
             minimum= min;
             maximum= max;
         }
+        @Override
         public double getMinimum() { return minimum; }
+        @Override
         public double getMaximum() { return maximum; }
     }
     
@@ -435,15 +444,17 @@ public class DataRange implements Cloneable {
     protected DasAxis.Lock mutatorLock() {
         return new DasAxis.Lock() {
             DatumRange orig= DataRange.this.range;
+            @Override
             public void lock() {
                 if ( valueIsAdjusting ) {
                     System.err.println("lock is already set!");
                 }
                 valueIsAdjusting= true;
             }
+            @Override
             public void unlock() {
                 valueIsAdjusting= false;
-                if ( history.size()==0 || !orig.equals(history.peek()) ) history.push(orig);
+                if ( history.isEmpty() || !orig.equals(history.peek()) ) history.push(orig);
                 while ( history.size()>HISTORY_DEPTH ) {
                     history.remove(0);
                 }
@@ -461,6 +472,7 @@ public class DataRange implements Cloneable {
      * final propertyChangeEvent after the lock is released.  (note it's not
      * clear who is responsible for this.
      * See http://www.das2.org/wiki/index.php/Das2.valueIsAdjusting)
+     * @return true if a lock is out and an object is rapidly mutating the object.
      */
     public boolean valueIsAdjusting() {
         return valueIsAdjusting;
