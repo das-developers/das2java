@@ -23,6 +23,7 @@
 
 package org.das2.util.filesystem;
 
+import java.io.FileNotFoundException;
 import java.net.URI;
 
 /**
@@ -35,7 +36,8 @@ public class LocalFileSystemFactory implements FileSystemFactory {
     public LocalFileSystemFactory() {
     }
 
-    public FileSystem createFileSystem(URI root) throws FileSystem.FileSystemOfflineException {
+    @Override
+    public FileSystem createFileSystem(URI root) throws FileSystem.FileSystemOfflineException, FileNotFoundException {
         return new LocalFileSystem(root);
     }
     
