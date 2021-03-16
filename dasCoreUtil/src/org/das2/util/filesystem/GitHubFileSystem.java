@@ -429,6 +429,7 @@ public class GitHubFileSystem extends HttpFileSystem {
     }
             
     /**
+     * Given the URI, convert this to the link which will download the file.
      * github puts directories for each project under "raw/master".
      * @param root
      * @param filename
@@ -436,11 +437,15 @@ public class GitHubFileSystem extends HttpFileSystem {
      * Translate:<pre>%{code
      * https://abbith.physics.uiowa.edu/jbf/myawesomepublicproject/blob/24dff04b9bcb275d8bfd85b38e0e8b039b21d655/sayAwesome.jy to <br>
      * https://abbith.physics.uiowa.edu/jbf/myawesomepublicproject/raw/24dff04b9bcb275d8bfd85b38e0e8b039b21d655/sayAwesome.jy
-     * https://github.com/autoplot/app/raw/master/Autoplot/src/resources/badge_ok.png
-     * https://github.com/autoplot/app/raw/master/Autoplot/src/resources/badge_ok.png
+     * https://github.com/autoplot/app/raw/master/Autoplot/src/resources/badge_ok.png to
+     * https://github.com/autoplot/app/master/Autoplot/src/resources/badge_ok.png
      * https://jfaden.net/git/jbfaden/public/blob/master/u/jeremy/2019/20191023/updates.jy
-     * https://research-git.uiowa.edu/space-physics/juno/ap-script/-/raw/master/test/testap.jy
-     * https://research-git.uiowa.edu/jbf/testproject/-/blob/master/script/testScript.jy
+     *
+     * https://research-git.uiowa.edu/space-physics/juno/ap-script/master/test/testap.jy to
+     * https://research-git.uiowa.edu/space-physics/juno/ap-script/-/raw/master/test/testap.jy 
+     *
+     * https://research-git.uiowa.edu/jbf/testproject/-/blob/master/script/testScript.jy to
+     * https://research-git.uiowa.edu/jbf/testproject/master/script/testScript.jy
      * }
      * </pre>
      * @throws MalformedURLException 
@@ -451,17 +456,26 @@ public class GitHubFileSystem extends HttpFileSystem {
         String[] path= root.getPath().split("/",-2);
         String spath= path[0] + '/' + path[1] + '/' + path[2] ;
         
-        for ( int i=0; i<baseOffset; i++ ) {
-            spath= spath + "/" + path[i+3];
-        }
+        // number of elements after the host to the base.
+        int gitPathElements;
         
         int base;
         if ( path[3+baseOffset].equals(branch) ) {
             base= 4;
+            gitPathElements= 3;
+        } else if ( path[4+baseOffset].equals(branch) ) { // https://research-git.uiowa.edu/space-physics/juno/ap-script/-/
+            base= 5;
+            gitPathElements= 4;
+            spath= path[0] + '/' + path[1] + '/' + path[2] + '/' + path[3];
         } else {
             base= 3;
+            gitPathElements= 3;
         }
-        
+
+        for ( int i=0; i<baseOffset; i++ ) {
+            spath= spath + "/" + path[i+gitPathElements];
+        }
+                
         if ( spath.startsWith("/") ) spath=spath.substring(1);
         
         if ( path[ base+baseOffset].equals("blob") ) {
@@ -477,9 +491,15 @@ public class GitHubFileSystem extends HttpFileSystem {
                 URL url= new URL( n );
                 return url;                
             } else {
-                String n= root.getScheme() + "://" + root.getHost() + '/' + spath + "/raw/"+branch+"/" + strjoin( path, "/", base+baseOffset, -1 ) + filename;
-                URL url= new URL( n );
-                return url;
+                if ( base==5 ) {
+                    String n= root.getScheme() + "://" + root.getHost() + '/' + spath + "/raw/"+branch+"/" + strjoin( path, "/", base+baseOffset, -1 ) + filename;
+                    URL url= new URL( n );
+                    return url;
+                } else {
+                    String n= root.getScheme() + "://" + root.getHost() + '/' + spath + "/raw/"+branch+"/" + strjoin( path, "/", base+baseOffset, -1 ) + filename;
+                    URL url= new URL( n );
+                    return url;
+                }
             }
         }
     }
