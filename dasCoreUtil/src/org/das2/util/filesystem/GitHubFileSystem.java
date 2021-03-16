@@ -7,10 +7,12 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.InterruptedIOException;
+import java.io.PushbackInputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -27,6 +29,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.das2.util.FileUtil;
 import org.das2.util.LoggerManager;
 import static org.das2.util.filesystem.FileSystem.loggerUrl;
 import static org.das2.util.filesystem.FileSystem.toCanonicalFilename;
@@ -62,6 +65,39 @@ public class GitHubFileSystem extends HttpFileSystem {
     
     // mission statement needed.  I believe this is the offset to the first folder/file name.
     private int baseOffset= 0;
+
+    private boolean isNeedLoginPage(File partFile) throws IOException {
+        int MAX_LINE_COUNT= 100;
+        try ( PushbackInputStream is= new PushbackInputStream( new FileInputStream(partFile) ) ) {
+            byte[] cc= new byte[15];
+            int bytesRead= is.read(cc);
+            int p=bytesRead;
+            while ( p<15 && bytesRead>-1 ) {
+                bytesRead= is.read(cc,p,15-p);
+            }
+            if ( bytesRead==-1 ) {
+                return false;
+            }
+            boolean isLogin= false;
+            if ( new String( cc, "US-ASCII" ).equals("<!DOCTYPE html>") ) {
+                BufferedReader r= new BufferedReader( new InputStreamReader( is ) );
+                String line= r.readLine();
+                int lineCount= 0;
+                while ( line!=null ) {
+                    lineCount++;
+                    if ( line.startsWith("<meta content=\"Sign in\"" ) ) {
+                        isLogin= true;
+                        break;
+                    }
+                    if ( lineCount>MAX_LINE_COUNT ) {
+                        break;
+                    }
+                    line= r.readLine();
+                }
+            }
+            return isLogin;
+        }
+    }
     
     private class GitHubHttpProtocol implements WebProtocol {
 
@@ -176,8 +212,8 @@ public class GitHubFileSystem extends HttpFileSystem {
     
     /**
      * one place that lists the GitHub (GitLab) filesystems.
-     * @param h the host, 
-     * @param path
+     * @param h the host
+     * @param path path to the top of the GitLabs instance.
      * @return null if it is not a GitHub filesystem, or the initial path otherwise
      */
     public static String isGithubFileSystem( String h, String path ) {
@@ -186,6 +222,8 @@ public class GitHubFileSystem extends HttpFileSystem {
         } else if ( h.equals("git.uiowa.edu") ) {
             return "";
         } else if ( h.equals("abbith.physics.uiowa.edu") ) {
+            return "";
+        } else if ( h.equals("research-git.uiowa.edu") ) {
             return "";
         } else if ( h.equals("git.physics.uiowa.edu" ) ) {
             return "";
@@ -213,7 +251,7 @@ public class GitHubFileSystem extends HttpFileSystem {
         String branch= "master";
         
         String suri= root.toString();
-        Pattern fsp1= Pattern.compile( "(https?://[a-z.]*/)(.*)(tree|blob|raw)/(.*?)/(.*)" );
+        Pattern fsp1= Pattern.compile( "(https?://[a-zA-Z0-9+.\\-]+/)(.*)(tree|blob|raw)/(.*?)/(.*)" );
         Matcher m1= fsp1.matcher( suri );
         if ( m1.matches() ) {
             String project= m1.group(2);
@@ -403,6 +441,8 @@ public class GitHubFileSystem extends HttpFileSystem {
      * https://github.com/autoplot/app/raw/master/Autoplot/src/resources/badge_ok.png
      * https://github.com/autoplot/app/raw/master/Autoplot/src/resources/badge_ok.png
      * https://jfaden.net/git/jbfaden/public/blob/master/u/jeremy/2019/20191023/updates.jy
+     * https://research-git.uiowa.edu/space-physics/juno/ap-script/-/raw/master/test/testap.jy
+     * https://research-git.uiowa.edu/jbf/testproject/-/blob/master/script/testScript.jy
      * }
      * </pre>
      * @throws MalformedURLException 
@@ -538,6 +578,9 @@ public class GitHubFileSystem extends HttpFileSystem {
             out.close();
             is.close();
             //TODO: there's a problem where if you aren't logged in to a private project, you get a 200 response with HTML.  Detect this!
+            if ( isNeedLoginPage( partFile ) ) {
+                throw new IOException("GitHub/GitLabs which requires authentication is not supported");
+            }
             if ( targetFile.exists() ) {
                 if ( !targetFile.delete() ) {
                     throw new IllegalArgumentException("unable to delete existing file "+targetFile );
