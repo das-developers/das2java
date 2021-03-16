@@ -7,7 +7,6 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -29,7 +28,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.das2.util.FileUtil;
 import org.das2.util.LoggerManager;
 import static org.das2.util.filesystem.FileSystem.loggerUrl;
 import static org.das2.util.filesystem.FileSystem.toCanonicalFilename;
@@ -373,16 +371,16 @@ public class GitHubFileSystem extends HttpFileSystem {
     private File lookForROCacheGH( File start ) {
         // This is a copy of WebFileSystem.lookForROCache.  This differs where
         // we inspect tail to look for the branch name: tail.substring(1).startsWith(branch) 
-        File localRoot= start;
+        File _localRoot= start;
         File stopFile= FileSystem.settings().getLocalCacheDir();
         File result= null;
 
-        if ( !localRoot.toString().startsWith(stopFile.toString()) ) {
+        if ( !_localRoot.toString().startsWith(stopFile.toString()) ) {
             throw new IllegalArgumentException("localRoot filename ("+stopFile+") must be parent of local root: "+start);
         }
         
-        while ( !( localRoot.equals(stopFile) ) ) {
-            File f= new File( localRoot, "ro_cache.txt" );
+        while ( !( _localRoot.equals(stopFile) ) ) {
+            File f= new File( _localRoot, "ro_cache.txt" );
             if ( f.exists() ) {
                 BufferedReader read = null;
                 try {
@@ -412,13 +410,13 @@ public class GitHubFileSystem extends HttpFileSystem {
                 }
                 break;
             } else {
-                localRoot= localRoot.getParentFile();
+                _localRoot= _localRoot.getParentFile();
             }
         }
         if ( result==null ) {
             return result;
         } else {
-            String tail= start.getAbsolutePath().substring(localRoot.getAbsolutePath().length());
+            String tail= start.getAbsolutePath().substring(_localRoot.getAbsolutePath().length());
             if ( tail.length()>0 ) {
                 if ( tail.substring(1).startsWith(branch) ) { // 1 is for the initial slash
                     tail= tail.substring( 1+branch.length() );
