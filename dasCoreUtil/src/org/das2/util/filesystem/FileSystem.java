@@ -243,7 +243,34 @@ public abstract class FileSystem  {
         }
     }
     
+    /**
+     * return true if the URI includes part that is within a Zip filesystem.
+     * @param root the path to the root.
+     * @return true if the path is within a Zip filesystem.
+     */
+    private static boolean pathIncludesZipFileSystem( URI root ) {
+        String p= root.getPath();
+        return ( p.contains(".zip") 
+                || p.contains(".ZIP")
+                || p.contains(".kmz") );
+    }
 
+    /**
+     * split the URI into the FileSystem containing the zip, the Zip file, and the path within 
+     * the zip file.
+     * @param root
+     * @return 
+     */
+    private static String[] pathZipSplit( URI root ) {
+        String surl= FileSystemUtil.fromUri(root);
+        int i= surl.indexOf(".zip");
+        if ( i==-1 ) i= surl.indexOf(".ZIP");
+        if ( i==-1 ) i= surl.indexOf(".kmz");
+        String subdir = surl.substring(i+4);
+        String[] ss= FileSystem.splitUrl( surl.substring(0,i+4) );
+        return new String[] { ss[2], ss[3].substring(ss[2].length()), subdir };
+    }
+    
     /**
      * Creates a FileSystem by parsing the URI and creating the correct FS type.
      * Presently, file, http, and ftp are supported.  If the URI contains a folder
@@ -333,15 +360,12 @@ public abstract class FileSystem  {
         // for the guys that enter subsequently...
         
         FileSystemFactory factory;
-        if ( root.getPath()!=null && ( root.getPath().contains(".zip") ||   root.getPath().contains(".ZIP") ) && registry.containsKey("zip") ) {
+        if ( root.getPath()!=null && pathIncludesZipFileSystem(root) && registry.containsKey("zip") ) {
             try {
-                String surl= FileSystemUtil.fromUri(root);
-                int i= surl.indexOf(".zip");
-                if ( i==-1 ) i= surl.indexOf(".ZIP");
-                String[] ss= FileSystem.splitUrl( surl.substring(0,i+4) );
-                URI parent = new URI(ss[2]); //getparent
-                String zipname = ss[3].substring(ss[2].length());
-                String subdir = surl.substring(i+4);
+                String[] pzs= pathZipSplit(root);
+                URI parent = new URI(pzs[0]); //getparent
+                String zipname = pzs[1];
+                String subdir = pzs[2];
                 FileSystem remote = FileSystem.create(parent);
                 mon.setProgressMessage("loading zip file");
                 File localZipFile = remote.getFileObject(zipname).getFile(mon);

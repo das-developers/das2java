@@ -42,8 +42,11 @@ public class LocalFileSystem extends FileSystem {
      *   file:/home/jbf    or   file:///home/jbf   
      *   but not file://home/jbf
      * Also, on Windows, /c:/documents and settings/jbf/  is okay.
+     * @param root
+     * @throws org.das2.util.filesystem.FileSystem.FileSystemOfflineException
+     * @throws java.io.FileNotFoundException if the root does not exist.
      */
-    protected LocalFileSystem(URI root) throws FileSystemOfflineException {
+    protected LocalFileSystem(URI root) throws FileSystemOfflineException, FileNotFoundException {
         super( root );
         if ( !("file".equals(root.getScheme()) ) ) {
             throw new IllegalArgumentException("protocol not file: "+root);
@@ -68,7 +71,7 @@ public class LocalFileSystem extends FileSystem {
             if ( Arrays.asList(roots).contains(localRoot) ) {
                 throw new FileSystemOfflineException();
             } else {
-                throw new IllegalArgumentException( "local root does not exist: "+localRoot );
+                throw new FileNotFoundException( "local root does not exist: "+localRoot );
             }
         }
         boolean b= new File("xxx").equals(new File("XXX"));
