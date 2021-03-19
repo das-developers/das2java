@@ -54,7 +54,7 @@ public class SubsetDataSet extends AbstractDataSet {
      * @throws ParseException 
      */
     public static int[] parseIndices( String spec, int dimlen ) throws ParseException {
-        Pattern p1= Pattern.compile("\\d+\\-\\d+");
+        Pattern p1= Pattern.compile("(\\-?\\d+)\\-(\\-?\\d+)");
         Pattern p2= Pattern.compile("(\\-?\\d+)?\\:(\\-?\\d+)?(\\:(\\-?\\d+)?)?");
         
         boolean invert= spec.length()>1 && spec.charAt(0)=='~';
@@ -80,7 +80,16 @@ public class SubsetDataSet extends AbstractDataSet {
             } else {
                 m = p1.matcher(s);
                 if (m.matches()) {
-                    List<Integer> ii= indgen( Integer.parseInt(m.group(1)), Integer.parseInt(m.group(2))+1, 1 );
+                    int start= m.group(1)==null ? 0 : Integer.parseInt(m.group(1));
+                    if ( start<0 ) start+= dimlen;
+                    int stop= m.group(2)==null ? dimlen : Integer.parseInt(m.group(2));
+                    if ( stop<0 ) stop+= dimlen;
+                    List<Integer> ii;
+                    if ( start>stop ) {
+                        ii= indgen( stop, start+1, 1 );
+                    } else {
+                        ii= indgen( start, stop+1, 1 );
+                    }
                     result.addAll( ii );
                 } else {
                     try {
