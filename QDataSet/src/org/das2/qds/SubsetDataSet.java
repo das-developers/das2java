@@ -179,7 +179,16 @@ public class SubsetDataSet extends AbstractDataSet {
         }
         if ( dep!=null ) {
             SubsetDataSet dim= new SubsetDataSet( dep );
-            dim.applyIndex(0,idx);
+            switch (dim.rank()) {
+                case 1:
+                    dim.applyIndex(0,idx);
+                    break;
+                case 2:
+                    dim.applyIndex(1,idx);
+                    break;
+                default:
+                    throw new IllegalArgumentException("DEPEND_"+idim+" must be rank 1 or rank 2");
+            }
             putProperty("DEPEND_"+idim,dim);
         }
         for ( int i=idim+1; i<source.rank(); i++ ) { // rfe670: high-rank DEPEND_2
