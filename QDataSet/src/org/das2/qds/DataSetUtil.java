@@ -39,6 +39,7 @@ import org.das2.datum.EnumerationUnits;
 import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.LocationUnits;
 import org.das2.datum.TimeLocationUnits;
+import org.das2.datum.TimeUtil;
 import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
 import org.das2.datum.format.DatumFormatter;
@@ -4295,6 +4296,24 @@ public class DataSetUtil {
                 }
             }
         } else {
+            if ( UnitsUtil.isTimeLocation(u) ) {
+                String f= (String) yds.property(QDataSet.FORMAT);
+                if ( f==null ) {
+                    QDataSet c= (QDataSet) yds.property( QDataSet.CADENCE );
+                    if ( c==null ) {
+                        return  DataSetUtil.getStringValue( yds, value );
+                    } else {
+                        double ns= Datum.create( c.value(), SemanticOps.getUnits(c) ).doubleValue( Units.nanoseconds );
+                        if ( ns<50000 ) {
+                            TimeDatumFormatter tf= TimeDatumFormatter.formatterForScale( TimeUtil.NANO, null, false );
+                            return tf.format(d);
+                        } else if ( ns<50000000 ) {
+                            TimeDatumFormatter tf= TimeDatumFormatter.formatterForScale( TimeUtil.MICRO, null, false );
+                            return tf.format(d);
+                        }
+                    }
+                }
+            }
             s = df.format(d,u);
         }
         return s;
