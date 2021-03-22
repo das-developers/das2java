@@ -463,7 +463,7 @@ public class GitHubFileSystem extends HttpFileSystem {
         if ( path[3+baseOffset].equals(branch) ) {
             base= 4;
             gitPathElements= 3;
-        } else if ( path[4+baseOffset].equals(branch) ) { // https://research-git.uiowa.edu/space-physics/juno/ap-script/-/
+        } else if ( path.length>4+baseOffset && path[4+baseOffset].equals(branch) ) { // https://research-git.uiowa.edu/space-physics/juno/ap-script/-/
             base= 5;
             gitPathElements= 4;
             spath= path[0] + '/' + path[1] + '/' + path[2] + '/' + path[3];
