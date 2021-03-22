@@ -1455,8 +1455,10 @@ public class DataSetUtil {
         QDataSet stddev2= (QDataSet) stats2.property("stddev");
         Units u1= SemanticOps.getUnits( stats1 );
         Units u2= SemanticOps.getUnits( stats2 );
-        DatumRange dr1= DatumRangeUtil.rescale( DatumRange.newDatumRange( Ops.subtract( stats1,stddev1 ).value(), Ops.add( stats1,stddev1 ).value(), u1 ), 0.2, 0.8 );
-        DatumRange dr2= DatumRangeUtil.rescale( DatumRange.newDatumRange( Ops.subtract( stats2,stddev2 ).value(), Ops.add( stats2,stddev2 ).value(), u2 ), 0.2, 0.8 );
+        DatumRange dr1= DatumRange.newDatumRange( Ops.subtract( stats1,stddev1 ).value(), Ops.add( stats1,stddev1 ).value(), u1 );
+        DatumRange dr2= DatumRange.newDatumRange( Ops.subtract( stats2,stddev2 ).value(), Ops.add( stats2,stddev2 ).value(), u2 );
+        if ( dr1.width().value()>0 ) dr1= DatumRangeUtil.rescale( dr1, 0.2, 0.8 );
+        if ( dr2.width().value()>0 ) dr2= DatumRangeUtil.rescale( dr2, 0.2, 0.8 );
         return dr1.intersects(dr2);
     }
     
