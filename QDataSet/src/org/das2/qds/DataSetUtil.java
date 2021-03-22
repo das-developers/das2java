@@ -4301,7 +4301,7 @@ public class DataSetUtil {
                 if ( f==null ) {
                     QDataSet c= (QDataSet) yds.property( QDataSet.CADENCE );
                     if ( c==null ) {
-                        return  DataSetUtil.getStringValue( yds, value );
+                        return df.format(d,u);
                     } else {
                         double ns= Datum.create( c.value(), SemanticOps.getUnits(c) ).doubleValue( Units.nanoseconds );
                         if ( ns<50000 ) {
