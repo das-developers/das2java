@@ -1483,7 +1483,9 @@ public class DataSetUtil {
         
         if ( samePopulation( lindiff.trim(0,h), lindiff.trim(h,l) ) ) {
             return false;
-        } else return samePopulation( logdiff.trim(0,h),logdiff.trim(h,l) );
+        } else {
+            return samePopulation( logdiff.trim(0,h),logdiff.trim(h,l) );
+        }
     }
     
     /**
