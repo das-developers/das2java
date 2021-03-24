@@ -39,6 +39,7 @@ import org.das2.datum.EnumerationUnits;
 import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.LocationUnits;
 import org.das2.datum.TimeLocationUnits;
+import org.das2.datum.TimeParser;
 import org.das2.datum.TimeUtil;
 import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
@@ -4287,35 +4288,42 @@ public class DataSetUtil {
                     
                 }
             } else {
-                try {
-                    s = String.format( Locale.US, form, value );
-                } catch ( IllegalFormatConversionException ex ) { // '%2X'
-                    char c= ex.getConversion();
-                    if ( c=='X' || c=='x' || c=='d' || c=='o' || c=='c' || c=='C'  ) {
-                        s = String.format( Locale.US, form, (long)value );
-                    } else {
-                        //warning bad format string
-                        s= df.format(d);
+                if ( UnitsUtil.isTimeLocation(u) ) {
+                    TimeParser tp= TimeParser.create(form);
+                    return tp.format(d);
+                } else {
+                    try {
+                        s = String.format( Locale.US, form, value );
+                    } catch ( IllegalFormatConversionException ex ) { // '%2X'
+                        char c= ex.getConversion();
+                        if ( c=='X' || c=='x' || c=='d' || c=='o' || c=='c' || c=='C'  ) {
+                            s = String.format( Locale.US, form, (long)value );
+                        } else {
+                            //warning bad format string
+                            s= df.format(d);
+                        }
                     }
                 }
             }
         } else {
             if ( UnitsUtil.isTimeLocation(u) ) {
-                String f= (String) yds.property(QDataSet.FORMAT);
-                if ( f==null ) {
+                if ( form==null ) {
                     QDataSet c= (QDataSet) yds.property( QDataSet.CADENCE );
                     if ( c==null ) {
                         return df.format(d,u);
                     } else {
                         double ns= Datum.create( c.value(), SemanticOps.getUnits(c) ).doubleValue( Units.nanoseconds );
                         if ( ns<50000 ) {
-                            TimeDatumFormatter tf= TimeDatumFormatter.formatterForScale( TimeUtil.NANO, null, false );
-                            return tf.format(d);
+                            TimeParser tp= TimeParser.create("$Y-$m-$dT$H:$M:$S.$(subsec,places=9)Z");
+                            return tp.format(d);
                         } else if ( ns<50000000 ) {
-                            TimeDatumFormatter tf= TimeDatumFormatter.formatterForScale( TimeUtil.MICRO, null, false );
-                            return tf.format(d);
+                            TimeParser tp= TimeParser.create("$Y-$m-$dT$H:$M:$S.$(subsec,places=6)Z");
+                            return tp.format(d);
                         }
                     }
+                } else {
+                    TimeParser tp= TimeParser.create(form);
+                    return tp.format(d); 
                 }
             }
             s = df.format(d,u);
