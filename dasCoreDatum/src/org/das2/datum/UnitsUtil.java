@@ -112,7 +112,7 @@ public final class UnitsUtil {
     
     /**
      * returns the unit whose product with the parameter unit is unity.
-     * (Presently this is only supports time units like Hz->seconds).
+     * (Presently this is only supports time units like Hz&rarr;seconds).
      * @param unit the unit
      * @return the inverse unit, or throws exception if one is not known.
      * @throws IllegalArgumentException if the units inversion is not known.
