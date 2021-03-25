@@ -431,7 +431,8 @@ public class HttpFileSystem extends WebFileSystem {
             d= new Date();
         }
 
-        monitor.setTaskSize(urlc.getContentLength());
+        long expectedContentLength= urlc.getContentLengthLong();
+        monitor.setTaskSize( expectedContentLength );
 
         if (!f.getParentFile().exists()) {
             logger.log(Level.FINER, "make dirs {0}", f.getParentFile());
@@ -477,7 +478,11 @@ public class HttpFileSystem extends WebFileSystem {
                     in= new GZIPInputStream( in );
                 }
 
-                copyStream(in, out, monitor);
+                long totalBytesRead= copyStream(in, out, monitor);
+                if ( totalBytesRead<urlc.getContentLength() ) {
+                    logger.log(Level.WARNING, "fewer bytes downloaded than expected: {0} of {1}", new Object[]{totalBytesRead, expectedContentLength});
+                    throw new IOException("fewer bytes in HTTP response than stated in header.");
+                }
                 monitor.finished();
                 out.close();
                 in.close();                    

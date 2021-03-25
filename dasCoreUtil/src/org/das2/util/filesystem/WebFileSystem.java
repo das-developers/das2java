@@ -841,9 +841,10 @@ public abstract class WebFileSystem extends FileSystem {
      * @param is the input stream
      * @param out the output stream
      * @param monitor monitor for the task.  Note this violates the monitor policy, and only calls setTaskProgress.  Use with care!
+     * @return number of bytes transferred.
      * @throws java.io.IOException
      */
-    protected void copyStream(InputStream is, OutputStream out, ProgressMonitor monitor) throws IOException {
+    protected long copyStream(InputStream is, OutputStream out, ProgressMonitor monitor) throws IOException {
         long reportIncrementBytes= 1000000;
         byte[] buffer = new byte[2048];
         int bytesRead = is.read(buffer, 0, 2048);
@@ -857,7 +858,7 @@ public abstract class WebFileSystem extends FileSystem {
             monitor.setTaskProgress(totalBytesRead);
             out.write(buffer, 0, bytesRead);
             bytesRead = is.read(buffer, 0, 2048);
-            totalBytesRead += bytesRead;
+            if ( bytesRead>-1 ) totalBytesRead += bytesRead;
             if ( totalBytesRead>reportSpeedTotalBytesRead ) {
                 if ( logger.isLoggable(Level.FINER ) ) {
                     String mbt= String.format( "%.1f MB", totalBytesRead / 1000000. );
@@ -870,6 +871,7 @@ public abstract class WebFileSystem extends FileSystem {
             }
             
         }
+        return totalBytesRead;
     }
 
     /**

@@ -150,13 +150,16 @@ public class FTPFileSystem extends WebFileSystem {
             
             URLConnection urlc = url.openConnection();
             
-            int i= urlc.getContentLength();
-            monitor.setTaskSize( i );
+            int expectedContentLength= urlc.getContentLength();
+            monitor.setTaskSize( expectedContentLength );
             out= new FileOutputStream( partFile );
             loggerUrl.log(Level.FINE, "GET {0}", new Object[] { urlc.getURL() } );
             is = urlc.getInputStream(); // To download
             monitor.started();
-            copyStream(is, out, monitor );
+            long totalBytesRead= copyStream(is, out, monitor );
+            if ( totalBytesRead<urlc.getContentLength() ) {
+                logger.log(Level.WARNING, "fewer bytes downloaded than expected: {0} of {1}", new Object[]{totalBytesRead, expectedContentLength});
+            }
             monitor.finished();
             out.close();
             is.close();
