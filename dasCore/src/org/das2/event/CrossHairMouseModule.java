@@ -125,26 +125,24 @@ public class CrossHairMouseModule extends MouseModule {
         }
     }
 
-    private static boolean isMac= ( System.getProperty("os.name").toLowerCase().startsWith("mac") );
+    //private static boolean isMac= ( System.getProperty("os.name").toLowerCase().startsWith("mac") );
     
     @Override
     public String getDirections() {
-        return "Press p to pin, " + ( isMac ? "command": "control" ) + "-C to copy to clipboard";
+        return "Press p to pin, C to copy data to clipboard";
     }
 
     @Override
     public void keyTyped(KeyEvent keyEvent) {
         logger.log(Level.FINE, "keyTyped {0} {1}", new Object[]{keyEvent.getKeyChar(), keyEvent.isMetaDown()});
-        if ( ( isMac && keyEvent.isMetaDown() ) || ( keyEvent.isControlDown() ) ) {
-            if ( keyEvent.getKeyCode()==KeyEvent.VK_C ) { // 3 was observed on Linux/Centos6/Java
-                CrossHairRenderer r= (CrossHairRenderer) super.dragRenderer;
-                String text= r.label.replaceAll("!c"," ");
-                StringSelection stringSelection = new StringSelection( text );
-                Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-                clipboard.setContents(stringSelection, (Clipboard clipboard1, Transferable contents) -> {
-                });
-                logger.log(Level.FINE, "copied to mouse buffer: {0}", text);
-            }
+        if ( keyEvent.getKeyCode()==KeyEvent.VK_C ) { 
+            CrossHairRenderer r= (CrossHairRenderer) super.dragRenderer;
+            String text= r.label.replaceAll("!c"," ");
+            StringSelection stringSelection = new StringSelection( text );
+            Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+            clipboard.setContents(stringSelection, (Clipboard clipboard1, Transferable contents) -> {
+            });
+            logger.log(Level.FINE, "copied to mouse buffer: {0}", text);
         }
     }
     
