@@ -135,7 +135,7 @@ public class CrossHairMouseModule extends MouseModule {
     @Override
     public void keyTyped(KeyEvent keyEvent) {
         logger.log(Level.FINE, "keyTyped {0} {1}", new Object[]{keyEvent.getKeyChar(), keyEvent.isMetaDown()});
-        if ( keyEvent.getKeyCode()==KeyEvent.VK_C ) { 
+        if ( keyEvent.getKeyChar()=='c' ) { 
             CrossHairRenderer r= (CrossHairRenderer) super.dragRenderer;
             String text= r.label.replaceAll("!c"," ");
             StringSelection stringSelection = new StringSelection( text );
