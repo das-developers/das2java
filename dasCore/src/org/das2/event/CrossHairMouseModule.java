@@ -129,13 +129,14 @@ public class CrossHairMouseModule extends MouseModule {
     
     @Override
     public String getDirections() {
-        return "Press p to pin, " + ( isMac ? "command": "control" ) + " to copy to clipboard";
+        return "Press p to pin, " + ( isMac ? "command": "control" ) + "-C to copy to clipboard";
     }
 
     @Override
     public void keyTyped(KeyEvent keyEvent) {
+        logger.log(Level.FINE, "keyTyped {0} {1}", new Object[]{keyEvent.getKeyChar(), keyEvent.isMetaDown()});
         if ( ( isMac && keyEvent.isMetaDown() ) || ( keyEvent.isControlDown() ) ) {
-            if ( keyEvent.getKeyChar()==KeyEvent.VK_C || keyEvent.getKeyChar()==3 ) { // 3 was observed on Linux/Centos6/Java
+            if ( keyEvent.getKeyCode()==KeyEvent.VK_C ) { // 3 was observed on Linux/Centos6/Java
                 CrossHairRenderer r= (CrossHairRenderer) super.dragRenderer;
                 String text= r.label.replaceAll("!c"," ");
                 StringSelection stringSelection = new StringSelection( text );
