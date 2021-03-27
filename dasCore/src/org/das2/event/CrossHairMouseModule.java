@@ -129,7 +129,7 @@ public class CrossHairMouseModule extends MouseModule {
     
     @Override
     public String getDirections() {
-        return "Press p to pin, C to copy data to clipboard";
+        return "Press P to pin, C to copy data to clipboard";
     }
 
     @Override
