@@ -22,9 +22,16 @@
  */
 
 package org.das2.event;
-import org.das2.components.HorizontalSpectrogramSlicer;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
+import java.awt.event.KeyEvent;
+import java.util.logging.Level;
 import org.das2.components.VerticalSpectrogramSlicer;
 import org.das2.dataset.DataSetConsumer;
+import org.das2.datum.Datum;
+import static org.das2.event.MouseModule.logger;
 import org.das2.graph.DasAxis;
 import org.das2.graph.DasCanvasComponent;
 import org.das2.graph.DasPlot;
@@ -39,6 +46,7 @@ public class VerticalSlicerMouseModule extends MouseModule {
     private QDataSet ds;
     private DasAxis xaxis;
     private DasAxis yaxis;
+    private Datum xlocation;
     
     private org.das2.dataset.DataSetConsumer dataSetConsumer;
     /** Creates a new instance of VerticalSlicerMouseModule */
@@ -74,10 +82,29 @@ public class VerticalSlicerMouseModule extends MouseModule {
         de.birthMilli= System.currentTimeMillis();
         ds= dataSetConsumer.getConsumedDataSet();
         de.set(xaxis.invTransform(e.getX()),yaxis.invTransform(e.getY()));
-        
+        xlocation= xaxis.invTransform(e.getX());
         de.setDataSet(ds);
         
         fireDataPointSelectionListenerDataPointSelected(de);
+    }
+    
+    @Override
+    public String getDirections() {
+        return "C to copy slice location to clipboard";
+    }
+
+    @Override
+    public void keyTyped(KeyEvent keyEvent) {
+        logger.log(Level.FINE, "keyTyped {0} {1}", new Object[]{keyEvent.getKeyChar(), keyEvent.isMetaDown()});
+        if ( keyEvent.getKeyChar()=='c' ) { 
+            VerticalSliceSelectionRenderer r= (VerticalSliceSelectionRenderer) super.dragRenderer;
+            String text= xlocation.toString();
+            StringSelection stringSelection = new StringSelection( text );
+            Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+            clipboard.setContents(stringSelection, (Clipboard clipboard1, Transferable contents) -> {
+            });
+            logger.log(Level.FINE, "copied to mouse buffer: {0}", text);
+        }
     }
     
     /** Registers DataPointSelectionListener to receive events.
