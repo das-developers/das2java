@@ -2096,7 +2096,7 @@ public class DasPlot extends DasCanvasComponent {
      */
     public DasColorBar getDasColorBar() {
         Renderer[] rr= getRenderers();
-        for ( int i=rr.length-1; i>=0; i++ ) {
+        for ( int i=rr.length-1; i>=0; i-- ) {
             DasColorBar cb= rr[i].getColorBar();
             if ( cb!=null ) return cb;
         }
