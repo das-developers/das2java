@@ -1600,8 +1600,14 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * <tr><td></td><td>empty string is automatic behavior</td></tr>
      * <tr><td>0,45,90,135,180</td><td>explicit tick positions, in axis units</td></tr>
      * <tr><td>+45</td><td>spacing between ticks, parsed with the axis offset units.</td></tr>
+     * <tr><td>+20s/4</td><td>every 20 seconds, with four minor divisions.</td></tr>
      * <tr><td>+30s</td><td>30 seconds spacing between ticks</td></tr>
+     * <tr><td>*10/2,3,4,5,6,7,8,9</td><td>normal log axis.</td></tr>
+     * <tr><td>*1e2/5,10,50</td><td>log major ticks should be every two cycles</td></tr>
+     * <tr><td>*5/2,3,4</td><td>log major ticks at 1,5,25/</td></tr>
      * </table>
+     * @see https://cdn.graphpad.com/faq/1910/file/1487logaxes.pdf about log axes.
+     * @see GraphUtil#calculateManualTicks(java.lang.String, org.das2.datum.DatumRange, boolean) 
      * @param ticks 
      */
     public void setTickValues(String ticks) {
