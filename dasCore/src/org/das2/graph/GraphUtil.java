@@ -1610,15 +1610,28 @@ public class GraphUtil {
                 double firstTick= Math.floor( min/dt )*dt;
                 double lastTick= Math.ceil( max/dt )*dt;
                 int ntick= (int)( ( lastTick - firstTick ) / dt ) + 1;
+                ntick= Math.max( 0, ntick );
+                ntick= Math.min( 120, ntick );
                 double[] dticks= new double[ ntick ];
                 for ( int i=0; i<dticks.length; i++ ) {
                     dticks[i]= firstTick + i*dt; // TODO: rewrite unstable
                 }
-                int minorTicks= minorMult>0 ? minorMult : updateTickVManualTicksMinor(dt);
-                dt= dt/minorTicks;
-                double[] dticksMinor= new double[ ntick*minorTicks ];
-                for ( int i=0; i<dticksMinor.length; i++ ) {
-                    dticksMinor[i]= firstTick + i*dt; // TODO: rewrite unstable
+                double[] dticksMinor;
+                if ( minorList!=null ) {
+                    dticksMinor= new double[ ntick*minorList.length ];
+                    for ( int i=0; i<dticks.length; i++ ) {
+                        double dd= dticks[i];
+                        for ( int j=0; j<minorList.length; j++ ) {
+                            dticksMinor[i*minorList.length+j]= dd + minorList[j]; 
+                        }
+                    }                    
+                } else {
+                    int minorTicks= minorMult>0 ? minorMult : updateTickVManualTicksMinor(dt);
+                    dt= dt/minorTicks;
+                    dticksMinor= new double[ ntick*minorTicks ];
+                    for ( int i=0; i<dticksMinor.length; i++ ) {
+                        dticksMinor[i]= firstTick + i*dt; // TODO: rewrite unstable
+                    }
                 }
                 TickVDescriptor majorTicks= new TickVDescriptor( dticksMinor, dticks, u );
                 result= majorTicks;
@@ -1639,6 +1652,8 @@ public class GraphUtil {
                 double firstTick= Math.floor( Math.log10(min)/dt )*dt;
                 double lastTick= Math.ceil( Math.log10(max)/dt )*dt;
                 int ntick= (int)( ( lastTick - firstTick ) / dt ) + 1;
+                ntick= Math.max( 0, ntick );
+                ntick= Math.min( 120, ntick );                
                 double[] dticks= new double[ ntick ];
                 for ( int i=0; i<dticks.length; i++ ) {
                     dticks[i]= Math.pow( 10, firstTick + i * dt );
