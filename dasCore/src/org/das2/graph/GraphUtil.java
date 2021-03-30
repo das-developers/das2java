@@ -5,23 +5,36 @@
  */
 package org.das2.graph;
 
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.geom.GeneralPath;
 import org.das2.datum.DatumRange;
 import org.das2.datum.Units;
 import org.das2.datum.Datum;
 import org.das2.datum.UnitsUtil;
-import java.awt.*;
-import java.awt.geom.*;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Line2D;
+import java.awt.geom.PathIterator;
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.ConvolveOp;
 import java.awt.image.Kernel;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Formatter;
+import java.util.List;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.*;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JFrame;
 import org.das2.datum.DatumRangeUtil;
 import org.das2.datum.LoggerManager;
 import org.das2.qds.DataSetOps;
@@ -1565,14 +1578,24 @@ public class GraphUtil {
         TickVDescriptor result;
         Units u= dr.getUnits();
         int islash= lticks.indexOf('/');
-        int minor= 0;
+        int minorMult= 0;
+        int[] minorList= null;
         if ( islash>-1 ) {
-            try {
-                minor= Integer.parseInt(lticks.substring(islash+1));
-            } catch ( NumberFormatException ex ) {
-                logger.log(Level.INFO, "unable to parse integer after slash: {0}", lticks);
-            }
+            String minorTicksSpec= lticks.substring(islash+1);
             lticks= lticks.substring(0,islash);
+            if ( minorTicksSpec.contains(",") ) {
+                String[] ss= minorTicksSpec.split(",");
+                minorList= new int[ss.length];
+                for ( int i=0; i<ss.length; i++ ) {
+                    minorList[i]= Integer.parseInt(ss[i]);
+                }
+            } else {
+                try {
+                    minorMult= Integer.parseInt(minorTicksSpec);
+                } catch ( NumberFormatException ex ) {
+                    logger.log(Level.INFO, "unable to parse integer after slash: {0}", lticks);
+                }
+            }
         }
         if ( lticks.startsWith("+") ) {
             try {
@@ -1591,7 +1614,7 @@ public class GraphUtil {
                 for ( int i=0; i<dticks.length; i++ ) {
                     dticks[i]= firstTick + i*dt; // TODO: rewrite unstable
                 }
-                int minorTicks= minor>0 ? minor : updateTickVManualTicksMinor(dt);
+                int minorTicks= minorMult>0 ? minorMult : updateTickVManualTicksMinor(dt);
                 dt= dt/minorTicks;
                 double[] dticksMinor= new double[ ntick*minorTicks ];
                 for ( int i=0; i<dticksMinor.length; i++ ) {
@@ -1603,6 +1626,51 @@ public class GraphUtil {
                 logger.warning(ex.getMessage());
                 result= null;
             }
+        } else if ( lticks.startsWith("*") ) {
+            try {
+                Datum tickM= u.getOffsetUnits().parse(lticks.substring(1));
+                double min= dr.min().doubleValue(u);
+                double max= dr.max().doubleValue(u);
+                double dt= Math.log10( tickM.doubleValue(u.getOffsetUnits()) );
+                if ( dt==0. ) {
+                    logger.warning("delta ticks cannot be 0.");
+                    return null;
+                }
+                double firstTick= Math.floor( Math.log10(min)/dt )*dt;
+                double lastTick= Math.ceil( Math.log10(max)/dt )*dt;
+                int ntick= (int)( ( lastTick - firstTick ) / dt ) + 1;
+                double[] dticks= new double[ ntick ];
+                for ( int i=0; i<dticks.length; i++ ) {
+                    dticks[i]= Math.pow( 10, firstTick + i * dt );
+                }
+                List<Double> dticksMinorList= new ArrayList<>();
+                //double[] dticksMinor= new double[ ntick*minorTicks ];
+                if ( minorList==null ) {
+                    if ( minorMult==2 ) {
+                        minorList= new int[] { 10 };
+                    } else if ( minorMult==3 ) {
+                        minorList= new int[] { 10, 100 };
+                    } else {
+                        minorList= new int[] { 2,3,4,5,6,7,8,9 };
+                    }
+                }
+                for ( int i=0; i<dticks.length-1; i++ ) {
+                    double d= dticks[i];
+                    dticksMinorList.add( d );
+                    for ( int j=0; j<minorList.length; j++ ) {                        
+                        dticksMinorList.add( d * minorList[j] );
+                    }
+                }
+                double[] dticksMinor= new double[dticksMinorList.size()];
+                for ( int i=0; i<dticksMinor.length; i++ ) {
+                    dticksMinor[i]= dticksMinorList.get(i);
+                }
+                TickVDescriptor majorTicks= new TickVDescriptor( dticksMinor, dticks, u );
+                result= majorTicks;
+            } catch (ParseException ex) {
+                logger.warning(ex.getMessage());
+                result= null;
+            }            
         } else {
             String[] ss= lticks.split(",");
             double[] dticks= new double[ss.length];
@@ -1617,7 +1685,7 @@ public class GraphUtil {
             double[] dticksMinor;
             if ( dticks.length>2 ) {
                 double dt= DasMath.gcd( dticks, (dticks[1]-dticks[0])/100. );
-                int minorTicks= minor>0 ? minor : updateTickVManualTicksMinor(dt);
+                int minorTicks= minorMult>0 ? minorMult : updateTickVManualTicksMinor(dt);
                 dt= dt/minorTicks;
                 double firstTick= DasMath.min(dticks);
                 double lastTick= DasMath.max(dticks);
