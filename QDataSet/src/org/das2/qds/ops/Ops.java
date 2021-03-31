@@ -4655,6 +4655,7 @@ public final class Ops {
      * @param rgbcolor and RGB color like 0xFF0000 (red), 0x00FF00 (green), or 0x0000FF (blue),
      * @param annotation label for event, possibly including granny codes.
      * @return a rank 2 QDataSet with [[ startTime, stopTime, rgbColor, annotation  ]]
+     * @see #eventsComplement(org.das2.qds.QDataSet, int, java.lang.String) 
      */
     public static QDataSet createEvent( String timeRange, int rgbcolor, String annotation ) {
         return createEvent( null, timeRange, rgbcolor, annotation );
@@ -4918,6 +4919,7 @@ public final class Ops {
      * @param tE a bunch of values.
      * @param tB a bunch of values.
      * @return the set of values found in both.
+     * @see #eventsConjunction(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      */
     public static QDataSet dataIntersection( QDataSet tE, QDataSet tB ) {
         QDataSet lE= sort(tE);
@@ -4958,6 +4960,7 @@ public final class Ops {
      * @return rank 2 canonical events list
      * @see Schemes#eventsList() 
      * @see #dataIntersection(org.das2.qds.QDataSet, org.das2.qds.QDataSet)    
+     * @see #eventsComplement(org.das2.qds.QDataSet, int, java.lang.String) 
      */
     public static QDataSet eventsConjunction( QDataSet tE, QDataSet tB ) {
 
@@ -5036,6 +5039,54 @@ public final class Ops {
         QDataSet result= dsb.getDataSet();
                 
         return result;
+    }
+    
+    /**
+     * Return an events list of time intervals which are not covered in the events list.
+     * A new events list is returned, containing events with the given color and message.
+     * This is expected to have a number of uses, one being identifying where data is 
+     * missing.  Note this assumes events are not overlapping.
+     * 
+     * @param events an events list
+     * @param range find gaps in events within this range
+     * @param color color for the missing events
+     * @param msg message to attach to these events
+     * @return the events data set.
+     * @see #createEvent(java.lang.String, int, java.lang.String) 
+     * @see #eventsConjunction(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
+     */
+    public static QDataSet eventsComplement( QDataSet events, DatumRange range, int color, String msg ) {
+        events= createEvents(events); // make canonical
+        QDataSet s= Ops.sort( Ops.slice1(events,0) );
+        events= applyIndex( events, s );
+        Datum st= range.min();
+        QDataSet r= Ops.where( Ops.and( Ops.lt( Ops.slice1( events, 0 ), range.max() ), 
+                Ops.gt( Ops.slice1( events, 1 ), range.min() ) ) );
+        events= applyIndex( events, r );
+
+        QDataSet bds= (QDataSet) events.property(QDataSet.BUNDLE_1);
+        Units eu= (Units) bds.property( QDataSet.UNITS, 3 );
+        
+        Datum dmsg;
+        if ( eu!=null && eu instanceof EnumerationUnits ) {
+            dmsg= ((EnumerationUnits)eu).createDatum(msg);
+        } else {
+            dmsg= Units.nominal().createDatum(msg);
+        }
+        
+        DataSetBuilder dsb= new DataSetBuilder( 2, 1000, 4 );
+        for ( int i=0; i<events.length(); i++ ) {
+            QDataSet e1= events.slice(i);
+            Datum t1= Ops.datum( e1.slice(0) );
+            if ( t1.gt(st) ) {
+                dsb.nextRecord( st, t1, color, dmsg );
+            }
+            st= Ops.datum( e1.slice(1) );
+        }
+        if ( st.lt(range.max()) ) {
+            dsb.nextRecord( st, range.max(), color, dmsg );
+        }
+        return dsb.getDataSet();
     }
     
     /**
@@ -7091,7 +7142,7 @@ public final class Ops {
     
     /**
      * apply the indeces 
-     * @param ds values to return, a rank 1, N-element dataset.
+     * @param ds values to return, a rank 1 N-element dataset, or rank 2 N by m element dataset.
      * @param r the indeces.
      * @return data a dataset with the geometry of ds and the units of values.
      * @see #subset(org.das2.qds.QDataSet, org.das2.qds.QDataSet) subset, which does the same thing.
@@ -7099,18 +7150,32 @@ public final class Ops {
      */
     public static WritableDataSet applyIndex( QDataSet ds, QDataSet r ) {
         QubeDataSetIterator iter= new QubeDataSetIterator(r);
-        DDataSet result= iter.createEmptyDs();
         Number fill= (Number)ds.property( QDataSet.FILL_VALUE );
         if ( fill==null ) fill= -1e38;
-        while ( iter.hasNext() ) {
-            iter.next();
-            int idx= (int)( iter.getValue(r) );
-            if ( idx<0 || idx>=ds.length() ) {
-                iter.putValue( result, fill.doubleValue() );
-            } else {
-                iter.putValue( result, ds.value(idx) );
+        
+        WritableDataSet result;
+        
+        if ( ds.rank()==2 ) {
+            DataSetBuilder resultb= new DataSetBuilder(ds.rank(),r.length(),ds.length(0));
+            while ( iter.hasNext() ) {
+                iter.next();
+                int idx= (int)( iter.getValue(r) );
+                resultb.nextRecord( ds.slice(idx) );
+            }
+            result= resultb.getDataSet();
+        } else {
+            result= iter.createEmptyDs();
+            while ( iter.hasNext() ) {
+                iter.next();
+                int idx= (int)( iter.getValue(r) );
+                if ( idx<0 || idx>=ds.length() ) {
+                    iter.putValue( result, fill.doubleValue() );
+                } else {
+                    iter.putValue( result, ds.value(idx) );
+                }
             }
         }
+        
         result.putProperty(QDataSet.UNITS,ds.property(QDataSet.UNITS));
         result.putProperty(QDataSet.FILL_VALUE,fill);
         
