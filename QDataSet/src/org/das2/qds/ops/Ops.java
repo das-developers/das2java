@@ -4960,7 +4960,7 @@ public final class Ops {
      * @return rank 2 canonical events list
      * @see Schemes#eventsList() 
      * @see #dataIntersection(org.das2.qds.QDataSet, org.das2.qds.QDataSet)    
-     * @see #eventsComplement(org.das2.qds.QDataSet, int, java.lang.String) 
+     * @see #eventsComplement(org.das2.qds.QDataSet, org.das2.datum.DatumRange, int, java.lang.String) 
      */
     public static QDataSet eventsConjunction( QDataSet tE, QDataSet tB ) {
 
@@ -5075,6 +5075,11 @@ public final class Ops {
         }
         
         DataSetBuilder dsb= new DataSetBuilder( 2, 1000, 4 );
+        dsb.setUnits( 0, (Units) bds.property( QDataSet.UNITS, 0 ) );
+        dsb.setUnits( 1, (Units) bds.property( QDataSet.UNITS, 1 ) );
+        dsb.setUnits( 2, (Units) bds.property( QDataSet.UNITS, 2 ) );
+        dsb.setUnits( 3, (Units) bds.property( QDataSet.UNITS, 3 ) );
+        
         for ( int i=0; i<events.length(); i++ ) {
             QDataSet e1= events.slice(i);
             Datum t1= Ops.datum( e1.slice(0) );
@@ -5086,6 +5091,7 @@ public final class Ops {
         if ( st.lt(range.max()) ) {
             dsb.nextRecord( st, range.max(), color, dmsg );
         }
+        
         return dsb.getDataSet();
     }
     
