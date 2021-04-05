@@ -174,6 +174,7 @@ public class ValuesTreeModel extends DefaultTreeModel {
             case 1:
                 Units units= (Units) ds.property(QDataSet.UNITS);
                 if ( units==null ) units= Units.dimensionless;
+                QDataSet plane0= (QDataSet)ds.property(QDataSet.PLANE_0);
                 for ( int i=0; i<Math.min( ds.length(), sizeLimit ); i++ ) {
                     Units u= units;
                     if ( bundle!=null ) {
@@ -193,6 +194,9 @@ public class ValuesTreeModel extends DefaultTreeModel {
                     if ( dep0!=null ) {
                         sval += " @ " +( svalRank1( wdsDep0, dep0, i ) );
                     }
+                    if ( plane0!=null ) {
+                        sval += " (" +( svalRank1( wds, plane0, i ) ) + ")";
+                    } 
                     if ( bundle!=null ) {
                         sval = bundle.property(QDataSet.NAME,i)+" = " + ( svalRank1( wds, ds, i ) );
                         //sval = bundle.property(QDataSet.NAME,i)+" = " + ( wds.value(i) > 0. ? DataSetUtil.getStringValue( bundle.slice(i), ds.value(i) ) : "fill" ); //TODO: check this
@@ -200,7 +204,8 @@ public class ValuesTreeModel extends DefaultTreeModel {
                     } else {
                         aroot.insert(  new DefaultMutableTreeNode( prefix+""+i+")="+sval), aroot.getChildCount() );
                     }
-                }   if ( ds.length()>=sizeLimit ) {
+                }   
+                if ( ds.length()>=sizeLimit ) {
                     aroot.insert( new DefaultMutableTreeNode( "..." ), aroot.getChildCount() );
                 }   // insert last N values
                 for ( int i=Math.max( ds.length()-TAIL_COUNT,sizeLimit ); i<ds.length(); i++ ) {
@@ -221,6 +226,9 @@ public class ValuesTreeModel extends DefaultTreeModel {
                     //TODO: future datum class may allow for toString to return nominal data for invalid data.
                     if ( dep0!=null ) {
                         sval += " @ " +( svalRank1( wdsDep0, dep0, i ) );
+                    }
+                    if ( plane0!=null ) {
+                        sval += " (" +( svalRank1( wds, plane0, i ) ) + ")";
                     }
                     if ( bundle!=null ) {
                         sval = bundle.property(QDataSet.NAME,i)+" = " + ( svalRank1( wds, ds, i ) );
