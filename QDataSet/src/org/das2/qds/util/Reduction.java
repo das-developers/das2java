@@ -10,6 +10,7 @@ import org.das2.datum.DatumUtil;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
+import org.das2.qds.ArrayDataSet;
 import org.das2.qds.ConstantDataSet;
 import org.das2.util.LoggerManager;
 import org.das2.qds.DDataSet;
@@ -739,6 +740,61 @@ public class Reduction {
         
     }
     
+    /**
+     * return the value of the last data point at each location.
+     * @param ds rank1 data
+     * @param xx rank 1 X values for each data point
+     * @param yy rank 1 Y values for each data point
+     * @param xxx rank 1 dataset describes the bins, which must be uniformly linearly spaced, or log spaced.  Uses SCALE_TYPE property.
+     * @param yyy rank 1 dataset describes the bins, which must be uniformly linearly spaced, or log spaced.
+     * @return rank 2 ds containing the last point at each bin, with DEPEND_0=xxx and DEPEND_1=yyy.
+     * @see org.das2.qds.ops.Ops#histogram2d(org.das2.qds.QDataSet, org.das2.qds.QDataSet, int[], org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
+     * @throws IllegalArgumentException when the units cannot be converted
+     */
+    public static QDataSet lastPointAt2D( QDataSet ds, QDataSet xx, QDataSet yy, QDataSet xxx, QDataSet yyy ) {
+        logger.entering("Reduction", "lastPointAt2D");
+        if ( ds.rank()!=1 ) {
+            throw new IllegalArgumentException("ds.rank() must be 1");
+        }
+        if ( xxx.length()<2 ) {
+            throw new IllegalArgumentException("xxx.length() must be at least 2");
+        }
+        if ( yyy.length()<2 ) {
+            throw new IllegalArgumentException("yyy.length() must be at least 2");
+        }
+        
+        boolean xlog= QDataSet.VALUE_SCALE_TYPE_LOG.equals( xxx.property(QDataSet.SCALE_TYPE) );
+        boolean ylog= QDataSet.VALUE_SCALE_TYPE_LOG.equals( yyy.property(QDataSet.SCALE_TYPE) );
+        double xspace= xlog ? Math.log10(xxx.value(1))-Math.log10(xxx.value(0)) : xxx.value(1)-xxx.value(0);
+        double yspace= ylog ? Math.log10(yyy.value(1))-Math.log10(yyy.value(0)) : yyy.value(1)-yyy.value(0);
+        double xmin= xlog ? Math.log10(xxx.value(0)) - xspace/2 : xxx.value(0) - xspace/2;
+        double ymin= ylog ? Math.log10(yyy.value(0)) - yspace/2 : yyy.value(0) - yspace/2;
+        int nx= xxx.length();
+        int ny= yyy.length();
+        
+        ArrayDataSet result= ArrayDataSet.createRank2(ArrayDataSet.guessBackingStore(ds),nx,ny);
+        QDataSet ww= SemanticOps.weightsDataSet(ds);
+        
+        UnitsConverter ucx= SemanticOps.getUnitsConverter( xx,xxx );
+        UnitsConverter ucy= SemanticOps.getUnitsConverter( yy,yyy );
+        
+        for ( int i=0; i<ds.length(); i++ ) {
+            if ( ww.value(i)>0 ) {
+                double x= ucx.convert( xx.value(i) );
+                double y= ucy.convert( yy.value(i) );
+                int ix= (int)( xlog ? (Math.log10(x)-xmin)/xspace : (x-xmin)/xspace );
+                int iy= (int)( ylog ? (Math.log10(y)-ymin)/yspace : (y-ymin)/yspace );
+                if ( ix>=0 && ix<nx && iy>=0 && iy<ny ) {
+                    result.putValue( ix, iy, ds.value(i) );
+                }
+            }
+        }
+        DataSetUtil.copyDimensionProperties( ds, result );
+        result.putProperty( QDataSet.DEPEND_0, xxx );
+        result.putProperty( QDataSet.DEPEND_1, yyy );
+        logger.exiting("Reduction", "lastPointAt2D");
+        return result;        
+    }
     
     /**
      * reduce the buckshot scatter data by laying it out on a 2-D grid and
