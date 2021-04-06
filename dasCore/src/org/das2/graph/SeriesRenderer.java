@@ -386,7 +386,7 @@ public class SeriesRenderer extends Renderer {
                 rgbColor= Units.rgbColor.equals( colorByDataSet.property(QDataSet.UNITS) );
                 IndexColorModel icm = colorBar.getIndexColorModel();
                 ccolors = new Color[icm.getMapSize()];
-                for (int j = 0; j < icm.getMapSize(); j++) {
+                for (int j = 0; j < icm.getMapSize(); j++) {               
                     ccolors[j] = new Color(icm.getRGB(j));
                 }
             }
@@ -443,6 +443,7 @@ public class SeriesRenderer extends Renderer {
             graphics.setColor(color0);   
         }
         
+        //PsymRendererElement
         @Override
         public synchronized int render(Graphics2D graphics, DasAxis xAxis, DasAxis yAxis, QDataSet vds, ProgressMonitor mon) {
             int i;
@@ -453,6 +454,7 @@ public class SeriesRenderer extends Renderer {
             if ( lparent==null ) return 0;
             
             QDataSet colorByDataSet = colorByDataSet(ds);
+            logger.log(Level.FINER, "colorByDataSet: {0}", colorByDataSet);
             boolean rgbColor= colorByDataSet!=null && Units.rgbColor.equals( colorByDataSet.property(QDataSet.UNITS) );
         
             if ( stampPsyms && !rgbColor && !lparent.getCanvas().isPrintingThread()) {
@@ -468,6 +470,7 @@ public class SeriesRenderer extends Renderer {
             return i;
         }
 
+        //PsymRendererElement
         @Override
         public synchronized void update(DasAxis xAxis, DasAxis yAxis, QDataSet dataSet, ProgressMonitor mon) {
 
@@ -949,6 +952,7 @@ public class SeriesRenderer extends Renderer {
             return path1;
         }
         
+        //PSymConnectorRendererElement
         @Override
         public synchronized void update(DasAxis xAxis, DasAxis yAxis, QDataSet dataSet, ProgressMonitor mon) {
             logger.log(Level.FINE, "enter connector update" );
@@ -2167,16 +2171,35 @@ public class SeriesRenderer extends Renderer {
             }
             hds = Reduction.histogram2D( vds, mxxx, myyy );
         }
+        QDataSet colors= colorByDataSet(vds);
+        if ( colors!=null ) {
+            colors= Reduction.lastPointAt2D( colors, SemanticOps.xtagsDataSet(vds), SemanticOps.ytagsDataSet(vds), mxxx, myyy );
+        }
         logger.log( Level.FINEST, "done histogram2D ({0}ms)", ( System.currentTimeMillis()-tt0 ));
         DataSetBuilder buildx= new DataSetBuilder(1,100);
         DataSetBuilder buildy= new DataSetBuilder(1,100);
-        for ( int ii=0; ii<hds.length(); ii++ ) {                
-            for ( int jj=0; jj<hds.length(0); jj++ ) {
-                if ( hds.value(ii,jj)>0 ) {
-                    buildx.putValue(-1,xxx.value(ii));
-                    buildy.putValue(-1,yyy.value(jj));
-                    buildx.nextRecord(); 
-                    buildy.nextRecord();
+        DataSetBuilder buildc= null;
+        if ( colors!=null ) {
+            buildc= new DataSetBuilder(1,100);
+            buildc.putProperty( QDataSet.UNITS,colors.property(QDataSet.UNITS) );
+            for ( int ii=0; ii<hds.length(); ii++ ) {                
+                for ( int jj=0; jj<hds.length(0); jj++ ) {
+                    if ( hds.value(ii,jj)>0 ) {
+                        buildx.nextRecord(xxx.value(ii));
+                        buildy.nextRecord(yyy.value(jj));
+                        buildc.nextRecord(colors.value(ii,jj));
+                    }
+                }
+            }            
+        } else {
+            for ( int ii=0; ii<hds.length(); ii++ ) {                
+                for ( int jj=0; jj<hds.length(0); jj++ ) {
+                    if ( hds.value(ii,jj)>0 ) {
+                        buildx.putValue(-1,xxx.value(ii));
+                        buildy.putValue(-1,yyy.value(jj));
+                        buildx.nextRecord(); 
+                        buildy.nextRecord();
+                    }
                 }
             }
         }
@@ -2184,7 +2207,10 @@ public class SeriesRenderer extends Renderer {
         buildx.putProperty( QDataSet.UNITS, xdr.getUnits() );
         buildy.putProperty( QDataSet.UNITS, ydr.getUnits() );
         MutablePropertyDataSet mvds= DataSetOps.makePropertiesMutable( Ops.link( buildx.getDataSet(), buildy.getDataSet() ) );
-        DataSetUtil.copyDimensionProperties( vds, mvds );        
+        DataSetUtil.copyDimensionProperties( vds, mvds );
+        if ( buildc!=null ) {
+            mvds.putProperty(QDataSet.PLANE_0,buildc.getDataSet());
+        }
         return mvds;
     }
 
