@@ -7,7 +7,6 @@ package org.das2.qds.demos;
 
 import java.text.ParseException;
 import java.util.Random;
-import java.util.concurrent.ThreadLocalRandom;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumVector;
 import org.das2.datum.Units;
@@ -24,53 +23,94 @@ import org.das2.qds.util.DataSetBuilder;
  */
 public class PlasmaModel {
 
-    private static class PlasmaModelSpec {
-
-        double nc = 1.2; // core density 1/cm^3
+        private double nc = 1.2; // core density 1/cm^3
         
-        double wcperp = 8000. * 1e5; // core thermal velocity cm/s
-        double wcparl = 8000. * 1e5;
+        private double wcperp = 8000. * 1e5; // core thermal velocity cm/s
+        private double wcparl = 8000. * 1e5;
         
-        static final double mass = 9.11e-28;
-        boolean isotropic = true;
-        double geomFactor = 1000e-40;
+        //static final double mass = 511000; // MeV //9.11e-28;  // gram
+        //static final double kappa = 8.617333262145e-5;  // eV / K
+        private static final double mass = 9.11e-28;  // gram
+        
+        private boolean isotropic = true;
+        private double geomFactor = 1000e-40;
 
         PoissonDistribution poissonDistribution;
         
-        public PlasmaModelSpec() {
+        public PlasmaModel() {
             poissonDistribution= new PoissonDistribution();
         }
 
+        /**
+         * set the model density
+         * @param density 
+         */
         public void setDensity(Datum density) {
             this.nc = density.doubleValue(Units.pcm3);
         }
 
+        /**
+         * get the model density
+         * @return 
+         */
         public Datum getDensity() {
             return Units.pcm3.createDatum(nc);
         }
 
+        /**
+         * set the parallel speed
+         * @param wcparl 
+         */
         public void setWcparl(Datum wcparl) {
             this.wcparl = wcparl.doubleValue(Units.cmps);
         }
 
+        /**
+         * get the parallel speed.
+         * @return 
+         */
         public Datum getWcParl() {
             return Units.cmps.createDatum(this.wcparl);
         }
 
+        /**
+         * set the perpendicular speed
+         * @param wcperp perpendicular speed
+         */
         public void setWcPerp(Datum wcperp) {
             this.wcperp= wcperp.doubleValue(Units.cmps);
         }
         
+        /**
+         * get the perpendicular speed
+         * @return the perpendicular speed
+         */
         public Datum getWcPerp() {
             return Units.cmps.createDatum(this.wcperp);
         }
 
+        /**
+         * set the detector geometry factor
+         * @param geom the detector geometry factor
+         */
+        public void setGeomFactor( Datum geom ) {
+            this.geomFactor= geom.doubleValue(Units.dimensionless);
+        }
+        
+        /**
+         * get the detector geometry factor
+         * @return the detector geometry factor
+         */
+        public Datum getGeomFactor( ) {
+            return Units.dimensionless.createDatum(this.geomFactor);
+        }
+        
         public double f(double energy, Units units) {
             if (units != Units.eV) {
                 throw new IllegalArgumentException("units must be in eV");
             }
-            if (!isotropic) {
-                throw new IllegalArgumentException("distribution is not isotropic, need theta,phi");
+            if ( wcperp!=wcparl ) {
+                throw new IllegalArgumentException("distribution is not isotropic, need pitch angle");
             }
             double v = Math.sqrt(2 * energy * 1.6e-19 * 1e7 / mass);
             double logfc = Math.log10(nc / (Math.pow(Math.PI, (3. / 2.)) * wcparl * wcparl)) - 3 * Math.pow(v / wcparl, 2);
@@ -78,19 +118,31 @@ public class PlasmaModel {
         }
 
         public double f( Datum energy, Datum pitchAngle ) {
-            if (!isotropic) {
-                throw new IllegalArgumentException("distribution is not isotropic, need theta,phi");
-            }
             double v = Math.sqrt(2 * energy.doubleValue(Units.eV) * 1.6e-19 * 1e7 / mass);
             double a = pitchAngle.doubleValue( Units.radians );
             double vparl= Math.cos(a) * v;
             double vperp= Math.sin(a) * v;
+            
+            //double kappa= 8.617333262145e-5;
+            //double mass_2K= mass / ( 2 * kappa ); 
+            //double f= nc * ( mass_2K / ( Math.PI * wcperp ) ) 
+            //        * Math.sqrt( mass_2K / ( Math.PI * wcperp ) ) 
+            //        * Math.exp( - ( mass_2K * Math.pow( vperp, 2 ) / wcperp ) )
+            //        * Math.exp( - ( mass_2K * Math.pow( vparl, 2 ) / wcparl ) );
+            //return f;
             double logfc = Math.log10(nc / (Math.pow(Math.PI, (3. / 2.)) * wcparl * wcperp)) 
                     - Math.pow(vparl / wcparl, 2) - 2*Math.pow(vperp / wcperp, 2);
             return Math.pow(10,logfc);
         }
         
-        public double fcounts(double energy, Units units, Random random) {
+        /**
+         * return the counts at this energy, assuming an isotropic distribution.  No
+         * Poisson noise is added to the output.
+         * @param energy
+         * @param units
+         * @return 
+         */
+        public double fcounts(double energy, Units units) {
             if (units != Units.eV) {
                 throw new IllegalArgumentException("units must be in eV");
             }
@@ -98,6 +150,13 @@ public class PlasmaModel {
             return fcount;
         }
 
+        /**
+         * return the counts at this energy, assuming an isotropic distribution, and
+         * Poisson noise is added to the result.
+         * @param energy in eV
+         * @param units must be Units.eV
+         * @return 
+         */
         public int counts(double energy, Units units, Random random) {
             if (units != Units.eV) {
                 throw new IllegalArgumentException("units must be in eV");
@@ -106,16 +165,29 @@ public class PlasmaModel {
             return poissonDistribution.poisson(fcount, random);
         }
         
-        public double fcounts( Datum energy, Datum pitch, Random random) {
-            double fcount = 2. * Math.pow( energy.doubleValue( Units.eV) / mass, 2 ) * geomFactor * f(energy, pitch);
+        /**
+         * return the counts at this energy and pitch angle, without Poisson noise added to the result.
+         * @param energy
+         * @param pitch
+         * @return the floating point count rate.
+         */
+        public double fcounts( Datum energy, Datum pitch ) {
+            double f= f(energy, pitch);
+            double fcount = f * 2. * Math.pow( energy.doubleValue( Units.eV) / mass, 2 ) * geomFactor;
             return fcount;
         }
 
+        /**
+         * return the counts at this energy and pitch angle, with Poisson noise added to the result.
+         * @param energy
+         * @param pitch
+         * @param random random number source
+         * @return the count rate
+         */
         public int counts(Datum energy, Datum pitch, Random random) {
-            double fcount = fcounts( energy, pitch, random );
+            double fcount = fcounts( energy, pitch );
             return poissonDistribution.poisson(fcount, random);
         }
-    }
 
     /**
      * return a rank 2 dataset with time as DEPEND_0 and energy as DEPEND_1.
@@ -124,7 +196,6 @@ public class PlasmaModel {
     public QDataSet getRank2( ) {
 
         try {
-            PlasmaModelSpec model = new PlasmaModelSpec();
             Random random = new Random(5330);
             //System.err.println("First Random: "+random.nextDouble() ); //TODO: look into bug where this always causes hang in autoplot-test148
             //System.err.println("Java version: "+System.getProperty("java.version"));
@@ -168,9 +239,9 @@ public class PlasmaModel {
                     //    System.err.println( String.format( "%d %d %5.4f", irun, irec, d ) ); //TODO: see above use at line 80.
                     //}
                     n= n * Math.pow(10, ( d-0.5 )/100 );
-                    model.setDensity( Units.pcm3.createDatum(n) );
+                    setDensity( Units.pcm3.createDatum(n) );
                     for (int j = 0; j < nj; j++) {
-                        zz[j] = model.counts( ydv.get(j).doubleValue(Units.dimensionless), Units.eV, random );
+                        zz[j] = counts( ydv.get(j).doubleValue(Units.dimensionless), Units.eV, random );
                         builder.putValue( -1, j, zz[j] );
                     }
                     xx.putValue( -1, x );
@@ -199,7 +270,6 @@ public class PlasmaModel {
     public QDataSet getRank3( ) {
 
         try {
-            PlasmaModelSpec model = new PlasmaModelSpec();
             Random random = new Random(5330);
             //System.err.println("First Random: "+random.nextDouble() ); //TODO: look into bug where this always causes hang in autoplot-test148
             //System.err.println("Java version: "+System.getProperty("java.version"));
@@ -255,10 +325,10 @@ public class PlasmaModel {
                     //    System.err.println( String.format( "%d %d %5.4f", irun, irec, d ) ); //TODO: see above use at line 80.
                     //}
                     n= n * Math.pow(10, ( d-0.5 )/100 );
-                    model.setDensity( Units.pcm3.createDatum(n) );
+                    setDensity( Units.pcm3.createDatum(n) );
                     for (int j = 0; j < ne; j++) {
                         for ( int k=0; k<na; k++ ) {
-                            double zz = model.counts( ydv.get(j), adv.get(k), random );
+                            double zz = counts( ydv.get(j), adv.get(k), random );
                             builder.putValue( -1, j, k, zz );
                         }
                         
