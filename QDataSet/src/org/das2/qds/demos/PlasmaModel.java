@@ -27,9 +27,11 @@ public class PlasmaModel {
     private static class PlasmaModelSpec {
 
         double nc = 1.2; // core density 1/cm^3
-        //double wcperp = 8000. * 1e5; // core thermal velocity cm/s
+        
+        double wcperp = 8000. * 1e5; // core thermal velocity cm/s
         double wcparl = 8000. * 1e5;
-        double mass = 9.11e-28;
+        
+        static final double mass = 9.11e-28;
         boolean isotropic = true;
         double geomFactor = 1000e-40;
 
@@ -47,6 +49,22 @@ public class PlasmaModel {
             return Units.pcm3.createDatum(nc);
         }
 
+        public void setWcparl(Datum wcparl) {
+            this.wcparl = wcparl.doubleValue(Units.cmps);
+        }
+
+        public Datum getWcParl() {
+            return Units.cmps.createDatum(this.wcparl);
+        }
+
+        public void setWcPerp(Datum wcperp) {
+            this.wcperp= wcperp.doubleValue(Units.cmps);
+        }
+        
+        public Datum getWcPerp() {
+            return Units.cmps.createDatum(this.wcperp);
+        }
+
         public double f(double energy, Units units) {
             if (units != Units.eV) {
                 throw new IllegalArgumentException("units must be in eV");
@@ -59,6 +77,19 @@ public class PlasmaModel {
             return Math.pow(10,logfc);
         }
 
+        public double f( Datum energy, Datum pitchAngle ) {
+            if (!isotropic) {
+                throw new IllegalArgumentException("distribution is not isotropic, need theta,phi");
+            }
+            double v = Math.sqrt(2 * energy.doubleValue(Units.eV) * 1.6e-19 * 1e7 / mass);
+            double a = pitchAngle.doubleValue( Units.radians );
+            double vparl= Math.cos(a) * v;
+            double vperp= Math.sin(a) * v;
+            double logfc = Math.log10(nc / (Math.pow(Math.PI, (3. / 2.)) * wcparl * wcperp)) 
+                    - Math.pow(vparl / wcparl, 2) - 2*Math.pow(vperp / wcperp, 2);
+            return Math.pow(10,logfc);
+        }
+        
         public double fcounts(double energy, Units units, Random random) {
             if (units != Units.eV) {
                 throw new IllegalArgumentException("units must be in eV");
@@ -72,6 +103,16 @@ public class PlasmaModel {
                 throw new IllegalArgumentException("units must be in eV");
             }
             double fcount = 2. * (energy / mass) * (energy / mass) * geomFactor * f(energy, units);
+            return poissonDistribution.poisson(fcount, random);
+        }
+        
+        public double fcounts( Datum energy, Datum pitch, Random random) {
+            double fcount = 2. * Math.pow( energy.doubleValue( Units.eV) / mass, 2 ) * geomFactor * f(energy, pitch);
+            return fcount;
+        }
+
+        public int counts(Datum energy, Datum pitch, Random random) {
+            double fcount = fcounts( energy, pitch, random );
             return poissonDistribution.poisson(fcount, random);
         }
     }
@@ -149,8 +190,102 @@ public class PlasmaModel {
         } catch (ParseException ex) {
             throw new RuntimeException(ex);
         }
-       
     }
+       
+    /**
+     * return a rank 2 dataset with time as DEPEND_0 and energy as DEPEND_1.
+     * @return 
+     */
+    public QDataSet getRank3( ) {
+
+        try {
+            PlasmaModelSpec model = new PlasmaModelSpec();
+            Random random = new Random(5330);
+            //System.err.println("First Random: "+random.nextDouble() ); //TODO: look into bug where this always causes hang in autoplot-test148
+            //System.err.println("Java version: "+System.getProperty("java.version"));
+            Datum start = Units.us2000.parse("2000-017T00:00");
+            Datum end = Units.us2000.parse("2000-018T00:00");
+            Datum xTagWidth = Units.seconds.createDatum(13.8);
+            Datum t = start;
+            DataSetBuilder builder = new DataSetBuilder(3,1000,20,18);
+            DataSetBuilder xx= new DataSetBuilder(1,1000);
+            boolean ylog = false;
+            DatumVector[] energyTags = new DatumVector[1];
+            DatumVector[] alphaTags = new DatumVector[1];
+            Random s = new Random(234567); // repeatable random sequence
+
+            double n= 2.0;
+            //int irec=0;
+            while ( t.lt(end) ) {
+                int whichTags = s.nextInt(energyTags.length);
+                int ne;
+                if (energyTags[whichTags] == null) {
+                    ne = whichTags * 10 + 20;
+                    double[] en = new double[ne];
+                    for (int j = 0; j < ne; j++) {
+                        if (ylog) {
+                            en[j] = (ne / 300) + j * 0.05; // findbugs okay ICAST_IDIV_CAST_TO_DOUBLE
+                            en[j] = Math.pow(10,en[j]);
+                        } else {
+                            en[j] = (ne / 3) + j * 1.2;
+                        }
+                    }
+                    energyTags[whichTags] = DatumVector.newDatumVector(en, Units.eV);
+                } else {
+                    ne = energyTags[whichTags].getLength();
+                }
+                int na;
+                if (alphaTags[whichTags] == null) {
+                    na = 18;
+                    double[] yy = new double[na];
+                    for (int j = 0; j < na; j++) {
+                        yy[j]= Math.PI * ( 0.5 + j ) / na ;
+                    }
+                    alphaTags[whichTags] = DatumVector.newDatumVector(yy, Units.radians );
+                } else {
+                    na = alphaTags[whichTags].getLength();
+                }
+                
+                int ncol = s.nextInt(4) + 1;
+                DatumVector ydv = energyTags[whichTags];
+                DatumVector adv = alphaTags[whichTags];
+                for (int icol = 0; icol < ncol; icol++) {
+                    double d=  random.nextDouble();
+                    //if ( icol==0 && irec<150 ) {
+                    //    System.err.println( String.format( "%d %d %5.4f", irun, irec, d ) ); //TODO: see above use at line 80.
+                    //}
+                    n= n * Math.pow(10, ( d-0.5 )/100 );
+                    model.setDensity( Units.pcm3.createDatum(n) );
+                    for (int j = 0; j < ne; j++) {
+                        for ( int k=0; k<na; k++ ) {
+                            double zz = model.counts( ydv.get(j), adv.get(k), random );
+                            builder.putValue( -1, j, k, zz );
+                        }
+                        
+                    }
+                    xx.putValue( -1, t );
+                    t= t.add( xTagWidth );
+                    //irec++;
+                }
+                builder.nextRecord();
+                xx.nextRecord();
+            }
+            xx.putProperty( QDataSet.UNITS, Units.us2000 );
+            builder.putProperty( QDataSet.DEPEND_0, xx.getDataSet() );
+            DDataSet yy= DDataSet.wrap(energyTags[0].toDoubleArray(Units.eV));
+            yy.putProperty(QDataSet.UNITS, Units.eV);
+            DDataSet aa= DDataSet.wrap(alphaTags[0].toDoubleArray(Units.radians));
+            builder.putProperty( QDataSet.DEPEND_1, yy );
+            builder.putProperty( QDataSet.DEPEND_2, aa );
+            //System.err.println("Last Random: "+random.nextDouble() ); //TODO: see above use at line 80.
+            return builder.getDataSet();
+        } catch (ParseException ex) {
+            throw new RuntimeException(ex);
+        }
+
+    }
+    
+    
 //
 //    public static Runnable getRunnable(final int irun) {
 //        return new Runnable() {
