@@ -105,14 +105,17 @@ public class PlasmaModel {
             return Units.dimensionless.createDatum(this.geomFactor);
         }
         
-        public double f(double energy, Units units) {
-            if (units != Units.eV) {
-                throw new IllegalArgumentException("units must be in eV");
-            }
+        /**
+         * return f at the given energy
+         * @param energy
+         * @return 
+         */
+        public double f( Datum energy ) {
+            double en= energy.doubleValue( Units.eV );
             if ( wcperp!=wcparl ) {
                 throw new IllegalArgumentException("distribution is not isotropic, need pitch angle");
             }
-            double v = Math.sqrt(2 * energy * 1.6e-19 * 1e7 / mass);
+            double v = Math.sqrt(2 * en * 1.6e-19 * 1e7 / mass);
             double logfc = Math.log10(nc / (Math.pow(Math.PI, (3. / 2.)) * wcparl * wcparl)) - 3 * Math.pow(v / wcparl, 2);
             return Math.pow(10,logfc);
         }
@@ -139,14 +142,11 @@ public class PlasmaModel {
          * return the counts at this energy, assuming an isotropic distribution.  No
          * Poisson noise is added to the output.
          * @param energy
-         * @param units
          * @return 
          */
-        public double fcounts(double energy, Units units) {
-            if (units != Units.eV) {
-                throw new IllegalArgumentException("units must be in eV");
-            }
-            double fcount = 2. * (energy / mass) * (energy / mass) * geomFactor * f(energy, units);
+        public double fcounts( Datum energy) {
+            double en= energy.doubleValue(Units.eV);
+            double fcount = 2. * (en / mass) * (en / mass) * geomFactor * f(energy);
             return fcount;
         }
 
@@ -154,14 +154,12 @@ public class PlasmaModel {
          * return the counts at this energy, assuming an isotropic distribution, and
          * Poisson noise is added to the result.
          * @param energy in eV
-         * @param units must be Units.eV
+         * @param random source of random numbers.
          * @return 
          */
-        public int counts(double energy, Units units, Random random) {
-            if (units != Units.eV) {
-                throw new IllegalArgumentException("units must be in eV");
-            }
-            double fcount = 2. * (energy / mass) * (energy / mass) * geomFactor * f(energy, units);
+        public int counts( Datum energy, Random random) {
+            double en= energy.doubleValue(Units.eV);
+            double fcount = 2. * (en / mass) * (en / mass) * geomFactor * f(energy);
             return poissonDistribution.poisson(fcount, random);
         }
         
@@ -241,7 +239,7 @@ public class PlasmaModel {
                     n= n * Math.pow(10, ( d-0.5 )/100 );
                     setDensity( Units.pcm3.createDatum(n) );
                     for (int j = 0; j < nj; j++) {
-                        zz[j] = counts( ydv.get(j).doubleValue(Units.dimensionless), Units.eV, random );
+                        zz[j] = counts( ydv.get(j), random );
                         builder.putValue( -1, j, zz[j] );
                     }
                     xx.putValue( -1, x );
