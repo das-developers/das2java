@@ -7,7 +7,10 @@ package org.das2.qds.demos;
 
 import java.text.ParseException;
 import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.das2.datum.Datum;
+import org.das2.datum.DatumUtil;
 import org.das2.datum.DatumVector;
 import org.das2.datum.Units;
 import org.das2.qds.math.PoissonDistribution;
@@ -28,11 +31,11 @@ public class PlasmaModel {
         private double wcperp = 8000. * 1e5; // core thermal velocity cm/s
         private double wcparl = 8000. * 1e5;
         
+        //static final double k = 1.380649e-16; // erg / k
         //static final double mass = 511000; // MeV //9.11e-28;  // gram
-        //static final double kappa = 8.617333262145e-5;  // eV / K
+        //static final double k = 8.617333262145e-5;  // eV / k
         private static final double mass = 9.11e-28;  // gram
         
-        private boolean isotropic = true;
         private double geomFactor = 1000e-40;
 
         PoissonDistribution poissonDistribution;
@@ -126,12 +129,11 @@ public class PlasmaModel {
             double vparl= Math.cos(a) * v;
             double vperp= Math.sin(a) * v;
             
-            //double kappa= 8.617333262145e-5;
-            //double mass_2K= mass / ( 2 * kappa ); 
-            //double f= nc * ( mass_2K / ( Math.PI * wcperp ) ) 
-            //        * Math.sqrt( mass_2K / ( Math.PI * wcperp ) ) 
-            //        * Math.exp( - ( mass_2K * Math.pow( vperp, 2 ) / wcperp ) )
-            //        * Math.exp( - ( mass_2K * Math.pow( vparl, 2 ) / wcparl ) );
+//            double mass_2K= mass / ( 2 * k ); 
+//            double f= nc * ( mass_2K / ( Math.PI * wcperp ) ) 
+//                    * Math.sqrt( mass_2K / ( Math.PI * wcperp ) ) 
+//                    * Math.exp( - ( mass_2K * Math.pow( vperp, 2 ) / wcperp ) )
+//                    * Math.exp( - ( mass_2K * Math.pow( vparl, 2 ) / wcparl ) );
             //return f;
             double logfc = Math.log10(nc / (Math.pow(Math.PI, (3. / 2.)) * wcparl * wcperp)) 
                     - Math.pow(vparl / wcparl, 2) - 2*Math.pow(vperp / wcperp, 2);
