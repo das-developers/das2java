@@ -226,7 +226,7 @@ public class PlasmaModel {
                             yy[j] = (nj / 3) + j * 1.2;
                         }
                     }
-                    yTags[whichYTags] = DatumVector.newDatumVector(yy, Units.dimensionless);
+                    yTags[whichYTags] = DatumVector.newDatumVector(yy, Units.eV);
                 } else {
                     nj = yTags[whichYTags].getLength();
                 }
@@ -253,7 +253,7 @@ public class PlasmaModel {
             }
             xx.putProperty( QDataSet.UNITS, Units.us2000 );
             builder.putProperty( QDataSet.DEPEND_0, xx.getDataSet() );
-            DDataSet yy= DDataSet.wrap(yTags[0].toDoubleArray(Units.dimensionless));
+            DDataSet yy= DDataSet.wrap(yTags[0].toDoubleArray(Units.eV));
             yy.putProperty(QDataSet.UNITS, Units.eV);
             builder.putProperty( QDataSet.DEPEND_1, yy );
             //System.err.println("Last Random: "+random.nextDouble() ); //TODO: see above use at line 80.
