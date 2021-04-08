@@ -973,7 +973,7 @@ public class DataSetOps {
         }
 
         if ( dep2!=null ) {
-            if ( dep2.rank()==2 ) {
+            if ( dep2.rank()>=2 ) {
                 result.put( QDataSet.DEPEND_1, dep2.slice( index ) );
             } else {
                 result.put( QDataSet.DEPEND_1, dep2 );
@@ -981,7 +981,7 @@ public class DataSetOps {
         }
 
         if ( dep3!=null ) { 
-            if ( dep3.rank()==2 ) {
+            if ( dep3.rank()>=2 ) {
                 result.put( QDataSet.DEPEND_2, dep3.slice( index ) );
             } else {
                 result.put( QDataSet.DEPEND_2, dep3 );
