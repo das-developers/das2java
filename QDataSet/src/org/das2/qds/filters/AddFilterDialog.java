@@ -6,7 +6,6 @@ import java.io.InputStream;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Deque;
 import java.util.Enumeration;
 import java.util.List;
@@ -15,10 +14,9 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.DefaultListModel;
 import javax.swing.JOptionPane;
+import javax.swing.ListModel;
 import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.DefaultTreeSelectionModel;
@@ -76,29 +74,23 @@ public class AddFilterDialog extends javax.swing.JPanel {
         if ( selectedIndex<0 ) selectedIndex=0;
         if ( selectedIndex>= this.jList1.getModel().getSize() ) selectedIndex= this.jList1.getModel().getSize()-1;
         //this.jList1.setCellRenderer( getListCellRenderer() );
-        this.jList1.addListSelectionListener( new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                Bookmark b= (Bookmark) jList1.getSelectedValue();
+        this.jList1.addListSelectionListener((ListSelectionEvent e) -> {
+            Bookmark b= (Bookmark) jList1.getSelectedValue();
+            jLabel1.setText( b.description );
+            jLabel2.setText( b.filter );
+            setSelectedValue( b );
+        });
+        this.jList1.setSelectedIndex( selectedIndex );
+        this.jList1.ensureIndexIsVisible( selectedIndex );
+        this.jTree1.addTreeSelectionListener((TreeSelectionEvent e) -> {
+            TreePath tp= jTree1.getSelectionPath();
+            if ( tp!=null ) {
+                Object o = tp.getLastPathComponent();
+                DefaultMutableTreeNode tn = (DefaultMutableTreeNode) o;
+                Bookmark b = (Bookmark) tn.getUserObject();
                 jLabel1.setText( b.description );
                 jLabel2.setText( b.filter );
                 setSelectedValue( b );
-            }
-        } );
-        this.jList1.setSelectedIndex( selectedIndex );
-        this.jList1.ensureIndexIsVisible( selectedIndex );
-        this.jTree1.addTreeSelectionListener( new TreeSelectionListener() {
-            @Override
-            public void valueChanged(TreeSelectionEvent e) {
-                TreePath tp= jTree1.getSelectionPath();
-                if ( tp!=null ) {
-                    Object o = tp.getLastPathComponent();
-                    DefaultMutableTreeNode tn = (DefaultMutableTreeNode) o;
-                    Bookmark b = (Bookmark) tn.getUserObject();
-                    jLabel1.setText( b.description );
-                    jLabel2.setText( b.filter );
-                    setSelectedValue( b );
-                }
             }
         });
                         
@@ -138,13 +130,8 @@ public class AddFilterDialog extends javax.swing.JPanel {
     private void populateList( ) {
         List<Bookmark> elements= new ArrayList<>(100);
         getElementsFromTree( elements, (DefaultMutableTreeNode)this.jTree1.getModel().getRoot() );
-        Collections.sort(elements, new Comparator<Bookmark>() {
-            @Override
-            public int compare(Bookmark o1, Bookmark o2) {
-                return o1.filter.compareTo(o2.filter);
-            }
-        } );
-        DefaultListModel model = new DefaultListModel();
+        Collections.sort(elements, (Bookmark o1, Bookmark o2) -> o1.filter.compareTo(o2.filter));
+        DefaultListModel<Bookmark> model = new DefaultListModel<>();
         
         Bookmark last= null;
         for( Bookmark val : elements ) {
@@ -213,7 +200,7 @@ public class AddFilterDialog extends javax.swing.JPanel {
     static DefaultHandler createHandler(final DefaultMutableTreeNode root) {
         final StringBuilder charsBuilder = new StringBuilder();
 
-        final Deque<DefaultMutableTreeNode> stack = new ArrayDeque();
+        final Deque<DefaultMutableTreeNode> stack = new ArrayDeque<>();
 
         stack.push(root);
 

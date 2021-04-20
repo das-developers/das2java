@@ -67,7 +67,7 @@ public class NearestNeighborTcaFunction extends AbstractQFunction {
         QDataSet q = dep0.slice(0);
         //TODO: there might be a problem if the first dep0 value is fill.
         MutablePropertyDataSet ret = (MutablePropertyDataSet) Ops.bundle(q);
-        Map<String,Object> p = DataSetUtil.getDimensionProperties( q, new HashMap() );
+        Map<String,Object> p = DataSetUtil.getDimensionProperties( q, new HashMap<>() );
         for ( Entry<String,Object> e : p.entrySet() ) {
             inputDescriptor.putProperty( e.getKey(), 0, e.getValue() );
         }
@@ -79,7 +79,7 @@ public class NearestNeighborTcaFunction extends AbstractQFunction {
         }
         outputDescriptor= DDataSet.createRank2( exampleOutput.length(), 0 );
         for ( int i=0; i<exampleOutput.length(); i++ ) {
-            p = DataSetUtil.getDimensionProperties( exampleOutput.slice(i), new HashMap() );
+            p = DataSetUtil.getDimensionProperties( exampleOutput.slice(i), new HashMap<>() );
             for ( Entry<String,Object> e : p.entrySet() ) {
                 outputDescriptor.putProperty( e.getKey(), i, e.getValue() );
             }

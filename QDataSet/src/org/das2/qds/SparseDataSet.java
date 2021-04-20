@@ -32,8 +32,8 @@ public class SparseDataSet extends AbstractDataSet implements WritableDataSet {
      */
     private SparseDataSet( int rank ) {
         this.rank= rank;
-        data= new HashMap();
-        length= new HashMap();
+        data= new HashMap<>();
+        length= new HashMap<>();
     }
     
     /**

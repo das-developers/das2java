@@ -32,9 +32,9 @@ public class ReferenceCache {
 
     private static ReferenceCache instance;
 
-    private final Map<String,ReferenceCacheEntry> uris= new LinkedHashMap();
+    private final Map<String,ReferenceCacheEntry> uris= new LinkedHashMap<>();
 
-    private final Map<String,ProgressMonitor> locks= new LinkedHashMap();
+    private final Map<String,ProgressMonitor> locks= new LinkedHashMap<>();
 
     // no one can directly instantiate, see getInstance.
     private ReferenceCache() {
@@ -284,16 +284,13 @@ public class ReferenceCache {
      * remove all the entries that have been garbage collected.
      */
     public synchronized void tidy() {
-        List<String> rm= new ArrayList();
-        for ( Entry<String,ReferenceCacheEntry> ent : instance.uris.entrySet() ) {
-            ReferenceCacheEntry ent1= ent.getValue();
-            if ( ent1.wasGarbageCollected() ) {
-                rm.add(ent1.uri);
-            }
-        }
-        for ( String uri: rm ) {
+        List<String> rm= new ArrayList<>();
+        instance.uris.entrySet().stream().map((ent) -> ent.getValue()).filter((ent1) -> ( ent1.wasGarbageCollected() )).forEachOrdered((ent1) -> {
+            rm.add(ent1.uri);
+        });
+        rm.forEach((uri) -> {
             instance.uris.remove(uri);
-        }
+        });
     }
 
     /**

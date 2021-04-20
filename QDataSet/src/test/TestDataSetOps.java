@@ -85,7 +85,7 @@ public class TestDataSetOps {
     }
 
     public static void testSliceIndexProps() {
-        Map m= new HashMap<String,Object>();
+        Map<String,Object> m= new HashMap<>();
         m.put( "UNITS__0", Units.hertz );
         m.put( "UNITS__1", Units.eV );
         m.put( "UNITS__1_100", Units.eV );
