@@ -1075,7 +1075,7 @@ public class AsciiParser {
 
         Object o= builder.properties.get( QDataSet.USER_PROPERTIES );
         if ( o==null ) {
-            builder.putProperty(QDataSet.USER_PROPERTIES, new HashMap(builder.properties)); // put discovered properties into
+            builder.putProperty(QDataSet.USER_PROPERTIES, new HashMap<>(builder.properties)); // put discovered properties into
         }
         if ( bundleDescriptor!=null ) { // it shouldn't be null.
             builder.putProperty( QDataSet.BUNDLE_1, bundleDescriptor );
@@ -1148,6 +1148,7 @@ public class AsciiParser {
      * we assign the values to the USER_PROPERTIES.
      * @param header
      * @param builder
+     * @SuppressWarnings("unchecked")
      */
     private void parseMeta( String header, DataSetBuilder builder ) {
 
@@ -1162,10 +1163,10 @@ public class AsciiParser {
                 bundleDescriptor.property(QDataSet.LABEL, 1);
                 //move dimensionless properties to the dataset.
                 Map<String,Object> props= DataSetUtil.getProperties( bundleDescriptor, DataSetUtil.globalProperties(), null );
-                for ( Entry<String,Object> e: props.entrySet() ) {
+                props.entrySet().forEach((e) -> {
                     String k= e.getKey();
                     builder.putProperty( k, e.getValue() );
-                }
+                });
 
                 for ( int j=0; j<bundleDescriptor.length(); j++ ) {
                     Units u= (Units) bundleDescriptor.property( QDataSet.UNITS, j );
@@ -1181,7 +1182,7 @@ public class AsciiParser {
             } catch (ParseException ex) {
                 logger.log(Level.SEVERE, ex.getMessage(), ex);
                 if ( propertyPattern!=null ) {
-                Map<String,String> userProps= new LinkedHashMap();
+                Map<String,String> userProps= new LinkedHashMap<>();
                 for ( String line2: header.split("\n") ) {
                     Matcher m2= propertyPattern.matcher(line2);
                     if ( m2.matches() ) {
@@ -1193,7 +1194,7 @@ public class AsciiParser {
             }
         } else {
             if ( propertyPattern!=null ) {
-                Map<String,String> userProps= new LinkedHashMap();
+                Map<String,String> userProps= new LinkedHashMap<>();
                 for ( String line2: header.split("\n") ) {
                     Matcher m2= propertyPattern.matcher(line2);
                     if ( m2.matches() ) {
@@ -1258,6 +1259,7 @@ public class AsciiParser {
     
     private Comparator whereComp= new Comparator() {
         @Override
+        @SuppressWarnings("unchecked")
         public int compare(Object o1, Object o2) {
             if ( o1.equals(o2) ) {
                 return 0;

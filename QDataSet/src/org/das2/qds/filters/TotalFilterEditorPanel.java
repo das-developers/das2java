@@ -99,11 +99,12 @@ public class TotalFilterEditorPanel extends AbstractFilterEditorPanel implements
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void setInput(QDataSet ds) {
         logger.log(Level.FINE, "setInput {0}", ds.toString() );
         String[] depNames1= FilterEditorPanelUtil.getDimensionNames(ds);
         int idx= sliceDimensionCB.getSelectedIndex();
-        sliceDimensionCB.setModel(new DefaultComboBoxModel(depNames1));
+        sliceDimensionCB.setModel(new DefaultComboBoxModel<>(depNames1));
         try {
             sliceDimensionCB.setSelectedIndex(idx);
         } catch ( IllegalArgumentException ex ) {
