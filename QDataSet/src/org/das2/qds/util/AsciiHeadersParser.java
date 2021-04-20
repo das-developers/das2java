@@ -224,7 +224,7 @@ public class AsciiHeadersParser {
         for (String name : names) {
             Object val = jo.get(name);
             if (val instanceof JSONObject) {
-                Map child= new HashMap();
+                Map<String,Object> child= new HashMap<>();
                 calcUserProperties( (JSONObject)jo, child );
             } else if (val instanceof JSONArray) {
                 result.put(name, (JSONArray)val); //TODO: convert this
@@ -248,11 +248,11 @@ public class AsciiHeadersParser {
         BundleDescriptor bd= new BundleDescriptor();
 
         //Map<Integer,String> dsNames= new LinkedHashMap();  // enumeration of all the names that are not in line.
-        Map<String,Integer> dsToPosition= new LinkedHashMap(); // name to the index of first column
+        Map<String,Integer> dsToPosition= new LinkedHashMap<>(); // name to the index of first column
 
         int ids= 0; // index of the dataset in the bundleDescriptor.
 
-        Map<JSONObject, String> messages= new LinkedHashMap();
+        Map<JSONObject, String> messages= new LinkedHashMap<>();
 
         String[] names= JSONObject.getNames(jo);
         for ( int ivar=0; ivar<names.length; ivar++ ) {
@@ -266,9 +266,15 @@ public class AsciiHeadersParser {
                 if ( o instanceof JSONObject ) {
                     jo1= (JSONObject)o;
                 } else {
-                    Map<String,Object> val= (Map<String,Object>)bd.property(QDataSet.USER_PROPERTIES);
+                    Object oval= bd.property(QDataSet.USER_PROPERTIES);
+                    if ( oval!=null ) {
+                        if ( !( oval instanceof Map ) ) {
+                            throw new IllegalArgumentException("USER_PROPERTIES is not a map");
+                        }
+                    }
+                    Map<String,Object> val= (Map<String,Object>)oval;
                     if ( val==null ) {
-                        val= new HashMap();
+                        val= new HashMap<>();
                         bd.putProperty(QDataSet.USER_PROPERTIES, val);
                     }
                     val.put( jsonName, o );
@@ -276,7 +282,7 @@ public class AsciiHeadersParser {
                 }
                 
                 if ( jsonName.equals( QDataSet.USER_PROPERTIES ) ) {
-                    Map<String,Object> val= new HashMap();
+                    Map<String,Object> val= new HashMap<>();
                     calcUserProperties( jo1,val );
                     bd.putProperty( jsonName,val );
                     continue; 
@@ -346,7 +352,7 @@ public class AsciiHeadersParser {
                         String lookFor= elementNames[0]; //Note ELEMENT_NAMES must correspond to adjacent columns.
                         int icol= -1;
                         int count= 0;
-                        List<Integer> icols= new ArrayList();
+                        List<Integer> icols= new ArrayList<>();
                         if ( !jo1.has("VALUES") ) {
                             //early version of JSONHeadedASCII (rich ascii) allowed lookups.
                             for ( int j=0; j<columns.length; j++ ) {
@@ -687,12 +693,12 @@ public class AsciiHeadersParser {
         Map<String,int[]> qubes;
 
         BundleDescriptor(  ) {
-            properties= new LinkedHashMap();
-            datasets= new LinkedHashMap();
-            datasets2= new LinkedHashMap();
-            inlineDataSets= new LinkedHashMap();
-            props= new LinkedHashMap();
-            qubes= new LinkedHashMap();
+            properties= new LinkedHashMap<>();
+            datasets= new LinkedHashMap<>();
+            datasets2= new LinkedHashMap<>();
+            inlineDataSets= new LinkedHashMap<>();
+            props= new LinkedHashMap<>();
+            qubes= new LinkedHashMap<>();
         }
 
         public int indexOf( String name ) {
@@ -875,7 +881,7 @@ public class AsciiHeadersParser {
         * @return
         */
         BundleDescriptor resortDataSets( Map<String,Integer> dsToPosition ) {
-            Map<Integer,String> positionToDs= new LinkedHashMap();
+            Map<Integer,String> positionToDs= new LinkedHashMap<>();
 
             int maxColumn=-1;
             for ( Entry<String,Integer> entry: dsToPosition.entrySet() ) {
@@ -968,11 +974,19 @@ public class AsciiHeadersParser {
              String key= (String) it.next();
              Object o= jo.get(key);
              if ( !( o instanceof JSONObject ) ) {
-                 Map<String,Object> userProperties= (Map<String,Object>) bd.property( QDataSet.USER_PROPERTIES );
-                 if ( userProperties==null ) {
-                     userProperties= new LinkedHashMap<>();
-                     bd.putProperty( QDataSet.USER_PROPERTIES, userProperties );
+                 Object oUserProperties=bd.property( QDataSet.USER_PROPERTIES );
+                 if ( oUserProperties!=null ) {
+                     if ( !( oUserProperties instanceof Map ) ) {
+                         throw new IllegalArgumentException("USER_PROPERTIES is not a map");
+                     }
                  }
+                 Map<String,Object> userProperties= (Map<String,Object>)oUserProperties ;
+
+                 if ( userProperties==null ) {
+                      userProperties= new LinkedHashMap<>();
+                      bd.putProperty( QDataSet.USER_PROPERTIES, userProperties );
+                 }
+                 
                  if ( o instanceof JSONArray ) {
                      JSONArray ja= ((JSONArray)o);
                      String[] arr= new String[ ja.length() ];

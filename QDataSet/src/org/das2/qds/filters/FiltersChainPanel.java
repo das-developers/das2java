@@ -102,22 +102,22 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
         setFilter("");
     }
 
-    List<FilterEditorPanel> editors= new LinkedList();
+    List<FilterEditorPanel> editors= new LinkedList<>();
     
     /**
      * these are the results after each filter. 
      */
-    List<QDataSet> results= new LinkedList();
+    List<QDataSet> results= new LinkedList<>();
     
     /**
      * these are the filters used to get to each result.
      */
-    List<String> resultFilters= new LinkedList();
+    List<String> resultFilters= new LinkedList<>();
     
     /**
      * true means the filter is recalculating, and the GUI will be updated later.
      */
-    List<Boolean> recalculating= new LinkedList();
+    List<Boolean> recalculating= new LinkedList<>();
     
     /**
      * This method is called from within the constructor to initialize the form.
@@ -302,19 +302,16 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
         
         final StringBuilder b= new StringBuilder();
         
-        Runnable run= new Runnable() {
-            @Override
-            public void run() {
-                List<FilterEditorPanel> leditors= new ArrayList(editors);
-                int ifilter= 0;
-                for ( FilterEditorPanel p: leditors ) {
-                    if ( ifilter==0 && p instanceof UnbundleFilterEditorPanel && implicitUnbundle ) {
-                        b.append( ((UnbundleFilterEditorPanel)p).getComponent() );
-                    } else {
-                        b.append(p.getFilter());
-                    }
+        Runnable run= () -> {
+            List<FilterEditorPanel> leditors= new ArrayList<>(editors);
+            int ifilter= 0;
+            leditors.forEach((p) -> {
+                if ( ifilter==0 && p instanceof UnbundleFilterEditorPanel && implicitUnbundle ) {
+                    b.append( ((UnbundleFilterEditorPanel)p).getComponent() );
+                } else {
+                    b.append(p.getFilter());
                 }
-            }
+            });
         };
         
         if ( SwingUtilities.isEventDispatchThread() ) {
@@ -608,14 +605,14 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
         // will contain an empty string when there is no initial unbundle, 
         String[] ss= filter.split("\\|",-2);
         
-        List<FilterEditorPanel> recycle= new ArrayList(editors);
+        List<FilterEditorPanel> recycle= new ArrayList<>(editors);
         for ( int i= editors.size(); i<ss.length; i++ ) {
             recycle.add(null);
         }
         
-        for ( FilterEditorPanel p: editors ) {
+        editors.forEach((p) -> {
             removeFocusListeners( p.getPanel() );
-        }
+        });
         editors.clear();
         recalculating.clear();
         
@@ -872,15 +869,12 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
         }
         recalculatingTimer.restart();
         
-        final List<FilterEditorPanel> leditors= new ArrayList(editors);
+        final List<FilterEditorPanel> leditors= new ArrayList<>(editors);
         
-        Runnable run= new Runnable() { 
-            @Override
-            public void run() {
-                logger.entering( CLASS_NAME, "resetInput", ds );
-                setInput( ds, filter, leditors );
-                logger.exiting( CLASS_NAME, "resetInput", ds );
-            }
+        Runnable run= () -> {
+            logger.entering( CLASS_NAME, "resetInput", ds );
+            setInput( ds, filter, leditors );
+            logger.exiting( CLASS_NAME, "resetInput", ds );
         };
         
         new Thread( run, "resetInput" ).start();
@@ -914,7 +908,7 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
     public boolean validateFilter(String filter) {
         String[] ss= filter.split("\\|");
         int i=0;
-        final List<FilterEditorPanel> leditors= new ArrayList(editors);
+        final List<FilterEditorPanel> leditors= new ArrayList<>(editors);
         
         QDataSet ds= inputDs;
         for (String s : ss) {

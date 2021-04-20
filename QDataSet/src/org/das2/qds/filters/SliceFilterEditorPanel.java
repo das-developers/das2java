@@ -342,7 +342,7 @@ public class SliceFilterEditorPanel extends AbstractFilterEditorPanel implements
         }
         String oldFilter= getFilter();
         logger.log(Level.FINE, "setInput {0}", ds.toString() );
-        this.inputDs= new WeakReference(ds);
+        this.inputDs= new WeakReference<>(ds);
         String[] depNames1= FilterEditorPanelUtil.getDimensionNames(ds);
         switch (depNames1.length) {
             case 2:
@@ -359,7 +359,7 @@ public class SliceFilterEditorPanel extends AbstractFilterEditorPanel implements
                 break;
         }
         int idx= sliceDimensionCB.getSelectedIndex();
-        sliceDimensionCB.setModel(new DefaultComboBoxModel(depNames1));
+        sliceDimensionCB.setModel(new DefaultComboBoxModel<>(depNames1));
         qube= DataSetUtil.qubeDims(ds);
         if ( qube!=null ) {
             if ( idx<qube.length ) { // transitions
