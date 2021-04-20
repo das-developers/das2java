@@ -1,0 +1,29 @@
+  <body>
+      
+      <p>QDataSets are less abstract and more flexible data model for das2.  das2's 
+          current data model was developed to deliver spectrogram time series data sets
+          where the dataset structure would change over time, and the interface is highly
+          optimized for that environment.  It's difficult to express many datasets in these
+      terms, so the simpler "quick" QDataSet was introduced.  </p>
+ 
+      <p>The QDataSet can be thought of as a fast java array that has name-value metadata
+          attached to it.  These arrays of data can have arbitrary rank, although currently
+          the interface limits rank to 0, 1, 2, 3, and 4.  (Rank N are proposed but not
+          developed.)  Each dimension's length can vary, like java arrays, and datasets 
+      where the dimensions do not vary in length are colloquially called "Qubes."
+      See <a href="http://autoplot.org/QDataSet">http://autoplot.org/QDataSet</a>
+      </p>
+ 
+      <p>QDataSets can have other QDataSets as property values, for example the property
+          QDataSet.DEPEND_0 indicates that the values are dependend parameters of the "tags"
+          QDataSet found there.  This how how we get to the same abstraction level of 
+      the legacy das2 dataset. </p>
+  
+      <p>Mutable datasets warning: Many of the QDataSet implementations are mutable, meaning
+          that values can be changed.  Generally clients can expect that QDataSets are immutable,
+          so no dataset should be modified once it is accessible to the
+      rest of the system.  This would require clients make defensive copies which would 
+      seriously degrade performance.  Note mutable datasets (e.g. MutablePropertyDataSet) have a makeImmutable() 
+      method that will throw a runtime exception when clients attempt to write to the dataset.
+      </p>
+  </body>

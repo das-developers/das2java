@@ -1,0 +1,19 @@
+<html>
+<body>
+<p>Filters are operations applied to the data before display, and these are small
+    GUIs used to control each filter step.  For example, 
+the filter "|multiply(10.)" would multiply the data by 10 before display.  There are
+more complex filters as well, such as "|fftPower(512)" which converts waveform data
+into a spectrogram.  All filters should run fairly quickly.
+</p>
+<p>FilterEditorPanels are small GUIs designed to assist the scientist in creating the 
+    filter specifications.  Like URIs, Autoplot depends on strings 
+    to allow for future functionality and to provide portability, and then GUIs are 
+    provided to construct these strings.
+</p>
+<p>filters.xml is used to create the chooser GUI.</p>
+<p>Note when new filters are added they must be added to FiltersChainPanel as well!</p>
+<p>See <a href='../../../org/das2/qds/DataSetOps.html#sprocess(java.lang.String,%20org.das2.qds.QDataSet,%20org.das2.util.monitor.ProgressMonitor)'>sprocess</a>
+    for the implementation of filters.</p>
+</body>
+</html>

@@ -1,0 +1,53 @@
+[00]000068<?xml version="1.0" encoding="UTF-8"?>
+<stream dataset_id="B_GSM"/>
+[01]000381<?xml version="1.0" encoding="UTF-8"?>
+<packet>
+    <qdataset id="dimLabels" rank="1">
+        <properties>
+            <property name="UNITS" type="enumerationUnit" value="default[1:B-GSM-X::2:B-GSM-Y::3:B-GSM-Z]"/>
+            <property name="NAME" type="string" value="dimLabels"/>
+        </properties>
+        <values encoding="ascii10" length="3"/>
+    </qdataset>
+</packet>
+[02]001271<?xml version="1.0" encoding="UTF-8"?>
+<packet>
+    <qdataset id="time" rank="1">
+        <properties>
+            <property name="UNITS" type="units" value="us2000"/>
+            <property name="MONOTONIC" type="Boolean" value="true"/>
+            <property name="NAME" type="string" value="time"/>
+        </properties>
+        <values encoding="time25" length=""/>
+    </qdataset>
+    <qdataset id="quality" rank="1">
+        <properties>
+            <property name="DEPEND_0" type="qdataset" value="time"/>
+            <property name="UNITS" type="enumerationUnit" value="quality[0:Good::1:Better::2:Best::3:Perfect::]"/>
+            <property name="NAME" type="string" value="quality"/>
+        </properties>
+        <values encoding="ascii10" length=""/>
+    </qdataset>
+    <qdataset id="B_GSM" rank="2">
+        <properties>
+            <property name="DEPEND_0" type="qdataset" value="time"/>
+            <property name="DEPEND_1" type="qdataset" value="dimLabels"/>
+            <property name="PLANE_0" type="qdataset" value="quality"/>
+            <property name="QUBE" type="Boolean" value="true"/>
+            <property name="NAME" type="string" value="B_GSM"/>
+        </properties>
+        <values encoding="ascii10" length="3"/>
+    </qdataset>
+</packet>
+:01:        1         2         3
+:02:2003-09-09T00:00:00.000Z         3    8397.7   33605.7     203.1
+:02:2003-09-09T00:00:13.860Z         1   39523.5       123         6
+:02:2003-09-09T00:00:27.720Z         0       3.3         5     246.3
+:02:2003-09-09T00:00:41.580Z         1    4227.5   49926.5   16882.3
+:02:2003-09-09T00:00:55.440Z         0      42.6    1085.7       0.7
+:02:2003-09-09T00:01:09.300Z         3   50190.2      19.6       3.4
+:02:2003-09-09T00:01:23.160Z         2      69.6       0.8     267.7
+:02:2003-09-09T00:01:37.020Z         0       9.1       0.2    1096.9
+:02:2003-09-09T00:01:50.880Z         0    4954.2      45.9       6.5
+:02:2003-09-09T00:02:04.740Z         2      12.9      4294      26.7
+:02:2003-09-09T00:02:18.600Z         1     215.6      10.6   11571.2

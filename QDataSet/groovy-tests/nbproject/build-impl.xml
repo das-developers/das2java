@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+*** GENERATED FROM project.xml - DO NOT EDIT  ***
+***         EDIT ../build.xml INSTEAD         ***
+
+For the purpose of easier reading the script
+is divided into following sections:
+
+  - initialization
+  - compilation
+  - jar
+  - execution
+  - cleanup
+
+-->
+<project name="GroovyTests-impl" default="build" basedir="..">
+    <target name="default" depends="jar" description="Build the whole project."/>
+    <!-- 
+    ======================
+    INITIALIZATION SECTION 
+    ======================
+    -->
+    <target name="-pre-init">
+        <!-- Empty placeholder for easier customization. -->
+        <!-- You can override this target in the ../build.xml file. -->
+    </target>
+    <target name="-init-private" depends="-pre-init">
+        <property file="nbproject/private/private.properties"/>
+    </target>
+    <target name="-init-user" depends="-pre-init,-init-private">
+        <property file="${user.properties.file}"/>
+        <!-- The two properties below are usually overridden -->
+        <!-- by the active platform. Just a fallback. -->
+        <property name="default.javac.source" value="1.4"/>
+        <property name="default.javac.target" value="1.4"/>
+    </target>
+    <target name="-init-project" depends="-pre-init,-init-private,-init-user">
+        <property file="nbproject/project.properties"/>
+    </target>
+    <target name="-do-init" depends="-pre-init,-init-private,-init-user,-init-project,-init-macrodef-property">
+        <available file="${manifest.file}" property="manifest.available"/>
+        <condition property="manifest.available+main.script">
+            <and>
+                <isset property="manifest.available"/>
+                <isset property="main.script"/>
+                <not>
+                    <equals arg1="${main.script}" arg2="" trim="true"/>
+                </not>
+            </and>
+        </condition>
+        <condition property="netbeans.home">
+            <and>
+                <isset property="netbeans.home"/>
+            </and>
+        </condition>
+        <property name="run.jvmargs" value=""/>
+        <property name="javac.compilerargs" value=""/>
+        <property name="work.dir" value="${basedir}"/>
+        <condition property="no.deps">
+            <and>
+                <istrue value="${no.dependencies}"/>
+            </and>
+        </condition>
+    </target>
+    <target name="-post-init">
+        <!-- Empty placeholder for easier customization. -->
+        <!-- You can override this target in the ../build.xml file. -->
+    </target>
+    <target name="-init-check" depends="-pre-init,-init-private,-init-user,-init-project,-do-init">
+        <fail unless="src.dir">Must set src.dir</fail>
+        <fail unless="build.dir">Must set build.dir</fail>
+        <fail unless="dist.dir">Must set dist.dir</fail>
+        <fail unless="build.classes.dir">Must set build.classes.dir</fail>
+        <fail unless="build.classes.excludes">Must set build.classes.excludes</fail>
+        <fail unless="dist.jar">Must set dist.jar</fail>
+    </target>
+    <target name="-init-macrodef-property">
+        <macrodef name="property" uri="http://www.netbeans.org/ns/groovy-project/1">
+            <attribute name="name"/>
+            <attribute name="value"/>
+            <sequential>
+                <property name="@{name}" value="${@{value}}"/>
+            </sequential>
+        </macrodef>
+    </target>
+    <target name="-init-macrodef-groovyc">
+        <taskdef name="groovyc" classname="org.codehaus.groovy.ant.Groovyc">
+            <classpath>
+                <fileset dir="${groovy.home}/lib">
+                    <include name="*.jar"/>
+                </fileset>
+            </classpath>
+        </taskdef>
+        <macrodef name="groovyc" uri="http://www.netbeans.org/ns/groovy-project/1">
+            <attribute name="srcdir" default="${src.dir}"/>
+            <attribute name="destdir" default="${build.classes.dir}"/>
+            <attribute name="classpath" default="${javac.classpath}"/>
+            <attribute name="debug" default="${javac.debug}"/>
+            <element name="customize" optional="true"/>
+            <sequential>
+                <groovyc srcdir="@{srcdir}" destdir="@{destdir}">
+                    <classpath>
+                        <path path="@{classpath}"/>
+                    </classpath>
+                    <customize/>
+                </groovyc>
+            </sequential>
+        </macrodef>
+    </target>
+    <target name="-init-macrodef-groovy">
+        <macrodef name="groovy" uri="http://www.netbeans.org/ns/groovy-project/1">
+            <attribute name="script" default="${main.script}"/>
+            <element name="customize" optional="true"/>
+            <sequential>
+                <java fork="true" classname="groovy.lang.GroovyShell" dir="${work.dir}">
+                    <arg line="${run.jvmargs} ${src.dir}/@{script}"/>
+                    <sysproperty key="groovy.home" value="${groovy.home}"/>
+                    <classpath>
+                        <path path="${run.classpath}"/>
+                        <fileset dir="${groovy.home}/lib">
+                            <include name="*.jar"/>
+                        </fileset>
+                    </classpath>
+                    <syspropertyset>
+                        <propertyref prefix="run-sys-prop."/>
+                        <mapper type="glob" from="run-sys-prop.*" to="*"/>
+                    </syspropertyset>
+                    <customize/>
+                </java>
+            </sequential>
+        </macrodef>
+    </target>
+    <target name="-init-presetdef-jar">
+        <presetdef name="jar" uri="http://www.netbeans.org/ns/groovy-project/1">
+            <jar jarfile="${dist.jar}" compress="${jar.compress}">
+                <fileset dir="${build.classes.dir}"/>
+            </jar>
+        </presetdef>
+    </target>
+    <target name="init" depends="-pre-init,-init-private,-init-user,-init-project,-do-init,-post-init,-init-check,-init-macrodef-property,-init-macrodef-groovyc,-init-macrodef-groovy,-init-presetdef-jar"/>
+    <!--
+    ===================
+    COMPILATION SECTION
+    ===================
+    -->
+    <target name="deps-jar" depends="init" unless="no.deps">
+        <ant target="jar" inheritall="false" antfile="${project.QDataSet}/build.xml"/>
+    </target>
+    <target name="-pre-pre-compile" depends="init,deps-jar">
+        <mkdir dir="${build.classes.dir}"/>
+    </target>
+    <target name="-pre-compile">
+        <!-- Empty placeholder for easier customization. -->
+        <!-- You can override this target in the ../build.xml file. -->
+    </target>
+    <target name="-do-compile" depends="init,deps-jar,-pre-pre-compile,-pre-compile">
+        <groovyproject:groovyc xmlns:groovyproject="http://www.netbeans.org/ns/groovy-project/1"/>
+        <copy todir="${build.classes.dir}">
+            <fileset dir="${src.dir}" excludes="${build.classes.excludes}"/>
+        </copy>
+    </target>
+    <target name="-post-compile">
+        <!-- Empty placeholder for easier customization. -->
+        <!-- You can override this target in the ../build.xml file. -->
+    </target>
+    <target name="compile" depends="init,deps-jar,-pre-pre-compile,-pre-compile,-do-compile,-post-compile" description="Compile project."/>
+    <target name="-pre-compile-single">
+        <!-- Empty placeholder for easier customization. -->
+        <!-- You can override this target in the ../build.xml file. -->
+    </target>
+    <target name="-do-compile-single" depends="init,deps-jar,-pre-pre-compile">
+        <fail unless="groovyc.includes">Must select some files in the IDE or set groovyc.includes</fail>
+        <groovyproject:groovyc xmlns:groovyproject="http://www.netbeans.org/ns/groovy-project/1">
+            <customize>
+                <patternset includes="${groovyc.includes}"/>
+            </customize>
+        </groovyproject:groovyc>
+    </target>
+    <target name="-post-compile-single">
+        <!-- Empty placeholder for easier customization. -->
+        <!-- You can override this target in the ../build.xml file. -->
+    </target>
+    <target name="compile-single" depends="init,deps-jar,-pre-pre-compile,-pre-compile-single,-do-compile-single,-post-compile-single"/>
+    <!--
+    ====================
+    JAR BUILDING SECTION
+    ====================
+    -->
+    <target name="-pre-pre-jar" depends="init">
+        <dirname property="dist.jar.dir" file="${dist.jar}"/>
+        <mkdir dir="${dist.jar.dir}"/>
+    </target>
+    <target name="-pre-jar">
+        <!-- Empty placeholder for easier customization. -->
+        <!-- You can override this target in the ../build.xml file. -->
+    </target>
+    <target name="-do-jar-without-manifest" depends="init,compile,-pre-pre-jar,-pre-jar" unless="manifest.available">
+        <groovyproject:jar xmlns:groovyproject="http://www.netbeans.org/ns/groovy-project/1"/>
+    </target>
+    <target name="-do-jar-with-manifest" depends="init,compile,-pre-pre-jar,-pre-jar" if="manifest.available" unless="manifest.available+main.script">
+        <groovyproject:jar manifest="${manifest.file}" xmlns:groovyproject="http://www.netbeans.org/ns/groovy-project/1"/>
+    </target>
+    <target name="-do-jar-with-mainclass" depends="init,compile,-pre-pre-jar,-pre-jar" if="manifest.available+main.script">
+        <groovyproject:jar manifest="${manifest.file}" xmlns:groovyproject="http://www.netbeans.org/ns/groovy-project/1">
+            <manifest>
+                <attribute name="Main-Class" value="${main.script}"/>
+            </manifest>
+        </groovyproject:jar>
+    </target>
+    <target name="-post-jar">
+        <!-- Empty placeholder for easier customization. -->
+        <!-- You can override this target in the ../build.xml file. -->
+    </target>
+    <target name="jar" depends="init,compile,-pre-jar,-do-jar-with-manifest,-do-jar-without-manifest,-do-jar-with-mainclass,-post-jar" description="Build JAR."/>
+    <!--
+    =================
+    EXECUTION SECTION
+    =================
+    -->
+    <target name="run" depends="init,deps-jar" description="Run a main script.">
+        <groovyproject:groovy xmlns:groovyproject="http://www.netbeans.org/ns/groovy-project/1">
+            <customize>
+                <arg line="${application.args}"/>
+            </customize>
+        </groovyproject:groovy>
+    </target>
+    <target name="run-single" depends="init,deps-jar">
+        <fail unless="run.script">Must select one file in the IDE or set run.script</fail>
+        <groovyproject:groovy script="${run.script}" xmlns:groovyproject="http://www.netbeans.org/ns/groovy-project/1"/>
+    </target>
+    <!--
+    ===============
+    CLEANUP SECTION
+    ===============
+    -->
+    <target name="deps-clean" depends="init" unless="no.deps">
+        <ant target="clean" inheritall="false" antfile="${project.QDataSet}/build.xml"/>
+    </target>
+    <target name="-do-clean" depends="init">
+        <delete dir="${build.dir}"/>
+        <delete dir="${dist.dir}"/>
+        <delete dir="jpywork"/>
+    </target>
+    <target name="-post-clean">
+        <!-- Empty placeholder for easier customization. -->
+        <!-- You can override this target in the ../build.xml file. -->
+    </target>
+    <target name="clean" depends="init,deps-clean,-do-clean,-post-clean" description="Clean build products."/>
+</project>

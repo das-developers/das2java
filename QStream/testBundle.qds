@@ -1,0 +1,85 @@
+[00]000067<?xml version="1.0" encoding="UTF-8"?>
+<stream dataset_id="ds_0"/>
+[02]000299<?xml version="1.0" encoding="UTF-8"?>
+<packet>
+    <qdataset id="ds_2" rank="1">
+        <properties>
+            <property name="UNITS" type="enumerationUnit" value="default[1:B-GSM-X::2:B-GSM-Y::3:B-GSM-Z]"/>
+        </properties>
+        <values values="1.0,2.0,3.0"/>
+    </qdataset>
+</packet>
+[03]000299<?xml version="1.0" encoding="UTF-8"?>
+<packet>
+    <qdataset id="ds_3" rank="1">
+        <properties>
+            <property name="UNITS" type="enumerationUnit" value="default[1:B-GSM-X::2:B-GSM-Y::3:B-GSM-Z]"/>
+        </properties>
+        <values values="1.0,2.0,3.0"/>
+    </qdataset>
+</packet>
+[04]000299<?xml version="1.0" encoding="UTF-8"?>
+<packet>
+    <qdataset id="ds_4" rank="1">
+        <properties>
+            <property name="UNITS" type="enumerationUnit" value="default[1:B-GSM-X::2:B-GSM-Y::3:B-GSM-Z]"/>
+        </properties>
+        <values values="1.0,2.0,3.0"/>
+    </qdataset>
+</packet>
+[05]001466<?xml version="1.0" encoding="UTF-8"?>
+<packet>
+    <qdataset id="ds_1" rank="2">
+        <properties index="0">
+            <property name="UNITS" type="units" value="us2000"/>
+            <property name="NAME" type="String" value="TimeMin"/>
+        </properties>
+        <properties index="1">
+            <property name="UNITS" type="units" value="us2000"/>
+            <property name="NAME" type="String" value="TimeMax"/>
+        </properties>
+        <properties index="2">
+            <property name="UNITS" type="units" value="m"/>
+            <property name="NAME" type="String" value="BGSM_X"/>
+        </properties>
+        <properties index="3">
+            <property name="UNITS" type="units" value="m"/>
+            <property name="NAME" type="String" value="BGSM_Y"/>
+        </properties>
+        <properties index="4">
+            <property name="UNITS" type="units" value="m"/>
+            <property name="NAME" type="String" value="BGSM_Z"/>
+        </properties>
+        <properties index="5">
+            <property name="UNITS" type="units" value="cm/s"/>
+            <property name="NAME" type="String" value="Speed"/>
+        </properties>
+        <properties/>
+        <values index="0" values="2.0"/>
+        <values index="1" values="2.0"/>
+        <values index="2" values="3.0"/>
+        <values index="3" values="3.0"/>
+        <values index="4" values="3.0"/>
+        <values index="5" length="0" values=""/>
+    </qdataset>
+</packet>
+[01]000332<?xml version="1.0" encoding="UTF-8"?>
+<packet>
+    <qdataset id="ds_0" rank="2">
+        <properties>
+            <property name="BUNDLE_1" type="qdataset" value="ds_1"/>
+            <property name="QUBE" type="Boolean" value="true"/>
+        </properties>
+        <values encoding="ascii18" length="6"/>
+    </qdataset>
+</packet>
+:01: +0.0000000000E00  +3.6000000000E09 +3.6180310716E-01 +9.3299348529E-01 +8.3309134897E-01 +3.2647575624E-01
+:01: +3.6000000000E09  +7.2000000000E09 +2.3552379065E-01 +3.4911535662E-01 +4.4807763269E-01 +6.3815294378E-01
+:01: +7.2000000000E09  +1.0800000000E10 +1.5826654330E-01 +7.6888806019E-01 +9.4507345773E-01 +6.5585040721E-02
+:01: +1.0800000000E10  +1.4400000000E10 +8.1023127347E-01 +4.7791537253E-01 +3.3258639697E-01 +6.9253134204E-01
+:01: +1.4400000000E10  +1.8000000000E10 +9.1622886707E-01 +3.5086223384E-01 +9.0243278314E-02 +5.5540027391E-01
+:01: +1.8000000000E10  +2.1600000000E10 +1.0277490055E-01 +9.4435833635E-01 +1.9418323998E-01 +2.5351598806E-01
+:01: +2.1600000000E10  +2.5200000000E10 +6.9606832538E-01 +4.7334359010E-02 +2.0072146476E-01 +8.5014588222E-01
+:01: +2.5200000000E10  +2.8800000000E10 +3.9801892973E-01 +2.3166816177E-01 +1.5601389876E-01 +6.6639177760E-02
+:01: +2.8800000000E10  +3.2400000000E10 +1.0268323132E-01 +5.9152597360E-01 +3.7777422594E-01 +4.9565875823E-01
+:01: +3.2400000000E10  +3.6000000000E10 +5.9691394618E-01 +9.1154136360E-01 +8.9664404691E-02 +1.8937213716E-01

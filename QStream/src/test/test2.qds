@@ -1,0 +1,43 @@
+[00]000068<?xml version="1.0" encoding="UTF-8"?>
+<stream dataset_id="B_GSM"/>
+[02]000402<?xml version="1.0" encoding="UTF-8"?>
+<packet>
+    <qdataset id="dimLabels" rank="1">
+        <properties>
+            <property name="UNITS" type="enumerationUnit" value="default[1:B-GSM-X::2:B-GSM-Y::3:B-GSM-Z]"/>
+            <property name="NAME" type="String" value="dimLabels"/>
+        </properties>
+        <values encoding="ascii10" length="3" values="1.0,2.0,3.0"/>
+    </qdataset>
+</packet>
+[01]000807<?xml version="1.0" encoding="UTF-8"?>
+<packet>
+    <qdataset id="time" rank="1">
+        <properties>
+            <property name="UNITS" type="units" value="us2000"/>
+            <property name="MONOTONIC" type="Boolean" value="true"/>
+            <property name="NAME" type="String" value="time"/>
+        </properties>
+        <values encoding="time24" length=""/>
+    </qdataset>
+    <qdataset id="B_GSM" rank="2">
+        <properties>
+            <property name="DEPEND_0" type="qdataset" value="time"/>
+            <property name="DEPEND_1" type="qdataset" value="dimLabels"/>
+            <property name="QUBE" type="Boolean" value="true"/>
+            <property name="NAME" type="String" value="B_GSM"/>
+        </properties>
+        <values encoding="ascii10" length="3"/>
+    </qdataset>
+</packet>
+:01:2003-09-09T00:00:00.000         0         1         2
+:01:2003-09-10T00:00:00.000         3         4         5
+:01:2003-09-11T00:00:00.000         6         7         8
+:01:2003-09-12T00:00:00.000         9        10        11
+:01:2003-09-13T00:00:00.000        12        13        14
+:01:2003-09-14T00:00:00.000        15        16        17
+:01:2003-09-15T00:00:00.000        18        19        20
+:01:2003-09-16T00:00:00.000        21        22        23
+:01:2003-09-17T00:00:00.000        24        25        26
+:01:2003-09-18T00:00:00.000        27        28        29
+:01:2003-09-19T00:00:00.000        30        31        32

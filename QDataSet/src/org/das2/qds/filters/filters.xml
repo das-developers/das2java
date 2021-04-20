@@ -1,0 +1,400 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- <!DOCTYPE bookmark-list SYSTEM "http://emfisis.physics.uiowa.edu/pub/jy/filters/bookmarks.dtd"> -->
+<!-- see https://tau.physics.uiowa.edu/rbsp_pub/jy/filters -->
+<bookmark-list version="1.1">
+    <bookmark-folder>
+        <title>Filters</title>
+        <bookmark-list>
+            <bookmark-folder>
+                <title>Fourier Filtering</title>
+                <bookmark-list>
+                    <bookmark>
+                        <title>FFT Power Spectrum with sliding window </title>
+                        <filter>|fftPower(512,2,'Hanning')</filter>
+                        <description>Initializes the FFTPower filter</description>
+                    </bookmark>
+                    <bookmark>
+                        <title>Hanning</title>
+                        <filter>|hanning(128)</filter>
+                        <description>Runs a Hanning window before taking the fft</description>
+                    </bookmark>
+                    <bookmark>
+                        <title>FFT</title>
+                        <filter>|fft()</filter>
+                        <description>Returns real and imaginary components of Fourier transform</description>
+                    </bookmark>
+                    <bookmark>
+                        <title>FFT and magnitude</title>
+                        <filter>|fft()|magnitude()</filter>
+                        <description>Returns real and imaginary components of Fourier transform, then take magnitude</description>
+                    </bookmark>                    
+                </bookmark-list>
+            </bookmark-folder>
+            <bookmark-folder>
+                <title>Data Set Operations</title>
+                <bookmark-list>
+                    <bookmark>
+                        <title>Collapse Zeroth Dimension</title>
+                        <filter>|collapse0()</filter>
+                        <description>Average over the zeroth dimension to reduce the dimensionality</description>
+                    </bookmark>
+                    <bookmark>
+                        <title>Collapse First Dimension</title>
+                        <filter>|collapse1()</filter>
+                        <description>Average over the first dimension to reduce the dimensionality</description>
+                    </bookmark>
+                    <bookmark>
+                        <title>Collapse Second Dimension</title>
+                        <filter>|collapse2()</filter>
+                        <description>Average over the second dimension to reduce the dimensionality</description>
+                    </bookmark>                    
+                    <bookmark>
+                        <title>Collapse a Range of Indeces of Second Dimension</title>
+                        <filter>|trim(2,0,4)|collapse2()</filter>
+                        <description>Average over a subset of second dimension to reduce the dimensionality</description>
+                    </bookmark>        
+                    <bookmark>
+                        <title>Apply Index</title>
+                        <filter>|applyIndex1(0)</filter>
+                        <description>Extract a subset of the data, along an index.</description>
+                    </bookmark>
+                    <bookmark>
+                        <title>Contour</title>
+                        <filter>|contour(1,5)</filter>
+                        <description>Initializes Contour Filter</description>
+                    </bookmark>
+                    <bookmark>
+                        <title>dbAbovebackgroundDim1</title>
+                        <filter>|dbAboveBackgroundDim1(10)</filter>
+                        <description>Shows data as decibels above a specified percentile level</description>
+                    </bookmark>
+                    <bookmark>
+                        <title>Detrend</title>
+                        <filter>|detrend(10)</filter>
+                        <description>Initializes Detrend Filter</description>
+                    </bookmark>
+                    <bookmark>
+                        <title>Normalize</title>
+                        <filter>|normalize()</filter>
+                        <description>Normalize the data so that the maximum value is 1.</description>
+                    </bookmark>
+                    <bookmark>
+                        <title>Grid</title>
+                        <filter>|grid()</filter>
+                        <description>Flattened n,3 data is formed into table of x[i],y[j]->z[i,j]. </description>
+                    </bookmark>
+                    <bookmark>
+                        <title>Flatten</title>
+                        <filter>|flatten()</filter>
+                        <description>Flattens a rank 2 table. The result is a n,3 bundle dataset of [x,y,z]. </description>
+                    </bookmark>
+                    <bookmark>
+                        <title>Flatten Waveform</title>
+                        <filter>|flattenWaveform()</filter>
+                        <description>Flattens a rank 2 waveform into a single-index dataset with DEPEND_0. </description>
+                    </bookmark>            
+                    <bookmark>
+                        <title>Histogram</title>
+                        <filter>|histogram()</filter>
+                        <description>Perform an "auto" histogram of the data that automatically sets bins</description>
+                    </bookmark>
+                    <bookmark>
+                        <title>Histogram2d</title>
+                        <filter>|histogram2d()</filter>
+                        <description>Perform a 2-D histogram of X and Y to create a rank 2 table.</description>
+                    </bookmark>
+                    <bookmark>
+                        <title>Bin Average 2D</title>
+                        <filter>|binAverage2d()</filter>
+                        <description>Perform a 2-D bin average X, Y, Z scatter to create a rank 2 table.</description>
+                    </bookmark>
+                    <bookmark>
+                        <title>Reduce In Zeroth Dimension</title>
+                        <filter>|reducex('1 hr')</filter>
+                        <description>Reduces data to selected time/data intervals</description>
+                    </bookmark> 
+                    <bookmark>
+                        <title>Decimate</title>
+                        <filter>|decimate(4)</filter>
+                        <description>Keep every 4th measurement.</description>
+                    </bookmark> 
+                    <bookmark>
+                        <title>Slice0</title>
+                        <filter>|slice0(0)</filter>
+                        <description>Slice the zeroth dimension at selected index</description>
+                    </bookmark> 
+                    <bookmark>
+                        <title>Slice1</title>
+                        <filter>|slice1(0)</filter>
+                        <description>Slice the first dimension at selected index</description>
+                    </bookmark> 
+                    <bookmark>
+                        <title>Slices</title>
+                        <filter>|slices(':')</filter>
+                        <description>Slice several dimensions at once</description>
+                    </bookmark> 
+                    <bookmark>
+                        <title>Magnitude</title>
+                        <filter>|magnitude()</filter>
+                        <description>calculate the magnitude of the cartesian vectors.</description>
+                    </bookmark>
+                    <bookmark>
+                        <title>Trim</title>
+                        <filter>|trim(0,10)</filter>
+                        <description>Trim the data to a smaller range</description>
+                    </bookmark> 
+                    <bookmark>
+                        <title>Smooth</title>
+                        <filter>|smooth(5)</filter>
+                        <description>Smooth Filter</description>
+                    </bookmark>
+                    <bookmark>
+                        <title>Smooth Over Dimension</title>
+                        <filter>|smooth1(5)</filter>
+                        <description>Smooth Filter over the first dimension</description>
+                    </bookmark>
+                    <bookmark>
+                        <title>Total Over a Dimension</title>
+                        <filter>|total1()</filter>
+                        <description>Totals over a dimension to reduce the dimensionality.</description>
+                    </bookmark>
+                    <bookmark>
+                        <title>Transpose</title>
+                        <filter>|transpose()</filter>
+                        <description>Transpose the rank 2 dataset.</description>
+                    </bookmark>
+                    <bookmark>
+                        <title>Polar to Cartesian</title>
+                        <filter>|polarToCartesian()</filter>
+                        <description>Rank 2 bundle of [ radius, angle, Z ] is converted to cartesian coordinates.</description>
+                    </bookmark>
+                    <bookmark>
+                        <title>Unbundle</title>
+                        <filter>|unbundle('Bx')</filter>
+                        <description>Unbundles a component</description>
+                    </bookmark>
+                    <bookmark>
+                        <title>Rebundle</title>
+                        <filter>|rebundle(Bx,By)</filter>
+                        <description>Unbundles and rebundles components</description>
+                    </bookmark>
+                    <bookmark>
+                        <title>Valid</title>
+                        <filter>|valid()</filter>
+                        <description>Replaces data with 1 where valid and 0 where invalid</description>
+                    </bookmark>          
+                    <bookmark>
+                        <title>Extent</title>
+                        <filter>|extent()</filter>
+                        <description>returns a range (min,max) for the data</description>
+                    </bookmark>          
+                    <bookmark>
+                        <title>Get Property</title>
+                        <filter>|getProperty(DEPEND_0)</filter>
+                        <description>Replace the dataset with one of its properties, for example DEPEND_0 to get its timetags.</description>
+                    </bookmark>          
+                    <bookmark>
+                        <title>Put Property</title>
+                        <filter>|putProperty(VALID_MIN,-1e38)</filter>
+                        <description>Insert a property value into a dataset's properties.</description>
+                    </bookmark>          
+                    <bookmark>
+                        <title>Set Valid Range</title>
+                        <filter>|setValidRange('-1e38 to 1e38')</filter>
+                        <description>Set the limits of the data.</description>
+                    </bookmark>
+                    <bookmark>
+                        <title>Set Fill Value</title>
+                        <filter>|setFillValue(-1e38)</filter>
+                        <description>Set the numerical value marking invalid data.</description>
+                    </bookmark>
+                    <bookmark>
+                        <title>Monotonic Subset</title>
+                        <filter>|monotonicSubset()</filter>
+                        <description>Ensure the data is monotonically increasing by removing records.</description>
+                    </bookmark>                    
+                    <bookmark>
+                        <title>Sort In Time</title>
+                        <filter>|sortInTime()</filter>
+                        <description>Sort data by the time (or tags) found in DEPEND_0.</description>
+                    </bookmark>
+                </bookmark-list>
+            </bookmark-folder>
+            <bookmark-folder>
+                <title>Mathematics</title> 
+                <bookmark-list>
+                    <bookmark-folder>
+                        <title>Arithmetic</title>
+                        <bookmark-list>
+                            <bookmark>
+                                <title>Absolute Value</title>
+                                <filter>|abs()</filter>
+                                <description>Takes absolute value of dataset</description>
+                            </bookmark>
+                            <bookmark>
+                                <title>Accum</title>
+                                <filter>|accum()</filter>
+                                <description>Returns the running sum of a rank 1 dataSet</description>
+                            </bookmark>
+                            <bookmark>
+                                <title>Add</title>
+                                <filter>|add(0.)</filter>
+                                <description>Add a scalar</description>
+                            </bookmark>
+                            <bookmark>
+                                <title>Subtract</title>
+                                <filter>|subtract(0.)</filter>
+                                <description>Subtract a scalar</description>
+                            </bookmark>
+                            <bookmark>
+                                <title>Divide</title>
+                                <filter>|divide(2.)</filter>
+                                <description>Divide by a scalar</description>
+                            </bookmark>
+                            <bookmark>
+                                <title>Multiply</title>
+                                <filter>|multiply(2.)</filter>
+                                <description>Multiply by a scalar</description>
+                            </bookmark>
+                            <bookmark>
+                                <title>Negate</title>
+                                <filter>|negate()</filter>
+                                <description>Flips the sign of the dataSet</description>
+                            </bookmark>
+                            <bookmark>
+                                <title>Diff</title>
+                                <filter>|diff()</filter>
+                                <description> Returns the finite differences between adjacent elements in a rank 1 dataSet</description>
+                            </bookmark>
+                        </bookmark-list>
+                    </bookmark-folder>
+                    <bookmark-folder>
+                        <title>Log and Exp</title>
+                        <bookmark-list>
+                            <bookmark>
+                                <title>Exponent</title>
+                                <filter>|exp10()</filter>
+                                <description>Takes the dataset, ds, to the given exponent [exp10() = pow(10,ds)]</description>
+                            </bookmark>
+                            <bookmark>
+                                <title>Sqrt</title>
+                                <filter>|sqrt()</filter>
+                                <description>Takes the square root</description>
+                            </bookmark>
+                            <bookmark>
+                                <title>Pow</title>
+                                <filter>|pow(2)</filter>
+                                <description>Takes the power(ds,n)</description>
+                            </bookmark>
+                            <bookmark>
+                                <title>Log Base 10</title>
+                                <filter>|log10()</filter>
+                                <description>Takes the base-10 log of the data</description>
+                            </bookmark>
+                            <bookmark>
+                                <title>Log Histogram</title>
+                                <filter>|logHistogram()</filter>
+                                <description>Perform the auto histogram in the log space</description>
+                            </bookmark>
+                        </bookmark-list>
+                    </bookmark-folder>
+                    <bookmark-folder>
+                        <title>Statistics</title>
+                        <bookmark-list>
+                            <bookmark>
+                                <title>Detrend</title>
+                                <filter>|detrend(5)</filter>
+                                <description>Initializes Detrend Filter</description>
+                            </bookmark>
+                            <bookmark>
+                                <title>Median Boxcar</title>
+                                <filter>|medianFilter(5)</filter>
+                                <description>Finds and returns the boxcar median of the dataset</description>
+                            </bookmark>
+                            <bookmark>
+                                <title>Smooth</title>
+                                <filter>|smooth(5)</filter>
+                                <description>Finds and returns the boxcar average of a rank 1 dataSet</description>
+                            </bookmark>
+                        </bookmark-list>
+                    </bookmark-folder>        
+                    <bookmark-folder>
+                        <title>Trigonometry</title>
+                        <bookmark-list>
+                            <bookmark>
+                                <title>Cosine</title>
+                                <filter>|cos()</filter>
+                                <description>Finds the cosine of the dataset</description>
+                            </bookmark>
+                            <bookmark>
+                                <title>Sine</title>
+                                <filter>|sin()</filter>
+                                <description>Finds the sine of the dataset</description>
+                            </bookmark>
+                            <bookmark>
+                                <title>toDegrees</title>
+                                <filter>|toDegrees()</filter>
+                                <description>Converts from Radians to Degrees</description>
+                            </bookmark>
+                            <bookmark>
+                                <title>toRadians</title>
+                                <filter>|toRadians()</filter>
+                                <description>Converts from Degrees to Radians</description>
+                            </bookmark>
+                        </bookmark-list>
+                    </bookmark-folder> 
+                </bookmark-list>                
+            </bookmark-folder>    
+            <bookmark-folder>
+                <title>Signal Processing</title>
+                <bookmark-list>
+                    <bookmark>
+                        <title>Butterworth</title>
+                        <filter>|butterworth(2,500,550,True)</filter>
+                        <description>Initializes the Butterworth filter</description>
+                    </bookmark>                    
+                    <bookmark>
+                        <title>Clean Data</title>
+                        <filter>|cleanData(11,3.0)</filter>
+                        <description>Remove outliers from the data, more than N sigma from the mean.</description>
+                    </bookmark>                    
+                </bookmark-list>
+            </bookmark-folder>
+            <bookmark-folder>
+                <title>Units/Labeling</title>
+                <bookmark-list>
+                    <bookmark>
+                        <title>setUnits</title>
+                        <filter>|setUnits('nT')</filter>
+                        <description>Resets current units to new units</description>
+                    </bookmark>
+                    <bookmark>
+                        <title>setDepend0Units</title>
+                        <filter>|setDepend0Units('nT')</filter>
+                        <description>Resets current DEPEND_0 units to new units</description>
+                    </bookmark>   
+                    <bookmark>
+                        <title>setDepend0Cadence</title>
+                        <filter>|setDepend0Cadence('50s')</filter>
+                        <description>Resets current DEPEND_0 cadence to new cadence (scalar and units)</description>
+                    </bookmark>
+                    <bookmark>
+                        <title>setDepend1Cadence</title>
+                        <filter>|setDepend1Cadence('50Hz')</filter>
+                        <description>Resets current DEPEND_1 cadence to new cadence (scalar and units)</description>
+                    </bookmark>
+                    <bookmark>
+                        <title>expandWaveform</title>
+                        <filter>|expandWaveform()</filter>
+                        <description>assign fake timetags for waveform data points so that gaps are filled.</description>
+                    </bookmark>                    
+                    <bookmark>
+                        <title>expandToFillGaps</title>
+                        <filter>|expandToFillGaps(0.9)</filter>
+                        <description>assign fake timetags to spectral data so that gaps are filled.</description>
+                    </bookmark>                    
+                </bookmark-list>
+            </bookmark-folder>
+        </bookmark-list>
+    </bookmark-folder>
+</bookmark-list>
