@@ -744,6 +744,16 @@ public class TimeParser {
     }
     
     /**
+     * make the constant-expression Regex safe, but remove \Q\E.
+     * @param s
+     * @return 
+     */
+    private static String quotePattern( String s ) {
+        if ( s.length()==0 ) return s;
+        return Pattern.quote(s);
+    }
+    
+    /**
      * create a new TimeParser.  
      * @param formatString
      * @param fieldHandlers a map of code to special handlers
@@ -805,7 +815,7 @@ public class TimeParser {
         ndigits = ss.length;
 
         StringBuilder regex1 = new StringBuilder(100);
-        regex1.append(ss[0].replaceAll("\\+","\\\\+"));//TODO: I thought we did this already.
+        regex1.append(quotePattern(ss[0]));//TODO: I thought we did this already.
 
         lengths = new int[ndigits];
         for (int i = 0; i < lengths.length; i++) {
@@ -1141,7 +1151,7 @@ public class TimeParser {
             } else {
                 regex1.append("(").append(dots.substring(0, lengths[i])).append(")");
             }
-            regex1.append(delim[i].replaceAll("\\+","\\\\+"));
+            regex1.append( quotePattern(delim[i]) );
 
         }
 
