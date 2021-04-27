@@ -1078,6 +1078,8 @@ public final class Ops {
      * @param dim zero-based index number.
      * @param mon progress monitor 
      * @return rank N-1 dataset.
+     * @see #reduceMin(org.das2.qds.QDataSet, int, org.das2.util.monitor.ProgressMonitor) 
+     * @see #reduceMean(org.das2.qds.QDataSet, int, org.das2.util.monitor.ProgressMonitor) 
      * @see #extent(org.das2.qds.QDataSet) 
      * @see #extent(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      */
