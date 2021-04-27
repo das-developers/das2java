@@ -1078,6 +1078,8 @@ public final class Ops {
      * @param dim zero-based index number.
      * @param mon progress monitor 
      * @return rank N-1 dataset.
+     * @see #extent(org.das2.qds.QDataSet) 
+     * @see #extent(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      */
     public static QDataSet reduceMax(QDataSet ds, int dim, ProgressMonitor mon ) {
         try {
@@ -9050,6 +9052,7 @@ public final class Ops {
      * TODO: this could use MONOTONIC, but it doesn't.  DELTA_PLUS, DELTA_MINUS make that more difficult.
      * @see DataSetUtil#rangeOfMonotonic(org.das2.qds.QDataSet) 
      * @see AutoRangeUtil#simpleRange in Autoplot.
+     * @see Ops#reduceMax(org.das2.qds.QDataSet, int, org.das2.util.monitor.ProgressMonitor) 
      * @param ds the dataset to measure the extent
      * @return two element, rank 1 "bins" dataset.
      */
@@ -9196,6 +9199,7 @@ public final class Ops {
      * @param ds the dataset to measure the extent rank 1 or rank 2 bins
      * @param wds a weights dataset, containing zero where the data is not valid, positive non-zero otherwise.  If null, then all finite data is treated as valid.
      * @param range if non-null, return the union of this range and the extent.  This must not contain fill!
+     * @see #reduceMax(org.das2.qds.QDataSet, int, org.das2.util.monitor.ProgressMonitor) 
      * @return two element, rank 1 "bins" dataset.
      */
     public static QDataSet extent( QDataSet ds, QDataSet wds, QDataSet range ) {
