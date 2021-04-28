@@ -12,7 +12,11 @@ import org.das2.qds.QDataSet;
 public final class NybbleDataSet extends BufferDataSet {
 
     public NybbleDataSet(int rank, int reclenbits, int recoffsbits, int len0, int len1, int len2, int len3, ByteBuffer back ) {
-        super( rank, reclenbits, recoffsbits, BufferDataSet.BITS, len0, len1, len2, len3, BufferDataSet.NYBBLE, back );        
+        super( rank, reclenbits, recoffsbits, BufferDataSet.BITS, len0, len1, len2, len3, BufferDataSet.NYBBLE, back );
+        int recLenNeededBits= (int)Math.ceil( 4 * ( len1 * len2 * len3 ) );
+        if ( reclenbits < recLenNeededBits ) {
+            throw new IllegalArgumentException("reclenbits too small to hold each record");
+        }
         reclen= reclenbits/8;
         this.makeImmutable();
     }
@@ -48,11 +52,12 @@ public final class NybbleDataSet extends BufferDataSet {
 
     @Override
     public double value(int i0, int i1) {
+        byte vv= back.get(offset(i0,i1));
         try {
-            if ( i0 % 2 == 0 ) {
-                return back.get(offset(i0,i1)) & 0x0F;
+            if ( i1 % 2 == 0 ) {
+                return vv & 0x0F;
             } else {
-                return back.get(offset(i0,i1)) >> 4;
+                return ( vv & 0xF0 ) >> 4;
             }
         } catch ( IndexOutOfBoundsException ex ) {
             throw ex;
@@ -87,17 +92,37 @@ public final class NybbleDataSet extends BufferDataSet {
     
     @Override
     public void putValue(double d) {
-        throw new UnsupportedOperationException("Not supported yet."); 
+        int vv= back.get( offset() ) & 0x0F;
+        vv= vv & ( ((int)d) & 0xF );
+        back.put( offset(), (byte)vv );
     }
 
     @Override
     public void putValue(int i0, double d) {
-        throw new UnsupportedOperationException("Not supported yet."); 
+        int off= offset(i0);
+        if ( i0 % 2 == 0 ) {
+            int vv= back.get( off );
+            vv= ( vv & 0xF0 ) | ( ((int)d) & 0xF );
+            back.put( off, (byte)vv );
+        } else {
+            int vv= back.get( off );
+            vv= ( vv & 0x0F ) | ( ((int)d)<<4 & 0xF0 );
+            back.put( off, (byte)vv );
+        }
     }
 
     @Override
     public void putValue(int i0, int i1, double d) {
-        throw new UnsupportedOperationException("Not supported yet."); 
+        int off= offset(i0,i1);
+        if ( i1 % 2 == 0 ) {
+            int vv= back.get( off );
+            vv= ( vv & 0xF0 ) | ( ((int)d) & 0xF );
+            back.put( off, (byte)vv );
+        } else {
+            int vv= back.get( off );
+            vv= ( vv & 0x0F ) | ( ((int)d)<<4 & 0xF0 );
+            back.put( off, (byte)vv );
+        }
     }
 
     @Override
