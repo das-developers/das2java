@@ -750,7 +750,14 @@ public class TimeParser {
      */
     private static String quotePattern( String s ) {
         if ( s.length()==0 ) return s;
-        return Pattern.quote(s);
+        Pattern safe= Pattern.compile("^[\\/a-zA-Z0-9.,_]+");
+        Matcher m= safe.matcher(s);
+        if ( m.find() ) {
+            int i= m.end();
+            return s.substring(0,i)+quotePattern(s.substring(i));
+        } else {
+            return Pattern.quote(s);
+        }
     }
     
     /**
