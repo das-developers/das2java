@@ -28,9 +28,11 @@ import org.das2.datum.format.DatumFormatter;
 
 /**
  * <p>A Datum is a number in the context of a Unit, for example "15 microseconds."
- *   A Datum object has methods for formatting itself as a String, representing 
- *  itself as a double in the context of another Unit, and mathematical
- * operators that allow simple calculations to be made at the physical quantities.
+ *   A Datum object has methods for<ul>
+ * <li>formatting itself as a String, 
+ * <li>representing itself as a double in the context of another Unit, 
+ * <li>and mathematical operators that allow simple calculations to be made at the physical quantities.
+ * </ul>
  * Also a Datum's precision can be limited to improve formatting.</p>
  * <p>
  * @author  jbf
