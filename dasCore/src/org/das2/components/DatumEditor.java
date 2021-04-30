@@ -41,8 +41,9 @@ import javax.swing.event.EventListenerList;
 import javax.swing.table.TableCellEditor;
 
 /**
- *
+ * Editor for a Datum.
  * @author  Edward West
+ * @see org.das2.datum.Datum
  */
 public class DatumEditor implements PropertyEditor, TableCellEditor {
 
