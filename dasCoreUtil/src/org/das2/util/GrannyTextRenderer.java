@@ -60,12 +60,13 @@ import java.util.logging.Logger;
  * !K  reduce the font size. (Not in IDL's set.)
  * !!  the exclamation point (!)
  * !(ext;args) where ext can be:
- *   !(color;saddleBrown)
- *   !(painter;codeId;codeArg1)
- *   </pre>
+ * !(color;saddleBrown)  switch to color.
+ * !(painter;codeId;codeArg1)  Plug-in Java code for painting regions.
+ * </pre>
  * For Greek and math symbols, Unicode characters should be
  * used like so: &amp;#9742; (&#9742 phone symbol), or symbols like <tt>&amp;Omega;</tt> and <tt>&amp;omega;</tt>
  * 
+ * @see https://github.com/das-developers/das2java/wiki/Granny-Text-Strings
  * @see java.awt.font.TextLayout, which may do some of the same things.
  * @see org.das2.graph.GrannyTextLabeller
  * @author  Edward West
@@ -655,7 +656,10 @@ public class GrannyTextRenderer {
         int begin;
         int end = 0;
         str= str.replaceAll("\\<br\\>","!c");
-        
+        str= str.replaceAll("\\<sup\\>","!u");
+        str= str.replaceAll("\\</sup\\>","!n");
+        str= str.replaceAll("\\<sub\\>","!d");
+        str= str.replaceAll("\\</sub\\>","!n");
         while(end < str.length()) {
             begin = end;
             if (str.charAt(begin) == '!') {
