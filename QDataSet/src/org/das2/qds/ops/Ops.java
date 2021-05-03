@@ -92,6 +92,8 @@ import org.das2.qds.util.LSpec;
 import org.das2.qds.util.LinFit;
 import org.das2.qds.math.Contour;
 import org.das2.util.ColorUtil;
+import org.das2.util.JsonUtil;
+import org.json.JSONArray;
 
 /**
  * A fairly complete set of operations for QDataSets, including binary operations
@@ -6670,14 +6672,9 @@ public final class Ops {
                 case DataSetUtil.PROPERTY_TYPE_MAP:
                     if ( !( value instanceof Map ) ) {
                         try {
-                            String json= value.toString();
+                            String json= value.toString(); // Python Dictionary
                             JSONObject obj= new JSONObject(json);
-                            Map<String,Object> result= new HashMap<>();
-                            Iterator i= obj.keys();
-                            while ( i.hasNext() ) {
-                                String k= String.valueOf( i.next() );
-                                result.put( k, obj.get(k) );
-                            }
+                            Map<String,Object> result= JsonUtil.jsonToMap(obj);
                             mds.putProperty( name, result );
                         } catch (JSONException ex) {
                             logger.log(Level.SEVERE, "type is not supported for PROPERTY TYPE MAP: "+value, ex);
