@@ -60,6 +60,7 @@ import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
+import java.beans.IndexedPropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.*;
 import java.io.IOException;
@@ -2160,9 +2161,17 @@ public class DasPlot extends DasCanvasComponent {
         }
     }
 
+    private void firePropertyChange( PropertyChangeEvent pce ) {
+        for ( PropertyChangeListener pcl: this.getPropertyChangeListeners() ) {
+            pcl.propertyChange(pce);
+        }
+    }
+    
     /**
      * add the renderer to the stack of renderers.  It will be the 
      * last element drawn.
+     * This fires off an IndexPropertyChangeEvent with the index
+     * being that of the inserted element.
      * @param rend the renderer
      */
     public void addRenderer(Renderer rend) {
@@ -2173,12 +2182,14 @@ public class DasPlot extends DasCanvasComponent {
         DasPlot parent= rend.getParent();
         if ( parent != null) {
             parent.removeRenderer(rend);
-        }
+        } 
+        Renderer[] oldValue= renderers.toArray( new Renderer[renderers.size()] );
         renderers.add(rend);
         rend.setParent( this );
         if (getCanvas() != null) {
             rend.installRenderer();
         }
+        firePropertyChange(PROP_RENDERERS, oldValue, renderers.toArray( new Renderer[renderers.size()] ) );        
         rend.update();
         invalidateCacheImage();
     }
@@ -2186,6 +2197,8 @@ public class DasPlot extends DasCanvasComponent {
     /**
      * add the renderer to the stack of renderers at the given index.
      * Index 0 is drawn first.  This will insert the renderer at the position.
+     * This fires off an IndexPropertyChangeEvent with the index
+     * being that of the inserted element.
      * @param index the index, 0 is drawn first.
      * @param rend the renderer
      */
@@ -2198,11 +2211,14 @@ public class DasPlot extends DasCanvasComponent {
         if ( parent != null) {
             parent.removeRenderer(rend);
         }
+        Renderer[] oldValue= renderers.toArray( new Renderer[renderers.size()] );
+        
         renderers.add(index,rend);
         rend.setParent(this);
         if (getCanvas() != null) {
             rend.installRenderer();
         }
+        firePropertyChange( PROP_RENDERERS, oldValue, renderers.toArray( new Renderer[renderers.size()] ) );
         rend.update();
         invalidateCacheImage();
     }
@@ -2210,6 +2226,8 @@ public class DasPlot extends DasCanvasComponent {
     /**
      * remove the renderer from the stack of renderers.  A warning 
      * is logged if the renderer is not present.
+     * This fires off an IndexPropertyChangeEvent with the index
+     * being that of the removed element.
      * @param rend the renderer
      */
     public void removeRenderer(Renderer rend) {
@@ -2222,11 +2240,15 @@ public class DasPlot extends DasCanvasComponent {
             rend.uninstallRenderer();
         }
         if ( focusRenderer==rend ) setFocusRenderer(null);
+                
+        Renderer[] oldValue= renderers.toArray( new Renderer[renderers.size()] );
         renderers.remove(rend);
+        firePropertyChange( PROP_RENDERERS, oldValue, renderers.toArray( new Renderer[renderers.size()] ) );
         rend.setParent( null );
         invalidateCacheImage();
 
     }
+    public static final String PROP_RENDERERS = "renderers";
 
     /**
      * since the plotVisible property can be false and the plot having 
