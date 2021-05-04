@@ -60,7 +60,6 @@ import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
-import java.beans.IndexedPropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.*;
 import java.io.IOException;
@@ -2160,18 +2159,12 @@ public class DasPlot extends DasCanvasComponent {
             r1.uninstallRenderer();
         }
     }
-
-    private void firePropertyChange( PropertyChangeEvent pce ) {
-        for ( PropertyChangeListener pcl: this.getPropertyChangeListeners() ) {
-            pcl.propertyChange(pce);
-        }
-    }
     
     /**
      * add the renderer to the stack of renderers.  It will be the 
      * last element drawn.
-     * This fires off an IndexPropertyChangeEvent with the index
-     * being that of the inserted element.
+     * This fires off an PropertyChangeEvent with the old and new arrays of renderers.
+     *
      * @param rend the renderer
      */
     public void addRenderer(Renderer rend) {
@@ -2197,8 +2190,7 @@ public class DasPlot extends DasCanvasComponent {
     /**
      * add the renderer to the stack of renderers at the given index.
      * Index 0 is drawn first.  This will insert the renderer at the position.
-     * This fires off an IndexPropertyChangeEvent with the index
-     * being that of the inserted element.
+     * This fires off an PropertyChangeEvent with the old and new arrays of renderers.
      * @param index the index, 0 is drawn first.
      * @param rend the renderer
      */
@@ -2226,8 +2218,7 @@ public class DasPlot extends DasCanvasComponent {
     /**
      * remove the renderer from the stack of renderers.  A warning 
      * is logged if the renderer is not present.
-     * This fires off an IndexPropertyChangeEvent with the index
-     * being that of the removed element.
+     * This fires off an PropertyChangeEvent with the old and new arrays of renderers.
      * @param rend the renderer
      */
     public void removeRenderer(Renderer rend) {
