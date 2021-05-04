@@ -2370,7 +2370,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             }
         }
 
-        boolean drawBounds= false;
+        boolean drawBounds= true;
         if ( drawBounds ) {
             Rectangle b= getAxisBounds();
             g.setColor( Color.GREEN );
@@ -2439,8 +2439,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             boolean topTickLabels = ((orientation == TOP && tickLabelsVisible) && trLabelRect != null && trLabelRect.intersects(clip));
             boolean topLabel = ((orientation == TOP && !axisLabel.equals("")) && trTitleRect != null && trTitleRect.intersects(clip));
 
+            int axisOffsetPx= getAxisOffsetPixels();
+            
             int topPosition = getRow().getDMinimum();
-            int bottomPosition = getRow().getDMaximum();
+            int bottomPosition = getRow().getDMaximum() + axisOffsetPx;
             int DMax = getColumn().getDMaximum();
             int DMin = getColumn().getDMinimum();
 
@@ -2634,6 +2636,27 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     }
 
     /**
+     * return the offset of the axis from the plot, as specified by the axisOffset property.
+     * @return the offset of the axis from the plot
+     */
+    private int getAxisOffsetPixels() {
+        int axisOffsetPx=0;
+                    
+        try {
+            double[] pos = DasDevicePosition.parseLayoutStr(getAxisOffset());
+            if ( pos[0]==0 ) {
+                axisOffsetPx = (int) ( Math.round( pos[1]*getEmSize() + pos[2] ) ); // make independent from row layout for initialization.
+            } else {
+                axisOffsetPx = (int) (Math.round( pos[0]*getRow().getHeight() + pos[1]*getEmSize() + pos[2] ));
+            }
+        } catch ( ParseException ex ) {
+            logger.warning(ex.getMessage());
+            return 0;
+        }
+        return axisOffsetPx;
+    }
+    
+    /**
      * Paint the vertical axis
      * @param g the graphics context
      */
@@ -2657,7 +2680,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             int rightPosition = getColumn().getDMaximum();
             int DMax = getRow().getDMaximum();
             int DMin = getRow().getDMinimum();
-
+            
             TickVDescriptor ticks = getTickV();
 
             if ( DMax-DMin<2 ) {
@@ -2669,7 +2692,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 return;
             }
             
+            int axisOffsetPx= getAxisOffsetPixels();
             if (leftLine) {
+                leftPosition= leftPosition - axisOffsetPx;
                 logger.log(Level.FINER, "draw V leftline at {0}", leftPosition);
                 g.drawLine(leftPosition, DMin, leftPosition, DMax);
             }
@@ -2789,10 +2814,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     /**
      * allows multiple stacked axes to be manually lined up
      * (if you somehow magically know the offset)
+     * @param leftXOverride
      * @deprecated use setLabelOffset instead.
+     * @see #setLabelOffset(java.lang.String) 
      */
-    public void setLeftXLabelOverride(int leftXOverride)
-    {
+    public void setLeftXLabelOverride(int leftXOverride) {
     	this.leftXOverride = leftXOverride;
     }
     
@@ -2813,6 +2839,25 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      */
     public String getLabelOffset( ) {
         return this.labelOffset;
+    }
+
+    private String axisOffset = "";
+
+    public static final String PROP_AXISOFFSET = "axisOffset";
+
+    public String getAxisOffset() {
+        return axisOffset;
+    }
+
+    /**
+     * set the offset of the axis from the plot.
+     * @param axisOffset 
+     */
+    public void setAxisOffset(String axisOffset) {
+        String oldAxisOffset = this.axisOffset;
+        this.axisOffset = axisOffset;
+        update();
+        firePropertyChange(PROP_AXISOFFSET, oldAxisOffset, axisOffset);
     }
 
     /** 
@@ -3371,6 +3416,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             fontDecent= 5-fontDecent;
             logger.finest("negative font descent");
         }
+
+        int axisOffsetPx= getAxisOffsetPixels();
         
         DatumVector ticks = ltickV.tickV;
         for (int i = 0; i < labels.length; i++) {
@@ -3388,8 +3435,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 int zeroOrPosTickLen= Math.max(0,tickLen);
                 if (isHorizontal()) {
                     if (getOrientation() == BOTTOM) {
-                        rmin.translate((int) (dmin - flw / 2), getRow().bottom() + space + zeroOrPosTickLen + labelFont.getSize());
-                        rmax.translate((int) (dmax - flw / 2), getRow().bottom() + space + zeroOrPosTickLen + labelFont.getSize());
+                        rmin.translate((int) (dmin - flw / 2), getRow().bottom() + space + zeroOrPosTickLen + labelFont.getSize() + axisOffsetPx );
+                        rmax.translate((int) (dmax - flw / 2), getRow().bottom() + space + zeroOrPosTickLen + labelFont.getSize() + axisOffsetPx );
                     } else {
                         rmin.translate((int) (dmin - flw / 2), getRow().top() - space - zeroOrPosTickLen - (int) ( rmin.getHeight()+rmin.y ) ) ;
                         rmax.translate((int) (dmax - flw / 2), getRow().top() - space - zeroOrPosTickLen - (int) ( rmax.getHeight()+rmax.y ) );
@@ -3400,9 +3447,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 } else {
                     double delta= gtr.getAscent() - gtr.getHeight() / 2;
                     if (getOrientation() == LEFT) {
-                        rmin.translate(-(int) rmin.getWidth() - space - zeroOrPosTickLen + getColumn().left(),
+                        rmin.translate(-(int) rmin.getWidth() - space - zeroOrPosTickLen + getColumn().left() - axisOffsetPx,
                                 (int) dmin - (int) delta ); // note that gtr.getBounds() already contains the ascent.
-                        rmax.translate(-(int) rmax.getWidth() - space - zeroOrPosTickLen + getColumn().left(),
+                        rmax.translate(-(int) rmax.getWidth() - space - zeroOrPosTickLen + getColumn().left() - axisOffsetPx,
                                 (int) (dmax + fontDecent + 3 ) ); // 3 is fudge
                     } else {
                         rmin.translate( space + zeroOrPosTickLen + getColumn().right(), 
@@ -3524,8 +3571,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         boolean topTickLabels = (orientation == TOP && tickLabelsVisible);
         boolean topLabel = (topTickLabels && !axisLabel.equals(""));
 
+        int axisOffsetPx= getAxisOffsetPixels();
+
         int topPosition = getRow().getDMinimum();
-        int bottomPosition = getRow().getDMaximum();
+        int bottomPosition = getRow().getDMaximum() + axisOffsetPx;
         DasDevicePosition range = getColumn();
         int DMax = range.getDMaximum();
         int DMin = range.getDMinimum();
@@ -3667,7 +3716,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         boolean rightTickLabels = (orientation == RIGHT && tickLabelsVisible);
         boolean rightLabel = (orientation == RIGHT && !axisLabel.equals(""));
 
-        int leftPosition = getColumn().getDMinimum();
+        int axisOffsetPx= getAxisOffsetPixels();
+
+        int leftPosition = getColumn().getDMinimum() - axisOffsetPx;
         int rightPosition = getColumn().getDMaximum();
         int DMax = getRow().getDMaximum();
         int DMin = getRow().getDMinimum();
