@@ -195,6 +195,9 @@ public class SubsetDataSet extends AbstractDataSet {
                 case 2:
                     dim.applyIndex(1,idx);
                     break;
+                case 3:
+                    dim.applyIndex(2,idx);
+                    break;
                 default:
                     throw new IllegalArgumentException("DEPEND_"+idim+" must be rank 1 or rank 2");
             }
