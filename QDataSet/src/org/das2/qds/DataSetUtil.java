@@ -733,7 +733,7 @@ public class DataSetUtil {
      * @return a map of properties attached to the slice at index
      */
     public static Map<String, Object> sliceProperties( QDataSet ds, int index, Map<String,Object> result ) {
-        if ( result==null ) result= new LinkedHashMap();
+        if ( result==null ) result= new LinkedHashMap<>();
 
         if ( ds.property(QDataSet.BUNDLE_0 )!=null ) {
             logger.fine("sliceProperties is not allowed when BUNDLE_0 is set");
@@ -763,7 +763,7 @@ public class DataSetUtil {
      */
     public static Map<String,Object> trimProperties( QDataSet ds, int start, int stop ) {
 
-        Map<String,Object> result= new LinkedHashMap();
+        Map<String,Object> result= new LinkedHashMap<>();
         result= getDimensionProperties(ds,result);
 
         QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
@@ -838,11 +838,11 @@ public class DataSetUtil {
      * @param def defaults, or null if no defaults are to be used.
      * @return map of the properties.
      */
-    public static Map<String,Object> getProperties( QDataSet ds, String[] names, Map def ) {
+    public static Map<String,Object> getProperties( QDataSet ds, String[] names, Map<String,Object> def ) {
         if ( def==null ) {
-            def= new LinkedHashMap();
+            def= new LinkedHashMap<>();
         } else {
-            def= new LinkedHashMap( def );
+            def= new LinkedHashMap<>( def );
         }
 
         for (String name : names) {
@@ -863,7 +863,7 @@ public class DataSetUtil {
      * @return the properties.
      */
     public static Map<String, Object> getProperties(QDataSet ds, Map<String, Object> def) {
-        Map result = def;
+        Map<String,Object> result = def;
 
         for (int i = 0; i <= ds.rank(); i++) {
             Object dep = ds.property("DEPEND_" + i);
@@ -931,7 +931,7 @@ public class DataSetUtil {
      * @see #putProperties(java.util.Map, org.das2.qds.MutablePropertyDataSet) 
      */
     public static Map<String, Object> getProperties(QDataSet ds) {
-        return getProperties(ds, new LinkedHashMap());
+        return getProperties(ds, new LinkedHashMap<>());
     }
 
     /**
