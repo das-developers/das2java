@@ -232,6 +232,35 @@ public class SubsetDataSet extends AbstractDataSet {
             b.applyIndex( 0, idx );
             putProperty( "BUNDLE_"+idim, b );
         }
+        
+        String[] ss= new String[] { "DELTA_PLUS", "DELTA_MINUS", "BIN_PLUS", "BIN_MINUS" };
+        for ( String s: ss ) {
+            QDataSet d;
+            d= (QDataSet)property( s );
+            if ( d!=null ) {
+                switch (d.rank()) {
+                    case 3: {
+                            SubsetDataSet b= new SubsetDataSet(d);
+                            b.applyIndex( idim, idx );
+                            putProperty( s, b );
+                            break;
+                        }
+                    case 2: {
+                            SubsetDataSet b= new SubsetDataSet(d);
+                            b.applyIndex( idim==0 ? 0 : 1, idx );
+                            putProperty( s, b );
+                            break;
+                        }
+                    default:
+                        if ( idim==0 ) {
+                            SubsetDataSet b= new SubsetDataSet(d);
+                            b.applyIndex( 0, idx );
+                            putProperty( s, b );
+                        }  
+                        break;
+                }
+            }
+        }
     }
 
     @Override
@@ -293,7 +322,11 @@ public class SubsetDataSet extends AbstractDataSet {
     @Override
     public Object property(String name) {
         Object v= properties.get(name);
-        return v!=null ? v : source.property(name);
+        Object result= v!=null ? v : source.property(name);
+        if( name.startsWith("DELTA_") && result!=null ) {
+            System.err.println("line296: here DELTA");
+        }
+        return result;
     }
 
 }
