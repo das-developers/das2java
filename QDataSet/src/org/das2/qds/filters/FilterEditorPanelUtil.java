@@ -27,7 +27,9 @@ public class FilterEditorPanelUtil {
             if (dep0 != null) {
                 String dname = (String) dep0.property(QDataSet.NAME);
                 if (dname != null) {
-                    if ( i>0 && dep0.rank()==2 ) {
+                    if ( i>1 && dep0.rank()==3 ) {
+                        depNames[i] = dname + " ("+dep0.length(0,0)+" bins)";
+                    } else if ( i>0 && dep0.rank()==2 ) {
                         depNames[i] = dname + " ("+dep0.length(0)+" bins)";
                     } else {
                         depNames[i] = dname + " ("+dep0.length()+" bins)";
