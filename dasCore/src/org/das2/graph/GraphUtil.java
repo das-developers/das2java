@@ -1344,6 +1344,17 @@ public class GraphUtil {
      * @return an icon.
      */
     public static Icon colorIcon( Color iconColor, int w, int h ) {
+        return colorImageIcon(iconColor, w, h);
+    }
+    
+    /**
+     * return an ImageIcon with the color and size.
+     * @param iconColor
+     * @param w
+     * @param h
+     * @return 
+     */
+    public static ImageIcon colorImageIcon( Color iconColor, int w, int h ) {
         BufferedImage image= new BufferedImage( w, h, BufferedImage.TYPE_INT_ARGB );
         Graphics g= image.getGraphics();
         if ( iconColor.getAlpha()!=255 ) { // draw checkerboard to indicate transparency
