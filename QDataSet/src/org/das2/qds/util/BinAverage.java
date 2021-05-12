@@ -115,7 +115,8 @@ public class BinAverage {
     
     
     /**
-     * returns a dataset with tags specified by newTags.
+     * returns a dataset with tags specified by newTags, where linear averages
+     * of the points in each bin are returned.
      * @param ds a rank 2 dataset.  If it's a bundle, then rebinBundle is called.
      * @param newTags0 rank 1 monotonic dataset
      * @param newTags1 rank 1 monotonic dataset
