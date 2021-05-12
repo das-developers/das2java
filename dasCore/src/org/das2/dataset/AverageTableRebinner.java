@@ -312,7 +312,7 @@ public class AverageTableRebinner implements DataSetRebinner {
                 } else {
                     r= DataSetUtil.guessCadenceNew( xds, null );
                 }
-                if ( r==null ) return xunits.getOffsetUnits().createDatum(0);
+                if ( r==null ) return xunits.getOffsetUnits().createDatum(Double.MAX_VALUE);
                 Datum rd= DataSetUtil.asDatum(r);
                 return rd;
             } else {
