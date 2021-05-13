@@ -435,11 +435,15 @@ public class ContoursRenderer extends Renderer {
                         float[] lastp= (float[]) props.get( "PROP_LAST_POINT");
                         
                         boolean circuit= false;
-                        if ( first!=null && lastp!=null && first[0]==lastp[0] && first[1]==lastp[1] ) {
-                            circuit= true;
+                        if ( first!=null && lastp!=null ) {
+                            double r= Math.sqrt( Math.pow(first[0]-lastp[0],2) + Math.pow( first[1]-lastp[1],2 ) );
+                            if ( r<font.getSize() ) {
+                                circuit= true;
+                            }
                         }
                         if ( circuit ) {
                             labelCadencePixels= len / nlabel;
+                            phase= 0;
                         }
                         
                         double[] lens = new double[nlabel*2];
