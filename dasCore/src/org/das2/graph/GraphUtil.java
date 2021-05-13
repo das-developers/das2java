@@ -27,9 +27,12 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Formatter;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
@@ -941,6 +944,7 @@ public class GraphUtil {
      * return the points along a curve.  Used by ContourRenderer.  The returned
      * result is the remaining path length.  Elements of pathlen that are beyond
      * the total path length are not computed, and the result points will be null.
+     * Note that CUBICTO and QUADTO are not supported.
      * @param pathlen monotonically increasing path lengths at which the position is to be located.  May be null if only the total path length is desired.
      * @param result the resultant points will be put into this array.  This array should have the same number of elements as pathlen
      * @param orientation the local orientation, in radians, of the point at will be put into this array.  This array should have the same number of elements as pathlen
@@ -949,7 +953,28 @@ public class GraphUtil {
      * @return the remaining length.  Note null may be used for pathlen, result, and orientation and this will simply return the total path length.
      */
     public static double pointsAlongCurve(PathIterator it, double[] pathlen, Point2D.Double[] result, double[] orientation, boolean stopAtMoveTo) {
+        return pointsAlongCurve( it, pathlen, result, orientation, stopAtMoveTo, new HashMap<>() );
+    }
 
+    /**
+     * return the points along a curve.  Used by ContourRenderer.  The returned
+     * result is the remaining path length.  Elements of pathlen that are beyond
+     * the total path length are not computed, and the result points will be null.
+     * Note that CUBICTO and QUADTO are not supported.
+     * @param pathlen monotonically increasing path lengths at which the position is to be located.  May be null if only the total path length is desired.
+     * @param result the resultant points will be put into this array.  This array should have the same number of elements as pathlen
+     * @param orientation the local orientation, in radians, of the point at will be put into this array.  This array should have the same number of elements as pathlen
+     * @param it PathIterator first point is used to start the length.
+     * @param stopAtMoveTo treat SEG_MOVETO as the end of the path.  The pathIterator will be left at this point.
+     * @param props empty map where properties are added.
+     * @return the remaining length.  Note null may be used for pathlen, result, and orientation and this will simply return the total path length.
+     */    
+    public static double pointsAlongCurve(PathIterator it, 
+            double[] pathlen, 
+            Point2D.Double[] result, 
+            double[] orientation, 
+            boolean stopAtMoveTo,
+            Map<String,Object> props ) {        
         float[] point = new float[6];
         float fx0 = Float.NaN, fy0 = Float.NaN;
 
@@ -957,9 +982,17 @@ public class GraphUtil {
         int pathlenIndex = 0;
         int type;
 
+        if ( props==null ) props= new HashMap<>();
+        
         if (pathlen == null) {
             pathlen = new double[0];
         }
+        
+        if ( !it.isDone() ) {
+            type = it.currentSegment(point);
+            props.put( "PROP_FIRST_POINT", Arrays.copyOf( point, point.length ) );
+        }
+        
         while (!it.isDone()) {
             type = it.currentSegment(point);
             it.next();
@@ -1005,6 +1038,8 @@ public class GraphUtil {
             fy0 = point[1];
 
         }
+        
+        props.put( "PROP_LAST_POINT", Arrays.copyOf( point, point.length ) );
 
         double remaining;
         if (pathlenIndex > 0) {

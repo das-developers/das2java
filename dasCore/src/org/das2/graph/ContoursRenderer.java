@@ -26,6 +26,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -392,7 +393,7 @@ public class ContoursRenderer extends Renderer {
         
         Rectangle visible= getParent().getAxisClip();
         
-        double labelCadencePixels= getPixelLength( labelCadence, font.getSize2D() );
+        double labelCadencePixels0= getPixelLength( labelCadence, font.getSize2D() );
             
         double minLength= 20;
         for (int i = 0; i < lpaths.length; i++) {
@@ -408,23 +409,39 @@ public class ContoursRenderer extends Renderer {
                     logger.finer("skipping offscreen path");
                     continue;
                 }
-
+                
                 PathIterator it1 = p.getPathIterator(null);
                 PathIterator it2 = p.getPathIterator(null);
 
+                Map<String,Object> props= new HashMap<>();
+                
                 while (!it1.isDone()) {
-
-                    double len = GraphUtil.pointsAlongCurve(it1, null, null, null, true);
-
+                    
+                    double labelCadencePixels= labelCadencePixels0;
+                    
+                    double len = GraphUtil.pointsAlongCurve(it1, null, null, null, true, props );
+                    
                     int nlabel = 1 + (int) Math.floor( len / labelCadencePixels );
 
-                    double phase = (len - ( nlabel-1 )  * labelCadencePixels ) / 2;
+                    double phase = (len - ( nlabel-1 )  * labelCadencePixels ) / 2; // starting point in pixels
 
                     if ( len < minLength ) {
                         //advance it2.
                         GraphUtil.pointsAlongCurve(it2, null, null, null, true);
 
                     } else {
+                        
+                        float[] first= (float[]) props.get( "PROP_FIRST_POINT");
+                        float[] lastp= (float[]) props.get( "PROP_LAST_POINT");
+                        
+                        boolean circuit= false;
+                        if ( first!=null && lastp!=null && first[0]==lastp[0] && first[1]==lastp[1] ) {
+                            circuit= true;
+                        }
+                        if ( circuit ) {
+                            labelCadencePixels= len / nlabel;
+                        }
+                        
                         double[] lens = new double[nlabel*2];
                         double labelWidth=10; // approx.
                         if ( labelWidth > labelCadencePixels ) labelWidth= labelCadencePixels * 0.99;
