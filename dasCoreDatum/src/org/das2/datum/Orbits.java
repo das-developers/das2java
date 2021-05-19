@@ -104,6 +104,13 @@ public class Orbits {
                     case "cassini":
                         urls.add( new URL( "http://www-pw.physics.uiowa.edu/~jbf/cassini/cassiniOrbits.txt" ) );
                         break;
+                    case "psp-aa":
+                        urls.add( new URL( "https://raw.githubusercontent.com/autoplot/orbits/main/psp/psp-aa.txt" ) );
+                        break;
+                    case "psp-aa25":
+                        urls.add( new URL( "https://raw.githubusercontent.com/autoplot/orbits/main/psp/psp-aa25.txt" ) );
+                        break;
+                           
                     default:
                         urls.add( new URL( "https://das2.org/Orbits/"+sc+".dat" ) );
                         break;
@@ -405,7 +412,8 @@ public class Orbits {
         names.put( "junoPJ","Juno at perijove");
         names.put( "junoEqx","Juno at Eqx");
         names.put( "junoEntire","Juno (Whole Orbits)");
-        
+        names.put( "psp-aa", "Parker Solar Probe aphelion to aphelion");
+        names.put( "psp-aa25", "Parker Solar Probe where orbit is within 0.25 AU");
         return names;
     }
 
