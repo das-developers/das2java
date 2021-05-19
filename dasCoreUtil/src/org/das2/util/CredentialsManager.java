@@ -4,8 +4,11 @@ package org.das2.util;
 import java.awt.Frame;
 import java.awt.Window;
 import java.io.Console;
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
@@ -58,6 +61,8 @@ import javax.swing.SwingUtilities;
  */
 public class CredentialsManager{
 	
+    private static final Logger logger= LoggerManager.getLogger("das2.credentialsmanager");
+    
 	///////////////////////////////////////////////////////////////////////////////////
 	// Static Section
 	
@@ -294,9 +299,129 @@ public class CredentialsManager{
 		loc.sUser = null;
 		loc.sPasswd = null;
 	}
-	
+	 
+    /**
+     * support restricted security environment by checking permissions before 
+     * checking property.
+     * @param name
+     * @param deft
+     * @return
+     * @see org.das2.DasApplication#getProperty !
+     */
+    public static String getProperty( String name, String deft ) {
+        try {
+            return System.getProperty(name, deft);
+        } catch ( SecurityException ex ) {
+            return deft;
+        }
+    }
+    
+    /**
+     * returns the location of the local directory sandbox.  For example,
+     * The web filesystem object downloads temporary files to here, logging
+     * properties file, etc.
+     *
+     * Assume that this File is local, so I/O is quick, and that the process
+     * has write access to this area.
+     * For definition, assume that at least 1Gb of storage is available as
+     * well.
+     * 
+     * @return the directory.
+     * @see org.das2.DasApplication#getDas2UserDirectory !
+     */
+    public static File getDas2UserDirectory() {
+        File local;
+        // for applets, if we are running from a disk, then it is okay to write local files, but we can't check permissions
+        if ( getProperty("user.name", "Web").equals("Web") ) {
+            local= new File("/tmp");
+        } else {
+            local= new File( System.getProperty("user.home") );
+        }
+        local= new File( local, ".das2" );
+        return local;
+    }
 	////////////////////////// User Interaction ////////////////////////////////////
 	
+    private String checkKeyChainForCredentials( Location loc ) {
+        File das2Dir= getDas2UserDirectory();
+        if ( !das2Dir.exists() ) {
+            if ( !das2Dir.mkdirs() ) {
+                logger.log(Level.WARNING, "unable to mkdir {0}", das2Dir);
+                return null;
+            }
+        }
+        File credentialsDir= new File( das2Dir, "keychain" );
+        if ( !credentialsDir.exists() ) {
+            if ( !credentialsDir.mkdirs() ) {
+                logger.log(Level.WARNING, "unable to mkdir {0}", credentialsDir);
+                return null;
+            }
+        }
+        String hash= String.format( "%09d.txt", Math.abs(loc.sLocId.hashCode()) );
+        File locFile= new File( credentialsDir, hash );
+        if ( locFile.exists() ) {
+            if ( !locFile.canRead() ) {
+                logger.log(Level.WARNING, "unable to read file {0}", locFile );
+                return null;
+            } else {
+                try {
+                    String result= FileUtil.readFileToString(locFile).trim();
+                    String[] ss= result.split("\n");
+                    result= ss[1];
+                    return result;
+                } catch (IOException ex) {
+                    logger.log( Level.WARNING, ex.getMessage(), ex );
+                    return null;
+                }
+            }
+        } else {
+            return null;
+        }
+
+    }
+
+    private void recordCredentialsToKeyChain( Location loc ) {
+        File das2Dir= getDas2UserDirectory();
+        if ( !das2Dir.exists() ) {
+            if ( !das2Dir.mkdirs() ) {
+                logger.log(Level.WARNING, "unable to mkdir {0}", das2Dir);
+            }
+        }
+        File credentialsDir= new File( das2Dir, "keychain" );
+        if ( !credentialsDir.exists() ) {
+            if ( !credentialsDir.mkdirs() ) {
+                logger.log(Level.WARNING, "unable to mkdir {0}", credentialsDir);
+            }
+        }
+        String hash= String.format( "%09d.txt", Math.abs(loc.sLocId.hashCode()) );
+        File locFile= new File( credentialsDir, hash );
+        if ( locFile.exists() && !locFile.canWrite() ) {
+            logger.log(Level.WARNING, "unable to write file {0}", locFile );
+        } else {
+            try {
+                String credentialsString= loc.sLocId+ "\n" + loc.sUser + ":"+ loc.sPasswd + "\n";
+                if ( locFile.exists() ) {
+                    String old= FileUtil.readFileToString(locFile);
+                    if ( old.equals(credentialsString) ) {
+                        logger.fine("password didn't change");
+                        return;
+                    }
+                }                
+                FileUtil.writeStringToFile( locFile, credentialsString );
+                if ( !locFile.setReadable(false) ) {
+                    logger.warning("unable to set read permission");
+                }
+                if ( !locFile.setReadable(true,true) ) {
+                    logger.warning("unable to set read permission");
+                }
+                        
+            } catch (IOException ex) {
+                logger.log( Level.WARNING, ex.getMessage(), ex );
+            }
+        }
+
+    }
+    
 	/** Gather User Credentials
 	 * 
 	 * @param loc The Location in question
@@ -308,7 +433,14 @@ public class CredentialsManager{
 		// this method started.  Need to avoid the double-authenticate dialogs problem
 		// I'm not sure how to prevent the double cancel problem at this time. --cwp
 		if( loc.hasCredentials()) return true;
-		
+
+        String credentialsFromKeyChain= checkKeyChainForCredentials( loc );
+        if ( credentialsFromKeyChain!=null ) {
+            int i= credentialsFromKeyChain.indexOf(":");
+            loc.sUser= credentialsFromKeyChain.substring(0,i);
+            loc.sPasswd= credentialsFromKeyChain.substring(i+1);
+        }
+            
 		try{
 			SwingUtilities.invokeAndWait(
 				new Runnable(){
@@ -344,6 +476,8 @@ public class CredentialsManager{
 		loc.sUser = m_dlg.getUser();
 		loc.sPasswd = m_dlg.getPasswd();
 		
+        recordCredentialsToKeyChain( loc );
+                
 		return true;
 	}
 	
