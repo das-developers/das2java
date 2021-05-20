@@ -408,12 +408,12 @@ public class CredentialsManager{
                     }
                 }                
                 FileUtil.writeStringToFile( locFile, credentialsString );
-                if ( !locFile.setReadable(false) ) {
-                    logger.warning("unable to set read permission");
-                }
-                if ( !locFile.setReadable(true,true) ) {
-                    logger.warning("unable to set read permission");
-                }
+                if ( !locFile.setReadable(false) ) logger.warning("setReadable failure");
+                if ( !locFile.setReadable(false,false) ) logger.warning("setReadable failure");
+                if ( !locFile.setReadable(true,true) ) logger.warning("setReadable failure");
+                if ( !locFile.setWritable(false) ) logger.warning("setWritable failure");
+                if ( !locFile.setWritable(false,false) ) logger.warning("setWritable failure");
+                if ( !locFile.setWritable(true,true) ) logger.warning("setWritable failure");   
                         
             } catch (IOException ex) {
                 logger.log( Level.WARNING, ex.getMessage(), ex );

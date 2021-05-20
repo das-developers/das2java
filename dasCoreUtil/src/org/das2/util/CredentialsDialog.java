@@ -109,6 +109,7 @@ public class CredentialsDialog extends JDialog{
         getContentPane().add(jLabel3, gridBagConstraints);
 
         jLabel4.setText("Password:");
+        jLabel4.setToolTipText("passwords are stored in ~/.das2/keychain.");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
