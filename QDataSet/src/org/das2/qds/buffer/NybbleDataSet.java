@@ -13,7 +13,10 @@ public final class NybbleDataSet extends BufferDataSet {
 
     public NybbleDataSet(int rank, int reclenbits, int recoffsbits, int len0, int len1, int len2, int len3, ByteBuffer back ) {
         super( rank, reclenbits, recoffsbits, BufferDataSet.BITS, len0, len1, len2, len3, BufferDataSet.NYBBLE, back );
-        int recLenNeededBits= (int)Math.ceil( 4 * ( len1 * len2 * len3 ) );
+        int recLenNeededBits= 4 * ( len1 * len2 * len3 );
+        if ( recLenNeededBits<0 ) {
+            throw new IllegalArgumentException("each record must be less than 2^31 bits long.");
+        }
         if ( reclenbits < recLenNeededBits ) {
             throw new IllegalArgumentException("reclenbits too small to hold each record");
         }
