@@ -357,7 +357,7 @@ public class CredentialsManager{
                 return null;
             }
         }
-        String hash= String.format( "%09d.txt", Math.abs(loc.sLocId.hashCode()) );
+        String hash= String.format( "%09d.txt", loc.sLocId.hashCode() & 0x7FFFFFFF );
         File locFile= new File( credentialsDir, hash );
         if ( locFile.exists() ) {
             if ( !locFile.canRead() ) {
@@ -393,7 +393,7 @@ public class CredentialsManager{
                 logger.log(Level.WARNING, "unable to mkdir {0}", credentialsDir);
             }
         }
-        String hash= String.format( "%09d.txt", Math.abs(loc.sLocId.hashCode()) );
+        String hash= String.format( "%09d.txt", loc.sLocId.hashCode() & 0x7FFFFFFF );
         File locFile= new File( credentialsDir, hash );
         if ( locFile.exists() && !locFile.canWrite() ) {
             logger.log(Level.WARNING, "unable to write file {0}", locFile );
