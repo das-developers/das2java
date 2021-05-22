@@ -1303,6 +1303,66 @@ public final class Ops {
     }
     
     /**
+     * increase the rank 1 data into rank 2 data by binning data.  For example,
+     * <code>byOrbit= binData( density, datumRange( 'orbit:rbspa-pp:3' ) )</code>
+     * 
+     * @param ds rank 1 data with (time) tags
+     * @param bin datum range which is an example range
+     * @return rank 2 bins.
+     * 
+     */
+    public static QDataSet binData( QDataSet ds, DatumRange bin ) {
+        JoinDataSet resultx= new JoinDataSet(2);
+        JoinDataSet resulty= new JoinDataSet(2);
+        DataSetBuilder resultDep= new DataSetBuilder(1,100);
+        QDataSet xds= SemanticOps.xtagsDataSet(ds);
+        QDataSet yds= SemanticOps.ytagsDataSet(ds);
+        DataSetBuilder currentAccumY= new DataSetBuilder(1,100);
+        DataSetBuilder currentAccumX= new DataSetBuilder(1,100);
+        for ( int i=0; i<ds.length(); i++ ) {
+            Datum x= DataSetUtil.asDatum(xds.slice(i));
+            while ( bin.min().gt(x) ) {
+                DatumRange pbin= bin.previous();
+                if ( pbin==bin ) break; // orbit datum ranges get stuck at ends
+                if ( currentAccumX.getLength()>0 ) {
+                    resultDep.nextRecord(bin.middle());
+                    resultx.join(currentAccumX.getDataSet());
+                    resulty.join(currentAccumY.getDataSet());
+                    currentAccumY= new DataSetBuilder(1,100);
+                    currentAccumX= new DataSetBuilder(1,100);
+                }
+                bin= pbin;                
+            }
+            while ( bin.max().le(x) ) {
+                DatumRange pbin= bin.next();
+                if ( pbin==bin ) break; // orbit datum ranges get stuck at ends
+                if ( currentAccumX.getLength()>0 ) {
+                    resultDep.nextRecord(bin.middle());
+                    resultx.join(currentAccumX.getDataSet());
+                    resulty.join(currentAccumY.getDataSet());
+                    currentAccumY= new DataSetBuilder(1,100);
+                    currentAccumX= new DataSetBuilder(1,100);
+                }
+                bin= pbin;
+            }
+            if ( bin.contains(x) ) {
+                currentAccumX.nextRecord(x);
+                currentAccumY.nextRecord(yds.slice(i));
+            }
+        }
+        if ( currentAccumX.getLength()>0 ) {
+            resultDep.nextRecord(bin.middle());
+            resultx.join(currentAccumX.getDataSet());
+            resulty.join(currentAccumY.getDataSet());
+        }
+        QDataSet result= resulty;
+        QDataSet dep1= resultx;
+        QDataSet dep0= resultDep.getDataSet();
+        
+        return Ops.link( dep0, dep1, result );
+    }
+    
+    /**
      * normalize the data so that the max is 1, where we normalize by the biggest
      * @param ds
      * @return dataset with the same geometry as ds.
