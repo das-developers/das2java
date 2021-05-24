@@ -107,9 +107,9 @@ public class DataTransferType {
          * @param units 
          */
         public void resetUnits( Units units ) {
-            if ( units!=Units.us2000 ) {
-                System.err.println("das2stream units set to something other than Units.us2000: See https://bugs-pw.physics.uiowa.edu/mantis/view.php?id=478" );
-            }
+            //if ( units!=Units.us2000 ) {
+            //    System.err.println("das2stream units set to something other than Units.us2000: See https://bugs-pw.physics.uiowa.edu/mantis/view.php?id=478" );
+            //}
             this.units= units;
         }
         
@@ -121,9 +121,7 @@ public class DataTransferType {
                 String str = new String(bytes, "ASCII").trim();
                 double result = TimeUtil.create( str ).doubleValue(units);
                 return result;
-            } catch ( UnsupportedEncodingException e ) {
-                throw new RuntimeException(e);
-            } catch ( ParseException e ) {
+            } catch ( UnsupportedEncodingException | ParseException e ) {
                 throw new RuntimeException(e);
             }
         }
