@@ -1385,6 +1385,28 @@ public final class Ops {
     }
 
     /**
+     * normalize the data so that the max at a row or column is 1, where we 
+     * have normalized by the biggest value along a dimension.  For example, 
+     * normalize( ds, 1 ) will produce a result
+     * where each ds[i,:] will have a max of 1.0.
+     * @param ds the dataset
+     * @param dim the dimension to normalize
+     * @return dataset with the same geometry as ds.
+     * @see #reduceMax(org.das2.qds.QDataSet, int) 
+     */
+    public static QDataSet normalize( QDataSet ds, int dim ) {
+        QDataSet n= reduceMax( ds, dim );
+        MutablePropertyDataSet result= Ops.maybeCopy( Ops.divide( ds, n ) );
+        Map<String,Object> props= DataSetUtil.getProperties(ds);
+        props.put(QDataSet.UNITS, Units.dimensionless );
+        props.put(QDataSet.TITLE, "" + props.get(QDataSet.TITLE)+" (normalized)");
+        props.put(QDataSet.LABEL, "" + props.get(QDataSet.LABEL)+" (normalized)");
+        DataSetUtil.putProperties( props, result );
+        
+        return result;
+    }
+    
+    /**
      * reduce the size of the data by keeping every 10th measurement.  
      * @param ds a qube dataset.
      * @return a decimated qube dataset.
