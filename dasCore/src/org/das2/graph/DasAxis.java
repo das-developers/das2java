@@ -1316,6 +1316,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     public void setTcaLabels(String tcaLabels) {
         String oldTcaLabels = this.tcaLabels;
         this.tcaLabels = tcaLabels;
+        markDirty("tcaFunction");
+        update();
         firePropertyChange(PROP_TCALABELS, oldTcaLabels, tcaLabels);
     }
 
