@@ -1364,6 +1364,7 @@ public final class Ops {
     
     /**
      * normalize the data so that the max is 1, where we normalize by the biggest
+     * value, so that the maximum is one.  
      * @param ds
      * @return dataset with the same geometry as ds.
      */
