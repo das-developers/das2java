@@ -77,11 +77,13 @@ import org.das2.system.RequestProcessor;
 import org.das2.util.LoggerManager;
 import org.das2.util.TickleTimer;
 import org.das2.qds.ArrayDataSet;
+import org.das2.qds.BundleDataSet;
 import org.das2.qds.DDataSet;
 import org.das2.qds.JoinDataSet;
 import org.das2.qds.QDataSet;
 import org.das2.qds.QFunction;
 import org.das2.qds.SemanticOps;
+import org.das2.qds.ops.Ops;
 
 /** 
  * One dimensional axis component that transforms data to device space and back, 
@@ -1299,6 +1301,24 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
     }
 
+    private String tcaLabels="";
+
+    public static final String PROP_TCALABELS = "tcaLabels";
+
+    public String getTcaLabels() {
+        return tcaLabels;
+    }
+
+    /**
+     * set the TCA data labels explicitly, using a semi-colon delimited list of labels.
+     * @param tcaLabels 
+     */
+    public void setTcaLabels(String tcaLabels) {
+        String oldTcaLabels = this.tcaLabels;
+        this.tcaLabels = tcaLabels;
+        firePropertyChange(PROP_TCALABELS, oldTcaLabels, tcaLabels);
+    }
+
     /**
      * update the TCAs using the QFunction this.tcaFunction.  We get an example
      * input from the function, then call it for each tick.  We add the property
@@ -1397,6 +1417,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                     logger.log(Level.FINER, "skipping irregular record: {0}", ticks);
                 }
             }
+            if ( tcaLabels.trim().length()>0 ) {
+                outDescriptor= Ops.labelsDataset( tcaLabels.split(";") );
+                ltcaData.putProperty( QDataSet.DEPEND_1, outDescriptor );                
+            }
+            
             if ( outDescriptor==null ) {
                 outDescriptor= (QDataSet)tickss.property(QDataSet.BUNDLE_1);
             }
@@ -1987,7 +2012,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         if ( lcanvas!=null ) {
             final Object tcaLock= "tcaload_"+this.getDasName();
             lcanvas.registerPendingChange( this, tcaLock );
-            RequestProcessor.invokeLater( new Runnable() {
+            RequestProcessor.invokeLater(new Runnable() {
                 @Override
                 public void run() {
                    lcanvas.performingChange( DasAxis.this, tcaLock );
@@ -2345,6 +2370,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 idlt.setString( g, "tcaData not available" );
                 idlt.draw( graphics, (float)(rightEdge-idlt.getWidth()), (float)baseLine );
             } else {
+                QDataSet dds= (QDataSet) tcaData.property(QDataSet.DEPEND_1);
                 QDataSet bds= (QDataSet) tcaData.property(QDataSet.BUNDLE_1);
                 if ( bds==null ) {
                     logger.fine("expected TCA data to have BUNDLE dataset");
@@ -2352,15 +2378,23 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 int lines= Math.min( MAX_TCA_LINES, tcaData.length(0) );
                 for (int i = 0; i < lines; i++) {
                     baseLine += lineHeight;
-                    if ( bds==null ) {
-                        idlt.setString( g, "???" );
-                    } else {
-                        String label=  (String) bds.property( QDataSet.LABEL, i ) ;
-                        if ( label==null ) label= (String) bds.property( QDataSet.NAME, i );
-                        if ( label==null ) {
-                            idlt.setString( g, "????" ); // This shouldn't happen, but does...  We need to check earlier
+                    if ( dds!=null ) {
+                        if ( dds.length()>i ) {
+                            idlt.setString( g, dds.slice(i).svalue() );
                         } else {
-                            idlt.setString( g, label );
+                            idlt.setString( g, "???" );
+                        }
+                    } else {
+                        if ( bds==null ) {
+                            idlt.setString( g, "???" );
+                        } else {
+                            String label=  (String) bds.property( QDataSet.LABEL, i ) ;
+                            if ( label==null ) label= (String) bds.property( QDataSet.NAME, i );
+                            if ( label==null ) {
+                                idlt.setString( g, "????" ); // This shouldn't happen, but does...  We need to check earlier
+                            } else {
+                                idlt.setString( g, label );
+                            }
                         }
                     }
                     width = (int) Math.floor(idlt.getWidth() + 0.5);
