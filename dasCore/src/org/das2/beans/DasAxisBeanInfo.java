@@ -54,6 +54,7 @@ public class DasAxisBeanInfo extends AccessLevelBeanInfo {
         new Property("flipLabel", AccessLevel.DASML, "isFlipLabel", "setFlipLabel", null),
         new Property("dataPath", AccessLevel.DASML, "getDataPath", "setDataPath", null),
         new Property("showTca", AccessLevel.DASML, "getDrawTca", "setDrawTca", null),
+        new Property("tcaLabels", AccessLevel.DASML, "getTcaLabels", "setTcaLabels", null),
         new Property("scanRange", AccessLevel.DASML, "getScanRange", "setScanRange", null),
     };
     
