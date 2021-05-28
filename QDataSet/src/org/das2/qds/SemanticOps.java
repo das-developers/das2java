@@ -768,9 +768,17 @@ public final class SemanticOps {
      * @return the trimmed dataset.
      */
     public static QDataSet trim( QDataSet ds, DatumRange xrange, DatumRange yrange ) {
+        Logger llogger= LoggerManager.getLogger("qdataset.ops.trim");
+        llogger.entering("SemanticOps", "trim");
         int rank=ds.rank();
-        if ( ds.rank()==0 ) return ds;
-        if ( xrange==null && yrange==null ) return ds;
+        if ( ds.rank()==0 ) {
+            llogger.exiting("SemanticOps", "trim");
+            return ds;
+        }
+        if ( xrange==null && yrange==null ) {
+            llogger.exiting("SemanticOps", "trim");
+            return ds;
+        }
         if ( rank==3 ) {
             if ( isJoin(ds) ) {
                 JoinDataSet jds= new JoinDataSet(ds.rank());
@@ -781,6 +789,7 @@ public final class SemanticOps {
                     }
                 }
                 DataSetUtil.putProperties( DataSetUtil.getProperties(ds), jds );
+                llogger.exiting("SemanticOps", "trim");
                 return jds;
             } else if ( Schemes.isCompositeImage(ds) ) {
                 int[] size= Ops.size(ds);
@@ -790,6 +799,7 @@ public final class SemanticOps {
                     ch= trim( ch, xrange, yrange );
                     bds.bundle(ch);
                 }
+                llogger.exiting("SemanticOps", "trim");
                 return bds;
             } else {
                 throw new IllegalArgumentException("not supported: "+ds);
@@ -803,6 +813,7 @@ public final class SemanticOps {
                     Ops.and( Ops.ge( Ops.add( xds, ydsMax ), DataSetUtil.asDataSet(xrange.min()) ), Ops.le(  xds, DataSetUtil.asDataSet(xrange.max()) ) );
                 SubsetDataSet sds= new SubsetDataSet(ds);
                 if ( xinside!=null ) sds.applyIndex( 0, Ops.where(xinside) );  //TODO: consider the use of trim which would be more efficient.
+                llogger.exiting("SemanticOps", "trim");
                 return sds;
                 
             } else if ( isSimpleTableDataSet(ds) ) {
@@ -815,6 +826,7 @@ public final class SemanticOps {
                 SubsetDataSet sds= new SubsetDataSet(ds);
                 if ( xinside!=null ) sds.applyIndex( 0, Ops.where(xinside) );  //TODO: consider the use of trim which would be more efficient.
                 if ( yinside!=null ) sds.applyIndex( 1, Ops.where(yinside) );
+                llogger.exiting("SemanticOps", "trim");
                 return sds;
                 
             } else if ( isBundle(ds) ) { 
@@ -832,15 +844,17 @@ public final class SemanticOps {
                 } else if ( xrange==null ) {
                     //ok= Ops.where( yinside );
                     //sds.applyIndex( 1, ok );
+                    llogger.exiting("SemanticOps", "trim");
                     return ds; // this is because we can't easily search the ytags.
                 } else if ( yrange==null ) {
                     ok= Ops.where( xinside );
                     sds.applyIndex( 0, ok );
                 } else {
-                    logger.fine( "yds is being ignored, not sure why...");
+                    llogger.fine( "yds is being ignored, not sure why...");
                     ok= Ops.where( Ops.and( xinside, yinside ) );
                     sds.applyIndex( 0, ok );
                 }
+                llogger.exiting("SemanticOps", "trim");
                 return sds;
                 
             } else { // copy over elements where
@@ -853,20 +867,23 @@ public final class SemanticOps {
                 QDataSet ok;
                 SubsetDataSet sds= new SubsetDataSet(ds);
                 if ( xrange==null && yrange==null ) {
+                    llogger.exiting("SemanticOps", "trim");
                     return ds;
                 } else if ( xrange==null ) {
                     //ok= Ops.where( yinside );
                     //sds.applyIndex( 1, ok );
+                    llogger.exiting("SemanticOps", "trim");
                     return ds; // this is because we can't easily search the ytags.
                 } else if ( yrange==null ) {
                     ok= Ops.where( xinside );
                     sds.applyIndex( 0, ok );
                 } else {
-                    logger.fine( "yds is being ignored, not sure why...");
+                    llogger.fine( "yds is being ignored, not sure why...");
                     //ok= Ops.where( Ops.and( xinside, yinside ) );
                     ok= Ops.where( xinside );
                     sds.applyIndex( 0, ok );
                 }
+                llogger.exiting("SemanticOps", "trim");
                 return sds;
                 
             }
@@ -885,6 +902,7 @@ public final class SemanticOps {
                         j= -1 * ( j + 1 );
                     }
                     if ( yrange==null ) {
+                        llogger.exiting("SemanticOps", "trim");
                         return ds.trim(i,j);  // optimization for waveforms...
                         
                     } else {
@@ -920,6 +938,7 @@ public final class SemanticOps {
             }
             SubsetDataSet sds= new SubsetDataSet(ds);
             sds.applyIndex( 0, ok );
+            llogger.exiting("SemanticOps", "trim");
             return sds;
         } else {
             throw new IllegalArgumentException("not supported: "+ds);
