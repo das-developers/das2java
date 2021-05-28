@@ -78,19 +78,20 @@ public class GitHubFileSystem extends HttpFileSystem {
             }
             boolean isLogin= false;
             if ( new String( cc, "US-ASCII" ).equals("<!DOCTYPE html>") ) {
-                BufferedReader r= new BufferedReader( new InputStreamReader( is ) );
-                String line= r.readLine();
-                int lineCount= 0;
-                while ( line!=null ) {
-                    lineCount++;
-                    if ( line.startsWith("<meta content=\"Sign in\"" ) ) {
-                        isLogin= true;
-                        break;
+                try (BufferedReader r = new BufferedReader( new InputStreamReader( is ) )) {
+                    String line= r.readLine();
+                    int lineCount= 0;
+                    while ( line!=null ) {
+                        lineCount++;
+                        if ( line.startsWith("<meta content=\"Sign in\"" ) ) {
+                            isLogin= true;
+                            break;
+                        }
+                        if ( lineCount>MAX_LINE_COUNT ) {
+                            break;
+                        }
+                        line= r.readLine();
                     }
-                    if ( lineCount>MAX_LINE_COUNT ) {
-                        break;
-                    }
-                    line= r.readLine();
                 }
             }
             return isLogin;
