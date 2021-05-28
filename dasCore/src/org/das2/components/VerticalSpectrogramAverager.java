@@ -45,20 +45,19 @@ import org.das2.event.DataRangeSelectionEvent;
 import org.das2.event.DataRangeSelectionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
-import java.io.IOException;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JDialog;
-import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
@@ -69,7 +68,6 @@ import org.das2.qds.SemanticOps;
 import org.das2.qds.examples.Schemes;
 import org.das2.qds.ops.Ops;
 import org.das2.util.LoggerManager;
-import org.das2.util.filesystem.FileSystemUtil;
 
 /**
  * show the average of the data over an interval
@@ -135,6 +133,41 @@ public class VerticalSpectrogramAverager implements DataRangeSelectionListener {
             buttonPanel.add(b,0);
         }
     }    
+
+    private String mode = "average";
+
+    public static final String PROP_MODE = "mode";
+
+    public String getMode() {
+        return mode;
+    }
+
+    public void setMode(String mode) {
+        String oldMode = this.mode;
+        this.mode = mode;
+        propertyChangeSupport.firePropertyChange(PROP_MODE, oldMode, mode);
+    }
+
+    private transient final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+
+    /**
+     * Add PropertyChangeListener.
+     *
+     * @param listener
+     */
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.addPropertyChangeListener(listener);
+    }
+
+    /**
+     * Remove PropertyChangeListener.
+     *
+     * @param listener
+     */
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.removePropertyChangeListener(listener);
+    }
+
 
     protected void setDataSet( QDataSet ds ) {
        renderer.setDataSet(ds);
@@ -245,7 +278,7 @@ public class VerticalSpectrogramAverager implements DataRangeSelectionListener {
         
         Window parentWindow = SwingUtilities.getWindowAncestor(parentPlot);
         popupWindow = new JDialog(parentWindow);
-        popupWindow.setTitle("Vertical Spectrogram Averager");
+        popupWindow.setTitle("Vertical Interval Averager");
         popupWindow.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         popupWindow.setContentPane(content);
         popupWindow.pack();
@@ -264,6 +297,14 @@ public class VerticalSpectrogramAverager implements DataRangeSelectionListener {
             yy= r.y;
         }
         
+        JComboBox modeCB= new JComboBox( new String[] {"average","sum" } ); //,"integrate" } );
+        modeCB.addActionListener((ActionEvent e) -> {
+            VerticalSpectrogramAverager.this.setMode((String) modeCB.getSelectedItem());
+            JOptionPane.showMessageDialog( buttonPanel, "Re-slice to update.", "mode updated", JOptionPane.INFORMATION_MESSAGE );
+        });
+        buttonPanel.add( modeCB );
+        
+                
         popupWindow.setLocation(xx,yy);
     }
     
@@ -304,32 +345,54 @@ public class VerticalSpectrogramAverager implements DataRangeSelectionListener {
         RebinDescriptor ddX = new RebinDescriptor(xValue1, xValue2, 1, false);
         ddX.setOutOfBoundsAction(RebinDescriptor.MINUSONE);
         AverageTableRebinner rebinner = new AverageTableRebinner();
+        
+        String title= parentPlot.getTitle().trim();
+        
         try {
             if ( xtys.rank()==3 ) {
                 QDataSet jds= null;
-                for ( int i=0; i<xtys.length(); i++ ) {
+                    for ( int i=0; i<xtys.length(); i++ ) {
                     QDataSet rebinned = (QDataSet)rebinner.rebin(xtys.slice(i), ddX, null, null);
                     QDataSet ds1 = rebinned.slice(0);
-                    jds= org.das2.qds.ops.Ops.concatenate( jds, ds1 );
+                    jds= org.das2.qds.ops.Ops.append( jds, ds1 );
                 }
-                renderer.setDataSet(jds);                
+                renderer.setDataSet(jds);         
             } else {
-                QDataSet rebinned = (QDataSet)rebinner.rebin(xtys, ddX, null, null);
-                QDataSet ds1 = rebinned.slice(0);
+                QDataSet rebinned;
+                switch (mode) {
+                    case "average":
+                        rebinned = Ops.reduceMean( Ops.trim( ds, Ops.dataset(xValue1), Ops.dataset(xValue2) ), 0 );
+                        title= "Averaged " + title;
+                        break;
+                    case "sum":
+                        rebinned = Ops.reduceSum( Ops.trim( ds, Ops.dataset(xValue1), Ops.dataset(xValue2) ), 0 );
+                        title= "Summed " + title;
+                        break;
+                    case "integrate":
+                        QDataSet trimmed= Ops.trim( ds, Ops.dataset(xValue1), Ops.dataset(xValue2) );
+                        QDataSet dep1= (QDataSet) ds.property(QDataSet.DEPEND_1);
+                        if ( dep1==null ) dep1= Ops.indgen(ds.length(0));
+                        QDataSet normalize= Ops.reduceSum( Ops.diff( dep1 ), 1 );
+                        renderer.setException( new Exception("integrate is not implemented.") );
+                        return;
+                        //rebinned = Ops.reduceSum( trimmed, 1 );
+                        //rebinned= Ops.divide( rebinned, normalize );
+                        //title= "Integrated " + title;
+                        //break;
+                    default:
+                        renderer.setException( new Exception("unknown mode in averager: "+mode) );
+                        return;
+                }
+                QDataSet ds1 = Ops.link( ds.property(QDataSet.DEPEND_0), rebinned );
                 renderer.setDataSet(ds1);
             }
         } catch (DasException de) {
             //Do nothing.
         }
-
-        value= e.getReference();
-
-        String title= parentPlot.getTitle().trim();
-        if ( title.length()>0 ) {
-            title= "Averaged " + title+"!c";
-        }
         
-        myPlot.setTitle( title + new DatumRange( xValue1, xValue2 ).toString() );
+        value= e.getReference();
+        
+        myPlot.setTitle( title + "!c" + new DatumRange( xValue1, xValue2 ).toString() );
         if ( !myPlot.getXAxis().getLabel().equals( sourceXAxis.getLabel() ) ) {
             myPlot.getXAxis().setLabel( sourceXAxis.getLabel() );
         }

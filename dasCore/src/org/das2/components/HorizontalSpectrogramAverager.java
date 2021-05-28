@@ -14,10 +14,8 @@ import org.das2.graph.DasRow;
 import org.das2.graph.DasPlot;
 import org.das2.graph.DasAxis;
 import org.das2.dataset.TableDataSetConsumer;
-import org.das2.dataset.AverageTableRebinner;
 import org.das2.dataset.RebinDescriptor;
 import org.das2.datum.DatumRange;
-import org.das2.DasException;
 import org.das2.datum.Datum;
 import org.das2.event.DataRangeSelectionEvent;
 import org.das2.event.DataRangeSelectionListener;
@@ -258,7 +256,7 @@ public class HorizontalSpectrogramAverager implements DataRangeSelectionListener
         
         Window parentWindow = SwingUtilities.getWindowAncestor(parentPlot);
         popupWindow = new JDialog(parentWindow);
-        popupWindow.setTitle("Horizontal Spectrogram Averager");
+        popupWindow.setTitle("Horizontal Interval Averager");
         popupWindow.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         popupWindow.setContentPane(content);
         popupWindow.pack();
@@ -280,7 +278,7 @@ public class HorizontalSpectrogramAverager implements DataRangeSelectionListener
         JComboBox modeCB= new JComboBox( new String[] {"average","sum" } ); //,"integrate" } );
         modeCB.addActionListener((ActionEvent e) -> {
             HorizontalSpectrogramAverager.this.setMode((String) modeCB.getSelectedItem());
-            JOptionPane.showConfirmDialog( buttonPanel, "Re-slice to update.", "mode updated", JOptionPane.OK_OPTION );
+            JOptionPane.showMessageDialog( buttonPanel, "Re-slice to update.", "mode updated", JOptionPane.INFORMATION_MESSAGE );
         });
         buttonPanel.add( modeCB );
         
@@ -385,11 +383,11 @@ public class HorizontalSpectrogramAverager implements DataRangeSelectionListener
         }
         
         myPlot.setTitle( title + new DatumRange( yValue1, yValue2 ).toString() );
-        if ( !myPlot.getYAxis().getLabel().equals( sourceXAxis.getLabel() ) ) {
-            myPlot.getYAxis().setLabel( sourceXAxis.getLabel() );
-        }
         if ( !myPlot.getYAxis().getLabel().equals( sourceZAxis.getLabel() ) ) {
             myPlot.getYAxis().setLabel( sourceZAxis.getLabel() );
+        }
+        if ( !myPlot.getXAxis().getLabel().equals( sourceXAxis.getLabel() ) ) {
+            myPlot.getXAxis().setLabel( sourceXAxis.getLabel() );
         }
         //eventBirthMilli= e.birthMilli;
     }
