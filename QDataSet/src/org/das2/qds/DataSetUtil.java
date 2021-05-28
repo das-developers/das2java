@@ -52,7 +52,6 @@ import org.das2.util.LoggerManager;
 import org.das2.qds.examples.Schemes;
 import org.das2.qds.ops.Ops;
 import org.das2.qds.util.AutoHistogram;
-import org.das2.qds.util.DataSetBuilder;
 import org.das2.qds.util.LinFit;
 
 /**
@@ -133,18 +132,26 @@ public class DataSetUtil {
      * @see Ops#ensureMonotonic
      */
     public static boolean isMonotonic(QDataSet ds) {
+        Logger llogger= LoggerManager.getLogger("qdataset.ops.monotonic");
+        
+        llogger.entering( "DataSetUtil", "isMonotonic", ds.toString() );
+        
         if (ds.rank() != 1) { // TODO: support bins dataset rank 2 with BINS_1="min,max"
+            llogger.exiting( "DataSetUtil", "isMonotonic" );
             return false;
         }
 
         if (ds.length() == 0) {
+            llogger.exiting( "DataSetUtil", "isMonotonic" );
             return false;
         }
 
-        if (Boolean.TRUE.equals(ds.property(QDataSet.MONOTONIC))) {
-            return true;
+        Boolean precalc= (Boolean) ds.property( QDataSet.MONOTONIC );
+        if ( precalc!=null ) {
+            llogger.exiting( "DataSetUtil", "isMonotonic" );
+            return precalc;
         }
-
+        
         QDataSet wds= DataSetUtil.weightsDataSet(ds);
         int i;
 
@@ -153,6 +160,7 @@ public class DataSetUtil {
         }
 
         if ( i==ds.length() ) {
+            llogger.exiting( "DataSetUtil", "isMonotonic" );
             return false;
         }
 
@@ -163,10 +171,13 @@ public class DataSetUtil {
             double w = wds.value(i);
             if ( w==0 ) continue;
             if ( d < last  ) {
+                llogger.exiting( "DataSetUtil", "isMonotonic" );
                 return false;
             } 
             last = d;
         }
+
+        llogger.exiting( "DataSetUtil", "isMonotonic" );
         return true;
     }
     
@@ -235,6 +246,11 @@ public class DataSetUtil {
         logger.entering( "DataSetUtil", "isMonotonicQuick" );
         logger.finest("enter isMonotonicQuick test for "+QDataSet.MONOTONIC);
         if (ds instanceof IndexGenDataSet ) return true;
+        Boolean precalc= (Boolean) ds.property( QDataSet.MONOTONIC );
+        if ( precalc!=null ) {
+            logger.exiting( "DataSetUtil", "isMonotonic" );
+            return precalc;
+        }
         if (ds.rank() == 1) {
             if (ds.length() < 100) {
                 return DataSetUtil.isMonotonic(ds);
@@ -4031,7 +4047,7 @@ public class DataSetUtil {
                             logger.warning("step limit in nextprev https://sourceforge.net/p/autoplot/bugs/1209/");
                             dr= dr0.next();
                             break;
-                        }
+                        }                        
                         QDataSet ds1= SemanticOps.trim( ds, dr, null);
                         if ( ds1==null || ds1.length()==0 ) {
                             logger.log(Level.FINER, "no records found in range ({0} steps): {1}", new Object[] { count, dr } );
