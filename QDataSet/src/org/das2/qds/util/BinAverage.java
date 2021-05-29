@@ -377,11 +377,12 @@ public class BinAverage {
      * takes rank 2 bundle (x,y,z) and averages it into table z(x,y).  This is 
      * similar to what happens in the spectrogram routine.
      * @param ds rank 2 bundle(x,y,z)
-     * @param dep0 the rank 1 depend0 for the result, which must be uniformly spaced.
-     * @param dep1 the rank 1 depend1 for the result, which must be uniformly spaced.
+     * @param dep0 the rank 1 depend0 for the result, which must be uniform in log or linear space.
+     * @param dep1 the rank 1 depend1 for the result, which must be uniform in log or linear space.
      * @return rank 2 dataset of z averages with depend_0 and depend_1.  WEIGHTS contains the total weight for each bin.
      * @see #rebin(org.das2.qds.QDataSet, org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      * @see #rebinBundle(org.das2.qds.QDataSet, org.das2.qds.QDataSet, org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
+     * @see https://github.com/autoplot/dev/blob/master/demos/2021/20210529/demoBinAverageBundle.jy
      */
     public static DDataSet binAverageBundle(QDataSet ds, QDataSet dep0, QDataSet dep1) {
 
@@ -475,6 +476,7 @@ public class BinAverage {
      * @see #rebin(org.das2.qds.QDataSet, org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      * @see #rebinBundle(org.das2.qds.QDataSet, org.das2.qds.QDataSet, org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      * @see Ops#meanAverageDeviation(org.das2.qds.QDataSet) 
+     * @see https://github.com/autoplot/dev/blob/master/demos/2021/20210529/demoBinMeanAverageDeviation.jy
      */
     public static DDataSet binMeanAverageDeviation( QDataSet ads, QDataSet ds ) {
 
