@@ -1666,6 +1666,12 @@ public class SeriesRenderer extends Renderer {
             lastIndex = index;
         }
         
+        if ( firstIndex==lastIndex && lastIndex==xds.length() ) {
+            logger.info("all data removed in firstIndex/lastIndex");
+        } else {
+            logger.fine("some data found in firstIndex/lastIndex");
+        }
+        
         logger.log( Level.FINE, "updateFirstLast ds: {0},  firstIndex={1} to lastIndex={2} in {3}ms", new Object[]{ String.valueOf(this.ds), this.firstIndex, this.lastIndex, System.currentTimeMillis()-t0 });
     }
 
@@ -2207,7 +2213,11 @@ public class SeriesRenderer extends Renderer {
         buildx.putProperty( QDataSet.UNITS, xdr.getUnits() );
         buildy.putProperty( QDataSet.UNITS, ydr.getUnits() );
         MutablePropertyDataSet mvds= DataSetOps.makePropertiesMutable( Ops.link( buildx.getDataSet(), buildy.getDataSet() ) );
-        DataSetUtil.copyDimensionProperties( vds, mvds );
+        Map<String,Object> p= DataSetUtil.getDimensionProperties(vds,null);
+        p.remove( QDataSet.VALID_MIN );
+        p.remove( QDataSet.VALID_MAX );
+        p.remove( QDataSet.FILL_VALUE );
+        DataSetUtil.putProperties( p, mvds );
         if ( buildc!=null ) {
             mvds.putProperty(QDataSet.PLANE_0,buildc.getDataSet());
         }
