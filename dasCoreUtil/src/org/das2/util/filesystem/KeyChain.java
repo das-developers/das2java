@@ -42,7 +42,6 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import org.das2.util.Base64;
-import org.das2.util.CredentialsManager;
 
 /**
  * class that contains the credentials for websites.  This is first
@@ -50,6 +49,13 @@ import org.das2.util.CredentialsManager;
  * would just ask for credentials once.  Also, this allows all the sensitive
  * information to be stored in one class.
  *
+ * https://datatracker.ietf.org/doc/html/rfc7617 talks about how this
+ * should be done.  Presently this is done by URL and not the realm.
+ * TODO: This needs to be redone so that the keys are stored by realm
+ * as well, and once a directory is left a 401 and resending of the 
+ * realm will be needed before the key is sent again.
+ * 
+ * @see https://datatracker.ietf.org/doc/html/rfc7617 
  * @author jbf
  */
 public class KeyChain {
