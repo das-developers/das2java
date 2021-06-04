@@ -6346,7 +6346,7 @@ public final class Ops {
      * 
      * Note, before March 2, 2015, this would incorrectly return the where of the result.
      * @param ds rank N dataset where N &gt; 0
-     * @param bounds a rank 1 bounding box.  
+     * @param bounds a rank 1 bounding box, or rank 2 array of bounding boxes, or rank 2 events list
      * @return rank N dataset containing non-zero where the condition is true.
      * @see #without(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      * @see #binsWithin(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
@@ -6356,19 +6356,38 @@ public final class Ops {
             throw new NullPointerException("bounds is null");
         }
         if ( bounds.rank()==0 ) {
-            throw new IllegalArgumentException("bounds must be not be rank 0, but a rank 1 bounding box");
+            throw new IllegalArgumentException("bounds must be not be rank 0, but a rank 1 bounding box or rank 2 array of events");
         }
-        final UnitsConverter uc= SemanticOps.getLooseUnitsConverter( bounds, ds );
+        if ( bounds.rank()==2 ) {
+            return withinListOfBounds( ds, bounds );
+        }
+        final UnitsConverter uc= SemanticOps.getLooseUnitsConverter( bounds.slice(0), ds );
         final double min= uc.convert(bounds.value(0));
         final double max= uc.convert(bounds.value(1));
-        return applyUnaryOp( ds, new UnaryOp() {
-            @Override
-            public double op(double d1) {
-                return ( d1 >= min && d1 < max ) ? 1.0 : 0.0;
+        return applyUnaryOp(ds, (UnaryOp) (double d1) -> ( d1 >= min && d1 < max ) ? 1.0 : 0.0);
+    }
+    
+    /**
+     * 
+     * @param ds data, typically timetags.
+     * @param bounds rank 2 list of bounds, with bounds[:,0] the mins and bounds[:,1] the maxes
+     * @return dataset with the same geometry as ds, with 1 where within the bounds 0, when not within.
+     */
+    private static QDataSet withinListOfBounds( QDataSet ds, QDataSet bounds ) {
+        if ( bounds.rank()!=2 ) throw new IllegalArgumentException("bounds should be rank 2 array of bounds");
+        final UnitsConverter uc= SemanticOps.getLooseUnitsConverter( bounds.slice(0).slice(0), ds );
+        return applyUnaryOp(ds, (UnaryOp) (double d1) -> {
+            for (int i = 0; i<bounds.length(); i++) {
+                double min1 = uc.convert(bounds.value(i,0));
+                double max1 = uc.convert(bounds.value(i,1));
+                if (d1 >= min1 && d1 < max1) {
+                    return 1.0;
+                }
             }
+            return 0.0;
         });
     }
-
+    
     /**
      * return non-zero where the data in ds are within the bounds.  In Jython,
      *<blockquote><pre>
