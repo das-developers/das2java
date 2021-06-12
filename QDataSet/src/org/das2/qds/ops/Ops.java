@@ -4978,7 +4978,7 @@ public final class Ops {
             xmaxs= putProperty( xmaxs, QDataSet.LABEL, null );
         }
 
-        xmins=  putProperty( xmins, QDataSet.NAME, "startTime" );
+        xmins=  putProperty( xmins, QDataSet.NAME, "startTime" ); 
         xmaxs=  putProperty( xmaxs, QDataSet.NAME, "stopTime" );
         colors= putProperty( colors,QDataSet.NAME, "color" );
         msgs=   putProperty( msgs,  QDataSet.NAME, "messages" );
