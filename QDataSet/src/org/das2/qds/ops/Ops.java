@@ -4841,7 +4841,7 @@ public final class Ops {
      * clear that this was generally useful.
      * @param vds dataset in a number of forms that can be converted to an events dataset.
      * @param deftColor the color to use as the default color.
-     * @return rank 2 QDataSet [ index; 4( time, stopTime, rgbColor, label ) ]
+     * @return rank 2 QDataSet [ index; time, stopTime, rgbColor, label ]
      */
     public static QDataSet createEvents( QDataSet vds, Color deftColor ) {
     
@@ -4893,7 +4893,12 @@ public final class Ops {
                     } else {
                         throw new IllegalArgumentException( "rank 2 dataset must have dep0 of rank 1 or rank 2 bins" );
                     }       
-                    msgs= DataSetOps.unbundle( vds, vds.length(0)-1 );
+                    if ( vds.length(0)==2 ) {
+                        msgs= Ops.replicate( dataset( EnumerationUnits.create("default").createDatum("_") ), vds.length() );
+                    } else {
+                        msgs= DataSetOps.unbundle( vds, vds.length(0)-1 );
+                    }
+                    
                     break;
                 }
             case 1:
@@ -4969,11 +4974,15 @@ public final class Ops {
 
         if ( u1.isConvertibleTo( u0.getOffsetUnits() ) && !u1.isConvertibleTo(u0) ) { // maxes are dt instead of stopt.
             xmaxs= Ops.add( xmins, xmaxs );
-            xmaxs= putProperty( xmaxs, QDataSet.NAME, "StopTime" );
             xmaxs= putProperty( xmaxs, QDataSet.DEPEND_0, null );
             xmaxs= putProperty( xmaxs, QDataSet.LABEL, null );
         }
 
+        xmins=  putProperty( xmins, QDataSet.NAME, "startTime" );
+        xmaxs=  putProperty( xmaxs, QDataSet.NAME, "stopTime" );
+        colors= putProperty( colors,QDataSet.NAME, "color" );
+        msgs=   putProperty( msgs,  QDataSet.NAME, "messages" );
+        
         colors= Ops.putProperty( colors, QDataSet.FORMAT, "0x%08x" );
         
         QDataSet lds= Ops.bundle( xmins, xmaxs, colors, msgs );
