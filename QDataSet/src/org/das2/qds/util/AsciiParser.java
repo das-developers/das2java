@@ -1782,7 +1782,9 @@ public class AsciiParser {
                             logger.fine("ignore fails on the first line");
                             failCount++;
                         } else {
-                            if ( firstException==null ) firstException= e;
+                            if ( firstException==null && j<fieldCount-1  ) {
+                                firstException= e;
+                            }
                             failCount++;
                         }
                         if ( builder!=null ) builder.putValue(irec, j, -1e31 ); //TODO
@@ -1793,7 +1795,7 @@ public class AsciiParser {
             }
             if ( firstException!=null && failCount>0 && failCount<fieldCount ) {
                 if ( showException ) {                    
-                    logger.log( Level.WARNING, "The following exception occurred while parsing:", firstException );
+                    logger.log( Level.WARNING, "The following exception occurred while parsing: " + firstException.getMessage(), firstException );
                     showException= false;
                 }
             }
