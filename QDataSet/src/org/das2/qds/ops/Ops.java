@@ -6448,6 +6448,9 @@ public final class Ops {
         if ( bounds.rank()==0 ) {
             throw new IllegalArgumentException("bounds must be not be rank 0, but a rank 1 bounding box");
         }
+        if ( bounds.rank()!=1 ) {
+            throw new IllegalArgumentException("bounds must be a rank 1 bounding box");
+        }
         return or( lt( ds, bounds.slice(0) ), ge( ds, bounds.slice(1) ) );
     }
 
