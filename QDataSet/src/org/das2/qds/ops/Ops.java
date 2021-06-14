@@ -6429,6 +6429,27 @@ public final class Ops {
     }
     
     /**
+     * 
+     * @param ds data, typically timetags.
+     * @param bounds rank 2 list of bounds, with bounds[:,0] the mins and bounds[:,1] the maxes
+     * @return dataset with the same geometry as ds, with 1 where within the bounds 0, when not within.
+     */
+    private static QDataSet withoutListOfBounds( QDataSet ds, QDataSet bounds ) {
+        if ( bounds.rank()!=2 ) throw new IllegalArgumentException("bounds should be rank 2 array of bounds");
+        final UnitsConverter uc= SemanticOps.getLooseUnitsConverter( bounds.slice(0).slice(0), ds );
+        return applyUnaryOp(ds, (UnaryOp) (double d1) -> {
+            for (int i = 0; i<bounds.length(); i++) {
+                double min1 = uc.convert(bounds.value(i,0));
+                double max1 = uc.convert(bounds.value(i,1));
+                if (d1 >= min1 && d1 < max1) {
+                    return 0.0;
+                }
+            }
+            return 1.0;
+        });
+    }
+    
+    /**
      * return non-zero where the data in ds are outside of the bounds.  In Jython,
      *<blockquote><pre>
      *print without( [0,1,2,3,4], '2 to 4' ) --> [ 1,1,0,0,1 ]
@@ -6446,12 +6467,18 @@ public final class Ops {
             throw new NullPointerException("bounds is null");
         }
         if ( bounds.rank()==0 ) {
-            throw new IllegalArgumentException("bounds must be not be rank 0, but a rank 1 bounding box");
+            throw new IllegalArgumentException("bounds must be not be rank 0, but a rank 1 bounding box or rank 2 list of bounding boxes");
         }
-        if ( bounds.rank()!=1 ) {
-            throw new IllegalArgumentException("bounds must be a rank 1 bounding box");
+        if ( bounds.rank()>2 ) {
+            throw new IllegalArgumentException("bounds must be a rank 1 bounding box or rank 2 list of bounding boxes");
         }
-        return or( lt( ds, bounds.slice(0) ), ge( ds, bounds.slice(1) ) );
+        
+        if ( bounds.rank()==1 ) {
+            return or( lt( ds, bounds.slice(0) ), ge( ds, bounds.slice(1) ) );
+        } else {
+            return withoutListOfBounds( ds, bounds );
+        }
+            
     }
 
     /**
