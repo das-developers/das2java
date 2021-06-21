@@ -239,6 +239,7 @@ public class TimeDatumFormatter extends DatumFormatter {
             ts= TimeUtil.toTimeStruct(datum);
         }
         Number[] array = timeStructToArray(ts);
+        if ( array.length==8 && array[7].intValue()==-1 ) array[7]=0; // https://github.com/das-developers/das2java/issues/16
         return format.format(array);
     }
     
