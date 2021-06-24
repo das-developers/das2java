@@ -345,10 +345,9 @@ public abstract class Units {
     public static final Units percent= new NumberUnits("%","");
 
     /**
-     * Define a set of units to describe ratiometric (logarithmic) spacing.  Note that Units.percent
-     * is no longer the defacto ratiometric spacing, and Units.percentIncrease takes its place.  
+     * Define a set of units to describe ratiometric (logarithmic) spacing.  
      * Note the log10Ratio is the preferred method for expressing spacing, but all are convertible
-     * See logERatio, log10Ratio and google for "fold change."
+     * See logERatio, log10Ratio and Google for "fold change."
      */
 
     /* percentIncrease is defined as <code>( b-a )*100. / a</code>.  So { 1,2,4,8 } has a spacing of 100 % diff.  */
