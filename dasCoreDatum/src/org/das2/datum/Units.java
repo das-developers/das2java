@@ -281,6 +281,12 @@ public abstract class Units {
             Units.milliseconds, Basis.since1970 );
 
     /**
+     * milliseconds since midnight Jan 1, 1970, excluding leap seconds.
+     */
+    public static final TimeLocationUnits us1970= new TimeLocationUnits("us1970","Microseconds since midnight Jan 1, 1970",
+            Units.microseconds, Basis.since1970 );
+
+    /**
      * roughly days since on midnight on 1958-01-01, Julian - 2436204.5 to be more precise.
      */
     public static final TimeLocationUnits mj1958= new TimeLocationUnits("mj1958","days since 1958-01-01T00:00Z, or Julian - 2436204.5", 
@@ -327,6 +333,7 @@ public abstract class Units {
         ((Units)us2000).registerConverter(decimalYear, new DecimalYearConverter( true ) );
         ((Units)t2000).registerConverter(t1970, new UnitsConverter.ScaleOffset(1.0, 9.466848e8));
         ((Units)t1970).registerConverter(ms1970, UnitsConverter.MILLI );
+        ((Units)t1970).registerConverter(us1970, UnitsConverter.MICRO );
         ((Units)t2000).registerConverter(t2010, new UnitsConverter.ScaleOffset(1.0, -3.1561920e+8 ));
         ((Units)t2000).registerConverter(mj1958, new UnitsConverter.ScaleOffset(1.0/8.64e4, 15340 ));
         ((Units)t2000).registerConverter(mjd, new UnitsConverter.ScaleOffset(1.0/8.64e4, 51544 ));
