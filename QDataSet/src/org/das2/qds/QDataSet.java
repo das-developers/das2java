@@ -10,16 +10,16 @@
 package org.das2.qds;
 
 /**
- * <p>QDataSets are less abstract and more flexible data model for das2.  das2's 
- * old data model was developed to deliver spectrogram time series data sets
+ * <p>QDataSets are the data model used within Das2 and Autoplot.  It was preceded 
+ * by a more specific data model, used to developed to deliver spectrogram time series data sets
  * where the dataset structure would change over time, and the interface is highly
  * optimized for that environment.  It's difficult to express many datasets in these
  * terms, so the simpler "quick" QDataSet was introduced.  </p>
  *
- * <p>The QDataSet can be thought of as a fast java array that has name-value metadata
- * attached to it.  These arrays of data can have arbitrary rank, although currently
- * the interface limits rank to 0,1,2,3, and 4.  (Rank N is proposed but not
- * developed.)  Each dimension's length can vary, like Java arrays, and datasets 
+ * <p>The QDataSet can be thought of as a fast Java array that has name-value metadata
+ * attached to it.  These arrays of data can have an arbitrary number of indexes, or rank, 
+ * although currently the interface limits rank to 0, 1, 2, 3, and 4.  Each 
+ * index's length can vary, like Java arrays, and datasets 
  * where the dimensions do not vary in length are colloquially called "Qubes."</p>
  *
  * <p>QDataSets can have other QDataSets as property values, for example the property
