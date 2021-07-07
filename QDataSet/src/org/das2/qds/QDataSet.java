@@ -163,12 +163,9 @@ public interface QDataSet {
     public final static int MAX_PLANE_COUNT=50;
 
     /**
-     * maximum number of same-unit bundled dimensions (e.g. B_GSM[time,Bundle]).  This was introduced when cdf dataset
+     * maximum number of same-unit bundled dimensions (e.g. B_GSM[time,Bundle]).  This was introduced when CDF dataset
      * fa_k0_tms_20040224_v01.cdf?O+_en had 48 energy channels, was marked as time_series but wouldn't render because
      * view code limited to 12.
-     *
-     * Seth's file vap+cdf:file:///home/jbf/ct/hudson/data.backup/cdf/lanl/rbspa_pre_ect-mageisHIGH-sp-L1_20130213_v1.0.0.cdf?Count_Rate_elec
-     * RBSP/Hope has 72 channels.
      */
     public final static int MAX_UNIT_BUNDLE_COUNT=96;
 
