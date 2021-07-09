@@ -580,7 +580,7 @@ public class DataSetBuilder {
             } else if ( v1 instanceof QDataSet ) {
                 putValue( -1, i, (QDataSet)v1 );
             } else {
-                throw new IllegalArgumentException("expected String, Datum, or double");
+                throw new IllegalArgumentException("expected String, Datum, or double, got: "+v1.getClass());
             }
         } 
         nextRecord();
