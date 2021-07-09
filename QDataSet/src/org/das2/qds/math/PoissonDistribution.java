@@ -21,7 +21,7 @@ public class PoissonDistribution {
     
     Fac fac= new Fac();
     
-    private class Fac {
+    private static class Fac {
         final static int FAK_LEN=1024;
         double[] fac_table;
         boolean initialized= false;
@@ -65,7 +65,7 @@ public class PoissonDistribution {
     
     PoissonInver poissonInver= new PoissonInver();
     
-    private class PoissonInver {
+    private static class PoissonInver {
         double p_L_last=-1;  // previous value of L
         double p_f0;         // cache f0( L )
         /**
