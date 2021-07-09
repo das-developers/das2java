@@ -174,9 +174,10 @@ public class AsciiParser {
      */
     public final boolean isHeader(int iline, String lastLine, String thisLine, int recCount) {
         return (iline < skipLines 
-                || (headerDelimiter != null && recCount == 0 && 
-                   (lastLine == null || !Pattern.compile(headerDelimiter).matcher(lastLine).find())) 
-                || (commentPrefix != null && thisLine.startsWith(commentPrefix))
+                || ( headerDelimiter != null && 
+                     recCount == 0 && 
+                     (lastLine == null || !Pattern.compile(headerDelimiter).matcher(lastLine).find()) ) 
+                || ( commentPrefix != null && thisLine.startsWith(commentPrefix) )
                 );
     }
 
@@ -380,7 +381,12 @@ public class AsciiParser {
             if ( line==null ) return null;
 
             DelimParser p= guessDelimParser(line,iline);
-
+            
+            String headerLine= line;
+            int headerLineNumber= iline;
+            
+            DelimParser headerp= p;
+            
             List<String> lines= new LinkedList<>();
 
             int parseCount=0;
@@ -444,6 +450,10 @@ public class AsciiParser {
                         }
                     }                    
                 }
+            }
+            
+            if ( headerp.fieldCount==p.fieldCount ) {
+                 p= guessDelimParser(headerLine,headerLineNumber); // restores units found in header.
             }
             
             result= p;
@@ -1151,7 +1161,7 @@ public class AsciiParser {
      * @SuppressWarnings("unchecked")
      */
     private void parseMeta( String header, DataSetBuilder builder ) {
-
+        logger.entering( "AsciiParser", "parseMeta" );
         boolean doJSON= isRichHeader(header); 
         
         if ( doJSON ) {
@@ -1207,12 +1217,13 @@ public class AsciiParser {
             SparseDataSetBuilder sdsb= new SparseDataSetBuilder(2);
             sdsb.setQube( new int[] { units.length, 0 } );
             for ( int i=0; i<units.length; i++ ) {
-                sdsb.putProperty( QDataSet.UNITS, i, units[i] );
+                sdsb.putProperty( QDataSet.UNITS, i, this.units[i] );
                 sdsb.putProperty( QDataSet.LABEL, i, this.fieldLabels[i] );
                 sdsb.putProperty( QDataSet.NAME, i, this.fieldNames[i] );
             }
             bundleDescriptor= sdsb.getDataSet();
         }
+        logger.exiting( "AsciiParser", "parseMeta" );
 
     }
 
@@ -1596,6 +1607,9 @@ public class AsciiParser {
                                 fieldUnits[i]= null;
                             }
                         }
+                        if ( fieldUnits[i]!=null ) {
+                            _setUnits(i,Units.lookupUnits(fieldUnits[i]));
+                        }
                     }
                 } else {
                     if (isColumnHeaders) {
@@ -1779,7 +1793,7 @@ public class AsciiParser {
                         okayCount++;
                     } catch (ParseException | NumberFormatException | InconvertibleUnitsException e) {
                         if ( irec==0 ) {
-                            logger.fine("ignore fails on the first line");
+                            logger.finest("ignore fails on the first line");
                             failCount++;
                         } else {
                             if ( firstException==null && j<fieldCount-1  ) {
@@ -2201,10 +2215,11 @@ public class AsciiParser {
      * @param u the unit
      */
     private void _setUnits( int i, Units u ) {
-        //if ( i==20 ) {
-        //    System.err.println("here we are at 2180");
-        //}
+        logger.log(Level.FINEST, "_setUnits({0},{1})", new Object[]{i, u});
         this.units[i]= u;
+        if ( bundleDescriptor!=null ) {
+            bundleDescriptor.putProperty( QDataSet.UNITS, i, u );
+        }
     }
     
     /**
