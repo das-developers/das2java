@@ -31,7 +31,7 @@ endif
 
 # Project Targets ############################################################
 
-LIB_JAR=dasCore-2.2.jar
+LIB_JAR=dasCore-1.0-SNAPSHOT.jar
 
 DEPEND_JARS=batik-awt-util-1.5.jar batik-svggen-1.5.jar \
  batik-util-1.5.jar bcmail-jdk14-138.jar bcprov-jdk14-138.jar \
@@ -81,14 +81,10 @@ $(INST_HOST_LIB)/%.jar:target/lib/%.jar
 
 .PHONY : build package test install clean distclean
 
-build: $(BUILD_JAR) $(BUILD_DEPEND_JARS) $(BUILD_SCRIPTS) #\
-# target/site/apidocs/index.html
+build: $(BUILD_JAR) $(BUILD_DEPEND_JARS) $(BUILD_SCRIPTS)
 
 $(BUILD_JAR) $(BUILD_DEPEND_JARS):
-	mvn -Dmaven.javadoc.skip=true package
-
-target/site/apidocs/index.html:
-	mvn generate-sources javadoc:javadoc
+	mvn package
 
 test:
 	mvn integration-test
@@ -99,12 +95,6 @@ show:
 
 
 install: $(INST_LIB_JARS) $(INST_SCRIPTS)
-	mvn install
-
-$(INST_DOC)/dasCore/index.html:target/site/apidocs/index.html
-	if [ ! -e $(INST_DOC)/dasCore ]; then mkdir -p $(INST_DOC)/dasCore; fi
-	cp --remove-destination -r target/site/apidocs/* $(INST_DOC)/dasCore
-	chmod -R g+w $(INST_DOC)/dasCore
 
 clean:
 	mvn clean
