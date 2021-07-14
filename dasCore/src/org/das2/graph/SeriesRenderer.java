@@ -466,6 +466,14 @@ public class SeriesRenderer extends Renderer {
             if ( haveValidColor==false ) {
                 lparent.postMessage( SeriesRenderer.this, "no valid data to color plot symbols", Level.INFO, null, null );
             }
+            
+            DasColorBar lcolorBar= colorBar;
+            if (colorByDataSet != null && lcolorBar!=null ) {
+                Units zunits= SemanticOps.getUnits( colorByDataSet );
+                if ( !zunits.isConvertibleTo( lcolorBar.getUnits() ) ) {
+                    lparent.postMessage( SeriesRenderer.this, "colorbar units do not match, data units are \""+zunits+"\"", Level.INFO, null, null );
+                }
+            }
 
             return i;
         }
@@ -488,6 +496,9 @@ public class SeriesRenderer extends Renderer {
             Units zunits = null;
             if (colorByDataSet1 != null && fcolorBar!=null ) {
                 zunits= SemanticOps.getUnits( colorByDataSet1 );
+                if ( !zunits.isConvertibleTo( fcolorBar.getUnits() ) ) {
+                    zunits= fcolorBar.getUnits(); // we will post warning later
+                }
             }
 
             double x, y;            
