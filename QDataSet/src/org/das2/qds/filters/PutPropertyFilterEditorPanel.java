@@ -1,8 +1,4 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package org.das2.qds.filters;
 
 import java.util.regex.Matcher;
@@ -59,6 +55,10 @@ public class PutPropertyFilterEditorPanel extends AbstractFilterEditorPanel {
                 vv= new String[] { "None" };
                 documentationLabel.setText("reset the units");
                 break;
+            case "NAME":
+                vv= new String[] { "MyData" };
+                documentationLabel.setText("set the name used for the data");
+                break;
             default:
                 vv= new String[] { "" };
                 documentationLabel.setText(" ");
@@ -83,7 +83,7 @@ public class PutPropertyFilterEditorPanel extends AbstractFilterEditorPanel {
         jLabel1.setText("Put Property");
 
         jComboBox1.setEditable(true);
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "VALID_MIN", "VALID_MAX", "FILL_VALUE", "TITLE", "LABEL", "DEPEND_0", "FORMAT", "DELTA_PLUS", "DELTA_MINUS", "UNITS" }));
+        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "VALID_MIN", "VALID_MAX", "FILL_VALUE", "TITLE", "LABEL", "NAME", "DEPEND_0", "FORMAT", "DELTA_PLUS", "DELTA_MINUS", "UNITS" }));
         jComboBox1.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 jComboBox1ItemStateChanged(evt);

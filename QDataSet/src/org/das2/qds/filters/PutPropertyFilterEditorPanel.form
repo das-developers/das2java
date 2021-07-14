@@ -61,17 +61,18 @@
       <Properties>
         <Property name="editable" type="boolean" value="true"/>
         <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-          <StringArray count="10">
+          <StringArray count="11">
             <StringItem index="0" value="VALID_MIN"/>
             <StringItem index="1" value="VALID_MAX"/>
             <StringItem index="2" value="FILL_VALUE"/>
             <StringItem index="3" value="TITLE"/>
             <StringItem index="4" value="LABEL"/>
-            <StringItem index="5" value="DEPEND_0"/>
-            <StringItem index="6" value="FORMAT"/>
-            <StringItem index="7" value="DELTA_PLUS"/>
-            <StringItem index="8" value="DELTA_MINUS"/>
-            <StringItem index="9" value="UNITS"/>
+            <StringItem index="5" value="NAME"/>
+            <StringItem index="6" value="DEPEND_0"/>
+            <StringItem index="7" value="FORMAT"/>
+            <StringItem index="8" value="DELTA_PLUS"/>
+            <StringItem index="9" value="DELTA_MINUS"/>
+            <StringItem index="10" value="UNITS"/>
           </StringArray>
         </Property>
       </Properties>
