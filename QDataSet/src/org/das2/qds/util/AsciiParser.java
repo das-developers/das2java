@@ -604,7 +604,7 @@ public class AsciiParser {
         } else if ( commaDelimFieldCount > 1 && commaDelimFieldCount>= whitespaceDelimFieldCount/2 ) { //TODO: improve this
             fieldSep = ",";
         } else {
-            fieldSep = "\\s+";
+            fieldSep = "[\\s\\u00A0]+";
         }
         
         logger.log(Level.FINER, "guessDelimParser guesses \"{0}\" for line {1}", new Object[]{fieldSep, lineNumber});
