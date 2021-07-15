@@ -70,7 +70,7 @@ public class PropertiesTreeModel extends DefaultTreeModel {
                 nextChild= (MutableTreeNode) model.getRoot();
             } else if ( value.getClass().isArray() ) {
                 value.getClass().getComponentType();
-                List list= new ArrayList();
+                List<Object> list= new ArrayList();
                 int nn= Math.min( Array.getLength(value), 5 );
                 for ( int i=0; i<nn; i++ ){
                     list.add( Array.get( value, i) );
