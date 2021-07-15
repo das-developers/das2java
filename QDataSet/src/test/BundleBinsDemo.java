@@ -77,7 +77,7 @@ public class BundleBinsDemo {
                     if ( QDataSet.START_INDEX.equals(name) ) return 0;
 
                 } else if ( i==2 || i==3 || i==4 ) {
-                    if ( QDataSet.DEPEND_1.equals(name) ) return Ops.labels( new String[] { "B-GSM-X","B-GSM-Y","B-GSM-Z" } );
+                    if ( QDataSet.DEPEND_1.equals(name) ) return Ops.labelsDataset( new String[] { "B-GSM-X","B-GSM-Y","B-GSM-Z" } );
                     if ( QDataSet.DEPENDNAME_0.equals(name) ) return "TimeBins";
                     if ( QDataSet.UNITS.equals(name) ) return Units.meters;
                     //if ( QDataSet.NAME.equals(name) ) return "BGSM";
