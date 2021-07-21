@@ -52,6 +52,7 @@ import org.das2.util.LoggerManager;
 import org.das2.qds.examples.Schemes;
 import org.das2.qds.ops.Ops;
 import org.das2.qds.util.AutoHistogram;
+import org.das2.qds.util.DataSetBuilder;
 import org.das2.qds.util.LinFit;
 
 /**
@@ -2530,6 +2531,66 @@ public class DataSetUtil {
             return ds.rank()==2 && dep1!=null && dep1.rank()==1;
         }
         return true;
+    }
+    
+    /**
+     * return a subset of the dataset which is a qube.
+     * @param ds a rank N dataset like dataset[3,1616*,6144*], where asterisks (stars) indicate it is not a qube.
+     * @param reclen the record length for each record.
+     * @return a rank N-1 dataset.
+     */
+    public static QDataSet qubeSubset( QDataSet ds, int reclen ) {
+        if ( DataSetUtil.isQube(ds) ) {
+            throw new IllegalArgumentException("Dataset is already a qube");
+        }
+        int n= 0;
+        for ( int i=0; i<ds.length(); i++ ) {
+            QDataSet ds1= ds.slice(i); // this must be a qube.
+            if ( ds1.length(0)==reclen ) {
+                n+= ds1.length();
+            }
+        }
+        
+        ArrayDataSet result;
+        ArrayDataSet resultDep0;
+        
+        if ( ds.rank()==3 ) {
+            Class dsType= ArrayDataSet.guessBackingStore(ds.slice(0));
+            Class dep0Type= ArrayDataSet.guessBackingStore(((QDataSet)ds.slice(0).property(QDataSet.DEPEND_0)));
+            result= ArrayDataSet.create( dsType, new int[] { n, reclen } );
+            resultDep0= ArrayDataSet.create( dep0Type, new int[] { n } );
+            int iout=0;
+            boolean copyProps= true;
+            for ( int i=0; i<ds.length(); i++ ) {
+                QDataSet ds1= ds.slice(i); // this must be a qube.
+                if ( ds1.length(0)==reclen ) {
+                    QDataSet dep0= (QDataSet) ds1.property(QDataSet.DEPEND_0);
+                    if ( dep0==null ) dep0= Ops.add( iout, Ops.indgen(ds1.length()) );
+                    DataSetUtil.copyDimensionProperties( dep0, resultDep0 );
+                    for ( int j=0; j<ds1.length(); j++ ) {
+                        for ( int k=0; k<reclen; k++ ) {
+                            result.putValue( iout, k, ds1.value( j,k ) );
+                        }
+                        resultDep0.putValue( iout, dep0.value(j) );
+                        iout++;
+                    }
+                    if ( copyProps ) {
+                        DataSetUtil.copyDimensionProperties( ds1, result );
+                        QDataSet resultDep1= (QDataSet)ds1.property(QDataSet.DEPEND_1);
+                        if ( resultDep1!=null && resultDep1.rank()>1 ) {
+                            throw new IllegalArgumentException("result depend1 cannot be rank 2");
+                        }
+                        result.putProperty(QDataSet.DEPEND_1, resultDep1);
+                        copyProps= false;
+                    }
+                }
+            }
+            result.putProperty(QDataSet.DEPEND_0,resultDep0);
+        } else {
+            throw new IllegalArgumentException("rank 2 and rank 4 are not yet supported");
+        }
+        
+        return result;
     }
 
     /**
