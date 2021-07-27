@@ -12232,6 +12232,7 @@ public final class Ops {
      * @return the single dataset evaluated at the other dataset's timetags.
      * @see #synchronizeNN(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      * @see #synchronize(org.das2.qds.QDataSet, org.das2.qds.QDataSet...) 
+     * @see #flattenWaveform(org.das2.qds.QDataSet) 
      */
     public static QDataSet synchronize( QDataSet ds1, QDataSet ds ) {
         List<QDataSet> dss= synchronize( ds1, new QDataSet[] { ds } );
@@ -12251,6 +12252,7 @@ public final class Ops {
      * @return a list of N datasets, synchronized
      * @see #synchronizeNN(org.das2.qds.QDataSet, org.das2.qds.QDataSet...) 
      * @see #synchronize(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
+     * @see #flattenWaveform(org.das2.qds.QDataSet) 
      */
     public static List<QDataSet> synchronize( QDataSet dsTarget, QDataSet ... dsSources ) {
         QDataSet ttTarget= (QDataSet) dsTarget.property( QDataSet.DEPEND_0 );
@@ -12319,6 +12321,7 @@ public final class Ops {
      * @return the single dataset evaluated at the other dataset's timetags.
      * @see #synchronize(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      * @see #synchronizeNN(org.das2.qds.QDataSet, org.das2.qds.QDataSet...) 
+     * @see #flattenWaveform(org.das2.qds.QDataSet) 
      */
     public static QDataSet synchronizeNN( QDataSet ds1, QDataSet ds ) {
         List<QDataSet> dss= synchronizeNN( ds1, new QDataSet[] { ds } );
@@ -12337,6 +12340,7 @@ public final class Ops {
      * @return a list of N datasets, synchronized
      * @see #synchronize(org.das2.qds.QDataSet, org.das2.qds.QDataSet...)      
      * @see #synchronizeNN(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
+     * @see #flattenWaveform(org.das2.qds.QDataSet) 
      */
     public static List<QDataSet> synchronizeNN( QDataSet ds1, QDataSet ... dss ) {
         QDataSet tt= (QDataSet) ds1.property( QDataSet.DEPEND_0 );
@@ -12499,6 +12503,7 @@ public final class Ops {
      * @return rank 1 waveform
      * @see #flatten(org.das2.qds.QDataSet) 
      * @see DataSetOps#flattenWaveform(org.das2.qds.QDataSet) 
+     * @see #synchronizeNN(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      */
     public static QDataSet flattenWaveform( QDataSet ds ) {
         return DataSetOps.flattenWaveform(ds);
