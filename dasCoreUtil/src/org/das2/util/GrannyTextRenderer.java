@@ -62,6 +62,10 @@ import java.util.logging.Logger;
  * !(ext;args) where ext can be:
  * !(color;saddleBrown)  switch to color.
  * !(painter;codeId;codeArg1)  Plug-in Java code for painting regions.
+ * !(bold) switch to bold
+ * !(italic) switch to italic
+ * !(unbold) switch off bold by switching to plain
+ * !(unitalic) switch off italic by switching to plain
  * </pre>
  * For Greek and math symbols, Unicode characters should be
  * used like so: &amp;#9742; (&#9742 phone symbol), or symbols like <tt>&amp;Omega;</tt> and <tt>&amp;omega;</tt>
@@ -350,6 +354,8 @@ public class GrannyTextRenderer {
         
         logger.entering( "GrannyTextRenderer", "draw", new Object[] { baseFont, ix, iy, draw, str } );
         
+        Font activeFont= baseFont;
+        
         boolean debug= false;
         if ( debug && !draw && this.tokens.length>1 ) {
             logger.info("draw debug");
@@ -565,6 +571,30 @@ public class GrannyTextRenderer {
                                 }
                                 current.x+= b1.getWidth();
                             }
+                        } else if ( command.equals("bold") ) {
+                            if ( activeFont.isItalic() ) {
+                                activeFont = activeFont.deriveFont(Font.ITALIC | Font.BOLD );
+                            } else {
+                                activeFont = activeFont.deriveFont(Font.BOLD);
+                            }
+                        } else if ( command.equals("unbold") ) {
+                            if ( activeFont.isItalic() ) {
+                                activeFont = activeFont.deriveFont(Font.ITALIC);
+                            } else {
+                                activeFont = activeFont.deriveFont(Font.PLAIN);
+                            }
+                        } else if ( command.equals("italic") ) {
+                            if ( activeFont.isBold() ) {
+                                activeFont = activeFont.deriveFont(Font.ITALIC | Font.BOLD );
+                            } else {
+                                activeFont = activeFont.deriveFont(Font.ITALIC);
+                            }
+                        } else if ( command.equals("unitalic") ) {
+                            if ( activeFont.isBold() ) {
+                                activeFont = activeFont.deriveFont(Font.BOLD);
+                            } else {
+                                activeFont = activeFont.deriveFont(Font.PLAIN);
+                            }
                         }
                         break;
                     case  '!':
@@ -572,22 +602,22 @@ public class GrannyTextRenderer {
                     default:break;
                 }
             } else {
-                Font font = baseFont;
-                float size = baseFont.getSize2D();
+                Font font = activeFont;
+                float size = activeFont.getSize2D();
                 float y = current.y;
                 switch (current.sub) {
                     case SUB_U:
-                        font = baseFont.deriveFont(size * 0.62f);
+                        font = activeFont.deriveFont(size * 0.62f);
                         y = y - 0.38f * size;
                         size = size * 0.62f;
                         break;
                     case SUB_D:
-                        font = baseFont.deriveFont(size * 0.62f);
+                        font = activeFont.deriveFont(size * 0.62f);
                         y = y + 0.31f * size;
                         size = size * 0.62f;
                         break;
                     case SUB_L:
-                        font = baseFont.deriveFont(size * 0.62f);
+                        font = activeFont.deriveFont(size * 0.62f);
                         y = y + 0.62f * size;
                         size = size * 0.62f;
                         break;
@@ -660,6 +690,11 @@ public class GrannyTextRenderer {
         str= str.replaceAll("\\</sup\\>","!n");
         str= str.replaceAll("\\<sub\\>","!d");
         str= str.replaceAll("\\</sub\\>","!n");
+        str= str.replaceAll("\\<b>","!(bold)");
+        str= str.replaceAll("\\</b>","!(unbold)");
+        str= str.replaceAll("\\<i>","!(italic)");
+        str= str.replaceAll("\\</i>","!(unitalic)");
+        
         while(end < str.length()) {
             begin = end;
             if (str.charAt(begin) == '!') {
