@@ -38,7 +38,7 @@ public class SmoothFilterEditorPanel extends AbstractFilterEditorPanel {
 
         jCheckBox1.setText("jCheckBox1");
 
-        jLabel1.setText("'Smooth' Boxcar Size:  ");
+        jLabel1.setText("'Smooth' sliding boxcar size:  ");
 
         sizeTF.setText("3");
         sizeTF.setPreferredSize(new java.awt.Dimension(50, 27));

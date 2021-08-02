@@ -51,7 +51,7 @@
   <SubComponents>
     <Component class="javax.swing.JLabel" name="jLabel1">
       <Properties>
-        <Property name="text" type="java.lang.String" value="&apos;Smooth&apos; Boxcar Size:  "/>
+        <Property name="text" type="java.lang.String" value="&apos;Smooth&apos; sliding boxcar size:  "/>
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="sizeTF">
