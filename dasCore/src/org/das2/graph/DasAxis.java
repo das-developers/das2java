@@ -3271,7 +3271,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         double trans2 = -1 * memento.dmin * scale2 + getMemento().dmin;
 
         if ( dmin0==DEVICE_POSITIVE_LIMIT || dmin0==-DEVICE_POSITIVE_LIMIT | dmax0==DEVICE_POSITIVE_LIMIT | dmax0==DEVICE_POSITIVE_LIMIT ) {
-            logger.info("unable to create transform");
+            logger.fine("unable to create transform in getAffineTransform");
         }
 
         if (!(isHorizontal() ^ flipped)) {
