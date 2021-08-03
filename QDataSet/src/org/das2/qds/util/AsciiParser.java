@@ -452,10 +452,6 @@ public class AsciiParser {
                 }
             }
             
-            if ( headerp.fieldCount==p.fieldCount ) {
-                 p= guessDelimParser(headerLine,headerLineNumber); // restores units found in header.
-            }
-            
             result= p;
 
             // Now go back and find the first line that has this field count, to get labels.
@@ -1268,7 +1264,7 @@ public class AsciiParser {
     Datum dwhereValue= null;
     DatumRange dwhereWithin= null;
     
-    private Comparator whereComp= new Comparator() {
+    private Comparator<String> whereComp= new Comparator() {
         @Override
         @SuppressWarnings("unchecked")
         public int compare(Object o1, Object o2) {
@@ -1754,7 +1750,7 @@ public class AsciiParser {
         }
         
         @Override
-        public boolean tryParseRecord(String line, int irec, DataSetBuilder builder) {
+        public boolean tryParseRecord( String line, int irec, DataSetBuilder builder) {
             int j;
             int okayCount = 0;
             int failCount = 0;
@@ -1807,6 +1803,7 @@ public class AsciiParser {
                     
                 }
             }
+            logger.log(Level.FINE, "line {0} okayCount: {1} failCount: {2}", new Object[]{irec, okayCount, failCount});
             if ( firstException!=null && failCount>0 && failCount<fieldCount ) {
                 if ( showException ) {                    
                     logger.log( Level.WARNING, "The following exception occurred while parsing: " + firstException.getMessage(), firstException );
