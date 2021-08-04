@@ -1,8 +1,10 @@
 package org.das2.qds;
 
+import org.das2.datum.Units;
+
 /**
  * Iterator for accessing each value of a dataset.
- * See http://jfaden.net:8080/hudson/job/autoplot-test037/ws/dataSetIterator.jy
+ * See https://jfaden.net/jenkins/job/autoplot-test037/ws/dataSetIterator.jy
  * @author jbf
  */
 public interface DataSetIterator {
@@ -44,12 +46,26 @@ public interface DataSetIterator {
     double getValue(QDataSet ds);
 
     /**
+     * get the rank 0 data set the current iterator position.
+     * @param ds
+     * @return units
+     */
+    QDataSet getRank0Value( QDataSet ds );
+    
+    /**
      * replace the value in ds at the current iterator position.
      * @param ds a writable dataset with compatible geometry as the iterator's geometry.
      * @param v the value to insert.
      */
     void putValue(WritableDataSet ds, double v);
 
+    /**
+     * replace the value in ds at the current iterator position.
+     * @param ds a writable dataset with compatible geometry as the iterator's geometry.
+     * @param v the rank 0 value to insert
+     */
+    void putRank0Value( WritableDataSet ds, QDataSet v);
+    
     /**
      * return the rank of the dataset which the iterator will walk through.
      * Note this needn't be the same rank as the dataset!  For example,

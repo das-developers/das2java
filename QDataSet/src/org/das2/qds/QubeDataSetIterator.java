@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.datum.LoggerManager;
+import org.das2.datum.Units;
+import org.das2.datum.UnitsConverter;
 import org.das2.util.monitor.ProgressMonitor;
 import org.das2.qds.ops.Ops;
 
@@ -860,6 +862,28 @@ public final class QubeDataSetIterator implements DataSetIterator {
     }
 
     @Override
+    public final QDataSet getRank0Value(QDataSet ds) {
+        QDataSet result;
+        switch ( rank ) {
+            case 1:
+                result= ds.slice( index(0) );
+                break;
+            case 2:
+                result= ds.slice( index(0) ).slice( index(1) );
+                break;
+            case 3:
+                result= ds.slice( index(0) ).slice( index(1) ).slice( index(2) );
+                break;
+            case 4:
+                result= ds.slice( index(0) ).slice( index(1) ).slice( index(2) ).slice( index(3) );
+                break;
+            default:
+                throw new IllegalArgumentException("rank limit: "+rank + " is not supported");
+        }
+        return result;
+    }
+    
+    @Override
     public final void putValue(WritableDataSet ds, double v) {
         switch (rank) {
             case 0:
@@ -881,4 +905,16 @@ public final class QubeDataSetIterator implements DataSetIterator {
                 throw new IllegalArgumentException("rank limit");
         }
     }
+
+    @Override
+    public void putRank0Value(WritableDataSet ds, QDataSet vds) {
+        QDataSet r0ds= getRank0Value(ds);
+        Units uds= SemanticOps.getUnits(r0ds);
+        Units uv= SemanticOps.getUnits(vds);
+        UnitsConverter uc= uv.getConverter(uds);
+        double v= uc.convert(vds.value());
+        putValue( ds, v );
+    }
+    
+    
 }

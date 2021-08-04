@@ -1,6 +1,9 @@
 
 package org.das2.qds;
 
+import org.das2.datum.Units;
+import org.das2.datum.UnitsConverter;
+
 /**
  * Iterator that uses a rank 2 list of indeces.  For example,
  * to iterate over 10 points of a rank 2 dataset, this would be constructed
@@ -54,6 +57,28 @@ public class IndexListDataSetIterator implements DataSetIterator {
         return 1;
     }
 
+    @Override
+    public QDataSet getRank0Value(QDataSet ds) {
+        QDataSet result;
+        switch ( dsrank ) {
+            case 1:
+                result= ds.slice( index(0) );
+                break;
+            case 2:
+                result= ds.slice( index(0) ).slice( index(1) );
+                break;
+            case 3:
+                result= ds.slice( index(0) ).slice( index(1) ).slice( index(2) );
+                break;
+            case 4:
+                result= ds.slice( index(0) ).slice( index(1) ).slice( index(2) ).slice( index(3) );
+                break;
+            default:
+                throw new IllegalArgumentException("rank limit: "+dsrank + " is not supported");
+        }
+        return result;
+    }
+    
     /**
      * get the value from ds at the current iterator position.
      * @param ds a dataset with compatible geometry as the iterator's geometry.
@@ -98,6 +123,16 @@ public class IndexListDataSetIterator implements DataSetIterator {
             default:
                 throw new IllegalArgumentException("rank limit: "+dsrank + " is not supported");
         }        
+    }
+
+    @Override
+    public void putRank0Value(WritableDataSet ds, QDataSet vds) {
+        QDataSet r0ds= getRank0Value(ds);
+        Units uds= SemanticOps.getUnits(r0ds);
+        Units uv= SemanticOps.getUnits(vds);
+        UnitsConverter uc= uv.getConverter(uds);
+        double v= uc.convert(vds.value());
+        putValue( ds, v );
     }
     
     @Override
