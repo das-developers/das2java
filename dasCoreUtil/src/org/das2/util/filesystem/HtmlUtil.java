@@ -139,6 +139,7 @@ public class HtmlUtil {
         String surl= url.toString();
 
         while ( matcher.find() ) {
+            
             String strLink= matcher.group(2);
             logger.log(Level.FINEST, "parse listing {0}", strLink);
             URL urlLink;
@@ -146,6 +147,9 @@ public class HtmlUtil {
             try {
                 urlLink = new URL(url, URLDecoder.decode(strLink,"UTF-8") );
                 strLink = urlLink.toString();
+                if ( strLink.contains("data-item-type=") ) { // kludge for https://github.com/autoplot/dev/master/bugs/sf/2376/
+                    continue;
+                }
             } catch (MalformedURLException e) {
                 logger.log(Level.SEVERE, "bad URL: {0} {1}", new Object[]{url, strLink});
                 continue;
