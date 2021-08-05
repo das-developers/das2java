@@ -7,10 +7,12 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.InterruptedIOException;
+import java.io.PrintWriter;
 import java.io.PushbackInputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -298,12 +300,30 @@ public class GitHubFileSystem extends HttpFileSystem {
         try {
             URL url= gitHubMapDir( root, directory );
             String surl= url.toString();
+            if ( surl.contains("https://abbith.physics.uiowa.edu") ) {
+                surl= surl.replace("raw/master", "-/tree/master");
+                url= new URL(surl);
+            }
+            
+            logger.log(Level.FINE, "translated list URL to {0}", url);
+            
             urlStream = getInputStream(url);
             URL[] listing= HtmlUtil.getDirectoryListing( url, urlStream, false );
+            
+            //try (PrintWriter fw = new PrintWriter( new FileWriter(new File("/tmp/ap/listingGitHubFS.txt")) )) {
+            //    for ( URL u: listing ) {
+            //        fw.println(u);
+            //    }
+            //}
+            //System.err.println("Wrote /tmp/ap/listingGitHubFS.txt") ;
+            
             List<String> result= new ArrayList<>();
-            int parentLen= root.toString().length() + ( directory.length() -1 ) + 12;
+            int parentLen= root.toString().length() + ( directory.length() -1 ) + 5;
             for ( URL u: listing ) {
                 String su= u.toString();
+                //if ( su.contains("readme.md") ) {
+                //    System.err.println("here for debugging");
+                //}
                 if ( su.contains("/blob/"+branch+"/")
                         && !su.endsWith(".gitkeep") ) {
                     result.add( su.substring( parentLen ) );
@@ -513,20 +533,15 @@ public class GitHubFileSystem extends HttpFileSystem {
      * @throws MalformedURLException 
      */
     public URL gitHubMapDir( URI root, String filename ) throws MalformedURLException {
-        filename= toCanonicalFilename( filename );            
-        // png image "https://github.com/autoplot/app/raw/master/Autoplot/src/resources/badge_ok.png"
-        String[] path= root.getPath().split("/",-2);
-        String spath= path[0] + '/' + path[1] + '/' + path[2] ;
-        for ( int i=3; i<3+baseOffset; i++ ) {
-            spath+= "/" + path[i];
-        }
-        String n;
-        if ( path.length==(3+baseOffset) && filename.length()==1 ) {
-            return root.toURL();
+        
+        URL ff= gitHubMapFile( root, filename+"/readme.md" );
+        String s= ff.toString();
+        s= s.substring(0,s.length()-10);
+        if ( s.endsWith("raw/"+branch+"/") ) {
+            int len= ("raw/"+branch+"/").length();
+            return new URL( s.substring(0,s.length()-len) );
         } else {
-            n= root.getScheme() + "://" + root.getHost() + '/' + spath + "/tree/"+branch+"/" + strjoin( path, "/", 3 + baseOffset, -1 ) + filename;
-            URL url= new URL( n );
-            return url;
+            return new URL( s );
         }
     }
 
