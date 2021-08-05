@@ -150,6 +150,9 @@ public class HtmlUtil {
                 if ( strLink.contains("data-item-type=") ) { // kludge for https://github.com/autoplot/dev/master/bugs/sf/2376/
                     continue;
                 }
+                if ( strLink.contains("#") ) {
+                    continue;   // get rid of many https://abbith.physics.uiowa.edu/assets/icons-2cb47a6dce56387af715816406f3f0d5d68651436bd5c96807123fcf421ad07d.svg#chevron-down
+                }
             } catch (MalformedURLException e) {
                 logger.log(Level.SEVERE, "bad URL: {0} {1}", new Object[]{url, strLink});
                 continue;
