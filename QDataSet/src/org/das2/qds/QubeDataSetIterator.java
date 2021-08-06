@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.LoggerManager;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsConverter;
@@ -911,10 +912,20 @@ public final class QubeDataSetIterator implements DataSetIterator {
         QDataSet r0ds= getRank0Value(ds);
         Units uds= SemanticOps.getUnits(r0ds);
         Units uv= SemanticOps.getUnits(vds);
-        UnitsConverter uc= uv.getConverter(uds);
-        double v= uc.convert(vds.value());
+        
+        double v;
+        try {
+            UnitsConverter uc= uv.getConverter(uds);
+            v= uc.convert(vds.value());
+        } catch ( InconvertibleUnitsException ex ) {
+            if ( uv==Units.dimensionless ) {
+                v= vds.value();
+            } else {
+                throw ex;
+            }
+        }
         putValue( ds, v );
     }
-    
+
     
 }
