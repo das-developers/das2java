@@ -1,6 +1,7 @@
 
 package org.das2.qds;
 
+import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsConverter;
 
@@ -130,8 +131,17 @@ public class IndexListDataSetIterator implements DataSetIterator {
         QDataSet r0ds= getRank0Value(ds);
         Units uds= SemanticOps.getUnits(r0ds);
         Units uv= SemanticOps.getUnits(vds);
-        UnitsConverter uc= uv.getConverter(uds);
-        double v= uc.convert(vds.value());
+        double v;
+        try {
+            UnitsConverter uc= uv.getConverter(uds);
+            v= uc.convert(vds.value());
+        } catch ( InconvertibleUnitsException ex ) {
+            if ( uv==Units.dimensionless ) {
+                v= vds.value();
+            } else {
+                throw ex;
+            }
+        }
         putValue( ds, v );
     }
     
