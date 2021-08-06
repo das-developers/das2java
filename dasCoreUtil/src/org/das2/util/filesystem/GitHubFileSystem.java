@@ -284,6 +284,17 @@ public class GitHubFileSystem extends HttpFileSystem {
         
     }
     
+    /**
+     * return true if the URLs should contain an extra dash before the tree/master 
+     * part, as in https://abbith.physics.uiowa.edu/jbf/juno/-/tree/master/team/ephemeris
+     * 
+     * @param host the host name, e.g. https://abbith.physics.uiowa.edu
+     * @return 
+     */
+    private static boolean mysteryDash( String host ) {
+        return host.contains("https://abbith.physics.uiowa.edu");
+    }
+    
     @Override
     public String[] listDirectory(String directory) throws IOException {
         if ( !directory.endsWith("/") ) directory= directory+"/";
@@ -321,7 +332,7 @@ public class GitHubFileSystem extends HttpFileSystem {
         try {
             URL url= gitHubMapDir( root, directory );
             String surl= url.toString();
-            if ( surl.contains("https://abbith.physics.uiowa.edu") ) {
+            if ( mysteryDash(surl) ) {
                 surl= surl.replace("raw/master", "-/tree/master");
                 url= new URL(surl);
             }
@@ -342,15 +353,22 @@ public class GitHubFileSystem extends HttpFileSystem {
             List<String> result= new ArrayList<>();
             int parentLen= sroot.length() + ( directory.length() -1 );
             
-            int ii= sroot.indexOf(spath) + spath.length();
-            String searchChild1= sroot.substring(0,ii) + "/tree/" + branch + sroot.substring(ii);
-            String searchChild2= sroot.substring(0,ii) + "/blob/" + branch + sroot.substring(ii);
+            String mysteryDash= mysteryDash(surl) ? "/-" : "";
             
+            int ii= sroot.indexOf(spath) + spath.length();
+            String searchChild1= sroot.substring(0,ii) + mysteryDash + "/tree/" + branch + sroot.substring(ii);
+            String searchChild2= sroot.substring(0,ii) + mysteryDash + "/blob/" + branch + sroot.substring(ii);
+            //https://jfaden.net/git/jbfaden/public/tree/master/2021
+            int icount=0;
             for ( URL u: listing ) {
                 String su= u.toString();
                 //if ( su.contains("readme.md") ) {
                 //    System.err.println("here for debugging");
                 //}
+                if ( icount==81 ) {
+                    System.err.println("here for debugging");
+                }
+                icount++;
                 if ( !su.startsWith(searchChild1) ) {
                     if ( !su.startsWith(searchChild2) ) {
                         continue;
