@@ -296,6 +296,27 @@ public class GitHubFileSystem extends HttpFileSystem {
             }
             return ss;
         }
+        
+        String[] path= root.getPath().split("/",-2);
+        String spath= path[0] + '/' + path[1] + '/' + path[2] ;
+        String withinGitRepo= path[3];
+        
+        // number of elements after the host to the base.
+        int gitPathElements;
+        
+        int base;
+        if ( path[3+baseOffset].equals(branch) ) {
+            base= 4;
+            gitPathElements= 3;
+        } else if ( path.length>4+baseOffset && path[4+baseOffset].equals(branch) ) { // https://research-git.uiowa.edu/space-physics/juno/ap-script/-/
+            base= 5;
+            gitPathElements= 4;
+            spath= path[0] + '/' + path[1] + '/' + path[2] + '/' + path[3];
+        } else {
+            base= 3;
+            gitPathElements= 3;
+        }
+        
         InputStream urlStream= null ;
         try {
             URL url= gitHubMapDir( root, directory );
@@ -317,31 +338,49 @@ public class GitHubFileSystem extends HttpFileSystem {
             //}
             //System.err.println("Wrote /tmp/ap/listingGitHubFS.txt") ;
             
+            String sroot= root.toString();
             List<String> result= new ArrayList<>();
-            int parentLen= root.toString().length() + ( directory.length() -1 ) + 5;
+            int parentLen= sroot.length() + ( directory.length() -1 );
+            
+            int ii= sroot.indexOf(spath) + spath.length();
+            String searchChild1= sroot.substring(0,ii) + "/tree/" + branch + sroot.substring(ii);
+            String searchChild2= sroot.substring(0,ii) + "/blob/" + branch + sroot.substring(ii);
+            
             for ( URL u: listing ) {
                 String su= u.toString();
                 //if ( su.contains("readme.md") ) {
                 //    System.err.println("here for debugging");
                 //}
-                if ( su.contains("/blob/"+branch+"/")
+                if ( !su.startsWith(searchChild1) ) {
+                    if ( !su.startsWith(searchChild2) ) {
+                        continue;
+                    }
+                }
+                if ( su.contains("/blob/"+branch+"/") // These are files
                         && !su.endsWith(".gitkeep") ) {
-                    result.add( su.substring( parentLen ) );
+                    result.add( su.substring( parentLen + ("blob/"+branch+"/").length() ) );
                 } else if ( su.contains("/tree/"+branch+"/") ) {
                     if ( su.length()>parentLen ) {
-                        String ss= u.toString().substring( parentLen ) + "/" ;
+                        String ss= u.toString().substring( parentLen ); // e.g. "tree/master/bugs"
+                        if ( withinGitRepo.length()==0 ) {
+                            ss= ss.substring("tree/".length());
+                        }
+                        ss= ss.substring( branch.length() );
+                        ss= ss.substring( withinGitRepo.length() + 1) ;
                         if ( ss.length()>1 
                                 && !ss.contains("#start-of-content") 
                                 && !ss.contains("#content-body") 
                                 && !su.contains("return_to=") 
                                 && !su.endsWith("/..") ) {
-                            result.add( ss );
+                            result.add( ss + "/" );
                         }
                     }
                 } else if ( su.startsWith(surl) ) {
                     String sub= su.substring(surl.length());
                     if ( sub.length()>0 && sub.charAt(0)!='#' && !sub.contains("/") ) {
-                        result.add( sub+"/" );
+                        if ( !result.contains( sub+"/" ) ) { // inefficient
+                            result.add( sub+"/" );
+                        }
                     }
                 }
             }
