@@ -383,7 +383,8 @@ public class VerticalSpectrogramAverager implements DataRangeSelectionListener {
                         renderer.setException( new Exception("unknown mode in averager: "+mode) );
                         return;
                 }
-                QDataSet ds1 = Ops.link( ds.property(QDataSet.DEPEND_0), rebinned );
+                //QDataSet ds1 = Ops.link( ds.property(QDataSet.DEPEND_0), rebinned );
+                QDataSet ds1 = rebinned;
                 renderer.setDataSet(ds1);
             }
         } catch (DasException de) {
