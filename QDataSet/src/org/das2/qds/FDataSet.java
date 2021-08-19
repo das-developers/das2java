@@ -395,7 +395,7 @@ public final class FDataSet extends ArrayDataSet {
     @Override
     public void putProperty(String name, Object value) {
         if ( name.equals(QDataSet.UNITS) ) {
-            if ( UnitsUtil.isTimeLocation( (Units)value ) ) {
+            if ( value!=null && UnitsUtil.isTimeLocation( (Units)value ) ) {
                 logger.warning("float array is being used to store times, which typically lacks sufficient resolution to represent data."); 
             }
         }
