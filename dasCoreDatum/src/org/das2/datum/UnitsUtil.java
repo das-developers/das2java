@@ -37,7 +37,10 @@ public final class UnitsUtil {
     }
     
     /**
-     * returns true if the unit describes a location in time, as in us2000.
+     * returns true if the unit describes a location in time, as in us2000 or
+     * Units.lookupTimeUnits('seconds since 1989-12-13T00:00Z')
+     * @param unit the unit to test
+     * @return true if the unit describes a location in time
      */
     public static boolean isTimeLocation( Units unit ) {
         return unit==Units.us2000 || unit.isConvertibleTo(Units.us2000);
