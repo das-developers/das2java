@@ -2469,10 +2469,10 @@ public final class Ops {
             resultUnits= units2;
         } else {
             if ( !UnitsUtil.isRatioMeasurement(units1) ) {
-                throw new IllegalArgumentException("ds1 units are not ratio units: "+units1);
+                throw new IllegalArgumentException("ds1 units are not ratio scale units: "+units1);
             }
             if ( !UnitsUtil.isRatioMeasurement(units2) ) {
-                throw new IllegalArgumentException("ds2 units are not ratio units: "+units2);
+                throw new IllegalArgumentException("ds2 units are not ratio scale units: "+units2);
             }
             logger.fine("throwing out units until we improve the units library, both arguments have physical units");
             resultUnits= null;
@@ -2546,8 +2546,8 @@ public final class Ops {
             resultUnits= Units.dimensionless;
             uc= units2.getConverter(units1);
         } else {
-            if ( !UnitsUtil.isRatioMeasurement(units1) ) throw new IllegalArgumentException("ds1 units are not ratio units: "+units1);
-            if ( !UnitsUtil.isRatioMeasurement(units2) ) throw new IllegalArgumentException("ds2 units are not ratio units: "+units2);
+            if ( !UnitsUtil.isRatioMeasurement(units1) ) throw new IllegalArgumentException("ds1 units are not ratio scale units: "+units1);
+            if ( !UnitsUtil.isRatioMeasurement(units2) ) throw new IllegalArgumentException("ds2 units are not ratio scale units: "+units2);
 
             if ( units1==Units.dimensionless ) {
                 try {
