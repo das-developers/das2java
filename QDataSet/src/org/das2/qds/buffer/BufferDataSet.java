@@ -1444,6 +1444,7 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
             ByteBuffer wback= checkedAllocateDirect( back.capacity() );
             wback.order( back.order() );
             wback.put(back);
+            wback.flip();
             back= wback;
         }
     }
