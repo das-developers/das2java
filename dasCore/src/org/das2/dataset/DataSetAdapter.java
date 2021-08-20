@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -247,8 +248,8 @@ public class DataSetAdapter {
 		// Now build a QDataSet, if multiple physicsal dimensions present, will need a bundle ds.
 		AbstractDataSet bds = null;
 		Vector v = null;
-		for(String sSource: lPDims.keySet()){
-			AdapterPDim pdim = lPDims.get(sSource);
+		for( Entry<String,AdapterPDim> e : lPDims.entrySet() ) {
+			AdapterPDim pdim = e.getValue();
 			
 			org.das2.dataset.AbstractDataSet.ViewDataSet view
 					= (org.das2.dataset.AbstractDataSet.ViewDataSet) vds.getPlanarView(pdim.sId);

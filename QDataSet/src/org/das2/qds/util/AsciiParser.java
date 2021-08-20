@@ -381,12 +381,7 @@ public class AsciiParser {
             if ( line==null ) return null;
 
             DelimParser p= guessDelimParser(line,iline);
-            
-            String headerLine= line;
-            int headerLineNumber= iline;
-            
-            DelimParser headerp= p;
-            
+                        
             List<String> lines= new LinkedList<>();
 
             int parseCount=0;

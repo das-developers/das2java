@@ -811,7 +811,12 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
     /**
      * append the dataset with the same geometry but different number of records (zeroth dim)
      * to this.  An IllegalArgumentException is thrown when there is not enough room.  
-     * See grow(newRecCount).
+     * See grow(newRecCount).  This buffer's capacity will be something like 
+     * java.nio.DirectByteBuffer[pos=0 lim=6256 cap=13760] and the dataset ds's buffer will have 
+     * java.nio.DirectByteBufferR[pos=0 lim=6256 cap=6256].  After this append operation,
+     * the buffer of the second will be copied into the first's:
+     * java.nio.DirectByteBuffer[pos=0 lim=12512 cap=13760].
+     * 
      * Not thread safe--we need to go through and make it so...
      * @param ds
      * @see #grow(int) 
@@ -859,6 +864,7 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         } else {
             this.back.position( recoffset + myLength );
             this.back.limit( recoffset + myLength + dsLength );
+            dsBuffer.position( ds.recoffset );
             this.back.put( dsBuffer );
             this.back.flip();
         }
@@ -1438,6 +1444,7 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
             ByteBuffer wback= checkedAllocateDirect( back.capacity() );
             wback.order( back.order() );
             wback.put(back);
+            wback.flip();
             back= wback;
         }
     }
@@ -1518,7 +1525,7 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
     }
     
     /**
-     * get ride of extra spaces between records.
+     * get rid of extra spaces between records.
      * @return new BufferDataSet without gaps.
      */
     public BufferDataSet compact() {
