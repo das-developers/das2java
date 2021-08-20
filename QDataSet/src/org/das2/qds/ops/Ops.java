@@ -8872,7 +8872,7 @@ public final class Ops {
         result.putProperty(QDataSet.JOIN_0, null);
 
         int nsam= ds.length()*(ds.length(0)/step); // approx
-        DataSetBuilder dep0b= new DataSetBuilder( 1,nsam );
+        DataSetBuilder dep0Builder= new DataSetBuilder( 1,nsam );
 
         QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
         if ( dep0!=null ) { // make sure these are really units we can use
@@ -8885,9 +8885,12 @@ public final class Ops {
         QDataSet dep1= (QDataSet) ds.property( QDataSet.DEPEND_1 );
         if ( dep1==null ) {
             dep1= (QDataSet)ds.slice(0).property(QDataSet.DEPEND_0);
+            if ( dep1==null ) {
+                logger.finer("No time offsets found.");
+            }
         }
         
-        QDataSet ytags;
+        QDataSet ytags=null;
         double minD= Double.NEGATIVE_INFINITY, maxD=Double.POSITIVE_INFINITY;
         if ( dep1!=null && dep1.rank()==1 ) {
             ytags= FFTUtil.getTimeDomainTags( dep1.trim(0,len) );
@@ -8914,7 +8917,7 @@ public final class Ops {
             QDataSet slicei= ds.slice(i); //TODO: for DDataSet, this copies the backing array.  This shouldn't happen in DDataSet.slice, but it does...
             QDataSet dep0i= (QDataSet) slicei.property(QDataSet.DEPEND_0);
             if ( dep0i!=null && dep0==null ) {
-                dep0b.putProperty(QDataSet.UNITS, dep0i.property(QDataSet.UNITS) );
+                dep0Builder.putProperty(QDataSet.UNITS, dep0i.property(QDataSet.UNITS) );
                 if ( !Boolean.TRUE.equals( dep0i.property(QDataSet.MONOTONIC) ) ) {
                     isMono= false;
                 }
@@ -8941,21 +8944,21 @@ public final class Ops {
                 }
 
                 double d0=0;
-                if ( dep0!=null && dep1!=null ) {
+                if ( dep0!=null && ytags!=null ) {
                     d0= dep0.value(i) + uc.convert( ytags.value( j*step + len/2 )  );
                 } else if ( dep0!=null ) {
                     d0= dep0.value(i);
                 } else if ( dep0i!=null ) {
                     d0= dep0i.value(j*step+len/2);
                 } else {
-                    dep0b= null;
+                    dep0Builder= null;
                 }
 
                 if ( d0>=minD && d0<=maxD) {
                     result.join(vds);
-                    if ( dep0b!=null ) {
-                        dep0b.putValue(-1, d0 );
-                        dep0b.nextRecord();
+                    if ( dep0Builder!=null ) {
+                        dep0Builder.putValue(-1, d0 );
+                        dep0Builder.nextRecord();
                     }
                 } else {
                     System.err.println("dropping record with invalid timetag: "+d0 ); //TODO: consider setting VALID_MIN, VALID_MAX instead...
@@ -8968,13 +8971,13 @@ public final class Ops {
         }
         mon.finished();
         
-        if ( dep0!=null && dep0b!=null ) {
-            dep0b.putProperty(QDataSet.UNITS, dep0.property(QDataSet.UNITS) );
-            if ( isMono ) dep0b.putProperty(QDataSet.MONOTONIC,true);
-            result.putProperty(QDataSet.DEPEND_0, dep0b.getDataSet() );
-        } else if ( dep0b!=null ) {
-            if ( isMono ) dep0b.putProperty(QDataSet.MONOTONIC,true);
-            result.putProperty(QDataSet.DEPEND_0, dep0b.getDataSet() );
+        if ( dep0!=null && dep0Builder!=null ) {
+            dep0Builder.putProperty(QDataSet.UNITS, dep0.property(QDataSet.UNITS) );
+            if ( isMono ) dep0Builder.putProperty(QDataSet.MONOTONIC,true);
+            result.putProperty(QDataSet.DEPEND_0, dep0Builder.getDataSet() );
+        } else if ( dep0Builder!=null ) {
+            if ( isMono ) dep0Builder.putProperty(QDataSet.MONOTONIC,true);
+            result.putProperty(QDataSet.DEPEND_0, dep0Builder.getDataSet() );
         }
 
         if ( title!=null ) result.putProperty( QDataSet.TITLE, title );
