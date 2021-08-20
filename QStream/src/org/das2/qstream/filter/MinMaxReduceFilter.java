@@ -136,13 +136,8 @@ public class MinMaxReduceFilter extends QDataSetsFilter {
             StreamTool.readStream( Channels.newChannel(in), me );
             
         } finally {
-            if ( args.length>2 ) {
-                out.close(); // Grr findbugs OBL_UNSATISFIED_OBLIGATION
-            }
-
-            if ( args.length>1 ) {
-                in.close();
-            }
+            out.close();
+            in.close();
         }
     }
 }
