@@ -180,22 +180,27 @@ public abstract class WeightsDataSet implements QDataSet {
             return ( v == fill || ( v>fillMin && v<fillMax ) || Double.isNaN(v) || v > vmax || v < vmin ) ? 0.0 : 1.0;
         }
 
+        @Override
         public double value() {
             return weight(ds.value());
         }
 
+        @Override
         public double value(int i) {
             return weight(ds.value(i));
         }
 
+        @Override
         public double value(int i0, int i1) {
             return weight(ds.value(i0, i1));
         }
 
+        @Override
         public double value(int i0, int i1, int i2) {
             return weight(ds.value(i0, i1, i2));
         }
 
+        @Override
         public double value(int i0, int i1, int i2, int i3) {
             return weight(ds.value(i0, i1, i2, i3));
         }
@@ -214,22 +219,27 @@ public abstract class WeightsDataSet implements QDataSet {
             return ( v == fill || ( v>fillMin && v<fillMax ) || Double.isNaN(v) ) ? 0.0 : 1.0;
         }
 
+        @Override
         public double value() {
             return weight(ds.value());
         }
 
+        @Override
         public double value(int i) {
             return weight(ds.value(i));
         }
 
+        @Override
         public double value(int i0, int i1) {
             return weight(ds.value(i0, i1));
         }
 
+        @Override
         public double value(int i0, int i1, int i2) {
             return weight(ds.value(i0, i1, i2));
         }
 
+        @Override
         public double value(int i0, int i1, int i2, int i3) {
             return weight(ds.value(i0, i1, i2, i3));
         }
@@ -247,22 +257,27 @@ public abstract class WeightsDataSet implements QDataSet {
             return Double.isNaN(v) ? 0.0 : 1.0;
         }
 
+        @Override
         public double value() {
             return weight(ds.value());
         }
 
+        @Override
         public double value(int i) {
             return weight(ds.value(i));
         }
 
+        @Override
         public double value(int i0, int i1) {
             return weight(ds.value(i0, i1));
         }
 
+        @Override
         public double value(int i0, int i1, int i2) {
             return weight(ds.value(i0, i1, i2));
         }
 
+        @Override
         public double value(int i0, int i1, int i2, int i3) {
             return weight(ds.value(i0, i1, i2, i3));
         }
@@ -276,22 +291,27 @@ public abstract class WeightsDataSet implements QDataSet {
             super(ds);
         }
         
+        @Override
         public double value() {
             return 1.0;
         }
 
+        @Override
         public double value(int i) {
             return 1.0;
         }
 
+        @Override
         public double value(int i0, int i1) {
             return 1.0;
         }
 
+        @Override
         public double value(int i0, int i1, int i2) {
             return 1.0;
         }
 
+        @Override
         public double value(int i0, int i1, int i2, int i3) {
             return 1.0;
         }
