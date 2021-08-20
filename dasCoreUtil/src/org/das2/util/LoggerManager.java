@@ -89,8 +89,8 @@ public final class LoggerManager {
      */
     public static final class TimeTaggingLogger extends Logger {
         
-        public long lastTime= 0;
-        public long lastLoggedTime= 0;
+        private long lastTime= 0;
+        private long lastLoggedTime= 0;
         
         private TimeTaggingLogger( String id ) {
             super(id,null);
@@ -120,12 +120,19 @@ public final class LoggerManager {
         
         /**
          * return the timestamp of the last log message.
-         * @return 
+         * @return the timestamp of the last log message.
          */
         public long getLastTime() {
             return lastTime;
         }
         
+        /**
+         * return the timestamp of the last log message that was loggable.
+         * @return  the timestamp of the last log message that was loggable.
+         */        
+        public long getLastLoggedTime() {
+            return lastLoggedTime;
+        }
     }
     
     /**
