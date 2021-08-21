@@ -2084,6 +2084,88 @@ public final class Ops {
     }
     
     /**
+     * set the cadence property for the DEPEND_0 data.  This allows scripts to 
+     * assert that the data is collected at a given rate, and connecting lines should
+     * be drawn.
+     * <pre>
+     * xx= [ 0,2,4,6,8,10 ]
+     * yy= [ 1,1,2,2,3,3 ]
+     * ds= dataset(xx,yy)
+     * ds= setDepend0Cadence( ds, '2' )
+     * </pre>
+     * @param ds the data, which has a DEPEND_0 property.
+     * @param arg the string representing the cadence.
+     * @return the data, which now has a DEPEND_0 with the cadence.
+     * @throws ParseException 
+     */
+    public static QDataSet setDepend0Cadence( QDataSet ds, String arg ) throws ParseException {
+        QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
+        if ( dep0!=null ) {
+            Map<String,Object> props= DataSetUtil.getDimensionProperties( ds,null );
+            Units dep0units= SemanticOps.getUnits(dep0);
+            QDataSet cadence = DataSetUtil.asDataSet( dep0units.getOffsetUnits().parse(arg) );
+            MutablePropertyDataSet mdep0= Ops.putProperty( dep0, QDataSet.CADENCE, cadence );
+            ds= Ops.putProperty( ds, QDataSet.DEPEND_0, mdep0 );
+            DataSetUtil.putProperties( props,(MutablePropertyDataSet)ds );
+        } else if ( SemanticOps.isJoin(ds) ) {
+            JoinDataSet n= new JoinDataSet(ds.rank());
+            Map<String,Object> props= DataSetUtil.getDimensionProperties( ds,null );
+            for ( int ii=0; ii<ds.length(); ii++ ) {
+                QDataSet fillDs1= ds.slice(ii);
+                Map<String,Object> props1= DataSetUtil.getDimensionProperties( fillDs1,null );
+                dep0= (QDataSet) fillDs1.property(QDataSet.DEPEND_0);
+                Units dep0units= SemanticOps.getUnits(dep0);
+                QDataSet cadence = DataSetUtil.asDataSet( dep0units.getOffsetUnits().parse(arg) );
+                MutablePropertyDataSet mdep0= Ops.putProperty( dep0, QDataSet.CADENCE, cadence );
+                fillDs1= Ops.putProperty( fillDs1, QDataSet.DEPEND_0, mdep0 );
+                DataSetUtil.putProperties( props1,(MutablePropertyDataSet)fillDs1 );
+                n.join(fillDs1);
+            }
+            ds= n;
+            DataSetUtil.putProperties( props,(MutablePropertyDataSet)ds );
+        }
+        return ds;
+    }
+    
+    /**
+     * set the cadence property for the DEPEND_1 data.  This allows scripts to 
+     * assert that the data is collected at a given rate, and connecting lines should
+     * be drawn.
+     * <pre>
+     * xx= findgen(6)*2
+     * yy= findgen(6)*'10Hz'
+     * yy[3:]= yy[3:]+'2Hz'
+     * zz= randn(6,6)
+     * ds= dataset(xx,yy,zz)
+     * ds= setDepend1Cadence( ds, '12Hz' )
+     * plot( ds )
+     * </pre>
+     * @param ds the data, which has a DEPEND_1 property.
+     * @param arg the string representing the cadence.
+     * @return the data, which now has a DEPEND_1 with the cadence.
+     * @throws ParseException 
+     */    
+    public static QDataSet setDepend1Cadence( QDataSet ds, String arg ) throws ParseException {
+        Map<String,Object> props= DataSetUtil.getDimensionProperties( ds,null );
+        ds= Ops.copy(ds);
+        QDataSet dep1= (QDataSet) ds.property(QDataSet.DEPEND_1);
+        if ( dep1!=null ) {
+            Units dep1units= SemanticOps.getUnits(dep1);
+            Datum news;
+            try {
+                news= dep1units.getOffsetUnits().parse(arg);
+            } catch ( ParseException | InconvertibleUnitsException ex ) {
+                news= DatumUtil.parse(arg);
+            }
+
+            MutablePropertyDataSet mdep0= Ops.putProperty( dep1, QDataSet.CADENCE, DataSetUtil.asDataSet( news ) );
+            ds= Ops.putProperty( ds, QDataSet.DEPEND_1, mdep0 );
+        } 
+        DataSetUtil.putProperties( props,(MutablePropertyDataSet)ds );
+        return ds;
+    }
+    
+    /**
      * element-wise sqrt.  See Ops.pow to square a number.
      * @param ds the dataset
      * @return the square root of the dataset, which will contain NaN where the data is negative.
