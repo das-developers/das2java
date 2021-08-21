@@ -719,50 +719,12 @@ public class OperationsProcessor {
                     }
                 } else if ( cmd.equals("|setDepend0Cadence") ) {
                     String arg= getStringArg( s.next() );
-                    QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
-                    if ( dep0!=null ) {
-                        Map<String,Object> props= DataSetUtil.getDimensionProperties( ds,null );
-                        Units dep0units= SemanticOps.getUnits(dep0);
-                        MutablePropertyDataSet mdep0= Ops.putProperty( dep0, QDataSet.CADENCE, DataSetUtil.asDataSet( dep0units.getOffsetUnits().parse(arg) ) );
-                        ds= Ops.putProperty( ds, QDataSet.DEPEND_0, mdep0 );
-                        DataSetUtil.putProperties( props,(MutablePropertyDataSet)ds );
-                    } else if ( SemanticOps.isJoin(ds) ) {
-                        JoinDataSet n= new JoinDataSet(ds.rank());
-                        Map<String,Object> props= DataSetUtil.getDimensionProperties( ds,null );
-                        for ( int ii=0; ii<ds.length(); ii++ ) {
-                            QDataSet fillDs1= ds.slice(ii);
-                            Map<String,Object> props1= DataSetUtil.getDimensionProperties( fillDs1,null );
-                            dep0= (QDataSet) fillDs1.property(QDataSet.DEPEND_0);
-                            Units dep0units= SemanticOps.getUnits(dep0);
-                            MutablePropertyDataSet mdep0= Ops.putProperty( dep0, QDataSet.CADENCE, DataSetUtil.asDataSet( dep0units.getOffsetUnits().parse(arg) ) );
-                            fillDs1= Ops.putProperty( fillDs1, QDataSet.DEPEND_0, mdep0 );
-                            DataSetUtil.putProperties( props1,(MutablePropertyDataSet)fillDs1 );
-                            n.join(fillDs1);
-                        }
-                        ds= n;
-                        DataSetUtil.putProperties( props,(MutablePropertyDataSet)ds );
-                    }
+                    ds= Ops.setDepend0Cadence( ds, arg );
                     
                 } else if ( cmd.equals("|setDepend1Cadence" ) ) {
                     String arg= getStringArg( s.next() );
-                    Map<String,Object> props= DataSetUtil.getDimensionProperties( ds,null );
-                    ds= Ops.copy(ds);
-                    QDataSet dep1= (QDataSet) ds.property(QDataSet.DEPEND_1);
-                    if ( dep1!=null ) {
-                        Units dep1units= SemanticOps.getUnits(dep1);
-                        Datum news;
-                        try {
-                            news= dep1units.getOffsetUnits().parse(arg);
-                        } catch ( ParseException ex ) {
-                            news= DatumUtil.parse(arg);
-                        } catch ( InconvertibleUnitsException ex ) {
-                            news= DatumUtil.parse(arg);
-                        }
-                        
-                        MutablePropertyDataSet mdep0= Ops.putProperty( dep1, QDataSet.CADENCE, DataSetUtil.asDataSet( news ) );
-                        ds= Ops.putProperty( ds, QDataSet.DEPEND_1, mdep0 );
-                    } 
-                    DataSetUtil.putProperties( props,(MutablePropertyDataSet)ds );
+                    ds= Ops.setDepend1Cadence( ds, arg );
+
                 } else if ( cmd.equals("|getProperty") ) {
                     String arg= getStringArg( s.next() );
                     if ( arg.startsWith("QDataSet.") ) {
@@ -784,10 +746,7 @@ public class OperationsProcessor {
                     
                 } else if ( cmd.equals("|setValidRange") ) {
                     String arg= getStringArg( s.next() );
-                    Units u= SemanticOps.getUnits(ds);
-                    DatumRange d= DatumRangeUtil.parseDatumRange( arg, u );
-                    ds= Ops.putProperty( ds, QDataSet.VALID_MIN, d.min().doubleValue(u) );
-                    ds= Ops.putProperty( ds, QDataSet.VALID_MAX, d.max().doubleValue(u) );
+                    ds= Ops.setValidRange( ds, arg );
                     
                 } else if ( cmd.equals("|monotonicSubset") ) {
                     WritableDataSet wds= Ops.copy(ds);
