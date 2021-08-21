@@ -699,7 +699,8 @@ public interface QDataSet {
      * A slice will be the elements at this index, for example if this dataset
      * is a rank 2 dataset flux(Time,Energy) then the slice of this will be
      * a rank 1 dataset flux(Energy).
-     * The result of any slice will be a qube.
+     * The result of any slice will be a qube.  Note the index must be positive.  
+     * Negative indices, referenced from the end of the dataset, are not supported.
      * @throws IllegalArgumentException when dataset rank is zero.
      * @param i the index to slice at
      * @return the rank n-1 QDataSet at index i.
@@ -716,6 +717,8 @@ public interface QDataSet {
      *    assert( trim.length()==10 );
      * }
      * </pre> 
+     * Note start and end must be positive.  Negative indices,
+     * referenced from the end of the dataset, are not supported here.
      * @param start  the first index to be included in the new dataset.
      * @param end the exclusive index indicating the last index.
      * @return a QDataSet with the same rank but fewer elements.
