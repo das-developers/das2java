@@ -25,7 +25,7 @@ package org.das2.datum;
 
 import java.io.Serializable;
 import org.das2.datum.format.DatumFormatter;
-
+        
 /**
  * <p>A Datum is a number in the context of a Unit, for example "15 microseconds."
  *   A Datum object has methods for<ul>
@@ -613,17 +613,7 @@ public class Datum implements Comparable, Serializable {
             a= a.convertTo(this.units);
         }
         
-        double d= this.getValue().doubleValue() - a.getValue().doubleValue();
-        
-        if (d==0.) {
-            return 0;
-        } else if ( d<0. ) {
-            return -1;
-        } else {
-            return 1;
-        }
-        //findbugs wants:
-        //return java.lang.Double.compare( this.getValue().doubleValue(), a.getValue().doubleValue() );
+        return java.lang.Double.compare( this.getValue().doubleValue(), a.getValue().doubleValue() );
         
     }
     

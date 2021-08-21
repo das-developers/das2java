@@ -1141,12 +1141,8 @@ public class DasPlot extends DasCanvasComponent {
             lcacheImageBounds.width = width;
             lcacheImageBounds.height = height;
             if ( lcacheImageBounds.width==0 || lcacheImageBounds.height==0 ) {
-                try {
-                    System.err.println("cheesy code to fix getHeight=0 when printing");
-                    Thread.sleep(100);
-                } catch (InterruptedException ex) {
-                    logger.log(Level.SEVERE, ex.getMessage(), ex);
-                }
+                logger.warning("cheesy code to fix getHeight=0 when printing");
+                Thread.yield();
                 lcacheImageBounds.width = width;
                 lcacheImageBounds.height = height;
             }            

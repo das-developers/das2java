@@ -25,7 +25,7 @@ public class PoissonDistribution {
         final static int FAK_LEN=1024;
         double[] fac_table;
         boolean initialized= false;
-        final double        // coefficients in Stirling approximation
+        private static final double        // coefficients in Stirling approximation
                 C0 =  0.918938533204672722,   // ln(sqrt(2*pi))
                 C1 =  1./12.,
                 C3 = -1./360.;
@@ -116,8 +116,8 @@ public class PoissonDistribution {
      * vol. 31, no. 1, 1990, pp. 181-189.
      */
     class PoissonRatioUniforms {
-        final double SHAT1 = 2.943035529371538573;    // 8/e
-        final double SHAT2 = 0.8989161620588987408;   // 3-sqrt(12/e)
+        private static final double SHAT1 = 2.943035529371538573;    // 8/e
+        private static final double SHAT2 = 0.8989161620588987408;   // 3-sqrt(12/e)
         
         double p_L_last = -1.0;            // previous L cache tag
         double p_a;                       // hat center

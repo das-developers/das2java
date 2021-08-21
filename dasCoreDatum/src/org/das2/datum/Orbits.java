@@ -121,7 +121,7 @@ public class Orbits {
         }
 
         InputStream in=null;
-        Exception exfirst=null;
+        IOException exfirst=null;
 
         URL sourceUrl=null;
 
@@ -151,9 +151,9 @@ public class Orbits {
 
         if ( in==null ) {
             if ( exfirst!=null ) {
-                throw (IOException)exfirst;
+                throw exfirst;
             } else {
-                throw new IllegalArgumentException("I/O Exception prevents reading orbits from \""+urls.get(0)+"\"",exfirst );
+                throw new IllegalArgumentException("I/O Exception prevents reading orbits from \""+urls.get(0)+"\"" );
             }
         }
 

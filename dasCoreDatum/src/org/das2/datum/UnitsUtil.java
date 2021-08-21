@@ -53,6 +53,7 @@ public final class UnitsUtil {
      * Examples include "5 km" or "0.2/cc" and "15 counts"
      * @see http://en.wikipedia.org/wiki/Level_of_measurement
      * @see http://www.statisticssolutions.com/data-levels-of-measurement/
+     * @see https://www.questionpro.com/blog/nominal-ordinal-interval-ratio/
      * @param unit
      * @return
      */
