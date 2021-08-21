@@ -191,41 +191,51 @@ public class OperationsProcessor {
                     try {
                         arg= getArgumentIndex( s.next(),0 );
                     } catch ( IllegalArgumentException ex ) {
-                        ex.printStackTrace();
+                        logger.log( Level.WARNING, ex.getLocalizedMessage(), ex );
                         arg= 0;
                     }
                     if ( arg instanceof Integer ) {
                         int idx= (Integer)arg;
-                        if ( dim==0 ) {
-                            if ( idx>=ds.length() ) idx=ds.length()-1;
-                            if ( idx<0 ) idx+= ds.length();
-                            ds= ds.slice(idx);
-                        } else if ( dim==1 ) {
-                            if ( idx>=ds.length(0) ) idx=ds.length(0)-1;
-                            if ( idx<0 ) idx=0;
-                            ds= slice1(ds, idx);
-                        } else if ( dim==2 ) {
-                            if ( idx>=ds.length(0,0) ) idx=ds.length(0,0)-1;
-                            if ( idx<0 ) idx=0;
-                            ds= slice2(ds, idx);
-                        } else if ( dim==3 ) {
-                            if ( idx>=ds.length(0,0,0) ) idx=ds.length(0,0,0)-1;
-                            if ( idx<0 ) idx=0;
-                            ds= slice3(ds, idx);
-                        } else {
-                            throw new IllegalArgumentException("unsupported dim: "+cmd);
+                        switch (dim) {
+                            case 0:
+                                if ( idx>=ds.length() ) idx=ds.length()-1;
+                                if ( idx<0 ) idx+= ds.length();
+                                ds= ds.slice(idx);
+                                break;
+                            case 1:
+                                if ( idx>=ds.length(0) ) idx=ds.length(0)-1;
+                                if ( idx<0 ) idx=0;
+                                ds= slice1(ds, idx);
+                                break;
+                            case 2:
+                                if ( idx>=ds.length(0,0) ) idx=ds.length(0,0)-1;
+                                if ( idx<0 ) idx=0;
+                                ds= slice2(ds, idx);
+                                break;
+                            case 3:
+                                if ( idx>=ds.length(0,0,0) ) idx=ds.length(0,0,0)-1;
+                                if ( idx<0 ) idx=0;
+                                ds= slice3(ds, idx);
+                                break;
+                            default:
+                                throw new IllegalArgumentException("unsupported dim: "+cmd);
                         }
                     } else {
-                        if ( dim==0 ) {
-                            ds= Ops.slice0( ds, (QDataSet)arg );
-                        } else if ( dim==1 ) {
-                            ds= Ops.slice1( ds, (QDataSet)arg );
-                        } else if ( dim==2 ) {
-                            ds= Ops.slice2( ds, (QDataSet)arg );
-                        } else if ( dim==3 ) {
-                            ds= Ops.slice3( ds, (QDataSet)arg );
-                        } else {
-                            throw new IllegalArgumentException("unsupported dim: "+cmd);
+                        switch (dim) {
+                            case 0:
+                                ds= Ops.slice0( ds, (QDataSet)arg );
+                                break;
+                            case 1:
+                                ds= Ops.slice1( ds, (QDataSet)arg );
+                                break;
+                            case 2:
+                                ds= Ops.slice2( ds, (QDataSet)arg );
+                                break;
+                            case 3:
+                                ds= Ops.slice3( ds, (QDataSet)arg );
+                                break;
+                            default:
+                                throw new IllegalArgumentException("unsupported dim: "+cmd);
                         }
                     }
                 } else if ( cmd.equals("|reducex") ) {
