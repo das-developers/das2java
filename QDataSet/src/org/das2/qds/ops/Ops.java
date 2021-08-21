@@ -2166,6 +2166,23 @@ public final class Ops {
     }
     
     /**
+     * assert that the valid data is within the given range like "10 to 50000", where
+     * the range is parsed using DatumRangeUtil.parseDatumRange.
+     * @param ds the data
+     * @param arg the formatted range
+     * @return the data with the VALID_MIN and VALID_MAX properties set.
+     * @throws java.text.ParseException if the string cannot be parsed.
+     * @see DatumRangeUtil#parseDatumRange(java.lang.String) 
+     */
+    public static QDataSet setValidRange( QDataSet ds, String arg ) throws ParseException {
+        Units u= SemanticOps.getUnits(ds);
+        DatumRange d= DatumRangeUtil.parseDatumRange( arg, u );
+        ds= Ops.putProperty( ds, QDataSet.VALID_MIN, d.min().doubleValue(u) );
+        ds= Ops.putProperty( ds, QDataSet.VALID_MAX, d.max().doubleValue(u) );
+        return ds;
+    }
+    
+    /**
      * element-wise sqrt.  See Ops.pow to square a number.
      * @param ds the dataset
      * @return the square root of the dataset, which will contain NaN where the data is negative.
