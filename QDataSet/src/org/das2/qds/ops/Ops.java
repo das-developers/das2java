@@ -2190,12 +2190,7 @@ public final class Ops {
      */
     public static QDataSet sqrt(QDataSet ds) {
         //MutablePropertyDataSet result= (MutablePropertyDataSet) pow(ds, 0.5);
-        MutablePropertyDataSet result= applyUnaryOp( ds, new UnaryOp() {
-            @Override
-            public double op(double d1) {
-                return Math.sqrt(d1);
-            }
-        } );
+        MutablePropertyDataSet result= applyUnaryOp(ds, (UnaryOp) (double d1) -> Math.sqrt(d1) );
         return result;
     }
 
@@ -5652,12 +5647,7 @@ public final class Ops {
      * @return
      */
     public static QDataSet sin(QDataSet ds) {
-        MutablePropertyDataSet result= applyUnaryOp(ds, new UnaryOp() {
-            @Override
-            public double op(double d1) {
-                return Math.sin(d1);
-            }
-        });
+        MutablePropertyDataSet result= applyUnaryOp(ds, (UnaryOp) (double d1) -> Math.sin(d1) );
         result.putProperty(QDataSet.LABEL, maybeLabelUnaryOp(result, "sin" ) );
         return result;
     }
@@ -5676,12 +5666,7 @@ public final class Ops {
      * @return
      */
     public static QDataSet asin(QDataSet ds) {
-        MutablePropertyDataSet result= applyUnaryOp(ds, new UnaryOp() {
-            @Override
-            public double op(double d1) {
-                return Math.asin(d1);
-            }
-        });
+        MutablePropertyDataSet result= applyUnaryOp(ds, (UnaryOp) (double d1) -> Math.asin(d1) );
         result.putProperty(QDataSet.LABEL, maybeLabelUnaryOp(result, "asin" ) );
         return result;
     }
@@ -5700,12 +5685,7 @@ public final class Ops {
      * @return
      */
     public static QDataSet cos(QDataSet ds) {
-        MutablePropertyDataSet result= applyUnaryOp(ds, new UnaryOp() {
-            @Override
-            public double op(double d1) {
-                return Math.cos(d1);
-            }
-        });
+        MutablePropertyDataSet result= applyUnaryOp(ds, (UnaryOp) (double d1) -> Math.cos(d1) );
         result.putProperty(QDataSet.LABEL, maybeLabelUnaryOp(result, "cos" ) );
         return result;
     }
@@ -5724,12 +5704,7 @@ public final class Ops {
      * @return
      */
     public static QDataSet acos(QDataSet ds) {
-        MutablePropertyDataSet result= applyUnaryOp(ds, new UnaryOp() {
-            @Override
-            public double op(double d1) {
-                return Math.acos(d1);
-            }
-        });
+        MutablePropertyDataSet result= applyUnaryOp(ds, (UnaryOp) (double d1) -> Math.acos(d1) );
         result.putProperty(QDataSet.LABEL, maybeLabelUnaryOp(result, "acos" ) );
         return result;
 
@@ -5749,12 +5724,7 @@ public final class Ops {
      * @return
      */
     public static QDataSet tan(QDataSet ds) {
-        MutablePropertyDataSet result= applyUnaryOp(ds, new UnaryOp() {
-            @Override
-            public double op(double a) {
-                return Math.tan(a);
-            }
-        });
+        MutablePropertyDataSet result= applyUnaryOp(ds, (UnaryOp) (double a) -> Math.tan(a) );
         result.putProperty(QDataSet.LABEL, maybeLabelUnaryOp(result, "tan" ) );
         return result;
     }
@@ -5773,7 +5743,7 @@ public final class Ops {
      * @return
      */
     public static QDataSet atan(QDataSet ds) {
-        MutablePropertyDataSet result= applyUnaryOp(ds, (UnaryOp) (double a) -> Math.atan(a));
+        MutablePropertyDataSet result= applyUnaryOp(ds, (UnaryOp) (double a) -> Math.atan(a) );
         result.putProperty(QDataSet.LABEL, maybeLabelUnaryOp(result, "atan" ) );
         return result;
     }
@@ -6241,12 +6211,7 @@ public final class Ops {
      * @return 
      */
     public static QDataSet toRadians(QDataSet ds) {
-        MutablePropertyDataSet result= applyUnaryOp(ds, new UnaryOp() {
-            @Override
-            public double op(double y) {
-                return y * Math.PI / 180.;
-            }
-        });
+        MutablePropertyDataSet result= applyUnaryOp(ds, (UnaryOp) (double y) -> y * Math.PI / 180. );
         result.putProperty( QDataSet.UNITS, Units.radians );
         return result;
     }
@@ -6263,12 +6228,7 @@ public final class Ops {
      * @return 
      */
     public static QDataSet toDegrees(QDataSet ds) {
-        MutablePropertyDataSet result= applyUnaryOp(ds, new UnaryOp() {
-            @Override
-            public double op(double y) {
-                return y * 180 / Math.PI;
-            }
-        });
+        MutablePropertyDataSet result= applyUnaryOp(ds, (UnaryOp) (double y) -> y * 180 / Math.PI );
         result.putProperty( QDataSet.UNITS, Units.degrees );
         return result;
     }
@@ -10158,12 +10118,7 @@ public final class Ops {
      * @return
      */
     public static QDataSet ceil(QDataSet ds1) {
-        return applyUnaryOp(ds1, new UnaryOp() {
-            @Override
-            public double op(double a) {
-                return Math.ceil(a);
-            }
-        });
+        return applyUnaryOp(ds1, (UnaryOp) (double a) -> Math.ceil(a) );
     }
 
     public static double ceil( double x ) {
@@ -10180,12 +10135,7 @@ public final class Ops {
      * @return
      */
     public static QDataSet round(QDataSet ds1) {
-        return applyUnaryOp(ds1, new UnaryOp() {
-            @Override
-            public double op(double a) {
-                return Math.round(a);
-            }
-        });
+        return applyUnaryOp(ds1, (UnaryOp) (double a) -> Math.round(a) );
     }
 
     /**
@@ -10210,12 +10160,7 @@ public final class Ops {
      */
     public static QDataSet round(QDataSet ds1, int ndigits ) {
         final double res= Math.pow(10,ndigits);
-        return applyUnaryOp(ds1, new UnaryOp() {
-            @Override
-            public double op(double a) {
-                return Math.round(a*res) / res;
-            }
-        });
+        return applyUnaryOp(ds1, (UnaryOp) (double a) -> Math.round(a*res) / res );
     }
 
     /**
@@ -10250,8 +10195,7 @@ public final class Ops {
      * @return 
      */
     public static QDataSet signum(QDataSet ds1) {
-        return applyUnaryOp(ds1, 
-                (UnaryOp) (double a) -> Math.signum(a));
+        return applyUnaryOp(ds1, (UnaryOp) (double a) -> Math.signum(a) );
     }
 
     public static double signum( double x ) {
@@ -10272,12 +10216,10 @@ public final class Ops {
      * @return
      */
     public static QDataSet copysign(QDataSet magnitude, QDataSet sign) {
-        return applyBinaryOp(magnitude, sign, new BinaryOp() {
-            @Override
-            public double op(double m, double s) {
-                double s1 = Math.signum(s);
-                return Math.abs(m) * (s1 == 0 ? 1. : s1);
-            }
+        return applyBinaryOp(magnitude, sign, 
+                (BinaryOp) (double m, double s) -> {
+            double s1 = Math.signum(s);
+            return Math.abs(m) * (s1 == 0 ? 1. : s1);
         });
     }
     
