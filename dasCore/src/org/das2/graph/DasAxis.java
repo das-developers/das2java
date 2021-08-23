@@ -101,8 +101,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     public static final String PROP_UNITS = "units";
     public static final String PROPERTY_TICKS = "ticks";
 
-    private static final int DEVICE_POSITIVE_LIMIT= 10000;
-    private static final int MAX_TCA_LINES=10; // maximum number of TCA lines
+    private static final int DEVICE_POSITIVE_LIMIT = 10000;
+    private static final int MAX_TCA_LINES = 32; // maximum number of TCA lines
     /*
      * PUBLIC CONSTANT DECLARATIONS
      */
