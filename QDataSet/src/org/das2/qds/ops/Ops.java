@@ -71,7 +71,6 @@ import org.das2.qds.SemanticOps;
 import org.das2.qds.TransposeRank2DataSet;
 import org.das2.qds.DataSetAnnotations;
 import static org.das2.qds.DataSetUtil.propertyNames;
-import org.das2.qds.DataSetWrapper;
 import org.das2.qds.IndexGenDataSet;
 import org.das2.qds.IndexListDataSetIterator;
 import org.das2.qds.SortDataSet;
@@ -93,7 +92,6 @@ import org.das2.qds.util.LinFit;
 import org.das2.qds.math.Contour;
 import org.das2.util.ColorUtil;
 import org.das2.util.JsonUtil;
-import org.json.JSONArray;
 
 /**
  * A fairly complete set of operations for QDataSets, including binary operations
@@ -14498,6 +14496,50 @@ public final class Ops {
         return result;
     };
       
+    /**
+     * return a triangle tesselation of the space identified by 
+     * rank 1 xx and yy.
+     * @param xx rank 1 dataset
+     * @param yy rank 1 dataset
+     * @return rank 2 ds[n,3] dataset.
+     */
+    public static QDataSet triangulate( QDataSet xx, QDataSet yy ) {
+        
+        xx= rescale( xx, dataset(0), dataset(1) );
+        yy= rescale( yy, dataset(0), dataset(1) );
+        
+        List<ProGAL.geom2d.Point> points= new ArrayList<>(xx.length());
+        for ( int i=0; i<xx.length(); i++ ) {
+            points.add( new VertexInt( xx.value(i), yy.value(i), i ) );
+        }
+        ProGAL.geom2d.delaunay.DTWithBigPoints rt=null;
+        try {
+            rt= new ProGAL.geom2d.delaunay.DTWithBigPoints( points );  
+        } catch ( Exception ex ) {
+            throw new IllegalArgumentException("data cannot contain close colinear points");
+        }
+        
+        List<ProGAL.geom2d.delaunay.Triangle> triangles= rt.getTriangles();
+        
+        DataSetBuilder b= new DataSetBuilder(2,100,3);
+        for ( ProGAL.geom2d.delaunay.Triangle t: triangles ) {
+            Object o1= t.getCorner(0);
+            Object o2= t.getCorner(1);
+            Object o3= t.getCorner(2);
+            if ( o1 instanceof VertexInt 
+                    && o2 instanceof VertexInt 
+                    && o3 instanceof VertexInt ) {
+                VertexInt c1= (VertexInt)t.getCorner(0);
+                VertexInt c2= (VertexInt)t.getCorner(1);
+                VertexInt c3= (VertexInt)t.getCorner(2);
+                b.nextRecord( new double[] { c1.idx, c2.idx, c3.idx } );
+            }
+        }
+        
+        return b.getDataSet();
+
+    }
+    
     /** 2-D interpolation performed by tessellating the space (with 3-point 
      * triangles) and doing interpolation.
      * NOTE: this does not check units.
