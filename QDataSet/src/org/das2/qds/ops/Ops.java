@@ -379,10 +379,10 @@ public final class Ops {
      */
     public static HashMap<String, Object> equalProperties(Map<String, Object> m1, Map<String, Object> m2) {
         HashMap<String,Object> result = new HashMap<>();
-        for ( Entry<String,Object> e : m1.entrySet()) {
+        m1.entrySet().forEach((e) -> {
             String k= e.getKey();
             Object v = e.getValue();
-            if (v != null ) {
+            if (v != null) {
                 Object v2= m2.get(k);
                 if ( v.equals(v2) ) {
                     result.put(k, v);
@@ -392,7 +392,7 @@ public final class Ops {
                     }
                 }
             }
-        }
+        });
         return result;
     }
 
@@ -9507,39 +9507,43 @@ public final class Ops {
                 min = Ops.subtract(min, deltaminus);
             }
 
-            if ( ds.rank()==1 ) { // optimize for rank 1, see https://sourceforge.net/p/autoplot/bugs/1801/
-                int ni= min.length();
-                for ( int i=0; i<ni; i++ ) {
-                    if ( wds.value(i)>0 ) {
-                        count++;
-                        result[0]= Math.min( result[0], min.value(i) );
-                        result[1]= Math.max( result[1], max.value(i) );
+            switch (ds.rank()) {
+                case 1:
+                    {
+                        // optimize for rank 1, see https://sourceforge.net/p/autoplot/bugs/1801/
+                        int ni= min.length();
+                        for ( int i=0; i<ni; i++ ) {
+                            if ( wds.value(i)>0 ) {
+                                count++;
+                                result[0]= Math.min( result[0], min.value(i) );
+                                result[1]= Math.max( result[1], max.value(i) );
+                            }
+                        }       break;
                     }
-                }
-            } else if ( ds.rank()==2 ) {
-                int ni= min.length();
-                for ( int i=0; i<ni; i++ ) {
-                    int nj= min.length(i);
-                    for ( int j=0; j<nj; j++ ) {
-                        if ( wds.value(i,j)>0 ) {
+                case 2:
+                    {
+                        int ni= min.length();
+                        for ( int i=0; i<ni; i++ ) {
+                            int nj= min.length(i);
+                            for ( int j=0; j<nj; j++ ) {
+                                if ( wds.value(i,j)>0 ) {
+                                    count++;
+                                    result[0]= Math.min( result[0], min.value(i,j) );
+                                    result[1]= Math.max( result[1], max.value(i,j) );
+                                }
+                            }
+                        }       break;
+                    }
+                default:
+                    QubeDataSetIterator it = new QubeDataSetIterator(ds);
+                    while (it.hasNext()) {
+                        it.next();
+                        if (it.getValue(wds) > 0.) {
                             count++;
-                            result[0]= Math.min( result[0], min.value(i,j) );
-                            result[1]= Math.max( result[1], max.value(i,j) );
+                            result[0] = Math.min(result[0], it.getValue(min));
+                            result[1] = Math.max(result[1], it.getValue(max));
                         }
-                    }
-                }
-                
-            } else {
-                QubeDataSetIterator it = new QubeDataSetIterator(ds);
-
-                while (it.hasNext()) {
-                    it.next();
-                    if (it.getValue(wds) > 0.) {
-                        count++;
-                        result[0] = Math.min(result[0], it.getValue(min));
-                        result[1] = Math.max(result[1], it.getValue(max));
-                    }
-                }
+                    }   break;
             }
             
             if ( count==0 ) {  // no valid data!
@@ -14533,19 +14537,19 @@ public final class Ops {
         List<ProGAL.geom2d.delaunay.Triangle> triangles= rt.getTriangles();
         
         DataSetBuilder b= new DataSetBuilder(2,100,3);
-        for ( ProGAL.geom2d.delaunay.Triangle t: triangles ) {
+        triangles.forEach((t) -> {
             Object o1= t.getCorner(0);
             Object o2= t.getCorner(1);
             Object o3= t.getCorner(2);
-            if ( o1 instanceof VertexInt 
-                    && o2 instanceof VertexInt 
-                    && o3 instanceof VertexInt ) {
+            if (o1 instanceof VertexInt 
+                    && o2 instanceof VertexInt
+                    && o3 instanceof VertexInt) {
                 VertexInt c1= (VertexInt)t.getCorner(0);
                 VertexInt c2= (VertexInt)t.getCorner(1);
                 VertexInt c3= (VertexInt)t.getCorner(2);
                 b.nextRecord( new double[] { c1.idx, c2.idx, c3.idx } );
             }
-        }
+        });
         
         return b.getDataSet();
 
