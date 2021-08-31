@@ -14064,12 +14064,23 @@ public final class Ops {
     }
 
     /**
-     * transpose the rank 2 dataset.  result[i,j]= ds[j,i] for each i,j.
+     * transpose the rank 2 or rank 1 dataset.  result[i,j]= ds[j,i] for each i,j;
+     * or in the case of rank 1, the DEPEND_0 (x) becomes a dependent on the data (y).
      * @param ds rank 2 dataset
      * @return rank 2 dataset
      */
     public static QDataSet transpose(QDataSet ds) {
-        return new TransposeRank2DataSet(ds);
+        if ( ds.rank()==1 ) {
+            QDataSet xx= (QDataSet) ds.property(QDataSet.DEPEND_0);
+            if ( xx==null ) {
+                throw new IllegalArgumentException("rank 1 data must have DEPEND_0");
+            } else {
+                QDataSet yy= ds;
+                return Ops.link( ds, xx );
+            }
+        } else {
+            return new TransposeRank2DataSet(ds);
+        }
     }
 
     public static QDataSet transpose( Object ds ) {
