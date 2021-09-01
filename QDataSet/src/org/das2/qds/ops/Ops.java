@@ -5143,6 +5143,65 @@ public final class Ops {
     }
     
     /**
+     * return an events dataset describing differences between the
+     * two events lists.  The list will contain labels starting
+     * with insert, delete, and update, and the values.
+     * 
+     * @param tE
+     * @param tB
+     * @return 
+     */
+    public static QDataSet eventsDiff( QDataSet tE, QDataSet tB ) {
+        int iE= 0;
+        int iB= 0;
+
+        QDataSet tE4= createEvents(tE);
+        tB= createEvents(tB);
+                
+        tE= Ops.trim1( tE4, 0, 2 );
+        Units tu= (Units)tE.slice(0).slice(0).property( QDataSet.UNITS );
+        tB= Ops.trim1( tB, 0, 2 );
+        Units bu= (Units)tB.slice(0).slice(0).property( QDataSet.UNITS );
+        tB= Ops.putProperty( tB, QDataSet.UNITS, bu );
+        tB= convertUnitsTo( tB, tu );
+        
+        DataSetBuilder dsb= new DataSetBuilder(2,100,4);
+        EnumerationUnits eu= (EnumerationUnits)((QDataSet)tE4.property(QDataSet.BUNDLE_1)).property(QDataSet.UNITS,3);
+        dsb.setUnits( 3,eu );
+            
+        while ( iE<tE.length() || iB<tB.length() ) {
+            if ( iE==tE.length() ) {
+                dsb.nextRecord( tB.value(iB,0), tB.value(iB,1), 0xa0f0a0, "insert " + tB.slice(iB).slice(3).svalue() );
+                iB++;
+            } else if ( iB==tB.length() ) {
+                dsb.nextRecord( tE.value(iE,0), tE.value(iE,1), 0xf0a0a0, "delete " + tE.slice(iE).slice(3).svalue() );
+                iE++;
+            } else if ( tE.value(iE,0) > tB.value(iB,0) ) {
+                dsb.nextRecord( tB.value(iB,0), tB.value(iB,1), 0xa0f0a0, "insert " + tB.slice(iB).slice(3).svalue() );
+                iB++;
+            } else if ( tE.value(iE,0) < tB.value(iB,0) ) {
+                dsb.nextRecord( tE.value(iE,0), tE.value(iE,1), 0xf0a0a0, "delete " + tE.slice(iE).slice(3).svalue());
+                iE++;
+            } else {
+                if ( !tE.slice(iE).slice(3).svalue().equals(tB.slice(iB).slice(3).svalue()) ) {
+                    String msg= "modify " + tE.slice(iE).slice(3).svalue() + " &rarr; "+ tB.slice(iB).slice(3).svalue();
+                    dsb.nextRecord( tB.value(iB,0), 
+                                    tB.value(iB,1), 
+                                    0xa0a0f0, // ColorUtil.ALICE_BLUE.getRGB(), 
+                                    eu.createDatum( msg ) );
+                }
+                iB++;                
+                iE++;
+            }
+        }
+        dsb.putProperty( QDataSet.BUNDLE_1, tE4.property(QDataSet.BUNDLE_1 ) );
+        
+        return dsb.getDataSet();
+        
+    }
+    
+    
+    /**
      * return an events list of when events are found in both events lists. 
      * (This might have been better called "eventsIntersection")
      * @param tE rank 2 canonical events list
