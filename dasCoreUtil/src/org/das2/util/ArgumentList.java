@@ -339,12 +339,12 @@ public class ArgumentList {
             } else {
                 if ( !this.UNSPECIFIED.equals(value) ) {
                     if ( this.FALSE.equals(value) || this.TRUE.equals(value) ) {
-                        s.append( String.format( "-%s, --%s  \t%s", abbrev, name, description ) );
+                        s.append( String.format( "--%s, -%s \t%s", name, abbrev, description ) );
                     } else {
-                        s.append( String.format( "-%s, --%s= \t%s ", abbrev, name, description ) );
+                        s.append( String.format( "--%s=, -%s= \t%s ", name, abbrev, description ) );
                     }
                 } else {
-                    s.append( String.format( "-%s, --%s= \t%s (required)", abbrev, name, description ) );
+                    s.append( String.format( "--%s=, -%s= \t%s (required)", name, abbrev, description ) );
                 }
             }
             System.err.println(s.toString());
