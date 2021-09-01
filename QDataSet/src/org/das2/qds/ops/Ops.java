@@ -14147,7 +14147,7 @@ public final class Ops {
                 throw new IllegalArgumentException("rank 1 data must have DEPEND_0");
             } else {
                 QDataSet yy= ds;
-                return Ops.link( ds, xx );
+                return Ops.link( yy, xx );
             }
         } else {
             return new TransposeRank2DataSet(ds);
