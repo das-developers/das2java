@@ -5171,6 +5171,14 @@ public final class Ops {
             
         while ( iE<tE.length() || iB<tB.length() ) {
             if ( iE==tE.length() ) {
+                logger.log(Level.FINE, "eventsDiff xxx {0}", tB.slice(iB).slice(0).svalue());   
+            } else if ( iB==tB.length() ) {
+                logger.log(Level.FINE, "eventsDiff {0} xxx", tE.slice(iE).slice(0).svalue());   
+            } else {
+                logger.log(Level.FINE, "eventsDiff {0} {1}", new Object[]{tE.slice(iE).slice(0).svalue(), tB.slice(iB).slice(0).svalue()});   
+            }
+
+            if ( iE==tE.length() ) {
                 dsb.nextRecord( tB.value(iB,0), tB.value(iB,1), 0xa0f0a0, "insert " + tB.slice(iB).slice(3).svalue() );
                 iB++;
             } else if ( iB==tB.length() ) {
