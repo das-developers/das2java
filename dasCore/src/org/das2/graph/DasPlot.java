@@ -763,7 +763,7 @@ public class DasPlot extends DasCanvasComponent {
         legendElements = new ArrayList<>();
 
         if (!drawGridOver) {
-            maybeDrawGrid(plotGraphics);
+            maybeDrawGrid( (Graphics2D)plotGraphics.create() );
         }
 
         if ( this.bottomDecorator!=null ) drawDecorator(plotGraphics, this.bottomDecorator );
@@ -805,7 +805,7 @@ public class DasPlot extends DasCanvasComponent {
         }
 
         if (drawGridOver) {
-            maybeDrawGrid(plotGraphics);
+            maybeDrawGrid( (Graphics2D)plotGraphics.create() );
         }
         
         if ( this.topDecorator!=null ) {
