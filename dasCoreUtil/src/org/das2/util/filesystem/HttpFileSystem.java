@@ -819,6 +819,7 @@ public class HttpFileSystem extends WebFileSystem {
         directory = toCanonicalFolderName(directory);
 
         Map<String,DirectoryEntry> result;
+        
         if ( isListingCached(directory) ) {
             logger.log(Level.FINER, "using cached listing for {0}", directory);
 

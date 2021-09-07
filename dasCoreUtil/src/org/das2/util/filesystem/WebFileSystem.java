@@ -611,7 +611,7 @@ public abstract class WebFileSystem extends FileSystem {
         File listing = listingFile( directory );
         if ( listing.exists() ) {
             long ageMs= ( System.currentTimeMillis() - listing.lastModified() );
-            if ( ageMs<LISTING_TIMEOUT_MS ) {
+            if ( ageMs<LISTING_TIMEOUT_MS || offline ) {
                 logger.log( Level.FINE, "listing date is {0} millisec old", ageMs );
                 return true;
             } else {
