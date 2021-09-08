@@ -586,6 +586,7 @@ public class HttpFileSystem extends WebFileSystem {
 
         if ( !urlc.equals(oldurlc) ) {
             try {
+                System.err.println("Test142Line589>>> "+urlc);
                 URI rootu=urlc.getURL().toURI();
                 userInfo= KeyChain.getDefault().checkUserInfo( urlc.getURL() );
                 if ( userInfo!=null ) {
