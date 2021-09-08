@@ -9,20 +9,15 @@
 
 package org.das2.qds;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.datum.LoggerManager;
-import static org.das2.qds.QubeDataSetIterator.currentJythonLine;
 import org.das2.qds.ops.Ops;
 
 /**
  * wraps QDataSet, rearranging the elements of the first index as specified
- * by a rank 1 data set of indeces
+ * by a rank 1 data set of indeces.
  * 
  * @author jbf
  */
@@ -32,15 +27,23 @@ public class SortDataSet extends AbstractDataSet {
     
     QDataSet source;
     QDataSet sort;
+    /**
+     * null or the qube dimensions
+     */
+    private int[] qubeDims;
             
     /**
      * creates the SortDataSet
      * @param source rank N dataset.  Supports plane_0.  Supports rank 2 Depend_1.
-     * @param sort the indeces of the sort. 
+     * @param sort the rank 1 indeces of the sort. 
      */
     public SortDataSet( QDataSet source, QDataSet sort ) {
         this.source= source;
+        if ( sort.rank()!=1 ) {
+            throw new IllegalArgumentException("sort must be rank 1");
+        }
         this.sort= sort;
+        this.qubeDims= DataSetUtil.qubeDims(source);
 
         if ( sort.length()==0 ) {
             logger.log(Level.FINE, "sort is zero-length for {0}", source);
@@ -139,6 +142,7 @@ public class SortDataSet extends AbstractDataSet {
         properties.put( QDataSet.CADENCE, null );  // cadence is no longer correct, as with decimate.
     }
 
+    @Override
     public int rank() {
         return source.rank();
     }
@@ -195,17 +199,23 @@ public class SortDataSet extends AbstractDataSet {
 
     @Override
     public int length(int i) {
-        return source.length( (int)sort.value(i) );
+        return this.qubeDims!=null ?    
+                this.qubeDims[1] :
+                source.length( (int)sort.value(i) );
     }
 
     @Override
     public int length(int i, int j) {
-        return source.length( (int)sort.value(i), j );
+        return this.qubeDims!=null ? 
+                this.qubeDims[2] :
+                source.length( (int)sort.value(i), j );
     }
 
     @Override
     public int length(int i, int j, int k) {
-        return source.length( (int)sort.value(i), j, k );
+        return this.qubeDims!=null ? 
+                this.qubeDims[3] :
+                source.length( (int)sort.value(i), j, k );
     }
     
 }
