@@ -585,17 +585,13 @@ public class HttpFileSystem extends WebFileSystem {
         urlc= (HttpURLConnection)HttpUtil.checkRedirect(urlc);
 
         if ( !urlc.equals(oldurlc) ) {
-            try {
-                System.err.println("Test142Line589>>> "+urlc);
-                URI rootu=urlc.getURL().toURI();
-                userInfo= KeyChain.getDefault().checkUserInfo( urlc.getURL() );
-                if ( userInfo!=null ) {
-                    String encode = Base64.getEncoder().encodeToString(userInfo.getBytes());
-                    urlc.setRequestProperty("Authorization", "Basic " + encode);
-                }
-            } catch (URISyntaxException ex) {
-                throw new RuntimeException(ex);
+            System.err.println("Test142Line589>>> "+urlc.getURL());
+            userInfo= KeyChain.getDefault().checkUserInfo( urlc.getURL() );
+            if ( userInfo!=null ) {
+                String encode = Base64.getEncoder().encodeToString(userInfo.getBytes());
+                urlc.setRequestProperty("Authorization", "Basic " + encode);
             }
+            System.err.println("ALL OKAY Test142Line589>>> "+urlc.getURL());
         }
 
         try {
