@@ -130,11 +130,22 @@ public class FTPFileSystem extends WebFileSystem {
                 throw new IllegalArgumentException("unable to mkdirs "+f );
             }
             File listing= new File( localRoot, directory + ".listing" );
-            if ( !listing.canRead() ) {
-                downloadFile( directory, listing, getPartFile(listing), new NullProgressMonitor() );
+            long ageMilliseconds= Integer.MAX_VALUE;
+            if ( listing.exists() ) {
+                ageMilliseconds = ( listing.lastModified() - System.currentTimeMillis() );
             }
-            listing.deleteOnExit();
-            return parseLsl( directory, listing );
+            if ( this.offline ) {
+                if ( listing.canRead() ) {
+                    return parseLsl( directory, listing );
+                } else {
+                    return f.list();
+                }
+            } else {
+                if ( !listing.canRead() || ( ageMilliseconds > HTTP_CHECK_TIMESTAMP_LIMIT_MS ) ) {
+                    downloadFile( directory, listing, getPartFile(listing), new NullProgressMonitor() );
+                }
+                return parseLsl( directory, listing );
+            }
         } catch ( IOException e ) {
             throw new RuntimeException(e);
         }
