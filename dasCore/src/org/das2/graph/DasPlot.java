@@ -470,12 +470,22 @@ public class DasPlot extends DasCanvasComponent {
      * draw the legend elements, substituting the plot context if the macro %{CONTEXT} is found.
      * @param g graphics context
      * @param llegendElements the legend elements
+     * @see #setDisplayLegend(boolean) 
+     * @see #setLegendFontSize(java.lang.String) 
      */
     private void drawLegend(Graphics2D g, List<LegendElement> llegendElements ) {
 
         Graphics2D graphics= (Graphics2D) g.create();
 
-        graphics.setFont( getFont().deriveFont( getFont().getSize2D() + legendRelativeFontSize ) );
+        double legendFontSizeImpl= GraphUtil.parseLayoutLength( this.legendFontSize, 0.0, getFont().getSize2D() );
+        if ( legendFontSizeImpl==getFont().getSize2D() ) {
+            graphics.setFont( getFont().deriveFont( getFont().getSize2D() + legendRelativeFontSize ) );
+        } else {
+            if ( legendRelativeFontSize!=0 ) {
+                logger.warning("legendRelativeFontSize ignored because legendFontSize is set");
+            }
+            graphics.setFont( getFont().deriveFont( (float)legendFontSizeImpl ) );
+        }
         
         int em;
         int msgx, msgy;
@@ -2570,6 +2580,34 @@ public class DasPlot extends DasCanvasComponent {
         repaint();
     }
     
+    /**
+     * font size for the legend.  This can be "" or "1em" meaning that the
+     * plot's font size should be used.
+     */
+    private String legendFontSize = "1em";
+
+    public static final String PROP_LEGENDFONTSIZE = "legendFontSize";
+
+    public String getLegendFontSize() {
+        return legendFontSize;
+    }
+
+    /**
+     * set the font size for the legend, using the conventions where 1em is
+     * the parent's font size:<ul>
+     * <li>1em same as plot font.
+     * <li>2em twice  plot font.
+     * <li>1em+2pt two points bigger than plot font.
+     * </ul>
+     * @see #setFontSize(java.lang.String) 
+     * @param legendFontSize 
+     */
+    public void setLegendFontSize(String legendFontSize) {
+        String oldLegendFontSize = this.legendFontSize;
+        this.legendFontSize = legendFontSize;
+        firePropertyChange(PROP_LEGENDFONTSIZE, oldLegendFontSize, legendFontSize);
+    }
+
     private String fontSize = "1em";
 
     public static final String PROP_FONTSIZE = "fontSize";
@@ -2578,6 +2616,10 @@ public class DasPlot extends DasCanvasComponent {
         return fontSize;
     }
 
+    /**
+     * set the font size, with respect to the canvas font.
+     * @param fontSize 
+     */
     public void setFontSize(String fontSize) {
         String oldFontSize = this.fontSize;
         this.fontSize = fontSize;
@@ -2602,6 +2644,7 @@ public class DasPlot extends DasCanvasComponent {
     /**
      * true if the legend should be displayed
      * @param displayLegend true if the legend should be displayed
+     * @see #drawLegend(java.awt.Graphics2D, java.util.List) 
      */
     public void setDisplayLegend(boolean displayLegend) {
         boolean oldDisplayLegend = this.displayLegend;
