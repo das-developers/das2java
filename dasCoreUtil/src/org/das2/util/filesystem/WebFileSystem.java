@@ -719,7 +719,7 @@ public abstract class WebFileSystem extends FileSystem {
     }
     
     /**
-     * return the URL for the internal filename
+     * return the URL for the internal filename, encoding the characters if necessary.
      * @param filename internal filename
      * @return 
      */
@@ -727,6 +727,16 @@ public abstract class WebFileSystem extends FileSystem {
         filename = FileSystem.toCanonicalFilename(filename);
         try {
             return new URL( root.toURL(), FileSystemUtil.uriEncode(filename.substring(1)) );
+            /*  This might be better code, to test more another day.:
+            /String s= filename.substring(1);
+            /String[] ss= s.split("/");
+            StringBuilder sb= new StringBuilder();
+            for (String s1 : ss) {
+                sb.append(URLEncoder.encode(s1));
+                sb.append("/");
+            }
+            return new URL( root.toURL(), sb.toString() );
+            */
         } catch (MalformedURLException ex) {
             throw new RuntimeException(ex);
         }
