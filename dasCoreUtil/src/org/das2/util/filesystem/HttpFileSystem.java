@@ -647,10 +647,9 @@ public class HttpFileSystem extends WebFileSystem {
      */
     @Override
     protected Map<String,String> downloadFile(String filename, File targetFile, File partFile, ProgressMonitor monitor) throws IOException {
-        URL remoteURL = getURL( filename );  // TEMP see 665 below
         
         Lock lock = getDownloadLock(filename, targetFile, monitor);
-        
+            
         if (lock == null) {
             return Collections.EMPTY_MAP;
         }
@@ -662,7 +661,7 @@ public class HttpFileSystem extends WebFileSystem {
         logger.log(Level.FINER, "downloadFile {0}, using temporary file {1}", new Object[] { filename, partFile } );
 
         try {
-            //remoteURL = getURL( filename ); // TEMP see 650 above
+            URL remoteURL = getURL( filename ); // TEMP see 650 above
             
             try { 
                 meta= doDownload( filename, remoteURL, targetFile, partFile, monitor );
