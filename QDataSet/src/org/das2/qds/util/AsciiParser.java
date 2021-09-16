@@ -2258,6 +2258,13 @@ public class AsciiParser {
                 }
             }
 
+            for (Units unit : parser.units) {
+                if (unit != null && Units.dimensionless.isConvertibleTo(unit)) {
+                    doGuessUnits= false;
+                }
+            }
+            logger.log(Level.CONFIG, "doGuessUnits={0}", doGuessUnits);
+
         }
 
         @Override
