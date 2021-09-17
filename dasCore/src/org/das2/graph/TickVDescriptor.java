@@ -452,9 +452,9 @@ public class TickVDescriptor {
             while ( majorTick.lt( maxD ) ) {
                 TickVDescriptor result;
                 if ( majorTicks==null && maxD.divide(majorTick).value() < 10 ) {
-                    result= bestTickVLinear( minD, maxD, 2, 10, fin );
+                    result= bestTickVLinear( minD, maxD, 2, nTicksMax, fin );
                 } else {
-                    result= bestTickVLinear( majorTick, majorTick.multiply(9), 2, 10, fin );
+                    result= bestTickVLinear( majorTick, majorTick.multiply(9), 2, nTicksMax, fin );
                 }
                 if ( df==null ) df= result.getFormatter();
                 DatumVector majorTicks1= getDatumVectorSubVector( result.getMajorTicks(), majorTick.multiply(0.99), majorTick.multiply(10) );
