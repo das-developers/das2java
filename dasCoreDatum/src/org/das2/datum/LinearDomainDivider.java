@@ -16,11 +16,12 @@ public class LinearDomainDivider implements DomainDivider {
 
     // private version allows specification of increment, for use by
     // finerDivider and coarserDivider
-    private LinearDomainDivider(int significand, int exponent) {
+    protected LinearDomainDivider(int significand, int exponent) {
         incSignificand = significand;
         incExponent = exponent;
     }
 
+    @Override
     public DomainDivider coarserDivider(boolean superset) {
         int newSignificand, newExponent;
         if (incSignificand == 1) {
@@ -43,6 +44,7 @@ public class LinearDomainDivider implements DomainDivider {
         return new LinearDomainDivider(newSignificand, newExponent);
     }
 
+    @Override
     public DomainDivider finerDivider(boolean superset) {
         int newSignificand, newExponent;
 
@@ -66,6 +68,7 @@ public class LinearDomainDivider implements DomainDivider {
         return new LinearDomainDivider(newSignificand, newExponent);
     }
 
+    @Override
     public DatumVector boundaries(Datum min, Datum max) {
         if ( !min.isFinite() || !max.isFinite() ) {
             System.err.println("min and max must be finite");
@@ -94,12 +97,14 @@ public class LinearDomainDivider implements DomainDivider {
         return DatumVector.newDatumVector(values, min.getUnits());
     }
 
+    @Override
     public DatumRange rangeContaining(Datum v) {
         double intervalSize = incSignificand * Math.pow(10, incExponent);
         double min = Math.floor(v.doubleValue()/intervalSize) * intervalSize;
         return new DatumRange(min, min + intervalSize, v.getUnits());
     }
 
+    @Override
     public long boundaryCount(Datum min, Datum max) {
         if ( min.gt(max) ) {
             return 0;
@@ -129,6 +134,7 @@ public class LinearDomainDivider implements DomainDivider {
         return incExponent;
     }
 
+    @Override
     public String toString() {
         return "ldd "+incSignificand+"E"+incExponent;
     }
