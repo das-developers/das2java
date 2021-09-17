@@ -104,7 +104,7 @@ public class LogLinDomainDivider implements DomainDivider {
         long bc=0;
         int numLogBoundaries = logBoundaries.getLength();
 
-        if (numLogBoundaries > 1) {
+        if (numLogBoundaries > 1) { // count the whole-decade boundaries
             long divsPerDecade = decadeDivider.boundaryCount(Datum.create(0), Datum.create(10)) - 1;
             bc = divsPerDecade * (numLogBoundaries -1);
         }
@@ -114,13 +114,14 @@ public class LogLinDomainDivider implements DomainDivider {
             double decadeOffset = Math.pow(10, Math.floor(Math.log10(min.doubleValue())));
             Datum mmin = min.divide(decadeOffset);
             Datum mmax = logBoundaries.get(0).divide(decadeOffset);
-            bc += decadeDivider.boundaryCount(mmin, mmax) - 1; //subtract 1 to avoide double count
+            bc += decadeDivider.boundaryCount(mmin, mmax) - 1; //subtract 1 to avoid double count
 
             // count divisions between last boundary and max
-            decadeOffset = Math.pow(10, Math.floor(Math.log10(max.doubleValue())));
+            double maxd= Math.floor(Math.log10(max.doubleValue()));
+            decadeOffset = Math.pow(10, maxd );
             mmin = logBoundaries.get(numLogBoundaries-1).divide(decadeOffset);
             mmax = max.divide(decadeOffset);
-            bc += decadeDivider.boundaryCount(mmin, mmax);
+            bc += decadeDivider.boundaryCount(mmin, mmax); 
         } else {
             // There are no log boundaries, so just count from min to max
             double decadeOffset = Math.pow(10, Math.floor(Math.log10(min.doubleValue())));

@@ -45,9 +45,9 @@ public interface DomainDivider {
      * Returns the boundaries between intervals on the given data range. When
      * min or max lay on a boundary, it should be returned.  Note this is
      * inconsistent with DatumRange logic, where the max is exclusive.
-     * If min>=max, then an empty list should be returned.
-     * @param min
-     * @param max
+     * If min&gt;&eq;max, then an empty list should be returned.
+     * @param min the lower bound
+     * @param max the upper bound
      * @return a <code>DatumVector</code> containing the boundary values
      */
     public DatumVector boundaries(Datum min, Datum max);
@@ -56,8 +56,8 @@ public interface DomainDivider {
      * Compute the number of intervals produced by this <code>DomainDivider</code>
      * on the given range.  This allows the DomainDivider to indicate the number
      * of intervals (e.g. a zillion) without having to enumerate them.  When
-     * min or max lay on a boundary, it should be counted.  If min>=max, then 
-     * zero should be returned.
+     * min or max lay on a boundary, it should be counted (inclusive max).  If 
+     * min&gt;&eq;max, then zero should be returned.
      * @param min
      * @param max
      * @return
@@ -68,7 +68,7 @@ public interface DomainDivider {
      * Return a <code>DatumRange</code> representing the interval containing
      * the given value.
      * @param v
-     * @return
+     * @return the range containing a given value.
      */
     public DatumRange rangeContaining(Datum v);
 
