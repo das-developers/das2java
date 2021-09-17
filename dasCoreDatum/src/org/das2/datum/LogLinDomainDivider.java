@@ -2,7 +2,10 @@ package org.das2.datum;
 
 /**
  * A DomainDivider which divides logarithmically (base 10), with linear subdivisions.
- * It provides divisions such as 1,2,3,4,5,6,7,8,9,10,20,30,40,50.....
+ * It provides divisions such as <ul>
+ * <li>1,2,3,4,5,6,7,8,9,10,20,30,40,50,...
+ * <li>2,4,6,8,10,20,40,60,80,100,200,...
+ * </ul>
  * @author ed
  */
 public class LogLinDomainDivider implements DomainDivider {
@@ -16,6 +19,7 @@ public class LogLinDomainDivider implements DomainDivider {
         this.decadeDivider = decadeDivider;
     }
 
+    @Override
     public DomainDivider coarserDivider(boolean superset) {
         LinearDomainDivider d = (LinearDomainDivider) decadeDivider.coarserDivider(superset);
         if  (d.boundaryCount(Datum.create(1.0), Datum.create(10.0 )) < 1) {
@@ -26,11 +30,13 @@ public class LogLinDomainDivider implements DomainDivider {
             return new LogLinDomainDivider(d);
     }
 
+    @Override
     public DomainDivider finerDivider(boolean superset) {
         // Make the linear subidivision finer.
         return new LogLinDomainDivider((LinearDomainDivider)decadeDivider.finerDivider(superset));
     }
 
+    @Override
     public DatumVector boundaries(Datum min, Datum max) {
         if ( !min.isFinite() || !max.isFinite() ) {
             System.err.println("min and max must be finite");
@@ -91,6 +97,7 @@ public class LogLinDomainDivider implements DomainDivider {
         return DatumVector.newDatumVector(result, min.getUnits());
     }
 
+    @Override
     public long boundaryCount(Datum min, Datum max) {
         DomainDivider logDivider = new LogDomainDivider();
         DatumVector logBoundaries = logDivider.boundaries(min, max);
@@ -124,6 +131,7 @@ public class LogLinDomainDivider implements DomainDivider {
         return bc;
     }
 
+    @Override
     public DatumRange rangeContaining(Datum v) {
         DomainDivider logDivider = new LogDomainDivider();
         DatumRange decade = logDivider.rangeContaining(v);
