@@ -156,6 +156,28 @@ public final class DatumVector {
         return new DatumVector( dd, 0, dd.length, newUnits );
     }
     
+    /**
+     * return a DatumVector which contains the elements of a and then 
+     * the elements of b.
+     * @param a null or a DatumVector
+     * @param b a DatumVector with compatible units.
+     * @return the DatumVector which contains the elements of a and then 
+     * the elements of b.
+     */
+    public static DatumVector append( DatumVector a, DatumVector b ) {
+        if ( a==null ) return b;
+        Units u= a.getUnits();
+        double[] ra= new double[ a.length + b.length ];
+        for ( int i=0; i<a.length; i++ ) {
+            ra[i]= a.doubleValue( i, u );
+        }
+        for ( int i=0; i<b.length; i++ ) {
+            ra[i+a.length]= b.doubleValue( i, u );
+        }
+        DatumVector result= new DatumVector( ra, 0, ra.length, u );
+        return result;
+    }
+    
     public DatumVector subtract( Datum d ) {
         double[] dd= new double[getLength()];
         Units newUnits;

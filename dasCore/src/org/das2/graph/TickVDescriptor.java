@@ -389,6 +389,33 @@ public class TickVDescriptor {
     }
 
     /**
+     * for the sorted list v, return the elements within min and max (exclusive)
+     * @param v
+     * @param min
+     * @param max
+     * @return 
+     */
+    private static DatumVector getDatumVectorSubVector( DatumVector v, Datum min, Datum max ) {
+        int n= v.getLength();
+        int imin=0;
+        int imax=v.getLength();
+        for ( int i=0; i<n; i++ ) {
+            if ( v.get(i).ge(min) ) {
+                imin= i;
+                break;
+            }
+        }
+        for ( int i=n-1; i>0; i-- ) {
+            if ( v.get(i).lt(max) ) {
+                imax= i+1;
+                break;
+            }
+        }
+        if ( imin>imax ) throw new IllegalArgumentException("whoops something went wrong min>max");
+        return v.getSubVector( imin, imax );
+    }
+    
+    /**
      * return a set of log ticks, within the given constraints.
      * @param minD the minimum
      * @param maxD the maximum
@@ -415,28 +442,38 @@ public class TickVDescriptor {
         int ntick0 = (int) (Math.floor(logMax * 0.999) - Math.ceil(logMin * 1.001) + 1);
 
         if (ntick0 < 2) {
-            TickVDescriptor result = bestTickVLinear(minD, maxD, nTicksMin, nTicksMax, fin);
-            int ii = 0;
-
-            DatumVector majortics = result.getMajorTicks();
-            Units u = majortics.getUnits();
-
-            while (ii < majortics.getLength() && majortics.get(ii).doubleValue(u) <= 0) {
-                ii++;
+            
+            Datum majorTick= ticks.units.createDatum( Math.pow( 10, Math.floor(logMin) ) );
+            
+            DatumVector majorTicks= null;
+            DatumVector minorTicks= null;
+            
+            DatumFormatter df= null;
+            while ( majorTick.lt( maxD ) ) {
+                TickVDescriptor result;
+                if ( majorTicks==null && maxD.divide(majorTick).value() < 10 ) {
+                    result= bestTickVLinear( minD, maxD, 2, 10, fin );
+                } else {
+                    result= bestTickVLinear( majorTick, majorTick.multiply(9), 2, 10, fin );
+                }
+                if ( df==null ) df= result.getFormatter();
+                DatumVector majorTicks1= getDatumVectorSubVector( result.getMajorTicks(), majorTick.multiply(0.99), majorTick.multiply(10) );
+                majorTicks= DatumVector.append( majorTicks, majorTicks1 );
+                DatumVector minorTicks1= getDatumVectorSubVector( result.getMinorTicks(), majorTick.multiply(0.99), majorTick.multiply(10) );
+                minorTicks= DatumVector.append( minorTicks, minorTicks1 );
+                majorTick= majorTick.multiply(10);
             }
-            majortics = majortics.getSubVector(ii, majortics.getLength());
+            
+            DatumVector vis= getDatumVectorSubVector( majorTicks, minD, maxD.multiply(1.001) );
+            if ( vis.getLength()<2 ) {
+                return bestTickVLinear( minD, maxD, 2, 10, fin );
+            } else {
+                        
+                TickVDescriptor result = TickVDescriptor.newTickVDescriptor( majorTicks, minorTicks);
+                result.datumFormatter = df;
 
-            DatumVector minortics = result.getMinorTicks();
-            while (ii < minortics.getLength() && minortics.get(ii).doubleValue(u) <= 0) {
-                ii++;
+                return result;
             }
-            minortics = minortics.getSubVector(ii, minortics.getLength());
-
-            DatumFormatter df = result.datumFormatter;
-            result = TickVDescriptor.newTickVDescriptor(majortics, minortics);
-            result.datumFormatter = df;
-
-            return result;
 
         }
 
