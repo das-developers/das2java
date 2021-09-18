@@ -448,6 +448,12 @@ public class TickVDescriptor {
             DatumVector majorTicks= null;
             DatumVector minorTicks= null;
             
+            // calculate nticksMax for one cycle.
+            double dnticksMax= 10. / (maxD.divide(minD).value());
+            if ( dnticksMax<1 ) {
+                nTicksMax= (int)Math.ceil( nTicksMax * dnticksMax );
+            }
+                    
             DatumFormatter df= null;
             while ( majorTick.lt( maxD ) ) {
                 TickVDescriptor result;
@@ -458,6 +464,9 @@ public class TickVDescriptor {
                 }
                 if ( df==null ) df= result.getFormatter();
                 DatumVector majorTicks1= getDatumVectorSubVector( result.getMajorTicks(), majorTick.multiply(0.99), majorTick.multiply(10) );
+                if ( majorTicks1.getLength()==0 || !majorTicks1.get(0).equals(majorTick) ) {
+                    majorTicks= DatumVector.append( majorTicks, DatumVector.newDatumVector( new Datum[] { majorTick }, majorTick.getUnits() ) );
+                }
                 majorTicks= DatumVector.append( majorTicks, majorTicks1 );
                 DatumVector minorTicks1= getDatumVectorSubVector( result.getMinorTicks(), majorTick.multiply(0.99), majorTick.multiply(10) );
                 minorTicks= DatumVector.append( minorTicks, minorTicks1 );
