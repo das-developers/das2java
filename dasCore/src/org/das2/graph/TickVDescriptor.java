@@ -422,7 +422,7 @@ public class TickVDescriptor {
      * @param nTicksMin the minimum number of ticks.
      * @param nTicksMax the maximum number of ticks.
      * @param fin final, useful when debugging.
-     * @return
+     * @return the ticks.
      */
     public static TickVDescriptor bestTickVLogNew(Datum minD, Datum maxD, int nTicksMin, int nTicksMax, boolean fin) {
 
@@ -442,47 +442,28 @@ public class TickVDescriptor {
         int ntick0 = (int) (Math.floor(logMax * 0.999) - Math.ceil(logMin * 1.001) + 1);
 
         if (ntick0 < 2) {
-            
-            Datum majorTick= ticks.units.createDatum( Math.pow( 10, Math.floor(logMin) ) );
-            
-            DatumVector majorTicks= null;
-            DatumVector minorTicks= null;
-            
-            // calculate nticksMax for one cycle.
-            double dnticksMax= 10. / (maxD.divide(minD).value());
-            if ( dnticksMax<1 ) {
-                nTicksMax= (int)Math.ceil( nTicksMax * dnticksMax );
-            }
-                    
-            DatumFormatter df= null;
-            while ( majorTick.lt( maxD ) ) {
-                TickVDescriptor result;
-                if ( majorTicks==null && maxD.divide(majorTick).value() < 10 ) {
-                    result= bestTickVLinear( minD, maxD, 2, nTicksMax, fin );
-                } else {
-                    result= bestTickVLinear( majorTick, majorTick.multiply(9), 2, nTicksMax, fin );
-                }
-                if ( df==null ) df= result.getFormatter();
-                DatumVector majorTicks1= getDatumVectorSubVector( result.getMajorTicks(), majorTick.multiply(0.99), majorTick.multiply(10) );
-                if ( majorTicks1.getLength()==0 || !majorTicks1.get(0).equals(majorTick) ) {
-                    majorTicks= DatumVector.append( majorTicks, DatumVector.newDatumVector( new Datum[] { majorTick }, majorTick.getUnits() ) );
-                }
-                majorTicks= DatumVector.append( majorTicks, majorTicks1 );
-                DatumVector minorTicks1= getDatumVectorSubVector( result.getMinorTicks(), majorTick.multiply(0.99), majorTick.multiply(10) );
-                minorTicks= DatumVector.append( minorTicks, minorTicks1 );
-                majorTick= majorTick.multiply(10);
-            }
-            
-            DatumVector vis= getDatumVectorSubVector( majorTicks, minD, maxD.multiply(1.001) );
-            if ( vis.getLength()<2 ) {
-                return bestTickVLinear( minD, maxD, 2, 10, fin );
-            } else {
-                        
-                TickVDescriptor result = TickVDescriptor.newTickVDescriptor( majorTicks, minorTicks);
-                result.datumFormatter = df;
+            TickVDescriptor result = bestTickVLinear(minD, maxD, nTicksMin, nTicksMax, fin);
+            int ii = 0;
 
-                return result;
+            DatumVector majortics = result.getMajorTicks();
+            Units u = majortics.getUnits();
+
+            while (ii < majortics.getLength() && majortics.get(ii).doubleValue(u) <= 0) {
+                ii++;
             }
+            majortics = majortics.getSubVector(ii, majortics.getLength());
+
+            DatumVector minortics = result.getMinorTicks();
+            while (ii < minortics.getLength() && minortics.get(ii).doubleValue(u) <= 0) {
+                ii++;
+            }
+            minortics = minortics.getSubVector(ii, minortics.getLength());
+
+            DatumFormatter df = result.datumFormatter;
+            result = TickVDescriptor.newTickVDescriptor(majortics, minortics);
+            result.datumFormatter = df;
+
+            return result;            
 
         }
 
@@ -577,6 +558,72 @@ public class TickVDescriptor {
 
     }
 
+    /**
+     * experimental code for calculating log ticks.
+     * @param minD
+     * @param maxD
+     * @param nTicksMin
+     * @param nTicksMax
+     * @param fin
+     * @return 
+     */
+    public static TickVDescriptor bestTickLog20210921( Datum minD, Datum maxD, int nTicksMin, int nTicksMax, boolean fin ) {
+        TickVDescriptor ticks = new TickVDescriptor();
+        ticks.units = minD.getUnits();
+        double min = minD.doubleValue(ticks.units);
+        double max = maxD.doubleValue(ticks.units);
+
+        if (max <= 0) {
+            max = 100.;
+        }
+        if (min <= 0) {
+            min = max / 1000.;
+        }
+        
+        double logMin = Math.log10(min);
+        Datum majorTick= ticks.units.createDatum( Math.pow( 10, Math.floor(logMin) ) );
+
+        DatumVector majorTicks= null;
+        DatumVector minorTicks= null;
+
+        // calculate nticksMax for one cycle.
+        double dnticksMax= 10. / (maxD.divide(minD).value());
+        if ( dnticksMax<1 ) {
+            nTicksMax= (int)Math.ceil( nTicksMax * dnticksMax );
+        }
+
+        DatumFormatter df= null;
+        while ( majorTick.lt( maxD ) ) {
+            TickVDescriptor result;
+            if ( majorTicks==null && maxD.divide(majorTick).value() < 10 ) {
+                result= bestTickVLinear( minD, maxD, 2, nTicksMax, fin );
+            } else {
+                result= bestTickVLinear( majorTick, majorTick.multiply(9), 2, nTicksMax, fin );
+            }
+            if ( df==null ) df= result.getFormatter();
+            DatumVector majorTicks1= getDatumVectorSubVector( result.getMajorTicks(), majorTick.multiply(0.99), majorTick.multiply(10) );
+            if ( majorTicks1.getLength()==0 || !majorTicks1.get(0).equals(majorTick) ) {
+                majorTicks= DatumVector.append( majorTicks, DatumVector.newDatumVector( new Datum[] { majorTick }, majorTick.getUnits() ) );
+            }
+            majorTicks= DatumVector.append( majorTicks, majorTicks1 );
+            DatumVector minorTicks1= getDatumVectorSubVector( result.getMinorTicks(), majorTick.multiply(0.99), majorTick.multiply(10) );
+            minorTicks= DatumVector.append( minorTicks, minorTicks1 );
+            majorTick= majorTick.multiply(10);
+        }
+
+        DatumVector vis= getDatumVectorSubVector( majorTicks, minD, maxD.multiply(1.001) );
+        if ( vis.getLength()<2 ) {
+            return bestTickVLinear( minD, maxD, 2, 10, fin );
+        } else {
+
+            TickVDescriptor result = TickVDescriptor.newTickVDescriptor( majorTicks, minorTicks);
+            result.datumFormatter = df;
+
+            return result;
+        }
+        
+    }
+    
     /**
      * find a divider that gives the biggest divisions for unitsPerDecade.  For example, we want to
      * divide a pizza evenly.  If the pizza has 12 pieces, then we can return 1,2,3,4 or 6.
