@@ -8733,7 +8733,7 @@ public final class Ops {
                     }
                 }
                 assert cadenceMax!=null;
-                logger.log(Level.FINE, "expandToFillGaps: {0} {1}", new Object[]{cadenceMin, cadenceMax});
+                logger.log(Level.FINE, "expandToFillGaps: cadenceMin={0} cadenceMax={1}", new Object[]{cadenceMin, cadenceMax});
                 DataSetBuilder tb= new DataSetBuilder(1,ds.length());
                 tb.setUnits((Units)ttags.property(QDataSet.UNITS));
                 double stepFactor= cadenceMax.divide(cadenceMin).divide(count).value();
