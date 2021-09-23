@@ -78,17 +78,17 @@ public final class SemanticOps {
     public static UnitsConverter getLooseUnitsConverter( QDataSet src, QDataSet dst ) {
         Units usrc= getUnits(src);
         Units udst= getUnits(dst);
-        try {
+        if ( usrc.isConvertibleTo(udst)) {
             return usrc.getConverter(udst);
-        } catch ( InconvertibleUnitsException ex ) {
+        } else {
             if ( UnitsUtil.isRatioMeasurement(usrc) && UnitsUtil.isRatioMeasurement(udst) ) {
                 if ( Units.dimensionless==usrc || Units.dimensionless==udst ) {
                     return UnitsConverter.LOOSE_IDENTITY;
                 } else {
-                    throw ex;
+                    return usrc.getConverter(udst); // throws InconvertibleUnitsException
                 }
             } else {
-                throw ex;
+                return usrc.getConverter(udst); // throws InconvertibleUnitsException
             }
         }
     }
