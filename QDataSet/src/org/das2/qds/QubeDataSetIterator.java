@@ -133,6 +133,7 @@ public final class QubeDataSetIterator implements DataSetIterator {
 
     /**
      * generates iterator for counting off indeces.  (3:15:2 in ds[3:15:2,:])
+     * Indices can be negative.
      */
     public static class StartStopStepIteratorFactory implements DimensionIteratorFactory {
 
@@ -142,7 +143,7 @@ public final class QubeDataSetIterator implements DataSetIterator {
 
         /**
          * create the factory which will create iterators.
-         * @param start the start index.  
+         * @param start the start index.  negative indices are supported.
          * @param stop the stop index, exclusive.  null (or None) is used to indicate the end of non-qube datasets.
          * @param step the step size, null means just use 1.
          */
@@ -274,12 +275,16 @@ public final class QubeDataSetIterator implements DataSetIterator {
     }
     
     /**
-     * Factory for iterator that goes through a list of indeces.
+     * Factory for iterator that goes through a list of indices.  The indices can be negative.
      */
     public static class IndexListIteratorFactory implements DimensionIteratorFactory {
 
         QDataSet ds;
 
+        /**
+         * initialize with the set of indices. 
+         * @param ds 
+         */
         public IndexListIteratorFactory(QDataSet ds) {
             if ( ds.rank()==0 ) {
                 ds= Ops.join(null,ds);
@@ -362,7 +367,7 @@ public final class QubeDataSetIterator implements DataSetIterator {
     }
 
     /**
-     * Factory for iterator for a single index.
+     * Factory for iterator for a single index, which can be negative indicating it is from the end of the array.
      */
     public static class SingletonIteratorFactory implements DimensionIteratorFactory {
 
