@@ -918,13 +918,12 @@ public final class QubeDataSetIterator implements DataSetIterator {
         Units uds= SemanticOps.getUnits(r0ds);
         Units uv= SemanticOps.getUnits(vds);
         
-        //TODO: assign rank0 with units to dimensionless dataset.
         double v;
         try {
             UnitsConverter uc= uv.getConverter(uds);
             v= uc.convert(vds.value());
         } catch ( InconvertibleUnitsException ex ) {
-            if ( uv==Units.dimensionless ) {
+            if ( uds==Units.dimensionless ) {
                 v= vds.value();
             } else {
                 throw ex;
