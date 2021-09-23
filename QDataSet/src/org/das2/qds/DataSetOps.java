@@ -28,6 +28,7 @@ import org.das2.datum.UnitsUtil;
 import org.das2.util.LoggerManager;
 import org.das2.util.monitor.ProgressMonitor;
 import org.das2.qds.examples.Schemes;
+import org.das2.qds.ops.CoerceUtil;
 import org.das2.qds.ops.Ops;
 import org.das2.qds.util.DataSetBuilder;
 
@@ -627,6 +628,7 @@ public class DataSetOps {
      * @return new dataset that is a copy of the first, resorted.
      * @see  org.das2.qds.SortDataSet for similar functionality
      * @see Ops#decimate(org.das2.qds.QDataSet, int, int) 
+     * @see #applyIndexAllLists(org.das2.qds.QDataSet, org.das2.qds.QDataSet[]) 
      */
     public static WritableDataSet applyIndex( QDataSet ds, int idim, QDataSet sort, boolean deps ) {
 
@@ -701,6 +703,151 @@ public class DataSetOps {
         }
 
         return cds;
+    }
+    
+    /**
+     * handle special case where rank 1 datasets are used to index a rank N array.  Supports negative indices.
+     * This was extracted from PyQDataSet because it should be useful in Java codes as well.
+     * @param rods the dataset
+     * @param lists datasets of rank 0 or rank 1
+     * @return the array extracted.
+     * @see applyIndex which is similar
+     */
+    public static ArrayDataSet applyIndexAllLists( QDataSet rods, QDataSet[] lists ) {
+                
+        QDataSet[] ll= new QDataSet[2];
+        ll[0]= lists[0];
+        for ( int i=1; i<lists.length; i++) {
+            ll[1]= lists[i];
+            CoerceUtil.coerce( ll[0], ll[1], false, ll );
+            lists[0]= ll[0];
+            lists[i]= ll[1];
+        }
+
+        int[] qubeDims= DataSetUtil.qubeDims(rods);
+        
+        for ( int i=0; i<lists.length; i++ ) {
+            int len= i==0 ? rods.length() : qubeDims[i];
+            lists[i]= Ops.applyUnaryOp( lists[i], (Ops.UnaryOp) (double d1) -> d1<0 ? len+d1 : d1 );
+        }
+                
+        ArrayDataSet result;
+        switch (lists[0].rank()) {
+            case 0:
+                result= ArrayDataSet.createRank0( ArrayDataSet.guessBackingStore(rods) );
+                break;
+            case 1:
+                result= ArrayDataSet.createRank1( ArrayDataSet.guessBackingStore(rods), lists[0].length() );
+                break;
+            default:
+                result= ArrayDataSet.create( ArrayDataSet.guessBackingStore(rods), DataSetUtil.qubeDims( lists[0] ) );
+                break;
+        }
+        
+        switch (lists[0].rank()) { // all datasets in lists[] will have the same rank.
+            case 0:
+                switch (rods.rank()) {
+                    case 1:
+                        result.putValue( rods.value( (int)lists[0].value() ) );
+                        break;
+                    case 2:
+                        result.putValue( rods.value( (int)lists[0].value(), (int)lists[1].value() ) );
+                        break;
+                    case 3:
+                        result.putValue( rods.value(
+                            (int)lists[0].value(),
+                            (int)lists[1].value(),
+                            (int)lists[2].value() ) );
+                        break;
+                    case 4:
+                        result.putValue( rods.value(
+                            (int)lists[0].value(),
+                            (int)lists[1].value(),
+                            (int)lists[2].value(),
+                            (int)lists[3].value() ) );
+                        break;
+                    default:
+                        break;
+                }   break;
+            case 1:
+                int n= lists[0].length();
+                switch (rods.rank()) {
+                    case 1:
+                        for ( int i=0;i<n;i++ ) {
+                            result.putValue( i, rods.value( (int)lists[0].value(i) ) );
+                        }
+                        break;
+                    case 2:
+                        for ( int i=0;i<n;i++ ) {
+                            result.putValue( i, rods.value( (int)lists[0].value(i), (int)lists[1].value(i) ) );
+                        }
+                        break;
+                    case 3:
+                        for ( int i=0;i<n;i++ ) {
+                            result.putValue( i,
+                                rods.value(
+                                    (int)lists[0].value(i),
+                                    (int)lists[1].value(i),
+                                    (int)lists[2].value(i) ) );
+                        }
+                        break;
+                    case 4:
+                        for ( int i=0;i<n;i++ ) {
+                            result.putValue( i,
+                                rods.value(
+                                    (int)lists[0].value(i),
+                                    (int)lists[1].value(i),
+                                    (int)lists[2].value(i),
+                                    (int)lists[3].value(i) ) );
+                        }
+                        break;
+                    default:
+                        break;
+                }   break;
+            default:
+                QubeDataSetIterator iter= new QubeDataSetIterator( result );
+                switch ( rods.rank() ) {
+                    case 1:
+                        while ( iter.hasNext() ) {
+                            iter.next();
+                            double d= rods.value( (int)iter.getValue(lists[0]) );
+                            iter.putValue( result, d );
+                        }
+                        break;
+                    case 2:
+                        while ( iter.hasNext() ) {
+                            iter.next(); 
+                            double d= rods.value(
+                                (int)iter.getValue(lists[0]),
+                                (int)iter.getValue(lists[1]) );
+                            iter.putValue( result, d );
+                        }
+                        break;
+                    case 3:
+                        while ( iter.hasNext() ) {
+                            iter.next();
+                            double d= rods.value(
+                                (int)iter.getValue(lists[0]), 
+                                (int)iter.getValue(lists[1]),
+                                (int)iter.getValue(lists[2]) );
+                            iter.putValue( result, d );
+                        }
+                        break;
+                    case 4:
+                        while ( iter.hasNext() ) {
+                            iter.next();
+                            double d= rods.value(
+                                (int)iter.getValue(lists[0]), 
+                                (int)iter.getValue(lists[1]),
+                                (int)iter.getValue(lists[2]), 
+                                (int)iter.getValue(lists[3]) );
+                            iter.putValue( result, d );
+                        }
+                        break;
+                }   break;
+        }
+        return result;
+        
     }
     
     /**
