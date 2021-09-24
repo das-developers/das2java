@@ -240,7 +240,7 @@ public final class QubeDataSetIterator implements DataSetIterator {
         if ( indexSize>-1 ) {
             Number max= (Number)ds.property(QDataSet.VALID_MAX);
             if ( max!=null ) {
-                if ( max.intValue()!=indexSize ) {
+                if ( max.intValue()!=indexSize  ) { //&& (indexSize-max.intValue()!=1)
                     String jythonLine= currentJythonLine();
                     if ( jythonLine.equals("???") ) {
                         if ( max instanceof Integer || max instanceof Long ) {
@@ -514,11 +514,15 @@ public final class QubeDataSetIterator implements DataSetIterator {
             if ( max>-1 ) {
                 if ( this.qube!=null ) {
                     if ( this.qube[dim]!=max ) {
-                        String jythonLine= currentJythonLine();
-                        if ( jythonLine.equals("???") ) {
-                            logger.log(Level.WARNING, "rfe737: index list appears to be for dimensions of length {0} (see VALID_MAX) but is indexing dimension length {1}, which may indicate there''s a bug.", new Object[]{max, this.qube[dim]});
+                        if ( this.qube[dim]-max==1 ) {
+                            logger.log(Level.FINER, "rfe737: index list appears to be for dimensions of length {0} (see VALID_MAX) but is indexing dimension length {1}, I bet you know what you are doing...", new Object[]{max, this.qube[dim]} );
                         } else {
-                            logger.log(Level.WARNING, "rfe737: index list appears to be for dimensions of length {0} (see VALID_MAX) but is indexing dimension length {1}, which may indicate there''s a bug at {2}.", new Object[]{max, this.qube[dim], jythonLine});
+                            String jythonLine= currentJythonLine();
+                            if ( jythonLine.equals("???") ) {
+                                logger.log(Level.WARNING, "rfe737: index list appears to be for dimensions of length {0} (see VALID_MAX) but is indexing dimension length {1}, which may indicate there''s a bug.", new Object[]{max, this.qube[dim]});
+                            } else {
+                                logger.log(Level.WARNING, "rfe737: index list appears to be for dimensions of length {0} (see VALID_MAX) but is indexing dimension length {1}, which may indicate there''s a bug at {2}.", new Object[]{max, this.qube[dim], jythonLine});
+                            }
                         }
                     }
                 }
