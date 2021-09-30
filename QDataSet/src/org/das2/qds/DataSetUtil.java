@@ -1100,22 +1100,28 @@ public class DataSetUtil {
             return str.toString();
         }
 
-        if ( ds.rank()==2 && ds.length()==2 && ds.length(0)==2 && "min,maxInclusive".equals(ds.property( QDataSet.BINS_1) ) ) {
-            Units u1= (Units) ds.property(QDataSet.UNITS,0);
-            Units u2= (Units) ds.property(QDataSet.UNITS,1);
+        if ( ds.rank()==2 && ds.length()==2 && ds.length(0)==2 ) {
+            QDataSet ex1= ds.slice(0);
+            if ( "min,maxInclusive".equals(ex1.property( QDataSet.BINS_0) ) ) {
+                Units u1= (Units) ds.property(QDataSet.UNITS,0);
+                Units u2= (Units) ds.property(QDataSet.UNITS,1);
 
-            DatumRange dr1= new DatumRange( ds.value(0,0), ds.value(0,1), u1==null ? Units.dimensionless : u1 );
-            DatumRange dr2= new DatumRange( ds.value(1,0), ds.value(1,1), u2==null ? Units.dimensionless : u2 );
-            return dr1.toString() + "; "+ dr2.toString() + "  (inclusive)";
+                DatumRange dr1= new DatumRange( ds.value(0,0), ds.value(0,1), u1==null ? Units.dimensionless : u1 );
+                DatumRange dr2= new DatumRange( ds.value(1,0), ds.value(1,1), u2==null ? Units.dimensionless : u2 );
+                return dr1.toString() + "; "+ dr2.toString() + "  (inclusive)";
+            }
         }
 
-        if ( ds.rank()==2 && ds.length()==2 && ds.length(0)==2 && "min,max".equals(ds.property( QDataSet.BINS_1) ) ) {
-            Units u1= (Units) ds.property(QDataSet.UNITS,0);
-            Units u2= (Units) ds.property(QDataSet.UNITS,1);
+        if ( ds.rank()==2 && ds.length()==2 && ds.length(0)==2 ) {
+            QDataSet ex1= ds.slice(0);
+            if ( "min,max".equals(ex1.property( QDataSet.BINS_0 ) ) ) {
+                Units u1= (Units) ds.property(QDataSet.UNITS,0);
+                Units u2= (Units) ds.property(QDataSet.UNITS,1);
 
-            DatumRange dr1= new DatumRange( ds.value(0,0), ds.value(0,1), u1==null ? Units.dimensionless : u1 );
-            DatumRange dr2= new DatumRange( ds.value(1,0), ds.value(1,1), u2==null ? Units.dimensionless : u2 );
-            return dr1.toString() + "; "+ dr2.toString();
+                DatumRange dr1= new DatumRange( ds.value(0,0), ds.value(0,1), u1==null ? Units.dimensionless : u1 );
+                DatumRange dr2= new DatumRange( ds.value(1,0), ds.value(1,1), u2==null ? Units.dimensionless : u2 );
+                return dr1.toString() + "; "+ dr2.toString();
+            }
         }
 
         String qubeStr = DataSetUtil.isQube(ds) ? "" : "*";
