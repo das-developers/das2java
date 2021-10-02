@@ -25,7 +25,11 @@ public class Basis implements Serializable {
     public static final Basis kelvin= new Basis( "kelvin", "kelvin", Basis.physicalZero, 0, "celcius degrees" );
     public static final Basis centigrade= new Basis( "centigrade", "centigrade", Basis.physicalZero, 273.15, "celcius degrees" );
 
+    // t1980 = Units.t1970.parse('1980-01-01T00:00Z')
+    // t2000 = Units.t1970.parse('2000-01-01T00:00Z')
+    // print '%20.2f' % ( ( t1980 - t2000 ).doubleValue( Units.seconds ) )
     public static final Basis since2000= new Basis( "since2000", "since 2000-01-01T00:00Z", null, 0, null );
+    public static final Basis since2020= new Basis( "since2020", "since 2020-01-01T00:00Z", since2000, 631152000, "seconds" );
     public static final Basis since2010= new Basis( "since2010", "since 2010-01-01T00:00Z", since2000,  315619200., "seconds");
     public static final Basis since1980= new Basis( "since1980", "since 1980-01-01T00:00Z", since2000, -631152000., "seconds");
     public static final Basis since1970= new Basis( "since1970", "since 1970-01-01T00:00Z", since2000, -938044800., "seconds");

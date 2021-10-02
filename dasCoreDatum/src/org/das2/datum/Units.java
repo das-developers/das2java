@@ -242,6 +242,13 @@ public abstract class Units {
     public static final Units euros= new CurrencyUnits("euros","\u20AC", "Euro Dollars");
     public static final Units yen= new CurrencyUnits("yen","\uFFE5","Japanese Yen");
     public static final Units rupee= new CurrencyUnits("rupee","\u20B9", "Indian Rupee");
+
+    /**
+     * Microseconds since midnight Jan 1, 2020, excluding those within a leap second.  Differences across leap
+     * second boundaries do not represent the number of microseconds elapsed.
+     */
+    public static final TimeLocationUnits us2020= new TimeLocationUnits("us2020", "Microseconds since midnight Jan 1, 2020.",
+            Units.microseconds, Basis.since2020);
     
     /**
      * Microseconds since midnight Jan 1, 2000, excluding those within a leap second.  Differences across leap
@@ -328,6 +335,7 @@ public abstract class Units {
     static {
         ((Units)t2000).registerConverter(us2000, UnitsConverter.MICRO);
         ((Units)us1980).registerConverter(us2000, new UnitsConverter.ScaleOffset(1.0, -631152000000000L ) );
+        ((Units)us2020).registerConverter(us2000, new UnitsConverter.ScaleOffset(1.0, 631152000000000L ) );
         ((Units)us2000).registerConverter(cdfEpoch, new UnitsConverter.ScaleOffset( 1/1000.,63113904000000L ));
         ((Units)us2000).registerConverter(cdfTT2000, new LeapSecondsConverter( true ) ); 
         ((Units)us2000).registerConverter(decimalYear, new DecimalYearConverter( true ) );
