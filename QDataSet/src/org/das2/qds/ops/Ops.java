@@ -4851,10 +4851,20 @@ public final class Ops {
      * @return a rank 2 QDataSet with [[ startTime, stopTime, rgbColor, annotation  ]]
      */
     public static QDataSet createEvent( QDataSet append, String timeRange, int rgbcolor, String annotation ) {
-        
         DatumRange dr= DatumRangeUtil.parseTimeRangeValid(timeRange);        
-        
         return createEvent( append, dr, rgbcolor, annotation );
+    }
+    
+    /**
+     * tool for creating ad-hoc events datasets.
+     * @param dr a datum range like "1496 to 1627" 
+     * @param rgbcolor and RGB color like 0xFF0000 (red), 0x00FF00 (green), or 0x0000FF (blue),
+     * @param annotation label for event, possibly including granny codes.
+     * @return a rank 2 QDataSet with [[ start, stop, rgbColor, annotation  ]]
+     * @see #eventsComplement(org.das2.qds.QDataSet, int, java.lang.String) 
+     */
+    public static QDataSet createEvent( DatumRange dr, int rgbcolor, String annotation ) {
+        return createEvent( null, dr, rgbcolor, annotation );
     }
     
     /**
