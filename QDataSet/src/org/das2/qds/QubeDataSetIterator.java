@@ -927,7 +927,7 @@ public final class QubeDataSetIterator implements DataSetIterator {
             UnitsConverter uc= uv.getConverter(uds);
             v= uc.convert(vds.value());
         } catch ( InconvertibleUnitsException ex ) {
-            if ( uds==Units.dimensionless ) {
+            if ( uds==Units.dimensionless || uv==Units.dimensionless ) {
                 v= vds.value();
             } else {
                 throw ex;
