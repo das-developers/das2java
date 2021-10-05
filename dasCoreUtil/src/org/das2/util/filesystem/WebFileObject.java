@@ -50,7 +50,12 @@ public class WebFileObject extends FileObject {
     
     final WebFileSystem wfs;
     String pathname;
+    
+    /**
+     * localFile is a local copy of the remote file, which the FS library will fetch if needed.
+     */
     File localFile;
+    
     boolean isRoot;
     boolean isFolder;
     Map<String,String> metadata;
@@ -347,8 +352,8 @@ public class WebFileObject extends FileObject {
         this.isFolderResolved = false;
         
         if ( ! wfs.isAppletMode() ) {
-            this.localFile = new File(wfs.getLocalRoot(), pathname); // TODO: perhaps this should be ro_cache.txt...
-
+            this.localFile = new File(wfs.getLocalRoot(), pathname); // This will always be the scientist's cache area which we can modify
+            
             if ( FileSystem.settings().getPersistence()==FileSystemSettings.Persistence.SESSION ) this.localFile.deleteOnExit();
 
             try {
