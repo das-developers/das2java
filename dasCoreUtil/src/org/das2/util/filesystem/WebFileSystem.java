@@ -183,6 +183,33 @@ public abstract class WebFileSystem extends FileSystem {
     }
 
     /**
+     * return the canonical path for the path, if it is part of a git clone.
+     * @param root a directory which is a clone of some path, possibly
+     * @param path the path within the path.
+     * @return the canonical path, or null if it is not a git clone.
+     */
+    public static String isGitClone( File root, String path ) {
+        File gitDir= new File( root, ".git");
+        boolean isGit= false;
+        if ( gitDir.exists() && gitDir.isDirectory() ) {
+            File configFile= new File( gitDir, "config" );
+            isGit = configFile.exists();
+        }
+        if ( isGit ) {
+            if ( path.startsWith("/blob/master") ) {
+                return path.substring(12);
+            } else if ( path.startsWith("/blob/main") ) {
+                return path.substring(10);
+            } else if ( path.startsWith("/raw/master") ) {
+                return path.substring(11);
+            } else if ( path.startsWith("/raw/main") ) {
+                return path.substring(9);
+            }
+        }
+        return null;
+    }
+    
+    /**
      * return the name of the folder containing a local copy of the cache.
      * @param start the root which will typically be a subfolder of 
      * FileSystem.settings().getLocalCacheDir();
@@ -236,6 +263,13 @@ public abstract class WebFileSystem extends FileSystem {
             return result;
         } else {
             String tail= start.getAbsolutePath().substring(localRoot.getAbsolutePath().length());
+            if ( tail.startsWith("/blob/") ) {
+                File localPath= localRoot.getAbsoluteFile();
+                String s= isGitClone( result, tail );
+                if ( s!=null ) {
+                    return new File( result, s );
+                }                
+            }
             if ( tail.length()>0 ) {
                 return new File( result, tail );
             } else {
