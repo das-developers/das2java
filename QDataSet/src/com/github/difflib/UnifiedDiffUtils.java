@@ -18,6 +18,8 @@ package com.github.difflib;
 import com.github.difflib.patch.ChangeDelta;
 import com.github.difflib.patch.Chunk;
 import com.github.difflib.patch.AbstractDelta;
+import com.github.difflib.patch.DeleteDelta;
+import com.github.difflib.patch.InsertDelta;
 import com.github.difflib.patch.Patch;
 import java.util.ArrayList;
 import java.util.List;
@@ -120,9 +122,15 @@ public final class UnifiedDiffUtils {
                     }
                 }
             }
-            patch.addDelta(new ChangeDelta<>(new Chunk<>(
-                    old_ln - 1, oldChunkLines, removePosition), new Chunk<>(
-                    new_ln - 1, newChunkLines, addPosition)));
+            Chunk original= new Chunk<>( old_ln - 1, oldChunkLines, removePosition);
+            Chunk revised= new Chunk<>( new_ln - 1, newChunkLines, addPosition );
+            if ( removePosition.isEmpty() ) {
+                patch.addDelta( new InsertDelta( original, revised ) );
+            } else if ( addPosition.isEmpty() ) {
+                patch.addDelta( new DeleteDelta( original, revised ) );
+            } else {
+                patch.addDelta(new ChangeDelta( original, revised ) );
+            }
             rawChunk.clear();
         }
     }
