@@ -32,7 +32,7 @@ import java.util.regex.Pattern;
 public final class UnifiedDiffUtils {
 
     private static final Pattern UNIFIED_DIFF_CHUNK_REGEXP = Pattern
-            .compile("^@@\\s+-(?:(\\d+)(?:,(\\d+))?)\\s+\\+(?:(\\d+)(?:,(\\d+))?)\\s+@@$");
+            .compile("^@@\\s+-(?:(\\d+)(?:,(\\d+))?)\\s+\\+(?:(\\d+)(?:,(\\d+))?)\\s+@@(.*)$");
     private static final String NULL_FILE_INDICATOR = "/dev/null";
 
     /**
@@ -59,7 +59,7 @@ public final class UnifiedDiffUtils {
                 continue;
             }
             Matcher m = UNIFIED_DIFF_CHUNK_REGEXP.matcher(line);
-            if (m.find()) {
+            if (m.matches()) {
                 // Process the lines in the previous chunk
                 processLinesInPrevChunk(rawChunk, patch, old_ln, new_ln);
                 // Parse the @@ header
