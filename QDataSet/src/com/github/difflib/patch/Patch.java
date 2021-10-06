@@ -145,7 +145,12 @@ public final class Patch<T> implements Serializable {
 
     @Override
     public String toString() {
-        return "Patch{" + "deltas=" + deltas + '}';
+        StringBuilder sb= new StringBuilder( "Patch{" + "deltas=" );
+        for ( AbstractDelta d: deltas ) {
+            sb.append("\n   ").append(d) ;
+        }
+        sb.append( '}');
+        return sb.toString();
     }
 
     public static <T> Patch<T> generate(List<T> original, List<T> revised, List<Change> changes) {
