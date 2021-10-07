@@ -8706,8 +8706,16 @@ public final class Ops {
         return ds;
     }
 
+    /**
+     * Special function by the RPW Group at U. Iowa, which reassigns timetags so the small waveform 
+     * packets are visible, or bursty spectrograms are more easily viewed.  This just calls
+     * expandToFillGaps with a 90 percent overlap (expandToFillGaps( ds, 0.9 )).
+     * @param ds the dataset
+     * @return the dataset with new DEPEND_0 values.
+     * @see #expandWaveform(org.das2.qds.QDataSet) 
+     */
     public static QDataSet expandToFillGaps( QDataSet ds ) {
-        return expandToFillGaps( ds, -1 );
+        return expandToFillGaps( ds, 0.9 );
     }
     
     /**
