@@ -7670,6 +7670,7 @@ public final class Ops {
 
     
     /**
+     * returns the slice at the given slice location.  
      * @see org.das2.qds.QDataSet#slice(int) 
      * @param ds the rank N (N&gt;0) or more dataset
      * @param idx the index 
