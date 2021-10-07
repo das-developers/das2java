@@ -122,6 +122,7 @@ public abstract class Units {
     public static final Units years= new NumberUnits("years");
     public static final Units days= new NumberUnits("days");
     public static final Units hours= new NumberUnits("hr");
+    public static final Units hours2= new NumberUnits("hrs");
     public static final Units minutes= new NumberUnits("min");
     public static final Units seconds= new NumberUnits("s");
     public static final Units seconds2= new NumberUnits("sec");
@@ -147,6 +148,7 @@ public abstract class Units {
         microseconds.registerConverter(microseconds2, UnitsConverter.IDENTITY);
         microseconds.registerConverter(microseconds3, UnitsConverter.IDENTITY);
         milliseconds.registerConverter(milliseconds2, UnitsConverter.IDENTITY);
+        hours.registerConverter(hours2, UnitsConverter.IDENTITY );
         hours.registerConverter(seconds, new UnitsConverter.ScaleOffset( 3600.,0.0));
         minutes.registerConverter(seconds, new UnitsConverter.ScaleOffset( 60.,0.0));
         days.registerConverter(seconds, new UnitsConverter.ScaleOffset(8.64e4, 0.0));
