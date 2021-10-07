@@ -1143,6 +1143,14 @@ public final class Ops {
         }
     }
 
+    /**
+     * reduce the dataset's rank by reporting the min of all the elements along a dimension.
+     * Only QUBEs are supported presently.
+     * 
+     * @param ds rank N qube dataset.
+     * @param dim zero-based index number.
+     * @return rank N-1 dataset.
+     */
     public static QDataSet reduceMin(QDataSet ds, int dim) {
         return reduceMin( ds, dim, null );
     }
@@ -5922,27 +5930,45 @@ public final class Ops {
     }
 
     /**
+     * Returns <i>e</i><sup>xx</sup>&nbsp;-1.  Note that for values of
+     * <i>x</i> near 0, the exact sum of
+     * <code>expm1(x)</code>&nbsp;+&nbsp;1 is much closer to the true
+     * result of <i>e</i><sup>xx</sup> than <code>exp(x)</code>.
+     *
+     * @param xx
+     * @return
+     */
+    public static QDataSet expm1(QDataSet xx) {
+        MutablePropertyDataSet result= 
+                applyUnaryOp(xx, (UnaryOp) (double a) -> Math.expm1(a));
+        result.putProperty(QDataSet.LABEL, maybeLabelUnaryOp(result, "expm1" ) );
+        return result;
+    }
+    
+    /**
      * Returns <i>e</i><sup>x</sup>&nbsp;-1.  Note that for values of
      * <i>x</i> near 0, the exact sum of
      * <code>expm1(x)</code>&nbsp;+&nbsp;1 is much closer to the true
      * result of <i>e</i><sup>x</sup> than <code>exp(x)</code>.
      *
-     * @param ds
-     * @return
+     * @param x a double
+     * @return <i>e</i><sup>x</sup>&nbsp;-1
      */
-    public static QDataSet expm1(QDataSet ds) {
-        MutablePropertyDataSet result= 
-                applyUnaryOp(ds, (UnaryOp) (double a) -> Math.expm1(a));
-        result.putProperty(QDataSet.LABEL, maybeLabelUnaryOp(result, "expm1" ) );
-        return result;
+    public static double expm1( double x ) {
+        return Math.expm1( x );
     }
-    
-    public static double expm1( double ds ) {
-        return Math.expm1( ds );
-    }
-        
-    public static QDataSet expm1( Object ds ) {
-        return expm1( dataset(ds) );
+     
+    /**
+     * Returns <i>e</i><sup>x</sup>&nbsp;-1.  Note that for values of
+     * <i>x</i> near 0, the exact sum of
+     * <code>expm1(x)</code>&nbsp;+&nbsp;1 is much closer to the true
+     * result of <i>e</i><sup>x</sup> than <code>exp(x)</code>.
+     *
+     * @param x an object which can be interpretted as a double or dataset.
+     * @return <i>e</i><sup>x</sup>&nbsp;-1
+     */
+    public static QDataSet expm1( Object x ) {
+        return expm1( dataset(x) );
     }
 
     /** scalar math functions http://sourceforge.net/p/autoplot/bugs/1052/ */
@@ -7244,6 +7270,17 @@ public final class Ops {
         return mds;
     }
     
+    /**
+     * like putProperty, but this inserts values into the dataset.  If the dataset
+     * is not mutable, then this will make a copy of the data and return the copy.
+     * 
+     * @param ds the rank 1 or greater dataset
+     * @param indeces rank 1 indeces when ds is rank 1, or rank 2 [:,m] indeces for a rank m dataset.
+     * @param values null for fill, or the rank 0 value or rank 1 values to assign.
+     * @return the dataset with the indeces assigned new values.
+     * @see #where(org.das2.qds.QDataSet) 
+     * @see #removeValues(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
+     */
     public static WritableDataSet putValues( Object ds, Object indeces, Object values ) {
         QDataSet qvalues= dataset(values);
         QDataSet qindeces= dataset(indeces);
@@ -7662,10 +7699,11 @@ public final class Ops {
     
     
     /**
+     * returns the slice at the given slice location.
      * @see org.das2.qds.DataSetOps#slice1(org.das2.qds.QDataSet, int) 
-     * @param ds
-     * @param idx
-     * @return
+     * @param ds the rank N where N&ge;2 dataset, which is also a qube.
+     * @param idx the index to slice at.
+     * @return rank N-1 dataset.
      */
     public static QDataSet slice1( QDataSet ds, int idx ) {
         return DataSetOps.slice1(ds, idx);
@@ -7673,9 +7711,9 @@ public final class Ops {
     
     /**
      * returns the slice at the given slice location.
-     * @param ds ripples(20,20).  Presently this must be a simple table.
+     * @param ds the rank N where N&ge;2 dataset, which is also a qube.
      * @param sliceds dataset("10.3")
-     * @return 
+     * @return rank N-1 dataset.
      */
     public static QDataSet slice1( QDataSet ds, QDataSet sliceds ) {
         if ( sliceds.rank()!=0 ) {
@@ -7697,10 +7735,11 @@ public final class Ops {
     }        
 
     /**
+     * returns the slice at the given slice location.
      * @see org.das2.qds.DataSetOps#slice2(org.das2.qds.QDataSet, int) 
-     * @param ds
-     * @param idx
-     * @return
+     * @param ds the rank N where N&ge;3 dataset, which is also a qube.
+     * @param idx the index to slice at.
+     * @return rank N-1 dataset.
      */
     public static QDataSet slice2( QDataSet ds, int idx ) {
         return DataSetOps.slice2(ds, idx);
@@ -7732,10 +7771,11 @@ public final class Ops {
     }    
     
     /**
+     * returns the slice at the given slice location.
      * @see org.das2.qds.DataSetOps#slice3(org.das2.qds.QDataSet, int) 
-     * @param ds
-     * @param idx
-     * @return
+     * @param ds the rank N where N&ge;4 dataset, which is also a qube.
+     * @param idx the index to slice at.
+     * @return rank N-1 dataset.
      */
     public static QDataSet slice3( QDataSet ds, int idx ) {
         return DataSetOps.slice3(ds, idx);
@@ -9650,6 +9690,14 @@ public final class Ops {
         
     }
 
+    /**
+     * fast extent needed at some point, which will be removed.  It simply 
+     * calls extentSimple.
+     * @param ds a dataset.
+     * @return the extent of the data.
+     * @deprecated use extentSimple
+     * @see #extentSimple(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
+     */
     public static QDataSet extent445( QDataSet ds ) {
         return extentSimple(ds,null);
     }
@@ -11579,7 +11627,17 @@ public final class Ops {
         return result;
         
     }
-    
+       
+    /**
+     * Median function that sorts a rank N dataset and returns its median.  
+     * If lists are equal in size (even number of elements), always choose 
+     * first element of 'more' list
+     * @param o object which can be interpreted as a dataset.
+     * @return rank 0 dataset
+     * @author mmclouth
+     * @see #mean
+     * @see #mode
+     */ 
     public static QDataSet median( Object o ) {
         return median( dataset(o) );
     }
@@ -11654,6 +11712,12 @@ public final class Ops {
         return DataSetUtil.asDataSet( ans, SemanticOps.getUnits(ds) );
     }
     
+    /**
+     * standard deviation function.
+     * @param o an object which can be interpreted as a rank N dataset.
+     * @return rank 0 dataset with units matching those of the input.
+     * @author mmclouth
+     */
     public static QDataSet stddev( Object o ) {
         return stddev( dataset(o) );
     }
@@ -11692,6 +11756,13 @@ public final class Ops {
         return DataSetUtil.asDataSet( result, SemanticOps.getUnits(ds).getOffsetUnits() );
     }
 
+    /**
+     * variance function is the square of the stddev.
+     * @param o object which can be interpreted as rank 1 dataset.
+     * @return Rank 0 QDataSet containing the variance.  The result is currently dimensionless, but this will change.
+     * @author mmclouth
+     * @see #stddev
+     */
     public static QDataSet variance( Object o ) {
         return variance( dataset(o) );
     }
