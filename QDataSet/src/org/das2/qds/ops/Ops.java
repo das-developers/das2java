@@ -1830,7 +1830,7 @@ public final class Ops {
     }        
 
     /**
-     * trim the dataset to the indeces on the zeroth dimension.  Note
+     * trim the dataset to the indices on the zeroth dimension.  Note
      * the trim function can also be called directly.
      * @param ds the dataset to be trimmed.
      * @param st the start index
@@ -1960,7 +1960,7 @@ public final class Ops {
      * @param ds the dataset, which must be a qube.
      * @param st the first index, inclusive
      * @param en the last index, exclusive
-     * @return the trimmed dataset with same number of dimensions and fewer indeces in one dimension.
+     * @return the trimmed dataset with same number of dimensions and fewer indices in one dimension.
      */
     public static QDataSet trim( int dim, QDataSet ds, int st, int en ) {
         if ( dim==0 ) {
@@ -1979,7 +1979,7 @@ public final class Ops {
      * @param ds the dataset, which must be a qube.
      * @param st rank 0 min value
      * @param en rank 0 max value
-     * @return the trimmed dataset with same number of dimensions and fewer indeces in one dimension.
+     * @return the trimmed dataset with same number of dimensions and fewer indices in one dimension.
      */
     public static QDataSet trim( int dim, QDataSet ds, QDataSet st, QDataSet en ) {
         if ( dim==0 ) {
@@ -4512,7 +4512,7 @@ public final class Ops {
     }
 
     /**
-     * return a table of distances d[len0] to the indeces c0; in units of r0.
+     * return a table of distances d[len0] to the indices c0; in units of r0.
      * This is motivated by a need for more interesting datasets for testing.
      * @param len0 the length of the dataset
      * @param c0 the center point 0
@@ -4529,7 +4529,7 @@ public final class Ops {
     }
     
     /**
-     * return a table of distances d[len0,len1] to the indeces c0,c1; in units of r0, r1.
+     * return a table of distances d[len0,len1] to the indices c0,c1; in units of r0, r1.
      * This is motivated by a need for more interesting datasets for testing.
      * @param len0 the length of the dataset
      * @param len1 the length of each row of the dataset
@@ -6401,7 +6401,7 @@ public final class Ops {
      * will return the subset of ds where ds is greater than 1.
      * @param ds rank N array, N &gt; 0.
      * @param w rank 1 dataset of length l indexing a rank 1 array, or rank 2 ds[l,N] indexing a rank N array.
-     * @return rank 1 indeces.
+     * @return rank 1 indices.
      * @see #applyIndex(org.das2.qds.QDataSet, org.das2.qds.QDataSet) applyIndex, which does the same thing.
      */
     public static QDataSet subset( QDataSet ds, QDataSet w ) {
@@ -6409,8 +6409,8 @@ public final class Ops {
     }
     
     /**
-     * returns a dataset containing the indeces of where the dataset is non-zero.
-     * For a rank 1 dataset, returns a rank 1 dataset with indeces for the values.
+     * returns a dataset containing the indices of where the dataset is non-zero.
+     * For a rank 1 dataset, returns a rank 1 dataset with indices for the values.
      * For a higher rank dataset, returns a rank 2 qube dataset with ds.rank()
      * elements in the first dimension.  Note when the dataset is all zeros (false),
      * the result is a zero-length array, as opposed to IDL which would return
@@ -6670,7 +6670,7 @@ public final class Ops {
     }
         
     /**
-     * returns a rank 1 dataset of indeces that sort the rank 1 dataset ds.
+     * returns a rank 1 dataset of indices that sort the rank 1 dataset ds.
      * This is not the dataset sorted.  For example:
      *<blockquote><pre>
      *ds= randn(2000)
@@ -6680,7 +6680,7 @@ public final class Ops {
      * Note the result will have the property MONOTONIC==Boolean.TRUE if 
      * the data was sorted already.
      * @param ds rank 1 dataset
-     * @return rank 1 dataset of indeces that sort the input dataset.
+     * @return rank 1 dataset of indices that sort the input dataset.
      * @see #shuffle(org.das2.qds.QDataSet)  
      */
     public static QDataSet sort(QDataSet ds) {
@@ -6692,12 +6692,12 @@ public final class Ops {
     }
     
     /**
-     * Return the unique indeces from the rank 1 dataset.  If the 
-     * set is not monotonic, then return unique indeces from the monotonic
+     * Return the unique indices from the rank 1 dataset.  If the 
+     * set is not monotonic, then return unique indices from the monotonic
      * portions.
      * 
      * @param ds rank 1 dataset, sorted, or mostly sorted.
-     * @return the element indeces.
+     * @return the element indices.
      * @see #sort(java.lang.Object) 
      * @see #uniq(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      * @see #uniqValues(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
@@ -6739,14 +6739,14 @@ public final class Ops {
     }
     
     /**
-     * Return the unique indeces from the rank 1 dataset, using sort to resort the indeces.
+     * Return the unique indices from the rank 1 dataset, using sort to resort the indices.
      * If sort is null, then
      * the dataset is assumed to be monotonic, and only repeating values are
      * coalesced.  If sort is non-null, then it is the result of the function
-     * "sort" and should be a rank 1 list of indeces that sort the data.
+     * "sort" and should be a rank 1 list of indices that sort the data.
      * @param ds rank 1 dataset, sorted, or mostly sorted.
-     * @param sort null, or the rank 1 dataset of indeces
-     * @return the indeces of the unique elements.
+     * @param sort null, or the rank 1 dataset of indices
+     * @return the indices of the unique elements.
      * @see #uniqValues uniqValues, which returns the values.
      */
     public static QDataSet uniq( QDataSet ds, QDataSet sort ) {
@@ -6807,14 +6807,14 @@ public final class Ops {
      * return the unique elements from the dataset.  If sort is null, then
      * the dataset is assumed to be monotonic, and only repeating values are
      * coalesced.  If sort is non-null, then it is the result of the function
-     * "sort" and should be a rank 1 list of indeces that sort the data.
+     * "sort" and should be a rank 1 list of indices that sort the data.
      *
      * renamed uniqValues from uniq to avoid confusion with the IDL command.
      *
      * This needs example code and should not be used for now.  See VirboAutoplot/src/scripts/test/testUniq.jy
-     * @see #uniq uniq, which returns the indeces.
+     * @see #uniq uniq, which returns the indices.
      * @param ds rank 1 dataset, sorted, or mostly sorted.
-     * @param sort null, or the rank 1 dataset of indeces
+     * @param sort null, or the rank 1 dataset of indices
      * @return the subset of the data which is uniq.
      * @see #uniq(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      */
@@ -7275,17 +7275,17 @@ public final class Ops {
      * is not mutable, then this will make a copy of the data and return the copy.
      * 
      * @param ds the rank 1 or greater dataset
-     * @param indeces rank 1 indeces when ds is rank 1, or rank 2 [:,m] indeces for a rank m dataset.
+     * @param indices rank 1 indices when ds is rank 1, or rank 2 [:,m] indices for a rank m dataset.
      * @param values null for fill, or the rank 0 value or rank 1 values to assign.
-     * @return the dataset with the indeces assigned new values.
+     * @return the dataset with the indices assigned new values.
      * @see #where(org.das2.qds.QDataSet) 
      * @see #removeValues(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      */
-    public static WritableDataSet putValues( Object ds, Object indeces, Object values ) {
+    public static WritableDataSet putValues( Object ds, Object indices, Object values ) {
         QDataSet qvalues= dataset(values);
-        QDataSet qindeces= dataset(indeces);
+        QDataSet qindices= dataset(indices);
         QDataSet qds= dataset(ds);
-        return putValues( qds, qindeces, qvalues );
+        return putValues( qds, qindices, qvalues );
     }
     
     /**
@@ -7293,14 +7293,14 @@ public final class Ops {
      * is not mutable, then this will make a copy of the data and return the copy.
      * 
      * @param ds the rank 1 or greater dataset
-     * @param indeces rank 1 indeces when ds is rank 1, or rank 2 [:,m] indeces for a rank m dataset.
+     * @param indices rank 1 indices when ds is rank 1, or rank 2 [:,m] indices for a rank m dataset.
      * @param value null for fill, or the rank 0 value or rank 1 values to assign.
-     * @return the dataset with the indeces assigned new values.
+     * @return the dataset with the indices assigned new values.
      * @see #where(org.das2.qds.QDataSet) 
      * @see #removeValues(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      */
-    public static WritableDataSet putValues( QDataSet ds, QDataSet indeces, QDataSet value ) {
-        DataSetUtil.checkListOfIndeces(ds,indeces);
+    public static WritableDataSet putValues( QDataSet ds, QDataSet indices, QDataSet value ) {
+        DataSetUtil.checkListOfIndeces(ds,indices);
         WritableDataSet result;
         if ( ds instanceof WritableDataSet ) {
             WritableDataSet wds= (WritableDataSet)ds;
@@ -7314,11 +7314,11 @@ public final class Ops {
         }
         
         // promote rank to match data, if necessary.  
-        if ( result.rank()>1 && indeces.rank()==1 ) { // allow rank 1 indeces to putValues in rank N>1 dataset (promoting rank).
-            DataSetBuilder dsb= new DataSetBuilder(2,indeces.length()*result.length(0),result.rank());
+        if ( result.rank()>1 && indices.rank()==1 ) { // allow rank 1 indices to putValues in rank N>1 dataset (promoting rank).
+            DataSetBuilder dsb= new DataSetBuilder(2,indices.length()*result.length(0),result.rank());
             Object[] iii= new Object[result.rank()];
-            for ( int i=0; i<indeces.length(); i++ ) {
-                int i0= (int)indeces.value(i);
+            for ( int i=0; i<indices.length(); i++ ) {
+                int i0= (int)indices.value(i);
                 iii[0]= i0;
                 DataSetIterator it= new QubeDataSetIterator(result.slice(i0));
                 while ( it.hasNext() ) {
@@ -7329,7 +7329,7 @@ public final class Ops {
                     }
                 }
             }
-            indeces= dsb.getDataSet();
+            indices= dsb.getDataSet();
         }
         
         double dvalue= Double.NaN;
@@ -7346,8 +7346,8 @@ public final class Ops {
             }
         }
             
-        if ( indeces.rank()==1 ) indeces= new BundleDataSet(indeces);
-        IndexListDataSetIterator iter= new IndexListDataSetIterator( indeces );
+        if ( indices.rank()==1 ) indices= new BundleDataSet(indices);
+        IndexListDataSetIterator iter= new IndexListDataSetIterator( indices );
         
         if ( value==null || value.rank()==0 ) {
             while ( iter.hasNext() ) {
@@ -7368,21 +7368,21 @@ public final class Ops {
     }
     
     /**
-     * put fill data for these indeces
+     * put fill data for these indices
      * @param ds the rank 1 or greater dataset
-     * @param indeces rank 1 indeces when ds is rank 1, or rank 2 [:,m] indeces for a rank m dataset.
-     * @return the dataset with the data at the indeces made invalid.
+     * @param indices rank 1 indices when ds is rank 1, or rank 2 [:,m] indices for a rank m dataset.
+     * @return the dataset with the data at the indices made invalid.
      * @see #putValues(org.das2.qds.QDataSet, org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      * @see #where(org.das2.qds.QDataSet) 
-     * @see #removeIndeces(org.das2.qds.QDataSet, org.das2.qds.QDataSet) which copies the data to remove the indeces.
+     * @see #removeIndeces(org.das2.qds.QDataSet, org.das2.qds.QDataSet) which copies the data to remove the indices.
      */
-    public static WritableDataSet removeValues( QDataSet ds, QDataSet indeces ) {
-        DataSetUtil.checkListOfIndeces(ds,indeces);
-        return putValues( ds, indeces, null );
+    public static WritableDataSet removeValues( QDataSet ds, QDataSet indices ) {
+        DataSetUtil.checkListOfIndeces(ds,indices);
+        return putValues( ds, indices, null );
     }
     
-    public static WritableDataSet removeValues( Object ds, Object indeces ) {
-        return putValues( dataset(ds), dataset(indeces), null );
+    public static WritableDataSet removeValues( Object ds, Object indices ) {
+        return putValues( dataset(ds), dataset(indices), null );
     }
     
     /**
@@ -7434,9 +7434,9 @@ public final class Ops {
     }
     
     /**
-     * apply the indeces, checking for out-of-bounds values.
+     * apply the indices, checking for out-of-bounds values.
      * @param vv values to return, a rank 1, N-element dataset.
-     * @param ds the indeces.
+     * @param ds the indices.
      * @param fillValue the value to use when the index is out-of-bounds.
      * @return data a dataset with the geometry of ds and the units of values.
      * @see #subset(org.das2.qds.QDataSet, org.das2.qds.QDataSet) subset, which does the same thing.
@@ -7460,9 +7460,9 @@ public final class Ops {
     }
     
     /**
-     * apply the indeces 
+     * apply the indices 
      * @param ds values to return, a rank 1 N-element dataset, or rank 2 N by m element dataset.
-     * @param r the indeces.
+     * @param r the indices.
      * @return data a dataset with the geometry of ds and the units of values.
      * @see #subset(org.das2.qds.QDataSet, org.das2.qds.QDataSet) subset, which does the same thing.
      * @see #applyIndex(org.das2.qds.QDataSet, int, org.das2.qds.QDataSet) 
@@ -7513,7 +7513,7 @@ public final class Ops {
     }
     
     /**
-     * apply the indeces 
+     * apply the indices 
      * @param dso values to return, a rank 1, N-element dataset.
      * @param r the indices.
      * @return data a dataset with the geometry of ds and the units of values.
@@ -7533,7 +7533,7 @@ public final class Ops {
     }
     
     /**
-     * apply the indeces to the given dimension.
+     * apply the indices to the given dimension.
      * @param ds
      * @param dimension
      * @param indices
@@ -7547,7 +7547,7 @@ public final class Ops {
     }
     
     /**
-     * remove the data at the indeces from the rank 1 dataset.  This can be
+     * remove the data at the indices from the rank 1 dataset.  This can be
      * used for example like so:
      * <pre>
      * {@code
@@ -7557,31 +7557,31 @@ public final class Ops {
      * }
      * </pre>
      * @param vv a rank 1 dataset
-     * @param indeces the indeces to remove.
+     * @param indices the indices to remove.
      * @see https://github.com/autoplot/dev/blob/master/rfe/20190208/demoRemoveIndeces.jy
      * @see #removeValues(org.das2.qds.QDataSet, org.das2.qds.QDataSet) which inserts fill.
      * @see #where(org.das2.qds.QDataSet) 
      * @return a dataset with the values removed.
      */
-    public static QDataSet removeIndeces( QDataSet vv, QDataSet indeces ) {
-        if ( indeces.length()==0 ) return vv;
-        if ( !DataSetUtil.isMonotonic(indeces) ) {
-            QDataSet s= sort(indeces);
-            indeces= applyIndex( indeces, s );
+    public static QDataSet removeIndeces( QDataSet vv, QDataSet indices ) {
+        if ( indices.length()==0 ) return vv;
+        if ( !DataSetUtil.isMonotonic(indices) ) {
+            QDataSet s= sort(indices);
+            indices= applyIndex( indices, s );
         }
-        if ( indeces.value(0) % 1 > 0 ) {
-            throw new IllegalArgumentException("indeces must be counting numbers.");
+        if ( indices.value(0) % 1 > 0 ) {
+            throw new IllegalArgumentException("indices must be counting numbers.");
         }
         int currentSkipIndex= 0;
-        int nextSkepIndex= (int)indeces.value(currentSkipIndex);
+        int nextSkepIndex= (int)indices.value(currentSkipIndex);
         int currentIndex= 0;
         DataSetBuilder build;
         switch (vv.rank()) {
             case 1:
-                build= new DataSetBuilder(1,100*(int)Math.ceil((vv.length()-indeces.length())/100.) );
+                build= new DataSetBuilder(1,100*(int)Math.ceil((vv.length()-indices.length())/100.) );
                 break;
             case 2:
-                build= new DataSetBuilder(2,100*(int)Math.ceil((vv.length()-indeces.length())/100.),vv.length(0) );
+                build= new DataSetBuilder(2,100*(int)Math.ceil((vv.length()-indices.length())/100.),vv.length(0) );
                 break;
             default:
                 throw new IllegalArgumentException("only rank 1 and rank 2 datasets are supported");
@@ -7589,10 +7589,10 @@ public final class Ops {
         while ( currentIndex<vv.length() ) {
             if ( currentIndex==nextSkepIndex ) {
                 currentSkipIndex++;
-                if ( currentSkipIndex==indeces.length() ) {
+                if ( currentSkipIndex==indices.length() ) {
                     nextSkepIndex= -1;
                 } else {
-                    nextSkepIndex= (int)indeces.value(currentSkipIndex);
+                    nextSkepIndex= (int)indices.value(currentSkipIndex);
                 }
             } else {
                 build.nextRecord(vv.slice(currentIndex));
@@ -7604,7 +7604,7 @@ public final class Ops {
         
         QDataSet dep0= (QDataSet) vv.property(QDataSet.DEPEND_0);
         if ( dep0!=null ) {
-            result.putProperty( QDataSet.DEPEND_0, removeIndeces( dep0, indeces ) );
+            result.putProperty( QDataSet.DEPEND_0, removeIndeces( dep0, indices ) );
         }
         
         return result;
@@ -7625,13 +7625,13 @@ public final class Ops {
     
 
     /**
-     * returns a rank 1 dataset of indeces that shuffle the rank 1 dataset ds
+     * returns a rank 1 dataset of indices that shuffle the rank 1 dataset ds.
      *<blockquote><pre>
      *s= shuffle( ds )
      *dsShuffled= ds[s]
      *</pre></blockquote>
      * @param ds rank 1 dataset
-     * @return rank 1 dataset of integer indeces.
+     * @return rank 1 dataset of integer indices.
      * @see #sort(org.das2.qds.QDataSet) 
      */
     public static QDataSet shuffle(QDataSet ds) {
@@ -7653,7 +7653,17 @@ public final class Ops {
 
         return wds;
     }
-    
+        
+    /**
+     * returns a rank 1 dataset of indices that shuffle the rank 1 dataset ds.
+     *<blockquote><pre>
+     *s= shuffle( ds )
+     *dsShuffled= ds[s]
+     *</pre></blockquote>
+     * @param ds an object which can be interpretted as a rank 1 dataset.
+     * @return rank 1 dataset of integer indices.
+     * @see #sort(org.das2.qds.QDataSet) 
+     */
     public static QDataSet shuffle(Object ds) {
         return shuffle(dataset(ds));
     }
@@ -10370,10 +10380,10 @@ public final class Ops {
     }
     
     /**
-     * return a list of indeces, similar to the where result.
+     * return a list of indices, similar to the where result.
      * @param ds rank 1 dataset of length N
      * @param seq rank 1 dataset, with length much less than N.
-     * @return rank 1 list of indeces.
+     * @return rank 1 list of indices.
      * @see https://github.com/autoplot/dev/blob/master/demos/2021/20210115/whereSequence.jy
      */
     public static QDataSet whereSequence( QDataSet ds, QDataSet seq ) {
@@ -10521,9 +10531,9 @@ public final class Ops {
     }
             
     /**
-     * interpolate values from rank 1 dataset vv using fractional indeces 
+     * interpolate values from rank 1 dataset vv using fractional indices 
      * in rank N findex.  For example, findex=1.5 means interpolate
-     * the 1st and 2nd indeces with equal weight, 1.1 means
+     * the 1st and 2nd indices with equal weight, 1.1 means
      * 90% of the first mixed with 10% of the second.  
      * Only modest extrapolations where findex&gt;=-0.5 and findex&lt;=L-0.5 are allowed, where L is the number of points.
      * The findex parameter must be dimensionless, to ensure that the caller is not passing in physical data.
@@ -10545,7 +10555,7 @@ public final class Ops {
      * </pre>
      * 
      * @param vv rank 1 dataset having length L that is the data to be interpolated.
-     * @param findex rank N dataset of fractional indeces.  This must be dimensionless, between -0.5 and L-0.5 and is typically calculated by the findex command.
+     * @param findex rank N dataset of fractional indices.  This must be dimensionless, between -0.5 and L-0.5 and is typically calculated by the findex command.
      * @return the result.  
      * @see #interpolateMod interpolateMod, for data like longitude where 259 deg is 2 degrees away from 1 deg
      */
@@ -10656,7 +10666,7 @@ public final class Ops {
     /**
      * 
      * @param vv object that can be converted to rank 1 dataset, such as array. These are the rank 1 dataset that is the data to be interpolated.
-     * @param findex object that can be converted to a rank N dataset, such as an array.  These are the rank N dataset of fractional indeces. 
+     * @param findex object that can be converted to a rank N dataset, such as an array.  These are the rank N dataset of fractional indices. 
      * @return rank N dataset.
      */
     public static QDataSet interpolate( Object vv, Object findex ) {
@@ -10664,12 +10674,12 @@ public final class Ops {
     }    
     
     /**
-     * interpolate values from rank 2 dataset vv using fractional indeces
+     * interpolate values from rank 2 dataset vv using fractional indices
      * in rank N findex, using bilinear interpolation.  See also interpolateGrid.
      *
      * @param vv rank 2 dataset.
-     * @param findex0 rank N dataset of fractional indeces for the zeroth index.  This must be dimensionless, between -0.5 and L-0.5 and is typically calculated by the findex command.
-     * @param findex1 rank N dataset of fractional indeces for the first index.  This must be dimensionless, between -0.5 and L-0.5 and is typically calculated by the findex command.
+     * @param findex0 rank N dataset of fractional indices for the zeroth index.  This must be dimensionless, between -0.5 and L-0.5 and is typically calculated by the findex command.
+     * @param findex1 rank N dataset of fractional indices for the first index.  This must be dimensionless, between -0.5 and L-0.5 and is typically calculated by the findex command.
      * @return rank N dataset 
      * @see #findex findex, the 1-D findex command
      * @see #interpolateGrid(org.das2.qds.QDataSet, org.das2.qds.QDataSet, org.das2.qds.QDataSet)  
@@ -10802,13 +10812,13 @@ public final class Ops {
      
         
     /**
-     * interpolate values from rank 2 dataset vv using fractional indeces
+     * interpolate values from rank 2 dataset vv using fractional indices
      * in rank N findex, using bilinear interpolation.  See also interpolateGrid.
      *
      * @see #findex findex, the 1-D findex command
      * @param vv object convertible to rank 2 dataset.
-     * @param findex0 object convertible to rank N dataset of fractional indeces for the zeroth index.
-     * @param findex1 object convertible to rank N dataset of fractional indeces for the first index.
+     * @param findex0 object convertible to rank N dataset of fractional indices for the zeroth index.
+     * @param findex1 object convertible to rank N dataset of fractional indices for the first index.
      * @return rank N dataset 
      */
     public static QDataSet interpolate( Object vv, Object findex0, Object findex1 ) {
@@ -10816,13 +10826,13 @@ public final class Ops {
     }    
 
     /**
-     * interpolate values from rank 2 dataset vv using fractional indeces
+     * interpolate values from rank 2 dataset vv using fractional indices
      * in rank N findex, using bilinear interpolation.  See also interpolateGrid.
      *
      * @param vv rank 2 dataset.
-     * @param findex0 rank N dataset of fractional indeces for the zeroth index.  This must be dimensionless, between -0.5 and L-0.5 and is typically calculated by the findex command.
-     * @param findex1 rank N dataset of fractional indeces for the first index.  This must be dimensionless, between -0.5 and L-0.5 and is typically calculated by the findex command.
-     * @param findex2 rank N dataset of fractional indeces for the second index.  This must be dimensionless, between -0.5 and L-0.5 and is typically calculated by the findex command.
+     * @param findex0 rank N dataset of fractional indices for the zeroth index.  This must be dimensionless, between -0.5 and L-0.5 and is typically calculated by the findex command.
+     * @param findex1 rank N dataset of fractional indices for the first index.  This must be dimensionless, between -0.5 and L-0.5 and is typically calculated by the findex command.
+     * @param findex2 rank N dataset of fractional indices for the second index.  This must be dimensionless, between -0.5 and L-0.5 and is typically calculated by the findex command.
      * @return rank N dataset 
      * @see #findex findex, the 1-D findex command
      * @see #interpolateGrid 
@@ -11006,7 +11016,7 @@ public final class Ops {
      * modulo space than they would be in the linear space.
      * @param vv rank 1 dataset that is the data to be interpolated. (e.g. longitude from 0 to 360deg)
      * @param mod rank 0 dataset that is the mod of the space (e.g. 360deg), or rank 1 where the range is specified (e.g. -180 to 180).
-     * @param findex rank N dataset of fractional indeces.  This must be dimensionless and is typically calculated by the findex command.
+     * @param findex rank N dataset of fractional indices.  This must be dimensionless and is typically calculated by the findex command.
      * @return the result, a rank 1 dataset with one element for each findex.
      * @see #interpolate(QDataSet,QDataSet)
      */
@@ -11133,14 +11143,14 @@ public final class Ops {
     }
     
     /**
-     * interpolate values from rank 2 dataset vv using fractional indeces
+     * interpolate values from rank 2 dataset vv using fractional indices
      * in rank N findex, using bilinear interpolation.  Here the two rank1
      * indexes form a grid and the result is rank 2.
      *
      * @see #findex findex, the 1-D findex command
      * @param vv rank 2 dataset.
-     * @param findex0 rank 1 dataset of fractional indeces for the zeroth index.
-     * @param findex1 rank 1 dataset of fractional indeces for the first index.
+     * @param findex0 rank 1 dataset of fractional indices for the zeroth index.
+     * @param findex1 rank 1 dataset of fractional indices for the first index.
      * @return rank 2 dataset 
      */
     public static QDataSet interpolateGrid(QDataSet vv, QDataSet findex0, QDataSet findex1) {
@@ -12656,7 +12666,7 @@ public final class Ops {
     /**
      * flatten a rank N dataset, though currently rank 4 is not supported.
      * The result for rank 2 is an n,3 dataset of [x,y,z], or if there are no tags, just [z].
-     * The last index will be the dependent variable, and the first indeces will
+     * The last index will be the dependent variable, and the first indices will
      * be the independent variables sorted by dimension.
      * @see org.das2.qds.DataSetOps#flattenRank2(org.das2.qds.QDataSet) 
      * @see #grid(org.das2.qds.QDataSet) 
@@ -12968,7 +12978,7 @@ public final class Ops {
     /**
      * slice each dimension in one call, so that chaining isn't required to slice multiple dimensions at once.
      * @param ds the dataset
-     * @param args varargs list of integers that are slice indeces, or "" or ":" to mean don't slice
+     * @param args varargs list of integers that are slice indices, or "" or ":" to mean don't slice
      * @return the dataset with slices performed.
      */
     public static QDataSet slices( QDataSet ds, Object ... args ) {
@@ -13020,7 +13030,7 @@ public final class Ops {
 
     /**
      * Reshape the dataset to remove the first dimension with length 1, reducing
-     * its rank by 1.  Dependencies are also preserved.  If no indeces are found, then the dataset is returned.
+     * its rank by 1.  Dependencies are also preserved.  If no indices are found, then the dataset is returned.
      * 
      * @param ds rank N dataset
      * @return the dataset, or rank N-1 dataset with the first 1-element dimension removed.
