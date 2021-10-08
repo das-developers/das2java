@@ -83,8 +83,11 @@ public class GitCommand {
 
         String msg = FileUtil.readFileToString(log);
         
-        System.err.println(msg);
-        
-        return msg;
+        if ( p.exitValue()==0 ) {
+            System.err.println(msg);
+            return msg;
+        } else {
+            throw new IllegalArgumentException("git command failed: "+msg);
+        }
     }
 }
