@@ -5720,6 +5720,9 @@ public final class Ops {
             }
             dep0copy.putProperty( QDataSet.MONOTONIC, Boolean.TRUE );
             mds.putProperty( QDataSet.DEPEND_0, dep0copy );
+        } else {
+            dep0.putProperty(QDataSet.MONOTONIC,Boolean.TRUE);
+            mds.putProperty( QDataSet.DEPEND_0, dep0 );
         }
         return mds;
     }
@@ -10438,6 +10441,7 @@ public final class Ops {
         if ( uu.length()==0 ) throw new IllegalArgumentException("uu has length=0");
         if ( uu.rank()!=1 ) throw new IllegalArgumentException("uu must be rank 1");
         if (!DataSetUtil.isMonotonic(uu)) {
+            DataSetUtil.isMonotonic(uu);
             throw new IllegalArgumentException("u must be monotonic");
         }
         if ( !DataSetUtil.isMonotonicAndIncreasingQuick(uu) ) {
