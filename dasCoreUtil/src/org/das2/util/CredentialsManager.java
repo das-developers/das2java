@@ -181,6 +181,11 @@ public class CredentialsManager{
 		return loc.hasCredentials();
 	}
 	
+    /**
+     * Allow scripts to set username and password.
+     * @param sLocationId the location/realm, like "http://jupiter.physics.uiowa.edu/das/server|Juno Magnetospheric Working Group"
+     * @param userInfo the user pass in string like "usern:passw"
+     */
    public void setHttpBasicHashRaw(String sLocationId, String userInfo){
 		if(!hasCredentials(sLocationId)){
 			m_dLocs.put(sLocationId, new Location(sLocationId, null, null));
