@@ -26,7 +26,7 @@ import java.util.Objects;
  *
  * <p>
  * Text is represented as <code>Object[]</code> because the diff engine is
- * capable of handling more than plain ascci. In fact, arrays or lists of any
+ * capable of handling more than plain ASCII. In fact, arrays or lists of any
  * type that implements {@link java.lang.Object#hashCode hashCode()} and
  * {@link java.lang.Object#equals equals()} correctly can be subject to
  * differencing using this library.
@@ -44,7 +44,7 @@ public final class Chunk<T> implements Serializable {
     /**
      * Creates a chunk and saves a copy of affected lines
      *
-     * @param position the start position
+     * @param position the start position, where 0 is the first position.
      * @param lines the affected lines
      * @param changePosition the positions of changed lines
      */
