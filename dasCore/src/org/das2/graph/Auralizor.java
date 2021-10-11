@@ -215,7 +215,7 @@ public final class Auralizor {
         
     }
     
-    LineListener getLineListener( ) {
+    private LineListener getLineListener( ) {
         return new LineListener() {
             @Override
             public void update( LineEvent e ) {
