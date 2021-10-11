@@ -51,9 +51,13 @@ public class TrimStrideWrapper extends AbstractDataSet {
         if ( isImmutable() ) {
             throw new IllegalArgumentException("data set is immutable");
         }
-        int sstart= start == null ? 0 : start.intValue();
         this.stride[dim]= stride == null ? 1 : stride.intValue();
-        int sstop= stop==null ? qube[dim] : stop.intValue();
+        int step1= this.stride[dim];
+        int dftStart= step1>=0 ? 0 : -1;
+        int dftStop= step1>=0 ? qube[dim] : -1-qube[dim]; // careful!
+        
+        int sstart= start == null ? dftStart : start.intValue();
+        int sstop= stop==null ? dftStop : stop.intValue();
         if ( sstop>qube[dim] ) {
             throw new IndexOutOfBoundsException("stop is greater than qube dimension: "+stop + ">" + qube[dim]);
         }

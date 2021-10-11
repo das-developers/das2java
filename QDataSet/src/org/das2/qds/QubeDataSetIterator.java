@@ -105,7 +105,11 @@ public final class QubeDataSetIterator implements DataSetIterator {
 
         @Override
         public boolean hasNext() {
-            return index + step < stop;
+            if ( step>=0 ) {
+                return index + step < stop;
+            } else {
+                return index + step > stop;
+            }
         }
 
         @Override
@@ -155,9 +159,17 @@ public final class QubeDataSetIterator implements DataSetIterator {
 
         @Override
         public DimensionIterator newIterator(int length) {
-            int start1 = start == null ? 0 : start.intValue();
-            int stop1 = stop == null ? length : stop.intValue();
             int step1 = step == null ? 1 : step.intValue();
+            int dftStart,dftStop;
+            if ( step1>=0 ) {
+                dftStart= 0;
+                dftStop= length;
+            } else {
+                dftStart= -1;
+                dftStop= -1-length; // note danger code which assumes this will still be negative below.
+            }
+            int start1 = start == null ? dftStart : start.intValue();
+            int stop1 = stop == null ? dftStop : stop.intValue();
             if (start1 < 0) {
                 start1 = length + start1;
             }
@@ -775,6 +787,9 @@ public final class QubeDataSetIterator implements DataSetIterator {
                         result.putProperty( "DEPEND_"+i, dep );
                     } else if ( sssi.step==1 ) {
                         result.putProperty( "DEPEND_"+i, dep.trim( sssi.start, sssi.stop ) );
+                    } else if ( sssi.step<0 ) {
+                        QDataSet depSlice= DataSetOps.trim( dep, sssi.start-dep.length(), sssi.stop-dep.length(), sssi.step );
+                        result.putProperty( "DEPEND_"+i, depSlice );
                     } else {
                         QDataSet depSlice= DataSetOps.trim( dep, sssi.start, sssi.stop, sssi.step );
                         result.putProperty( "DEPEND_"+i, depSlice );
