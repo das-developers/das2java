@@ -153,25 +153,32 @@ public class LanlNNRebinner implements DataSetRebinner {
                         yds0= Ops.subtract( yds, binMinus );
                         yds1= Ops.add( yds, binPlus );
                     } else {
-                        if ( yds.rank()==2 ) {
-                            logger.info("inferring bounds rank 2 ytags, this can be slow.");
-                            // test code: vap+das2server:http://planet.physics.uiowa.edu/das/das2Server?dataset=juno/waves/flight/burst_hfwbr_hi.dsdf&start_time=2014-04-04T17:00:00.000Z&end_time=2014-04-04T21:00:00.000Z
-                            QDataSet[] bins= DataSetUtil.inferBinsRank2( yds );
-                            yds0= bins[0];
-                            yds1= bins[1];
-                        } else if ( yds.rank()==1 ) {
-                            QDataSet bins= DataSetUtil.inferBins( yds.rank()==2 ? yds.slice(0): yds );
-                            yds0= Ops.copy( Ops.slice1( bins, 0 ) );
-                            yds1= Ops.copy( Ops.slice1( bins, 1 ) );
-                        } else {
-                            throw new UnsupportedOperationException("bad rank on ytags: "+yds.rank());
+                        switch (yds.rank()) {
+                            case 2:
+                                {
+                                    logger.info("inferring bounds rank 2 ytags, this can be slow.");
+                                    // test code: vap+das2server:http://planet.physics.uiowa.edu/das/das2Server?dataset=juno/waves/flight/burst_hfwbr_hi.dsdf&start_time=2014-04-04T17:00:00.000Z&end_time=2014-04-04T21:00:00.000Z
+                                    QDataSet[] bins= DataSetUtil.inferBinsRank2( yds );
+                                    yds0= bins[0];
+                                    yds1= bins[1];
+                                    break;
+                                }
+                            case 1:
+                                {
+                                    QDataSet bins= DataSetUtil.inferBins( yds.rank()==2 ? yds.slice(0): yds );
+                                    yds0= Ops.copy( Ops.slice1( bins, 0 ) );
+                                    yds1= Ops.copy( Ops.slice1( bins, 1 ) );
+                                    break;
+                                }
+                            default:
+                                throw new UnsupportedOperationException("bad rank on ytags: "+yds.rank());
                         }
                     }
                 }
                 yds0c.put( yds, yds0 );
                 yds1c.put( yds, yds1 );
             }
-
+            assert yds0!=null;
             rank2y= yds0.rank()==2;
 
             Units xunits= SemanticOps.getUnits( xds );
