@@ -1582,7 +1582,8 @@ public class DataSetUtil {
             } else {
                 QDataSet diff1= yds.trim(0,yds.length()-1);
                 QDataSet diff2= yds.trim(1,yds.length());
-                delta= Ops.interpolate( Ops.subtract(diff2,diff1), Ops.linspace( -0.5,diff1.length()-0.5, diff1.length()+1 ) );
+                delta= Ops.abs( 
+                        Ops.interpolate( Ops.subtract(diff2,diff1), Ops.linspace( -0.5,diff1.length()-0.5, diff1.length()+1 ) ) );
             }
             QDataSet r= Ops.where( Ops.lt( delta, dy ) );
             if ( r.length()>yds.length()/2 ) {
@@ -1606,7 +1607,8 @@ public class DataSetUtil {
             } else {
                 QDataSet diff1= yds.trim(0,yds.length()-1);
                 QDataSet diff2= yds.trim(1,yds.length());
-                delta= Ops.interpolate( Ops.subtract(diff2,diff1), Ops.linspace( -0.5,diff1.length()-0.5, diff1.length()+1 ) );
+                delta= Ops.abs( 
+                        Ops.interpolate( Ops.subtract(diff2,diff1), Ops.linspace( -0.5,diff1.length()-0.5, diff1.length()+1 ) ) );
                 delta= Ops.divide( delta, DataSetUtil.asDataSet(2) );
                 yds0= Ops.subtract( yds, delta );
                 yds1= Ops.add( yds, delta );
