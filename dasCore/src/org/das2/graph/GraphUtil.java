@@ -1744,20 +1744,28 @@ public class GraphUtil {
                 }
             }
             double[] dticksMinor;
-            if ( dticks.length>2 ) {
-                double dt= DasMath.gcd( dticks, (dticks[1]-dticks[0])/100. );
-                int minorTicks= minorMult>0 ? minorMult : updateTickVManualTicksMinor(dt);
-                dt= dt/minorTicks;
-                double firstTick= DasMath.min(dticks);
-                double lastTick= DasMath.max(dticks);
-                int ntick= (int)(Math.ceil(lastTick-firstTick)/dt) + 1;
-                dticksMinor= new double[ ntick ];
+            if ( minorList!=null ) {
+                dticksMinor= new double[ minorList.length ];
                 for ( int i=0; i<dticksMinor.length; i++ ) {
-                    dticksMinor[i]= firstTick + i * dt;
+                    dticksMinor[i]= minorList[i];
                 }
             } else {
-                dticksMinor= dticks;
+                if ( dticks.length>2 ) {
+                    double dt= DasMath.gcd( dticks, (dticks[1]-dticks[0])/100. );
+                    int minorTicks= minorMult>0 ? minorMult : updateTickVManualTicksMinor(dt);
+                    dt= dt/minorTicks;
+                    double firstTick= DasMath.min(dticks);
+                    double lastTick= DasMath.max(dticks);
+                    int ntick= (int)(Math.ceil(lastTick-firstTick)/dt) + 1;
+                    dticksMinor= new double[ ntick ];
+                    for ( int i=0; i<dticksMinor.length; i++ ) {
+                        dticksMinor[i]= firstTick + i * dt;
+                    }
+                } else {
+                    dticksMinor= dticks;
+                }
             }
+            
             TickVDescriptor majorTicks= new TickVDescriptor( dticksMinor, dticks, u );
             result= majorTicks;
         }
