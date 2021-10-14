@@ -123,12 +123,20 @@ public class SubTaskMonitor implements ProgressMonitor {
 
     private boolean finished= false;
 
+    private StackTraceElement[] sts;
+    
     @Override
     public void finished() {
         if ( finished ) {
-            logger.warning("SubTaskMonitor.finished called twice, which could cause problems in the future");
+            Thread.dumpStack(); // DEBUG IDL BRIDGE
+            logger.warning("XXX SubTaskMonitor.finished called twice, which could cause problems in the future");
+            logger.warning("Here is sts:");
+            for ( StackTraceElement el: sts ) {
+                logger.warning("xxx " + el.toString());
+            }
         } else {
             logger.fine("enter monitor finished");
+            sts= Thread.currentThread().getStackTrace();
         }
         this.finished= true; // only to support the bean property
     }
