@@ -30,6 +30,7 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -66,6 +67,8 @@ import java.util.logging.Logger;
  * !(italic) switch to italic
  * !(unbold) switch off bold by switching to plain
  * !(unitalic) switch off italic by switching to plain
+ * !(underline) switch to underline
+ * !(ununderline) switch to underline
  * </pre>
  * For Greek and math symbols, Unicode characters should be
  * used like so: &amp;#9742; (&#9742 phone symbol), or symbols like <tt>&amp;Omega;</tt> and <tt>&amp;omega;</tt>
@@ -88,6 +91,7 @@ public class GrannyTextRenderer {
     private float alignment = LEFT_ALIGNMENT;
     
     private static final Logger logger= LoggerManager.getLogger("das2.graph.text");
+    private boolean underline;
     
     public GrannyTextRenderer( ) {
         //setAlignment(CENTER_ALIGNMENT);
@@ -595,6 +599,10 @@ public class GrannyTextRenderer {
                             } else {
                                 activeFont = activeFont.deriveFont(Font.PLAIN);
                             }
+                        } else if ( command.equals("underline") ) {
+                            underline= true;
+                        } else if ( command.equals("ununderline") ) {
+                            underline= false;
                         }
                         break;
                     case  '!':
@@ -648,7 +656,11 @@ public class GrannyTextRenderer {
                 if (draw) {
                     g.setFont(font);
                     g.drawString(strl, current.x, y);
-                    current.x += g.getFontMetrics(font).stringWidth(strl);
+                    int w= g.getFontMetrics(font).stringWidth(strl);
+                    if ( underline ) {
+                        g.draw( new Line2D.Double( current.x, y+2, current.x+w, y+2 ) );
+                    }
+                    current.x += w;
                     //bounds.translate((int)ix,(int)iy);
                     //g.draw(bounds);  //useful for debugging
                     //g.drawLine((int)ix,(int)iy,(int)ix+4,(int)iy);
@@ -659,7 +671,7 @@ public class GrannyTextRenderer {
                     current.x += ig.getFontMetrics(font).stringWidth(strl);
                 }
             }
-        } // for (String strl : tokens) {
+        } // for (String strl : tokens) {// for (String strl : tokens) {
         if (!draw) {
             llineBounds.add(boundsl);
             this.lineBounds= llineBounds;
