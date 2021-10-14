@@ -1778,7 +1778,6 @@ public class SeriesRenderer extends Renderer {
             if ( foreBackSameColor ) {
                 DasLogger.getLogger(DasLogger.GRAPHICS_LOG).fine("foreground and background colors are the same");
                 lparent.postMessage(this, "foreground and background colors are the same", DasPlot.INFO, null, null);
-                return;
             }
         }
         
