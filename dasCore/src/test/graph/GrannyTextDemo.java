@@ -1,21 +1,14 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package test.graph;
 
 import java.awt.BorderLayout;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import org.das2.datum.DatumRange;
-import org.das2.datum.Units;
 import org.das2.graph.DasAnnotation;
 import org.das2.graph.DasCanvas;
 import org.das2.graph.DasColumn;
 import org.das2.graph.DasPlot;
 import org.das2.graph.DasRow;
-import org.das2.graph.GraphUtil;
 
 /**
  *
