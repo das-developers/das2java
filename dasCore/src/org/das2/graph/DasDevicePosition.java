@@ -301,7 +301,21 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
     }
     
     /**
-     * formats the row or column position into a string like
+     * formats the row or column position into a string like 100%+1em,100%+2em.
+     * @param pos the row or column
+     * @return String like "100%+1em,100%+2em"
+     * @see #formatFormatStr(double[]) which contains repeated code.
+     */
+    public static String formatLayoutStr( DasDevicePosition pos ) {
+        StringBuilder buf= new StringBuilder();
+        buf.append( formatLayoutStr( pos, true ) );
+        buf.append(",");
+        buf.append( formatLayoutStr( pos, false ) );
+        return buf.toString();
+    }
+    
+    /**
+     * formats the row or column position into a string like 100%-5em+4pt.
      * @param pos the row or column
      * @param min true if the minimum boundary is to be formatted, false if the maximum boundary is to be formatted.
      * @return String like "100%-5em+4pt"
