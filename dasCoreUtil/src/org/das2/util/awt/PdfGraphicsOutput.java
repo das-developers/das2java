@@ -35,6 +35,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.util.FileUtil;
@@ -239,6 +240,11 @@ public class PdfGraphicsOutput implements GraphicsOutput {
      */
     public static String ttfFromName( java.awt.Font font ) {
             Map<String,File> map= getFontToTtfMap();
+            if ( logger.isLoggable(Level.FINER) ) {
+                map.entrySet().stream().filter((e) -> ( e.getKey().contains(font.getName()) )).forEachOrdered((e) -> {
+                    System.err.println( e.getKey() );
+                });
+            }
             File f= map.get(font.getFontName());
             if ( f==null ) {
                 String s= font.getFamily();
