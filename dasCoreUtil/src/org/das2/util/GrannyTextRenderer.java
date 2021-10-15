@@ -708,6 +708,8 @@ public class GrannyTextRenderer {
         str= str.replaceAll("\\</b>","!(unbold)");
         str= str.replaceAll("\\<i>","!(italic)");
         str= str.replaceAll("\\</i>","!(unitalic)");
+        str= str.replaceAll("\\<u>","!(underline)");
+        str= str.replaceAll("\\</u>","!(ununderline)");
         
         while(end < str.length()) {
             begin = end;

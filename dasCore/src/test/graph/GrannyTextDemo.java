@@ -97,7 +97,7 @@ public class GrannyTextDemo {
 
     public static void main( String[] args ) {
         //new GrannyTextDemo("!c!c!(underline)HELLO!(ununderline) There!").showFrame();
-        new GrannyTextDemo("Serif <b>in</b> 1917!c!c!<i>HELLO</i> There!").showFrame();
+        new GrannyTextDemo("Serif <b>in</b> 1917!c!c<i><u>HELLO</i></u> There!").showFrame();
     }
 
 }
