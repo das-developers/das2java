@@ -1613,6 +1613,8 @@ public class GraphUtil {
      * <li>+20s  every 20 seconds
      * <li>0,20,40,60,100  explicit locations.
      * <li>+20s/4 every 20 seconds, with four minor divisions.
+     * <li>+20s/5,10,15 minor ticks repeat each 20s.
+     * <li>100,200,300/50,150,250,350 explicit list of major and minor ticks.
      * </ul>
      * 
      * @param lticks the specification
@@ -1625,15 +1627,15 @@ public class GraphUtil {
         Units u= dr.getUnits();
         int islash= lticks.indexOf('/');
         int minorMult= 0;
-        int[] minorList= null;
+        double[] minorList= null;
         if ( islash>-1 ) {
             String minorTicksSpec= lticks.substring(islash+1);
             lticks= lticks.substring(0,islash);
             if ( minorTicksSpec.contains(",") ) {
                 String[] ss= minorTicksSpec.split(",");
-                minorList= new int[ss.length];
+                minorList= new double[ss.length];
                 for ( int i=0; i<ss.length; i++ ) {
-                    minorList[i]= Integer.parseInt(ss[i]);
+                    minorList[i]= Double.parseDouble(ss[i]);
                 }
             } else {
                 try {
@@ -1708,11 +1710,11 @@ public class GraphUtil {
                 //double[] dticksMinor= new double[ ntick*minorTicks ];
                 if ( minorList==null ) {
                     if ( minorMult==2 ) {
-                        minorList= new int[] { 10 };
+                        minorList= new double[] { 10 };
                     } else if ( minorMult==3 ) {
-                        minorList= new int[] { 10, 100 };
+                        minorList= new double[] { 10, 100 };
                     } else {
-                        minorList= new int[] { 2,3,4,5,6,7,8,9 };
+                        minorList= new double[] { 2,3,4,5,6,7,8,9 };
                     }
                 }
                 for ( int i=0; i<dticks.length-1; i++ ) {
@@ -1746,9 +1748,7 @@ public class GraphUtil {
             double[] dticksMinor;
             if ( minorList!=null ) {
                 dticksMinor= new double[ minorList.length ];
-                for ( int i=0; i<dticksMinor.length; i++ ) {
-                    dticksMinor[i]= minorList[i];
-                }
+                System.arraycopy(minorList, 0, dticksMinor, 0, dticksMinor.length);
             } else {
                 if ( dticks.length>2 ) {
                     double dt= DasMath.gcd( dticks, (dticks[1]-dticks[0])/100. );
