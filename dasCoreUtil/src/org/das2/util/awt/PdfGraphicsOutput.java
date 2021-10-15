@@ -255,7 +255,7 @@ public class PdfGraphicsOutput implements GraphicsOutput {
             }
     }
         
-    FontMapper fontMapper = new FontMapper() {
+    private final FontMapper fontMapper = new FontMapper() {
         @Override
         public BaseFont awtToPdf(java.awt.Font font) {
             try {
