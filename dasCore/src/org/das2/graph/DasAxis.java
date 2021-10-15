@@ -2466,12 +2466,21 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 clip = new Rectangle(getX(), getY(), getWidth(), getHeight());
             }
 
-            boolean bottomLine = ((orientation == BOTTOM || oppositeAxisVisible) && blLineRect != null && blLineRect.intersects(clip));
-            boolean bottomTicks = ((orientation == BOTTOM || oppositeAxisVisible) && blTickRect != null && blTickRect.intersects(clip));
+            boolean loppositeAxisVisible= this.oppositeAxisVisible;
+            if ( loppositeAxisVisible ) {
+                DasPlot otherPlot= getCanvas().otherPlotOnTop(this);
+                if ( otherPlot!=null ) {
+                    if ( otherPlot.getXAxis().getOrientation()!=this.getOrientation() ) {
+                        loppositeAxisVisible= false;
+                    }
+                }
+            }
+            boolean bottomLine = ((orientation == BOTTOM || loppositeAxisVisible) && blLineRect != null && blLineRect.intersects(clip));
+            boolean bottomTicks = ((orientation == BOTTOM || loppositeAxisVisible) && blTickRect != null && blTickRect.intersects(clip));
             boolean bottomTickLabels = ((orientation == BOTTOM && tickLabelsVisible) && blLabelRect != null && blLabelRect.intersects(clip));
             boolean bottomLabel = ((orientation == BOTTOM && !axisLabel.equals("")) ); // && blTitleRect != null && blTitleRect.intersects(clip));
-            boolean topLine = ((orientation == TOP || oppositeAxisVisible) && trLineRect != null && trLineRect.intersects(clip));
-            boolean topTicks = ((orientation == TOP || oppositeAxisVisible) && trTickRect != null && trTickRect.intersects(clip));
+            boolean topLine = ((orientation == TOP || loppositeAxisVisible) && trLineRect != null && trLineRect.intersects(clip));
+            boolean topTicks = ((orientation == TOP || loppositeAxisVisible) && trTickRect != null && trTickRect.intersects(clip));
             boolean topTickLabels = ((orientation == TOP && tickLabelsVisible) && trLabelRect != null && trLabelRect.intersects(clip));
             boolean topLabel = ((orientation == TOP && !axisLabel.equals("")) && trTitleRect != null && trTitleRect.intersects(clip));
 
@@ -2703,12 +2712,21 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 clip = new Rectangle(getX(), getY(), getWidth(), getHeight());
             }
 
-            boolean leftLine = ((orientation == LEFT || oppositeAxisVisible) && blLineRect != null && blLineRect.intersects(clip));
-            boolean leftTicks = ((orientation == LEFT || oppositeAxisVisible) && blTickRect != null && blTickRect.intersects(clip));
+            boolean loppositeAxisVisible= this.oppositeAxisVisible;
+            if ( loppositeAxisVisible ) {
+                DasPlot otherPlot= getCanvas().otherPlotOnTop(this);
+                if ( otherPlot!=null ) {
+                    if ( otherPlot.getYAxis().getOrientation()!=this.getOrientation() ) {
+                        loppositeAxisVisible= false;
+                    }
+                }
+            }            
+            boolean leftLine = ((orientation == LEFT || loppositeAxisVisible) && blLineRect != null && blLineRect.intersects(clip));
+            boolean leftTicks = ((orientation == LEFT || loppositeAxisVisible) && blTickRect != null && blTickRect.intersects(clip));
             boolean leftTickLabels = ((orientation == LEFT && tickLabelsVisible) && blLabelRect != null && blLabelRect.intersects(clip));
             boolean leftLabel = ((orientation == LEFT && !axisLabel.equals("")) && blTitleRect != null && blTitleRect.intersects(clip));
-            boolean rightLine = ((orientation == RIGHT || oppositeAxisVisible) && trLineRect != null && trLineRect.intersects(clip));
-            boolean rightTicks = ((orientation == RIGHT || oppositeAxisVisible) && trTickRect != null && trTickRect.intersects(clip));
+            boolean rightLine = ((orientation == RIGHT || loppositeAxisVisible) && trLineRect != null && trLineRect.intersects(clip));
+            boolean rightTicks = ((orientation == RIGHT || loppositeAxisVisible) && trTickRect != null && trTickRect.intersects(clip));
             boolean rightTickLabels = ((orientation == RIGHT && tickLabelsVisible) && trLabelRect != null && trLabelRect.intersects(clip));
             boolean rightLabel = ((orientation == RIGHT && !axisLabel.equals("")) && trTitleRect != null && trTitleRect.intersects(clip));
 

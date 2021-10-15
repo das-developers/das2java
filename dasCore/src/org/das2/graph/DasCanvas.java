@@ -175,6 +175,33 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
     
     private static DasCanvas currentCanvas;
 
+    /**
+     * return a plot which shares this row and column, or null.
+     * @param aThis
+     * @return a plot which shares this row and column, or null.
+     */
+    public DasPlot otherPlotOnTop( DasAxis aThis ) {
+        DasPlot myPlot=null;
+        for ( DasCanvasComponent cc: this.getCanvasComponents() ) {
+            if ( cc instanceof DasPlot ) {
+                DasPlot p= (DasPlot)cc;
+                if ( p.getXAxis()==aThis || p.getYAxis()==aThis ) {
+                    myPlot= p;
+                }
+            }
+        }
+        if ( myPlot==null ) return null;
+        for ( DasCanvasComponent cc: this.getCanvasComponents() ) {
+            if ( cc instanceof DasPlot ) {
+                DasPlot p= (DasPlot)cc;
+                if ( p!=myPlot && p.getRow()==myPlot.getRow() && p.getColumn()==myPlot.getColumn() ) {
+                    return p;
+                }
+            }
+        }
+        return null;
+    }
+
     /* Canvas actions */
     protected static abstract class CanvasAction extends AbstractAction {
         CanvasAction(String label) {
