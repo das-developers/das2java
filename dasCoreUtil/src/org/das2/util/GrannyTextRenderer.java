@@ -335,20 +335,20 @@ public class GrannyTextRenderer {
     
     private static void drawText( Graphics ig, boolean draw, float y, boolean underline,
             String strl, Font font, TextPosition current, Rectangle boundsl  ) {
+
+//        boolean canDoIt= true;
+//        for ( int i=0; i<strl.length(); i++ ) {
+//            if ( !font.canDisplay(strl.charAt(i) ) ) {
+//                System.err.println("Can't display character "+strl.charAt(i) );
+//                canDoIt= false;
+//            }
+//        }
+//        if ( !canDoIt ) {
+//            font= Font.decode("sans");
+//        }
+        ig.setFont( font );
         if (draw) {
             Graphics2D g= (Graphics2D)ig;
-            boolean canDoIt= true;
-            for ( int i=0; i<strl.length(); i++ ) {
-                if ( !font.canDisplay(strl.charAt(i) ) ) {
-                    System.err.println("Can't display character "+strl.charAt(i) );
-                    canDoIt= false;
-                }
-            }
-            if ( canDoIt ) {
-                g.setFont(font);
-            } else {
-                g.setFont( Font.decode("sans") );
-            }
             g.drawString(strl, current.x, y);
             int w= g.getFontMetrics(font).stringWidth(strl);
             if ( underline ) {
