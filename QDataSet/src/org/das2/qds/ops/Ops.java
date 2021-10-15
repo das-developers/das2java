@@ -2814,32 +2814,13 @@ public final class Ops {
         QDataSet dds1,dds2;
         try {
             dds1= dataset(ds1);
-            try {
-                dds2= dataset(ds2);
-            } catch ( IllegalArgumentException ex ) {
-                Units uu1= SemanticOps.getUnits(dds1);
-                if ( UnitsUtil.isNominalMeasurement(uu1) ) {
-                    dds2= dataset( ((EnumerationUnits)uu1).createDatum(ds2.toString()) );
-                } else {
-                    try {
-                        dds2= dataset( uu1.parse(ds2.toString()) );
-                    } catch ( ParseException ex1 ) {
-                        throw new IllegalArgumentException("unable to parse: "+ds2, ex1 );
-                    }
-                }
-            }
         } catch ( IllegalArgumentException ex ) {
+            dds1= null;
+        }
+        try {
             dds2= dataset(ds2);
-            try {
-                Units uu2= SemanticOps.getUnits(dds2);
-                if ( UnitsUtil.isNominalMeasurement(uu2) ) {
-                    dds1= dataset( ((EnumerationUnits)uu2).createDatum(ds1.toString()) );
-                } else {
-                    dds1= dataset( uu2.parse(ds1.toString()) );
-                }
-            } catch ( ParseException ex1 ) {
-                throw new IllegalArgumentException(ex1);
-            }
+        } catch ( IllegalArgumentException ex ) {
+            dds2= null;
         }
         dds2= enumerationUnitsCheck( dds1, ds2, dds2 );
         dds1= enumerationUnitsCheck( dds2, ds1, dds1 );
@@ -2871,32 +2852,13 @@ public final class Ops {
         QDataSet dds1,dds2;
         try {
             dds1= dataset(ds1);
-            try {
-                dds2= dataset(ds2);
-            } catch ( IllegalArgumentException ex ) {
-                Units uu1= SemanticOps.getUnits(dds1);
-                if ( UnitsUtil.isNominalMeasurement(uu1) ) {
-                    dds2= dataset( ((EnumerationUnits)uu1).createDatum(ds2.toString()) );
-                } else {
-                    try {
-                        dds2= dataset( uu1.parse(ds2.toString()) );
-                    } catch ( ParseException ex1 ) {
-                        throw new IllegalArgumentException("unable to parse: "+ds2, ex1 );
-                    }
-                }
-            }
         } catch ( IllegalArgumentException ex ) {
+            dds1= null;
+        }
+        try {
             dds2= dataset(ds2);
-            try {
-                Units uu2= SemanticOps.getUnits(dds2);
-                if ( UnitsUtil.isNominalMeasurement(uu2) ) {
-                    dds1= dataset( ((EnumerationUnits)uu2).createDatum(ds1.toString()) );
-                } else {
-                    dds1= dataset( uu2.parse(ds1.toString()) );
-                }
-            } catch ( ParseException ex1 ) {
-                throw new IllegalArgumentException(ex1);
-            }
+        } catch ( IllegalArgumentException ex ) {
+            dds2= null;
         }
         dds2= enumerationUnitsCheck( dds1, ds2, dds2 );
         dds1= enumerationUnitsCheck( dds2, ds1, dds1 );
@@ -6179,7 +6141,11 @@ public final class Ops {
         } else if ( arg0 instanceof String ) {
             String sarg= (String)arg0;
             try {
-               return DataSetUtil.asDataSet( u.parse(sarg) ); //TODO: someone is going to want lookupUnits that will allocate new units.
+                if ( u instanceof EnumerationUnits ) {
+                    return DataSetUtil.asDataSet( ((EnumerationUnits) u).createDatum(sarg) );
+                } else {
+                    return DataSetUtil.asDataSet( u.parse(sarg) ); //TODO: someone is going to want lookupUnits that will allocate new units.
+                }
             } catch (ParseException ex) {
                try {
                    return DataSetUtil.asDataSet(TimeUtil.create(sarg));
@@ -6205,7 +6171,11 @@ public final class Ops {
                     j[i]=((Number)n).doubleValue();
                 } else {
                     try {
-                        j[i]= u.parse((String)n).doubleValue(u);
+                        if ( u instanceof EnumerationUnits ) {
+                            j[i]= ((EnumerationUnits)u).createDatum((String)n).doubleValue(u);
+                        } else {
+                            j[i]= u.parse((String)n).doubleValue(u);
+                        }
                     } catch (ParseException ex) {
                         throw new IllegalArgumentException(ex);
                     }
