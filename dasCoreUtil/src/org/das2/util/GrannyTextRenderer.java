@@ -333,6 +333,51 @@ public class GrannyTextRenderer {
         this.draw( ig, ig.getFont(), ix, iy, true);
     }
     
+    private static void drawText( Graphics ig, boolean draw, float y, boolean underline,
+            String strl, Font font, TextPosition current, Rectangle boundsl  ) {
+        if (draw) {
+            Graphics2D g= (Graphics2D)ig;
+            boolean canDoIt= true;
+            for ( int i=0; i<strl.length(); i++ ) {
+                if ( !font.canDisplay(strl.charAt(i) ) ) {
+                    System.err.println("Can't display character "+strl.charAt(i) );
+                    canDoIt= false;
+                }
+            }
+            if ( canDoIt ) {
+                g.setFont(font);
+            } else {
+                g.setFont( Font.decode("sans") );
+            }
+            g.drawString(strl, current.x, y);
+            int w= g.getFontMetrics(font).stringWidth(strl);
+            if ( underline ) {
+                g.draw( new Line2D.Double( current.x, y+2, current.x+w, y+2 ) );
+            }
+            current.x += w;
+            //bounds.translate((int)ix,(int)iy);
+            //g.draw(bounds);  //useful for debugging
+            //g.drawLine((int)ix,(int)iy,(int)ix+4,(int)iy);
+        } else {
+            FontMetrics fm= ig.getFontMetrics(font);
+            boundsl.add(current.x, y+fm.getDescent());
+            boundsl.add(current.x+fm.stringWidth(strl),y-fm.getAscent() ); // removed -5.0 pixels
+            current.x += ig.getFontMetrics(font).stringWidth(strl);
+        }        
+    }
+    
+    private static final class TextPosition {
+        public TextPosition(int sub, int ei, float x, float y) {
+            this.sub = sub; this.ei = ei; this.x = x; this.y = y; }
+        public TextPosition(TextPosition p) {
+            copy(p); }
+        public void copy(TextPosition p) {
+            sub = p.sub; ei = p.ei; x = p.x; y = p.y; }
+        public int sub;
+        public int ei;
+        public float x;
+        public float y;
+    }
     
     /**
      * Draws the given string and/or computes its bounds.
@@ -396,20 +441,7 @@ public class GrannyTextRenderer {
         final int LOWCAPS= 10;  // not in IDL's set
         final int SUB_A = 11;
         final int SUB_B = 12;
-        
-        final class TextPosition {
-            public TextPosition(int sub, int ei, float x, float y) {
-                this.sub = sub; this.ei = ei; this.x = x; this.y = y; }
-            public TextPosition(TextPosition p) {
-                copy(p); }
-            public void copy(TextPosition p) {
-                sub = p.sub; ei = p.ei; x = p.x; y = p.y; }
-            public int sub;
-            public int ei;
-            public float x;
-            public float y;
-        }
-        
+                
         if ( ig==null ) {
             ig= getHeadlessGraphicsContext();
         }
@@ -654,24 +686,14 @@ public class GrannyTextRenderer {
                         break;
                     default:break;
                 }
-                if ( strl.equals("!!") ) strl= "!";            
-                if (draw) {
-                    g.setFont(font);
-                    g.drawString(strl, current.x, y);
-                    int w= g.getFontMetrics(font).stringWidth(strl);
-                    if ( underline ) {
-                        g.draw( new Line2D.Double( current.x, y+2, current.x+w, y+2 ) );
-                    }
-                    current.x += w;
-                    //bounds.translate((int)ix,(int)iy);
-                    //g.draw(bounds);  //useful for debugging
-                    //g.drawLine((int)ix,(int)iy,(int)ix+4,(int)iy);
+                if ( strl.equals("!!") ) strl= "!";      
+
+                if ( draw ) {
+                    drawText( g, draw, y, underline, strl, font, current, boundsl);
                 } else {
-                    FontMetrics fm= ig.getFontMetrics(font);
-                    boundsl.add(current.x, y+fm.getDescent());
-                    boundsl.add(current.x+fm.stringWidth(strl),y-fm.getAscent() ); // removed -5.0 pixels
-                    current.x += ig.getFontMetrics(font).stringWidth(strl);
+                    drawText( ig, draw, y, underline, strl, font, current, boundsl);
                 }
+
             }
         } // for (String strl : tokens) {// for (String strl : tokens) {
         if (!draw) {
