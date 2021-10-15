@@ -51,6 +51,12 @@ public class TickVDescriptor {
     protected TickVDescriptor() {
     }
 
+    /**
+     * creates a TickVDescriptor with the given minor and major ticks.
+     * @param minorTicks
+     * @param ticks
+     * @param units 
+     */
     public TickVDescriptor(double[] minorTicks, double[] ticks, Units units) {
         this.tickV = DatumVector.newDatumVector(ticks, units);
         this.minorTickV = DatumVector.newDatumVector(minorTicks, units);
