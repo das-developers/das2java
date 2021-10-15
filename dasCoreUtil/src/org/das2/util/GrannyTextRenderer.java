@@ -603,6 +603,8 @@ public class GrannyTextRenderer {
                             underline= true;
                         } else if ( command.equals("ununderline") ) {
                             underline= false;
+                        } else {
+                            logger.log(Level.INFO, "unrecognized command: {0}", command);
                         }
                         break;
                     case  '!':
