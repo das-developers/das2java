@@ -2811,8 +2811,36 @@ public final class Ops {
      * @return 
      */
     public static QDataSet eq( Object ds1, Object ds2 ) {
-        QDataSet dds1= dataset(ds1);
-        QDataSet dds2= dataset(ds2);
+        QDataSet dds1,dds2;
+        try {
+            dds1= dataset(ds1);
+            try {
+                dds2= dataset(ds2);
+            } catch ( IllegalArgumentException ex ) {
+                Units uu1= SemanticOps.getUnits(dds1);
+                if ( UnitsUtil.isNominalMeasurement(uu1) ) {
+                    dds2= dataset( ((EnumerationUnits)uu1).createDatum(ds2.toString()) );
+                } else {
+                    try {
+                        dds2= dataset( uu1.parse(ds2.toString()) );
+                    } catch ( ParseException ex1 ) {
+                        throw new IllegalArgumentException("unable to parse: "+ds2, ex1 );
+                    }
+                }
+            }
+        } catch ( IllegalArgumentException ex ) {
+            dds2= dataset(ds2);
+            try {
+                Units uu2= SemanticOps.getUnits(dds2);
+                if ( UnitsUtil.isNominalMeasurement(uu2) ) {
+                    dds1= dataset( ((EnumerationUnits)uu2).createDatum(ds1.toString()) );
+                } else {
+                    dds1= dataset( uu2.parse(ds1.toString()) );
+                }
+            } catch ( ParseException ex1 ) {
+                throw new IllegalArgumentException(ex1);
+            }
+        }
         dds2= enumerationUnitsCheck( dds1, ds2, dds2 );
         dds1= enumerationUnitsCheck( dds2, ds1, dds1 );
         return eq( dds1, dds2 );
@@ -2840,8 +2868,36 @@ public final class Ops {
      * @return 
      */
     public static QDataSet ne( Object ds1, Object ds2 ) {
-        QDataSet dds1= dataset(ds1);
-        QDataSet dds2= dataset(ds2);
+        QDataSet dds1,dds2;
+        try {
+            dds1= dataset(ds1);
+            try {
+                dds2= dataset(ds2);
+            } catch ( IllegalArgumentException ex ) {
+                Units uu1= SemanticOps.getUnits(dds1);
+                if ( UnitsUtil.isNominalMeasurement(uu1) ) {
+                    dds2= dataset( ((EnumerationUnits)uu1).createDatum(ds2.toString()) );
+                } else {
+                    try {
+                        dds2= dataset( uu1.parse(ds2.toString()) );
+                    } catch ( ParseException ex1 ) {
+                        throw new IllegalArgumentException("unable to parse: "+ds2, ex1 );
+                    }
+                }
+            }
+        } catch ( IllegalArgumentException ex ) {
+            dds2= dataset(ds2);
+            try {
+                Units uu2= SemanticOps.getUnits(dds2);
+                if ( UnitsUtil.isNominalMeasurement(uu2) ) {
+                    dds1= dataset( ((EnumerationUnits)uu2).createDatum(ds1.toString()) );
+                } else {
+                    dds1= dataset( uu2.parse(ds1.toString()) );
+                }
+            } catch ( ParseException ex1 ) {
+                throw new IllegalArgumentException(ex1);
+            }
+        }
         dds2= enumerationUnitsCheck( dds1, ds2, dds2 );
         dds1= enumerationUnitsCheck( dds2, ds1, dds1 );
         return ne( dds1, dds2 );
