@@ -75,6 +75,14 @@ public class DateTimeDatumFormatter extends DatumFormatter {
         return date==null ? time : time + "!c" + date;
     }
 
+    /**
+     * format the datums for axis, automatically picking the resolution needed to
+     * correctly indicate tick values.
+     * @param datums
+     * @param context
+     * @see TimeDatumFormatter#guessFormatter(org.das2.datum.DatumVector, org.das2.datum.DatumRange) 
+     * @return 
+     */
     @Override
     public String[] axisFormat( DatumVector datums, DatumRange context ) {
         boolean haveMidnight= false;

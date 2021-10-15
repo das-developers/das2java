@@ -31,6 +31,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
+import org.das2.datum.DatumVector;
 import org.das2.datum.TimeUtil;
 import org.das2.datum.Units;
 
@@ -159,6 +160,33 @@ public class TimeDatumFormatter extends DatumFormatter {
      */
     public static TimeDatumFormatter formatterForScale( int scale, DatumRange context ) {
         return formatterForScale( scale, context, false );
+    }
+    
+    /**
+     * guess formatted based on the two ticks given
+     * @param ticks values to represent
+     * @param context
+     * @return 
+     * @see DateTimeDatumFormatter#axisFormat
+     */
+    public static TimeDatumFormatter guessFormatter( DatumVector ticks, DatumRange context ) {
+        int scale;
+        double width;
+        if ( ticks.getLength()<2 ) {
+            scale= TimeUtil.MICRO;
+        } else {
+            width= ticks.get(1).subtract(ticks.get(0)).doubleValue(Units.microseconds);
+            if ( width>=60e6 ) {
+                scale= TimeUtil.MINUTE;
+            } else if ( width>=1e6 ) {
+                scale= TimeUtil.SECOND;
+            } else if ( width>=1e3 ) {
+                scale= TimeUtil.MILLI;
+            } else {
+                scale= TimeUtil.MICRO;
+            }
+        }
+        return formatterForScale( scale, context );
     }
     
     /**

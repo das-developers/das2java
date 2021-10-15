@@ -1603,7 +1603,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 updateTickV();
             } else {
                 autoTickV = false;
-                this.datumFormatter= tickV.getFormatter();
+                this.datumFormatter= resolveFormatter(tickV);
             }
         }
         if ( dasPlot!=null ) dasPlot.invalidateCacheImage();
@@ -1643,6 +1643,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         if ( oldTicks!=null && !oldTicks.equals(ticks) ) {
             firePropertyChange(PROP_TICKVALUES, oldTicks, ticks);
             updateTickV();
+            maybeStartTcaTimer();
             if ( dasPlot!=null ) dasPlot.invalidateCacheImage();
         }
     }
@@ -2082,6 +2083,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     
     protected void updateTickVManualTicks(String lticks) {
         TickVDescriptor ticks= GraphUtil.calculateManualTicks( lticks, this.getDatumRange(), this.isLog() );
+        TickMaster.getInstance().offerTickV( this, ticks );
         this.tickV= ticks; // note ticks might be null.
     }
     
@@ -2470,7 +2472,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             if ( loppositeAxisVisible ) {
                 DasPlot otherPlot= getCanvas().otherPlotOnTop(this);
                 if ( otherPlot!=null ) {
-                    if ( otherPlot.getXAxis().getOrientation()!=this.getOrientation() ) {
+                    if ( otherPlot.getXAxis().getOrientation()!=this.getOrientation() &&
+                            otherPlot.getXAxis().isVisible() ) {
                         loppositeAxisVisible= false;
                     }
                 }
@@ -2716,7 +2719,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             if ( loppositeAxisVisible ) {
                 DasPlot otherPlot= getCanvas().otherPlotOnTop(this);
                 if ( otherPlot!=null ) {
-                    if ( otherPlot.getYAxis().getOrientation()!=this.getOrientation() ) {
+                    if ( otherPlot.getYAxis().getOrientation()!=this.getOrientation() &&
+                            otherPlot.getXAxis().isVisible() ) {
                         loppositeAxisVisible= false;
                     }
                 }
