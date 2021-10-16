@@ -346,8 +346,8 @@ public class GrannyTextRenderer {
 //        if ( !canDoIt ) {
 //            font= Font.decode("sans");
 //        }
-        ig.setFont( font );
         if (draw) {
+            ig.setFont( font );
             Graphics2D g= (Graphics2D)ig;
             g.drawString(strl, current.x, y);
             int w= g.getFontMetrics(font).stringWidth(strl);
@@ -448,6 +448,10 @@ public class GrannyTextRenderer {
         
         if ( baseFont==null ) {
             baseFont= Font.decode("sans-10");
+        }
+        
+        if ( str!=null && str.contains("really really") ) {
+            System.err.println("here stop:" + baseFont.getSize() + " " + str);
         }
         
         int lineNum=1;
