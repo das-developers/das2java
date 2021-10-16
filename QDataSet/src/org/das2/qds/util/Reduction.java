@@ -303,15 +303,14 @@ public class Reduction {
                 nx+= 1;
 
                 double ww1= ww.value();
-                if ( ww1==0 ) {
-                    continue;
-                }
-                double pyy = yy.value();
-                sy0 += pyy*ww1;
-                nn0 += ww1;
                 if ( ww1>0 ) {
-                    miny0 = Math.min( miny0, pyy );
-                    maxy0 = Math.max( maxy0, pyy );
+                    double pyy = yy.value();
+                    sy0 += pyy*ww1;
+                    nn0 += ww1;
+                    if ( ww1>0 ) {
+                        miny0 = Math.min( miny0, pyy );
+                        maxy0 = Math.max( maxy0, pyy );
+                    }
                 }
 
             }
