@@ -162,6 +162,225 @@ public class Reduction {
         return reducex(ds, xLimit, true);
     }   
     
+    private static QDataSet reducexRank1( QDataSet ds, QDataSet xLimit, boolean xregular ) {
+        
+        long t0= System.currentTimeMillis();
+        
+        DataSetBuilder xbuilder= new DataSetBuilder( 1, 1000 );
+        DataSetBuilder ybuilder;
+        DataSetBuilder yminbuilder;
+        DataSetBuilder ymaxbuilder;
+        DataSetBuilder wbuilder;
+        
+        ybuilder= new DataSetBuilder( 1, 1000 );
+        yminbuilder= new DataSetBuilder( 1, 1000 );
+        ymaxbuilder= new DataSetBuilder( 1, 1000 );
+        wbuilder= new DataSetBuilder( 1, 1000 );
+                
+        double sy = 0;
+        double nn = 0;
+        double miny = Double.POSITIVE_INFINITY;
+        double maxy = Double.NEGATIVE_INFINITY; 
+        
+        QDataSet x= (QDataSet) ds.property( QDataSet.DEPEND_0 );
+        if ( x==null ) {
+            if ( ds.rank()==2 && SemanticOps.isBundle(ds) ) {
+                x= DataSetOps.unbundle(ds, 0); // often the x values.
+            } else {
+                x= new org.das2.qds.IndexGenDataSet(ds.length());
+            }
+        }
+
+        int ny= ds.rank()==1 ? 1 : ds.length(0);
+
+        double x0 = Float.MAX_VALUE;
+        double sx0 = 0;
+        double basex= -1e31;
+        double nx= 0;  // number in X average.
+        double ax0= 0;
+        
+        double ay0= 0;
+        double sy0 = 0;
+        double nn0 = 0;
+        double miny0 = Double.POSITIVE_INFINITY;
+        double maxy0 = Double.NEGATIVE_INFINITY;        
+        
+        UnitsConverter uc;
+        double dxLimit;
+        if ( xLimit!=null ) {
+            uc= getDifferencesConverter( xLimit, x, null );
+            dxLimit = uc.convert( xLimit.value() );
+        } else {
+            dxLimit= Double.MAX_VALUE;
+        }
+
+        int points = 0;
+        //int inCount = 0;
+
+        QDataSet wds= DataSetUtil.weightsDataSet(ds);
+
+        int i=0;
+
+        double fill= Double.NaN;
+
+        if ( basex==-1e31 ) {
+            basex= x.value(0);
+        }
+        
+        Units tu= (Units)x.property(QDataSet.UNITS);
+        
+        while ( i<x.length() ) {
+            //inCount++;
+            
+            double xx= x.value(i);
+            QDataSet yy= ds.slice(i);
+            QDataSet ww= wds.slice(i);
+
+            double pxx = xx;
+            
+            double wx= 1; // weight to use for x.
+
+            if ( x0==Float.MAX_VALUE ) {
+                if ( xregular ) {
+                    x0= Math.floor( xx / dxLimit ) * dxLimit;
+                } else {
+                    x0= pxx;
+                }
+            }
+            
+            double dx = pxx - x0;
+            
+            if ( dx<0 || dx>= dxLimit ) { // clear the accumulators
+
+                if ( nx>0 ) {
+                    if ( xregular ) {
+                        ax0 = x0 + dxLimit/2;
+                        x0 = Math.floor(pxx/dxLimit) * dxLimit;
+                    } else {
+                        ax0 = basex + sx0/nx;
+                        x0 = pxx;
+                    }
+                    if ( logger.isLoggable(Level.FINEST) ) {
+                        logger.log(Level.FINEST, "out: {0} {1} ({2})", new Object[]{ax0, nx, tu.createDatum(ax0)});
+                    }
+                    xbuilder.putValue( points, ax0 );
+                              
+                    sx0 = 0.0;
+                    nx= 0;
+                    
+                    boolean nv= nn0==0;
+                    ay0 = nv ? fill : sy0 / nn0;
+                    ybuilder.putValue( points, ay0 );
+                    yminbuilder.putValue( points, nv ? fill : miny0 );
+                    ymaxbuilder.putValue( points, nv ? fill : maxy0 );
+                    wbuilder.putValue( points, nn0 );
+
+                    double pyy = yy.value();
+                    double wwj= ww.value();
+
+                    sy0 = 0.;
+                    nn0 = 0.;
+                    
+                    if ( wwj>0 ) {
+                        miny0 = pyy;
+                        maxy0 = pyy;
+                    } else {
+                        miny0 = Double.POSITIVE_INFINITY;
+                        maxy0 = Double.NEGATIVE_INFINITY;
+                    }
+
+                }
+                points++;                
+
+            }
+            
+            if ( logger.isLoggable(Level.FINEST) ) {
+                logger.log(Level.FINEST, " in: {0} ({1})", new Object[]{pxx, tu.createDatum(pxx)});
+            }
+            
+            { // Here is the accumulation.
+                sx0 += (pxx-basex)*wx; 
+                nx+= 1;
+
+                double ww1= ww.value();
+                if ( ww1==0 ) {
+                    continue;
+                }
+                double pyy = yy.value();
+                sy0 += pyy*ww1;
+                nn0 += ww1;
+                if ( ww1>0 ) {
+                    miny0 = Math.min( miny0, pyy );
+                    maxy0 = Math.max( maxy0, pyy );
+                }
+
+            }
+
+            i++;
+
+        } // end loop over all records
+        
+        if ( nx>0 ) { // clean up any remaining data.
+            if ( xregular ) {
+                ax0 = x0 + dxLimit/2;
+            } else {
+                ax0 = basex + sx0/nx;
+            }
+            if ( logger.isLoggable(Level.FINEST) ) {
+                logger.log(Level.FINEST, "out: {0} {1} ({2})", new Object[]{ax0, nx, tu.createDatum(ax0)});
+            }
+            xbuilder.putValue( points, ax0 );                
+
+            boolean nv= nn0==0;
+            ay0 = nv ? fill : sy0 / nn0;
+            ybuilder.putValue( points, ay0 );
+            yminbuilder.putValue( points, nv ? fill : miny0 );
+            ymaxbuilder.putValue( points, nv ? fill : maxy0 );
+            wbuilder.putValue( points, nn0 );                
+            
+            points++;
+        }
+
+        MutablePropertyDataSet result= ybuilder.getDataSet();
+        MutablePropertyDataSet xds= xbuilder.getDataSet();
+
+        Map<String,Object> xprops= DataSetUtil.getDimensionProperties(x,null);
+        if ( xprops.containsKey( QDataSet.CADENCE ) ) xprops.put( QDataSet.CADENCE, xLimit );
+        if ( xprops.containsKey( QDataSet.CACHE_TAG ) ) xprops.put( QDataSet.CACHE_TAG, null );
+        if ( xprops.containsKey( QDataSet.DEPEND_0 ) ) xprops.put( QDataSet.DEPEND_0, null );
+        if ( xprops.containsKey( QDataSet.BIN_MINUS ) ) xprops.put( QDataSet.BIN_MINUS, null );
+        if ( xprops.containsKey( QDataSet.BIN_PLUS ) ) xprops.put( QDataSet.BIN_PLUS, null );
+        if ( xprops.containsKey( QDataSet.BIN_MIN ) ) xprops.put( QDataSet.BIN_MIN, null );
+        if ( xprops.containsKey( QDataSet.BIN_MAX ) ) xprops.put( QDataSet.BIN_MAX, null );        
+        DataSetUtil.putProperties( xprops, xds );
+
+        Map<String,Object> yprops= DataSetUtil.getProperties(ds);
+        yprops.put( QDataSet.DEPEND_0, xds );
+        
+        DataSetUtil.putProperties( yprops, result );
+        yminbuilder.putProperty( QDataSet.UNITS, SemanticOps.getUnits(result) );
+        ymaxbuilder.putProperty( QDataSet.UNITS, SemanticOps.getUnits(result) );
+
+        result.putProperty( QDataSet.DEPEND_0, xds );
+        result.putProperty( QDataSet.WEIGHTS, wbuilder.getDataSet() );
+
+        QDataSet yminDs= yminbuilder.getDataSet();
+        QDataSet ymaxDs= ymaxbuilder.getDataSet();
+        result.putProperty( QDataSet.DELTA_MINUS, Ops.subtract( result, yminDs ) ); // TODO: This bad behavior should be deprecated.
+        result.putProperty( QDataSet.DELTA_PLUS, Ops.subtract( ymaxDs, result ) );
+        result.putProperty( QDataSet.BIN_MIN, yminDs );
+        result.putProperty( QDataSet.BIN_MAX, ymaxDs );
+        
+        logger.log( Level.FINE, "time to reducex({0} records -> {1} records) (ms): {2}", new Object[] { ds.length(), result.length(), System.currentTimeMillis()-t0 } );
+        logger.exiting("Reduction", "reducex" );
+        
+        //System.err.println( String.format( "time to reducex(%d records -> %d records) (ms): %d", ds.length(), result.length(), System.currentTimeMillis()-t0) );
+
+        return result;
+            
+    }
+    
+    
     /**
      * produce a simpler version of the dataset by averaging data adjacent in X.
      * code taken from org.das2.graph.GraphUtil.reducePath.  Adjacent points are
@@ -181,7 +400,7 @@ public class Reduction {
      * 
      * @param ds rank 1 or rank 2 dataset.  Must have DEPEND_0 (presently) and be a qube.  If this is null, then the result is null.
      * @param xLimit the size of the bins or null to indicate no limit.
-     * @param xregular return averages of x as well, and don't grid x.
+     * @param xregular if true, then return xtags with a uniform cadence; if false, return averages of x as well, and don't grid x. 
      * @return the reduced dataset, or null if the input dataset was null.
      */    
     public static QDataSet reducex( QDataSet ds, QDataSet xLimit, boolean xregular ) {
@@ -203,7 +422,11 @@ public class Reduction {
         DataSetBuilder wbuilder;
 
         if ( ds.rank()==1 ) {
-            return reduce2D( ds, xLimit, null );
+            if ( xregular==false ) {                
+                return reduce2D( ds, xLimit, null );
+            } else {
+                return reducexRank1( ds, xLimit, xregular );
+            }
 
         } else if ( ds.rank()==2 ) {
             if ( SemanticOps.isRank2Waveform(ds) ) {
@@ -221,7 +444,7 @@ public class Reduction {
             JoinDataSet result= new JoinDataSet(3);
             for ( int i=0; i<ds.length(); i++ ) {
                 QDataSet ds1= ds.slice(i);
-                result.join( reducex(ds1,xLimit) );
+                result.join( reducex(ds1,xLimit,xregular) ); // TODO: needs review
             }
             return result;
             
@@ -249,7 +472,7 @@ public class Reduction {
         double[] miny0 = new double[ny];
         for ( int j=0; j<ny; j++ ) miny0[j]= Double.POSITIVE_INFINITY;
         double[] maxy0 = new double[ny];
-        for ( int j=0; j<ny; j++ ) maxy0[j]= Double.NEGATIVE_INFINITY;
+        for ( int j=0; j<ny; j++ ) maxy0[j]= Double.NEGATIVE_INFINITY;        
         double ax0;
         double[] ay0 = new double[ny];
 
