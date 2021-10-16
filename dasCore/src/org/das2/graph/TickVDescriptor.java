@@ -63,8 +63,12 @@ public class TickVDescriptor {
         this.units = units;
         if ( UnitsUtil.isTimeLocation(units) ) {
             // assume that the axis will somehow indicate the context
-            DatumRange context= DatumRangeUtil.union( this.tickV.get(0), this.tickV.get(this.tickV.getLength()-1) );
-            this.datumFormatter= TimeDatumFormatter.guessFormatter( tickV, context );
+            if ( this.tickV.getLength()>0 ) {
+                DatumRange context= DatumRangeUtil.union( this.tickV.get(0), this.tickV.get(this.tickV.getLength()-1) );
+                this.datumFormatter= TimeDatumFormatter.guessFormatter( tickV, context );
+            } else {
+                this.datumFormatter= TimeDatumFormatter.guessFormatter( tickV, null );
+            }
         } else {
             this.datumFormatter = DefaultDatumFormatterFactory.getInstance().defaultFormatter();
         }
