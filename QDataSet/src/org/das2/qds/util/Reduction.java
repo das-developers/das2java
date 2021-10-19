@@ -176,12 +176,7 @@ public class Reduction {
         yminbuilder= new DataSetBuilder( 1, 1000 );
         ymaxbuilder= new DataSetBuilder( 1, 1000 );
         wbuilder= new DataSetBuilder( 1, 1000 );
-                
-        double sy = 0;
-        double nn = 0;
-        double miny = Double.POSITIVE_INFINITY;
-        double maxy = Double.NEGATIVE_INFINITY; 
-        
+                        
         QDataSet x= (QDataSet) ds.property( QDataSet.DEPEND_0 );
         if ( x==null ) {
             if ( ds.rank()==2 && SemanticOps.isBundle(ds) ) {
@@ -190,8 +185,6 @@ public class Reduction {
                 x= new org.das2.qds.IndexGenDataSet(ds.length());
             }
         }
-
-        int ny= ds.rank()==1 ? 1 : ds.length(0);
 
         double x0 = Float.MAX_VALUE;
         double sx0 = 0;
@@ -222,12 +215,21 @@ public class Reduction {
         int i=0;
 
         double fill= Double.NaN;
-
+            
+        Units tu= SemanticOps.getUnits(x);
+            
         if ( basex==-1e31 ) {
-            basex= x.value(0);
+            if ( UnitsUtil.isTimeLocation( tu ) ) {
+                Datum baset= Ops.datum( x.slice(0) );
+                baset= org.das2.datum.TimeUtil.prevMidnight( baset );
+                basex= baset.doubleValue( tu );
+            } else {
+                Datum baset= Ops.datum( x.slice(0) );
+                QDataSet phase= Ops.modp( baset, xLimit ); // Note x.slice(0) is not ratio quantity,
+                basex= Ops.datum( x.slice(0) ).subtract( Ops.datum( phase ) ).doubleValue( tu );
+            }
         }
         
-        Units tu= (Units)x.property(QDataSet.UNITS);
         
         while ( i<x.length() ) {
             //inCount++;
@@ -242,7 +244,8 @@ public class Reduction {
 
             if ( x0==Float.MAX_VALUE ) {
                 if ( xregular ) {
-                    x0= Math.floor( xx / dxLimit ) * dxLimit;
+                    x0= Math.floor( ( xx - basex ) / dxLimit ) * dxLimit + basex;
+                    //tu.createDatum(x0);
                 } else {
                     x0= pxx;
                 }
@@ -255,7 +258,7 @@ public class Reduction {
                 if ( nx>0 ) {
                     if ( xregular ) {
                         ax0 = x0 + dxLimit/2;
-                        x0 = Math.floor(pxx/dxLimit) * dxLimit;
+                        x0 = Math.floor( ( pxx - basex ) /dxLimit) * dxLimit + basex;
                     } else {
                         ax0 = basex + sx0/nx;
                         x0 = pxx;
