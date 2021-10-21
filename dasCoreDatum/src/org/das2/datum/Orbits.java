@@ -449,6 +449,9 @@ public class Orbits {
      * @throws IllegalArgumentException when the orbits file cannot be read
      */
     public static synchronized Orbits getOrbitsFor( String sc ) {
+        if ( SwingUtilities.isEventDispatchThread() ) {
+            LOGGER.log(Level.WARNING, "getOrbitsFor called from event thread! {0}", sc);
+        }
         Orbits orbits= missions.get(sc);
         if ( orbits==null ) {
             String error= nonmissions.get(sc);
@@ -460,7 +463,7 @@ public class Orbits {
             return orbits;
         } else {
             try {
-                LOGGER.log(Level.INFO, "** reading orbits for {0}", sc);
+                LOGGER.log(Level.FINE, "** reading orbits for {0}", sc);
                 List<URL> source= new ArrayList();
                 LinkedHashMap<String,DatumRange> lorbits= readOrbits(sc,source);
                 orbits= new Orbits(sc,lorbits);
@@ -470,7 +473,7 @@ public class Orbits {
                 orbits.last= last;
                 if ( source.size()==1 ) orbits.url= source.get(0);
                 missions.put( sc, orbits );
-                LOGGER.log(Level.INFO, "** done reading orbits for {0}", sc);
+                LOGGER.log(Level.FINE, "** done reading orbits for {0}", sc);
             } catch ( FileNotFoundException ex ) {
                 LOGGER.log(Level.INFO, "** not orbits: {0}", sc);
                 nonmissions.put(sc,"Not found: "+ex.getMessage());
