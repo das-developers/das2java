@@ -67,20 +67,46 @@ public class FileSystemSettings {
         localCacheDir = local;
     }
 
+    private int connectTimeoutMs = 5000;
+    
     /**
      * return the connection timeout in milliseconds.
-     * @return
+     * @return the connection timeout in milliseconds.
      */
     public int getConnectTimeoutMs() {
-        return 5000;
+        return connectTimeoutMs;
     }
 
+    /**
+     * reset the connect timeout.  Setting to 
+     * 0 or a negative number will reset it to the
+     * default of 5000ms.
+     * @param millis 
+     */
+    public void setConnectTimeoutMs( int millis ) {
+        if ( millis<=0 ) millis= 5000;
+        connectTimeoutMs= millis;
+    }
+    
+    private int readTimeoutMs = 60000;
+    
     /**
      * return the read timeout in milliseconds.
      * @return
      */
     public int getReadTimeoutMs() {
-        return 60000;
+        return readTimeoutMs;
+    }
+    
+    /**
+     * reset the time read timeout.  Setting to 
+     * 0 or a negative number will reset it to the
+     * default of 60000ms.
+     * @param millis number of milliseconds
+     */
+    public void setReadTimeoutMs( int millis ) {
+        if ( millis<=0 ) millis= 60000;
+        this.readTimeoutMs= millis;
     }
     
     /**
