@@ -782,7 +782,37 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
         }
     }
     
+    /**
+     * decode the string into a fill style
+     * @param s the symbol name, such as none, solid, and outline.
+     * @param deflt the value to use when the value is not parsed.
+     * @return the parsed value.
+     */
+    public static FillStyle decodeFillStyle( String s, FillStyle deflt ) {
+        s= s.toUpperCase();
+        switch (s) {
+            case "NONE":
+                return FillStyle.STYLE_NONE;
+            case "OUTLINE":
+                return FillStyle.STYLE_OUTLINE;
+            case "SOLID":
+                return FillStyle.STYLE_SOLID;
+            default:
+                logger.log(Level.FINE, "unable to parse symbol: {0}", deflt);
+                return deflt;
+        }
+    }
 
+    /**
+     * encode the fill style as a string, such as:
+     * none, outline, and solid.
+     * @param fillStyle
+     * @return the string encoding.
+     */
+    public static String encodeFillStyle( FillStyle fillStyle ) {
+        return fillStyle.toString();
+    } 
+    
     /*
      * returns the AffineTransform to transform data from the last updatePlotImage call
      * axes (if super.updatePlotImage was called), or null if the transform is not possible.

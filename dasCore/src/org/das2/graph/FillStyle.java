@@ -1,11 +1,3 @@
-/*
- * FillStyle.java
- *
- * Created on July 3, 2007, 11:42 AM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
 
 package org.das2.graph;
 
