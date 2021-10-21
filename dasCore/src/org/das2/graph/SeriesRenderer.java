@@ -109,6 +109,8 @@ public class SeriesRenderer extends Renderer {
     private long lastUpdateMillis;
     private boolean antiAliased = "on".equals(DasProperties.getInstance().get("antiAlias"));
     
+    public static final String CONTROL_KEY_BACKGROUND_THICK= "backgroundThick";
+    
     /**
      * the index of the first point drawn, nonzero when X is monotonic and we can clip. 
      */
@@ -244,6 +246,7 @@ public class SeriesRenderer extends Renderer {
         setSymSize( getDoubleControl( CONTROL_KEY_SYMBOL_SIZE, symSize ) );
         setPsym( decodePlotSymbolControl( getControl( CONTROL_KEY_SYMBOL, psym.toString() ), psym ) );
         setDrawError( getBooleanControl( CONTROL_KEY_DRAW_ERROR, drawError ) );
+        setBackgroundThick( getControl( CONTROL_KEY_BACKGROUND_THICK, backgroundThick ) );
     }
 
     @Override
@@ -256,6 +259,7 @@ public class SeriesRenderer extends Renderer {
         controls.put( CONTROL_KEY_SYMBOL_SIZE, String.valueOf( symSize ) );
         controls.put( CONTROL_KEY_SYMBOL, encodePlotSymbolControl(psym) );
         controls.put( CONTROL_KEY_DRAW_ERROR, encodeBooleanControl( drawError ) );
+        controls.put( CONTROL_KEY_BACKGROUND_THICK, backgroundThick );
         return formatControl(controls);
     }
     
