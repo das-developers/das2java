@@ -15,16 +15,15 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JScrollPane;
 import javax.swing.ListCellRenderer;
-import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
 import javax.swing.colorchooser.AbstractColorChooserPanel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import org.das2.graph.ColorUtil;
+import org.das2.util.ColorUtil;
 import org.das2.util.DesktopColorChooserPanel;
 
 /**
- *
+ * Show list of 140 named web colors, like SaddleBrown and OliveDrab
  * @author jbf
  */
 public class NamedColorChooserPanel extends AbstractColorChooserPanel {
