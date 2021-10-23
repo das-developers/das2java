@@ -1,8 +1,4 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package org.das2.util;
 
 import java.awt.BorderLayout;
@@ -12,10 +8,7 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import javax.swing.GroupLayout;
 import javax.swing.JColorChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -24,11 +17,10 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 /**
- *
+ * Graphical editor for "Granny" text strings on the canvas.
  * @author jbf
  */
 public class GrannyTextEditor extends javax.swing.JPanel {
-
     
     JPanel canvas;
     GrannyTextRenderer gtr;
