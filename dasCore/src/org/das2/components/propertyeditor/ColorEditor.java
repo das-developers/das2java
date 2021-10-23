@@ -6,6 +6,7 @@
 
 package org.das2.components.propertyeditor;
 
+import org.das2.util.NamedColorChooserPanel;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
