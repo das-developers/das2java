@@ -328,6 +328,7 @@ public class GrannyTextEditor extends javax.swing.JPanel {
 
     private void colorButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_colorButtonActionPerformed
         JColorChooser chooser= new JColorChooser();
+        chooser.addChooserPanel( new NamedColorChooserPanel() );
         chooser.addChooserPanel( new DesktopColorChooserPanel() );
         if ( JOptionPane.showConfirmDialog( this, chooser, "Color Chooser", JOptionPane.OK_CANCEL_OPTION )== JOptionPane.OK_OPTION ) {
             Color color= chooser.getColor();
