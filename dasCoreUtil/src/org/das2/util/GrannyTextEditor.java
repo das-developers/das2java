@@ -111,10 +111,15 @@ public class GrannyTextEditor extends javax.swing.JPanel {
         hersheyTab = new javax.swing.JPanel();
         aButton = new javax.swing.JButton();
         bButton = new javax.swing.JButton();
+        sButton = new javax.swing.JButton();
+        rButton = new javax.swing.JButton();
+        exclaimationPointButton = new javax.swing.JButton();
+        nButton = new javax.swing.JButton();
         extensionsTab = new javax.swing.JPanel();
         colorButton = new javax.swing.JButton();
         italicButton = new javax.swing.JButton();
         boldButton = new javax.swing.JButton();
+        underlineButton = new javax.swing.JButton();
         greekTab = new javax.swing.JPanel();
         miscTab = new javax.swing.JPanel();
 
@@ -131,17 +136,45 @@ public class GrannyTextEditor extends javax.swing.JPanel {
         });
         jScrollPane1.setViewportView(jTextArea1);
 
-        aButton.setText("A - Exponent");
+        aButton.setText("A - Shift Up");
         aButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 aButtonActionPerformed(evt);
             }
         });
 
-        bButton.setText("B - Subscript");
+        bButton.setText("B - Shift Down");
         bButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 bButtonActionPerformed(evt);
+            }
+        });
+
+        sButton.setText("S - Save Position");
+        sButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                sButtonActionPerformed(evt);
+            }
+        });
+
+        rButton.setText("R - Restore Position");
+        rButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                rButtonActionPerformed(evt);
+            }
+        });
+
+        exclaimationPointButton.setText("! Character");
+        exclaimationPointButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exclaimationPointButtonActionPerformed(evt);
+            }
+        });
+
+        nButton.setText("N - Normal");
+        nButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                nButtonActionPerformed(evt);
             }
         });
 
@@ -150,18 +183,31 @@ public class GrannyTextEditor extends javax.swing.JPanel {
         hersheyTabLayout.setHorizontalGroup(
             hersheyTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(hersheyTabLayout.createSequentialGroup()
-                .addGroup(hersheyTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(aButton)
-                    .addComponent(bButton))
-                .addGap(0, 272, Short.MAX_VALUE))
+                .addGroup(hersheyTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addComponent(nButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(bButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(aButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(18, 18, 18)
+                .addGroup(hersheyTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(rButton, javax.swing.GroupLayout.DEFAULT_SIZE, 186, Short.MAX_VALUE)
+                    .addComponent(sButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(exclaimationPointButton)
+                .addGap(0, 0, Short.MAX_VALUE))
         );
         hersheyTabLayout.setVerticalGroup(
             hersheyTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(hersheyTabLayout.createSequentialGroup()
-                .addComponent(aButton)
+                .addGroup(hersheyTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(aButton)
+                    .addComponent(sButton)
+                    .addComponent(exclaimationPointButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(bButton)
-                .addGap(0, 29, Short.MAX_VALUE))
+                .addGroup(hersheyTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(bButton)
+                    .addComponent(rButton))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(nButton))
         );
 
         jTabbedPane1.addTab("Granny", hersheyTab);
@@ -187,6 +233,13 @@ public class GrannyTextEditor extends javax.swing.JPanel {
             }
         });
 
+        underlineButton.setText("<html><u>underline</u>");
+        underlineButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                underlineButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout extensionsTabLayout = new javax.swing.GroupLayout(extensionsTab);
         extensionsTab.setLayout(extensionsTabLayout);
         extensionsTabLayout.setHorizontalGroup(
@@ -197,7 +250,9 @@ public class GrannyTextEditor extends javax.swing.JPanel {
                 .addComponent(boldButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(italicButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 180, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(underlineButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 139, Short.MAX_VALUE))
         );
         extensionsTabLayout.setVerticalGroup(
             extensionsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -205,7 +260,8 @@ public class GrannyTextEditor extends javax.swing.JPanel {
                 .addGroup(extensionsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(colorButton)
                     .addComponent(boldButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(italicButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(italicButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(underlineButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(60, Short.MAX_VALUE))
         );
 
@@ -228,7 +284,7 @@ public class GrannyTextEditor extends javax.swing.JPanel {
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(renderPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE)
+                .addComponent(renderPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 97, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -275,6 +331,26 @@ public class GrannyTextEditor extends javax.swing.JPanel {
         doInsert("<i>","</i>");
     }//GEN-LAST:event_italicButtonActionPerformed
 
+    private void underlineButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_underlineButtonActionPerformed
+        doInsert("<u>","</u>");
+    }//GEN-LAST:event_underlineButtonActionPerformed
+
+    private void exclaimationPointButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exclaimationPointButtonActionPerformed
+        doInsert("!!",null);
+    }//GEN-LAST:event_exclaimationPointButtonActionPerformed
+
+    private void sButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sButtonActionPerformed
+        doInsert("!S",null);
+    }//GEN-LAST:event_sButtonActionPerformed
+
+    private void rButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rButtonActionPerformed
+        doInsert("!R",null);
+    }//GEN-LAST:event_rButtonActionPerformed
+
+    private void nButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nButtonActionPerformed
+        doInsert("!N",null);
+    }//GEN-LAST:event_nButtonActionPerformed
+
     private void updateImage() {
         gtr.setString( canvas.getFont(), getValue() );
         canvas.repaint();
@@ -302,6 +378,7 @@ public class GrannyTextEditor extends javax.swing.JPanel {
     private javax.swing.JButton bButton;
     private javax.swing.JButton boldButton;
     private javax.swing.JButton colorButton;
+    private javax.swing.JButton exclaimationPointButton;
     private javax.swing.JPanel extensionsTab;
     private javax.swing.JPanel greekTab;
     private javax.swing.JPanel hersheyTab;
@@ -310,6 +387,10 @@ public class GrannyTextEditor extends javax.swing.JPanel {
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JTextArea jTextArea1;
     private javax.swing.JPanel miscTab;
+    private javax.swing.JButton nButton;
+    private javax.swing.JButton rButton;
     private javax.swing.JPanel renderPanel;
+    private javax.swing.JButton sButton;
+    private javax.swing.JButton underlineButton;
     // End of variables declaration//GEN-END:variables
 }
