@@ -18,6 +18,7 @@ import javax.swing.event.DocumentListener;
 
 /**
  * Graphical editor for "Granny" text strings on the canvas.
+ * @see https://sourceforge.net/p/autoplot/feature-requests/758
  * @author jbf
  */
 public class GrannyTextEditor extends javax.swing.JPanel {
