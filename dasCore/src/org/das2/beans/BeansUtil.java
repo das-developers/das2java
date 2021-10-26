@@ -27,6 +27,7 @@ import java.util.*;
 //import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.das2.components.propertyeditor.StringWithSchemeEditor;
 import org.das2.util.LoggerManager;
 
 
@@ -46,7 +47,7 @@ public class BeansUtil {
         }
     }
     static ClassMap editorRegistry = new ClassMap();
-
+    
     /** 
      * see BeanBindingDemo2.java 
      * @param beanClass the bean class, e.g. Datum.class
@@ -77,6 +78,7 @@ public class BeansUtil {
             registerEditor(Psym.class, EnumerationEditor.class);
             registerEditor(PlotSymbol.class, EnumerationEditor.class);
             registerEditor(FillStyle.class, EnumerationEditor.class);
+            registerEditor(String.class, StringWithSchemeEditor.class);
             registerEditor(org.das2.graph.DigitalRenderer.Align.class, EnumerationEditor.class );
             registerEditor(org.das2.graph.DasColorBar.Type.class, EnumerationEditor.class );
             registerEditor(org.das2.graph.SpectrogramRenderer.RebinnerEnum.class, EnumerationEditor.class );
