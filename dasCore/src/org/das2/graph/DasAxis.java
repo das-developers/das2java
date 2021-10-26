@@ -3546,12 +3546,13 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
         if (getOrientation() == BOTTOM && isVisible() && isTickLabelsVisible()) {
             QDataSet ltcaData= tcaData;
-            if (drawTca && ltcaData != null && ltcaData.length() != 0) {
+            String[] ltcaLabels= this.tcaLabels.split(";");
+            
+            if (drawTca && ( ltcaLabels.length>1 || ltcaData != null && ltcaData.length() != 0 ) ) {
                 int DMin = getColumn().getDMinimum();
                 Font tickLabelFont = getTickLabelFont();
                 int tick_label_gap = getFontMetrics(tickLabelFont).stringWidth(" ");
-                int ntca= ltcaData.length();
-                int lines= Math.min( MAX_TCA_LINES, Math.max( ltcaData.length(ntca-1), Math.max( ltcaData.length(ntca/2), ltcaData.length(0) ) ) );
+                int lines= getTickLines();
                 int tcaHeight = (tickLabelFont.getSize() + getLineSpacing()) * lines;
                 int maxLabelWidth = getMaxLabelWidth();
                 bounds.height += tcaHeight;
@@ -3562,7 +3563,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 GrannyTextRenderer idlt = new GrannyTextRenderer();
                 idlt.setString(tickLabelFont, "SCET");
                 int tcaLabelWidth = (int) Math.floor(idlt.getWidth() + 0.5);
-                QDataSet bds= (QDataSet) ltcaData.property(QDataSet.BUNDLE_1);
+                QDataSet bds=null;
+                if ( ltcaData!=null ) bds= (QDataSet) ltcaData.property(QDataSet.BUNDLE_1);
                 if ( bds!=null && bds.length()<lines ) {
                     //TODO: transitional state--I hope...
                     return bounds;
@@ -3570,7 +3572,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 for (int i = 0; i < lines; i++) {
                     String ss;
                     if ( bds==null ) {
-                        ss= "???";
+                        if ( ltcaLabels.length==1 && ltcaLabels[0].trim().equals("") ) {
+                            ss= "???";
+                        } else {
+                            ss= i<ltcaLabels.length ? ltcaLabels[i] :  "???";
+                        }
                     } else {
                         ss= (String) bds.property( QDataSet.LABEL, i );
                         if ( ss==null ) {
@@ -3609,12 +3615,20 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     }
     
     /**
-     * return the number of lines that the ticks use.
-     * @return 
+     * return the number of lines that the ticks use, considering the ephemeris (TCAs) loaded.
+     * @return the number of lines that the ticks use.
      */
     public int getTickLines() {
-        if ( tcaData!=null ) {
-            return 1+tcaData.length(0);
+        QDataSet ltcaData= tcaData;
+        String ltcaLabels= tcaLabels;
+        boolean ldrawTca= drawTca;
+        if ( ldrawTca && ltcaData!=null ) {
+            int ntca= ltcaData.length();
+            int tcaLines= Math.min( MAX_TCA_LINES, Math.max( ltcaData.length(ntca-1), Math.max( ltcaData.length(ntca/2), ltcaData.length(0) ) ) );
+            return 1+tcaLines;
+        } else if ( ldrawTca && ltcaLabels.trim().length()>0 ) {
+            String[] ss= ltcaLabels.split(";");
+            return 1+ ss.length;
         } else {
             return 2;
         }
