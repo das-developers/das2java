@@ -63,6 +63,20 @@ public class PropertyEditorAdapter implements TableCellEditor {
         PropertyTreeNodeInterface node = (PropertyTreeNodeInterface)model.getNodeForRow(rowIndex);
         PropertyDescriptor pd = node.getPropertyDescriptor();
         editor = getEditor(pd);
+        if ( editor instanceof StringWithSchemeEditor ) {
+            String propertyName=null;
+            if ( node instanceof PropertyTreeNode ) {
+                propertyName= ((PropertyTreeNode)node).getDisplayName();
+            } else if ( node instanceof PeerPropertyTreeNode ) {
+                propertyName= ((PeerPropertyTreeNode)node).getDisplayName();
+            }
+            
+            if ( propertyName.equals("tickValues") ) {
+                ((StringWithSchemeEditor)editor).setCustomEditor( new TickValuesStringSchemeEditor() );
+            } else {
+                ((StringWithSchemeEditor)editor).setCustomEditor( new DefaultStringSchemeEditor() );
+            }            
+        }
         if (editor == null) {
             cancelCellEditing();
             return new JLabel();

@@ -190,6 +190,10 @@ public class PeerPropertyTreeNode implements PropertyTreeNodeInterface {
         return warn ? PropertyEditor.MULTIPLE : value;
     }
 
+    public String getDisplayName() {
+        return leader.getDisplayName();
+    }
+    
     public void flush() {
         for (int i = 0; i < peers.length; i++) {
             peers[i].flush();
