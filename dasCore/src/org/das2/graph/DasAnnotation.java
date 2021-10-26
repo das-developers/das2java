@@ -630,8 +630,8 @@ public class DasAnnotation extends DasCanvasComponent {
                 try {
                     gtr.draw(g, r.x+em, r.y + em + (float) gtr.getAscent() );
                 } catch ( IllegalArgumentException ex ) {
-                    ex.printStackTrace();
-                    return;
+                    gtr.setString( g.getFont(), getText() );
+                    gtr.draw(g, r.x+em, r.y + em + (float) gtr.getAscent() );
                 }
             } else {
                 BufferedImage localImage= img;
