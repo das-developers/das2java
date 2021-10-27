@@ -397,6 +397,11 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
     public Component getComponent() {
         return this;
     }
+
+    @Override
+    public void setContext(Object o) {
+        
+    }    
     
     public static void main( String[] args ) {
         GrannyTextEditor edit= new GrannyTextEditor();
