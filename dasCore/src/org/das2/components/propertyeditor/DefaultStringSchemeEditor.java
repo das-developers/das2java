@@ -60,4 +60,10 @@ public class DefaultStringSchemeEditor extends javax.swing.JPanel implements Str
     public Component getComponent() {
         return this;
     }
+
+    @Override
+    public void setContext(Object o) {
+        
+    }
+    
 }
