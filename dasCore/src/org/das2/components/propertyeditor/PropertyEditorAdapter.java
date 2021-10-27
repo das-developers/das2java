@@ -15,6 +15,8 @@ import java.beans.IndexedPropertyDescriptor;
 import java.beans.PropertyDescriptor;
 import java.beans.PropertyEditor;
 import java.util.EventObject;
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -57,7 +59,19 @@ public class PropertyEditorAdapter implements TableCellEditor {
     public Object getCellEditorValue() {
         return editor.getValue();
     }
+    
+    private final Map<String,StringSchemeEditor> stringEditors= new HashMap<>();
+    
+    /**
+     * add a special editor for string properties with the particular name.
+     * @param propertyName
+     * @param editor 
+     */
+    public void addStringEditor( String propertyName, StringSchemeEditor editor ) {
+        this.stringEditors.put( propertyName,editor );
+    }
 
+    @Override
     public Component getTableCellEditorComponent(JTable table, Object value, boolean selected, int rowIndex, int columnIndex) {
         TreeTableModel model = (TreeTableModel)table.getModel();
         PropertyTreeNodeInterface node = (PropertyTreeNodeInterface)model.getNodeForRow(rowIndex);
@@ -71,8 +85,10 @@ public class PropertyEditorAdapter implements TableCellEditor {
                 propertyName= ((PeerPropertyTreeNode)node).getDisplayName();
             }
             
-            if ( propertyName.equals("tickValues") ) {
-                ((StringWithSchemeEditor)editor).setCustomEditor( new TickValuesStringSchemeEditor() );
+            StringSchemeEditor edit= this.stringEditors.get(propertyName);
+            
+            if ( edit!=null ) {
+                ((StringWithSchemeEditor)editor).setCustomEditor( edit );
             } else {
                 ((StringWithSchemeEditor)editor).setCustomEditor( new DefaultStringSchemeEditor() );
             }            
