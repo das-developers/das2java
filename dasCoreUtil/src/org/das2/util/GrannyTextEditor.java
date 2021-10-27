@@ -3,6 +3,7 @@ package org.das2.util;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
@@ -21,7 +22,7 @@ import javax.swing.event.DocumentListener;
  * @see https://sourceforge.net/p/autoplot/feature-requests/758
  * @author jbf
  */
-public class GrannyTextEditor extends javax.swing.JPanel {
+public class GrannyTextEditor extends javax.swing.JPanel implements StringSchemeEditor {
     
     JPanel canvas;
     GrannyTextRenderer gtr;
@@ -379,15 +380,22 @@ public class GrannyTextEditor extends javax.swing.JPanel {
         canvas.repaint();
     }
 
+    @Override
     public String getValue() {
         String text= jTextArea1.getText();
         text= text.replaceAll("\n","<br>");
         return text;
     }
     
+    @Override
     public void setValue( String text ) {
         jTextArea1.setText(text);
         updateImage();
+    }
+    
+    @Override
+    public Component getComponent() {
+        return this;
     }
     
     public static void main( String[] args ) {
@@ -419,4 +427,5 @@ public class GrannyTextEditor extends javax.swing.JPanel {
     private javax.swing.JButton sButton;
     private javax.swing.JButton underlineButton;
     // End of variables declaration//GEN-END:variables
+
 }
