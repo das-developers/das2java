@@ -281,7 +281,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     
     private static final boolean DEBUG_GRAPHICS = System.getProperty("das2.graph.dasaxis.debuggraphics","false").equals("true");
     
-    private static final Color[] DEBUG_COLORS;
+    private static final Color[] DEBUG_COLORS= new Color[]{ org.das2.util.ColorUtil.decodeColor("Purple"),
+                        org.das2.util.ColorUtil.decodeColor("Purple").brighter().brighter() };
 
     int tickLen= 0; // this is reset after sizing.
 
@@ -292,15 +293,6 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
     final int TICK_LABEL_GAP_MIN= 4;  // minimum number of pixels to label
 
-    static {
-        if (DEBUG_GRAPHICS) {
-            DEBUG_COLORS = new Color[]{
-                        Color.BLACK, Color.RED, Color.GREEN, Color.BLUE,
-                        Color.GRAY, Color.CYAN, Color.MAGENTA, Color.YELLOW.darker(),};
-        } else {
-            DEBUG_COLORS = null;
-        }
-    }
     private int debugColorIndex = 0;
     private DasPlot dasPlot;
     private JMenu bookmarksMenu;
@@ -2306,11 +2298,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 g.draw(trTitleRect);
             }
             g.setStroke( stroke0 );
-            g.setColor(DEBUG_COLORS[debugColorIndex]);
-            debugColorIndex++;
-            if (debugColorIndex >= DEBUG_COLORS.length) {
-                debugColorIndex = 0;
-            }
+            g.setColor( DEBUG_COLORS[ (debugColorIndex++) % 2 ] );
+            
         }
         /* End debugging code */
 
