@@ -70,6 +70,8 @@ public class PropertyEditor extends JComponent {
     static final Set editableTypes;
     public final static Object MULTIPLE= new Object();
 
+    PropertyEditorAdapter editor;
+            
     static {
         HashSet set = new HashSet();
 
@@ -246,7 +248,8 @@ public class PropertyEditor extends JComponent {
 
         PropertyCellRenderer valueRenderer = new PropertyCellRenderer();
         //PropertyCellEditor editor = new PropertyCellEditor(tree);
-        PropertyEditorAdapter editor = new PropertyEditorAdapter();
+        editor = new PropertyEditorAdapter();
+        
         int cellHeight = 21;  // c.getPreferredSize().height;
 
         table.setRowHeight(cellHeight);
@@ -271,6 +274,15 @@ public class PropertyEditor extends JComponent {
         }
     }
 
+    /**
+     * add a special editor for string properties with the particular name.
+     * @param propertyName
+     * @param editor 
+     */
+    public void addStringEditor( String propertyName, StringSchemeEditor editor ) {
+        this.editor.addStringEditor( propertyName, editor );
+    }
+    
     /**
      * create a PropertyEditor for the bean.
      * @param bean a java bean
