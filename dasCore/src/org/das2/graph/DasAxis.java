@@ -126,14 +126,6 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     /* Constants defining the action commands and labels for the scan buttons. */
     private static final String SCAN_PREVIOUS_LABEL = "<< step";
     private static final String SCAN_NEXT_LABEL = "step >>";
-
-    // these cannot be set to positive because it pushes the titles out.  This 
-    // needs to be done with care and it's 5:15pm on release day!  DEBUG_GRAPHICS 
-    // needs to be an environment variable, or just a switch.
-    int downPad=0; // TODO: if we had the graphics, we could get this perfectly, but it doesn't hurt to have extra pixels.
-    int leftPad=0;
-    int upPad=0;
-    int rightPad=0;
     
     /* GENERAL AXIS INSTANCE MEMBERS */
     protected DataRange dataRange;
@@ -3534,6 +3526,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         } else {
             bounds = getVerticalAxisBounds();
         }
+        
         if (getOrientation() == BOTTOM && isVisible() && isTickLabelsVisible()) {
             QDataSet ltcaData= tcaData;
             String[] ltcaLabels= this.tcaLabels.split(";");
@@ -3542,7 +3535,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 int DMin = getColumn().getDMinimum();
                 Font tickLabelFont = getTickLabelFont();
                 int tick_label_gap = getFontMetrics(tickLabelFont).stringWidth(" ");
-                int lines= getTickLines();
+                int lines= getTickLines() - 1;
                 int tcaHeight = (tickLabelFont.getSize() + getLineSpacing()) * lines;
                 int maxLabelWidth = getMaxLabelWidth();
                 bounds.height += tcaHeight;
@@ -3593,12 +3586,6 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                     blLabelRect.width = maxX - minX;
                 }
             }
-        }
-        if ( bounds.x < -999 ) {
-            logger.log(Level.FINE, "suspecious bounds calculated: {0}", bounds);
-        } else {
-            bounds.add( bounds.x-this.leftPad, bounds.y-this.upPad );
-            bounds.add(bounds.x+bounds.width+this.rightPad, bounds.y+bounds.height+this.downPad );
         }
 
         return bounds;
