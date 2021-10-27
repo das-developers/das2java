@@ -3,6 +3,8 @@ package org.das2.components.propertyeditor;
 
 import org.das2.util.StringSchemeEditor;
 import java.awt.Component;
+import org.das2.datum.DatumRange;
+import org.das2.graph.DasAxis;
 
 /**
  * Example specialized editor that creates ticks specifications
@@ -26,17 +28,10 @@ public class TickValuesStringSchemeEditor extends javax.swing.JPanel implements 
     private void initComponents() {
 
         jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
-        jLabel3 = new javax.swing.JLabel();
         valueTextField = new javax.swing.JTextField();
 
-        jLabel1.setText("Enter a list of ticks like one of the following:");
-
-        jLabel2.setText("10,20,30/11,12,13,15,17,19");
-
-        jLabel3.setText("+10/5");
-
-        valueTextField.setText("jTextField1");
+        jLabel1.setText("<html>Enter a specification of how ticks should be generated.  If empty, the default methods are used,  or this can take one of the following forms: <ul><li>10,20,30 - major ticks at 10,20, and 30 <li>+10/4 - major ticks every ten units <li>*10 - major ticks every cycle (10,100,1000,etc) <li>+10min/5 ticks every 10 minutes, with 5 divisions <li>10,100,1000/50,500,5000  major and minor ticks <ul> ");
+        jLabel1.setVerticalTextPosition(javax.swing.SwingConstants.TOP);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -45,38 +40,24 @@ public class TickValuesStringSchemeEditor extends javax.swing.JPanel implements 
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(valueTextField)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel1)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(12, 12, 12)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jLabel3)
-                                    .addComponent(jLabel2))))
-                        .addGap(0, 64, Short.MAX_VALUE)))
+                    .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                    .addComponent(valueTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 509, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel2)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel3)
+                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 191, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(valueTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(206, Short.MAX_VALUE))
+                .addContainerGap(90, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
     private javax.swing.JTextField valueTextField;
     // End of variables declaration//GEN-END:variables
 
@@ -93,5 +74,12 @@ public class TickValuesStringSchemeEditor extends javax.swing.JPanel implements 
     @Override
     public Component getComponent() {
         return this;
+    }
+
+    @Override
+    public void setContext(Object o) {
+        if ( o instanceof DasAxis ) {
+            DatumRange r= ((DasAxis)o).getDatumRange();
+        }
     }
 }
