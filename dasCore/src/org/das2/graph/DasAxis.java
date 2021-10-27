@@ -279,7 +279,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     public static final String PROPERTY_DATUMRANGE = "datumRange";
     /* DEBUGGING INSTANCE MEMBERS */
     
-    private static final boolean DEBUG_GRAPHICS = false;
+    private static final boolean DEBUG_GRAPHICS = System.getProperty("das2.graph.dasaxis.debuggraphics","false").equals("true");
     
     private static final Color[] DEBUG_COLORS;
 
@@ -3381,6 +3381,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                     size = labelSize;
                 }
             }
+            logger.log(Level.FINE, "Max label width: {0}", size);
             return size;
         } catch (InconvertibleUnitsException ex) {
             return 10;
