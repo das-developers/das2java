@@ -22,6 +22,7 @@
  */
 package org.das2.components.propertyeditor;
 
+import org.das2.util.StringSchemeEditor;
 import java.util.logging.Level;
 import org.das2.components.treetable.TreeTableCellRenderer;
 import org.das2.components.treetable.TreeTableModel;

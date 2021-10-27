@@ -1,6 +1,7 @@
 
 package org.das2.components.propertyeditor;
 
+import org.das2.util.StringSchemeEditor;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;

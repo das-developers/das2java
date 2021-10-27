@@ -6,6 +6,7 @@
 
 package org.das2.components.propertyeditor;
 
+import org.das2.util.StringSchemeEditor;
 import org.das2.beans.BeansUtil;
 import org.das2.components.treetable.TreeTableModel;
 import java.awt.Component;
