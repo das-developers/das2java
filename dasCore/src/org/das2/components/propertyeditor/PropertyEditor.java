@@ -48,7 +48,10 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Logger;
 import javax.swing.*;
@@ -242,7 +245,8 @@ public class PropertyEditor extends JComponent {
         table.setAutoCreateColumnsFromModel(false);
         table.putClientProperty("terminateEditOnFocusLost", true);
 
-        add(new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED), BorderLayout.CENTER);
+        add(new JScrollPane(table, 
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED), BorderLayout.CENTER);
 
         initButtonPanel(bean instanceof DasCanvas);
         initPopupMenu();
@@ -250,6 +254,10 @@ public class PropertyEditor extends JComponent {
         PropertyCellRenderer valueRenderer = new PropertyCellRenderer();
         //PropertyCellEditor editor = new PropertyCellEditor(tree);
         editor = new PropertyEditorAdapter();
+        
+        stringEditors.entrySet().forEach((e) -> {
+            editor.addStringEditor( e.getKey(), e.getValue() );
+        });
         
         int cellHeight = 21;  // c.getPreferredSize().height;
 
@@ -275,15 +283,29 @@ public class PropertyEditor extends JComponent {
         }
     }
 
+    private static final Map<String,StringSchemeEditor> stringEditors= new HashMap<>();
+    
     /**
      * add a special editor for string properties with the particular name.
-     * @param propertyName
-     * @param editor 
+     * @param propertyName the property name, like "label"
+     * @param editor the editor to use
      */
-    public void addStringEditor( String propertyName, StringSchemeEditor editor ) {
-        this.editor.addStringEditor( propertyName, editor );
-    }
+    public static void addStringEditor( String propertyName, StringSchemeEditor editor ) {
+        stringEditors.put( propertyName,editor );
+    }   
     
+    /**
+     * add a special editor for string properties with the particular name.  The beanClass
+     * argument is presently ignored, but this should be supported soon.
+     * TODO: beanClass should be supported soon
+     * @param beanClassName the class name containing the propertyName
+     * @param propertyName the property name, like "text"
+     * @param editor the editor to use
+     */
+    public static void addStringEditor( String beanClassName, String propertyName, StringSchemeEditor editor ) {
+        stringEditors.put( propertyName,editor );
+    }   
+        
     /**
      * create a PropertyEditor for the bean.
      * @param bean a java bean
