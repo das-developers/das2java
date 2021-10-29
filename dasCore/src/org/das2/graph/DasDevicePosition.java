@@ -264,15 +264,30 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
      * @return String like "100%-5em+4pt"
      * @see #parseFormatStr(java.lang.String) 
      * @see #formatLayoutStr(org.das2.graph.DasDevicePosition, boolean) which contains repeated code.
+     * @deprecated see formatLayoutStr( double[] arr )
      */
     public static String formatFormatStr( double[] arr ) {
+        return formatLayoutStr(arr);
+    }
+    
+    /**
+     * formats the three position specifiers efficiently.
+     * @param arr three-element array [ npos (0.0-1.0), emoffset, pt_offset ].
+     * @return String like "100%-5em+4pt"
+     * @see #parseFormatStr(java.lang.String) 
+     * @see #formatLayoutStr(org.das2.graph.DasDevicePosition, boolean) which contains repeated code.
+     */
+    public static String formatLayoutStr( double[] arr ) {
         StringBuilder buf= new StringBuilder();
         if ( arr[0]!=0 ) buf.append( String.format( Locale.US, "%.2f%%", arr[0]*100 ) );
+        if ( buf.toString().endsWith(".00%") ) buf= buf.replace( buf.length()-4, buf.length(), "%" );
         if ( arr[1]!=0 ) buf.append( String.format(Locale.US, "%+.1fem", arr[1] ) );
+        if ( buf.toString().endsWith(".0em") ) buf= buf.replace( buf.length()-4, buf.length(), "em" );
         if ( arr[2]!=0 ) buf.append( String.format(Locale.US, "%+dpt", (int)arr[2] ) );
+        if ( buf.length()==0 ) buf.append("0%");
         return buf.toString();
     }
-
+    
     /**
      * parses the layout string, which contains both the minimum and maximum
      * positions, and configures the row or column.  Note that for rows,
