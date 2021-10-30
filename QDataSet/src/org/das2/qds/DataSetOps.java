@@ -2296,7 +2296,7 @@ public class DataSetOps {
      * @see <a href="http://autoplot.org/developer.panel_rank_reduction">http://autoplot.org/developer.panel_rank_reduction</a>
      */
     public static QDataSet sprocess( String c, QDataSet fillDs, ProgressMonitor mon ) throws Exception {
-        return OperationsProcessor.sprocess( c, fillDs, mon );
+        return OperationsProcessor.process( fillDs, c, mon );
     }
 
     /**
