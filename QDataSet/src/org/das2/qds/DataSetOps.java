@@ -276,6 +276,8 @@ public class DataSetOps {
     /**
      * flatten a rank 3 dataset.  The result is a n,4 dataset
      * of [x,y,z,f], or if there are no tags just rank 1 f.
+     * For a rank 3 join (array of tables), the result will
+     * be ds[n,3].
      * @param ds rank 3 table dataset
      * @return rank 2 dataset that is array of (x,y,z,f) or rank 1 f.
      */
@@ -290,19 +292,43 @@ public class DataSetOps {
         boolean dep1rank2= dep1!=null && dep1.rank()==2;
         boolean dep2rank2= dep2!=null && dep2.rank()==2;
         boolean dep2rank3= dep2!=null && dep2.rank()==3;
-        for ( int i=0; i<ds.length(); i++ ) {
-            for ( int j=0; j<ds.length(i); j++ ) {
-                for ( int k=0; k<ds.length(i,j); k++ ) {
-                    if (dep0!=null) {
-                        xbuilder.nextRecord( dep0.value(i) );
+
+        if ( SemanticOps.isJoin(ds) && ds.rank()==3 ) {
+            for ( int i=0; i<ds.length(); i++ ) {
+                QDataSet slice= ds.slice(i);
+                dep0= (QDataSet) slice.property(QDataSet.DEPEND_0);
+                dep1= (QDataSet) slice.property(QDataSet.DEPEND_1);
+                boolean dep1srank2= dep1!=null && dep1.rank()==2;
+                for ( int j=0; j<slice.length(); j++ ) {
+                    for ( int k=0; k<slice.length(j); k++ ) {
+                        if (dep0!=null) {
+                            xbuilder.nextRecord( dep0.value(j) );
+                        }
+                        if (dep1!=null) {
+                            ybuilder.nextRecord( dep1srank2 ? dep1.value(j,k) : dep1.value(k) );
+                        }
+                        builder.nextRecord( slice.value(j,k) );
                     }
-                    if (dep1!=null) {
-                        ybuilder.nextRecord( dep1rank2 ? dep1.value(i,j) : dep1.value(j) );
+                }
+            }
+        } else {
+            for ( int i=0; i<ds.length(); i++ ) {
+                QDataSet slice= ds.slice(i);
+                QDataSet dep0s= (QDataSet) slice.property(QDataSet.DEPEND_0);
+                QDataSet dep1s= (QDataSet) slice.property(QDataSet.DEPEND_1);
+                for ( int j=0; j<ds.length(i); j++ ) {
+                    for ( int k=0; k<ds.length(i,j); k++ ) {
+                        if (dep0!=null) {
+                            xbuilder.nextRecord( dep0.value(i) );
+                        }
+                        if (dep1!=null) {
+                            ybuilder.nextRecord( dep1rank2 ? dep1.value(i,j) : dep1.value(j) );
+                        }
+                        if (dep2!=null) {
+                            zbuilder.nextRecord( dep2rank2 ? dep2.value(i,k) : ( dep2rank3 ? dep2.value(i,j,k): dep2.value(k) ) );
+                        }
+                        builder.nextRecord( ds.value(i,j,k) );
                     }
-                    if (dep2!=null) {
-                        zbuilder.nextRecord( dep2rank2 ? dep2.value(i,k) : ( dep2rank3 ? dep2.value(i,j,k): dep2.value(k) ) );
-                    }
-                    builder.nextRecord( ds.value(i,j,k) );
                 }
             }
         }
@@ -310,14 +336,18 @@ public class DataSetOps {
         DDataSet fds= builder.getDataSet();
         DataSetUtil.putProperties( DataSetUtil.getDimensionProperties(ds,null), fds );
 
-        if ( dep1!=null && dep0!=null ) {
+        if ( xbuilder.getLength()==fds.length() && xbuilder.getLength()==fds.length() ) {
             DDataSet xds= xbuilder.getDataSet();
-            DataSetUtil.putProperties( DataSetUtil.getDimensionProperties(dep0,null), xds );
+            if ( dep0!=null ) DataSetUtil.putProperties( DataSetUtil.getDimensionProperties(dep0,null), xds );
             DDataSet yds= ybuilder.getDataSet();
-            DataSetUtil.putProperties( DataSetUtil.getDimensionProperties(dep1,null), yds );
-            DDataSet zds= zbuilder.getDataSet();
-            DataSetUtil.putProperties( DataSetUtil.getDimensionProperties(dep2,null), zds );
-            return Ops.link( xds, yds, zds, fds );
+            if ( dep1!=null ) DataSetUtil.putProperties( DataSetUtil.getDimensionProperties(dep1,null), yds );
+            if ( zbuilder.getLength()==fds.length() ) {
+                DDataSet zds= zbuilder.getDataSet();
+                DataSetUtil.putProperties( DataSetUtil.getDimensionProperties(dep2,null), zds );
+                return Ops.link( xds, yds, zds, fds );
+            } else {
+                return Ops.link( xds, yds, fds );
+            }
         } else  {
             return fds;
         }

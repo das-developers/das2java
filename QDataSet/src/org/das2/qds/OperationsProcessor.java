@@ -501,8 +501,8 @@ public class OperationsProcessor {
                     int size= s.nextInt();
                     ds= Ops.fftWindow(ds, size);
                 } else if ( cmd.equals("|flatten" ) ) {
-                    if ( ds.rank()!=2 ) throw new IllegalArgumentException("only rank2 supported");
-                    ds= flattenRank2(ds);
+                    //if ( ds.rank()!=2 ) throw new IllegalArgumentException("only rank2 supported");
+                    ds= Ops.flatten(ds);
                 } else if ( cmd.equals("|grid" ) ) {
                     if ( ds.rank()!=2 ) throw new IllegalArgumentException("only rank2 supported");
                     ds= grid(ds);
