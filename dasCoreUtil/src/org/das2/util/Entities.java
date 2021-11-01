@@ -49,9 +49,9 @@ public class Entities {
     }
 
     /**
-     * decode one entity.
+     * decode one entity, and "" empty string is returned when the string cannot be decoded.
      * @param entity like &amp;rho;
-     * @return string with unicode like "&rho;"
+     * @return unicode character like "&rho;"
      */
     public static String decode(String entity) {
         if (entity.charAt(entity.length() - 1) == ';') // remove trailing semicolon
