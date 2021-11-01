@@ -920,7 +920,9 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         if ( ds.len1!=ths.len1 ) throw new IllegalArgumentException("len1 mismatch");
         if ( ds.len2!=ths.len2 ) throw new IllegalArgumentException("len2 mismatch");
         if ( ds.len3!=ths.len3 ) throw new IllegalArgumentException("len3 mismatch");
-        if ( !ths.getType().equals(ds.getType()) ) throw new IllegalArgumentException("backing type mismatch"); // time21
+        if ( !ths.getType().equals(ds.getType()) ) {
+            throw new IllegalArgumentException("backing type mismatch");
+        } // time21
         if ( ths.back.order()!=ds.back.order() ) throw new IllegalArgumentException("byte order (endianness) must be the same");
 
         int myLength= ths.len0 * ths.len1 * ths.len2 * ths.len3 * byteCount(ths.type);
@@ -992,15 +994,12 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
             QDataSet thatDep= (QDataSet) ds.property( "DEPEND_"+i );
             if ( thatDep!=null && ( i==0 || thatDep.rank()>1 ) ) {
                 QDataSet thisDep= (QDataSet) ths.property( "DEPEND_"+i );
-                BufferDataSet djoin= copy( thisDep ); //TODO: reconcile types
-                //if ( thatDep instanceof BufferDataSet ) {
-                //    System.err.println("== DEPEND_0 ==");
-                //    ((BufferDataSet)thatDep).about();
-                //}
+                BufferDataSet djoin= copy( thisDep ); 
                 BufferDataSet ddep1= thatDep instanceof BufferDataSet ? (BufferDataSet) thatDep : maybeCopy( thatDep );
-                //((BufferDataSet)thatDep).about();
+                if ( ddep1.getType()!=djoin.getType() ) {
+                    ddep1= copy( djoin.getType(), thisDep );
+                } 
                 djoin= append( djoin, ddep1 );
-                //((BufferDataSet)djoin).about();
                 result.put( "DEPEND_"+i, djoin );
 
             } else if ( thatDep!=null && thatDep.rank()==1 ) {
