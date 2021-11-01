@@ -9,6 +9,7 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import javax.swing.JColorChooser;
 import javax.swing.JOptionPane;
@@ -24,6 +25,11 @@ import javax.swing.event.DocumentListener;
  */
 public class GrannyTextEditor extends javax.swing.JPanel implements StringSchemeEditor {
     
+    /**
+     * suggested editor title
+     */
+    public static final String EDITOR_TITLE= "Granny Text Editor";
+            
     JPanel canvas;
     GrannyTextRenderer gtr;
     TickleTimer tickleTimer;
@@ -93,7 +99,16 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
     private javax.swing.JButton miscButton( String s ) {
         javax.swing.JButton result= new javax.swing.JButton("<html>"+s);
         result.addActionListener((ActionEvent e) -> {
-            doInsert( s, null );
+            if ( ( e.getModifiers() & ActionEvent.SHIFT_MASK ) == ActionEvent.SHIFT_MASK ) {
+                String s1= Entities.decode(s);
+                if ( s1.length()==0 ) {
+                    doInsert( s, null );
+                } else {
+                    doInsert( s1, null );
+                }
+            } else {
+                doInsert( s, null );
+            }
         } );
         return result;
     }
@@ -126,7 +141,7 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
         miscTab = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
-        jLabel3 = new javax.swing.JLabel();
+        instructionalLabel = new javax.swing.JLabel();
 
         renderPanel.setLayout(new java.awt.BorderLayout());
 
@@ -140,6 +155,12 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
             }
         });
         jScrollPane1.setViewportView(jTextArea1);
+
+        jTabbedPane1.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                jTabbedPane1StateChanged(evt);
+            }
+        });
 
         aButton.setText("A - Shift Up");
         aButton.addActionListener(new java.awt.event.ActionListener() {
@@ -257,7 +278,7 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
                 .addComponent(italicButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(underlineButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 139, Short.MAX_VALUE))
+                .addGap(0, 200, Short.MAX_VALUE))
         );
         extensionsTabLayout.setVerticalGroup(
             extensionsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -282,7 +303,7 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
 
         jLabel2.setText("Granny Text:");
 
-        jLabel3.setText("Press buttons from palette below to insert into text.");
+        instructionalLabel.setText("Press buttons from palette below to insert into text.");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -290,12 +311,12 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(renderPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(jScrollPane1)
-            .addComponent(jTabbedPane1)
+            .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 528, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel1)
                     .addComponent(jLabel2)
-                    .addComponent(jLabel3))
+                    .addComponent(instructionalLabel))
                 .addGap(0, 0, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -309,7 +330,7 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel3)
+                .addComponent(instructionalLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 112, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
@@ -375,6 +396,14 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
         doInsert("!N",null);
     }//GEN-LAST:event_nButtonActionPerformed
 
+    private void jTabbedPane1StateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jTabbedPane1StateChanged
+        if ( jTabbedPane1.getSelectedIndex()>1 ) {
+            instructionalLabel.setText( "Press to insert, and holding shift will insert the actual character." );
+        } else {
+           instructionalLabel.setText( "Press buttons from palette below to insert into text." );
+        }
+    }//GEN-LAST:event_jTabbedPane1StateChanged
+
     private void updateImage() {
         gtr.setString( canvas.getFont(), getValue() );
         canvas.repaint();
@@ -418,10 +447,10 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
     private javax.swing.JPanel extensionsTab;
     private javax.swing.JPanel greekTab;
     private javax.swing.JPanel hersheyTab;
+    private javax.swing.JLabel instructionalLabel;
     private javax.swing.JButton italicButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JTextArea jTextArea1;
