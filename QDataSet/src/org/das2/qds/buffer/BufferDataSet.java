@@ -994,12 +994,7 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
             QDataSet thatDep= (QDataSet) ds.property( "DEPEND_"+i );
             if ( thatDep!=null && ( i==0 || thatDep.rank()>1 ) ) {
                 QDataSet thisDep= (QDataSet) ths.property( "DEPEND_"+i );
-                BufferDataSet djoin= copy( thisDep ); 
-                BufferDataSet ddep1= thatDep instanceof BufferDataSet ? (BufferDataSet) thatDep : maybeCopy( thatDep );
-                if ( ddep1.getType()!=djoin.getType() ) {
-                    ddep1= copy( djoin.getType(), thisDep );
-                } 
-                djoin= append( djoin, ddep1 );
+                QDataSet djoin= Ops.append( thisDep, thatDep );
                 result.put( "DEPEND_"+i, djoin );
 
             } else if ( thatDep!=null && thatDep.rank()==1 ) {
