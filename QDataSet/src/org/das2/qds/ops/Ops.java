@@ -12368,8 +12368,12 @@ public final class Ops {
     public static QDataSet append( QDataSet ds1, QDataSet ds2 ) {
         if ( ds1==null ) {
             if ( ds2.rank()>0 ) {
+                if ( !DataSetUtil.validate( ds2, null ) ) 
+                    throw new RuntimeException("dataset input ds2 to append doesn't validate.");
                 return ds2;
             } else {
+                if ( !DataSetUtil.validate( ds2, null ) ) 
+                    throw new RuntimeException("dataset input ds2 to append doesn't validate.");
                 ArrayDataSet result= ArrayDataSet.createRank1(ArrayDataSet.guessBackingStore(ds2),1);
                 result.putValue( 0, ds2.value() );
                 DataSetUtil.copyDimensionProperties( ds2, result );
@@ -12380,15 +12384,27 @@ public final class Ops {
                 return result;
             }
         } if ( ds1 instanceof BufferDataSet && ds2 instanceof BufferDataSet ) {
+            if ( !DataSetUtil.validate( ds1, null ) ) throw new RuntimeException("dataset input ds1 to append doesn't validate.");
+            if ( !DataSetUtil.validate( ds2, null ) ) throw new RuntimeException("dataset input ds2 to append doesn't validate.");
             Object c1= ((BufferDataSet)ds1).getType();
             Object c2= ((BufferDataSet)ds2).getType();
             if ( c1==c2 ) {
-                return BufferDataSet.append( (BufferDataSet)ds1, (BufferDataSet)ds2 );
+                QDataSet result= BufferDataSet.append( (BufferDataSet)ds1, (BufferDataSet)ds2 );
+                if ( !DataSetUtil.validate( result, null ) ) {
+                    throw new RuntimeException("appended result didn't validate, contact support.");
+                }
+                return result;
             } else {
                 Class c= double.class;
-                return ArrayDataSet.append( ArrayDataSet.maybeCopy(c,ds1), ArrayDataSet.maybeCopy(c,ds2) );
+                QDataSet result= ArrayDataSet.append( ArrayDataSet.maybeCopy(c,ds1), ArrayDataSet.maybeCopy(c,ds2) );
+                if ( !DataSetUtil.validate( result, null ) ) {
+                    throw new RuntimeException("appended result didn't validate, contact support.");
+                }
+                return result;
             }
         } else {
+            if ( !DataSetUtil.validate( ds1, null ) ) throw new RuntimeException("dataset input ds1 to append doesn't validate.");
+            if ( !DataSetUtil.validate( ds2, null ) ) throw new RuntimeException("dataset input ds2 to append doesn't validate.");
             // use append to combine the two datasets.  Note append copies the data.
             Class c1= double.class;
             Class c2= double.class;
@@ -12402,7 +12418,12 @@ public final class Ops {
             if ( c1==c2 ) {
                 c= c1;
             }
-            return ArrayDataSet.append( ArrayDataSet.maybeCopy(c,ds1), ArrayDataSet.maybeCopy(c,ds2) );
+            
+            QDataSet result= ArrayDataSet.append( ArrayDataSet.maybeCopy(c,ds1), ArrayDataSet.maybeCopy(c,ds2) );
+            if ( !DataSetUtil.validate( result, null ) ) {
+                throw new RuntimeException("appended result didn't validate, contact support.");
+            }
+            return result;
         }
     }
     
@@ -12436,7 +12457,8 @@ public final class Ops {
             //Ops.extent(ttTarget);
             ff= findex( ttSource, ttTarget ); // TODO: cache ff in case tt1 is the same for each dss.
         } catch ( IllegalArgumentException ex ) {  // data is not monotonic
-            logger.log(Level.WARNING, "when calling synchronize, DEPEND_0 was not monotonic for dsSource, using monotonic subset of points");
+            logger.log(Level.WARNING, 
+                    "when calling synchronize, DEPEND_0 was not monotonic for dsSource, using monotonic subset of points");
             QDataSet dsx=Ops.monotonicSubset(dsSource);
             logger.log(Level.INFO, "monotonicSubset removes {0} records", (dsSource.length()-dsx.length()));
             dsSource= dsx;
