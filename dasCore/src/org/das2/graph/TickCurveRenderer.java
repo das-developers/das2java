@@ -277,8 +277,22 @@ public final class TickCurveRenderer extends Renderer {
     public static QDataSet doAutorange( QDataSet ds1 ) {
 
         QDataSet ds= makeCanonical(ds1);
-        QDataSet xrange= Ops.rescaleRangeLogLin( Ops.extent( DataSetOps.unbundle(ds,1) ), -0.1, 1.1 );
-        QDataSet yrange= Ops.rescaleRangeLogLin( Ops.extent( DataSetOps.unbundle(ds,2) ), -0.1, 1.1 );
+        
+        QDataSet xrange= Ops.extent( DataSetOps.unbundle(ds,1) );
+        if ( xrange.value(1)==xrange.value(0) ) {
+            Units u= SemanticOps.getUnits(xrange);
+            xrange= DDataSet.wrap( new double[] { -10, 10 } );
+            ((DDataSet)xrange).putProperty( QDataSet.UNITS, u );
+        }
+        xrange= Ops.rescaleRangeLogLin( xrange, -0.1, 1.1 );
+        
+        QDataSet yrange= Ops.extent( DataSetOps.unbundle(ds,2) );
+        if ( yrange.value(1)==yrange.value(0) ) {
+            Units u= SemanticOps.getUnits(yrange);
+            yrange= DDataSet.wrap( new double[] { -10, 10 } );
+            ((DDataSet)yrange).putProperty( QDataSet.UNITS, u );
+        }
+        yrange= Ops.rescaleRangeLogLin( yrange, -0.1, 1.1 );
 
         JoinDataSet bds= new JoinDataSet(2);
         bds.join(xrange);
