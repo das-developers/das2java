@@ -12,6 +12,8 @@ import org.das2.graph.DasAxis;
  */
 public class TickValuesStringSchemeEditor extends javax.swing.JPanel implements StringSchemeEditor {
 
+    public static final String EDITOR_TITLE= "Tick Values Editor";
+    
     /**
      * Creates new form TickValuesEditor
      */
