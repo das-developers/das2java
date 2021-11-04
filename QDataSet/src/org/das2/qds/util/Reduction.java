@@ -61,7 +61,7 @@ public class Reduction {
     /**
      * @param ds a rank1 or rank2 waveform dataset.
      * @param xLimit the target resolution, result will be finer than this, if possible.
-     * @return either the original dataset when there is no reduction to be done, or a series data set with bins (deltas for now).
+     * @return either the original dataset when there is no reduction to be done, or a series data set with bins (and deltas to support legacy scripts).
      * @see org.das2.qstream.filter.MinMaxReduceFilter.  This is basically a copy of that code.
      */
     private static QDataSet reducexWaveform( QDataSet ds, QDataSet xLimit ) {
@@ -87,11 +87,18 @@ public class Reduction {
             logger.fine("slice(0) on rank 2 dataset because code doesn't support time-varying DEPEND_1");
         }
         
-        int icadence= 4;
-        while ( icadence<offsets.length()/2 && cadence.gt( DataSetUtil.asDatum(offsets.slice(icadence)).subtract( DataSetUtil.asDatum( offsets.slice(0)) ) ) ) {
-            icadence= icadence*2;
+        int icadence;
+        
+        Datum packetLen= DataSetUtil.asDatum(offsets.slice(offsets.length()-1)).subtract( DataSetUtil.asDatum( offsets.slice(0) ) );
+        if ( packetLen.lt(cadence) ) {
+            icadence= offsets.length();
+        } else {
+            icadence= 4;
+            while ( icadence<offsets.length()/2 && cadence.gt( DataSetUtil.asDatum(offsets.slice(icadence)).subtract( DataSetUtil.asDatum( offsets.slice(0)) ) ) ) {
+                icadence= icadence*2;
+            }
+            icadence= icadence/2;
         }
-        icadence= icadence/2;                
         
         if ( icadence<4 ) {
             return ds;
@@ -111,7 +118,7 @@ public class Reduction {
             int i=0;
             QDataSet ttag= dep0.slice(j);    
             QDataSet ds1= ds.slice(j);
-            while ( (i+icadence)<offsets.length() ) {                     
+            while ( (i+icadence)<=offsets.length() ) {                     
                 QDataSet ext= Ops.extent(ds1.trim(i,i+icadence) );
                 QDataSet avg= Ops.reduceMean(ds1.trim(i,i+icadence),0);
                 xbuilder.putValue(iout, Ops.add( ttag, offsets.slice(i+icadence/2) ).value() );
@@ -123,14 +130,24 @@ public class Reduction {
             }
         }
         
+        QDataSet depend0= xbuilder.getDataSet();
+        
         DDataSet result= ybuilder.getDataSet();
         DataSetUtil.copyDimensionProperties( ds, result );
-        yminbuilder.putProperty( QDataSet.UNITS, ds.property(QDataSet.UNITS) );
-        ymaxbuilder.putProperty( QDataSet.UNITS, ds.property(QDataSet.UNITS) );
         
-        result.putProperty( QDataSet.DELTA_MINUS, Ops.subtract( result, yminbuilder.getDataSet() ) ); // TODO: this should be BIN_PLUS and BIN_MINUS.
-        result.putProperty( QDataSet.DELTA_PLUS, Ops.subtract( ymaxbuilder.getDataSet(), result ) );
-        result.putProperty( QDataSet.DEPEND_0, xbuilder.getDataSet() );
+        yminbuilder.putProperty( QDataSet.UNITS, ds.property(QDataSet.UNITS) );
+        yminbuilder.putProperty( QDataSet.DEPEND_0, depend0 );
+        ymaxbuilder.putProperty( QDataSet.UNITS, ds.property(QDataSet.UNITS) );
+        ymaxbuilder.putProperty( QDataSet.DEPEND_0, depend0 );
+        QDataSet binMin= yminbuilder.getDataSet();
+        QDataSet binMax= ymaxbuilder.getDataSet();
+                
+        result.putProperty( QDataSet.DELTA_MINUS, Ops.subtract( result, binMin ) ); 
+        result.putProperty( QDataSet.DELTA_PLUS, Ops.subtract( binMax, result ) );
+        result.putProperty( QDataSet.BIN_MAX, binMax ); 
+        result.putProperty( QDataSet.BIN_MIN, binMin );
+        
+        result.putProperty( QDataSet.DEPEND_0, depend0 );
         
         if ( result.property(QDataSet.CACHE_TAG)!=null ) result.putProperty(QDataSet.CACHE_TAG,null);
         return result;
