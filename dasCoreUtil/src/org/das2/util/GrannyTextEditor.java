@@ -418,6 +418,8 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
     
     @Override
     public void setValue( String text ) {
+        text= text.replaceAll("\\<br\\>","\n");
+        text= text.replaceAll("\\![cC]", "\n");
         jTextArea1.setText(text);
         updateImage();
     }
