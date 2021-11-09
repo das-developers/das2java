@@ -301,6 +301,14 @@ public class GrannyTextRenderer {
         this.tokens = buildTokenArray(this.str);
         this.draw( null, font, 0f, 0f, false );
     }
+    
+    /**
+     * return the string.
+     * @return 
+     */
+    public String getString() {
+        return this.str;
+    }
         
     /**
      * returns the current alignment, by default LEFT_ALIGNMENT.
