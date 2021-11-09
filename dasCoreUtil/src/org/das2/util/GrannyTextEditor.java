@@ -405,7 +405,14 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
     }//GEN-LAST:event_jTabbedPane1StateChanged
 
     private void updateImage() {
-        gtr.setString( canvas.getFont(), getValue() );
+        String oldString= gtr.getString();
+        try {
+            gtr.setString( canvas.getFont(), getValue() );
+            canvas.setBackground( Color.WHITE );
+        } catch ( RuntimeException ex ) {
+            gtr.setString( canvas.getFont(), oldString );
+            canvas.setBackground( Color.RED );
+        }
         canvas.repaint();
     }
 
