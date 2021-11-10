@@ -11,7 +11,9 @@ import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
+import java.util.Enumeration;
 import javax.swing.AbstractAction;
+import javax.swing.AbstractButton;
 import javax.swing.JColorChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -40,6 +42,7 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
      */
     public GrannyTextEditor() {
         initComponents();
+        psymButton.setVisible(false);
         canvas= new JPanel() {
             @Override
             protected void paintComponent(Graphics g1) {
@@ -106,9 +109,8 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
     public void addPainter( String id, GrannyTextRenderer.Painter p ) {
         gtr.addPainter( id, p );
         if ( id.equals("psym") ) {
-            javax.swing.JButton b= miscButton( "painter;psym;circles;size=5" );
-            b.setText("psym");
-            extensionsTab.add( b );            
+            psymButton.setVisible(true);
+            psymButton.setEnabled(true);
         }
         
     }
@@ -138,6 +140,30 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        psymPanel = new javax.swing.JPanel();
+        jLabel3 = new javax.swing.JLabel();
+        jRadioButton1 = new javax.swing.JRadioButton();
+        jRadioButton2 = new javax.swing.JRadioButton();
+        jRadioButton3 = new javax.swing.JRadioButton();
+        jRadioButton4 = new javax.swing.JRadioButton();
+        jRadioButton5 = new javax.swing.JRadioButton();
+        jRadioButton6 = new javax.swing.JRadioButton();
+        jRadioButton7 = new javax.swing.JRadioButton();
+        jLabel4 = new javax.swing.JLabel();
+        sizeTextField = new javax.swing.JTextField();
+        jLabel5 = new javax.swing.JLabel();
+        outlineFillStyleRB = new javax.swing.JRadioButton();
+        jRadioButton9 = new javax.swing.JRadioButton();
+        jLabel6 = new javax.swing.JLabel();
+        solidConnectRB = new javax.swing.JRadioButton();
+        jRadioButton11 = new javax.swing.JRadioButton();
+        noneConnectorRB = new javax.swing.JRadioButton();
+        psymColorCB = new javax.swing.JCheckBox();
+        jButton1 = new javax.swing.JButton();
+        psymColorTextField = new javax.swing.JTextField();
+        plotSymbolButtonGroup = new javax.swing.ButtonGroup();
+        connectButtonGroup = new javax.swing.ButtonGroup();
+        fillStyleButtonGroup = new javax.swing.ButtonGroup();
         renderPanel = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTextArea1 = new javax.swing.JTextArea();
@@ -154,11 +180,175 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
         italicButton = new javax.swing.JButton();
         boldButton = new javax.swing.JButton();
         underlineButton = new javax.swing.JButton();
+        psymButton = new javax.swing.JButton();
         greekTab = new javax.swing.JPanel();
         miscTab = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         instructionalLabel = new javax.swing.JLabel();
+
+        jLabel3.setText("Plot Symbol:");
+
+        plotSymbolButtonGroup.add(jRadioButton1);
+        jRadioButton1.setSelected(true);
+        jRadioButton1.setText("boxes");
+        jRadioButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jRadioButton1ActionPerformed(evt);
+            }
+        });
+
+        plotSymbolButtonGroup.add(jRadioButton2);
+        jRadioButton2.setText("circles");
+
+        plotSymbolButtonGroup.add(jRadioButton3);
+        jRadioButton3.setText("crosses");
+        jRadioButton3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jRadioButton3ActionPerformed(evt);
+            }
+        });
+
+        plotSymbolButtonGroup.add(jRadioButton4);
+        jRadioButton4.setText("diamonds");
+
+        plotSymbolButtonGroup.add(jRadioButton5);
+        jRadioButton5.setText("exes");
+
+        plotSymbolButtonGroup.add(jRadioButton6);
+        jRadioButton6.setText("triangles");
+
+        plotSymbolButtonGroup.add(jRadioButton7);
+        jRadioButton7.setText("none");
+
+        jLabel4.setText("Size:");
+
+        sizeTextField.setText("0.5em");
+
+        jLabel5.setText("Fill Style:");
+
+        fillStyleButtonGroup.add(outlineFillStyleRB);
+        outlineFillStyleRB.setText("outline");
+
+        fillStyleButtonGroup.add(jRadioButton9);
+        jRadioButton9.setSelected(true);
+        jRadioButton9.setText("solid");
+
+        jLabel6.setText("Connector:");
+
+        connectButtonGroup.add(solidConnectRB);
+        solidConnectRB.setText("solid");
+
+        connectButtonGroup.add(jRadioButton11);
+        jRadioButton11.setText("dots");
+
+        connectButtonGroup.add(noneConnectorRB);
+        noneConnectorRB.setSelected(true);
+        noneConnectorRB.setText("none");
+
+        psymColorCB.setText("Color:");
+
+        jButton1.setText("Pick...");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
+        psymColorTextField.setText("jTextField1");
+
+        javax.swing.GroupLayout psymPanelLayout = new javax.swing.GroupLayout(psymPanel);
+        psymPanel.setLayout(psymPanelLayout);
+        psymPanelLayout.setHorizontalGroup(
+            psymPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(psymPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(psymPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel3)
+                    .addGroup(psymPanelLayout.createSequentialGroup()
+                        .addGap(12, 12, 12)
+                        .addGroup(psymPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jRadioButton2)
+                            .addComponent(jRadioButton1)
+                            .addComponent(jRadioButton3)
+                            .addComponent(jRadioButton4)
+                            .addComponent(jRadioButton5)
+                            .addComponent(jRadioButton6)
+                            .addComponent(jRadioButton7))))
+                .addGap(12, 12, 12)
+                .addGroup(psymPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(psymPanelLayout.createSequentialGroup()
+                        .addGap(1, 1, 1)
+                        .addComponent(psymColorCB)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(psymColorTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jButton1))
+                    .addGroup(psymPanelLayout.createSequentialGroup()
+                        .addGroup(psymPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel5)
+                            .addComponent(jLabel4)
+                            .addGroup(psymPanelLayout.createSequentialGroup()
+                                .addGap(12, 12, 12)
+                                .addGroup(psymPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(sizeTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(outlineFillStyleRB)
+                                    .addComponent(jRadioButton9))))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(psymPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel6)
+                            .addGroup(psymPanelLayout.createSequentialGroup()
+                                .addGap(12, 12, 12)
+                                .addGroup(psymPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jRadioButton11)
+                                    .addComponent(solidConnectRB)
+                                    .addComponent(noneConnectorRB))))))
+                .addContainerGap(36, Short.MAX_VALUE))
+        );
+        psymPanelLayout.setVerticalGroup(
+            psymPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(psymPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(psymPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel3)
+                    .addComponent(jLabel4)
+                    .addComponent(jLabel6))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(psymPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jRadioButton1)
+                    .addComponent(sizeTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(solidConnectRB))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(psymPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jRadioButton2)
+                    .addComponent(jRadioButton11))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(psymPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jRadioButton3)
+                    .addComponent(jLabel5)
+                    .addComponent(noneConnectorRB))
+                .addGroup(psymPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(psymPanelLayout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(psymPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jRadioButton4)
+                            .addComponent(outlineFillStyleRB))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(psymPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jRadioButton5)
+                            .addComponent(jRadioButton9))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jRadioButton6)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jRadioButton7))
+                    .addGroup(psymPanelLayout.createSequentialGroup()
+                        .addGap(62, 62, 62)
+                        .addGroup(psymPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jButton1)
+                            .addComponent(psymColorCB)
+                            .addComponent(psymColorTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
 
         renderPanel.setLayout(new java.awt.BorderLayout());
 
@@ -276,10 +466,18 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
             }
         });
 
-        underlineButton.setText("<html><u>underline</u>");
+        underlineButton.setText("<html><u>Underline</u>");
         underlineButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 underlineButtonActionPerformed(evt);
+            }
+        });
+
+        psymButton.setText("Psym");
+        psymButton.setEnabled(false);
+        psymButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                psymButtonActionPerformed(evt);
             }
         });
 
@@ -288,14 +486,17 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
         extensionsTabLayout.setHorizontalGroup(
             extensionsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(extensionsTabLayout.createSequentialGroup()
-                .addComponent(colorButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(boldButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(italicButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(underlineButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 200, Short.MAX_VALUE))
+                .addGroup(extensionsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(extensionsTabLayout.createSequentialGroup()
+                        .addComponent(colorButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(boldButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(italicButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(underlineButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(psymButton))
+                .addGap(0, 199, Short.MAX_VALUE))
         );
         extensionsTabLayout.setVerticalGroup(
             extensionsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -305,7 +506,9 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
                     .addComponent(boldButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(italicButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(underlineButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(60, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(psymButton)
+                .addContainerGap(29, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Extensions", extensionsTab);
@@ -328,7 +531,7 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(renderPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(jScrollPane1)
-            .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 528, Short.MAX_VALUE)
+            .addComponent(jTabbedPane1)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel1)
@@ -421,6 +624,56 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
         }
     }//GEN-LAST:event_jTabbedPane1StateChanged
 
+    private void psymButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_psymButtonActionPerformed
+        if ( JOptionPane.OK_OPTION==
+                JOptionPane.showConfirmDialog( this, psymPanel, "Psym Options", JOptionPane.OK_CANCEL_OPTION ) ) {
+            StringBuilder textb= new StringBuilder( "!(painter;psym;" );
+            Enumeration<AbstractButton> bbs= plotSymbolButtonGroup.getElements();
+            while ( bbs.hasMoreElements() ) {
+                javax.swing.AbstractButton b= bbs.nextElement();
+                if ( b.isSelected() ) {
+                    textb.append(b.getText()).append(";");
+                }
+            }
+            textb.append("size=").append(sizeTextField.getText().trim());
+            if ( outlineFillStyleRB.isSelected() ) {
+                textb.append(";fillStyle=outline");
+            }
+            if ( !noneConnectorRB.isSelected() )  {
+                if ( solidConnectRB.isSelected() ) {
+                    textb.append(";lineStyle=solid");
+                } else {
+                    textb.append(";lineStyle=dots");
+                }
+            }
+            if ( psymColorCB.isSelected() ) {
+                textb.append(";color=").append(psymColorTextField.getText().trim());
+            }
+            textb.append(")");
+            doInsert( textb.toString(), null );
+        }
+    }//GEN-LAST:event_psymButtonActionPerformed
+
+    private void jRadioButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRadioButton3ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jRadioButton3ActionPerformed
+
+    private void jRadioButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRadioButton1ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jRadioButton1ActionPerformed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        JColorChooser chooser= new JColorChooser();
+        chooser.addChooserPanel( new NamedColorChooserPanel() );
+        chooser.addChooserPanel( new DesktopColorChooserPanel() );
+        if ( JOptionPane.showConfirmDialog( this, chooser, "Color Chooser", JOptionPane.OK_CANCEL_OPTION )== JOptionPane.OK_OPTION ) {
+            Color color= chooser.getColor();
+            String colorName= ColorUtil.nameForColor(color);
+            psymColorTextField.setText( colorName );
+            psymColorTextField.setBackground( color );
+        }
+    }//GEN-LAST:event_jButton1ActionPerformed
+
     private void updateImage() {
         String oldString= gtr.getString();
         try {
@@ -461,6 +714,7 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
     public static void main( String[] args ) {
         GrannyTextEditor edit= new GrannyTextEditor();
         edit.setValue( "Happy !(color;Blue)Day!!");
+        edit.addPainter( "psym", null );
         JOptionPane.showMessageDialog( null, edit );
     }
     
@@ -469,22 +723,47 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
     private javax.swing.JButton bButton;
     private javax.swing.JButton boldButton;
     private javax.swing.JButton colorButton;
+    private javax.swing.ButtonGroup connectButtonGroup;
     private javax.swing.JButton exclaimationPointButton;
     private javax.swing.JPanel extensionsTab;
+    private javax.swing.ButtonGroup fillStyleButtonGroup;
     private javax.swing.JPanel greekTab;
     private javax.swing.JPanel hersheyTab;
     private javax.swing.JLabel instructionalLabel;
     private javax.swing.JButton italicButton;
+    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JRadioButton jRadioButton1;
+    private javax.swing.JRadioButton jRadioButton11;
+    private javax.swing.JRadioButton jRadioButton2;
+    private javax.swing.JRadioButton jRadioButton3;
+    private javax.swing.JRadioButton jRadioButton4;
+    private javax.swing.JRadioButton jRadioButton5;
+    private javax.swing.JRadioButton jRadioButton6;
+    private javax.swing.JRadioButton jRadioButton7;
+    private javax.swing.JRadioButton jRadioButton9;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JTextArea jTextArea1;
     private javax.swing.JPanel miscTab;
     private javax.swing.JButton nButton;
+    private javax.swing.JRadioButton noneConnectorRB;
+    private javax.swing.JRadioButton outlineFillStyleRB;
+    private javax.swing.ButtonGroup plotSymbolButtonGroup;
+    private javax.swing.JButton psymButton;
+    private javax.swing.JCheckBox psymColorCB;
+    private javax.swing.JTextField psymColorTextField;
+    private javax.swing.JPanel psymPanel;
     private javax.swing.JButton rButton;
     private javax.swing.JPanel renderPanel;
     private javax.swing.JButton sButton;
+    private javax.swing.JTextField sizeTextField;
+    private javax.swing.JRadioButton solidConnectRB;
     private javax.swing.JButton underlineButton;
     // End of variables declaration//GEN-END:variables
 

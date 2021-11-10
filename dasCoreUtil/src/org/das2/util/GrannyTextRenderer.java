@@ -459,10 +459,6 @@ public class GrannyTextRenderer {
             baseFont= Font.decode("sans-10");
         }
         
-        if ( str!=null && str.contains("really really") ) {
-            System.err.println("here stop:" + baseFont.getSize() + " " + str);
-        }
-        
         int lineNum=1;
         
         TextPosition current = new TextPosition(NONE, NONE, ix, iy);
