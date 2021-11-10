@@ -255,8 +255,6 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
             }
         });
 
-        psymColorTextField.setText("jTextField1");
-
         javax.swing.GroupLayout psymPanelLayout = new javax.swing.GroupLayout(psymPanel);
         psymPanel.setLayout(psymPanelLayout);
         psymPanelLayout.setHorizontalGroup(
@@ -281,7 +279,7 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
                         .addGap(1, 1, 1)
                         .addComponent(psymColorCB)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(psymColorTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(psymColorTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jButton1))
                     .addGroup(psymPanelLayout.createSequentialGroup()
@@ -303,7 +301,7 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
                                     .addComponent(jRadioButton11)
                                     .addComponent(solidConnectRB)
                                     .addComponent(noneConnectorRB))))))
-                .addContainerGap(36, Short.MAX_VALUE))
+                .addContainerGap(41, Short.MAX_VALUE))
         );
         psymPanelLayout.setVerticalGroup(
             psymPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
