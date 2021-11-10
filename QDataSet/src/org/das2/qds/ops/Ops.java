@@ -8800,11 +8800,51 @@ public final class Ops {
     
     /**
      * Special function by the RPW Group at U. Iowa, which reassigns timetags so the small waveform 
-     * packets are visible, or bursty spectrograms are more easily viewed.
-     * @param ds
-     * @param factor duty cycle factor (0.5=50% duty cycle)
+     * packets are visible, or bursty spectrograms are more easily viewed.  When there are gaps
+     * longer than twiceCadenceMin, multiply the timetags preceding by multiplier to fill the gap.
+     * @param ds the data, presumably containing burst of continuous packets between long gaps.
+     * @param cadenceMin sets threshold to identify continuous bursts of packets.
+     * @param multiplier the scale to by which to expand the packet into the gap.
      * @return 
-     * @see #expandWaveform(org.das2.qds.QDataSet) 
+     * @see #expandToFillGaps(org.das2.qds.QDataSet, double) 
+     */
+    public static QDataSet expandToFillGaps( QDataSet ds, Datum cadenceMin, double multiplier ) {
+        QDataSet ttags= (QDataSet) ds.property(QDataSet.DEPEND_0);
+        Units toffUnits= ((Units)ttags.property(QDataSet.UNITS)).getOffsetUnits();
+        QDataSet dts= Ops.abs( Ops.diff(ttags) );
+        int basei= 0;
+        Datum baset= Ops.datum( ttags.slice(0) );
+                
+        DataSetBuilder tb= new DataSetBuilder(1,ds.length());
+        tb.setUnits((Units)ttags.property(QDataSet.UNITS));
+                
+        tb.putValue( 0, baset );
+        
+        Datum twiceCadenceMin= cadenceMin.multiply(2);
+        
+        for ( int i=1; i<ttags.length(); i++ ) {
+            if ( Ops.datum(dts.slice(i-1)).lt(twiceCadenceMin) ) {
+                tb.putValue( i, baset.add( ( ttags.value(i)-ttags.value(basei) ) * multiplier, toffUnits ) );
+            } else {
+                baset= Ops.datum( ttags.slice(i) );
+                basei= i;
+                tb.putValue( i, baset );                
+            }
+        }
+        
+        QDataSet newTTags= tb.getDataSet();
+        return link( newTTags, ds );
+
+    }
+    
+    /**
+     * Special self-configuring function by the RPW Group at U. Iowa, which reassigns timetags so the small waveform 
+     * packets are visible, or bursty spectrograms are more easily viewed.
+     * @param ds the data, presumably containing burst of continuous packets between long gaps.
+     * @param factor duty cycle factor (0.5=50% duty cycle)
+     * @return ds with new timetags.
+     * @see #expandWaveform(org.das2.qds.QDataSet)
+     * @see #expandToFillGaps(org.das2.qds.QDataSet, org.das2.datum.Datum, double) 
      */
     public static QDataSet expandToFillGaps( QDataSet ds, double factor ) {
         if ( Schemes.isRank2Waveform(ds) ) {
@@ -8814,17 +8854,17 @@ public final class Ops {
             QDataSet dts= Ops.abs( Ops.diff(ttags) );
             Datum cadenceMin= Ops.datum( Ops.reduceMin( dts, 0 ) );
             Datum twiceCadenceMin= cadenceMin.multiply(2);
-            QDataSet r= Ops.where( Ops.gt( dts, twiceCadenceMin ) );
+            QDataSet r= Ops.where( Ops.gt( dts, twiceCadenceMin ) );  // number of gaps
             if ( r.length()<1 ) {
                 return ds;
             } else {
                 int[] startIndexes= new int[r.length()+1];
                 startIndexes[0]= 0;
                 Datum cadenceMax= null; // cadenceMax is the smallest of the big jumps.
-                int count= 0;
+                int count= 0;  // the number of points in the burst of packets, where we found the smallest of the big gaps.
                 for ( int i=0; i<r.length(); i++ ) {
                     startIndexes[i+1]= (int)r.value(i);
-                    Datum cadence= datum( subtract( ttags.slice(startIndexes[i+1]+1), ttags.slice(startIndexes[i]) ) );
+                    Datum cadence= datum( subtract( ttags.slice(startIndexes[i+1]+1), ttags.slice(startIndexes[i]) ) ); // big gap size
                     if ( cadenceMax==null || cadence.lt(cadenceMax) ) {
                         cadenceMax= cadence;
                         count= startIndexes[i+1]+1 - startIndexes[i];
@@ -8834,22 +8874,8 @@ public final class Ops {
                 logger.log(Level.FINE, "expandToFillGaps: cadenceMin={0} cadenceMax={1}", new Object[]{cadenceMin, cadenceMax});
                 DataSetBuilder tb= new DataSetBuilder(1,ds.length());
                 tb.setUnits((Units)ttags.property(QDataSet.UNITS));
-                double stepFactor= cadenceMax.divide(cadenceMin).divide(count).value();
-                Units toffUnits= ((Units)ttags.property(QDataSet.UNITS)).getOffsetUnits();
-                int basei= 0;
-                Datum baset= Ops.datum( ttags.slice(0) );
-                tb.putValue( 0, baset );
-                for ( int i=1; i<ttags.length(); i++ ) {
-                    if ( Ops.datum(dts.slice(i-1)).lt(twiceCadenceMin) ) {
-                        tb.putValue( i, baset.add( ( ttags.value(i)-ttags.value(basei) ) * stepFactor * factor, toffUnits ) );
-                    } else {
-                        baset= Ops.datum( ttags.slice(i) );
-                        basei= i;
-                        tb.putValue( i, baset );                
-                    }
-                }
-                QDataSet newTTags= tb.getDataSet();
-                return link( newTTags, ds );
+                double stepFactor= cadenceMax.divide(cadenceMin).divide(count).value(); // step factor would fill the smallest gap.
+                return expandToFillGaps( ds, cadenceMin, stepFactor * factor );
             }
         } else {
             throw new IllegalArgumentException("data must be rank 2 spectrogram or waveform");

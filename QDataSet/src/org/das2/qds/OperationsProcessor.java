@@ -572,7 +572,22 @@ public class OperationsProcessor {
                     ds= Ops.expandWaveform(ds);
                 } else if ( cmd.equals("|expandToFillGaps") ) {
                     if ( s.hasNextDouble() ) {
-                        ds= Ops.expandToFillGaps(ds,s.nextDouble());
+                        double d= s.nextDouble();
+                        if ( s.hasNextDouble() ) {
+                            Units tu= SemanticOps.getUnits( SemanticOps.xtagsDataSet(ds) );
+                            Datum cadence= tu.getOffsetUnits().createDatum(d);
+                            ds= Ops.expandToFillGaps( ds, cadence, s.nextDouble() );
+                        } else {
+                            ds= Ops.expandToFillGaps(ds,d);
+                        }
+                    } else if ( s.hasNext() ) {    
+                        String scadence= s.next();
+                        String sexpand= s.next();
+                    
+                        Units tu= SemanticOps.getUnits( SemanticOps.xtagsDataSet(ds) );
+                        Datum cadence= tu.getOffsetUnits().parse(scadence);
+                        double expand= Double.parseDouble(sexpand);
+                        ds= Ops.expandToFillGaps( ds, cadence, expand );
                     } else {
                         ds= Ops.expandToFillGaps(ds);
                     }
