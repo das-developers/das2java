@@ -11,6 +11,7 @@ import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
+import javax.swing.AbstractAction;
 import javax.swing.JColorChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -96,6 +97,22 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
         }
     }
 
+    /**
+     * add the application-specific painter to the GrannyTextRenderer used
+     * to preview.
+     * @param id id for the painter, where the id is found in the granny text string
+     * @param p the painter code which draws on a graphics context.
+     */
+    public void addPainter( String id, GrannyTextRenderer.Painter p ) {
+        gtr.addPainter( id, p );
+        if ( id.equals("psym") ) {
+            javax.swing.JButton b= miscButton( "painter;psym;circles;size=5" );
+            b.setText("psym");
+            extensionsTab.add( b );            
+        }
+        
+    }
+    
     private javax.swing.JButton miscButton( String s ) {
         javax.swing.JButton result= new javax.swing.JButton("<html>"+s);
         result.addActionListener((ActionEvent e) -> {
