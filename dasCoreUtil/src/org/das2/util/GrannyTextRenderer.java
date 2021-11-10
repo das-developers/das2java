@@ -596,6 +596,7 @@ public class GrannyTextRenderer {
                                 } else {
                                     g4= (Graphics2D) ig.create( (int)current.x, (int)current.y, 100, 100 );
                                 }
+                                g4.setFont(activeFont);
                                 try {
                                     b1= painter.paint( g4, args );
                                     g4.dispose();
