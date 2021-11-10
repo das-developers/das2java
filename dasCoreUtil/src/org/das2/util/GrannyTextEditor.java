@@ -42,7 +42,7 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
      */
     public GrannyTextEditor() {
         initComponents();
-        psymButton.setVisible(false);
+        //psymButton.setVisible(false);
         canvas= new JPanel() {
             @Override
             protected void paintComponent(Graphics g1) {
