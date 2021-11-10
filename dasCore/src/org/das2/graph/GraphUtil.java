@@ -125,8 +125,13 @@ public class GraphUtil {
                     } else {
                         size = DasDevicePosition.parseLayoutStr(sspec, g.getFont().getSize(), g.getFont().getSize(), size);
                     }
-                } else if (args[i].startsWith("fillStyle=outline")) {
-                    fillStyle = FillStyle.STYLE_OUTLINE;
+                } else if (args[i].startsWith("fillStyle=")) {
+                    String sfillStyle= args[i].substring(10);
+                    if ( sfillStyle.equals("outline") ) {
+                        fillStyle = FillStyle.STYLE_OUTLINE;
+                    } else if ( sfillStyle.equals("none") ) {
+                        fillStyle = FillStyle.STYLE_NONE;
+                    } // STYLE_SOLID is default.
                 } else if (args[i].startsWith("connect=")) {
                     PsymConnector connect;
                     String sconnect = args[i].substring(8);
