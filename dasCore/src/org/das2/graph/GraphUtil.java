@@ -83,31 +83,35 @@ public class GraphUtil {
     private static GrannyTextRenderer.Painter createPlotSymbolPainter() {
         return (Graphics2D g, String[] args) -> {
             PlotSymbol p;
-            switch (args[0]) {
-                case "boxes":
-                    p = DefaultPlotSymbol.BOX;
-                    break;
-                case "circles":
-                    p = DefaultPlotSymbol.CIRCLES;
-                    break;
-                case "crosses":
-                    p = DefaultPlotSymbol.CROSS;
-                    break;
-                case "diamonds":
-                    p = DefaultPlotSymbol.DIAMOND;
-                    break;
-                case "exes":
-                    p = DefaultPlotSymbol.EX;
-                    break;
-                case "triangles":
-                    p = DefaultPlotSymbol.TRIANGLES;
-                    break;
-                case "none":
-                    p = DefaultPlotSymbol.NONE;
-                    break;
-                default:
-                    p = DefaultPlotSymbol.DIAMOND;
-                    break;
+            if ( args.length==0 ) {
+                p= DefaultPlotSymbol.BOX;
+            } else {
+                switch (args[0]) {
+                    case "boxes":
+                        p = DefaultPlotSymbol.BOX;
+                        break;
+                    case "circles":
+                        p = DefaultPlotSymbol.CIRCLES;
+                        break;
+                    case "crosses":
+                        p = DefaultPlotSymbol.CROSS;
+                        break;
+                    case "diamonds":
+                        p = DefaultPlotSymbol.DIAMOND;
+                        break;
+                    case "exes":
+                        p = DefaultPlotSymbol.EX;
+                        break;
+                    case "triangles":
+                        p = DefaultPlotSymbol.TRIANGLES;
+                        break;
+                    case "none":
+                        p = DefaultPlotSymbol.NONE;
+                        break;
+                    default:
+                        p = DefaultPlotSymbol.DIAMOND;
+                        break;
+                }
             }
             double size = 8;
             double fontSize = g.getFont().getSize2D();
