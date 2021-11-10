@@ -1639,7 +1639,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      */
     private TickVDescriptor updateTickVLog( DatumRange dr ) {
 
-        GrannyTextRenderer idlt = new GrannyTextRenderer();
+        GrannyTextRenderer idlt = GraphUtil.newGrannyTextRenderer();
         idlt.setString(this.getTickLabelFont(), "10!U-10");
 
         int nTicksMax;
@@ -1715,7 +1715,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
     private Rectangle getMaxBounds(DatumFormatter tdf, TickVDescriptor tickV) {
         String[] granny = tdf.axisFormat(tickV.tickV, getDatumRange());
-        GrannyTextRenderer idlt = new GrannyTextRenderer();
+        GrannyTextRenderer idlt = GraphUtil.newGrannyTextRenderer();
         Rectangle bounds = new Rectangle();
         for (String granny1 : granny) {
             idlt.setString(this.getTickLabelFont(), granny1);
@@ -1729,7 +1729,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             return false;
         }
         String[] granny = df.axisFormat(major, getDatumRange());
-        GrannyTextRenderer idlt = new GrannyTextRenderer();
+        GrannyTextRenderer idlt = GraphUtil.newGrannyTextRenderer();
         Rectangle[] bounds = new Rectangle[granny.length];
         for (int i = 0; i < granny.length; i++) {
             idlt.setString(this.getTickLabelFont(), granny[i]);
@@ -2339,7 +2339,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             int baseLine = position + Math.max( 0,tickLength ) + tick_label_gap + tickLabelFont.getSize();
             int rightEdge = DMin - tickLabelFontMetrics.stringWidth("0000") -  tickLabelFontMetrics.stringWidth(" ");
 
-            GrannyTextRenderer idlt = new GrannyTextRenderer();
+            GrannyTextRenderer idlt = GraphUtil.newGrannyTextRenderer();
             /*
             idlt.setString(this.getGraphics(), "SCET");
             int width = (int)Math.ceil(idlt.getWidth());
@@ -2613,7 +2613,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             if (!axisLabel.equals("") && isTickLabelsVisible() ) {
                 Graphics2D g2 = (Graphics2D) g.create();
                 int titlePositionOffset = getTitlePositionOffset();
-                GrannyTextRenderer gtr = new GrannyTextRenderer();
+                GrannyTextRenderer gtr = GraphUtil.newGrannyTextRenderer();
                 g2.setFont(getLabelFont());
                 if ( dasPlot!=null ) {
                     gtr.setAlignment( dasPlot.getMultiLineTextAlignment() );
@@ -2813,7 +2813,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             if (!axisLabel.equals("") && isTickLabelsVisible() ) {
                 Graphics2D g2 = (Graphics2D) g.create();
                 int titlePositionOffset = getTitlePositionOffset();
-                GrannyTextRenderer gtr = new GrannyTextRenderer();
+                GrannyTextRenderer gtr = GraphUtil.newGrannyTextRenderer();
                 g2.setFont(getLabelFont());
                 if ( dasPlot!=null ) {
                     gtr.setAlignment(dasPlot.getMultiLineTextAlignment());
@@ -2910,7 +2910,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 		int zeroOrPosTickLen= Math.max(0,tickLen);
         //int tickLength = this.tickLen; // tickLabelFont.getSize() * 2 / 3;
 
-        GrannyTextRenderer gtr = new GrannyTextRenderer();
+        GrannyTextRenderer gtr = GraphUtil.newGrannyTextRenderer();
         if ( dasPlot!=null ) gtr.setAlignment( dasPlot.getMultiLineTextAlignment() );
         gtr.setString(labelFont, axisLabel);
 
@@ -2967,7 +2967,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
 
         g.setFont(getTickLabelFont());
-        GrannyTextRenderer idlt = new GrannyTextRenderer();
+        GrannyTextRenderer idlt = GraphUtil.newGrannyTextRenderer();
         idlt.setString(g, label);
 
         int width;
@@ -3355,7 +3355,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             int size = Integer.MIN_VALUE;
             for (int i = 0; i < tickv.getLength(); i++) {
                 String label = tickFormatter(tickv.get(i));
-                GrannyTextRenderer idlt = new GrannyTextRenderer();
+                GrannyTextRenderer idlt = GraphUtil.newGrannyTextRenderer();
                 idlt.setString(f, label);
                 int labelSize = (int) Math.round(idlt.getWidth());
                 if (labelSize > size) {
@@ -3384,7 +3384,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             Graphics g = this.getGraphics();
             for (int i = 0; i < tickv.getLength(); i++) {
                 String label = tickFormatter(tickv.get(i));
-                GrannyTextRenderer idlt = new GrannyTextRenderer();
+                GrannyTextRenderer idlt = GraphUtil.newGrannyTextRenderer();
                 idlt.setString(g, label);
                 int labelSize = (int) Math.round(idlt.getWidth());
                 if (labelSize > size) {
@@ -3435,7 +3435,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
         String[] labels = tickFormatter( ltickV.tickV, dr );
 
-        GrannyTextRenderer gtr = new GrannyTextRenderer();
+        GrannyTextRenderer gtr = GraphUtil.newGrannyTextRenderer();
 
         Font labelFont = this.getLabelFont();
         Font font= this.getFont();
@@ -3543,7 +3543,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 if (blTitleRect != null) {
                     blTitleRect.y += tcaHeight;
                 }
-                GrannyTextRenderer idlt = new GrannyTextRenderer();
+                GrannyTextRenderer idlt = GraphUtil.newGrannyTextRenderer();
                 idlt.setString(tickLabelFont, "SCET");
                 int tcaLabelWidth = (int) Math.floor(idlt.getWidth() + 0.5);
                 QDataSet bds=null;
@@ -3701,7 +3701,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         //Add room for the axis label
         Font labelFont = getLabelFont();
 
-        GrannyTextRenderer gtr = new GrannyTextRenderer();
+        GrannyTextRenderer gtr = GraphUtil.newGrannyTextRenderer();
         gtr.setString(labelFont, getLabel());
         int labelSpacing = (int) gtr.getHeight() + labelFont.getSize() / 2;
 
@@ -3854,7 +3854,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         //Add room for the axis label
         Font labelFont = getLabelFont();
 
-        GrannyTextRenderer gtr = new GrannyTextRenderer();
+        GrannyTextRenderer gtr = GraphUtil.newGrannyTextRenderer();
         gtr.setString(labelFont, getLabel());
         int labelSpacing = (int) gtr.getHeight() + labelFont.getSize() / 2;
         if (leftLabel) {

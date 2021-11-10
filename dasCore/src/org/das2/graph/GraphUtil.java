@@ -8,6 +8,7 @@ package org.das2.graph;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.GeneralPath;
@@ -45,6 +46,8 @@ import org.das2.qds.QDataSet;
 import org.das2.qds.SemanticOps;
 import org.das2.qds.ops.Ops;
 import org.das2.util.DasMath;
+import org.das2.util.GrannyTextEditor;
+import org.das2.util.GrannyTextRenderer;
 import org.jdesktop.beansbinding.Converter;
 //import org.apache.xml.serialize.*;
 
@@ -56,6 +59,101 @@ import org.jdesktop.beansbinding.Converter;
  * @author  Jeremy
  */
 public class GraphUtil {
+
+    private static GrannyTextRenderer.Painter createBlockPainter() {
+        return (Graphics2D g, String[] args) -> {
+            double fontSize = g.getFont().getSize2D();
+            int s = (int) (fontSize * 2 / 3);
+            g.fillRect(1, -s + 2, s - 2, s - 4);
+            return new Rectangle(0, (int) -fontSize, (int) fontSize, (int) fontSize);
+        };
+    }
+
+    /**
+     * return a GrannyTextEditor with the Das2Core extras added.
+     * @return
+     */
+    public static GrannyTextRenderer newGrannyTextRenderer() {
+        GrannyTextRenderer result = new GrannyTextRenderer();
+        result.addPainter("psym", createPlotSymbolPainter());
+        result.addPainter("block", createBlockPainter());
+        return result;
+    }
+
+    private static GrannyTextRenderer.Painter createPlotSymbolPainter() {
+        return (Graphics2D g, String[] args) -> {
+            PlotSymbol p;
+            switch (args[0]) {
+                case "boxes":
+                    p = DefaultPlotSymbol.BOX;
+                    break;
+                case "circles":
+                    p = DefaultPlotSymbol.CIRCLES;
+                    break;
+                case "crosses":
+                    p = DefaultPlotSymbol.CROSS;
+                    break;
+                case "diamonds":
+                    p = DefaultPlotSymbol.DIAMOND;
+                    break;
+                case "exes":
+                    p = DefaultPlotSymbol.EX;
+                    break;
+                case "triangles":
+                    p = DefaultPlotSymbol.TRIANGLES;
+                    break;
+                case "none":
+                    p = DefaultPlotSymbol.NONE;
+                    break;
+                default:
+                    p = DefaultPlotSymbol.DIAMOND;
+                    break;
+            }
+            double size = 8;
+            double fontSize = g.getFont().getSize2D();
+            FillStyle fillStyle = FillStyle.STYLE_SOLID;
+            for (int i = 1; i < args.length; i++) {
+                if (args[i].startsWith("size=")) {
+                    String sspec = args[i].substring(5);
+                    if (Character.isDigit(sspec.charAt(sspec.length() - 1))) {
+                        size = Double.parseDouble(sspec);
+                    } else {
+                        size = DasDevicePosition.parseLayoutStr(sspec, g.getFont().getSize(), g.getFont().getSize(), size);
+                    }
+                } else if (args[i].startsWith("fillStyle=outline")) {
+                    fillStyle = FillStyle.STYLE_OUTLINE;
+                } else if (args[i].startsWith("connect=")) {
+                    PsymConnector connect;
+                    String sconnect = args[i].substring(8);
+                    if (sconnect.equals("solid")) {
+                        connect = PsymConnector.SOLID;
+                    } else if (sconnect.equals("dots")) {
+                        connect = PsymConnector.DOTS;
+                    } else {
+                        connect = PsymConnector.SOLID;
+                    }
+                    double x = fontSize / 2;
+                    double y = -fontSize * 2 / 3.0 / 2;
+                    connect.drawLine(g, x - size, y + size * 4 / 11, x + size, y - size * 4 / 11, 1.5F);
+                    //connect.drawLine( g, 2, 3, 13, 7, 1.5f);
+                }
+            }
+            p.draw(g, fontSize / 2, -fontSize * 2 / 3.0 / 2, (float) size, fillStyle);
+            Rectangle r = new Rectangle(0, (int) -fontSize, (int) fontSize, (int) fontSize);
+            return r;
+        };
+    }
+
+    /**
+     * return a GrannyTextEditor with the Das2Core extras added.
+     * @return
+     */
+    public static GrannyTextEditor newGrannyTextEditor() {
+        GrannyTextEditor result = new GrannyTextEditor();
+        result.addPainter("psym", createPlotSymbolPainter());
+        result.addPainter("block", createBlockPainter());
+        return result;
+    }
 	
 	/**
 	 * Classes that implement this interface provide their instances with

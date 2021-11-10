@@ -13,6 +13,7 @@ import org.das2.event.MoveComponentMouseModule;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
+import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -34,11 +35,11 @@ import javax.swing.Action;
 import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
 import org.das2.datum.DatumRange;
-import org.das2.datum.DatumRangeUtil;
 import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.LoggerManager;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
+import org.das2.util.GrannyTextEditor;
 
 /**
  * This makes a DasCanvasComponent for GrannyTextRenderer, and 
@@ -110,10 +111,10 @@ public class DasAnnotation extends DasCanvasComponent {
                 this.img= ImageIO.read( new URL(string) );
             } catch (IOException ex) {
                 logger.log(Level.SEVERE, null, ex);
-                this.gtr = new GrannyTextRenderer();
+                this.gtr = GraphUtil.newGrannyTextRenderer();
             }
         } else {
-            this.gtr = new GrannyTextRenderer();
+            this.gtr = GraphUtil.newGrannyTextRenderer();
             this.gtr.setString( getFont(), "" );
         }
         this.templateString = string;
@@ -197,7 +198,7 @@ public class DasAnnotation extends DasCanvasComponent {
         this.getDasMouseInputAdapter().addMouseModule(pointAtMouseModule);
 
     }
-
+    
     private void adjustDataRanges( int dx, int dy ) {
         
     }
@@ -313,11 +314,11 @@ public class DasAnnotation extends DasCanvasComponent {
                         img= ImageIO.read(new URL(string));
                         gtr= null;
                     } catch ( IOException ex ) {
-                        gtr= new GrannyTextRenderer();
+                        gtr= GraphUtil.newGrannyTextRenderer();
                         gtr.setString( this.getGraphics(), getString() );
                     }
                 } else {
-                    gtr= new GrannyTextRenderer();
+                    gtr= GraphUtil.newGrannyTextRenderer();
                     gtr.setString( this.getGraphics(), getString() );
                     for ( Entry<String,GrannyTextRenderer.Painter> ee: painters.entrySet() ) {
                         gtr.addPainter( ee.getKey(), ee.getValue() );
@@ -363,7 +364,7 @@ public class DasAnnotation extends DasCanvasComponent {
                 img= ImageIO.read(new URL(url));
                 gtr= null;
             } catch ( IOException ex ) {
-                gtr= new GrannyTextRenderer();
+                gtr= GraphUtil.newGrannyTextRenderer();
                 gtr.setString( this.getGraphics(), url );
             }
         }
@@ -1530,6 +1531,4 @@ public class DasAnnotation extends DasCanvasComponent {
         firePropertyChange(PROP_ANCHOROFFSET, oldAnchorOffset, anchorOffset);
         resize();
     }
-
-    
 }
