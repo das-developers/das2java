@@ -1,14 +1,14 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package org.das2.util;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+import java.util.prefs.Preferences;
 import javax.swing.DefaultListModel;
 import javax.swing.Icon;
 import javax.swing.JLabel;
@@ -18,9 +18,6 @@ import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.colorchooser.AbstractColorChooserPanel;
 import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import org.das2.util.ColorUtil;
-import org.das2.util.DesktopColorChooserPanel;
 
 /**
  * Show list of 140 named web colors, like SaddleBrown and OliveDrab
@@ -29,6 +26,7 @@ import org.das2.util.DesktopColorChooserPanel;
 public class NamedColorChooserPanel extends AbstractColorChooserPanel {
 
     JList l;
+    private boolean ignoreChanges=false;
     
     @Override
     public void updateChooser() {
@@ -42,9 +40,20 @@ public class NamedColorChooserPanel extends AbstractColorChooserPanel {
         }
     }
 
+    private static void updateFavorites(String[] ss, JList myFavoritesList ) {
+        final DefaultListModel m2= new DefaultListModel( );
+        for ( String s: ss ) {
+            m2.addElement(s);
+        }
+        myFavoritesList.setModel(m2);
+    }
+    
     @Override
     protected void buildChooser() {
         l= new JList();
+
+        final JList myFavoritesList= new JList();
+        
         final Map<String,Color> colors= ColorUtil.getNamedColors();
         final DefaultListModel m= new DefaultListModel( );
         for ( String s: colors.keySet() ) {
@@ -56,7 +65,7 @@ public class NamedColorChooserPanel extends AbstractColorChooserPanel {
             @Override
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 label.setText(String.valueOf(value));
-                Color cc=  colors.get((String)value);
+                Color cc=  ColorUtil.decodeColor((String)value);
                 label.setIcon( DesktopColorChooserPanel.colorIcon( cc, 24, 16 ) );
                 if( isSelected ) {
                     label.setBackground( list.getSelectionBackground() );
@@ -72,19 +81,46 @@ public class NamedColorChooserPanel extends AbstractColorChooserPanel {
         };
         l.setCellRenderer(r);
         l.setSelectionMode( ListSelectionModel.SINGLE_SELECTION );
-        l.addListSelectionListener( new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                String colorName= String.valueOf( l.getSelectedValue() );
-                getColorSelectionModel().setSelectedColor(colors.get(colorName));
+        l.addListSelectionListener((ListSelectionEvent e) -> {
+            String colorName= String.valueOf( l.getSelectedValue() );
+            getColorSelectionModel().setSelectedColor( ColorUtil.decodeColor(colorName) );
+            
+            if ( !ignoreChanges ) {
+                Preferences prefs= Preferences.userNodeForPackage(this.getClass());
+                String ps = prefs.get("namedPalette", "black,white,DodgerBlue");
+                List<String> ss= new LinkedList( Arrays.asList(ps.split(",")) );
+                ss.remove(colorName);
+                ss.add(colorName);
+                while ( ss.size()>6 ) {
+                    ss.remove(0);
+                }
+                prefs.put( "namedPalette", String.join(",",ss) );
+                updateFavorites(ss.toArray(new String[ss.size()]),myFavoritesList);
             }
+            
         });
         
         this.setLayout(new BorderLayout());
         
+        String ps = Preferences.userNodeForPackage(this.getClass()).get("namedPalette", "black,white,DodgerBlue");
+        
+        String[] ss= ps.split(",");
+        updateFavorites(ss,myFavoritesList);
+        myFavoritesList.setCellRenderer(r);
+        myFavoritesList.addListSelectionListener((ListSelectionEvent e) -> {
+            if ( ignoreChanges ) return;
+            String colorName= String.valueOf( myFavoritesList.getSelectedValue() );
+            if ( colorName==null ) return;
+            ignoreChanges= true;
+            getColorSelectionModel().setSelectedColor( ColorUtil.decodeColor(colorName) );
+            ignoreChanges= false;
+        });
+        JScrollPane jsp2= new JScrollPane(myFavoritesList,JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        this.add(jsp2,BorderLayout.EAST);
+        
         JScrollPane jsp= new JScrollPane(l,JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         
-        this.add(jsp,BorderLayout.CENTER);
+        this.add(jsp,BorderLayout.CENTER );
     }
 
     @Override

@@ -174,7 +174,7 @@ public class DesktopColorChooserPanel extends AbstractColorChooserPanel {
         return null;
     }
 
-    private class Palette extends JComponent {
+    public class Palette extends JComponent {
 
         List<Color> palette = new ArrayList();
 
