@@ -39,6 +39,9 @@ import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.LoggerManager;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
+import org.das2.event.DragRenderer;
+import org.das2.event.EmptyDragRenderer;
+import org.das2.event.MouseDragEvent;
 import org.das2.util.GrannyTextEditor;
 
 /**
@@ -131,7 +134,7 @@ public class DasAnnotation extends DasCanvasComponent {
 
         this.getDasMouseInputAdapter().addMenuItem(new JMenuItem(removeMeAction));
 
-        MouseModule mm = new MoveComponentMouseModule(this) {
+        MouseModule mm = new MoveComponentMouseModule( this ) {
             Point p0;
             
             @Override
@@ -174,6 +177,25 @@ public class DasAnnotation extends DasCanvasComponent {
                     Datum oldy= getPointAtY();
                     Datum x= plot.getXAxis().invTransform(e.getX()+getX());
                     Datum y= plot.getYAxis().invTransform(e.getY()+getY());
+                    
+                    if ( e.isShiftDown() ) {
+                        String xs= getReferenceX().trim();
+                        if ( xs.length()>0 ) {
+                            setReferenceX( xs + ";" + x.toString() );
+                        } else {
+                            setReferenceX( getPointAtX().toString() + ";" + x.toString() );
+                        }
+                        String ys= getReferenceY().trim();
+                        if ( ys.length()>0 ) {
+                            setReferenceY( ys + ";" + y.toString() );
+                        } else {
+                            setReferenceY( getPointAtY().toString() + ";" + y.toString() );
+                        }
+                    } else {
+                        setReferenceX("");
+                        setReferenceY("");
+                    }
+                    
                     setPointAtX(x);
                     setPointAtY(y);
                     
