@@ -23,7 +23,8 @@ import java.awt.geom.PathIterator;
 import java.awt.image.BufferedImage;
 
 /**
- *
+ * Resets the component row and column to implement the move requested with a 
+ * mouse drag.
  * @author jbf
  */
 public class MoveComponentMouseModule extends MouseModule {
@@ -82,6 +83,7 @@ public class MoveComponentMouseModule extends MouseModule {
             return gp;
         }
 
+        @Override
         public Rectangle[] renderDrag(Graphics g1, Point p1, Point p2) {
             Rectangle bounds = c.getActiveRegion().getBounds();
             bounds.translate(p2.x - p1.x, p2.y - p1.y);
@@ -93,23 +95,30 @@ public class MoveComponentMouseModule extends MouseModule {
             return new Rectangle[] { enlarge(bounds.getBounds(), 1.2 ).getBounds()};
         }
 
+        @Override
         public void clear(Graphics g) {
         }
 
+        @Override
         public MouseDragEvent getMouseDragEvent(Object source, Point p1, Point p2, boolean isModified) {
-            return null;
+            return new MouseDragEvent(source);
         }
 
+        @Override
         public boolean isPointSelection() {
             return false;
         }
 
+        @Override
         public boolean isUpdatingDragSelection() {
             return true;
         }
     }
 
-    /** Creates a new instance of MoveComponentMouseModule */
+    /** 
+     * Creates a new instance of MoveComponentMouseModule
+     * @param parent
+     */
     public MoveComponentMouseModule(DasCanvasComponent parent) {
         super(parent, new MoveRenderer(parent), "Move Component");
     }
