@@ -7012,7 +7012,14 @@ public final class Ops {
                     } else {
                         mds.putProperty( name, value);
                     }   break;
-                default:
+                case DataSetUtil.PROPERTY_TYPE_STRING:
+                    String svalue= (String)value;
+                    if ( svalue.startsWith("'") && svalue.endsWith("'") ) {
+                        svalue= svalue.substring(1,svalue.length()-1);
+                    }
+                    mds.putProperty( name, svalue);
+                    break;
+                default: // what am I not thinking of?
                     mds.putProperty( name, value);
                     break;
             }
