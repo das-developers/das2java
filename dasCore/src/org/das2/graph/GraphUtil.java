@@ -74,13 +74,27 @@ public class GraphUtil {
         };
     }
     
-    
-    private static GrannyTextRenderer.Painter createImagePainter( ) {
-        return (Graphics2D g, String[] args) -> {
+    private static class ImagePainter implements GrannyTextRenderer.Painter {
+        
+        private static Map<String,BufferedImage> cache= new HashMap<>();
+        private static Map<String,Long> cacheBirthMilli= new HashMap<>();
+                
+        private static long CACHE_TIMEOUT_MS= 10000;
+        
+        @Override
+        public Rectangle2D paint(Graphics2D g, String[] args) {
             try {
-                long t0= System.currentTimeMillis();
-                BufferedImage im = ImageIO.read( new URL(args[0]) );
-                System.err.println("time to load image: "+(System.currentTimeMillis()-t0));
+                BufferedImage im;
+                synchronized ( this ) {
+                    Long milli= cacheBirthMilli.get(args[0]);
+                    if ( milli==null || ( System.currentTimeMillis()-milli )>CACHE_TIMEOUT_MS ) {
+                        im = ImageIO.read( new URL(args[0]) );
+                        cache.put( args[0], im );
+                        cacheBirthMilli.put( args[0], System.currentTimeMillis() );
+                    } else {
+                        im= cache.get( args[0] );
+                    }
+                }
                 double scale;
                 if ( args.length<2 ) {
                     scale= 1.0;
@@ -107,7 +121,12 @@ public class GraphUtil {
                 g.draw( r );
                 return r;
             }
-        };
+        }
+        
+    }
+    
+    private static GrannyTextRenderer.Painter createImagePainter( ) {
+        return new ImagePainter();
     }
         
 
