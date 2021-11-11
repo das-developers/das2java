@@ -74,6 +74,11 @@ public class GraphUtil {
         };
     }
     
+    /**
+     * implements "!(painter;img;http://autoplot.org/wiki/images/Logo96.png;50%)<br>Autoplot"
+     * which is intended to replace the URL property of annotations.
+     * 
+     */
     private static class ImagePainter implements GrannyTextRenderer.Painter {
         
         private static Map<String,BufferedImage> cache= new HashMap<>();
