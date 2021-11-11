@@ -9464,6 +9464,7 @@ public final class Ops {
      * @return two element, rank 1 "bins" dataset.
      */
     public static QDataSet extent( QDataSet ds, QDataSet range  ) {
+        if ( ds==null ) throw new IllegalArgumentException("dataset is null");
         QDataSet wds = DataSetUtil.weightsDataSet(ds);
         return extent( ds, wds, range );
     }
@@ -9482,7 +9483,7 @@ public final class Ops {
     public static QDataSet extentSimple( QDataSet ds, QDataSet wds, QDataSet range  ) {
         
         logger.entering(CLASSNAME, "extentSimple" );
-        
+        if ( ds==null ) throw new IllegalArgumentException("dataset is null");
         int count=0;
         
         if ( wds==null ) {
@@ -14311,6 +14312,31 @@ public final class Ops {
         }
         return result.toString();
     }
+    
+    /**
+     * return true of the representation of fill is different in the two data sets.
+     * TODO: this does not consider WEIGHTS.
+     * @param ds1
+     * @param ds2
+     * @return true of the representation of fill is different in the two data sets.
+     */
+    public static boolean fillIsDifferent(QDataSet ds1, QDataSet ds2) {
+        String[] props = new String[]{QDataSet.FILL_VALUE, QDataSet.VALID_MIN, QDataSet.VALID_MAX};
+        for (String p : props) {
+            Number fill1 = (Number) ds1.property(p);
+            Number fill2 = (Number) ds2.property(p);
+            if (fill1 == null) {
+                if (fill2 != null) {
+                    return true;
+                }
+            } else {
+                if (!fill1.equals(fill2)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }    
 
     /**
      * transpose the rank 2 or rank 1 dataset.  result[i,j]= ds[j,i] for each i,j;

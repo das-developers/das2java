@@ -4,6 +4,7 @@
  */
 package org.das2.qds.buffer;
 
+import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
@@ -833,11 +834,11 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         int myLength= elementSizeBytes * this.len0 * this.len1 * this.len2 * this.len3;
         int dsLength= elementSizeBytes * ds.len0 * ds.len1 * ds.len2 * ds.len3;
         
-        if ( this.len1 * this.len2 * this.len3 * byteCount(this.type) < this.reclen ) {
+        if ( this.len1 * this.len2 * this.len3 * elementSizeBytes < this.reclen ) {
             throw new IllegalArgumentException("dataset must be compact");
         }
         
-        if ( ds.len1 * ds.len2 * ds.len3 * byteCount(ds.type) < ds.reclen ) {
+        if ( ds.len1 * ds.len2 * ds.len3 * elementSizeBytes < ds.reclen ) {
             BufferDataSet ds2= ds.compact();
             ds= ds2;
         }
@@ -850,7 +851,7 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
 
         ByteBuffer dsBuffer= ds.back.duplicate(); // TODO: verify thread safety
         
-        int recLenBytes= ds.len1 * ds.len2 * ds.len3 * byteCount(type);
+        int recLenBytes= ds.len1 * ds.len2 * ds.len3 * elementSizeBytes;
         if ( this.reclen < ds.reclen || this.recoffset!=0 || ds.recoffset!=0 ) { // there's a lot of data we aren't reading, we need to compact the data.
             ByteBuffer lback= ds.back.duplicate();
             this.back.position( recoffset + myLength );
@@ -868,6 +869,37 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
             this.back.put( dsBuffer );
             this.back.flip();
         }
+        
+        QDataSet weights=null;
+        if ( Ops.fillIsDifferent( this, ds ) ) {
+            
+            QDataSet v1= Ops.copy( Ops.valid(this) );
+            QDataSet v2= Ops.copy( Ops.valid(ds) );
+            QDataSet valid1= v1.rank()==1 ? v1 : Ops.reform( v1, new int[] { myLength / elementSizeBytes } );
+            QDataSet valid2= v2.rank()==1 ? v2 : Ops.reform( v2, new int[] { dsLength / elementSizeBytes } );
+            if ( this.type==double.class ) {
+                QDataSet r= Ops.where( Ops.eq( valid1,0 ) );
+                for ( int i=0; i<r.length(); i++ ) {
+                    dsBuffer.putDouble( (int)r.value(i) * elementSizeBytes, Double.NaN );
+                }
+                r= Ops.where( Ops.eq( valid2,0 ) );
+                for ( int i=0; i<r.length(); i++ ) {
+                    dsBuffer.putDouble( myLength + (int)r.value(i) * elementSizeBytes, Double.NaN );
+                }
+            } else if ( this.type==float.class ) {
+                QDataSet r= Ops.where( Ops.eq( valid1,0 ) );
+                for ( int i=0; i<r.length(); i++ ) {
+                    dsBuffer.putFloat( (int)r.value(i) * elementSizeBytes, Float.NaN );
+                }
+                r= Ops.where( Ops.eq( valid2,0 ) );
+                for ( int i=0; i<r.length(); i++ ) {
+                    dsBuffer.putFloat( myLength + (int)r.value(i) * elementSizeBytes, Float.NaN );
+                }
+            } else {
+                weights= Ops.append( Ops.valid(this), Ops.valid(ds) );
+            }
+        }
+        
         
         Units u1= SemanticOps.getUnits(this);
         Units u2= SemanticOps.getUnits(ds);
@@ -889,8 +921,10 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         
         this.len0= this.len0 + ds.len0;
 
-        properties.putAll( joinProperties( this, ds ) ); //TODO: verify
-
+        properties.putAll( joinProperties( this, ds ) );
+        if ( weights!=null ) {
+            properties.put( QDataSet.WEIGHTS, weights );
+        }
     }
     
     /**
@@ -925,14 +959,16 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         } // time21
         if ( ths.back.order()!=ds.back.order() ) throw new IllegalArgumentException("byte order (endianness) must be the same");
 
-        int myLength= ths.len0 * ths.len1 * ths.len2 * ths.len3 * byteCount(ths.type);
-        int dsLength= ds.len0 * ds.len1 * ds.len2 * ds.len3 * byteCount(ds.type);
+        int elementSizeBytes = byteCount(ths.type);
+                
+        int myLength= ths.len0 * ths.len1 * ths.len2 * ths.len3 * elementSizeBytes;
+        int dsLength= ds.len0 * ds.len1 * ds.len2 * ds.len3 * elementSizeBytes;
 
-        if ( ths.len1 * ths.len2 * ths.len3 * byteCount(ths.type) < ths.reclen ) {
+        if ( ths.len1 * ths.len2 * ths.len3 * elementSizeBytes < ths.reclen ) {
             ths= ths.compact();
         }
         
-        if ( ds.len1 * ds.len2 * ds.len3 * byteCount(ds.type) < ds.reclen ) {
+        if ( ds.len1 * ds.len2 * ds.len3 * elementSizeBytes < ds.reclen ) {
             ds= ds.compact();
         }
         ByteBuffer newback= checkedAllocateDirect( myLength + dsLength );
@@ -951,6 +987,37 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         BufferDataSet result= BufferDataSet.makeDataSet( ths.rank, ths.reclen, 0, 
                 ths.len0 + ds.len0, ths.len1, ths.len2, ths.len3, 
                 newback, ths.type );
+               
+        QDataSet weights=null;
+        if ( Ops.fillIsDifferent( ths, ds ) ) {
+            
+            QDataSet v1= Ops.copy( Ops.valid(ths) );
+            QDataSet v2= Ops.copy( Ops.valid(ds) );
+            QDataSet valid1= v1.rank()==1 ? v1 : Ops.reform( v1, new int[] { myLength / elementSizeBytes } );
+            QDataSet valid2= v2.rank()==1 ? v2 : Ops.reform( v2, new int[] { dsLength / elementSizeBytes } );
+            if ( ths.type==double.class ) {
+                QDataSet r= Ops.where( Ops.eq( valid1,0 ) );
+                for ( int i=0; i<r.length(); i++ ) {
+                    newback.putDouble( (int)r.value(i) * elementSizeBytes, Double.NaN );
+                }
+                r= Ops.where( Ops.eq( valid2,0 ) );
+                for ( int i=0; i<r.length(); i++ ) {
+                    newback.putDouble( myLength + (int)r.value(i) * elementSizeBytes, Double.NaN );
+                }
+            } else if ( ths.type==float.class ) {
+                QDataSet r= Ops.where( Ops.eq( valid1,0 ) );
+                for ( int i=0; i<r.length(); i++ ) {
+                    newback.putFloat( (int)r.value(i) * elementSizeBytes, Float.NaN );
+                }
+                r= Ops.where( Ops.eq( valid2,0 ) );
+                for ( int i=0; i<r.length(); i++ ) {
+                    newback.putFloat( myLength + (int)r.value(i) * elementSizeBytes, Float.NaN );
+                }
+            } else {
+                weights= Ops.append( Ops.valid(ths), Ops.valid(ds) );
+            }
+        }
+        
                 
         Units u1= SemanticOps.getUnits(ths);
         Units u2= SemanticOps.getUnits(ds);
@@ -972,7 +1039,10 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         
         result.properties.putAll( joinProperties( ths, ds ) );
         result.properties.put( QDataSet.UNITS, u1 ); // since we resolve units when they change (bug 3469219)
-
+        if ( weights!=null ) {
+            result.properties.put( QDataSet.WEIGHTS, weights );
+        }
+        
         result.fieldStride= ths.fieldStride;
         result.recStride= ths.recStride;
         

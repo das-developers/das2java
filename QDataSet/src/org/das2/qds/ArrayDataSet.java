@@ -737,7 +737,7 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
             dfill= Double.NaN;
         }
     }
-
+    
     /**
      * append the second dataset onto this dataset.  The two datasets need 
      * only have convertible units, so for example two time arrays may be appended 
@@ -797,6 +797,38 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
         System.arraycopy( ds1.getBackReadOnly(), 0, newback, 0, myLength );
         System.arraycopy( ds2.getBackReadOnly(), 0, newback, myLength, dsLength );
 
+        Class backClass= newback.getClass().getComponentType();
+        
+        QDataSet weights=null;
+        if ( Ops.fillIsDifferent(ds1,ds2) ) {
+            QDataSet v1= Ops.copy( Ops.valid(ds1) );
+            QDataSet v2= Ops.copy( Ops.valid(ds2 ) );
+            QDataSet valid1= v1.rank()==1 ? v1 : Ops.reform( v1, new int[] { myLength } );
+            QDataSet valid2= v2.rank()==1 ? v2 : Ops.reform( v2, new int[] { dsLength } );
+            if ( backClass==double.class ) {
+                QDataSet r= Ops.where( Ops.eq( valid1,0 ) );
+                for ( int i=0; i<r.length(); i++ ) {
+                    Array.setDouble( newback, (int)r.value(i), Double.NaN );
+                }
+                r= Ops.where( Ops.eq( valid2,0 ) );
+                for ( int i=0; i<r.length(); i++ ) {
+                    Array.setDouble( newback, myLength + (int)r.value(i), Double.NaN );
+                }
+            } else if ( backClass==float.class ) {
+                QDataSet r= Ops.where( Ops.eq( valid1,0 ) );
+                for ( int i=0; i<r.length(); i++ ) {
+                    Array.setFloat( newback, (int)r.value(i), Float.NaN );
+                }
+                r= Ops.where( Ops.eq( valid2,0 ) );
+                for ( int i=0; i<r.length(); i++ ) {
+                    Array.setFloat( newback, myLength + (int)r.value(i), Float.NaN );
+                }
+            } else {
+                weights= Ops.append( Ops.valid(ds1), Ops.valid(ds2) );
+            }
+        }
+        
+        
         if ( SemanticOps.isBundle(ds1) && SemanticOps.isBundle(ds2) ) {
             QDataSet bds1= (QDataSet) ds1.property(QDataSet.BUNDLE_1);
             QDataSet bds2= (QDataSet) ds2.property(QDataSet.BUNDLE_1);
@@ -815,7 +847,6 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
         Units u2= SemanticOps.getUnits(ds2);
         if ( u1!=u2 ) {
             UnitsConverter uc= UnitsConverter.getConverter(u2,u1);
-            Class backClass= ds1.getBackReadOnly().getClass().getComponentType();
             for ( int i=myLength; i<myLength+dsLength; i++ ) { //TODO: this is going to be sub-optimal that its much slower than it needs to be because if statements.
                 Number nv=  uc.convert(Array.getDouble( newback,i) ) ;
                 if ( backClass==double.class ) {
@@ -843,8 +874,12 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
         ArrayDataSet result= create( rank, len0, ds1.len1, ds1.len2, ds1.len3, newback );
 
         result.properties.putAll( joinProperties( ds1, ds2 ) );
-        result.properties.put( QDataSet.UNITS, u1 ); // since we resolve units when they change (bug 3469219)
+        result.properties.put( QDataSet.UNITS, u1 ); // since we resolve units when they change (bug https://sourceforge.net/p/autoplot/bugs/825/)
 
+        if ( weights!=null ) {
+            result.putProperty( QDataSet.WEIGHTS, weights );
+        }
+        
         return result;
     }
 
@@ -911,6 +946,7 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
             }
         }
 
+        // when the two datasets have the same values for a property, the property is kept.
         props= DataSetUtil.dimensionProperties();
         for (String prop : props) {
             Object value= ds1.property(prop);
@@ -918,6 +954,7 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
                 result.put( prop, ds1.property(prop) );
             }
         }
+        
         // special handling for QDataSet.CADENCE, and QDataSet.MONOTONIC
         props= new String[] { QDataSet.CADENCE, QDataSet.BINS_1 };
         for (String prop : props) {
