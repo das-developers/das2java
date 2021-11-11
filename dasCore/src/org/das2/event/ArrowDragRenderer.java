@@ -3,7 +3,6 @@
  *
  * Created on February 13, 2007, 3:50 PM
  *
- *
  */
 
 package org.das2.event;
@@ -15,7 +14,8 @@ import java.awt.Point;
 import java.awt.Rectangle;
 
 /**
- *
+ * indicates where an arrow will be added to the canvas by drawing an arrow 
+ * as the mouse drags.
  * @author Jeremy
  */
 public class ArrowDragRenderer implements DragRenderer {
@@ -40,7 +40,7 @@ public class ArrowDragRenderer implements DragRenderer {
     
     @Override
     public MouseDragEvent getMouseDragEvent(Object source, Point p1, Point p2, boolean isModified) {
-        return null;
+        return new MouseDragEvent(source);
     }
     
     @Override
