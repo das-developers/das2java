@@ -13,7 +13,7 @@ a more flexible data model defined by the
 [QDataSet](http://autoplot.org/QDataSet) interface.
 
 This code contained here has traditionally been called dasCore, but since
-that is the name of one of the sub-project directories within the repoisitory,
+that is the name of one of the sub-project directories within the repository,
 and to distinguish it from core das2 support in other languages, it is
 referred to as das2java here.
 
