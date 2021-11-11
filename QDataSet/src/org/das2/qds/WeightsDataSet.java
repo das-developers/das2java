@@ -104,27 +104,30 @@ public abstract class WeightsDataSet implements QDataSet {
 
     @Override
     public Object property(String name) {
-        if ( name.equals(QDataSet.FILL_VALUE) ) return reportFill; // https://sourceforge.net/p/autoplot/bugs/1458/
-        if ( name.equals(QDataSet.NAME ) ) return dsname;
-        if ( name.equals(PROP_SUGGEST_FILL) ) return fill;
-        return null;
-
+        switch ( name ) {
+            case QDataSet.FILL_VALUE:
+                return reportFill; // https://sourceforge.net/p/autoplot/bugs/1458/
+            case QDataSet.NAME:
+                return dsname;
+            case PROP_SUGGEST_FILL:
+                return fill;
+            case QUBE:
+                return ds.property(QDataSet.QUBE);
+            case DEPEND_0:
+                return ds.property(QDataSet.DEPEND_0);
+            case DEPEND_1:
+                return ds.property(QDataSet.DEPEND_1);
+            case DEPEND_2:
+                return ds.property(QDataSet.DEPEND_2);
+            case DEPEND_3:
+                return ds.property(QDataSet.DEPEND_3);
+            default:
+                return null;
+        }
     }
 
     @Override
     public Object property(String name, int i) {
-        return property(name);
-    }
-
-    public Object property(String name, int i0, int i1) {
-        return property(name);
-    }
-
-    public Object property(String name, int i0, int i1, int i2) {
-        return property(name);
-    }
-
-    public Object property(String name, int i0, int i1, int i2, int i3) {
         return property(name);
     }
 
