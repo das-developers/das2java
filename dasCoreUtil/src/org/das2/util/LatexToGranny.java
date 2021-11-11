@@ -120,7 +120,8 @@ public class LatexToGranny {
             "A^{B+C}",
             "\\sqrt{a + b}" };
         for ( String t: tests ) {
-            System.err.println( t );
+            System.err.print( t );
+            System.err.print( " --> ");
             System.err.println( latexToGranny( t ) );
         }
     }
