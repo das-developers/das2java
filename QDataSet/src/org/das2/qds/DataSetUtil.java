@@ -1070,7 +1070,8 @@ public class DataSetUtil {
         if ( ds.rank()==1 && "min,maxInclusive".equals(ds.property(QDataSet.BINS_0)) ) {
             if (  ds.value(0) <= ds.value(1) ) {
                 DatumRange dr= new DatumRange( ds.value(0), ds.value(1), u );
-                return dr.toString() + "  (inclusive)";
+                String s= DatumRangeUtil.toStringInclusive( new DatumRange( ds.value(0), ds.value(1), u ) );
+                return s;
             } else {
                 return String.format( "%s %s (invalid because BINS_0=min,maxInclusive)", ds.slice(0), ds.slice(1) );
             }
@@ -1108,7 +1109,7 @@ public class DataSetUtil {
 
                 DatumRange dr1= new DatumRange( ds.value(0,0), ds.value(0,1), u1==null ? Units.dimensionless : u1 );
                 DatumRange dr2= new DatumRange( ds.value(1,0), ds.value(1,1), u2==null ? Units.dimensionless : u2 );
-                return dr1.toString() + "; "+ dr2.toString() + "  (inclusive)";
+                return DatumRangeUtil.toStringInclusive( dr1 ) + "; "+ DatumRangeUtil.toStringInclusive( dr2 );
             }
         }
 
@@ -2811,8 +2812,7 @@ public class DataSetUtil {
             StringBuilder result= new StringBuilder();
             Units u= (Units) ds.property(QDataSet.UNITS);
             if ( u==null ) u= Units.dimensionless;
-            result.append( new DatumRange( ds.value(0), ds.value(1), u ).toString() );
-            result.append( "(inclusive)" );
+            result.append( DatumRangeUtil.toStringInclusive( new DatumRange( ds.value(0), ds.value(1), u ) ) );
             String[] ss= ((String)ds.property(QDataSet.BINS_0)).split(",",-2);
             if (ss.length!=ds.length() ) throw new IllegalArgumentException("bins count != length in ds");
             return result.toString();
