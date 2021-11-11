@@ -11,6 +11,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.geom.GeneralPath;
 import org.das2.datum.DatumRange;
 import org.das2.datum.Units;
@@ -24,6 +25,9 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.ConvolveOp;
 import java.awt.image.Kernel;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
@@ -36,6 +40,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.imageio.ImageIO;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
@@ -68,6 +73,43 @@ public class GraphUtil {
             return new Rectangle(0, (int) -fontSize, (int) fontSize, (int) fontSize);
         };
     }
+    
+    
+    private static GrannyTextRenderer.Painter createImagePainter( ) {
+        return (Graphics2D g, String[] args) -> {
+            try {
+                long t0= System.currentTimeMillis();
+                BufferedImage im = ImageIO.read( new URL(args[0]) );
+                System.err.println("time to load image: "+(System.currentTimeMillis()-t0));
+                double scale;
+                if ( args.length<2 ) {
+                    scale= 1.0;
+                } else {
+                    double ws;
+                    try {
+                        ws= Double.parseDouble(args[1]);
+                    } catch ( NumberFormatException ex ) {
+                        ws = DasDevicePosition.parseLayoutStr( args[1], g.getFont().getSize2D(), im.getWidth(), im.getWidth() );
+                    }
+                    scale= ws/im.getWidth();
+                }
+                int h = (int)(im.getHeight()*scale);
+                int w = (int)(im.getWidth()*scale);
+                g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
+                g.scale(scale,scale);
+                g.drawImage( im,0,-im.getHeight(),null );
+                Rectangle r = new Rectangle( 0,-h,w,h );
+                return r;
+            } catch (IOException | NumberFormatException ex) {
+                g.drawLine(0,0,16,16);
+                g.drawLine(0,16,16,0);
+                Rectangle r= new Rectangle(0,0,16,16);
+                g.draw( r );
+                return r;
+            }
+        };
+    }
+        
 
     /**
      * return a GrannyTextEditor with the Das2Core extras added.
@@ -77,6 +119,7 @@ public class GraphUtil {
         GrannyTextRenderer result = new GrannyTextRenderer();
         result.addPainter("psym", createPlotSymbolPainter());
         result.addPainter("block", createBlockPainter());
+        result.addPainter("img", createImagePainter());
         return result;
     }
 
@@ -170,6 +213,7 @@ public class GraphUtil {
         GrannyTextEditor result = new GrannyTextEditor();
         result.addPainter("psym", createPlotSymbolPainter());
         result.addPainter("block", createBlockPainter());
+        result.addPainter("img", createImagePainter());
         return result;
     }
 	
