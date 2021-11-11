@@ -30,6 +30,6 @@ https://github.com/das-developers/das2docs/tree/master/das2.2.2-ICD) and
 [QStreams](http://autoplot.org/qstream).
 
 Typically these libraries are used in 
-[Netbeans](https://www.oracle.com/technetwork/java/javase/downloads/jdk-netbeans-jsp-3413139-esa.html) 
+[Netbeans](https://netbeans.apache.org/) 
 projects, so ant files are provided for building the jars.
 
