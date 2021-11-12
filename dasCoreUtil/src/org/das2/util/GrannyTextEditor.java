@@ -111,6 +111,9 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
         if ( id.equals("psym") ) {
             psymButton.setVisible(true);
             psymButton.setEnabled(true);
+        } else if ( id.equals("img") ) {
+            imageButton.setVisible(true);
+            imageButton.setEnabled(true);
         }
         
     }
@@ -139,6 +142,7 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
+        bindingGroup = new org.jdesktop.beansbinding.BindingGroup();
 
         psymPanel = new javax.swing.JPanel();
         jLabel3 = new javax.swing.JLabel();
@@ -165,6 +169,12 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
         plotSymbolButtonGroup = new javax.swing.ButtonGroup();
         connectButtonGroup = new javax.swing.ButtonGroup();
         fillStyleButtonGroup = new javax.swing.ButtonGroup();
+        imagePanel = new javax.swing.JPanel();
+        jLabel7 = new javax.swing.JLabel();
+        imageUrlTF = new javax.swing.JTextField();
+        imageSizeCB = new javax.swing.JCheckBox();
+        imageSizeTF = new javax.swing.JTextField();
+        jLabel8 = new javax.swing.JLabel();
         renderPanel = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTextArea1 = new javax.swing.JTextArea();
@@ -182,6 +192,7 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
         boldButton = new javax.swing.JButton();
         underlineButton = new javax.swing.JButton();
         psymButton = new javax.swing.JButton();
+        imageButton = new javax.swing.JButton();
         greekTab = new javax.swing.JPanel();
         miscTab = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
@@ -354,6 +365,64 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
+        jLabel7.setText("URL of image:");
+
+        imageUrlTF.setText("http://autoplot.org/wiki/images/Logo96.png");
+
+        imageSizeCB.setText("Size:");
+
+        imageSizeTF.setText("50%");
+
+        org.jdesktop.beansbinding.Binding binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, imageSizeCB, org.jdesktop.beansbinding.ELProperty.create("${selected}"), imageSizeTF, org.jdesktop.beansbinding.BeanProperty.create("enabled"));
+        bindingGroup.addBinding(binding);
+
+        jLabel8.setText("<html><i>50% means half of original size; 2em means two em heights; 20 or 20px means 20 pixels");
+
+        binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, imageSizeCB, org.jdesktop.beansbinding.ELProperty.create("${selected}"), jLabel8, org.jdesktop.beansbinding.BeanProperty.create("enabled"));
+        bindingGroup.addBinding(binding);
+
+        javax.swing.GroupLayout imagePanelLayout = new javax.swing.GroupLayout(imagePanel);
+        imagePanel.setLayout(imagePanelLayout);
+        imagePanelLayout.setHorizontalGroup(
+            imagePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(imagePanelLayout.createSequentialGroup()
+                .addGap(36, 36, 36)
+                .addComponent(imageSizeTF, javax.swing.GroupLayout.PREFERRED_SIZE, 86, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, Short.MAX_VALUE))
+            .addGroup(imagePanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(imagePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(imagePanelLayout.createSequentialGroup()
+                        .addComponent(jLabel7)
+                        .addContainerGap(603, Short.MAX_VALUE))
+                    .addGroup(imagePanelLayout.createSequentialGroup()
+                        .addGroup(imagePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(imagePanelLayout.createSequentialGroup()
+                                .addGap(21, 21, 21)
+                                .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(imageSizeCB))
+                        .addGap(0, 0, Short.MAX_VALUE))))
+            .addGroup(imagePanelLayout.createSequentialGroup()
+                .addGap(24, 24, 24)
+                .addComponent(imageUrlTF)
+                .addContainerGap())
+        );
+        imagePanelLayout.setVerticalGroup(
+            imagePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(imagePanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel7)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(imageUrlTF, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(imageSizeCB)
+                .addGap(5, 5, 5)
+                .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(imageSizeTF, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
         renderPanel.setLayout(new java.awt.BorderLayout());
 
         jTextArea1.setColumns(20);
@@ -485,6 +554,14 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
             }
         });
 
+        imageButton.setText("Image");
+        imageButton.setEnabled(false);
+        imageButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                imageButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout extensionsTabLayout = new javax.swing.GroupLayout(extensionsTab);
         extensionsTab.setLayout(extensionsTabLayout);
         extensionsTabLayout.setHorizontalGroup(
@@ -499,7 +576,10 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
                         .addComponent(italicButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(underlineButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(psymButton))
+                    .addGroup(extensionsTabLayout.createSequentialGroup()
+                        .addComponent(psymButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(imageButton)))
                 .addGap(0, 199, Short.MAX_VALUE))
         );
         extensionsTabLayout.setVerticalGroup(
@@ -511,7 +591,9 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
                     .addComponent(italicButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(underlineButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(psymButton)
+                .addGroup(extensionsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(psymButton)
+                    .addComponent(imageButton))
                 .addContainerGap(29, Short.MAX_VALUE))
         );
 
@@ -558,6 +640,8 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 112, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
+
+        bindingGroup.bind();
     }// </editor-fold>//GEN-END:initComponents
 
     private void doInsert( String text, String endt ) {
@@ -680,6 +764,19 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
         }
     }//GEN-LAST:event_jButton1ActionPerformed
 
+    private void imageButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_imageButtonActionPerformed
+        if ( JOptionPane.OK_OPTION==
+                JOptionPane.showConfirmDialog( this, imagePanel, "Psym Options", JOptionPane.OK_CANCEL_OPTION ) ) {
+            StringBuilder textb= new StringBuilder( "!(painter;img" );
+            textb.append(";").append(imageUrlTF.getText());
+            if ( imageSizeCB.isSelected() ) {
+                textb.append(";").append(imageSizeTF.getText().trim());
+            }
+            textb.append(")");
+            doInsert( textb.toString(), null );
+        }
+    }//GEN-LAST:event_imageButtonActionPerformed
+
     private void updateImage() {
         String oldString= gtr.getString();
         try {
@@ -721,6 +818,7 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
         GrannyTextEditor edit= new GrannyTextEditor();
         edit.setValue( "Happy !(color;Blue)Day!!");
         edit.addPainter( "psym", null );
+        edit.addPainter( "img", null );
         JOptionPane.showMessageDialog( null, edit );
     }
     
@@ -735,6 +833,11 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
     private javax.swing.ButtonGroup fillStyleButtonGroup;
     private javax.swing.JPanel greekTab;
     private javax.swing.JPanel hersheyTab;
+    private javax.swing.JButton imageButton;
+    private javax.swing.JPanel imagePanel;
+    private javax.swing.JCheckBox imageSizeCB;
+    private javax.swing.JTextField imageSizeTF;
+    private javax.swing.JTextField imageUrlTF;
     private javax.swing.JLabel instructionalLabel;
     private javax.swing.JButton italicButton;
     private javax.swing.JButton jButton1;
@@ -744,6 +847,8 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
     private javax.swing.JRadioButton jRadioButton1;
     private javax.swing.JRadioButton jRadioButton11;
     private javax.swing.JRadioButton jRadioButton2;
@@ -772,6 +877,7 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
     private javax.swing.JTextField sizeTextField;
     private javax.swing.JRadioButton solidConnectRB;
     private javax.swing.JButton underlineButton;
+    private org.jdesktop.beansbinding.BindingGroup bindingGroup;
     // End of variables declaration//GEN-END:variables
 
 }

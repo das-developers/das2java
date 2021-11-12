@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<Form version="1.3" maxVersion="1.9" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+<Form version="1.5" maxVersion="1.9" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <NonVisualComponents>
     <Container class="javax.swing.JPanel" name="psymPanel">
 
@@ -285,6 +285,94 @@
     </Component>
     <Component class="javax.swing.ButtonGroup" name="fillStyleButtonGroup">
     </Component>
+    <Container class="javax.swing.JPanel" name="imagePanel">
+
+      <Layout>
+        <DimensionLayout dim="0">
+          <Group type="103" groupAlignment="0" attributes="0">
+              <Group type="102" alignment="0" attributes="0">
+                  <EmptySpace min="-2" pref="36" max="-2" attributes="0"/>
+                  <Component id="imageSizeTF" min="-2" pref="86" max="-2" attributes="0"/>
+                  <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+              </Group>
+              <Group type="102" alignment="0" attributes="0">
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" attributes="0">
+                          <Component id="jLabel7" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace pref="603" max="32767" attributes="0"/>
+                      </Group>
+                      <Group type="102" attributes="0">
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Group type="102" attributes="0">
+                                  <EmptySpace min="21" pref="21" max="-2" attributes="0"/>
+                                  <Component id="jLabel8" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <Component id="imageSizeCB" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                      </Group>
+                  </Group>
+              </Group>
+              <Group type="102" attributes="0">
+                  <EmptySpace min="-2" pref="24" max="-2" attributes="0"/>
+                  <Component id="imageUrlTF" max="32767" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+              </Group>
+          </Group>
+        </DimensionLayout>
+        <DimensionLayout dim="1">
+          <Group type="103" groupAlignment="0" attributes="0">
+              <Group type="102" alignment="0" attributes="0">
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="jLabel7" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="imageUrlTF" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace type="separate" max="-2" attributes="0"/>
+                  <Component id="imageSizeCB" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
+                  <Component id="jLabel8" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="imageSizeTF" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="32767" attributes="0"/>
+              </Group>
+          </Group>
+        </DimensionLayout>
+      </Layout>
+      <SubComponents>
+        <Component class="javax.swing.JLabel" name="jLabel7">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="URL of image:"/>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JTextField" name="imageUrlTF">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="http://autoplot.org/wiki/images/Logo96.png"/>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JCheckBox" name="imageSizeCB">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Size:"/>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JTextField" name="imageSizeTF">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="50%"/>
+          </Properties>
+          <BindingProperties>
+            <BindingProperty name="enabled" source="imageSizeCB" sourcePath="${selected}" target="imageSizeTF" targetPath="enabled" updateStrategy="0" immediately="false"/>
+          </BindingProperties>
+        </Component>
+        <Component class="javax.swing.JLabel" name="jLabel8">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;i&gt;50% means half of original size; 2em means two em heights; 20 or 20px means 20 pixels"/>
+          </Properties>
+          <BindingProperties>
+            <BindingProperty name="enabled" source="imageSizeCB" sourcePath="${selected}" target="jLabel8" targetPath="enabled" updateStrategy="0" immediately="false"/>
+          </BindingProperties>
+        </Component>
+      </SubComponents>
+    </Container>
   </NonVisualComponents>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
@@ -484,7 +572,11 @@
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="underlineButton" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <Component id="psymButton" min="-2" max="-2" attributes="0"/>
+                          <Group type="102" attributes="0">
+                              <Component id="psymButton" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="imageButton" min="-2" max="-2" attributes="0"/>
+                          </Group>
                       </Group>
                       <EmptySpace min="0" pref="199" max="32767" attributes="0"/>
                   </Group>
@@ -500,7 +592,10 @@
                           <Component id="underlineButton" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="psymButton" min="-2" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="psymButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="imageButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
                       <EmptySpace pref="29" max="32767" attributes="0"/>
                   </Group>
               </Group>
@@ -546,6 +641,15 @@
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="psymButtonActionPerformed"/>
+              </Events>
+            </Component>
+            <Component class="javax.swing.JButton" name="imageButton">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Image"/>
+                <Property name="enabled" type="boolean" value="false"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="imageButtonActionPerformed"/>
               </Events>
             </Component>
           </SubComponents>
