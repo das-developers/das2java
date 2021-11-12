@@ -83,7 +83,7 @@ public class ExpandToFillGapsFilterEditorPanel extends AbstractFilterEditorPanel
         binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, autoPanel, org.jdesktop.beansbinding.ELProperty.create("${enabled}"), jLabel2, org.jdesktop.beansbinding.BeanProperty.create("enabled"));
         bindingGroup.addBinding(binding);
 
-        expandRatioTextField.setText("jTextField1");
+        expandRatioTextField.setText("1.0");
 
         binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, autoPanel, org.jdesktop.beansbinding.ELProperty.create("${enabled}"), expandRatioTextField, org.jdesktop.beansbinding.BeanProperty.create("enabled"));
         bindingGroup.addBinding(binding);
@@ -199,12 +199,10 @@ public class ExpandToFillGapsFilterEditorPanel extends AbstractFilterEditorPanel
                                 .addComponent(autoButton)
                                 .addGap(18, 18, 18)
                                 .addComponent(manualButton)))
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(autoPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(manualPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addContainerGap())))
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(autoPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(manualPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -308,7 +306,12 @@ public class ExpandToFillGapsFilterEditorPanel extends AbstractFilterEditorPanel
                     }
                 }
                 double stepFactor= cadenceMax.divide(cadenceMin).divide(count).value(); // step factor would fill the smallest gap.
-                double factor= Double.parseDouble( this.expandRatioTextField.getText() );
+                double factor;
+                try {
+                    factor = Double.parseDouble( this.expandRatioTextField.getText() );
+                } catch ( NumberFormatException ex ) {
+                    factor = 0.8;
+                }
                 double expansionMultiplier= stepFactor * factor ;
                 assert cadenceMax!=null;
                 aboutDataLabel.setText( "fine cadence is "+cadenceMin+" and expand to fill gaps of "+cadenceMax 
