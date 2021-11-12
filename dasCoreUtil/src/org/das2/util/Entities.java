@@ -16,7 +16,7 @@ public class Entities {
      * utility method for decoding entities like &amp;rho; into unicode.
      * Malformed entities (like &#03B1; instead of &#x03B1;) are formatted as "???"
      * @param str string e.g. "&rho; degrees"
-     * @return string with unicode characters for entities.
+     * @return string with Unicode characters for entities.
      */
     public static String decodeEntities(String str) {
         int i0=0, i;
@@ -34,7 +34,12 @@ public class Entities {
                 if ( i1!=-1 && i1-i<MAX_ENTITY_LEN) {
                     result.append( str.substring(i0,i));
                     try {
-                        result.append( decode( str.substring(i,i1+1) ) );
+                        String n= decode( str.substring(i,i1+1) );
+                        if ( n.length()==0 ) {
+                            result.append(str.substring(i,i1+1));
+                        } else {
+                            result.append( n );
+                        }
                     } catch ( NumberFormatException ex ) {
                         result.append( "???" );  // indicate there's some sort of problem.
                     }
