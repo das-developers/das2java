@@ -466,4 +466,20 @@ public class FileSystemUtil {
             }
         };
     }
+    
+    /**
+     * download the URI as a file.  Presently these must be files which can be in a FileSystem.
+     * @param uri
+     * @param monitor
+     * @return
+     * @throws IOException 
+     */
+    public static File downloadResourceAsFile( URI uri, ProgressMonitor monitor ) throws IOException {
+        String suri= uri.toString();
+        String[] ss= FileSystem.splitUrl( suri );
+        FileSystem fs= FileSystem.create( ss[2] );
+        FileObject fo= fs.getFileObject(ss[3].substring(ss[2].length()));
+        File result= fo.getFile(monitor);
+        return result;
+    }
 }
