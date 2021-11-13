@@ -626,7 +626,15 @@ public class Schemes {
     
     /**
      * return data that describes the columns of another dataset.  Note these
-     * are typically not found in APIs.
+     * are typically not found in APIs.  The bundle descriptor will be <ul>
+     * <li> rank 2, 
+     * <li> length() gives the number of columns.
+     * <li> length(i) gives the number of indices of the ith column, or the ith column's rank.
+     * <li> property(i,NAME) gives the name of the column
+     * <li> property(i,START_INDEX) gives the column which is the first column of the rank 2 or higher bundled data set.
+     * <li> property(i,xxx) gives property xxx of the column
+     * <li> property(i,DEPEND0_NAME) gives the name of the column containing the depend 0 values.
+     * </ul>
      * @return data that describes the columns of another dataset.
      */
     public static QDataSet bundleDescriptor() {
