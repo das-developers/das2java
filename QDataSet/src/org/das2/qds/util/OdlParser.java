@@ -3,13 +3,16 @@ package org.das2.qds.util;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Stack;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.datum.LoggerManager;
 import org.das2.qds.QDataSet;
+import org.das2.qds.WritableDataSet;
 import org.das2.qds.ops.Ops;
 import org.das2.util.monitor.ProgressMonitor;
 import org.json.JSONArray;
@@ -102,6 +105,7 @@ public class OdlParser {
                             s= st.nextToken(); // =
                             sb.append(s).append(" ");
                             s= st.nextToken(); // the name
+                            sb.append(s).append(" ");
                             JSONObject currentObject= jsonStack.peek();
                             currentObject.put( t, s );
                         } else {
@@ -132,7 +136,14 @@ public class OdlParser {
     public static QDataSet readStream( BufferedReader r, JSONObject record, ProgressMonitor monitor ) throws IOException {
         int fieldCount= getFieldCount( record );
         AsciiParser parser= AsciiParser.newParser( fieldCount );
-        QDataSet result= parser.readStream( r, monitor );
+        WritableDataSet result= parser.readStream( r, monitor );
+        ArrayList<String> names= new ArrayList<>();
+        getNames( record, "", false, names );
+        BundleBuilder bbuild= new BundleBuilder(result.length(0));
+        for ( int i=0; i<result.length(0); i++ ) {
+            bbuild.putProperty( QDataSet.NAME, i, names.get(i) );
+        }
+        result.putProperty( QDataSet.BUNDLE_1, bbuild.getDataSet() );
         r.close();
         return result;
     }
@@ -233,6 +244,46 @@ public class OdlParser {
             throw new RuntimeException(ex);
         }
     }
+    
+    /**
+     * return a list of names which can be requested.
+     * @param record the node, typically then entire STS record.
+     * @param name the name of the node, "" for the root.
+     * @param includeComposite include the single-column names, for example BGSM as well as BGSM.X.
+     * @param result null or the name of a list to collect the names.
+     * @return 
+     */
+    public static String[] getNames( JSONObject record, String name, boolean includeComposite, List<String> result ) {
+        if ( result==null ) {
+            result= new ArrayList<>();
+        }
+        JSONArray array= record.optJSONArray("array");
+        int icol=0;
+        for ( int i=0; i<array.length(); i++ ) {
+            JSONObject child= array.optJSONObject(i);
+            String s= child.optString("NAME");
+            if ( !s.isEmpty() ) {
+                if ( child.optJSONArray("array").length()==0 ) {
+                    if ( name.length()==0 ) {
+                        result.add( s );
+                    } else {
+                        result.add( name + "." + s );
+                    }
+                } else {
+                    if ( name.length()==0 ) {
+                        if ( includeComposite ) result.add( s );
+                        getNames( child, s, includeComposite, result);
+                    } else {
+                        if ( !includeComposite ) result.add( name + "." + s );
+                        getNames( child, name + "." + s, includeComposite, result);                        
+                    }                    
+                }
+            }
+        }
+        
+        return result.toArray( new String[result.size()] );
+    }
+    
     
     /**
      * 
