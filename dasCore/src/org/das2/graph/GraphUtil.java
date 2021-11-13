@@ -25,8 +25,10 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.ConvolveOp;
 import java.awt.image.Kernel;
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -53,6 +55,8 @@ import org.das2.qds.ops.Ops;
 import org.das2.util.DasMath;
 import org.das2.util.GrannyTextEditor;
 import org.das2.util.GrannyTextRenderer;
+import org.das2.util.filesystem.FileSystemUtil;
+import org.das2.util.monitor.AlertNullProgressMonitor;
 import org.jdesktop.beansbinding.Converter;
 //import org.apache.xml.serialize.*;
 
@@ -93,7 +97,9 @@ public class GraphUtil {
                 synchronized ( this ) {
                     Long milli= cacheBirthMilli.get(args[0]);
                     if ( milli==null || ( System.currentTimeMillis()-milli )>CACHE_TIMEOUT_MS ) {
-                        im = ImageIO.read( new URL(args[0]) );
+                        URI uri= FileSystemUtil.toUri(args[0]);
+                        File f= FileSystemUtil.downloadResourceAsFile( uri, new AlertNullProgressMonitor("load image") );
+                        im = ImageIO.read( f );
                         cache.put( args[0], im );
                         cacheBirthMilli.put( args[0], System.currentTimeMillis() );
                     } else {
