@@ -8,7 +8,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Stack;
 import java.util.StringTokenizer;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.datum.LoggerManager;
 import org.das2.qds.QDataSet;
@@ -20,7 +19,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * Tool for parsing ODL found at the top of .sts files. 
+ * Tool for parsing ODL found at the top of .STS files. 
  * @author jbf
  */
 public class OdlParser {
@@ -286,11 +285,14 @@ public class OdlParser {
     
     
     /**
-     * 
-     * @param record
-     * @param startColumn
-     * @param name 
-     * @return [start,end] for rank 2, [col,col] for rank 1, or [-1,-1] for not found.
+     * Return the records of the object with the name, with nested object names delimited 
+     * with a period (POSN is a vector, POSN.X is the component).  This will return a two-element 
+     * int array indicating the position: [start,endExclusive] for vectors, [col,col] for scalars or a vector component, 
+     * or [-1,-1] when the name is not found.  Zero is the first column.
+     * @param record the JSON describing the file, or subset of the rows when startColumn is non-zero. 
+     * @param startColumn starting column for the JSON.
+     * @param name of the object (POSN.X for example).
+     * @return [start,endExclusive] for vectors, [col,col] for scalars or a vector component, or [-1,-1] when the name is not found.
      */
     public static int[] getColumns( JSONObject record, int startColumn, String name ) {
         String n1= record.optString( "NAME" );
@@ -305,23 +307,24 @@ public class OdlParser {
         }
         int icol=0;
         for ( int i=0; i<array.length(); i++ ) {
-            String s= array.optJSONObject(i).optString("NAME");
+            JSONObject thisObject = array.optJSONObject(i);
+            String s= thisObject.optString("NAME");
             if ( !s.isEmpty() ) {
                 if ( name.startsWith(s) ) {
                     if ( name.equals(s) ) {
-                        int[] rr= getColumns( array.optJSONObject(i), startColumn+icol, name ); // +1 is for the period
+                        int[] rr= getColumns( thisObject, startColumn+icol, name ); // +1 is for the period
                         if ( rr[0]>-1 ) {
                             return new int[] { rr[0],rr[1] };
                         }
                     } else {
-                        int[] rr= getColumns( array.optJSONObject(i), startColumn+icol, name.substring(s.length()+1) ); // +1 is for the period
+                        int[] rr= getColumns( thisObject, startColumn+icol, name.substring(s.length()+1) ); // +1 is for the period
                         if ( rr[0]>-1 ) {
-                            return new int[] { icol+rr[0],icol+rr[1] };
+                            return new int[] { rr[0],rr[1] };
                         }
                     }
                 }   
             }
-            icol += getFieldCount(array.optJSONObject(i));
+            icol += getFieldCount(thisObject);
         }
         return new int[] { -1, -1 };
     }
