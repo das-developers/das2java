@@ -51,9 +51,10 @@ import org.das2.util.monitor.ProgressMonitor;
  * evaluating file freshness.  ETags are now supported in WebFileSystem to 
  * provide this functionality.
  * 
- * Note, there's a strange interaction with Java and GitHub.com, where Java's
- * caching prevents updates from appearing automatically.  See
- * https://sourceforge.net/p/autoplot/bugs/2203/ .
+ * Note, GitHub is slow to update the raw view, so five minutes may pass
+ * before a pushed change is visible.  See
+ * https://sourceforge.net/p/autoplot/bugs/2203/ .  This can be resolved
+ * by maintaining a local clone of the repo.
  * 
  * @author jbf
  */
