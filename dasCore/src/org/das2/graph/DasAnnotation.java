@@ -13,7 +13,6 @@ import org.das2.event.MoveComponentMouseModule;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
-import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -39,10 +38,6 @@ import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.LoggerManager;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
-import org.das2.event.DragRenderer;
-import org.das2.event.EmptyDragRenderer;
-import org.das2.event.MouseDragEvent;
-import org.das2.util.GrannyTextEditor;
 
 /**
  * This makes a DasCanvasComponent for GrannyTextRenderer, and 
