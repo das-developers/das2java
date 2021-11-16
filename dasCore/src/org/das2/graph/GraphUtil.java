@@ -53,7 +53,7 @@ import org.das2.qds.QDataSet;
 import org.das2.qds.SemanticOps;
 import org.das2.qds.ops.Ops;
 import org.das2.util.DasMath;
-import org.das2.util.GrannyTextEditor;
+import org.das2.components.GrannyTextEditor;
 import org.das2.util.GrannyTextRenderer;
 import org.das2.util.filesystem.FileSystemUtil;
 import org.das2.util.monitor.AlertNullProgressMonitor;

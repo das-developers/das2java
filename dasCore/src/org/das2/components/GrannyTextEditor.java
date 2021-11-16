@@ -1,5 +1,5 @@
 
-package org.das2.util;
+package org.das2.components;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -18,6 +18,13 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.das2.util.ColorUtil;
+import org.das2.util.DesktopColorChooserPanel;
+import org.das2.util.Entities;
+import org.das2.util.GrannyTextRenderer;
+import org.das2.util.NamedColorChooserPanel;
+import org.das2.util.StringSchemeEditor;
+import org.das2.util.TickleTimer;
 
 /**
  * Graphical editor for "Granny" text strings on the canvas.
