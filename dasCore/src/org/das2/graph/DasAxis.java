@@ -673,6 +673,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      */
     public void setDatumRange(DatumRange dr) {
         //System.err.println("setDatumRange("+dr+")");
+        if ( dr==null ) {
+            throw new NullPointerException("range cannot be null");
+        }
         if ( !UnitsUtil.isIntervalOrRatioMeasurement(dr.getUnits()) ) {
             throw new IllegalArgumentException("units cannot be ordinal or nominal");
         }
