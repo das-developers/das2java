@@ -95,17 +95,15 @@ public class DatumRangeUtil {
 
     /**
      * represent the string to indicate that the calling code will also consider
-     * the maximum value part of the datum range.
+     * the maximum value part of the datum range.  This once added the text
+     * "(including...)," but this isn't terribly necessary and creates clutter on
+     * some plots.
      * @param datumRange "5 to 15 Kg"
-     * @return "5 to 15 Kg (including 15Kg)"
+     * @return "5 to 15 Kg"
      */
     public static String toStringInclusive(DatumRange datumRange) {
         String s= datumRange.toString();
-        if ( s.contains(" to ") ) {
-            return s + " (including "+datumRange.max().toString().trim() + ")";
-        } else {
-            return s;
-        }
+        return s;
     }
     
     public static class DateDescriptor {
