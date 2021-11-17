@@ -1,15 +1,25 @@
 
 package org.das2.qds.util;
 
+import java.text.ParseException;
 import java.util.Enumeration;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.das2.datum.Units;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
+import org.das2.datum.Datum;
 import org.das2.datum.EnumerationUnits;
+import org.das2.datum.TimeParser;
+import org.das2.datum.TimeUtil;
+import org.das2.datum.format.DatumFormatter;
+import org.das2.datum.format.TimeDatumFormatter;
 import org.das2.qds.DataSetUtil;
 import org.das2.qds.QDataSet;
+import org.das2.qds.RankZeroDataSet;
+import org.das2.qds.SemanticOps;
 import org.das2.qds.ops.Ops;
 
 /**
@@ -143,7 +153,59 @@ public class ValuesTreeModel extends DefaultTreeModel {
             return "Error: "+ex;
         }
     }
-
+    
+    private static TimeParser NANOSECONDS,MICROSECONDS,MILLISECONDS;
+    
+    static {
+        NANOSECONDS= TimeParser.create("$Y-$m-$dT$H:$M:$S.$(subsec,places=9)Z");
+        MICROSECONDS= TimeParser.create("$Y-$m-$dT$H:$M:$S.$(subsec,places=6)Z");
+        MILLISECONDS= TimeParser.create("$Y-$m-$dT$H:$M:$S.$(subsec,places=3)Z");
+    }
+    
+    private static String svalRank1( QDataSet wds, QDataSet ds, int i, QDataSet cadence ) {
+        if ( ds.rank()==2 && ds.property(QDataSet.BINS_1).equals(QDataSet.VALUE_BINS_MIN_MAX) ) {
+            if ( wds.value(i,0)==0 || wds.value(i,1)==0 ) {
+               return "fill";
+            } else {
+                return DataSetUtil.asDatumRange( ds.slice(i), true ).toString();
+            }
+        }
+        try {
+            if ( wds.value(i) > 0. ) {
+                QDataSet bds= (QDataSet)ds.property(QDataSet.BUNDLE_0);
+                if ( bds!=null ) {
+                    String alt= ds.slice(i).toString();
+                    String result= DataSetUtil.getStringValue( ds, ds.value(i), i );
+                    if ( alt.endsWith("=fill") ) {
+                        result= result + "(fill)";
+                    }
+                    return result;
+                } else {
+                    if ( cadence!=null ) {
+                        Units u= SemanticOps.getUnits(cadence);
+                        if ( u.isConvertibleTo(Units.seconds) ) {
+                            Datum d= DataSetUtil.asDatum(ds.slice(i));
+                            double cadenceUs= DataSetUtil.asDatum(cadence).doubleValue( Units.microseconds );
+                            if ( cadenceUs<1 ) {
+                                return NANOSECONDS.format(d);
+                            } else if ( cadenceUs<1000 ) {
+                                return MICROSECONDS.format(d);
+                            } else {
+                                return MILLISECONDS.format(d);
+                            }
+                        }
+                        
+                    }
+                    return DataSetUtil.getStringValue( ds, ds.value(i) );
+                }
+            } else {
+                return "fill ("+ds.value(i)+")";
+            }
+        } catch ( IllegalArgumentException ex ) {
+            return "Error: "+ex;
+        }
+    }
+    
     /**
      * return a tree node for the values of a dataset.
      * @param prefix prefix added to the each node, e.g. "value("
@@ -175,7 +237,11 @@ public class ValuesTreeModel extends DefaultTreeModel {
                 Units units= (Units) ds.property(QDataSet.UNITS);
                 if ( units==null ) units= Units.dimensionless;
                 QDataSet plane0= (QDataSet)ds.property(QDataSet.PLANE_0);
-                for ( int i=0; i<Math.min( ds.length(), sizeLimit ); i++ ) {
+                QDataSet cadenceDs= ds.length()>1000 ? ds.trim(0,1000) : ds;
+                RankZeroDataSet cadence= DataSetUtil.guessCadenceNew( cadenceDs, null );
+                //cadence= null;
+                int n= Math.min( ds.length(), sizeLimit );
+                for ( int i=0; i<n; i++ ) {
                     Units u= units;
                     if ( bundle!=null ) {
                         u= (Units)bundle.property( QDataSet.UNITS, i );
@@ -188,7 +254,11 @@ public class ValuesTreeModel extends DefaultTreeModel {
                             sval= "" + ds.value(i) + " (error)";
                         }
                     } else {
-                        sval= svalRank1( wds, ds, i );
+                        if ( cadence!=null ) {
+                            sval= svalRank1( wds, ds, i, cadence );
+                        } else {
+                            sval= svalRank1( wds, ds, i );
+                        }
                     }
                     //TODO: future datum class may allow for toString to return nominal data for invalid data.
                     if ( dep0!=null ) {
@@ -221,7 +291,11 @@ public class ValuesTreeModel extends DefaultTreeModel {
                             sval= "" + ds.value(i) + " (error)";
                         }
                     } else {
-                        sval= svalRank1( wds, ds, i );
+                        if ( cadence!=null ) {
+                            sval= svalRank1( wds, ds, i, cadence );
+                        } else {
+                            sval= svalRank1( wds, ds, i );
+                        }
                     }
                     //TODO: future datum class may allow for toString to return nominal data for invalid data.
                     if ( dep0!=null ) {
