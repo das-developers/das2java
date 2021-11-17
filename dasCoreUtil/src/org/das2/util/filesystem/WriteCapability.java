@@ -35,4 +35,13 @@ public interface WriteCapability {
      * @throws IOException
      */
     public boolean delete() throws IOException;
+    
+    /**
+     * push the changes to the remote server.  For local files,
+     * this does nothing, unless it is a local git repository.
+     * @param message message to document the commit.
+     * @return true if the commit was successful, false if not.
+     * @throws IOException 
+     */
+    public boolean commit(String message) throws IOException;
 }

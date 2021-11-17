@@ -46,7 +46,7 @@ import org.das2.util.monitor.CancelledOperationException;
  */
 public class WebFileObject extends FileObject {
 
-    private static final Logger logger= org.das2.util.LoggerManager.getLogger("das2.filesystem.wfs");
+    protected static final Logger logger= org.das2.util.LoggerManager.getLogger("das2.filesystem.wfs");
     
     final WebFileSystem wfs;
     String pathname;
