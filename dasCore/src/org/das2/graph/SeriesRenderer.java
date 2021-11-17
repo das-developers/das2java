@@ -564,7 +564,7 @@ public class SeriesRenderer extends Renderer {
             for (; index < lastIndex; index++) {
                 x = xds.value(index);
                 y = vds.value(index);
-
+                
                 final boolean isValid = wds.value(index)>0 && xUnits.isValid(x);
 
                 dx = xAxis.transform(x, xUnits);
@@ -2241,6 +2241,7 @@ public class SeriesRenderer extends Renderer {
         p.remove( QDataSet.VALID_MIN );
         p.remove( QDataSet.VALID_MAX );
         p.remove( QDataSet.FILL_VALUE );
+        p.remove( QDataSet.UNITS );
         DataSetUtil.putProperties( p, mvds );
         if ( buildc!=null ) {
             mvds.putProperty(QDataSet.PLANE_0,buildc.getDataSet());
