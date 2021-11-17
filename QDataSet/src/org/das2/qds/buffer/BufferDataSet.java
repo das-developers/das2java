@@ -975,13 +975,15 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         newback.order( ths.back.order() );
         
         ByteBuffer back2= ths.back.duplicate();
-        back2.limit( myLength );
-        back2.rewind();
+        back2.limit( ths.recoffset + myLength );
+        back2.position( ths.recoffset );
         newback.put( back2 );
+        
         ByteBuffer ds2= ds.back.duplicate();
-        ds2.limit(dsLength);
-        ds2.rewind();
+        ds2.limit(ds.recoffset + dsLength);
+        ds2.position( ds.recoffset );
         newback.put( ds2 );
+        
         newback.rewind(); // why not flip()?
                 
         BufferDataSet result= BufferDataSet.makeDataSet( ths.rank, ths.reclen, 0, 
