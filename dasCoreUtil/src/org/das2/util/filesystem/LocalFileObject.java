@@ -200,6 +200,12 @@ public class LocalFileObject extends FileObject {
                 public boolean delete() {
                     return localFile.delete();
                 }
+                @Override
+                public boolean commit(String message) throws IOException {
+                    //do nothing
+                    //TODO: check to see if this is a local git repo.
+                    return true;
+                }
             };
         } else {
             return super.getCapability(clazz);

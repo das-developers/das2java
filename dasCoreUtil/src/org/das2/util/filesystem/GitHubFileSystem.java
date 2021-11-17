@@ -22,6 +22,7 @@ import java.net.URLConnection;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -153,8 +154,8 @@ public class GitHubFileSystem extends HttpFileSystem {
     protected GitHubFileSystem(URI root, File localRoot, String branch, int baseOffset) {
         super(root, localRoot);
         File f= this.getReadOnlyCache( );
-        if ( f!=null ) {
-            File localRoCache= lookForROCacheGH(localRoot);
+        if ( f==null ) {
+            File localRoCache= lookForROCacheGH(localRoot,branch);
             if ( localRoCache!=null ) {
                 setReadOnlyCache( localRoCache );
             }
@@ -445,11 +446,13 @@ public class GitHubFileSystem extends HttpFileSystem {
      * will not.  <em>Note that this assumes the rocache copy is on the same
      * branch.</em>
      * @param start
+     * @param branch
      * @return the rocache location if available.
      */
-    private File lookForROCacheGH( File start ) {
+    private File lookForROCacheGH( File start, String branch ) {
         // This is a copy of WebFileSystem.lookForROCache.  This differs where
         // we inspect tail to look for the branch name: tail.substring(1).startsWith(branch) 
+        start= new File( start, branch );
         File _localRoot= start;
         File stopFile= FileSystem.settings().getLocalCacheDir();
         File result= null;
@@ -461,9 +464,7 @@ public class GitHubFileSystem extends HttpFileSystem {
         while ( !( _localRoot.equals(stopFile) ) ) {
             File f= new File( _localRoot, "ro_cache.txt" );
             if ( f.exists() ) {
-                BufferedReader read = null;
-                try {
-                    read = new BufferedReader( new InputStreamReader( new FileInputStream(f), "UTF-8" ) );
+                try ( BufferedReader read=new BufferedReader( new InputStreamReader( new FileInputStream(f), "UTF-8" ) ) ) {
                     String s = read.readLine();
                     while (s != null) {
                         int i= s.indexOf("#");
@@ -480,12 +481,6 @@ public class GitHubFileSystem extends HttpFileSystem {
                     }
                 } catch (IOException ex) {
                     logger.log(Level.SEVERE, ex.getMessage(), ex);
-                } finally {
-                    try {
-                        if ( read!=null ) read.close();
-                    } catch (IOException ex) {
-                        logger.log(Level.SEVERE, ex.getMessage(), ex);
-                    }
                 }
                 break;
             } else {
@@ -702,6 +697,12 @@ public class GitHubFileSystem extends HttpFileSystem {
         
         return result;
     }
+
+    @Override
+    public FileObject getFileObject(String filename) {
+        return new GitHubFileObject( this, filename, new Date( Long.MAX_VALUE ) );
+    }
+    
     
     @Override
     public String toString() {
