@@ -984,7 +984,7 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         ds2.position( ds.recoffset );
         newback.put( ds2 );
         
-        newback.rewind(); // why not flip()?
+        newback.flip();
                 
         BufferDataSet result= BufferDataSet.makeDataSet( ths.rank, ths.reclen, 0, 
                 ths.len0 + ds.len0, ths.len1, ths.len2, ths.len3, 
