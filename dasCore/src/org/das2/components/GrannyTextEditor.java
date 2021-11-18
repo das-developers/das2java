@@ -89,7 +89,7 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
         } );
         String[] greek= new String[] { "&alpha;", "&beta;", "&Gamma;", "&Delta;", "&Theta;", 
             "&eta;", "&Lambda;", "&mu;", "&pi;", "&rho;",
-            "&epsilon;", "&omega;", "&Omega;", "&Tau;", "&Chi;" };
+            "&epsilon;", "&omega;", "&Phi;", "&tau;", "&chi;" };
         for ( int i=0; i<15; i++ ) {
             if ( i<greek.length ) {
                 greekTab.add( miscButton(greek[i]) );
