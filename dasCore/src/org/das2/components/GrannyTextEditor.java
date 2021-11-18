@@ -87,7 +87,9 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
                 tickleTimer.tickle();
             }
         } );
-        String[] greek= new String[] { "&epsilon;", "&omega;", "&Omega;", "&Tau;", "&tau;" };
+        String[] greek= new String[] { "&alpha;", "&beta;", "&Gamma;", "&Delta;", "&Theta;", 
+            "&eta;", "&Lambda;", "&mu;", "&pi;", "&rho;",
+            "&epsilon;", "&omega;", "&Omega;", "&Tau;", "&Chi;" };
         for ( int i=0; i<15; i++ ) {
             if ( i<greek.length ) {
                 greekTab.add( miscButton(greek[i]) );
@@ -126,7 +128,7 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
     private javax.swing.JButton miscButton( String s ) {
         javax.swing.JButton result= new javax.swing.JButton("<html>"+s);
         result.addActionListener((ActionEvent e) -> {
-            if ( ( e.getModifiers() & ActionEvent.SHIFT_MASK ) == ActionEvent.SHIFT_MASK ) {
+            if ( ( e.getModifiers() & ActionEvent.CTRL_MASK ) == ActionEvent.CTRL_MASK ) {
                 String s1= Entities.decode(s);
                 if ( s1.length()==0 ) {
                     doInsert( s, null );
