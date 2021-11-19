@@ -739,6 +739,16 @@ public final class TickCurveRenderer extends Renderer {
         xunits= SemanticOps.getUnits(xds);
         yunits= SemanticOps.getUnits(yds);
         
+        Units xAxisUnits= xAxis.getUnits();
+        if ( !xAxisUnits.isConvertibleTo(xunits) && ( xAxisUnits==Units.dimensionless || xunits==Units.dimensionless ) ) {
+            xunits= xAxisUnits;
+        }
+        
+        Units yAxisUnits= yAxis.getUnits();
+        if ( !yAxisUnits.isConvertibleTo(yunits) && ( yAxisUnits==Units.dimensionless || yunits==Units.dimensionless ) ) {
+            yunits= yAxisUnits;
+        }
+
         // there are two goals here.  First is to break the line when we cross over modulo spaces.  If
         // we move from 23:59 to 00:01 in local time, we don't want a long line across the plot.  Second,
         // if there's an actual gap, then we want to mark that as well.
