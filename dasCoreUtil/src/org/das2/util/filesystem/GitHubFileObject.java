@@ -63,67 +63,9 @@ public class GitHubFileObject extends WebFileObject {
 
                     @Override
                     public boolean commit(String message) throws IOException {
-                        
-                        ProcessBuilder pb;
-                        Process p; 
-                        boolean completed;
-                        
-                        pb= new ProcessBuilder( "git", "pull" );
-                        pb.directory( wfs.getReadOnlyCache() );
-                        p= pb.start();
-                        try {
-                            completed = p.waitFor( 10000, TimeUnit.MILLISECONDS );
-                            if ( !completed ) {
-                                logger.warning("git pull failed to complete");
-                                return false;
-                            }
-                            if ( p.exitValue()!=0 ) {
-                                logger.log(Level.WARNING, "git pull exit code: {0}", p.exitValue());
-                                return false;
-                            }
-                        } catch (InterruptedException ex) {
-                            logger.log(Level.SEVERE, null, ex);
-                            return false;
-                        }
-                        
-                        pb= new ProcessBuilder( "git", "commit", "-m", "'"+message+"'", getNameExt() );
-                        pb.directory( wfs.getReadOnlyCache() );
-                        p= pb.start();
-                        try {
-                            completed = p.waitFor( 10000, TimeUnit.MILLISECONDS );
-                            if ( !completed ) {
-                                logger.warning("git commit failed to complete");
-                                return false;
-                            }
-                            if ( p.exitValue()!=0 ) {
-                                logger.log(Level.WARNING, "git pull exit code: {0}", p.exitValue());
-                                return false;
-                            }
-                        } catch (InterruptedException ex) {
-                            logger.log(Level.SEVERE, null, ex);
-                        }
-                        
-                        pb= new ProcessBuilder( "git", "push" );
-                        pb.directory( wfs.getReadOnlyCache() );
-                        p= pb.start();
-                        try {
-                            completed = p.waitFor( 10000, TimeUnit.MILLISECONDS );
-                            if ( !completed ) {
-                                logger.warning("git push failed to complete");
-                                return false;
-                            } else {
-                                if ( p.exitValue()!=0 ) {
-                                   logger.log(Level.WARNING, "git push exit code: {0}", p.exitValue());
-                                    return false;
-                                }
-                                return true;
-                            }
-                            
-                        } catch (InterruptedException ex) {
-                            logger.log(Level.SEVERE, null, ex);
-                            return false;
-                        }
-                    }
+                        return true;
+                    }               
+                    
                 };
             } else {
                 return null;

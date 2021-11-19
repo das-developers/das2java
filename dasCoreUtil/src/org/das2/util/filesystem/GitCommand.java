@@ -53,7 +53,7 @@ public class GitCommand {
         
         System.err.println(msg);
         
-        return 0;
+        return p.exitValue();
     }
     
     /**
