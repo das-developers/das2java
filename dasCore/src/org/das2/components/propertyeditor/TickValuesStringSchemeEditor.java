@@ -45,6 +45,7 @@ public class TickValuesStringSchemeEditor extends javax.swing.JPanel implements 
         minorListOfLocationsTF = new javax.swing.JTextField();
         jRadioButton4 = new javax.swing.JRadioButton();
         fixedNumberMinorCB = new javax.swing.JComboBox<>();
+        jLabel3 = new javax.swing.JLabel();
 
         jLabel1.setText("<html>Enter a specification of how ticks should be generated.  If empty, the default methods are used,  or this can take one of the following forms: <ul><li>10,20,30 - major ticks at 10,20, and 30 <li>+10/4 - major ticks every ten units <li>*10 - major ticks every cycle (10,100,1000,etc) <li>+10min/5 ticks every 10 minutes, with 5 divisions <li>10,100,1000/50,500,5000  major and minor ticks <ul> ");
         jLabel1.setVerticalAlignment(javax.swing.SwingConstants.TOP);
@@ -102,6 +103,7 @@ public class TickValuesStringSchemeEditor extends javax.swing.JPanel implements 
         bindingGroup.addBinding(binding);
 
         minorButtonGroup.add(minorListOfLocationsRB);
+        minorListOfLocationsRB.setSelected(true);
         minorListOfLocationsRB.setText("list of locations:");
 
         binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, alsoUseMinorCB, org.jdesktop.beansbinding.ELProperty.create("${selected}"), minorListOfLocationsRB, org.jdesktop.beansbinding.BeanProperty.create("enabled"));
@@ -173,6 +175,8 @@ public class TickValuesStringSchemeEditor extends javax.swing.JPanel implements 
                 .addComponent(fixedNumberMinorCB, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
+        jLabel3.setText("Specification:");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -180,37 +184,44 @@ public class TickValuesStringSchemeEditor extends javax.swing.JPanel implements 
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel2)
                             .addGroup(layout.createSequentialGroup()
                                 .addGap(12, 12, 12)
+                                .addComponent(jLabel3)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(valueTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 706, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(majorRepeatEveryRB)
-                                    .addComponent(majorListOfLocationsRB)
+                                    .addComponent(jLabel2)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addGap(12, 12, 12)
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(majorRepeatEveryRB)
+                                            .addComponent(majorListOfLocationsRB)
+                                            .addGroup(layout.createSequentialGroup()
+                                                .addGap(21, 21, 21)
+                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                    .addComponent(repeatEveryCB, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                    .addComponent(majorListOfLocationsTF, javax.swing.GroupLayout.PREFERRED_SIZE, 355, javax.swing.GroupLayout.PREFERRED_SIZE))))))
+                                .addGap(80, 80, 80)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(alsoUseMinorCB)
                                     .addGroup(layout.createSequentialGroup()
                                         .addGap(21, 21, 21)
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(repeatEveryCB, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addComponent(majorListOfLocationsTF, javax.swing.GroupLayout.PREFERRED_SIZE, 355, javax.swing.GroupLayout.PREFERRED_SIZE))))))
-                        .addGap(80, 80, 80)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(alsoUseMinorCB)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(21, 21, 21)
-                                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-                    .addComponent(valueTextField))
-                .addContainerGap())
+                                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                        .addGap(0, 45, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 130, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(valueTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(valueTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel3))
+                .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
                     .addComponent(alsoUseMinorCB))
@@ -225,7 +236,7 @@ public class TickValuesStringSchemeEditor extends javax.swing.JPanel implements 
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(repeatEveryCB, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(17, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         bindingGroup.bind();
@@ -290,6 +301,7 @@ public class TickValuesStringSchemeEditor extends javax.swing.JPanel implements 
     private javax.swing.JComboBox<String> fixedNumberMinorCB;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JRadioButton jRadioButton4;
     private javax.swing.ButtonGroup majorButtonGroup;
@@ -311,6 +323,7 @@ public class TickValuesStringSchemeEditor extends javax.swing.JPanel implements 
 
     @Override
     public String getValue() {
+        update();
         return this.valueTextField.getText();
     }
 
@@ -319,7 +332,7 @@ public class TickValuesStringSchemeEditor extends javax.swing.JPanel implements 
         if ( majorListOfLocationsRB.isSelected() ) {
             build.append(majorListOfLocationsTF.getText());
         } else {
-            String text= majorRepeatEveryRB.getText();
+            String text= (String)repeatEveryCB.getSelectedItem();
             int i= text.indexOf(":");
             if ( i>-1 ) text= text.substring(0,i).trim();
             if ( !( text.startsWith("+") || text.startsWith("*") ) ) {
