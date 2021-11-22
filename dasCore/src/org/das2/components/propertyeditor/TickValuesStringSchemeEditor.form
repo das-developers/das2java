@@ -103,7 +103,7 @@
   <SubComponents>
     <Component class="javax.swing.JLabel" name="jLabel1">
       <Properties>
-        <Property name="text" type="java.lang.String" value="&lt;html&gt;Enter a specification of how ticks should be generated.  If empty, the default methods are used,  or this can take one of the following forms: &lt;ul&gt;&lt;li&gt;10,20,30 - major ticks at 10,20, and 30 &lt;li&gt;+10/4 - major ticks every ten units &lt;li&gt;*10 - major ticks every cycle (10,100,1000,etc) &lt;li&gt;+10min/5 ticks every 10 minutes, with 5 divisions &lt;li&gt;10,100,1000/50,500,5000  major and minor ticks &lt;ul&gt; "/>
+        <Property name="text" type="java.lang.String" value="&lt;html&gt;Enter a specification of how ticks should be generated.  If empty, the default methods are used,  or this can take one of the following forms: &#xa;&lt;ul&gt;&#xa;&lt;li&gt;10,20,30&lt;i&gt; - major ticks at 10,20, and 30 &lt;/i&gt;&#xa;&lt;li&gt;+10/4&lt;i&gt; - major ticks every ten units &lt;/i&gt;&#xa;&lt;li&gt;*10&lt;i&gt; - major ticks every cycle (10,100,1000,etc) &lt;/i&gt;&#xa;&lt;li&gt;+10min/5&lt;i&gt; - ticks every 10 minutes, with 5 divisions &lt;/i&gt;&#xa;&lt;li&gt;10,100,1000/50,500,5000&lt;i&gt; -  major and minor ticks &lt;/i&gt;&lt;ul&gt; "/>
         <Property name="verticalAlignment" type="int" value="1"/>
         <Property name="verticalTextPosition" type="int" value="1"/>
       </Properties>
