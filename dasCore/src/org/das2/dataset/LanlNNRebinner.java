@@ -70,9 +70,13 @@ public class LanlNNRebinner implements DataSetRebinner {
      * @throws DasException
      */
     @Override
-    public QDataSet rebin( QDataSet ds, RebinDescriptor ddX, RebinDescriptor ddY, RebinDescriptor ddZ ) throws IllegalArgumentException, DasException {
+    public QDataSet rebin( QDataSet ds, RebinDescriptor ddX, RebinDescriptor ddY, RebinDescriptor ddZ ) 
+            throws IllegalArgumentException, DasException {
         logger.entering("org.das2.dataset.LanlNNRebinner", "rebin");
 
+        ddX.setOutOfBoundsAction( RebinDescriptor.EXTRAPOLATE );
+        ddY.setOutOfBoundsAction( RebinDescriptor.EXTRAPOLATE );
+        
         if (ds == null) {
             throw new NullPointerException("null data set");
         }
@@ -132,8 +136,8 @@ public class LanlNNRebinner implements DataSetRebinner {
             QDataSet yds0, yds1;
             boolean rank2y;
             
-            yds0= yds0c.get(yds); // let's cache the result of this, since rank 2 yds datasets are slow. (http://www.rbsp-ect.lanl.gov/data_pub/rbspa/mageis/level2/rbspa_pre_ect-mageis-L2_$Y$m$d_v$(v,sep).cdf?FEDO)
-            yds1= yds1c.get(yds);
+            yds0= yds0c.get(yds); // let's cache the result of this, since rank 2 yds datasets are slow. 
+            yds1= yds1c.get(yds); // (http://www.rbsp-ect.lanl.gov/data_pub/rbspa/mageis/level2/rbspa_pre_ect-mageis-L2_$Y$m$d_v$(v,sep).cdf?FEDO)
 
             if ( false ) { // set to true for debugging.
                 yds0= null;
@@ -203,7 +207,11 @@ public class LanlNNRebinner implements DataSetRebinner {
             double y0,y1;
             int nYData= rank2y ? yds0.length(0) : yds0.length();
 
-            if ( SemanticOps.isBundle(tds1) && tds1.length(0)==3 && !rank2y && yds0.length()==tds1.length() && xds0.length()==tds1.length() ) { // bug 1160: I think some data could still be mistaken here.
+            if ( SemanticOps.isBundle(tds1) 
+                    && tds1.length(0)==3 
+                    && !rank2y 
+                    && yds0.length()==tds1.length() 
+                    && xds0.length()==tds1.length() ) { // bug 1160: I think some data could still be mistaken here.
                 tds1= DataSetOps.unbundle(tds1,tds1.length(0)-1);
                 weights= DataSetOps.unbundle(weights,weights.length(0)-1);
                 for ( int i=0; i<xds0.length(); i++) {
