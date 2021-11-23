@@ -319,6 +319,7 @@ public class TickValuesStringSchemeEditor extends javax.swing.JPanel implements 
     @Override
     public void setValue(String v) {
         this.valueTextField.setText(v);
+        updateComponents();
     }
 
     @Override
