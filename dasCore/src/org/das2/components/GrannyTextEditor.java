@@ -713,7 +713,7 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
 
     private void jTabbedPane1StateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jTabbedPane1StateChanged
         if ( jTabbedPane1.getSelectedIndex()>1 ) {
-            instructionalLabel.setText( "Press to insert, and holding shift will insert the actual character." );
+            instructionalLabel.setText( "Press to insert, and holding control will insert the actual character." );
         } else {
            instructionalLabel.setText( "Press buttons from palette below to insert into text." );
         }
