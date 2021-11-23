@@ -26,8 +26,8 @@ import org.das2.datum.TimeUtil.TimeStruct;
  * Orbits are a map of string identifiers to DatumRanges, typically used to enumerate the orbits a spacecraft makes.
  * For example, Cassini orbit "C" was from 2004-366T07:03 to 2005-032T03:27 and "33" was from  2006-318T23:34 to 2006-330T22:23.
  * There are two types of orbits: canonical, which have an identifier like "cassini" and can be used by the community, and user
- * which have identifiers like  https://raw.githubusercontent.com/autoplot/orbits/main/psp/psp-aa25.txt.  In either case, these refer to a file.
- * The canonical ones are stored on the das2 website at  http://das2.org/Orbits/&lt;id&gt;.dat.  This file is a
+ * which have identifiers like  https://raw.githubusercontent.com/autoplot/orbits/main/psp/psp-aa25.txt.  In either case, these 
+ * refer to a file.  The canonical ones are stored on the das2 website at  http://das2.org/Orbits/&lt;id&gt;.dat.  This file is a
  * three-column ASCII file with the orbit id in either the first or last column.  Note any line not meeting this spec is ignored,
  * so that orbit files can contain additional documentation (and can sit within a wiki).
  *
@@ -138,7 +138,8 @@ public class Orbits {
                 break;
             } catch ( IOException ex ) {
                 try {
-                    if ( connect!=null && ( connect instanceof HttpURLConnection ) && ((HttpURLConnection)connect).getResponseCode()==401 ) {
+                    if ( connect!=null && ( connect instanceof HttpURLConnection ) 
+                            && ((HttpURLConnection)connect).getResponseCode()==401 ) {
                         LOGGER.info("HTTP connection needs credentials, which must be in the URL.");
                     }
                     LOGGER.log( Level.FINE, ex.getMessage(), ex );
@@ -555,7 +556,8 @@ public class Orbits {
         }
 
         @Override
-        public void parse(String fieldContent, TimeStruct startTime, TimeStruct timeWidth, Map<String, String> extra) throws ParseException {
+        public void parse(String fieldContent, TimeStruct startTime, TimeStruct timeWidth, Map<String, String> extra) 
+                throws ParseException {
 
             // identify leading fill characters
             int i=0;
@@ -595,7 +597,8 @@ public class Orbits {
         }
 
         @Override
-        public String format( TimeStruct startTime, TimeStruct timeWidth, int length, Map<String, String> extra ) throws IllegalArgumentException {
+        public String format( TimeStruct startTime, TimeStruct timeWidth, int length, Map<String, String> extra ) 
+                throws IllegalArgumentException {
             
             DatumRange seek= new DatumRange( TimeUtil.toDatum(startTime),TimeUtil.toDatum(TimeUtil.add(startTime,timeWidth)) );
             String result=null;
@@ -665,7 +668,8 @@ public class Orbits {
             DatumRange o600= dr.next();
             System.err.println( o600 ); //logger okay
             System.err.println( "-generate a list--" ); //logger okay
-            List<DatumRange> drs= DatumRangeUtil.generateList( DatumRangeUtil.parseTimeRangeValid("1991-03-27 through 1991-03-29"), o600 );
+            List<DatumRange> drs= 
+                    DatumRangeUtil.generateList( DatumRangeUtil.parseTimeRangeValid("1991-03-27 through 1991-03-29"), o600 );
             for ( DatumRange dr1: drs ) {
                 System.err.println( dr1 ); //logger okay
             }
