@@ -146,6 +146,7 @@ public class StringWithSchemeEditor extends AbstractCellEditor implements java.b
         });
         javax.swing.JPanel p= new javax.swing.JPanel(new BorderLayout());
         p.add( f, BorderLayout.CENTER );
+        final String propName= table.getValueAt( row, 0 ).toString();
         javax.swing.JButton extraButton= new javax.swing.JButton( new AbstractAction("?") {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -153,7 +154,7 @@ public class StringWithSchemeEditor extends AbstractCellEditor implements java.b
                 String svalue= (String)StringWithSchemeEditor.this.getValue();
                 StringWithSchemeEditor.this.ssEditor.setValue(svalue);
                 c= StringWithSchemeEditor.this.ssEditor.getComponent();
-                if ( JOptionPane.OK_OPTION==JOptionPane.showConfirmDialog( table, c, "Edit Text", JOptionPane.OK_CANCEL_OPTION ) ) {
+                if ( JOptionPane.OK_OPTION==JOptionPane.showConfirmDialog( table, c, "Edit " + propName, JOptionPane.OK_CANCEL_OPTION ) ) {
                     f.setText( ((StringSchemeEditor)c).getValue() );
                     ((Component)e.getSource()).getParent().repaint();
                 }
