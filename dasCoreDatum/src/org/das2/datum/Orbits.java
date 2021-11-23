@@ -411,6 +411,7 @@ public class Orbits {
         names.put( "cassini",   "Cassini Spacecraft" );
         names.put( "marsx", "marsx" );
         names.put( "junoPJ","Juno at perijove");
+        names.put( "junoPJ_2hr","Juno at perijove");
         names.put( "junoEqx","Juno at Eqx");
         names.put( "junoEntire","Juno (Whole Orbits)");
         names.put( "psp-aa", "Parker Solar Probe aphelion to aphelion");
