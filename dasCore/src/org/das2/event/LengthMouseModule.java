@@ -22,7 +22,9 @@ public class LengthMouseModule extends MouseModule {
             
     @Override
     public String getDirections() {
-        return "Press P to pin, C to copy data to clipboard, 1-5 set divisor.";
+        LengthDragRenderer r= (LengthDragRenderer)super.getDragRenderer();
+        r.setNCycles(1);
+        return "Press P to pin, C to copy data to clipboard, 1-9 set divisor.";
     }
 
     @Override
