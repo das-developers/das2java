@@ -61,6 +61,7 @@ import org.das2.datum.UnitsUtil;
 import org.das2.event.CrossHairMouseModule;
 import org.das2.event.DasMouseInputAdapter;
 import org.das2.event.LengthDragRenderer;
+import org.das2.event.LengthMouseModule;
 import org.das2.event.MouseModule;
 import org.das2.system.DasLogger;
 import org.das2.util.LoggerManager;
@@ -2681,7 +2682,7 @@ public class SeriesRenderer extends Renderer {
             if ( lparent==null ) throw new IllegalArgumentException("parent not set");
             DasMouseInputAdapter mouseAdapter = lparent.mouseAdapter;
             DasPlot p = lparent;
-            mouseAdapter.addMouseModule(new MouseModule(p, new LengthDragRenderer(p, p.getXAxis(), p.getYAxis()), "Length"));
+            mouseAdapter.addMouseModule(new LengthMouseModule(p, new LengthDragRenderer(p, p.getXAxis(), p.getYAxis()), "Length"));
 
             MouseModule ch = new CrossHairMouseModule(lparent, this, lparent.getXAxis(), lparent.getYAxis());
             mouseAdapter.addMouseModule(ch);
