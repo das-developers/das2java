@@ -28,7 +28,7 @@ public class LengthMouseModule extends MouseModule {
     @Override
     public void keyTyped(KeyEvent keyEvent) {
         logger.log(Level.FINE, "keyTyped {0} {1}", new Object[]{keyEvent.getKeyChar(), keyEvent.isMetaDown()});
-        if ( keyEvent.getKeyChar()>='1' && keyEvent.getKeyChar()<='5' ) { 
+        if ( keyEvent.getKeyChar()>='1' && keyEvent.getKeyChar()<='9' ) { 
             LengthDragRenderer r= (LengthDragRenderer)super.getDragRenderer();
             r.setNCycles(keyEvent.getKeyChar()-'0');
             parent.repaint();
