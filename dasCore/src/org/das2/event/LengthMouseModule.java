@@ -35,7 +35,7 @@ public class LengthMouseModule extends MouseModule {
             r.setNCycles(keyEvent.getKeyChar()-'0');
             parent.repaint();
         } else if ( keyEvent.getKeyChar()=='c' ) { 
-            CrossHairRenderer r= (CrossHairRenderer) super.dragRenderer;
+            LabelDragRenderer r= (LabelDragRenderer) super.dragRenderer;
             String text= r.label.replaceAll("!c"," ");
             StringSelection stringSelection = new StringSelection( text );
             Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
