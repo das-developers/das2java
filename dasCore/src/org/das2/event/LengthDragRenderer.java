@@ -14,6 +14,8 @@ import org.das2.datum.Datum;
 import org.das2.datum.DatumUtil;
 import org.das2.datum.UnitsUtil;
 import java.awt.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.text.*;
@@ -22,10 +24,11 @@ import java.text.*;
  * Indicate the length and the slope of the line.
  * @author  Owner
  */
-public class LengthDragRenderer extends LabelDragRenderer {
+public class LengthDragRenderer extends LabelDragRenderer implements KeyListener {
     
-    private DasAxis xaxis, yaxis;
-    private DasPlot plot;
+    private final DasAxis xaxis;
+    private final DasAxis yaxis;
+    private final DasPlot plot;
     
     /** Creates a new instance of PointSlopeDragRenderer
      * @param parent
@@ -39,6 +42,39 @@ public class LengthDragRenderer extends LabelDragRenderer {
         this.yaxis= yaxis;
     }
 
+    /**
+     * number of cycles or devisor for length
+     */
+    int ncycles = 20;
+    
+    public void keyPressed(KeyEvent e) {
+        switch (e.getKeyChar()) {
+            case '1':
+                ncycles= 1;
+                break;
+            case '2':
+                ncycles= 2;
+                break;
+            case '3':
+                ncycles= 3;
+                break;
+            case '4':
+                ncycles= 4;
+                break;
+            case '5':
+                ncycles= 5;
+                break;
+            default:
+                break;
+        }
+    }
+       
+    public void keyReleased(KeyEvent e) {
+    }
+    
+    public void keyTyped(KeyEvent e) {
+    }
+    
     @Override
     public Rectangle[] renderDrag(java.awt.Graphics g1, java.awt.Point p1, java.awt.Point p2) {
         Graphics2D g= ( Graphics2D ) g1;
@@ -73,7 +109,7 @@ public class LengthDragRenderer extends LabelDragRenderer {
             Datum x1= xa.invTransform(p2.x);
             Datum x0= xa.invTransform(p1.x);
             Datum run= x1.subtract(x0);
-            run= DatumUtil.asOrderOneUnits(run);
+            run= DatumUtil.asOrderOneUnits(run.divide(ncycles));
             String runString;
             if ( x1.getUnits()==run.getUnits() ) {
                 runString= x1.getFormatter().format(run);
@@ -83,7 +119,8 @@ public class LengthDragRenderer extends LabelDragRenderer {
             
             Datum y1= ya.invTransform(p2.y);
             Datum y0= ya.invTransform(p1.y);
-            Datum rise= y1.subtract(y0);
+            Datum rise= y1.subtract(y0).divide(ncycles);
+            String sdiv= ncycles==1 ? "" : "/"+ncycles;
 
             String riseString;
             riseString= rise.toString();
@@ -101,12 +138,13 @@ public class LengthDragRenderer extends LabelDragRenderer {
                         Math.pow( srund / Math.max( Math.abs( rund ), srund ), 2 ) );
                 Datum radDatum= Datum.create( rad, u, res/100. );
                 
-                radString= "!cR:" + radDatum;
+                radString= String.format( "!cR%s:%s", sdiv, radDatum );
             } else {
                 radString= "";
             }
             
-            String label1= "\u0394x: " + runString + " \u0394y: " + riseString + radString ;
+            String label1;
+            label1= String.format( "\u0394x%s: %s \u0394y%s: %s %s", sdiv, runString, sdiv, riseString, radString );
             
             if ( showSlope ) {
                 label1 += "!cm: "+ UnitsUtil.divideToString( rise, run );
@@ -233,6 +271,22 @@ public class LengthDragRenderer extends LabelDragRenderer {
      */
     public void setShowFit(boolean showFit) {
         this.showFit = showFit;
+    }
+
+    /**
+     * set the number to normalize the numbers by.
+     * @param i 
+     */
+    public void setNCycles(int i) {
+        this.ncycles= i;
+    }
+    
+    /**
+     * get the number to normalize the numbers by.
+     * @return the number of cycles, typically 1.
+     */
+    public int getNCycles() {
+        return this.ncycles;
     }
 
 }

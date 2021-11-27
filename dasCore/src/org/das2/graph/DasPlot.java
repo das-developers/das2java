@@ -78,6 +78,7 @@ import org.das2.dataset.DataSetAdapter;
 import org.das2.datum.DatumRangeUtil;
 import org.das2.datum.LoggerManager;
 import org.das2.event.DasMouseInputAdapter;
+import org.das2.event.LengthMouseModule;
 import org.das2.graph.DasAxis.Memento;
 import org.das2.qds.DataSetUtil;
 
@@ -900,7 +901,7 @@ public class DasPlot extends DasCanvasComponent {
         mouseAdapter.addMouseModule(new BoxZoomMouseModule(this, null, getXAxis(), getYAxis()));
         // TODO: support setYAxis, setXAxis.
 
-        x = new MouseModule(this, new LengthDragRenderer(this, getXAxis(), getYAxis()), "Length");
+        x = new LengthMouseModule(this, new LengthDragRenderer(this, getXAxis(), getYAxis()), "Length");
         mouseAdapter.addMouseModule(x);
 
         x = new DisplayDataMouseModule(this);
