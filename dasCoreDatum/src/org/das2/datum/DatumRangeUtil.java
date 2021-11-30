@@ -1984,11 +1984,11 @@ public class DatumRangeUtil {
     public static DatumRange rescale( DatumRange dr, double min, double max ) {
         Datum w= dr.width();
         if ( !w.isFinite() ) {
-            throw new RuntimeException("width is not finite");
+            throw new RuntimeException("width is not finite (containing fill) in rescale");
         }
         if ( w.doubleValue( w.getUnits() )==0. ) {
             // condition that might cause an infinate loop!  For now let's check for this and throw RuntimeException.
-            throw new RuntimeException("width is zero!");
+            throw new RuntimeException("width is zero in rescale!");
         }
         return new DatumRange( dr.min().add( w.multiply(min) ), dr.min().add( w.multiply(max) ) );
     }
@@ -2002,11 +2002,11 @@ public class DatumRangeUtil {
     public static Datum rescale( DatumRange dr, double n ) {
         Datum w= dr.width();
         if ( !w.isFinite() ) {
-            throw new RuntimeException("width is not finite");
+            throw new RuntimeException("width is not finite (containing fill) in rescale");
         }
         if ( w.doubleValue( w.getUnits() )==0. ) {
             // condition that might cause an infinate loop!  For now let's check for this and throw RuntimeException.
-            throw new RuntimeException("width is zero!");
+            throw new RuntimeException("width is zero in rescale!");
         }
         return dr.min().add( w.multiply(n) );
     }

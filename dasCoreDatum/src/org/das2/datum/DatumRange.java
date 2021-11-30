@@ -238,7 +238,7 @@ public class DatumRange implements Comparable, Serializable {
     public DatumRange rescale( double min, double max ) {
         Datum w= width();
         if ( !w.isFinite() ) {
-            throw new RuntimeException("width is not finite");
+            throw new RuntimeException("width is not finite in rescale");
         }
         if ( w.doubleValue( w.getUnits() )==0. ) {
             // condition that might cause an infinate loop!  For now let's check for this and throw RuntimeException.
