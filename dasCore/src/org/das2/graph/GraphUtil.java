@@ -1818,20 +1818,29 @@ public class GraphUtil {
         int islash= lticks.indexOf('/');
         int minorMult= 0;
         double[] minorList= null;
+        String minorTicksSpec=null;
         if ( islash>-1 ) {
-            String minorTicksSpec= lticks.substring(islash+1);
+            minorTicksSpec = lticks.substring(islash+1);
             lticks= lticks.substring(0,islash);
-            if ( minorTicksSpec.contains(",") ) {
-                String[] ss= minorTicksSpec.split(",");
-                minorList= new double[ss.length];
-                for ( int i=0; i<ss.length; i++ ) {
-                    minorList[i]= Double.parseDouble(ss[i]);
-                }
+            if ( minorTicksSpec.startsWith("+") ) {
+                TickVDescriptor minorT= calculateManualTicks( minorTicksSpec, dr, log );
+                minorList= minorT.tickV.toDoubleArray(u);
+            } else if ( minorTicksSpec.startsWith("*") ) {
+                TickVDescriptor minorT= calculateManualTicks( minorTicksSpec, dr, log );
+                minorList= minorT.tickV.toDoubleArray(u);
             } else {
-                try {
-                    minorMult= Integer.parseInt(minorTicksSpec);
-                } catch ( NumberFormatException ex ) {
-                    logger.log(Level.INFO, "unable to parse integer after slash: {0}", lticks);
+                if ( minorTicksSpec.contains(",") ) {
+                    String[] ss= minorTicksSpec.split(",");
+                    minorList= new double[ss.length];
+                    for ( int i=0; i<ss.length; i++ ) {
+                        minorList[i]= Double.parseDouble(ss[i]);
+                    }
+                } else {
+                    try {
+                        minorMult= Integer.parseInt(minorTicksSpec);
+                    } catch ( NumberFormatException ex ) {
+                        logger.log(Level.INFO, "unable to parse integer after slash: {0}", lticks);
+                    }
                 }
             }
         }
@@ -1897,14 +1906,25 @@ public class GraphUtil {
                     dticks[i]= Math.pow( 10, firstTick + i * dt );
                 }
                 List<Double> dticksMinorList= new ArrayList<>();
-                //double[] dticksMinor= new double[ ntick*minorTicks ];
-                if ( minorList==null ) {
-                    if ( minorMult==2 ) {
-                        minorList= new double[] { 10 };
-                    } else if ( minorMult==3 ) {
-                        minorList= new double[] { 10, 100 };
-                    } else {
-                        minorList= new double[] { 2,3,4,5,6,7,8,9 };
+                if ( minorTicksSpec!=null && minorTicksSpec.startsWith("+") ) {
+                    TickVDescriptor minorTicksOneCycle= calculateManualTicks( minorTicksSpec, 
+                            DatumRange.newDatumRange( 1, tickM.value(), Units.dimensionless ), false );
+                    
+                    minorList= minorTicksOneCycle.getMajorTicks().toDoubleArray( Units.dimensionless );
+                } else {
+                    //double[] dticksMinor= new double[ ntick*minorTicks ];
+                    if ( minorList==null ) {
+                        switch (minorMult) {
+                            case 2:
+                                minorList= new double[] { 10 };
+                                break;
+                            case 3:
+                                minorList= new double[] { 10, 100 };
+                                break;
+                            default:
+                                minorList= new double[] { 2,3,4,5,6,7,8,9 };
+                                break;
+                        }
                     }
                 }
                 for ( int i=0; i<dticks.length-1; i++ ) {
