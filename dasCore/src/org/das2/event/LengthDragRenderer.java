@@ -14,8 +14,6 @@ import org.das2.datum.Datum;
 import org.das2.datum.DatumUtil;
 import org.das2.datum.UnitsUtil;
 import java.awt.*;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.text.*;
