@@ -1805,8 +1805,10 @@ public class GraphUtil {
      * <li>+20s/4 every 20 seconds, with four minor divisions.
      * <li>+20s/5,10,15 minor ticks repeat each 20s.
      * <li>100,200,300/50,150,250,350 explicit list of major and minor ticks.
+     * <li>*10/+1 log ticks with linear minor ticks.
      * </ul>
      * 
+     * @see https://github.com/autoplot/dev/blob/master/demos/2021/20211130/demoCalculateManualTicks.jy
      * @param lticks the specification
      * @param dr the range to cover
      * @param log
@@ -1824,10 +1826,10 @@ public class GraphUtil {
             lticks= lticks.substring(0,islash);
             if ( minorTicksSpec.startsWith("+") ) {
                 TickVDescriptor minorT= calculateManualTicks( minorTicksSpec, dr, log );
-                minorList= minorT.tickV.toDoubleArray(u);
+                if ( minorT!=null ) minorList= minorT.tickV.toDoubleArray(u);
             } else if ( minorTicksSpec.startsWith("*") ) {
                 TickVDescriptor minorT= calculateManualTicks( minorTicksSpec, dr, log );
-                minorList= minorT.tickV.toDoubleArray(u);
+                if ( minorT!=null ) minorList= minorT.tickV.toDoubleArray(u);
             } else {
                 if ( minorTicksSpec.contains(",") ) {
                     String[] ss= minorTicksSpec.split(",");
