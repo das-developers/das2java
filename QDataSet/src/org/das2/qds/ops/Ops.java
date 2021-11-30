@@ -9953,11 +9953,11 @@ public final class Ops {
         }
         double w= dr.value(1) - dr.value(0);
         if ( Double.isInfinite(w) || Double.isNaN(w) ) {
-            throw new RuntimeException("width is not finite");
+            throw new RuntimeException("width is not finite in rescaleRange");
         }
         if ( w==0. ) {
             // condition that might cause an infinate loop!  For now let's check for this and throw RuntimeException.
-            throw new RuntimeException("width is zero!");
+            throw new RuntimeException("width is zero in rescaleRange!");
         }
         DDataSet result= DDataSet.createRank1(2);
         result.putValue( 0, dr.value(0) + w*min );
@@ -9989,11 +9989,11 @@ public final class Ops {
             double s2= Math.log10( dr.value(1) );
             double w= s2 - s1;
             if ( Double.isInfinite(w) || Double.isNaN(w) ) {
-                throw new RuntimeException("width is not finite");
+                throw new RuntimeException("width is not finite in rescaleRangeLogLin");
             }
             if ( w==0. ) {
                 // condition that might cause an infinate loop!  For now let's check for this and throw RuntimeException.
-                throw new RuntimeException("width is zero!");
+                throw new RuntimeException("width is zero in rescaleRangeLogLin!");
             }
             s2= Math.pow( 10, s1 + max * w ); // danger
             s1= Math.pow( 10, s1 + min * w );
@@ -10004,10 +10004,10 @@ public final class Ops {
         } else {
             double w= dr.value(1) - dr.value(0);
             if ( Double.isInfinite(w) || Double.isNaN(w) ) {
-                throw new RuntimeException("width is not finite");
+                throw new RuntimeException("width is not finite in rescaleRangeLogLin");
             }
             if ( w==0. ) {
-                throw new RuntimeException("width is zero!");
+                throw new RuntimeException("width is zero in rescaleRangeLogLin!");
             }
             result.putValue( 0, dr.value(0) + w*min );
             result.putValue( 1, dr.value(0) + w*max );    
