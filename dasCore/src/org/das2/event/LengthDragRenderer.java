@@ -24,7 +24,7 @@ import java.text.*;
  * Indicate the length and the slope of the line.
  * @author  Owner
  */
-public class LengthDragRenderer extends LabelDragRenderer implements KeyListener {
+public class LengthDragRenderer extends LabelDragRenderer {
     
     private final DasAxis xaxis;
     private final DasAxis yaxis;
@@ -46,34 +46,6 @@ public class LengthDragRenderer extends LabelDragRenderer implements KeyListener
      * number of cycles or devisor for length
      */
     int ncycles = 20;
-    
-    public void keyPressed(KeyEvent e) {
-        switch (e.getKeyChar()) {
-            case '1':
-                ncycles= 1;
-                break;
-            case '2':
-                ncycles= 2;
-                break;
-            case '3':
-                ncycles= 3;
-                break;
-            case '4':
-                ncycles= 4;
-                break;
-            case '5':
-                ncycles= 5;
-                break;
-            default:
-                break;
-        }
-    }
-       
-    public void keyReleased(KeyEvent e) {
-    }
-    
-    public void keyTyped(KeyEvent e) {
-    }
     
     @Override
     public Rectangle[] renderDrag(java.awt.Graphics g1, java.awt.Point p1, java.awt.Point p2) {
