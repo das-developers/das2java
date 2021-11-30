@@ -14,6 +14,7 @@ import java.awt.geom.GeneralPath;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.logging.Level;
 import org.das2.DasException;
 import org.das2.qds.DataSetUtil;
 import org.das2.datum.Datum;
@@ -45,7 +46,7 @@ public class DigitalRenderer extends Renderer {
     /**
      * autorange on the data, returning a rank 2 bounds for the dataset.
      * @param ds the dataset
-     * @return a bounding box 
+     * @return a bounding box or null if the dataset is empty.
      * @see org.das2.qds.examples.Schemes#boundingBox() 
      */
     public static QDataSet doAutorange( QDataSet ds ) {
@@ -60,6 +61,10 @@ public class DigitalRenderer extends Renderer {
             return bds;
             
         } else {
+            if ( ds.length()==0 ) {
+                return null;
+            }
+            
             xds= SemanticOps.xtagsDataSet(ds);
             yds= SemanticOps.ytagsDataSet(ds);
 
@@ -394,6 +399,10 @@ public class DigitalRenderer extends Renderer {
             } else {
                 parent.postMessage(this, "no data set", DasPlot.INFO, null, null);
             }
+            return;
+        }
+        if ( ds.length()==0 ) {
+            getParent().postMessage( this, "dataset is empty", Level.INFO, null, null );
             return;
         }
         try {
@@ -806,7 +815,7 @@ public class DigitalRenderer extends Renderer {
         
         QDataSet lds= getDataSet();
         if ( lds==null ) return;
-        if ( lds.rank()==0 || ( getDataSet().rank()==1 && SemanticOps.isRank1Bundle(lds) ) ) {
+        if ( lds.rank()==0 || ( getDataSet().rank()==1 && SemanticOps.isRank1Bundle(lds) ) || lds.length()==0 ) {
             // nothin
         } else {
             try {
