@@ -16,6 +16,7 @@ import org.das2.datum.UnitsUtil;
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
 import java.text.*;
 
 /**
@@ -63,6 +64,17 @@ public class LengthDragRenderer extends LabelDragRenderer {
         g.setStroke(new BasicStroke());
         g.setColor(color0);
 
+        for ( int i=1; i<ncycles; i++ ) {
+            Point2D.Double p1x= new Point2D.Double( p1.x + i* ( p2.x - p1.x ) / ncycles,  p1.y + i* ( p2.y - p1.y ) / ncycles );
+            double len= Math.sqrt( Math.pow(p2.x - p1.x,2) + Math.pow(p2.y-p1.y,2 ) );
+            double unitY= ( p2.y - p1.y ) / len;
+            double unitX= ( p2.x - p1.x ) / len;
+                    
+            Point2D.Double p2up= new Point2D.Double( p1x.x + unitY * 4, p1x.y - unitX * 4 );
+            Point2D.Double p2dn= new Point2D.Double( p1x.x - unitY * 4, p1x.y + unitX * 4 );
+            g.draw( new Line2D.Double( p2up, p2dn ) );
+        }
+        
         g.draw( line );
         g.draw( new Ellipse2D.Double( p1.x-4, p1.y-4, 8, 8 ) );
         
