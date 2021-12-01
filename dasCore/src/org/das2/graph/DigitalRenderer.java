@@ -401,7 +401,7 @@ public class DigitalRenderer extends Renderer {
             }
             return;
         }
-        if ( ds.length()==0 ) {
+        if ( ds.rank()>0 && ds.length()==0 ) {
             getParent().postMessage( this, "dataset is empty", Level.INFO, null, null );
             return;
         }
