@@ -1426,6 +1426,11 @@ public class DataSetOps {
             return ich;
         }
 
+        if ( name.matches("plane_\\d+") ) {
+            int ich= Integer.parseInt(name.substring(6) );
+            return ich;
+        }
+        
         if ( bundle1==null ) {
             bundle1= (QDataSet) bundleDs.property( "DEPEND_"+(rank-1) ); //simple legacy bundle was once DEPEND_1.
             if ( bundle1!=null && bundle1.rank()>1 ) {
