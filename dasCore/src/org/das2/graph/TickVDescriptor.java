@@ -14,11 +14,14 @@ import org.das2.datum.TimeLocationUnits;
 import org.das2.datum.TimeUtil;
 import org.das2.util.DasMath;
 import java.text.ParseException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import org.das2.datum.DomainDivider;
 import org.das2.datum.DomainDividerUtil;
 import org.das2.datum.EnumerationUnits;
 import org.das2.datum.UnitsUtil;
+import org.das2.datum.format.FormatStringFormatter;
 import org.das2.qds.QDataSet;
 import org.das2.qds.SemanticOps;
 import org.das2.qds.ops.Ops;
@@ -65,15 +68,15 @@ public class TickVDescriptor {
             // assume that the axis will somehow indicate the context
             if ( this.tickV.getLength()>0 ) {
                 DatumRange context= DatumRangeUtil.union( this.tickV.get(0), this.tickV.get(this.tickV.getLength()-1) );
-                this.datumFormatter= TimeDatumFormatter.guessFormatter( tickV, context );
+                this.datumFormatter= DatumUtil.bestFormatter(tickV, context);
             } else {
-                this.datumFormatter= TimeDatumFormatter.guessFormatter( tickV, null );
+                this.datumFormatter= DatumUtil.bestFormatter(tickV);
             }
         } else {
-            this.datumFormatter = DefaultDatumFormatterFactory.getInstance().defaultFormatter();
+            this.datumFormatter =  DatumUtil.bestFormatter(tickV);
         }
     }
-
+    
     /**
      * create the tickVDescriptor for a bunch of given ticks.  The first two ticks are used
      * to derive minor ticks, using the DomainDivider code.
