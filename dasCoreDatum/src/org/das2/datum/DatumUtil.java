@@ -120,7 +120,7 @@ public final class DatumUtil {
         return result;
     }
 
-    /**
+/**
      * return the most efficient formatter for the datums, supporting
      * nominal data, TimeLocationUnits, and LocationUnits, and 
      * other data.
@@ -129,6 +129,20 @@ public final class DatumUtil {
      * @see https://github.com/autoplot/dev/blob/master/demos/2021/20211203/testBestFormatter.jy
      */
     public static DatumFormatter bestFormatter( DatumVector datums ) {
+        return bestFormatter( datums, null );
+    }    
+    
+    /**
+     * return the most efficient formatter for the datums, supporting
+     * nominal data, TimeLocationUnits, and LocationUnits, and 
+     * other data.  A context can be provided, for example when the title contains the date of the data and only
+     * $H:$M should be shown.
+     * @param datums
+     * @param context externally-represented context, or null if none is used.
+     * @return a formatter for the set.
+     * @see https://github.com/autoplot/dev/blob/master/demos/2021/20211203/testBestFormatter.jy
+     */
+    public static DatumFormatter bestFormatter( DatumVector datums, DatumRange context ) {
         double[] array;
         Units units;
         
@@ -137,10 +151,14 @@ public final class DatumUtil {
         }
         
         if ( datums.getUnits() instanceof TimeLocationUnits ) {
-            Datum t1= datums.get(0);
-            int nticks= datums.getLength();
-            Datum t2= datums.get(nticks-1);
-            return DatumUtil.bestTimeFormatter(t1,t2,nticks-1);
+            if ( context!=null ) {
+                return TimeDatumFormatter.guessFormatter( datums, context );
+            } else {
+                Datum t1= datums.get(0);
+                int nticks= datums.getLength();
+                Datum t2= datums.get(nticks-1);
+                return DatumUtil.bestTimeFormatter(t1,t2,nticks-1);
+            }
         }
         
         if ( datums.getUnits() instanceof LocationUnits ) {
@@ -516,7 +534,8 @@ public final class DatumUtil {
             result[1]= result[0].substring(n) + result[1];
             result[0]= result[0].substring(0,n);
         }
-        if ( result[1].length()>0 && ( result[1].charAt(0)==':' || result[1].charAt(0)=='/' || result[1].charAt(0)=='T' ) ) { // ISO8601 time.
+        if ( result[1].length()>0 && 
+                ( result[1].charAt(0)==':' || result[1].charAt(0)=='/' || result[1].charAt(0)=='T' ) ) { // ISO8601 time.
             result[0]= s;
             result[1]= "UTC";
         }
