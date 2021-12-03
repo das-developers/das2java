@@ -120,6 +120,14 @@ public final class DatumUtil {
         return result;
     }
 
+    /**
+     * return the most efficient formatter for the datums, supporting
+     * nominal data, TimeLocationUnits, and LocationUnits, and 
+     * other data.
+     * @param datums
+     * @return a formatter for the set.
+     * @see https://github.com/autoplot/dev/blob/master/demos/2021/20211203/testBestFormatter.jy
+     */
     public static DatumFormatter bestFormatter( DatumVector datums ) {
         double[] array;
         Units units;
