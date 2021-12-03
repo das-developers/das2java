@@ -38,7 +38,12 @@ import javax.swing.colorchooser.AbstractColorChooserPanel;
 
 /**
  * Panel for picking colors off the desktop and maintaining a list of colors.
- *
+ * This is one of the most confusing dialogs, and needs to be either well-
+ * documented or re-done.  TODO: that.
+ * 1. click "Pick from Desktop"
+ * 2. press S which selects the color
+ * 3. clicking on another GUI will cause focus to be lost.
+ * 4. or clicking on the stop button will stop.
  * @author jbf
  */
 public class DesktopColorChooserPanel extends AbstractColorChooserPanel {
@@ -110,6 +115,7 @@ public class DesktopColorChooserPanel extends AbstractColorChooserPanel {
         public void windowLostFocus(WindowEvent e) {
             l.setText("Focus lost, click here to resume selection with keyboard.");
             l.setEnabled(false);
+            stopPicking();
         }
     };
 
