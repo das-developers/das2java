@@ -730,7 +730,7 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
                     textb.append(b.getText()).append(";");
                 }
             }
-            textb.append(sizeTextField.getText().trim());
+            textb.append("size=").append(sizeTextField.getText().trim());
             if ( outlineFillStyleRB.isSelected() ) {
                 textb.append(";fillStyle=outline");
             } else if ( noneFillStyleRB.isSelected() ) {
