@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.DefaultListModel;
 import javax.swing.Icon;
@@ -27,6 +28,8 @@ public class NamedColorChooserPanel extends AbstractColorChooserPanel {
 
     JList l;
     private boolean ignoreChanges=false;
+    
+    private static final Logger logger= LoggerManager.getLogger("das2.util");
     
     @Override
     public void updateChooser() {
@@ -82,7 +85,10 @@ public class NamedColorChooserPanel extends AbstractColorChooserPanel {
         l.setCellRenderer(r);
         l.setSelectionMode( ListSelectionModel.SINGLE_SELECTION );
         l.addListSelectionListener((ListSelectionEvent e) -> {
-            String colorName= String.valueOf( l.getSelectedValue() );
+            String colorName= (String)l.getSelectedValue();
+            if ( colorName==null ) {
+                return;
+            }
             getColorSelectionModel().setSelectedColor( ColorUtil.decodeColor(colorName) );
             
             if ( !ignoreChanges ) {
@@ -91,6 +97,9 @@ public class NamedColorChooserPanel extends AbstractColorChooserPanel {
                 List<String> ss= new LinkedList( Arrays.asList(ps.split(",")) );
                 ss.remove(colorName);
                 ss.add(colorName);
+                while ( ss.remove("null") ) {
+                    logger.finer("removed null which got into history");
+                }
                 while ( ss.size()>6 ) {
                     ss.remove(0);
                 }
