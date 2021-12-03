@@ -165,8 +165,8 @@ public class TimeDatumFormatter extends DatumFormatter {
     /**
      * guess formatted based on the two ticks given
      * @param ticks values to represent
-     * @param context
-     * @return 
+     * @param context null or the external context where the data is interpreted.
+     * @return the formatter
      * @see DateTimeDatumFormatter#axisFormat
      */
     public static TimeDatumFormatter guessFormatter( DatumVector ticks, DatumRange context ) {
