@@ -594,6 +594,7 @@ public class ColorUtil {
                 }
             } catch ( NumberFormatException ex ) {        
                 logger.log(Level.INFO, "unable to find color for \"{0}\"", s);
+                ex.printStackTrace();
                 return Color.GRAY;
             }
         }
