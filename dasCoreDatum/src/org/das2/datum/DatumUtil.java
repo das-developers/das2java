@@ -160,10 +160,14 @@ public final class DatumUtil {
             if ( context!=null ) {
                 return TimeDatumFormatter.guessFormatter( datums, context );
             } else {
-                Datum t1= datums.get(0);
-                int nticks= datums.getLength();
-                Datum t2= datums.get(nticks-1);
-                return DatumUtil.bestTimeFormatter(t1,t2,nticks-1);
+                if ( datums.getLength()>1 ) {
+                    Datum t1= datums.get(0);
+                    int nticks= datums.getLength();
+                    Datum t2= datums.get(nticks-1);
+                    return DatumUtil.bestTimeFormatter(t1,t2,nticks-1);
+                } else {
+                    return TimeDatumFormatter.guessFormatter( datums, context );
+                }
             }
         }
         
@@ -206,6 +210,10 @@ public final class DatumUtil {
                 }
                 if ( d>largest ) largest= d;
             }
+        }
+        
+        if ( ismallestExp==-1 ) {
+            return DefaultDatumFormatterFactory.getInstance().defaultFormatter();
         }
         
         if ( ( gcdlog == (int)gcdlog ) && biggestExp>3 ) {
