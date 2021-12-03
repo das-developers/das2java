@@ -32,7 +32,9 @@ import org.das2.datum.format.DatumFormatter;
 import org.das2.datum.format.DatumFormatterFactory;
 import org.das2.datum.format.DefaultDatumFormatterFactory;
 import org.das2.datum.format.EnumerationDatumFormatterFactory;
+import org.das2.datum.format.ExponentDatumFormatter;
 import org.das2.datum.format.ExponentialDatumFormatter;
+import org.das2.datum.format.FormatStringFormatter;
 import org.das2.datum.format.TimeDatumFormatter;
 
 /**
@@ -62,6 +64,9 @@ public final class DatumUtil {
 
     private static double gcd( double a, double d, double error ) {
 
+        if ( a<0 ) a= -1*a;
+        if ( d<0 ) d= -1*d;
+        
         if ( error>0 ) {
             a= Math.round( a/error );
             d= Math.round( d/error );
@@ -110,7 +115,8 @@ public final class DatumUtil {
     */
     private static double gcd( double[] A, double error ) {
         double guess= A[0];
-
+        if ( guess<0 ) guess= -1 * guess;
+        
         double result= guess;
 
         for ( int i=1; i<A.length; i++ ) {
@@ -173,20 +179,37 @@ public final class DatumUtil {
             array= datums.toDoubleArray(units);
         }
         
+        double[] logArray= new double[array.length];
+        for ( int j=0; j<array.length; j++ ) {
+            logArray[j]= Math.log10( Math.abs( array[j] ) );
+        }
+        
         double limit= Math.pow( 10, (int)Math.log10( max( array ) ) - 7 );
         double gcd= gcd( array, limit );
         
-        int smallestExp=99;
+        double gcdlog= gcd( logArray, 0.0001 );
+                
+        int smallestExp=9999;
+        int biggestExp=-9999;
         int ismallestExp=-1;
+        double largest= Double.NEGATIVE_INFINITY;
         for ( int j=0; j<datums.getLength(); j++ ) {
             double d= datums.get(j).doubleValue(units);
             if ( Math.abs(d)>(gcd*0.1) ) { // don't look at fuzzy zero
-                int ee= (int)Math.floor(0.05+Math.log10(Math.abs(d)));
+                int ee= (int)Math.floor(0.05+Math.abs(logArray[j]));
                 if ( ee<smallestExp ) {
                     smallestExp=ee;
                     ismallestExp= j;
                 }
+                if ( ee>biggestExp ) {
+                    biggestExp= ee;
+                }
+                if ( d>largest ) largest= d;
             }
+        }
+        
+        if ( ( gcdlog == (int)gcdlog ) && biggestExp>3 ) {
+            return new ExponentDatumFormatter("%d");
         }
         
         Datum resolution= units.createDatum(gcd);
