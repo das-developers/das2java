@@ -1891,13 +1891,19 @@ public class GraphUtil {
         } else if ( lticks.startsWith("*") ) {
             try {
                 Datum tickM= u.getOffsetUnits().parse(lticks.substring(1));
-                double min= dr.min().doubleValue(u);
-                double max= dr.max().doubleValue(u);
-                double dt= Math.log10( tickM.doubleValue(u.getOffsetUnits()) );
-                if ( dt==0. ) {
-                    logger.warning("delta ticks cannot be 0.");
+                if ( tickM.value()<=0 ) {
+                    logger.warning("delta ticks cannot be less than or equal to 0.");
                     return null;
                 }
+                double dt= Math.log10( tickM.doubleValue(u.getOffsetUnits()) );
+                if ( dt==0. ) {
+                    logger.warning("delta ticks cannot be 1.");
+                    return null;
+                }
+                double min= dr.min().doubleValue(u);
+                double max= dr.max().doubleValue(u);
+                if ( max<=0 ) max= 100;
+                if ( min<=0 ) min= max/1000;
                 double firstTick= Math.floor( Math.log10(min)/dt )*dt;
                 double lastTick= Math.ceil( Math.log10(max)/dt )*dt;
                 int ntick= (int)( ( lastTick - firstTick ) / dt ) + 1;
