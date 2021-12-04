@@ -40,11 +40,13 @@ public class TickValuesStringSchemeEditor extends javax.swing.JPanel implements 
         alsoUseMinorCB = new javax.swing.JCheckBox();
         repeatEveryCB = new javax.swing.JComboBox<>();
         majorListOfLocationsTF = new javax.swing.JTextField();
-        jPanel1 = new javax.swing.JPanel();
+        minorPanel = new javax.swing.JPanel();
         minorListOfLocationsRB = new javax.swing.JRadioButton();
         minorListOfLocationsTF = new javax.swing.JTextField();
-        jRadioButton4 = new javax.swing.JRadioButton();
+        minorFixedNumberIntervalsRB = new javax.swing.JRadioButton();
         fixedNumberMinorCB = new javax.swing.JComboBox<>();
+        minorRepeatEveryRB = new javax.swing.JRadioButton();
+        repeatEveryCB1 = new javax.swing.JComboBox<>();
         jLabel3 = new javax.swing.JLabel();
 
         jLabel1.setText("<html>Enter a specification of how ticks should be generated.  If empty, the default methods are used,  or this can take one of the following forms: \n<ul>\n<li>10,20,30<i> - major ticks at 10,20, and 30 </i>\n<li>+10/4<i> - major ticks every ten units </i>\n<li>*10<i> - major ticks every cycle (10,100,1000,etc) </i>\n<li>+10min/5<i> - ticks every 10 minutes, with 5 divisions </i>\n<li>10,100,1000/50,500,5000<i> -  major and minor ticks </i><ul> ");
@@ -57,7 +59,7 @@ public class TickValuesStringSchemeEditor extends javax.swing.JPanel implements 
             }
         });
 
-        jLabel2.setText("For the Major Ticks (with labels):");
+        jLabel2.setText("For the Major Ticks (with Labels):");
 
         majorButtonGroup.add(majorListOfLocationsRB);
         majorListOfLocationsRB.setSelected(true);
@@ -99,11 +101,10 @@ public class TickValuesStringSchemeEditor extends javax.swing.JPanel implements 
             }
         });
 
-        binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, alsoUseMinorCB, org.jdesktop.beansbinding.ELProperty.create("${selected}"), jPanel1, org.jdesktop.beansbinding.BeanProperty.create("enabled"));
+        binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, alsoUseMinorCB, org.jdesktop.beansbinding.ELProperty.create("${selected}"), minorPanel, org.jdesktop.beansbinding.BeanProperty.create("enabled"));
         bindingGroup.addBinding(binding);
 
         minorButtonGroup.add(minorListOfLocationsRB);
-        minorListOfLocationsRB.setSelected(true);
         minorListOfLocationsRB.setText("list of locations:");
 
         binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, alsoUseMinorCB, org.jdesktop.beansbinding.ELProperty.create("${selected}"), minorListOfLocationsRB, org.jdesktop.beansbinding.BeanProperty.create("enabled"));
@@ -123,16 +124,17 @@ public class TickValuesStringSchemeEditor extends javax.swing.JPanel implements 
             }
         });
 
-        minorButtonGroup.add(jRadioButton4);
-        jRadioButton4.setText("fixed number of intervals per major tick interval:");
+        minorButtonGroup.add(minorFixedNumberIntervalsRB);
+        minorFixedNumberIntervalsRB.setSelected(true);
+        minorFixedNumberIntervalsRB.setText("fixed number of intervals per major tick interval:");
 
-        binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, alsoUseMinorCB, org.jdesktop.beansbinding.ELProperty.create("${selected}"), jRadioButton4, org.jdesktop.beansbinding.BeanProperty.create("enabled"));
+        binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, alsoUseMinorCB, org.jdesktop.beansbinding.ELProperty.create("${selected}"), minorFixedNumberIntervalsRB, org.jdesktop.beansbinding.BeanProperty.create("enabled"));
         bindingGroup.addBinding(binding);
 
         fixedNumberMinorCB.setEditable(true);
         fixedNumberMinorCB.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "2", "3", "4", "5", "6" }));
 
-        binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, jRadioButton4, org.jdesktop.beansbinding.ELProperty.create("${selected}"), fixedNumberMinorCB, org.jdesktop.beansbinding.BeanProperty.create("enabled"));
+        binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, minorFixedNumberIntervalsRB, org.jdesktop.beansbinding.ELProperty.create("${selected}"), fixedNumberMinorCB, org.jdesktop.beansbinding.BeanProperty.create("enabled"));
         bindingGroup.addBinding(binding);
 
         fixedNumberMinorCB.addFocusListener(new java.awt.event.FocusAdapter() {
@@ -146,33 +148,68 @@ public class TickValuesStringSchemeEditor extends javax.swing.JPanel implements 
             }
         });
 
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addComponent(jRadioButton4, javax.swing.GroupLayout.Alignment.TRAILING)
-                        .addComponent(minorListOfLocationsRB)
-                        .addGroup(jPanel1Layout.createSequentialGroup()
-                            .addGap(21, 21, 21)
-                            .addComponent(fixedNumberMinorCB, javax.swing.GroupLayout.PREFERRED_SIZE, 93, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(21, 21, 21)
+        minorButtonGroup.add(minorRepeatEveryRB);
+        minorRepeatEveryRB.setText("repeat every:");
+
+        binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, alsoUseMinorCB, org.jdesktop.beansbinding.ELProperty.create("${selected}"), minorRepeatEveryRB, org.jdesktop.beansbinding.BeanProperty.create("enabled"));
+        bindingGroup.addBinding(binding);
+
+        repeatEveryCB1.setEditable(true);
+        repeatEveryCB1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "+1:  every unit", "+1 days: specify with unit", "+2hr: specify with unit", "+1: every cycle on log plot" }));
+
+        binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, minorRepeatEveryRB, org.jdesktop.beansbinding.ELProperty.create("${selected}"), repeatEveryCB1, org.jdesktop.beansbinding.BeanProperty.create("enabled"));
+        bindingGroup.addBinding(binding);
+
+        repeatEveryCB1.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                repeatEveryCB1FocusLost(evt);
+            }
+        });
+        repeatEveryCB1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                repeatEveryCB1ActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout minorPanelLayout = new javax.swing.GroupLayout(minorPanel);
+        minorPanel.setLayout(minorPanelLayout);
+        minorPanelLayout.setHorizontalGroup(
+            minorPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(minorPanelLayout.createSequentialGroup()
+                .addGroup(minorPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(minorPanelLayout.createSequentialGroup()
+                        .addGroup(minorPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(minorPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(minorFixedNumberIntervalsRB, javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addComponent(minorListOfLocationsRB)
+                                .addGroup(minorPanelLayout.createSequentialGroup()
+                                    .addGap(21, 21, 21)
+                                    .addComponent(fixedNumberMinorCB, javax.swing.GroupLayout.PREFERRED_SIZE, 93, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addComponent(minorRepeatEveryRB)
+                            .addGroup(minorPanelLayout.createSequentialGroup()
+                                .addGap(21, 21, 21)
+                                .addComponent(repeatEveryCB1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, minorPanelLayout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
                         .addComponent(minorListOfLocationsTF, javax.swing.GroupLayout.PREFERRED_SIZE, 339, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+        minorPanelLayout.setVerticalGroup(
+            minorPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, minorPanelLayout.createSequentialGroup()
                 .addComponent(minorListOfLocationsRB)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(minorListOfLocationsTF, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(5, 5, 5)
-                .addComponent(jRadioButton4)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(fixedNumberMinorCB, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(11, 11, 11)
+                .addComponent(minorFixedNumberIntervalsRB)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(fixedNumberMinorCB, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(minorRepeatEveryRB)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(repeatEveryCB1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(33, Short.MAX_VALUE))
         );
 
         jLabel3.setText("Specification:");
@@ -186,32 +223,31 @@ public class TickValuesStringSchemeEditor extends javax.swing.JPanel implements 
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
+                        .addGap(12, 12, 12)
+                        .addComponent(jLabel3)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(valueTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 706, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel2)
                             .addGroup(layout.createSequentialGroup()
                                 .addGap(12, 12, 12)
-                                .addComponent(jLabel3)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(valueTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 706, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jLabel2)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addGap(12, 12, 12)
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(majorRepeatEveryRB)
-                                            .addComponent(majorListOfLocationsRB)
-                                            .addGroup(layout.createSequentialGroup()
-                                                .addGap(21, 21, 21)
-                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                    .addComponent(repeatEveryCB, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                    .addComponent(majorListOfLocationsTF, javax.swing.GroupLayout.PREFERRED_SIZE, 355, javax.swing.GroupLayout.PREFERRED_SIZE))))))
-                                .addGap(80, 80, 80)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(alsoUseMinorCB)
+                                    .addComponent(majorRepeatEveryRB)
+                                    .addComponent(majorListOfLocationsRB)
                                     .addGroup(layout.createSequentialGroup()
                                         .addGap(21, 21, 21)
-                                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))))
-                        .addGap(0, 45, Short.MAX_VALUE))))
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(majorListOfLocationsTF, javax.swing.GroupLayout.PREFERRED_SIZE, 355, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addComponent(repeatEveryCB, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))))
+                        .addGap(40, 40, 40)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(21, 21, 21)
+                                .addComponent(minorPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addContainerGap())
+                            .addComponent(alsoUseMinorCB)))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -235,8 +271,7 @@ public class TickValuesStringSchemeEditor extends javax.swing.JPanel implements 
                         .addComponent(majorRepeatEveryRB)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(repeatEveryCB, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(minorPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
         );
 
         bindingGroup.bind();
@@ -278,6 +313,14 @@ public class TickValuesStringSchemeEditor extends javax.swing.JPanel implements 
         update();
     }//GEN-LAST:event_fixedNumberMinorCBFocusLost
 
+    private void repeatEveryCB1FocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_repeatEveryCB1FocusLost
+        // TODO add your handling code here:
+    }//GEN-LAST:event_repeatEveryCB1FocusLost
+
+    private void repeatEveryCB1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_repeatEveryCB1ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_repeatEveryCB1ActionPerformed
+
     private void updateComponents() {
         String spec= valueTextField.getText();
         String[] ss= spec.split("/",-2);
@@ -302,16 +345,18 @@ public class TickValuesStringSchemeEditor extends javax.swing.JPanel implements 
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JRadioButton jRadioButton4;
     private javax.swing.ButtonGroup majorButtonGroup;
     private javax.swing.JRadioButton majorListOfLocationsRB;
     private javax.swing.JTextField majorListOfLocationsTF;
     private javax.swing.JRadioButton majorRepeatEveryRB;
     private javax.swing.ButtonGroup minorButtonGroup;
+    private javax.swing.JRadioButton minorFixedNumberIntervalsRB;
     private javax.swing.JRadioButton minorListOfLocationsRB;
     private javax.swing.JTextField minorListOfLocationsTF;
+    private javax.swing.JPanel minorPanel;
+    private javax.swing.JRadioButton minorRepeatEveryRB;
     private javax.swing.JComboBox<String> repeatEveryCB;
+    private javax.swing.JComboBox<String> repeatEveryCB1;
     private javax.swing.JTextField valueTextField;
     private org.jdesktop.beansbinding.BindingGroup bindingGroup;
     // End of variables declaration//GEN-END:variables
@@ -345,8 +390,16 @@ public class TickValuesStringSchemeEditor extends javax.swing.JPanel implements 
             build.append("/");
             if ( minorListOfLocationsRB.isSelected() ) {
                 build.append( minorListOfLocationsTF.getText() );
-            } else {
+            } else if ( minorFixedNumberIntervalsRB.isSelected() ) {
                 build.append( fixedNumberMinorCB.getSelectedItem().toString() );
+            } else {
+                String text= (String)repeatEveryCB1.getSelectedItem();
+                int i= text.indexOf(":");
+                if ( i>-1 ) text= text.substring(0,i).trim();
+                if ( !( text.startsWith("+") || text.startsWith("*") ) ) {
+                    text= "+"+text;
+                }
+                build.append( text );
             }
         }
         this.valueTextField.setText(build.toString());
