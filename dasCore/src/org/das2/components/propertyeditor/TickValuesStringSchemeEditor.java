@@ -331,10 +331,15 @@ public class TickValuesStringSchemeEditor extends javax.swing.JPanel implements 
             majorListOfLocationsTF.setText(ss[0]);
         }
         if ( ss.length>1 ) {
-            if ( ss[1].split(",").length>0 ) {
+            if ( ss[1].split(",").length>1 ) {
                 minorListOfLocationsTF.setText(ss[1]);
-            } else {
+                minorListOfLocationsRB.setSelected(true);
+            } else if ( !( ss[1].startsWith("+") || ss[1].startsWith("*") ) ) {
                 fixedNumberMinorCB.setSelectedItem(ss[1]);
+                minorFixedNumberIntervalsRB.setSelected(true);
+            }  else {
+                repeatEveryCB1.setSelectedItem(ss[1]);
+                minorRepeatEveryRB.setSelected(true);                        
             }
         }
     }
