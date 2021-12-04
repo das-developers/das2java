@@ -59,7 +59,9 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
                 g.setColor( Color.WHITE );
                 g.fillRect( r.x, r.y, r.width, r.height );
                 g.setColor( Color.BLACK );
-                gtr.draw( g, 50, 50 );
+                gtr.draw(g, 10, 14 );
+                g.setColor( Color.LIGHT_GRAY );
+                g.drawRect( 10, 14 - (int)gtr.getAscent(), (int)gtr.getWidth(), (int)gtr.getHeight() );
             }
         };
         
