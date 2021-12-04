@@ -179,6 +179,18 @@ public class GraphUtil {
                     case "triangles":
                         p = DefaultPlotSymbol.TRIANGLES;
                         break;
+                    case "trianglesNorth":
+                        p = DefaultPlotSymbol.TRIANGLES_NORTH;
+                        break;
+                    case "trianglesEast":
+                        p = DefaultPlotSymbol.TRIANGLES_EAST;
+                        break;
+                    case "trianglesWest":
+                        p = DefaultPlotSymbol.TRIANGLES_WEST;
+                        break;
+                    case "trianglesSouth":
+                        p = DefaultPlotSymbol.TRIANGLES_SOUTH;
+                        break;
                     case "none":
                         p = DefaultPlotSymbol.NONE;
                         break;
@@ -205,7 +217,18 @@ public class GraphUtil {
                     } else if ( sfillStyle.equals("none") ) {
                         fillStyle = FillStyle.STYLE_NONE;
                     } // STYLE_SOLID is default.
-                } else if (args[i].startsWith("connect=")) {
+                } else if ( args[i].startsWith("color=")) {
+                    String scolor = args[i].substring(6);
+                    Color c= org.das2.util.ColorUtil.decodeColor(scolor);
+                    returnColor= g.getColor();
+                    g.setColor(c);
+                }
+            }
+
+            p.draw(g, fontSize / 2, -fontSize * 2 / 3.0 / 2, (float) size, fillStyle);
+
+            for (int i = 1; i < args.length; i++) {
+                if (args[i].startsWith("connect=")) {
                     PsymConnector connect;
                     String sconnect = args[i].substring(8);
                     if (sconnect.equals("solid")) {
@@ -219,14 +242,8 @@ public class GraphUtil {
                     double y = -fontSize * 2 / 3.0 / 2;
                     connect.drawLine(g, x - size, y + size * 4 / 11, x + size, y - size * 4 / 11, 1.5F);
                     //connect.drawLine( g, 2, 3, 13, 7, 1.5f);
-                } else if ( args[i].startsWith("color=")) {
-                    String scolor = args[i].substring(6);
-                    Color c= org.das2.util.ColorUtil.decodeColor(scolor);
-                    returnColor= g.getColor();
-                    g.setColor(c);
-                }
-            }
-            p.draw(g, fontSize / 2, -fontSize * 2 / 3.0 / 2, (float) size, fillStyle);
+                } 
+            }            
             Rectangle r = new Rectangle(0, (int) -fontSize, (int) fontSize, (int) fontSize);
             if ( returnColor!=null ) {
                 g.setColor(returnColor);
