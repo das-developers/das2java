@@ -258,16 +258,25 @@
           <Properties>
             <Property name="text" type="java.lang.String" value="Color:"/>
           </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="psymColorCBActionPerformed"/>
+          </Events>
         </Component>
         <Component class="javax.swing.JButton" name="jButton1">
           <Properties>
             <Property name="text" type="java.lang.String" value="Pick..."/>
           </Properties>
+          <BindingProperties>
+            <BindingProperty name="enabled" source="psymColorCB" sourcePath="${selected}" target="jButton1" targetPath="enabled" updateStrategy="0" immediately="false"/>
+          </BindingProperties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jButton1ActionPerformed"/>
           </Events>
         </Component>
         <Component class="javax.swing.JTextField" name="psymColorTextField">
+          <BindingProperties>
+            <BindingProperty name="enabled" source="psymColorCB" sourcePath="${selected}" target="psymColorTextField" targetPath="enabled" updateStrategy="0" immediately="false"/>
+          </BindingProperties>
         </Component>
         <Component class="javax.swing.JRadioButton" name="noneFillStyleRB">
           <Properties>

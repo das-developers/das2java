@@ -15,6 +15,7 @@ import javax.swing.AbstractButton;
 import javax.swing.JColorChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -266,13 +267,25 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
         noneConnectorRB.setText("none");
 
         psymColorCB.setText("Color:");
+        psymColorCB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                psymColorCBActionPerformed(evt);
+            }
+        });
 
         jButton1.setText("Pick...");
+
+        org.jdesktop.beansbinding.Binding binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, psymColorCB, org.jdesktop.beansbinding.ELProperty.create("${selected}"), jButton1, org.jdesktop.beansbinding.BeanProperty.create("enabled"));
+        bindingGroup.addBinding(binding);
+
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
             }
         });
+
+        binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, psymColorCB, org.jdesktop.beansbinding.ELProperty.create("${selected}"), psymColorTextField, org.jdesktop.beansbinding.BeanProperty.create("enabled"));
+        bindingGroup.addBinding(binding);
 
         fillStyleButtonGroup.add(noneFillStyleRB);
         noneFillStyleRB.setText("none");
@@ -380,7 +393,7 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
 
         imageSizeTF.setText("50%");
 
-        org.jdesktop.beansbinding.Binding binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, imageSizeCB, org.jdesktop.beansbinding.ELProperty.create("${selected}"), imageSizeTF, org.jdesktop.beansbinding.BeanProperty.create("enabled"));
+        binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, imageSizeCB, org.jdesktop.beansbinding.ELProperty.create("${selected}"), imageSizeTF, org.jdesktop.beansbinding.BeanProperty.create("enabled"));
         bindingGroup.addBinding(binding);
 
         jLabel8.setText("<html><i>50% means half of original size; 2em means two em heights; 20 or 20px means 20 pixels");
@@ -783,6 +796,17 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
             doInsert( textb.toString(), null );
         }
     }//GEN-LAST:event_imageButtonActionPerformed
+
+    private void psymColorCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_psymColorCBActionPerformed
+        if ( !psymColorCB.isSelected() ) {
+            JTextField s= new JTextField();
+            psymColorTextField.setBackground(s.getBackground());
+        } else {
+            String s= psymColorTextField.getText();
+            Color c= ColorUtil.decodeColor(s);
+            psymColorTextField.setBackground(c);
+        }
+    }//GEN-LAST:event_psymColorCBActionPerformed
 
     private void updateImage() {
         String oldString= gtr.getString();
