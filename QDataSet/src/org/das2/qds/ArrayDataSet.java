@@ -899,12 +899,14 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
             QDataSet thatDep= (QDataSet) ds2.property( "DEPEND_"+i );
             if ( thatDep!=null && ( i==0 || thatDep.rank()>1 ) ) {
                 QDataSet thisDep= (QDataSet) ds1.property( "DEPEND_"+i );
-                if ( thisDep==null ) throw new IllegalArgumentException("DEPEND_"+i+" missing from first argument: "+ds1);
-                ArrayDataSet djoin= copy( thisDep ); //TODO: reconcile types
-                ArrayDataSet ddep1= thatDep instanceof ArrayDataSet ? (ArrayDataSet) thatDep : maybeCopy( thatDep );
-                djoin= append( djoin, ddep1 );
-                result.put( "DEPEND_"+i, djoin );
-
+                if ( thisDep==null ) {
+                    logger.log(Level.FINE, "joinProperties is dropping DEPEND_{0} because only one dataset has this property.", i);
+                } else {
+                    ArrayDataSet djoin= copy( thisDep ); //TODO: reconcile types
+                    ArrayDataSet ddep1= thatDep instanceof ArrayDataSet ? (ArrayDataSet) thatDep : maybeCopy( thatDep );
+                    djoin= append( djoin, ddep1 );
+                    result.put( "DEPEND_"+i, djoin );
+                }
             } else if ( thatDep!=null && thatDep.rank()==1 ) {
                 //TODO: check properties equal.
                 result.put( "DEPEND_"+i, thatDep );
