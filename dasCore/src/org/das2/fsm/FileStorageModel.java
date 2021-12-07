@@ -186,8 +186,8 @@ public class FileStorageModel {
      * return a result.
      * This implementation does the same as getNames(), but stops after finding a file.
      * @param monitor progress monitor in case a file must be downloaded.
-     * @param childRegex the parent must contain a file/folder matching childRegex
-     * @param range hint at the range where we are looking.  
+     * @param childRegex the parent must contain a file/folder matching childRegex, or null if there is no child.
+     * @param range hint at the range where we are looking, or null if there is not time range constraint.
      * @return null if no file is found
      * @throws java.io.IOException if the file cannot be downloaded.
      */
@@ -205,7 +205,7 @@ public class FileStorageModel {
      * This implementation does the same as getNames(), but stops after finding a file.
      * @param ths
      * @param monitor progress monitor in case a file must be downloaded.
-     * @param childRegex the parent must contain a file/folder matching childRegex
+     * @param childRegex the parent must contain a file/folder matching childRegex, or null if there is no child.
      * @param range hint at the range where we are looking.  
      * @param depth the recursion depth, useful for debugging.
      * @return null if no file is found
