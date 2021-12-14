@@ -24,14 +24,29 @@ public class GitCommand {
      */
     public static class GitResponse {
         int exitCode;
+        String response;
+        String errorResponse;
+        
+        /**
+         * get the return code, where 0 is success, non-zero is code for error.
+         * @return 
+         */
         public int getExitCode() {
             return exitCode;
         }
-        String response;
+        
+        /**
+         * get the response, which is typically stdout but may have stderr combined.
+         * @return 
+         */
         public String getResponse() {
             return response;
         }
-        String errorResponse;
+        
+        /**
+         * get the stderr response, when provided.
+         * @return 
+         */
         public String getErrorResponse() {
             return errorResponse;
         }
@@ -65,8 +80,6 @@ public class GitCommand {
         p.waitFor();
 
         String msg = FileUtil.readFileToString(log);
-        
-        System.err.println(msg);
         
         GitResponse result= new GitResponse( );
         result.exitCode= p.exitValue();
