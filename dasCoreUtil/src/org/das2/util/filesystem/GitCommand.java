@@ -41,7 +41,7 @@ public class GitCommand {
         ProcessBuilder pb = new ProcessBuilder(exe.split(" "));
         pb.directory(pwd);
 
-        File log = new File("/tmp/editor.pull.txt");
+        File log = File.createTempFile( "editor.pull.", ".txt" );
 
         pb.redirectErrorStream(true);
         pb.redirectOutput(ProcessBuilder.Redirect.to(log));
@@ -73,7 +73,7 @@ public class GitCommand {
         ProcessBuilder pb = new ProcessBuilder(exe.split(" "));
         pb.directory(pwd);
 
-        File log = new File("/tmp/editor.diff.txt"); //TODO: this will not scale as multiple people use this.
+        File log = File.createTempFile( "editor.diff.", ".txt" );
 
         pb.redirectErrorStream(true);
         pb.redirectOutput(ProcessBuilder.Redirect.to(log));
