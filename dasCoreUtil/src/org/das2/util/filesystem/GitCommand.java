@@ -1,8 +1,4 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package org.das2.util.filesystem;
 
 import java.io.File;
@@ -18,7 +14,28 @@ import org.das2.util.LoggerManager;
  * @author jbf
  */
 public class GitCommand {
+    
+    Logger logger = LoggerManager.getLogger("das2.filesystem.git");
+
     File pwd= null;
+    
+    /**
+     * contains the exit code and messages.
+     */
+    public static class GitResponse {
+        int exitCode;
+        public int getExitCode() {
+            return exitCode;
+        }
+        String response;
+        public String getResponse() {
+            return response;
+        }
+        String errorResponse;
+        public String getErrorResponse() {
+            return errorResponse;
+        }
+    }
     
     public GitCommand(File pwd) {
         this.pwd= pwd;
@@ -30,10 +47,8 @@ public class GitCommand {
      * @throws IOException
      * @throws InterruptedException 
      */
-    public int pull() throws IOException, InterruptedException {
+    public GitResponse pull() throws IOException, InterruptedException {
         
-        Logger logger = LoggerManager.getLogger("jython.actions");
-
         String exe = "git pull";
 
         logger.log(Level.FINE, "running command {0}", exe);
@@ -53,18 +68,23 @@ public class GitCommand {
         
         System.err.println(msg);
         
-        return p.exitValue();
+        GitResponse result= new GitResponse( );
+        result.exitCode= p.exitValue();
+        result.response= msg;
+        result.errorResponse= null;
+        
+        return result;
     }
     
     /**
-     * 
-     * @param f
-     * @return
+     * query for the differences in the file.
+     * @param f the file.
+     * @return the difference formatted as unified diff.
      * @throws IOException
      * @throws InterruptedException 
+     * @see UnifiedDiffUtils.parseUnifiedDiff in QDataSet
      */
-    public String diff( File f ) throws IOException, InterruptedException {
-        Logger logger = LoggerManager.getLogger("jython.actions");
+    public GitResponse diff( File f ) throws IOException, InterruptedException {
 
         String exe = "git diff "+f.getPath() ;
 
@@ -83,11 +103,54 @@ public class GitCommand {
 
         String msg = FileUtil.readFileToString(log);
         
-        if ( p.exitValue()==0 ) {
-            System.err.println(msg);
-            return msg;
+        GitResponse response= new GitResponse();
+        response.exitCode= p.exitValue();
+        if ( response.exitCode==0 ) {
+            response.response= msg;
         } else {
-            throw new IllegalArgumentException("git command failed: "+msg);
+            response.errorResponse= msg;
         }
+        
+        return response;
     }
+    
+    
+    public GitResponse commit( File script, String msg ) throws IOException, InterruptedException {
+        
+        String name = script.getName();
+
+        logger.log(Level.INFO, "pwd: {0}", script.getParentFile());
+
+        ProcessBuilder pb = new ProcessBuilder( "git","commit","-m",msg,name );
+        pb.directory( script.getParentFile() );
+
+        logger.log(Level.FINE, "running command {0}", String.join( " ", pb.command() ) );
+
+        pb.directory(pwd);
+
+        File log = File.createTempFile( "editor.commit.", ".txt" );
+
+        pb.redirectErrorStream(true);
+        pb.redirectOutput(ProcessBuilder.Redirect.to(log));
+
+        Process p = pb.start();
+        p.waitFor();
+
+        String logmsg = FileUtil.readFileToString(log);
+
+        logger.info(logmsg);
+
+        GitResponse response= new GitResponse();
+        response.exitCode= p.exitValue();
+        if ( response.exitCode==0 ) {
+            response.response= logmsg;
+        } else {
+            response.errorResponse= logmsg;
+        }
+        
+        return response;
+        
+    }
+
+
 }
