@@ -90,6 +90,39 @@ public class GitCommand {
     }
     
     /**
+     * pull from the upstream repository
+     * @return 0 for success.
+     * @throws IOException
+     * @throws InterruptedException 
+     */
+    public GitResponse push() throws IOException, InterruptedException {
+        
+        String exe = "git push";
+
+        logger.log(Level.FINE, "running command {0}", exe);
+        
+        ProcessBuilder pb = new ProcessBuilder(exe.split(" "));
+        pb.directory(pwd);
+
+        File log = File.createTempFile( "editor.push.", ".txt" );
+
+        pb.redirectErrorStream(true);
+        pb.redirectOutput(ProcessBuilder.Redirect.to(log));
+
+        Process p = pb.start();
+        p.waitFor();
+
+        String msg = FileUtil.readFileToString(log);
+        
+        GitResponse result= new GitResponse( );
+        result.exitCode= p.exitValue();
+        result.response= msg;
+        result.errorResponse= null;
+        
+        return result;
+    }
+    
+    /**
      * query for the differences in the file.
      * @param f the file.
      * @return the difference formatted as unified diff.
