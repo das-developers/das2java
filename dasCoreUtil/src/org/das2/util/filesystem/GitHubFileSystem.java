@@ -71,7 +71,7 @@ public class GitHubFileSystem extends HttpFileSystem {
     private boolean isNeedLoginPage(File partFile) throws IOException {
         int MAX_LINE_COUNT= 100;
         try ( PushbackInputStream is= new PushbackInputStream( new FileInputStream(partFile) ) ) {
-            byte[] cc= new byte[15];
+            byte[] cc= new byte[60];
             int bytesRead= is.read(cc);
             int p=bytesRead;
             while ( p<15 && bytesRead>-1 ) {
@@ -81,13 +81,13 @@ public class GitHubFileSystem extends HttpFileSystem {
                 return false;
             }
             boolean isLogin= false;
-            if ( new String( cc, "US-ASCII" ).equals("<!DOCTYPE html>") ) {
+            if ( new String( cc, "US-ASCII" ).trim().startsWith("<!DOCTYPE html>") ) {
                 try (BufferedReader r = new BufferedReader( new InputStreamReader( is ) )) {
                     String line= r.readLine();
                     int lineCount= 0;
                     while ( line!=null ) {
                         lineCount++;
-                        if ( line.startsWith("<meta content=\"Sign in\"" ) ) {
+                        if ( line.contains("Sign in") ) {
                             isLogin= true;
                             break;
                         }
@@ -230,6 +230,8 @@ public class GitHubFileSystem extends HttpFileSystem {
             return "";
         } else if ( h.equals("git.physics.uiowa.edu" ) ) {
             return "";
+        } else if ( h.equals("github.umn.edu" ) ) {
+            return "";
         } else if ( h.equals("jfaden.net") && path.startsWith("/git") ) {
             return "/git";
         } else {
@@ -258,16 +260,16 @@ public class GitHubFileSystem extends HttpFileSystem {
         Matcher m1= fsp1.matcher( suri );
         if ( m1.matches() ) {
             String project= m1.group(2);
-            if ( project.endsWith("/-/") ) { // strange bug where U. Iowa server would add extra "-/"
+            branch= m1.group(4);
+            if ( project.endsWith("/-/") ) { // strange bug where U. Iowa GitLabs server would add extra "-/"
                 project= project.substring(0,project.length()-2);
             }
-            suri= m1.group(1)+project+m1.group(4)+"/" + m1.group(5);
+            suri= m1.group(1) + project + branch + "/" + m1.group(5);
             try {
                 root= new URI(suri);
             } catch (URISyntaxException ex) {
                 throw new RuntimeException(ex);
             }
-            branch= m1.group(4);
         }
         
         //if ( !branch.equals("master") ) {
