@@ -484,9 +484,13 @@ public class WebFileObject extends FileObject {
                 // TODO: do something with part file.
                 throw e;
             } catch (IOException ex ) {
-                if ( ex.getMessage()!=null && ex.getMessage().contains("Forbidden") ) {
-                    throw ex;
-                }
+                if ( ex.getMessage()!=null ) {
+                    if ( ex.getMessage().contains("Forbidden") ) {
+                        throw ex;
+                    } else if ( ex.getMessage().contains("requires authentication")) { //"GitHub/GitLabs which requires authentication is not supported"
+                        throw ex;
+                    }
+                } 
                 if ( this.wfs instanceof HttpFileSystem && !(ex instanceof InterruptedIOException )  ) { //TODO: when would we use this--it needs to be more precise.
                     if ( this.wfs.isOffline() ) {
                         logger.log(Level.SEVERE,"unable getFile",ex);
