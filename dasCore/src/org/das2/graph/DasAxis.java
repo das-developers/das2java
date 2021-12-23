@@ -4628,24 +4628,18 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             //Initialize bounds rectangle
             if (bottomTicks) {
                 bottomBounds = new Rectangle(DMin, bottomPosition, DMax - DMin + 1, 1);
+                bottomBounds.height += tickSize;    //Add room for ticks
             }
             if (topTicks) {
                 topBounds = new Rectangle(DMin, topPosition, DMax - DMin + 1, 1);
-            }
-            assert bottomBounds!=null;
-            assert topBounds!=null;
-            
-            //Add room for ticks
-            if (bottomTicks) {
-                bottomBounds.height += tickSize;
-            }
-            if (topTicks) {
-                topBounds.height += tickSize;
+                topBounds.height += tickSize;   //Add room for ticks
                 topBounds.y -= tickSize;
             }
+            
             int tick_label_gap = getFontMetrics(tickLabelFont).stringWidth(" ");
             //Add room for tick labels
             if (bottomTickLabels) {
+                assert bottomBounds!=null;
                 bottomBounds.height += tickLabelFont.getSize() * 3 / 2 + tick_label_gap;
             }
             if (topTickLabels) {
@@ -4653,11 +4647,14 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 topBounds.height += tickLabelFont.getSize() * 3 / 2 + tick_label_gap;
             }
 
-            Rectangle primaryBounds = (orientation == BOTTOM ? bottomBounds : topBounds);
-            Rectangle secondaryBounds = (orientation == BOTTOM ? topBounds : bottomBounds);
+            Rectangle primaryBounds =   ( bottomTicks ? bottomBounds : topBounds);
+            Rectangle secondaryBounds = ( bottomTicks ? topBounds : bottomBounds);
 
+            assert primaryBounds!=null;
+            
             primaryBounds.translate(-DasAxis.this.getX(), -DasAxis.this.getY());
             if (oppositeAxisVisible) {
+                assert secondaryBounds!=null;
                 secondaryBounds.translate(-DasAxis.this.getX(), -DasAxis.this.getY());
             }
 
@@ -4696,21 +4693,14 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             //Initialize bounds rectangle(s)
             if (leftTicks) {
                 leftBounds = new Rectangle(leftPosition, DMin, 1, DMax - DMin + 1);
-            }
-            if (rightTicks) {
-                rightBounds = new Rectangle(rightPosition, DMin, 1, DMax - DMin + 1);
-            }
-            assert leftBounds!=null;
-            assert rightBounds!=null;
-                        
-            //Add room for ticks
-            if (leftTicks) {
-                leftBounds.width += tickSize;
+                leftBounds.width += tickSize; //Add room for ticks
                 leftBounds.x -= tickSize;
             }
             if (rightTicks) {
-                rightBounds.width += tickSize;
+                rightBounds = new Rectangle(rightPosition, DMin, 1, DMax - DMin + 1);
+                rightBounds.width += tickSize; //Add room for ticks 
             }
+                        
             int maxLabelWidth = getMaxLabelWidth();
             int tick_label_gap = getFontMetrics(tickLabelFont).stringWidth(" ");
             //Add room for tick labels
@@ -4721,16 +4711,20 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             //bounds.height += tickLabelFont.getSize()*2;
             }
             if (rightTickLabels) {
+                assert rightBounds!=null;
                 rightBounds.width += maxLabelWidth + tick_label_gap;
             //bounds.y -= tickLabelFont.getSize();
             //bounds.height += tickLabelFont.getSize()*2;
             }
 
-            Rectangle primaryBounds = (orientation == LEFT ? leftBounds : rightBounds);
-            Rectangle secondaryBounds = (orientation == LEFT ? rightBounds : leftBounds);
+            Rectangle primaryBounds = ( leftTicks ? leftBounds : rightBounds);
+            Rectangle secondaryBounds = ( leftTicks ? rightBounds : leftBounds);
 
+            assert primaryBounds!=null;
+            
             primaryBounds.translate(-DasAxis.this.getX(), -DasAxis.this.getY());
             if (oppositeAxisVisible) {
+                assert secondaryBounds!=null;
                 secondaryBounds.translate(-DasAxis.this.getX(), -DasAxis.this.getY());
             }
 
