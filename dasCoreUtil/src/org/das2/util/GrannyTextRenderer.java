@@ -45,8 +45,10 @@ import java.util.logging.Logger;
 /**
  * Utility class for rendering "Granny" strings, which use the codes
  * identified by Grandle and Nystrom in their 1980 paper to provide 
- * rich formatting such as new lines and superscripts.
- * These are strings like "E=mc!e2" where the !e indicates the pen should be 
+ * rich formatting such as new lines and superscripts.  This has been
+ * extended significantly to include some html support, and extensions
+ * which paint arbitrary graphics.
+ * Granny are strings like "E=mc!e2" where the "!e" indicates the pen should be 
  * moved to the exponent position before drawing.  This supports sequences
  * including:<pre>
  * !A  shift up one half line
@@ -73,6 +75,17 @@ import java.util.logging.Logger;
  * </pre>
  * For Greek and math symbols, Unicode characters should be
  * used like so: &amp;#9742; (&#9742 phone symbol), or symbols like <tt>&amp;Omega;</tt> and <tt>&amp;omega;</tt>
+ * 
+ * The GrannyTextRenderer object is created and then the method
+ * setString is called and layout is performed, in Jython:
+ * 
+ * <pre>
+ * def paint(g):
+ *    gtr= GrannyTextRenderer()
+ *    gtr.setString( g, 'E=mc!e2' )
+ *    gtr.draw( g, 0, g.getFont().getHeight() )
+ * </pre>
+ * 
  * 
  * @see https://github.com/das-developers/das2java/wiki/Granny-Text-Strings
  * @see java.awt.font.TextLayout, which may do some of the same things.
