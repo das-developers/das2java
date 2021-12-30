@@ -219,6 +219,7 @@ public class TearoffTabbedPane extends JTabbedPane {
      * I needed a way to hide the mouseAdapter, since we can't do this automatically.  
      */
     public void hideMouseAdapter() {
+        checkEventThread();
         // https://sourceforge.net/tracker/?func=detail&aid=3377337&group_id=199733&atid=970682
         MouseListener[] mls= getMouseListeners();
         if ( mls.length>0 ) {
@@ -294,6 +295,12 @@ public class TearoffTabbedPane extends JTabbedPane {
         };
     }
 
+    private void checkEventThread() {
+        if ( !SwingUtilities.isEventDispatchThread() ) {
+            logger.warning("not event thread");
+        }
+    }
+    
     private void showPopupMenu(MouseEvent event) {
         Component selectedComponent;
         selectedTab = TearoffTabbedPane.this.indexAtLocation(event.getX(), event.getY());
@@ -726,6 +733,7 @@ public class TearoffTabbedPane extends JTabbedPane {
 
     public void tearOff(int tabIndex, Container newContainer) {
         logger.log( Level.FINE, "tearOff({0},{1})", new Object[]{tabIndex, newContainer});
+        checkEventThread();
         int lastSelected1 = this.lastSelected;
         Component c = getComponentAt(tabIndex);
         String title = super.getTitleAt(tabIndex);
@@ -1037,6 +1045,7 @@ public class TearoffTabbedPane extends JTabbedPane {
      */
     public void dock(Component c) {
         logger.log(Level.FINEST, "dock {0}", c);
+        checkEventThread();
         int selectedIndex = getSelectedIndex();
         TabDesc td = (TabDesc) this.tabs.get(c);
         if ( td==null ) {
@@ -1092,6 +1101,7 @@ public class TearoffTabbedPane extends JTabbedPane {
 
     @Override
     public void insertTab(String title, Icon icon, Component component, String tip, int index) {
+        checkEventThread();
         super.insertTab(title, icon, component, tip, index);
         TabDesc td = new TabDesc(title, icon, tip, index);
         tabs.put(component, td);
@@ -1099,6 +1109,7 @@ public class TearoffTabbedPane extends JTabbedPane {
 
     @Override
     public void addTab(String title, Icon icon, Component component, String tip) {
+        checkEventThread();
         super.addTab(title, icon, component, tip);
         TabDesc td = new TabDesc(title, icon, tip, indexOfComponent(component));
         tabs.put(component, td);
@@ -1107,6 +1118,7 @@ public class TearoffTabbedPane extends JTabbedPane {
     @Override
     public void remove( Component c ) {
         logger.log(Level.FINE, "remove({0})", c);
+        checkEventThread();
         TabDesc desc= tabs.get(c);
         if ( desc==null ) {
             //System.err.println("here c has no desc");
@@ -1155,6 +1167,7 @@ public class TearoffTabbedPane extends JTabbedPane {
 
     @Override
     public void removeTabAt(int index) {
+        checkEventThread();
         removeTabAt( index, true );
     }
     
