@@ -1800,9 +1800,14 @@ public class AsciiParser {
             }
             logger.log(Level.FINE, "line {0} okayCount: {1} failCount: {2}", new Object[]{irec, okayCount, failCount});
             if ( firstException!=null && failCount>0 && failCount<fieldCount ) {
-                if ( showException ) {                    
-                    logger.log( Level.WARNING, "The following exception occurred while parsing: " + firstException.getMessage(), firstException );
-                    showException= false;
+                if ( showException ) {
+                    if ( firstException instanceof ParseException ) {
+                        logger.log( Level.FINE, "The following exception occurred while parsing: " + firstException.getMessage(), firstException );
+                        showException= false;                        
+                    } else {
+                        logger.log( Level.WARNING, "The following exception occurred while parsing: " + firstException.getMessage(), firstException );
+                        showException= false;
+                    }
                 }
             }
             
