@@ -54,15 +54,15 @@ public class Datum implements Comparable, Serializable {
         }
             
         Double( double value, Units units ) {
-            super( new java.lang.Double(value), units, 0. );
+            super( value, units, 0. );
         }
         
         Double( double value ) {
-            super( new java.lang.Double(value), Units.dimensionless, 0. );
+            super( value, Units.dimensionless, 0. );
         }        
         
         Double( double value, Units units, double resolution ) {
-            super( new java.lang.Double(value), units, units.getDatumFormatterFactory().defaultFormatter(), resolution );
+            super( value, units, units.getDatumFormatterFactory().defaultFormatter(), resolution );
         }
         
     }
@@ -329,7 +329,7 @@ public class Datum implements Comparable, Serializable {
     }
     
     /**
-     * returns a Datum whose value is the sum of <tt>this</tt> and <tt>datum</tt>, in <tt>this.getUnits()</tt>.
+     * returns a Datum whose value is the sum of {@code this} and {@code datum}, in {@code this.getUnits()}.
      * @param datum Datum to add, that is convertible to this.getUnits().
      * @return a Datum that is the sum of the two values in this Datum's units.
      */
@@ -340,27 +340,31 @@ public class Datum implements Comparable, Serializable {
     }   
     
     /**
-     * returns a Datum whose value is the sum of <tt>this</tt> and value in 
-     * the context of <tt>units</tt>, in <tt>this.getUnits()</tt>.
+     * returns a Datum whose value is the sum of {@code this} and value in 
+     * the context of {@code units}, in {@code this.getUnits()}.
      * @param value a Number to add in the context of units.
      * @param units units defining the context of value.  There should be a converter from
      * units to this Datum's units.
      * @return value Datum that is the sum of the two values in this Datum's units.
      */
-    public Datum add( Number value, Units units ) {  return getUnits().add( getValue(), value, units ); }
+    public Datum add( Number value, Units units ) {  
+        return getUnits().add( getValue(), value, units ); 
+    }
     
     /**
-     * returns a Datum whose value is the sum of <tt>this</tt> and value in 
-     * the context of <tt>units</tt>, in <tt>this.getUnits()</tt>.
+     * returns a Datum whose value is the sum of {@code this} and value in 
+     * the context of {@code units}, in {@code this.getUnits()}.
      * @param d a Number to add in the context of units.
      * @param units units defining the context of value.  There should be a converter from
      * units to this Datum's units.
      * @return value Datum that is the sum of the two values in this Datum's units.
      */
-    public Datum add( double d, Units units ) {  return add( new java.lang.Double(d), units ); }
+    public Datum add( double d, Units units ) {  
+        return add( (Number)d, units ); 
+    }
     
     /**
-     * returns a Datum whose value is the difference of <tt>this</tt> and <tt>value</tt>.
+     * returns a Datum whose value is the difference of {@code this} and {@code value}.
      * The returned Datum will have units according to the type of units subtracted.
      * For example, "1979-01-02T00:00" - "1979-01-01T00:00" = "24 hours" (this datum's unit's offset units),
      * while "1979-01-02T00:00" - "1 hour" = "1979-01-01T23:00" (this datum's units.)
@@ -377,8 +381,8 @@ public class Datum implements Comparable, Serializable {
     }
                 
     /**
-     * returns a Datum whose value is the difference of <tt>this</tt> and value in 
-     * the context of <tt>units</tt>.  
+     * returns a Datum whose value is the difference of {@code this} and value in 
+     * the context of {@code units}.  
      * The returned Datum will have units according to the type of units subtracted.
      * For example, "1979-01-02T00:00" - "1979-01-01T00:00" = "24 hours" (this datum's unit's offset units),
      * while "1979-01-02T00:00" - "1 hour" = "1979-01-01T23:00" (this datum's units.)
@@ -394,8 +398,8 @@ public class Datum implements Comparable, Serializable {
     }
     
     /**
-     * returns a Datum whose value is the difference of <tt>this</tt> and value in 
-     * the context of <tt>units</tt>.
+     * returns a Datum whose value is the difference of {@code this} and value in 
+     * the context of {@code units}.
      * The returned Datum will have units according to the type of units subtracted.
      * For example, "1979-01-02T00:00" - "1979-01-01T00:00" = "24 hours" (this datum's unit's offset units),
      * while "1979-01-02T00:00" - "1 hour" = "1979-01-01T23:00" (this datum's units.)
@@ -406,15 +410,15 @@ public class Datum implements Comparable, Serializable {
      * @return value Datum that is the difference of the two values in this Datum's units.
      */
     public Datum subtract( double d, Units units ) {  
-        return subtract( new java.lang.Double(d), units ); 
-    }    
+        return subtract( (Number)d, units ); 
+    }
     
     private static double relativeErrorMult( double x, double dx, double y, double dy ) {
         return Math.sqrt( dx/x * dx/x + dy/y * dy/y );
     }
     
     /**
-     * divide this by the datum <tt>a</tt>.  Currently, only division is only supported:<pre>
+     * divide this by the datum {@code a}.  Currently, only division is only supported:<pre>
      *   between convertable units, resulting in a Units.dimensionless quantity, or
      *   by a Units.dimensionless quantity, and a datum with this datum's units is returned.</pre>
      * This may change, as a generic SI units class is planned.
@@ -451,7 +455,7 @@ public class Datum implements Comparable, Serializable {
     }
     
     /**
-     * multiply this by the datum <tt>a</tt>.  Currently, only multiplication is only supported
+     * multiply this by the datum {@code a}.  Currently, only multiplication is only supported
      *   by a dimensionless datum, or when this is dimensionless.
      * This may change, as a generic SI units class is planned.
      *
@@ -549,40 +553,40 @@ public class Datum implements Comparable, Serializable {
     }
     
     /**
-     * returns true if this is less than <tt>a</tt>.
+     * returns true if this is less than {@code a}.
      * @param a a datum convertible to this Datum's units.
      * @throws java.lang.IllegalArgumentException if the two don't have convertible units.
-     * @return true if this is less than <tt>a</tt>.
+     * @return true if this is less than {@code a}.
      */
     public boolean lt( Datum a ) throws IllegalArgumentException {
         return (this.compareTo(a)<0);
     }
     
     /**
-     * returns true if this is greater than <tt>a</tt>.
+     * returns true if this is greater than {@code a}.
      * @param a a datum convertible to this Datum's units.
      * @throws java.lang.IllegalArgumentException if the two don't have convertible units.
-     * @return true if this is greater than <tt>a</tt>.
+     * @return true if this is greater than {@code a}.
      */
     public boolean gt( Datum a ) throws IllegalArgumentException {
         return (this.compareTo(a)>0);
     }
     
     /**
-     * returns true if this is less than or equal to <tt>a</tt>.
+     * returns true if this is less than or equal to {@code a}.
      * @param a a datum convertible to this Datum's units.
      * @throws java.lang.IllegalArgumentException if the two don't have convertible units.
-     * @return true if this is less than or equal to <tt>a</tt>.
+     * @return true if this is less than or equal to {@code a}.
      */
     public boolean le( Datum a ) throws IllegalArgumentException {
         return (this.compareTo(a)<=0);
     }
     
     /**
-     * returns true if this is greater than or equal to <tt>a</tt>.
+     * returns true if this is greater than or equal to {@code a}.
      * @param a a datum convertible to this Datum's units.
      * @throws java.lang.IllegalArgumentException if the two don't have convertible units.
-     * @return true if this is greater than or equal to <tt>a</tt>.
+     * @return true if this is greater than or equal to {@code a}.
      */
     public boolean ge( Datum a ) throws IllegalArgumentException {
         return (this.compareTo(a)>=0);
@@ -668,7 +672,7 @@ public class Datum implements Comparable, Serializable {
     
     /**
      * creates a datum with the given units and value, for example,
-     * <tt>Datum.create( 54, Units.milliseconds )</tt>
+     * {@code Datum.create( 54, Units.milliseconds )}
      * @param value the magnitude of the datum.
      * @param units the units of the datum.
      * @return a Datum with the given units and value.
