@@ -183,35 +183,35 @@ public class LSpec {
         
     }
     
-    private static double guessCadence( QDataSet xds, final int skip ) {
-        double cadence = 0;
-        
-        // calculate average cadence for consistent points.  Preload to avoid extra branch.
-        double cadenceS= 0;
-        int cadenceN= 1;
-        
-        for ( int i=skip; i < xds.length(); i++) {
-            double cadenceAvg;
-            cadenceAvg= cadenceS/cadenceN;
-            cadence = xds.value(i) - xds.value(i-skip);
-            if ( cadence > 1.5 * cadenceAvg) {
-                cadenceS= cadence;
-                cadenceN= 1;
-            } else if ( cadence < 1.5 * cadenceAvg ) {
-                cadenceS+= cadence;
-                cadenceN+= 1;
-            }
-        }
-        return  cadenceS/cadenceN;
-    }
+//    private static double guessCadence( QDataSet xds, final int skip ) {
+//        double cadence = 0;
+//        
+//        // calculate average cadence for consistent points.  Preload to avoid extra branch.
+//        double cadenceS= 0;
+//        int cadenceN= 1;
+//        
+//        for ( int i=skip; i < xds.length(); i++) {
+//            double cadenceAvg;
+//            cadenceAvg= cadenceS/cadenceN;
+//            cadence = xds.value(i) - xds.value(i-skip);
+//            if ( cadence > 1.5 * cadenceAvg) {
+//                cadenceS= cadence;
+//                cadenceN= 1;
+//            } else if ( cadence < 1.5 * cadenceAvg ) {
+//                cadenceS+= cadence;
+//                cadenceN+= 1;
+//            }
+//        }
+//        return  cadenceS/cadenceN;
+//    }
     
     /**
      * rebin the datasets to rank 2 dataset ( time, LShell ), by interpolating along sweeps.  This
      * dataset has the property "sweeps", which is a dataset that indexes the input datasets.
      * @param lds rank 1 dataset of length N
-     * @param zds rank 1 dataset of length N, indexed along with <tt>lds</tt>
+     * @param zds rank 1 dataset of length N, indexed along with {@code lds}
      * @param lgrid rank 1 dataset indicating the dim 1 tags for the result dataset.
-     * @return a rank 2 dataset, with one column per sweep, interpolated to <tt>lgrid</tt>
+     * @return a rank 2 dataset, with one column per sweep, interpolated to {@code lgrid}
      */
     public static QDataSet rebin( QDataSet lds, QDataSet zds, QDataSet lgrid ) {
         return rebin( lds, zds, lgrid, 0 );
@@ -223,7 +223,7 @@ public class LSpec {
      * @param tlz x,y,z (T,L,Z) bundle of Z values collected along inward and outward sweeps of L in time.
      * @param lgrid desired uniform grid of L values.
      * @param dir =1 increasing (outward) only, =-1 decreasing (inward) only, 0 both.  
-     * @return a rank 2 dataset, with one column per sweep, interpolated to <tt>lgrid</tt>
+     * @return a rank 2 dataset, with one column per sweep, interpolated to {@code lgrid}
      */
     public static QDataSet rebin( QDataSet tlz, QDataSet lgrid, int dir ) {
         QDataSet lds= Ops.link( Ops.slice1(tlz,0), Ops.slice1(tlz,1) );
@@ -240,7 +240,7 @@ public class LSpec {
      * @param tspace rank 0 cadence, such as dataset('9 hr')
      * @param lgrid rank 1 data is the grid points, such as  linspace( 2.,8.,30 )
      * @param dir =1 increasing (outward) only, =-1 decreasing (inward) only, 0 both
-     * @return a rank 2 dataset, with one column per sweep, interpolated to <tt>lgrid</tt>
+     * @return a rank 2 dataset, with one column per sweep, interpolated to {@code lgrid}
      */
     public static QDataSet rebin( QDataSet tt, QDataSet lds, QDataSet zds, QDataSet tspace, QDataSet lgrid, int dir ) {
         final QDataSet sweeps= identifySweeps( lds, dir );
@@ -336,10 +336,10 @@ public class LSpec {
      * rebin the datasets to rank 2 dataset ( time, LShell ), by interpolating along sweeps.  This
      * dataset has the property "sweeps", which is a dataset that indexes the input datasets.
      * @param lds rank 1 dataset of length N
-     * @param zds rank 1 dataset of length N, indexed along with <tt>lds</tt>
+     * @param zds rank 1 dataset of length N, indexed along with {@code lds}
      * @param lgrid rank 1 dataset indicating the dim 1 tags for the result dataset.
      * @param dir =1 increasing (outward) only, =-1 decreasing (inward) only, 0 both
-     * @return a rank 2 dataset, with one column per sweep, interpolated to <tt>lgrid</tt>
+     * @return a rank 2 dataset, with one column per sweep, interpolated to {@code lgrid}
      */
     public static QDataSet rebin( QDataSet lds, QDataSet zds, QDataSet lgrid, int dir ) {
 
@@ -375,7 +375,7 @@ public class LSpec {
             }
         }
 
-        Map<String,Object> userProps= new LinkedHashMap();
+        Map<String,Object> userProps= new LinkedHashMap<>();
         userProps.put(USER_PROP_SWEEPS, sweeps);
 
         result.putProperty( QDataSet.USER_PROPERTIES, userProps );
