@@ -3033,6 +3033,8 @@ public class SeriesRenderer extends Renderer {
                    update();
                } else if ( evt.getPropertyName().equals(DasAxis.PROPERTY_DATUMRANGE) ) {
                    update();
+               } else if ( evt.getPropertyName().equals(DasAxis.PROP_LOG) ) {
+                   update();
                }
            }
         }
