@@ -1,10 +1,7 @@
 
 package org.das2.qds.util;
 
-import java.text.ParseException;
 import java.util.Enumeration;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.das2.datum.Units;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
@@ -13,9 +10,6 @@ import javax.swing.tree.TreeNode;
 import org.das2.datum.Datum;
 import org.das2.datum.EnumerationUnits;
 import org.das2.datum.TimeParser;
-import org.das2.datum.TimeUtil;
-import org.das2.datum.format.DatumFormatter;
-import org.das2.datum.format.TimeDatumFormatter;
 import org.das2.qds.DataSetUtil;
 import org.das2.qds.QDataSet;
 import org.das2.qds.RankZeroDataSet;
@@ -108,8 +102,8 @@ public class ValuesTreeModel extends DefaultTreeModel {
             }
 
             @Override
-            public Enumeration children() {
-                return new Enumeration() {
+            public Enumeration<TreeNode> children() {
+                return new Enumeration<TreeNode>() {
                     int i=0;
                     @Override
                     public boolean hasMoreElements() {
@@ -117,7 +111,7 @@ public class ValuesTreeModel extends DefaultTreeModel {
                     }
 
                     @Override
-                    public Object nextElement() {
+                    public TreeNode nextElement() {
                         return getChildAt(i++);
                     }
                 };
