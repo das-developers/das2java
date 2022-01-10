@@ -596,6 +596,7 @@ public class FileStorageModel {
         
         if ( parent!=null ) {
             names= parent.getNamesFor(targetRange,versioning,new NullProgressMonitor());   // note recursive call
+            logger.log(Level.FINE, "parent {0} yields: {1}", new Object[]{parent.toString(), names.length});
             fileSystems= new FileSystem[names.length];
             for ( int i=0; i<names.length; i++ ) {
                 try {
