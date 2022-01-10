@@ -1273,7 +1273,7 @@ public class SeriesRenderer extends Renderer {
             }
 
             QDataSet xds = SemanticOps.xtagsDataSet(dataSet);
-            QDataSet vds = ytagsDataSet( ds );
+            QDataSet vds = ytagsDataSet( dataSet );
             QDataSet wds = SemanticOps.weightsDataSet(vds);
             
             Units xUnits = SemanticOps.getUnits(xds);
