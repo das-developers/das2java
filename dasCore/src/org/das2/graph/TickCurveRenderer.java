@@ -284,7 +284,11 @@ public final class TickCurveRenderer extends Renderer {
             xrange= DDataSet.wrap( new double[] { -10, 10 } );
             ((DDataSet)xrange).putProperty( QDataSet.UNITS, u );
         }
-        xrange= Ops.rescaleRangeLogLin( xrange, -0.1, 1.1 );
+        try {
+            xrange= Ops.rescaleRangeLogLin( xrange, -0.1, 1.1 );
+        } catch ( RuntimeException ex ) {
+            logger.log(Level.FINE, "runtime error in rescale of {0}", xrange);
+        }
         
         QDataSet yrange= Ops.extent( DataSetOps.unbundle(ds,2) );
         if ( yrange.value(1)==yrange.value(0) ) {
@@ -292,7 +296,12 @@ public final class TickCurveRenderer extends Renderer {
             yrange= DDataSet.wrap( new double[] { -10, 10 } );
             ((DDataSet)yrange).putProperty( QDataSet.UNITS, u );
         }
-        yrange= Ops.rescaleRangeLogLin( yrange, -0.1, 1.1 );
+        
+        try {
+            yrange= Ops.rescaleRangeLogLin( yrange, -0.1, 1.1 );
+        } catch ( RuntimeException ex ) {
+            logger.log(Level.FINE, "runtime error in rescale of {0}", yrange);
+        }
 
         JoinDataSet bds= new JoinDataSet(2);
         bds.join(xrange);
