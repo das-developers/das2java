@@ -428,6 +428,19 @@ public class Orbits {
     }
 
     /**
+     * force a reload of the orbits file.  TODO: ideally the freshness of the orbits file would
+     * be checked every ten seconds, but there's quite a bit of coding to do that properly.
+     * This will force the reload, for example when the green play button is pressed on the 
+     * Autoplot Events List.
+     * @param sc the string identifier for the spacecraft, such as "rbspa-pp", or URL to orbit file.
+     * @return reread Orbits.
+     */
+    public static synchronized Orbits resetOrbitsFor( String sc ) {
+        missions.remove(sc);
+        return getOrbitsFor(sc);
+    }
+    
+    /**
      * Return the orbits for the named spacecraft, or those described in the file pointed to the URL when
      * the "sc" identifier is a URL.
      *
@@ -461,7 +474,7 @@ public class Orbits {
                 throw new IllegalArgumentException(error);
             }
         }
-        if ( orbits!=null && orbits.orbits.size()>0 ) {
+        if ( orbits!=null && !orbits.orbits.isEmpty() ) {
             return orbits;
         } else {
             try {
