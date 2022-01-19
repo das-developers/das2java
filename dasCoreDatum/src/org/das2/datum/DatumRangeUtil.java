@@ -1361,13 +1361,11 @@ public class DatumRangeUtil {
             if ( ss.length<3 ) {
                 throw new ParseException("orbit misformatted, should be orbit:<sc>:<num> or orbit:<sc>:<num>-<num>",0);
             }
-            if ( ss[2].contains("-") ) {
-                String[] sss= ss[2].split("-",-2);
-                if (sss.length!=2 ) {
-                    throw new ParseException("orbit range should be like 428-450",0);
-                }
-                DatumRange o0= new OrbitDatumRange( ss[1], sss[0] );
-                DatumRange o1= new OrbitDatumRange( ss[1], sss[1] );
+            Pattern p= Pattern.compile("(\\d+)\\-(\\d+)");
+            Matcher m= p.matcher(ss[2]);
+            if ( m.matches() ) { // This is a stupid feature which caused confusion with Ivar's "mms-ev1_01"
+                DatumRange o0= new OrbitDatumRange( ss[1], m.group(1) );
+                DatumRange o1= new OrbitDatumRange( ss[1], m.group(2) );
                 return DatumRangeUtil.union( o0,o1 );
             } else {
                 return new OrbitDatumRange( ss[1], ss[2] );
