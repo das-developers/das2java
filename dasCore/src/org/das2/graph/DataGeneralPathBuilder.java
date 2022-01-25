@@ -71,8 +71,8 @@ public final class DataGeneralPathBuilder {
         this.xaxis= xaxis;
         this.yaxis= yaxis;
         int yheight= yaxis.getRow().getHeight();
-        this.ymax= yaxis.getRow().getDMaximum()+yheight;
-        this.ymin= yaxis.getRow().getDMinimum()-yheight;
+        this.ymax= yaxis.getRow().getDMaximum()+yheight/2;
+        this.ymin= yaxis.getRow().getDMinimum()-yheight/2;
         this.xunits= xaxis.getUnits();
         this.yunits= yaxis.getUnits();
         logger.fine( "-----" );
