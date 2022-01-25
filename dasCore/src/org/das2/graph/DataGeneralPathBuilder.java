@@ -34,6 +34,8 @@ public final class DataGeneralPathBuilder {
     
     private final DasAxis xaxis;
     private final DasAxis yaxis;
+    private final int ymax;
+    private final int ymin;
     private final Units xunits;
     private final Units yunits;
     
@@ -68,6 +70,9 @@ public final class DataGeneralPathBuilder {
         //this.gp= new GraphUtil.DebuggingGeneralPath();
         this.xaxis= xaxis;
         this.yaxis= yaxis;
+        int yheight= yaxis.getRow().getHeight();
+        this.ymax= yaxis.getRow().getDMaximum()+yheight;
+        this.ymin= yaxis.getRow().getDMinimum()-yheight;
         this.xunits= xaxis.getUnits();
         this.yunits= yaxis.getUnits();
         logger.fine( "-----" );
@@ -191,7 +196,13 @@ public final class DataGeneralPathBuilder {
         if ( name.length()>0 ) {
             System.err.println(new Formatter().format( Locale.US, "%s.lineTo(%.2f,%.2f)", name, x, y ).toString());
         }
-        gp.lineTo( x,y );
+        if ( y>=ymax && ( x==penPositionX || Math.abs( (x-penPositionX ) )<0.5 ) ) {
+            gp.lineTo( x,ymax );
+        } else if ( y<ymin && ( x==penPositionX || Math.abs( (x-penPositionX ) )<0.5 ) ) {
+            gp.lineTo( x,ymin );
+        } else {
+            gp.lineTo( x,y );
+        }
         penPositionX= x;
         penPositionY= y;
     }
