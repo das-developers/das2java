@@ -339,6 +339,23 @@ public class GraphUtil {
     public static final String CONNECT_MODE_SERIES= "series";
     
     /**
+     * print the name for the segment type
+     * @param type
+     * @return "SEG_MOVETO", etc or "SEG_???"
+     */
+    public static final String getSegNameFor( int type ) {
+        switch (type) {
+            case PathIterator.SEG_MOVETO:
+                return "SEG_MOVETO";
+            case PathIterator.SEG_LINETO:
+                return "SEG_LINETO";
+            case PathIterator.SEG_CLOSE:
+                return "SEG_CLOSE";
+            default:
+            return "SEG_???";
+        }
+    }
+    /**
      * get the path for the points, checking for breaks in the data from fill values.
      * @param xAxis the x axis.
      * @param yAxis the y axis.
@@ -765,20 +782,27 @@ public class GraphUtil {
         
         boolean initialMoveTo= true;
         
+        //int iseg=0;
+        
         while (!it.isDone()) {
 
             int type = it.currentSegment(p);
             it.next();
             
+            //iseg++;
+            
             float xx = p[0];
             float yy = p[1];
-                        
+                  
+            //System.err.println( String.format( "780: %3d %10s %.2f %2f %s", iseg, getSegNameFor( type ), xx, yy, Thread.currentThread().getName() ) );
+            
             if ( type == PathIterator.SEG_MOVETO ) {
                 if ( lastP!=null ) { 
                     thisP= new Point2D.Float( xx, yy );
                     Point2D clipP= lineRectangleIntersection( lastP, thisP, clip );
                     if ( clip.contains(lastP) ) {
-                        throw new IllegalArgumentException("should not happen 584");
+                        result.moveTo( thisP.getX(), thisP.getY() );
+                        initialMoveTo= false;
                     } else if ( clip.contains(thisP) ) {
                         result.moveTo( clipP.getX(), clipP.getY() );
                         result.moveTo( thisP.getX(), thisP.getY() );
