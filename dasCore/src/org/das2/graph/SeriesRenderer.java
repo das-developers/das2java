@@ -1080,7 +1080,10 @@ public class SeriesRenderer extends Renderer {
                 int count = GraphUtil.reducePath20140622(pathBuilder.getPathIterator(), path1, 1, 5 );
                 if ( additionalClip ) {
                     GeneralPath path2= new GeneralPath(GeneralPath.WIND_NON_ZERO, pathLengthApprox );
-                    int x2= GraphUtil.clipPath( path1.getPathIterator(null), path2, GraphUtil.shrinkRectangle( getParent().getAxisClip(), 90 ) );
+                    //int x2= GraphUtil.clipPath( path1.getPathIterator(null), path2, 
+                    //    GraphUtil.shrinkRectangle( getParent().getAxisClip(), 90 ) );
+                    int x2= GraphUtil.clipPath( path1.getPathIterator(null), path2, 
+                        GraphUtil.shrinkRectangle( getParent().getAxisClip(), 110 ) );
                     logger.log(Level.FINE, "additionalClip: {0}", x2);
                     path1= path2;
                 }
@@ -1707,7 +1710,7 @@ public class SeriesRenderer extends Renderer {
         if ( active ) updatePsym();
     }
     
-    private boolean additionalClip = false;
+    private boolean additionalClip = true;
 
     public static final String PROP_ADDITIONALCLIP = "additionalClip";
 
@@ -1715,6 +1718,10 @@ public class SeriesRenderer extends Renderer {
         return additionalClip;
     }
 
+    /**
+     * this will clip all connecting lines outside of the plot boundaries.
+     * @param additionalClip 
+     */
     public void setAdditionalClip(boolean additionalClip) {
         boolean oldAdditionalClip = this.additionalClip;
         this.additionalClip = additionalClip;
