@@ -266,30 +266,41 @@ public class PolarPlotRenderer extends Renderer {
         return bds;
     }
     
+    /**
+     * autorange the data set.  If a color bar is needed then a 3-D bounding cube will be returned.
+     * @param tds
+     * @return bounding box or cube.
+     */
     public static QDataSet doAutorange(QDataSet tds) {
-
+        
         if ( tds.rank()==1 ) {
             return doAutorangeRank1(tds);
         }
         
         QDataSet zdesc;
         if ( SemanticOps.isBundle(tds) ) {
-            zdesc= Ops.extent( Ops.unbundle(tds,2) );
+            if ( tds.length(0)>2 ) {
+                zdesc= Ops.extent( Ops.unbundle(tds,2) );
+            } else {
+                zdesc= null;
+            }
         } else {
             zdesc= Ops.extent( tds );
         }
         
-        if ( zdesc.value(0)==zdesc.value(1) ) {
-            if ( zdesc.value(0)>0 ) {
-                zdesc= DDataSet.wrap( new double[] { 0, zdesc.value(1) } );
-                zdesc= Ops.putProperty( zdesc, QDataSet.UNITS, tds.property(QDataSet.UNITS) );
-            } else {
-                zdesc= DDataSet.wrap( new double[] { 0, 1 } );
-                zdesc= Ops.putProperty( zdesc, QDataSet.UNITS, tds.property(QDataSet.UNITS) );
+        if ( zdesc!=null ) {
+            if ( zdesc.value(0)==zdesc.value(1) ) {
+                if ( zdesc.value(0)>0 ) {
+                    zdesc= DDataSet.wrap( new double[] { 0, zdesc.value(1) } );
+                    zdesc= Ops.putProperty( zdesc, QDataSet.UNITS, tds.property(QDataSet.UNITS) );
+                } else {
+                    zdesc= DDataSet.wrap( new double[] { 0, 1 } );
+                    zdesc= Ops.putProperty( zdesc, QDataSet.UNITS, tds.property(QDataSet.UNITS) );
+                }
             }
+            zdesc= Ops.putProperty( zdesc, QDataSet.SCALE_TYPE, tds.property(QDataSet.SCALE_TYPE ) );
         }
-        zdesc= Ops.putProperty( zdesc, QDataSet.SCALE_TYPE, tds.property(QDataSet.SCALE_TYPE ) );
-
+        
         QDataSet ads= SemanticOps.xtagsDataSet(tds);
         QDataSet rds= SemanticOps.ytagsDataSet(tds); // this is why they are semanticOps.  ytagsDataSet is just used for convenience even though this is not the y values.
         
@@ -309,7 +320,9 @@ public class PolarPlotRenderer extends Renderer {
         JoinDataSet bds= new JoinDataSet(2);
         bds.join(xdesc);
         bds.join(ydesc);
-        bds.join(zdesc);
+        if ( zdesc!=null ) {
+            bds.join(zdesc);
+        }
 
         return bds;
 
@@ -348,11 +361,16 @@ public class PolarPlotRenderer extends Renderer {
         
         Double angleFactor= isAngleRange(ads, true);
         if ( angleFactor==null ) {
-            QDataSet t= rds;
-            rds= ads;
-            ads= t;
-            angleFactor= isAngleRange(ads, false);
+            Double angleFactor1= isAngleRange(rds, true);
+            if ( angleFactor1!=null ) {
+                QDataSet t= rds;
+                rds= ads;
+                ads= t;
+                angleFactor= isAngleRange(ads, false);
+            }
         }
+        
+        if ( angleFactor==null ) angleFactor= 1.0;
         
         QDataSet wds= Ops.copy( SemanticOps.weightsDataSet(rds) );
            
