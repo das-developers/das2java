@@ -1497,8 +1497,9 @@ public class SeriesRenderer extends Renderer {
         }
         logger.finer("cache miss means we must recalculate cadence");
         MutablePropertyDataSet xds1= Ops.copy(xds.trim(firstIndex,lastIndex));
+        QDataSet yds1= yds.trim(firstIndex,lastIndex);
         xds1.putProperty(QDataSet.CADENCE,null);
-        cadencec= SemanticOps.guessXTagWidth( xds1, yds.trim(firstIndex,lastIndex) );
+        cadencec= SemanticOps.guessXTagWidth( xds1, yds1 );
         xdsc= xds;
         ydsc= yds;
         firstIndexc= firstIndex;
