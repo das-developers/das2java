@@ -2179,18 +2179,10 @@ public class DataSetUtil {
                     logger.exiting(CLASSNAME,"guessCadenceNew");
                     theResult= (RankZeroDataSet)result;
                 } else {
-                    int brk= 0;
-                    for ( int i=0; i<ipeak; i++ ) {
-                        brk= brk+ (int)hist.value(i);
-                    }
-                    if ( brk > count/3*2 ) {
-                        return null;
-                    } else {
-                        result.putProperty( QDataSet.UNITS, xunits.getOffsetUnits() );
-                        logger.log(Level.FINE, "guessCadence({0})->{1} (linear)", new Object[]{xds, result});
-                        logger.exiting(CLASSNAME,"guessCadenceNew");                    
-                        theResult= (RankZeroDataSet)result;
-                    }
+                    result.putProperty( QDataSet.UNITS, xunits.getOffsetUnits() );
+                    logger.log(Level.FINE, "guessCadence({0})->{1} (linear)", new Object[]{xds, result});
+                    logger.exiting(CLASSNAME,"guessCadenceNew");                    
+                    theResult= (RankZeroDataSet)result;
                 }
             }
         }  
