@@ -206,6 +206,29 @@ public final class DataGeneralPathBuilder {
     }
     
     /**
+     * manually assert that the line script be interrupted at this point.
+     */
+    public void addBreak() {
+        if ( pen==PEN_DOWN ) { 
+            if ( histogramMode ) {
+                if ( pendingx!=null ) {
+                    double iPendingX= xaxis.transform(pendingx);
+                    lineTo( iPendingX, yaxis.transform(pendingy) );
+                    //double ix= xaxis.transform(x,xunits);
+                    //lineTo( ( iPendingX + ix ) / 2, yaxis.transform(pendingy) );
+                }
+            } else {
+                if ( pendingx!=null ) {
+                    lineTo( xaxis.transform(pendingx), yaxis.transform(pendingy) );
+                }
+            }            
+        }
+        pen= PEN_UP;
+        pendingx=null;
+        pendingy=null;           
+    }
+    
+    /**
      * add a point to the curve, where x and y are the magnitude in data coordinates.
      * @param valid if invalid, then break the line at this point.
      * @param x the x value in xaxis units.
