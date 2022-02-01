@@ -61,6 +61,11 @@ public class DataSetWrapper extends AbstractDataSet {
     }
 
     @Override
+    public double value() {
+        return ds.value();
+    }
+
+    @Override
     public int rank() {
         return ds.rank();
     }
@@ -97,5 +102,14 @@ public class DataSetWrapper extends AbstractDataSet {
         return ds.length();
     }
     
+    @Override
+    public QDataSet slice(int i) {
+        return new DataSetWrapper(ds.slice(i));
+    }
+
+    @Override
+    public QDataSet trim(int start, int end) {
+        return new DataSetWrapper(ds.trim(start, end)); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/OverriddenMethodBody
+    }
 
 }
