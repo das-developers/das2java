@@ -42,6 +42,8 @@ public class SelectionUtil {
             return ((PolarPlotRenderer)r).selectionArea();
         } else if ( r instanceof TickCurveRenderer ) {
             return ((TickCurveRenderer)r).selectionArea();
+        } else if ( r instanceof BoundsRenderer ) {
+            return ((BoundsRenderer)r).selectionArea();
         } else {
             Rectangle rect= DasDevicePosition.toRectangle( r.getParent().getRow(), r.getParent().getColumn() );
             rect= new Rectangle( rect.x+5, rect.y+5, rect.width-10, rect.height-10 );

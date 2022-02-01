@@ -3,16 +3,20 @@ package org.das2.graph;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.geom.Area;
 import java.awt.geom.GeneralPath;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import org.das2.datum.UnitsUtil;
 import org.das2.qds.QDataSet;
 import org.das2.qds.examples.Schemes;
 import org.das2.qds.ops.Ops;
 
 /**
- *
+ * Draw the region bounded by the dataset.  If the dataset is a bounding box, the box is drawn.  If the
+ * data is a rank 2 time series with bins (N by 2), then it is drawn.
  * @author jbf
+ * @see org.das2.qds.examples.Schemes#isBoundingBox(org.das2.qds.QDataSet) 
  */
 public class BoundsRenderer extends Renderer {
 
@@ -22,8 +26,19 @@ public class BoundsRenderer extends Renderer {
 
     @Override
     public boolean acceptsDataSet(QDataSet ds) {
-        return ds.rank()==2;
+        return ds.rank()==2 && ds.length(0)==2;
     }
+
+    @Override
+    public boolean acceptContext(int x, int y) {
+        return context==null ? false : context.contains(x, y);
+    }
+    
+    public Area selectionArea() {
+        return new Area(context);
+    }
+    
+    private GeneralPath context=null;
     
     public static QDataSet doAutorange( QDataSet ds ) {
         if ( Schemes.isBoundingBox(ds) ) {
@@ -44,9 +59,9 @@ public class BoundsRenderer extends Renderer {
     }
     
     
-    private Color color = Color.BLACK;
+    private Color color = new Color( 0, 0, 0 );
 
-    private Color fillColor= Color.BLACK;
+    private Color fillColor= new Color( 0, 0, 0, 128 );
     
     public static final String PROP_COLOR = "color";
 
@@ -102,21 +117,35 @@ public class BoundsRenderer extends Renderer {
             maxs= Ops.link( 
                 Ops.slice0( d,0 ), 
                 Ops.join( d.slice(1).slice(1), d.slice(1).slice(1) ) );
-            GeneralPath pmin= GraphUtil.getPath(xAxis,yAxis,
+            if ( mins.property(QDataSet.UNITS)==null && UnitsUtil.isRatioMeasurement(yAxis.getUnits()) ) {
+                mins= Ops.putProperty( mins, QDataSet.UNITS, yAxis.getUnits() );
+            }
+            if ( maxs.property(QDataSet.UNITS)==null && UnitsUtil.isRatioMeasurement(yAxis.getUnits()) ) {
+                maxs= Ops.putProperty( maxs, QDataSet.UNITS, yAxis.getUnits() );
+            }
+            GeneralPath pbox= GraphUtil.getPath(xAxis,yAxis,
                 Ops.append(mins,Ops.append(Ops.reverse(maxs),mins.slice(0))),false,false);
             g.setColor( this.fillColor );
-            g.fill(pmin);
+            g.fill(pbox);
             g.setColor( this.getColor() );
-            g.draw(pmin);
+            g.draw(pbox);
+            context= pbox;
         } else {
             mins= Ops.slice1( d,0 );
             maxs= Ops.slice1( d,1 );
-            GeneralPath pmin= GraphUtil.getPath(xAxis,yAxis,
+            if ( mins.property(QDataSet.UNITS)==null && UnitsUtil.isRatioMeasurement(yAxis.getUnits()) ) {
+                mins= Ops.putProperty( mins, QDataSet.UNITS, yAxis.getUnits() );
+            }
+            if ( maxs.property(QDataSet.UNITS)==null && UnitsUtil.isRatioMeasurement(yAxis.getUnits()) ) {
+                maxs= Ops.putProperty( maxs, QDataSet.UNITS, yAxis.getUnits() );
+            }            
+            GeneralPath path= GraphUtil.getPath(xAxis,yAxis,
                 Ops.append(mins,Ops.append(Ops.reverse(maxs),mins.slice(0))),false,false);
             g.setColor( this.fillColor );
-            g.fill(pmin);
+            g.fill(path);
             g.setColor( this.getColor() );
-            g.draw(pmin);
+            g.draw(path);
+            context= path;
         }
         
     }
