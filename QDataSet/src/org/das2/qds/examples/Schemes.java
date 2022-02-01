@@ -68,7 +68,10 @@ public class Schemes {
     }
     
     /**
-     * return true if the data is a boundingBox.
+     * return true if the data is a boundingBox.  A bounding box is
+     * rank 2 and has length 2.  ds[0,:] is typically the horizontal
+     * direction, and ds[1,:] is the vertical.
+     * 
      * @param ds a dataset
      * @return true if the dataset is a bounding box.
      */
