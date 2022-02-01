@@ -56,7 +56,7 @@ public class Schemes {
     public static QDataSet boundingBox( ) {
         try {
             QDataSet xx= Ops.timegen( "2015-02-20T00:30", "60 s", 1440 );
-            QDataSet yy= Ops.linspace( 14., 16., 1440 );
+            QDataSet yy= Ops.putProperty( Ops.linspace( 14., 16., 1440 ), QDataSet.UNITS, Units.nT );
             JoinDataSet bds= new JoinDataSet(2);
             bds.join( Ops.extent( xx ) );
             bds.join( Ops.extent( yy ) );
