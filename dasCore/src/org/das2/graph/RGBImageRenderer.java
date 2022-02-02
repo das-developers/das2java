@@ -306,7 +306,7 @@ public class RGBImageRenderer extends Renderer {
         switch (ds.rank()) {
             case 2:
                 if ( units==Units.rgbColor ) {
-                    imageType = BufferedImage.TYPE_INT_RGB;
+                    imageType = BufferedImage.TYPE_INT_ARGB;
                 } else {
                     imageType = BufferedImage.TYPE_BYTE_GRAY;
                 }
@@ -350,9 +350,15 @@ public class RGBImageRenderer extends Renderer {
         }
         if (ds.rank() == 2) {
             if ( units==Units.rgbColor ) {
+                QDataSet vv= Ops.valid(ds);
+                int alphaOpaque= 255*256*256*256;
                 for (int i = 0; i < w; i++) {
                     for (int j = 0; j < h; j++) {
-                        im.setRGB(i, j, (int) ds.value(i,j));
+                        if ( vv.value(i,j)==0 ) {
+                            im.setRGB(i, j, 0 );
+                        } else {
+                            im.setRGB(i, j, alphaOpaque + (int) ds.value(i,j) );
+                        }
                     }
                 }
             } else {
