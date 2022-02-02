@@ -19,6 +19,7 @@ import org.das2.DasApplication;
 import org.das2.DasException;
 import org.das2.datum.Datum;
 import org.das2.datum.Units;
+import org.das2.datum.UnitsUtil;
 import org.das2.event.CrossHairMouseModule;
 import org.das2.event.DasMouseInputAdapter;
 import org.das2.event.MouseModule;
@@ -102,6 +103,13 @@ public class RGBImageRenderer extends Renderer {
 
         Units xunits= SemanticOps.getUnits(dep0);
         Units yunits= SemanticOps.getUnits(dep1);
+        
+        if ( yunits==Units.dimensionless 
+            && yAxis.getUnits()!=Units.dimensionless 
+            && UnitsUtil.isRatioMeasurement( yAxis.getUnits() ) ) {
+            yunits= yAxis.getUnits();
+            dep1= Ops.putProperty( dep1, QDataSet.UNITS, yunits );
+        }
 
         int h= im.getHeight();
         int w= im.getWidth();
@@ -292,10 +300,16 @@ public class RGBImageRenderer extends Renderer {
         w = ds.length();
         h = ds.length(0);
 
+        Units units= SemanticOps.getUnits(ds);
+        
         BufferedImage im;
         switch (ds.rank()) {
             case 2:
-                imageType = BufferedImage.TYPE_BYTE_GRAY;
+                if ( units==Units.rgbColor ) {
+                    imageType = BufferedImage.TYPE_INT_RGB;
+                } else {
+                    imageType = BufferedImage.TYPE_BYTE_GRAY;
+                }
                 break;
             case 3:
                 if (ds.length(0,0) == 3) {
@@ -335,9 +349,17 @@ public class RGBImageRenderer extends Renderer {
             im = new BufferedImage(w, h, imageType);
         }
         if (ds.rank() == 2) {
-            for (int i = 0; i < w; i++) {
-                for (int j = 0; j < h; j++) {
-                    im.setRGB(i, j, 65536 * (int) ds.value(i,j) +  256 * (int) ds.value(i,j) + (int) ds.value(i,j));
+            if ( units==Units.rgbColor ) {
+                for (int i = 0; i < w; i++) {
+                    for (int j = 0; j < h; j++) {
+                        im.setRGB(i, j, (int) ds.value(i,j));
+                    }
+                }
+            } else {
+                for (int i = 0; i < w; i++) {
+                    for (int j = 0; j < h; j++) {
+                        im.setRGB(i, j, 65536 * (int) ds.value(i,j) +  256 * (int) ds.value(i,j) + (int) ds.value(i,j));
+                    }
                 }
             }
         } else if (ds.rank() == 3) {
