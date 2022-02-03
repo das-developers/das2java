@@ -104,12 +104,13 @@ public class DataSetWrapper extends AbstractDataSet {
     
     @Override
     public QDataSet slice(int i) {
-        return new DataSetWrapper(ds.slice(i));
+        //return new DataSetWrapper( ds.slice(i) );
+        return new DataSetWrapper( new Slice0DataSet(ds, i) );
     }
 
     @Override
     public QDataSet trim(int start, int end) {
-        return new DataSetWrapper(ds.trim(start, end)); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/OverriddenMethodBody
+        return new DataSetWrapper(ds.trim(start, end)); 
     }
 
 }
