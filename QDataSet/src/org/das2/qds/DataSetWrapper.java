@@ -104,8 +104,19 @@ public class DataSetWrapper extends AbstractDataSet {
     
     @Override
     public QDataSet slice(int i) {
+        DataSetWrapper slice= new DataSetWrapper( ds.slice(i) );
+        // replicate the 'addContext business
+        QDataSet dep0= (QDataSet)ds.property(QDataSet.DEPEND_0);
+        if ( dep0!=null ) {
+            DataSetUtil.addContext( slice, new Slice0DataSet( dep0, i, false ) );
+        } else {
+            DRank0DataSet context= DataSetUtil.asDataSet(i);
+            context.putProperty( QDataSet.NAME, "slice0" );
+            DataSetUtil.addContext( slice, context );
+        }
+        return slice;
         //return new DataSetWrapper( ds.slice(i) );
-        return new DataSetWrapper( new Slice0DataSet(ds, i) );
+        //return new DataSetWrapper( new Slice0DataSet(ds, i) );
     }
 
     @Override
