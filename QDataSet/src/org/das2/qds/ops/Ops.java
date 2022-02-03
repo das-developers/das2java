@@ -9918,7 +9918,7 @@ public final class Ops {
     /**
      * calculate the range of data, then rescale it so that the smallest
      * values becomes min and the largest values becomes max.
-     * @param data rank 1 dataset (TODO: easily modify this to support rank N)
+     * @param data rank N dataset
      * @param min rank 0 min
      * @param max rank 0 max
      * @return rescaled data.
@@ -9927,9 +9927,24 @@ public final class Ops {
         QDataSet extent= extent(data);
         QDataSet w= Ops.subtract( extent.slice(1), extent.slice(0) );
         if ( w.value()==0 ) {
-            return replicate( min, data.length() );
+            switch (data.rank()) {
+                case 0:
+                    return min;
+                case 1:
+                    return replicate( min, data.length() );
+                case 2:
+                    return replicate( min, data.length(), data.length(0) );
+                case 3:
+                    return Ops.multiply( min, Ops.ones( data.length(), data.length(0), data.length(0,0) ) );
+                case 4:
+                    return Ops.multiply( min, Ops.ones( data.length(), data.length(0), data.length(0,0), data.length(0,0,0) ) );
+                default:
+                    break;
+            }
         }
-        data= Ops.add( min, Ops.divide( Ops.subtract( data, extent.slice(0) ), w ) );
+        QDataSet xxx= Ops.divide( Ops.subtract( data, extent.slice(0) ), w );
+        xxx= Ops.multiply( xxx, Ops.subtract( max, min ) );
+        data= Ops.add( min, xxx );
         return data;
     }
     
