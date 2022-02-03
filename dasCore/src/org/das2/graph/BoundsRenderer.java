@@ -106,6 +106,14 @@ public class BoundsRenderer extends Renderer {
     public void render(Graphics2D g1, DasAxis xAxis, DasAxis yAxis ) {
         Graphics2D g= (Graphics2D)g1;
         QDataSet d= this.getDataSet();
+        if ( ds==null ) {
+            if ( getLastException()!=null ) {
+                renderException(g, xAxis, yAxis, lastException);
+            } else {
+                getParent().postMessage(this, "no data set", DasPlot.INFO, null, null);
+            }
+            return;
+        }
         if ( d.rank()!=2 ) expectDs();
         QDataSet mins;
         QDataSet maxs;
