@@ -331,6 +331,7 @@ public class TickValuesStringSchemeEditor extends javax.swing.JPanel implements 
             majorListOfLocationsTF.setText(ss[0]);
         }
         if ( ss.length>1 ) {
+            alsoUseMinorCB.setSelected(true);
             if ( ss[1].split(",").length>1 ) {
                 minorListOfLocationsTF.setText(ss[1]);
                 minorListOfLocationsRB.setSelected(true);
@@ -341,6 +342,8 @@ public class TickValuesStringSchemeEditor extends javax.swing.JPanel implements 
                 repeatEveryCB1.setSelectedItem(ss[1]);
                 minorRepeatEveryRB.setSelected(true);                        
             }
+        } else {
+            alsoUseMinorCB.setSelected(false);
         }
     }
 
