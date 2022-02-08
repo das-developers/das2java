@@ -29,8 +29,14 @@ public final class DecimalYearConverter extends UnitsConverter {
     }
 
     private void reset( double valueUs2000 ) {
-        Datum min= TimeUtil.floor( TimeUtil.YEAR, Units.us2000.createDatum(valueUs2000) );
-        Datum max= TimeUtil.next( TimeUtil.YEAR, min );
+        Datum min = Units.us2000.createDatum(valueUs2000);
+        if ( valueUs2000>Units.us2000.vmin ) {
+            min = TimeUtil.floor( TimeUtil.YEAR, min );
+        }
+        Datum max = min;
+        if ( valueUs2000<Units.us2000.vmax ) {
+            max = TimeUtil.next( TimeUtil.YEAR, min );
+        }
         year= TimeUtil.toTimeStruct(min).year;
         us2000Min= min.doubleValue( Units.us2000 );
         us2000Max= max.doubleValue( Units.us2000 );        
