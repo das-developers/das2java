@@ -65,7 +65,10 @@ public abstract class Units {
     }
 
     /**
-     * 
+     * It's often enough that we just want to paint data with a particular color that 
+     * there's a special unit which is used to trigger a branch, and the color will
+     * be used.  This can have an alpha channel as well in the high byte, but zero will imply that the
+     * alpha channel is missing and opaque will be used.
      */
     public static final Units rgbColor= new NumberUnits("rgbColor","256*256*red+256*green+blue");
 
