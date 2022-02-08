@@ -63,8 +63,6 @@ public class AsciiTimeTransferType extends AsciiTransferType {
             byte[] bak = s.getBytes("US-ASCII");
             int c = Math.min(s.length(), sizeBytes-1 );
             buffer.put(bak, 0, c);
-            c++;
-            buffer.put((byte) 'Z');
             while ( c < sizeBytes ) {
                 c++;
                 buffer.put((byte) 32);             
