@@ -93,8 +93,13 @@ public class TimeLocationUnits extends LocationUnits {
      * Note we don't bother making this synchronized--it should be safe.
      */
     private void calculateRange() {
-        vmin= Units.us2000.convertDoubleTo(this,Units.us2000.vmin); // DANGER: assumes Units.us2000 is initialized before this.
-        vmax= Units.us2000.convertDoubleTo(this,Units.us2000.vmax);
+        if ( this==Units.decimalYear ) {
+            vmin= 1001;
+            vmax= 8999;
+        } else {
+            vmin= Units.us2000.convertDoubleTo(this,Units.us2000.vmin); // DANGER: assumes Units.us2000 is initialized before this.
+            vmax= Units.us2000.convertDoubleTo(this,Units.us2000.vmax);
+        }
     }
 
     @Override
