@@ -95,6 +95,8 @@ import org.w3c.dom.Element;
  * @author  jbf
  */
 public class SeriesRenderer extends Renderer {
+    
+    public static String VERSION = "20220209.1624";
 
     private DefaultPlotSymbol psym = DefaultPlotSymbol.CIRCLES;
     private float symSize = 3.0f; // radius in pixels
