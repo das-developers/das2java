@@ -411,8 +411,15 @@ public class SeriesRenderer extends Renderer {
             if (colorByDataSet != null) {
                 if ( rgbColor ) {
                     for (int i = 0; i < count; i++) {
-                        if ( ( colors[i]>>24 & 0xFF ) > 0  ) {
+                        int alpha= colors[i]>>24 & 0xFF;
+                        if ( alpha>0 ) {
+                            graphics.setColor( new Color(colors[i],true ) );
+                            psym.draw(graphics, dpsymsPathX[i], dpsymsPathY[i], fsymSize, fillStyle);
+                        } else if ( alpha==0 ) {
                             graphics.setColor( new Color(colors[i]) );
+                            psym.draw(graphics, dpsymsPathX[i], dpsymsPathY[i], fsymSize, fillStyle);
+                        } else {
+                            graphics.setColor( new Color(colors[i],true ) );
                             psym.draw(graphics, dpsymsPathX[i], dpsymsPathY[i], fsymSize, fillStyle);
                         }
                     }
