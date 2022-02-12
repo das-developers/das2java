@@ -12,6 +12,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.nio.ByteBuffer;
@@ -439,5 +440,23 @@ public class FileUtil {
             }
             return lineCount;
         }
+    }
+    
+    /**
+     * read all the bytes off the stream, perhaps to empty a URL response.  This
+     * does not close the stream!
+     * @param in
+     * @return
+     * @throws IOException 
+     */
+    public static int consumeStream( InputStream in ) throws IOException {
+        byte[] buf= new byte[2048];
+        int totalBytesRead=0;
+        int bytesRead= in.read( buf, 0, buf.length );
+        while ( bytesRead>-1 ) {
+            totalBytesRead += bytesRead;
+            bytesRead= in.read( buf, 0, buf.length );
+        }
+        return totalBytesRead;
     }
 }
