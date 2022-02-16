@@ -332,12 +332,17 @@ public class TimeParser {
      */
     public boolean isNested() {
         int resolution= -9999;
+        
         for ( int i=1; i<fc.length; i++ ) {
             if ( handlers[i]>=0 && handlers[i]<8 ) {
                 if ( handlers[i]>resolution ) {
                     resolution= handlers[i];
                 } else {
-                    return false;
+                    if ( stopTimeDigit!=AFTERSTOP_INIT ) {
+                        resolution= handlers[i]; // disable this check when Y;end is used.
+                    } else {
+                        return false;
+                    }
                 }
             }
         }
