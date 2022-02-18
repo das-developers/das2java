@@ -8193,9 +8193,13 @@ public final class Ops {
             if ( c!=null && c.rank()==0 ) {
                 dep0u= (Units) c.property(QDataSet.UNITS);
                 dep0= new JoinDataSet(c);
+                QDataSet dep1= (QDataSet)ds.property(QDataSet.DEPEND_0);
                 if ( dep0u!=null ) {
+                    Units dep1u= SemanticOps.getUnits(dep1);
                     dep0.putProperty( QDataSet.UNITS, dep0u );
-                    jds.putProperty( QDataSet.DEPEND_0, dep0 );
+                    if ( dep1u.getOffsetUnits().isConvertibleTo(dep0u) ) {
+                        jds.putProperty( QDataSet.DEPEND_0, dep0 );
+                    }
                 }
             }
 
