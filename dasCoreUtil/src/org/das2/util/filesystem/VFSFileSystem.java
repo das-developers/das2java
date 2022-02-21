@@ -93,7 +93,7 @@ public class VFSFileSystem extends org.das2.util.filesystem.FileSystem {
         if (fsRoot.getType() == org.apache.commons.vfs.FileType.FOLDER) {
             fsuri = URI.create(roots);
         } else {
-            fsuri = URI.create(roots.substring(0, root.toString().lastIndexOf('/')+1 )); // huh--when is this branch taken?
+            fsuri = URI.create(roots.substring(0, root.toString().lastIndexOf('/')+1 )); // huh--when is this branch taken?  zip?
         }
     }
 
@@ -425,7 +425,11 @@ public class VFSFileSystem extends org.das2.util.filesystem.FileSystem {
             if ( filename.startsWith(fsuri.getPath()) ) {
                 logger.log( Level.INFO, "something is funny, we have the path twice:{0} {1}", new Object[]{filename, fsuri});
             }
-            filename = fsuri.getPath() + filename;
+            if ( fsuri.getScheme().equals("sftp") ) {
+                filename = fsuri.getPath() + filename;
+            } else {
+                logger.fine("filename is correct already");
+            }
             org.apache.commons.vfs.FileObject vfsob = vfsSystem.resolveFile(filename);
 
             if(!vfsob.exists()) {

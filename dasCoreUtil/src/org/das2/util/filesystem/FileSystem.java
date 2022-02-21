@@ -25,6 +25,8 @@ package org.das2.util.filesystem;
 
 import java.io.*;
 import java.net.*;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -251,6 +253,18 @@ public abstract class FileSystem  {
                 || p.contains(".ZIP")
                 || p.contains(".kmz") );
     }
+    
+    /**
+     * return true if the URI includes part that is within a Zip filesystem.
+     * @param root the path to the root.
+     * @return true if the path is within a Zip filesystem.
+     */
+    private static boolean pathIncludesTarFileSystem( URI root ) {
+        String p= root.getPath();
+        return ( p.contains(".tar") 
+                || p.contains(".tgz") );
+    }
+    
 
     /**
      * split the URI into the FileSystem containing the zip, the Zip file, and the path within 
@@ -268,6 +282,21 @@ public abstract class FileSystem  {
         return new String[] { ss[2], ss[3].substring(ss[2].length()), subdir };
     }
     
+    /**
+     * split the URI into the FileSystem containing the zip, the Zip file, and the path within 
+     * the zip file.
+     * @param root
+     * @return 
+     */
+    private static String[] pathTarSplit( URI root ) {
+        String surl= FileSystemUtil.fromUri(root);
+        int i= surl.indexOf(".tar");
+        if ( i==-1 ) i= surl.indexOf(".tgz");
+        String subdir = surl.substring(i+4);
+        String[] ss= FileSystem.splitUrl( surl.substring(0,i+4) );
+        return new String[] { ss[2], ss[3].substring(ss[2].length()), subdir };
+    }
+
     /**
      * Creates a FileSystem by parsing the URI and creating the correct FS type.
      * Presently, file, http, and ftp are supported.  If the URI contains a folder
@@ -356,39 +385,92 @@ public abstract class FileSystem  {
         // block on the wait object: synchronized(waitObject) {}, and have a double-check within the block
         // for the guys that enter subsequently...
         
-        FileSystemFactory factory;
-        if ( root.getPath()!=null && pathIncludesZipFileSystem(root) && registry.containsKey("zip") ) {
-            try {
-                String[] pzs= pathZipSplit(root);
-                URI parent = new URI(pzs[0]); //getparent
-                String zipname = pzs[1];
-                String subdir = pzs[2];
-                FileSystem remote = FileSystem.create(parent);
-                mon.setProgressMessage("loading zip file");
-                File localZipFile = remote.getFileObject(zipname).getFile(mon);
-                factory = (FileSystemFactory) registry.get("zip");
-                FileSystem zipfs = factory.createFileSystem(localZipFile.toURI());
-                if ( subdir.equals("") || subdir.equals("/") ) {
-                    result= zipfs;
-                } else {
-                    result= new SubFileSystem(zipfs, subdir);
+        FileSystemFactory factory=null;
+        if ( root.getPath()!=null ) {
+            if ( pathIncludesZipFileSystem(root) && registry.containsKey("zip") ) {
+                try {
+                    String[] pzs= pathZipSplit(root);
+                    URI parent = new URI(pzs[0]); //getparent
+                    String zipname = pzs[1];
+                    String subdir = pzs[2];
+                    FileSystem remote = FileSystem.create(parent);
+                    mon.setProgressMessage("loading zip file");
+                    File localZipFile = remote.getFileObject(zipname).getFile(mon);
+                    factory = (FileSystemFactory) registry.get("zip");
+                    FileSystem zipfs = factory.createFileSystem(localZipFile.toURI());
+                    if ( subdir.equals("") || subdir.equals("/") ) {
+                        result= zipfs;
+                    } else {
+                        result= new SubFileSystem(zipfs, subdir);
+                    }
+                } catch (UnknownHostException | FileNotFoundException ex ) {
+                    throw ex;
+                } catch (URISyntaxException ex) {
+                    //this shouldn't happen
+                    throw new RuntimeException(ex);
+                } catch (IOException ex) {
+                    throw new FileSystemOfflineException(ex);
+                } finally {
+                    logger.log( Level.FINE,"created zip new filesystem {0}", root );
+                    if ( result!=null ) instances.put( root, result);
+                    blocks.remove(root);
                 }
-            } catch (UnknownHostException | FileNotFoundException ex ) {
-                throw ex;
-            } catch (URISyntaxException ex) {
-                //this shouldn't happen
-                throw new RuntimeException(ex);
-            } catch (IOException ex) {
-                throw new FileSystemOfflineException(ex);
-            } finally {
-                logger.log( Level.FINE,"created zip new filesystem {0}", root );
-                if ( result!=null ) instances.put( root, result);
-                blocks.remove(root);
-            }
-        } else {
-            factory= (FileSystemFactory) registry.get(root.getScheme());
+            } else if ( pathIncludesTarFileSystem(root) && registry.containsKey("tar") ) {
+                try {
+                    String[] pzs= pathTarSplit(root);
+                    URI parent = new URI(pzs[0]); //getparent
+                    String tarname = pzs[1];
+                    String subdir = pzs[2];
+                    FileSystem remote = FileSystem.create(parent);
+                    mon.setProgressMessage("loading tar file");
+                    File localTarFile = remote.getFileObject(tarname).getFile(mon);
+                    factory = (FileSystemFactory) registry.get("tar");
+                    String ext= localTarFile.getName();
+                    int i= ext.lastIndexOf(".");
+                    ext= ext.substring(i+1);
+                    if ( ext.equals("tgz") ) { // double check that it really is .gz, since http/apache will sometimes unpack it. 
+                        // TODO: study this more, could be a bug on my end.
+                        FileChannel fc = new FileInputStream(localTarFile).getChannel();
+                        ByteBuffer bb = ByteBuffer.allocate(262);
+                        int bytesRead= 0;
+                        while ( bytesRead<262 ) {
+                            int bytesReadOnce= fc.read(bb);
+                            if ( bytesReadOnce==-1 ) break;
+                            bytesRead+= bytesReadOnce;
+                        }
+                        bb.flip();
+                        // bytes 257-261 will be "ustar"
+                        if ( bytesRead==262 && 
+                            bb.get(257)=='u' && bb.get(258)=='s' && bb.get(259)=='t' && bb.get(260)=='a' && bb.get(261)=='r' ) {
+                            // oh crud it's actually a .tar file which the server decompressed.
+                            ext= "tar";
+                        }
+                    }
+                    FileSystem tarfs = factory.createFileSystem(new URI( ext, null, localTarFile.getAbsolutePath(), null ) );
+                    if ( subdir.equals("") || subdir.equals("/") ) {
+                        result= tarfs;
+                    } else {
+                        result= new SubFileSystem(tarfs, subdir);
+                    }
+                } catch (UnknownHostException | FileNotFoundException ex ) {
+                    throw ex;
+                } catch (URISyntaxException ex) {
+                    //this shouldn't happen
+                    throw new RuntimeException(ex);
+                } catch (IOException ex) {
+                    throw new FileSystemOfflineException(ex);
+                } finally {
+                    logger.log( Level.FINE,"created tar new filesystem {0}", root );
+                    if ( result!=null ) instances.put( root, result);
+                    blocks.remove(root);
+                }
+            }      
         }
 
+        if ( factory==null ) {
+            factory= (FileSystemFactory) registry.get(root.getScheme());
+        }
+        
         if ( factory==null ) {
             synchronized( waitObject ) {
                 logger.log(Level.FINE, "releasing waitObject after factory=null {0}", waitObject);

@@ -117,7 +117,7 @@ public class VFSFileObject extends org.das2.util.filesystem.FileObject {
             Date localFileLastModified = new Date(localFile.lastModified());
             Date remoteDate = new Date( vfsob.getContent().getLastModifiedTime() );
             if (remoteDate.after(localFileLastModified)) {
-                FileSystem.logger.info("remote file is newer than local copy of " + this.getNameExt() + ", download.");
+                FileSystem.logger.log(Level.INFO, "remote file is newer than local copy of {0}, download.", this.getNameExt());
                 download = true;
             } else {
                 download= false;
