@@ -1845,7 +1845,8 @@ public class DataSetUtil {
             return null;
         }
         
-        double everIncreasing= 0.;
+        double everIncreasing= 0.; // if non-zero, then the ratio of the last to the first number.
+        
         if ( xds.length()<100 && xds.rank()==1 ) {
             LinFit f;
             f= new LinFit( Ops.findgen(xds.length()), xds );
@@ -1923,6 +1924,8 @@ public class DataSetUtil {
 
         logger.log(Level.FINE, "everIncreasing: {0}", everIncreasing);
         logger.log(Level.FINE, "xHasFill: {0}", xHasFill);
+        logger.log(Level.FINE, "monoMag: {0}", monoMag);
+        logger.log(Level.FINE, "logScaleType: {0}", logScaleType);
         
         QDataSet hist= ah.doit( diffs ); 
 
@@ -1936,7 +1939,7 @@ public class DataSetUtil {
         // if the ratio of successive numbers is always increasing this is a strong
         // hint that ratiometric spacing is more appropriate.  If non-zero, then
         // this is the ratio of the first to the last number.
-        final int everIncreasingLimit = total < 10 ? 25 : 100;
+        final int everIncreasingLimit = total < 10 ? 5 : 10;
 
         int ipeak=0;
         int peakv=(int) hist.value(0);
@@ -2027,6 +2030,13 @@ public class DataSetUtil {
             int logHighestPeak=0;
             t=0;
 
+//            // check to see if they are all basically the same (one peak).
+//            QDataSet logdep0= (QDataSet) loghist.property(QDataSet.DEPEND_0);
+//            if ( ( ( logdep0.value(logdep0.length()-1) + logdep0.value(0) ) / 2 ) 
+//                / ( logdep0.value(1)-logdep0.value(0) ) > 1e4 ) {
+//                if ( )
+//            }
+//            
             //mean= AutoHistogram.mean(loghist).value();
             for ( int i=0; i<loghist.length(); i++ ) {
                 t+= loghist.value(i);
@@ -2324,8 +2334,7 @@ public class DataSetUtil {
      * return the cadence for the given x tags.  The goal will be a rank 0
      * dataset that describes the intervals, but this will also return a rank 1
      * dataset when multiple cadences are found.  The yds values for each xds value can 
-     * also be set, specifying where the x values can be ignored because of fill.  When this
-     * is.
+     * also be set, specifying where the x values can be ignored because of fill.  
      * TODO: this needs review.
      * @param xds the x tags, which may not contain fill values for non-null result.
      * @param yds the y values, which if non-null is only used for fill values.  This is only used if it is rank 1.
@@ -2333,22 +2342,89 @@ public class DataSetUtil {
      */
     public static QDataSet guessCadence( QDataSet xds, QDataSet yds ) {
         
-        QDataSet dxds= Ops.diff( xds );
-        dxds= Ops.divide( Ops.add( Ops.append( dxds.slice(0), dxds ), Ops.append( dxds, dxds.slice(dxds.length()-1) ) ), Ops.dataset(2) );
-        
-        QDataSet hh= Ops.autoHistogram( dxds );
-        
-        int maxhh= -1;
-        int imaxhh= -1;
-        for ( int i=0; i<hh.length(); i++ ) {
-            if ( hh.value(i)>maxhh) {
-                maxhh= (int)hh.value(i);
-                imaxhh= i;
+        if ( yds!=null && yds.rank()==1 ) { // There's a silly dataset where every other measurement is to be ignored.
+            QDataSet r= Ops.where( Ops.valid(yds) );
+            if ( r.length()<=xds.length()/2 ) {
+                xds= Ops.applyIndex( yds, r );
             }
         }
-        QDataSet dephh= (QDataSet)hh.property(QDataSet.DEPEND_0);
         
-        return dephh.slice(imaxhh);
+        QDataSet dephhLinear;
+        int idephhLinear;
+        int scoreLinear;
+        
+        QDataSet dephhLog;
+        int idephhLog;
+        int scoreLog;
+        
+        int monotonic;
+             
+        QDataSet dxds= Ops.diff( xds );
+
+        // calculate monotonic, which is -1 when monotonic decreasing, 1 when increasing, and 0 when non-monotonic.
+        double sign= dxds.value(0);
+        if ( Ops.reduceMin( Ops.multiply( sign, dxds ), 0 ).value() < 0 ) {
+            monotonic= 0;
+        } else {
+            if ( sign>0 ) {
+                monotonic= 1;
+            } else {
+                monotonic= -1;
+            }
+        }
+        
+        // linear spacing
+        {
+                    
+            // dxds= ( append( dsds[0], dxds ) + append( dxds, dxds[-1]) ) ) / 2;
+            dxds= Ops.divide( Ops.add( Ops.append( dxds.slice(0), dxds ), 
+                                       Ops.append( dxds, dxds.slice(dxds.length()-1) ) ),
+                              Ops.dataset(2) );
+        
+            QDataSet hh= Ops.autoHistogram( dxds );
+        
+            int maxhh= -1;
+            int imaxhh= -1;
+            for ( int i=0; i<hh.length(); i++ ) {
+                if ( hh.value(i)>maxhh) {
+                    maxhh= (int)hh.value(i);
+                    imaxhh= i;
+                }
+            }
+            dephhLinear= (QDataSet)hh.property(QDataSet.DEPEND_0);
+            idephhLinear= imaxhh;
+            scoreLinear= 1;
+        }
+        
+        // log spacing
+        {
+            dxds= Ops.diff( Ops.log10( xds ) );
+            // dxds= ( append( dsds[0], dxds ) + append( dxds, dxds[-1]) ) ) / 2;
+            dxds= Ops.divide( Ops.add( Ops.append( dxds.slice(0), dxds ), 
+                              Ops.append( dxds, dxds.slice(dxds.length()-1) ) ), 
+                  Ops.dataset(2) );
+        
+            QDataSet hh= Ops.autoHistogram( dxds );
+        
+            int maxhh= -1;
+            int imaxhh= -1;
+            for ( int i=0; i<hh.length(); i++ ) {
+                if ( hh.value(i)>maxhh) {
+                    maxhh= (int)hh.value(i);
+                    imaxhh= i;
+                }
+            }
+            
+            dephhLog= (QDataSet)hh.property(QDataSet.DEPEND_0);
+            idephhLog= imaxhh;
+            scoreLog= 0;
+        }
+        
+        if ( scoreLinear>scoreLog ) {
+            return dephhLinear.slice(idephhLinear);
+        } else {
+            return dephhLog.slice(idephhLog);
+        }
                 
     }    
     
