@@ -1816,6 +1816,9 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
         y= DataSetUtil.asDatum( ds.slice(1) );
         Map<String,Datum> planes= new LinkedHashMap<>();
         String[] planeNames = DataSetUtil.bundleNames(ds);
+        if ( planeNames.length!=ds.length() ) {
+            throw new IllegalArgumentException("data must be a bundle of named data sets.");
+        }
         for ( int i=2; i<ds.length(); i++ ) {
             QDataSet d= ds.slice(i);
             planes.put( planeNames[i], DataSetUtil.asDatum(d) );
