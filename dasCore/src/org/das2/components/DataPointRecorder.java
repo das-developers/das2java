@@ -369,6 +369,19 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
         }
         myTableModel.fireTableDataChanged();
     }
+
+    /**
+     * convenient method to match getSelected.
+     * @param selectRows 
+     * @see #deleteRows(int[]) 
+     */
+    public void deleteRows(List<Integer> selectRows) {
+        int[] ii= new int[selectRows.size()];
+        for ( int i=0; i<ii.length; i++ ) {
+            ii[i]= selectRows.get(i);
+        }
+        deleteRows(ii);
+    }
     
     /**
      * delete the specified rows.
@@ -481,6 +494,19 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
         }
         return builder.getDataSet();
 
+    }
+    
+    /**
+     * return the array of selected indices.
+     * @return the array of selected indices.
+     */
+    public List<Integer> getSelected() {
+        int[] rr= getSelectedRowsInModel();
+        ArrayList<Integer> result= new ArrayList(rr.length);
+        for ( int i=0; i<rr.length; i++ ) {
+            result.add(i,rr[i]);
+        }
+        return result;
     }
     
     /**
