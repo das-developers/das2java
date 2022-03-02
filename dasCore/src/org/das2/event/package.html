@@ -3,9 +3,9 @@
 Each DasCanvasComponent has a DasMouseInputAdapter that dispatches mouse
 events.  MouseModules are plug into a DasMouseInputAdapter and receive the
 mouse events and perform a function based on the input.  For example, the
-CrossHairMouseModule looks up the X and Y coodinates of the pointer during a 
+CrossHairMouseModule looks up the X and Y coordinates of the pointer during a 
 mouse drag and displays them in a box.  A VerticalSlicerMouseModule looks up
-the TableDataSet column under the click and plots it in a popup window.
+the Table dataSet column under the click and plots it in a popup window.
 The MouseModules use DragRenderers to provide visual feedback about the pending
 operation.
 </p>
@@ -15,4 +15,10 @@ and BoxSelectionEvent.  For example, a MouseModule might create a BoxSelectionEv
 then send the event off to another module that begins an analysis for the data within
 the selected box.
     </p>
+    <p>Each MouseModule has a DragRenderer which graphically hints at what 
+action is to occur, and the state of the action.  For example, the BoxRenderer
+draws a box where the MouseModule will perform some action (like summing all
+the data within the box, or resetting the two axes to these new ranges).  
+DragRenderers should work in the pixel space, and the MouseModule does the job
+of promoting the abstraction from pixels to science data and data units.</p>
 </body>
