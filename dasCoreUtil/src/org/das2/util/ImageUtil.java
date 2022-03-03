@@ -28,7 +28,7 @@ public class ImageUtil {
     
     /**
      * return the node containing JSON metadata showing where the plots are in images
-     * produced by the Autoplot Das2 library.
+     * produced by the Autoplot Das2 library, or null.
      * @param file the png file.
      * @return null or the JSON describing the image.  See http://autoplot.org/developer.richPng
      * @throws IOException 
@@ -71,6 +71,49 @@ public class ImageUtil {
         return null;
     }    
     
+    /**
+     * return the value of the text node apscript, if it is found, so the image
+     * could be recreated.
+     * @param file png file, produced by Autoplot using the Run Batch Tool.
+     * @return null or the script.
+     * @throws IOException 
+     */
+    public static String getScriptURI( File file ) throws IOException {
+        try (ImageInputStream iis = ImageIO.createImageInputStream(file)) {
+            Iterator<ImageReader> readers = ImageIO.getImageReaders(iis);
+
+            if (readers.hasNext()) {
+
+                // pick the first available ImageReader
+                ImageReader reader = readers.next();
+
+                // attach source to the reader
+                reader.setInput(iis, true);
+
+                // read metadata of first image
+                IIOMetadata metadata = reader.getImageMetadata(0);
+                try {
+                    IIOMetadataNode n= (IIOMetadataNode)metadata.getAsTree("javax_imageio_png_1.0");
+                    NodeList nl= n.getElementsByTagName("tEXtEntry");
+                    for ( int i=0; i<nl.getLength(); i++ ) {
+                        Element e= (Element)nl.item(i);
+                        String n3= e.getAttribute("keyword");
+                        if ( n3.equals("ScriptURI") ) {
+                            return e.getAttribute("value");
+                        }
+                    }
+                } catch ( IllegalArgumentException ex ) {
+                    logger.log( Level.FINE, ex.getMessage() );
+                    return null;
+                }
+            }
+        } catch ( IllegalArgumentException ex ) {
+            // return null below
+            
+        } 
+        
+        return null;
+    }
     
     /**
      * convenient typical use.
