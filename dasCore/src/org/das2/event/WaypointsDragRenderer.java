@@ -136,7 +136,9 @@ public class WaypointsDragRenderer extends AbstractDragRenderer {
         if ( xx.rank()==0 ) {
             int index= -1;
             double ix= xaxis.transform(xx);
-            if ( ix<pointerStart.x ) return null;
+            
+            if ( ix<pointerStart.x ) return IDataSet.createRank1(0);
+            
             for ( int i=0; i<wayPoints.size(); i++ ) {
                 if ( ix<wayPoints.get(i).x ) {
                     index= i;
@@ -174,7 +176,6 @@ public class WaypointsDragRenderer extends AbstractDragRenderer {
                 Datum dymin= yaxis.invTransform( ymin );
                 Datum dymax= yaxis.invTransform( ymax );
                 QDataSet ww= Ops.within( yy, DatumRangeUtil.union( dymin, dymax ) );
-                System.err.println( String.format("%s %.1f %.1f %.1f %d", xx, yy.slice(0).value(), dymin.value(), dymax.value(), (int)ww.value(0) ) );
                 return Ops.where( ww );
             } else {
                 throw new IllegalArgumentException("yy must be rank 1");
