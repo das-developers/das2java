@@ -40,6 +40,8 @@ public class WaypointsDragRenderer extends AbstractDragRenderer {
     
     List<Point2D.Double> wayPoints= new ArrayList<>();
     
+    int direction=1;
+    
     private int width = 20;
 
     public static final String PROP_WIDTH = "width";
@@ -75,7 +77,18 @@ public class WaypointsDragRenderer extends AbstractDragRenderer {
      */
     public void addWayPoint(  ) {
         if ( pointerLocation!=null ) {
-            this.wayPoints.add( pointerLocation );
+            if ( direction==0 ) {
+                if ( pointerLocation.x>this.pointerStart.x ) {
+                    direction=1;
+                } else {
+                    direction=-1;
+                }
+            }
+            if ( ( pointerLocation.x - this.pointerStart.x ) * direction > 0 ) {
+                this.wayPoints.add( pointerLocation );
+            } else {
+                logger.info( "wrong direction" );
+            }
         } else {
             logger.info( "no pointer location");
         }
@@ -87,8 +100,21 @@ public class WaypointsDragRenderer extends AbstractDragRenderer {
         
         GeneralPath gen= new GeneralPath();
         
+        if ( direction>0 ) {
+            if ( wayPoints.size()>0 ) {
+                p2.x= Math.max( p2.x, (int)wayPoints.get(wayPoints.size()-1).x );
+            } else {
+                p2.x= Math.max( p2.x, p1.x );
+            }
+        } else if ( direction<0 ) {
+            if ( wayPoints.size()>0 ) {
+                p2.x= Math.min( p2.x, (int)wayPoints.get(wayPoints.size()-1).x );
+            } else {
+                p2.x= Math.min( p2.x, p1.x );
+            }
+        }
+
         gen.moveTo( p1.x, p1.y - width );
-        
         
         for ( int i=0; i<wayPoints.size(); i++ ) {
             gen.lineTo( wayPoints.get(i).x, wayPoints.get(i).y-width );
