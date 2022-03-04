@@ -1864,6 +1864,7 @@ public class GraphUtil {
      * @param dr the range to cover
      * @param log
      * @return null if the string can't be parsed, or the TickVDescriptor
+     * @see #MAX_TICKS the maximum number of minor or major ticks calculated
      */
     public static TickVDescriptor calculateManualTicks( String lticks, DatumRange dr, boolean log ) {
         TickVDescriptor result;
