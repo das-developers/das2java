@@ -176,6 +176,7 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
         jButton1 = new javax.swing.JButton();
         psymColorTextField = new javax.swing.JTextField();
         noneFillStyleRB = new javax.swing.JRadioButton();
+        jRadioButton8 = new javax.swing.JRadioButton();
         plotSymbolButtonGroup = new javax.swing.ButtonGroup();
         connectButtonGroup = new javax.swing.ButtonGroup();
         fillStyleButtonGroup = new javax.swing.ButtonGroup();
@@ -292,6 +293,9 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
         fillStyleButtonGroup.add(noneFillStyleRB);
         noneFillStyleRB.setText("none");
 
+        plotSymbolButtonGroup.add(jRadioButton8);
+        jRadioButton8.setText("stars");
+
         javax.swing.GroupLayout psymPanelLayout = new javax.swing.GroupLayout(psymPanel);
         psymPanel.setLayout(psymPanelLayout);
         psymPanelLayout.setHorizontalGroup(
@@ -308,9 +312,10 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
                             .addComponent(jRadioButton3)
                             .addComponent(jRadioButton4)
                             .addComponent(jRadioButton5)
-                            .addComponent(jRadioButton6)
-                            .addComponent(jRadioButton7))))
-                .addGap(12, 12, 12)
+                            .addComponent(jRadioButton8)
+                            .addComponent(jRadioButton7)
+                            .addComponent(jRadioButton6))))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(psymPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(psymPanelLayout.createSequentialGroup()
                         .addGroup(psymPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -339,52 +344,61 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
                         .addComponent(psymColorTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jButton1)))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(81, 81, 81))
         );
         psymPanelLayout.setVerticalGroup(
             psymPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(psymPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(psymPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel3)
-                    .addComponent(jLabel4)
-                    .addComponent(jLabel6))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(psymPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jRadioButton1)
-                    .addComponent(sizeTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(solidConnectRB))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(psymPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jRadioButton2)
-                    .addComponent(jRadioButton11)
-                    .addComponent(jLabel5))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(psymPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(psymPanelLayout.createSequentialGroup()
-                        .addComponent(jRadioButton3)
+                        .addGroup(psymPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel4)
+                            .addComponent(jLabel6))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(psymPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(sizeTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(solidConnectRB))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(psymPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jRadioButton4)
-                            .addComponent(outlineFillStyleRB))
+                            .addComponent(jRadioButton11)
+                            .addComponent(jLabel5))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(psymPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(psymPanelLayout.createSequentialGroup()
+                                .addGap(23, 23, 23)
+                                .addComponent(outlineFillStyleRB)
+                                .addGap(64, 64, 64))
+                            .addGroup(psymPanelLayout.createSequentialGroup()
+                                .addGroup(psymPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addComponent(jRadioButton9)
+                                    .addComponent(noneConnectorRB))
+                                .addGap(23, 23, 23)
+                                .addComponent(noneFillStyleRB)
+                                .addGap(16, 16, 16)
+                                .addGroup(psymPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addComponent(jButton1)
+                                    .addComponent(psymColorCB)
+                                    .addComponent(psymColorTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                    .addGroup(psymPanelLayout.createSequentialGroup()
+                        .addComponent(jLabel3)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jRadioButton1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jRadioButton2)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jRadioButton3)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jRadioButton4)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jRadioButton5)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jRadioButton6)
+                        .addComponent(jRadioButton8)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jRadioButton7))
-                    .addGroup(psymPanelLayout.createSequentialGroup()
-                        .addGroup(psymPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jRadioButton9)
-                            .addComponent(noneConnectorRB))
-                        .addGap(23, 23, 23)
-                        .addComponent(noneFillStyleRB)
-                        .addGap(16, 16, 16)
-                        .addGroup(psymPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jButton1)
-                            .addComponent(psymColorCB)
-                            .addComponent(psymColorTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(jRadioButton6)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jRadioButton7)
+                .addContainerGap(32, Short.MAX_VALUE))
         );
 
         jLabel7.setText("URL of image:");
@@ -766,26 +780,6 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
         }
     }//GEN-LAST:event_psymButtonActionPerformed
 
-    private void jRadioButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRadioButton3ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jRadioButton3ActionPerformed
-
-    private void jRadioButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRadioButton1ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jRadioButton1ActionPerformed
-
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        JColorChooser chooser= new JColorChooser();
-        chooser.addChooserPanel( new NamedColorChooserPanel() );
-        chooser.addChooserPanel( new DesktopColorChooserPanel() );
-        if ( JOptionPane.showConfirmDialog( this, chooser, "Color Chooser", JOptionPane.OK_CANCEL_OPTION )== JOptionPane.OK_OPTION ) {
-            Color color= chooser.getColor();
-            String colorName= ColorUtil.nameForColor(color);
-            psymColorTextField.setText( colorName );
-            psymColorTextField.setBackground( color );
-        }
-    }//GEN-LAST:event_jButton1ActionPerformed
-
     private void imageButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_imageButtonActionPerformed
         if ( JOptionPane.OK_OPTION==
                 JOptionPane.showConfirmDialog( this, imagePanel, "Psym Options", JOptionPane.OK_CANCEL_OPTION ) ) {
@@ -799,6 +793,18 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
         }
     }//GEN-LAST:event_imageButtonActionPerformed
 
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        JColorChooser chooser= new JColorChooser();
+        chooser.addChooserPanel( new NamedColorChooserPanel() );
+        chooser.addChooserPanel( new DesktopColorChooserPanel() );
+        if ( JOptionPane.showConfirmDialog( this, chooser, "Color Chooser", JOptionPane.OK_CANCEL_OPTION )== JOptionPane.OK_OPTION ) {
+            Color color= chooser.getColor();
+            String colorName= ColorUtil.nameForColor(color);
+            psymColorTextField.setText( colorName );
+            psymColorTextField.setBackground( color );
+        }
+    }//GEN-LAST:event_jButton1ActionPerformed
+
     private void psymColorCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_psymColorCBActionPerformed
         if ( !psymColorCB.isSelected() ) {
             JTextField s= new JTextField();
@@ -809,6 +815,14 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
             psymColorTextField.setBackground(c);
         }
     }//GEN-LAST:event_psymColorCBActionPerformed
+
+    private void jRadioButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRadioButton3ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jRadioButton3ActionPerformed
+
+    private void jRadioButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRadioButton1ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jRadioButton1ActionPerformed
 
     private void updateImage() {
         String oldString= gtr.getString();
@@ -890,6 +904,7 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
     private javax.swing.JRadioButton jRadioButton5;
     private javax.swing.JRadioButton jRadioButton6;
     private javax.swing.JRadioButton jRadioButton7;
+    private javax.swing.JRadioButton jRadioButton8;
     private javax.swing.JRadioButton jRadioButton9;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTabbedPane jTabbedPane1;
