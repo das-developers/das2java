@@ -314,11 +314,11 @@ public class TickValuesStringSchemeEditor extends javax.swing.JPanel implements 
     }//GEN-LAST:event_fixedNumberMinorCBFocusLost
 
     private void repeatEveryCB1FocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_repeatEveryCB1FocusLost
-        // TODO add your handling code here:
+        update();
     }//GEN-LAST:event_repeatEveryCB1FocusLost
 
     private void repeatEveryCB1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_repeatEveryCB1ActionPerformed
-        // TODO add your handling code here:
+        update();
     }//GEN-LAST:event_repeatEveryCB1ActionPerformed
 
     private void updateComponents() {
