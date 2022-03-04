@@ -1843,6 +1843,11 @@ public class GraphUtil {
     }
     
     /**
+     * limit the number of ticks which are computed
+     */
+    public static final int MAX_TICKS = 480;  
+    
+    /**
      * calculate a TickVDescriptor for the ticks.  
      * Example specifications:<ul>
      * <li>+20 every 20 units, whatever the data units are.
@@ -1907,7 +1912,7 @@ public class GraphUtil {
                 double lastTick= Math.ceil( max/dt )*dt;
                 int ntick= (int)( ( lastTick - firstTick ) / dt ) + 1;
                 ntick= Math.max( 0, ntick );
-                ntick= Math.min( 120, ntick );
+                ntick= Math.min( MAX_TICKS, ntick );
                 double[] dticks= new double[ ntick ];
                 for ( int i=0; i<dticks.length; i++ ) {
                     dticks[i]= firstTick + i*dt; // TODO: rewrite unstable
@@ -1964,7 +1969,7 @@ public class GraphUtil {
                 double lastTick= Math.ceil( Math.log10(max)/dt )*dt;
                 int ntick= (int)( ( lastTick - firstTick ) / dt ) + 1;
                 ntick= Math.max( 0, ntick );
-                ntick= Math.min( 120, ntick );                
+                ntick= Math.min( MAX_TICKS, ntick );                
                 double[] dticks= new double[ ntick ];
                 for ( int i=0; i<dticks.length; i++ ) {
                     dticks[i]= Math.pow( 10, firstTick + i * dt );
