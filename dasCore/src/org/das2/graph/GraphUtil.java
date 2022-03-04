@@ -191,6 +191,9 @@ public class GraphUtil {
                     case "trianglesSouth":
                         p = DefaultPlotSymbol.TRIANGLES_SOUTH;
                         break;
+                    case "stars":
+                        p = DefaultPlotSymbol.STAR;
+                        break;
                     case "none":
                         p = DefaultPlotSymbol.NONE;
                         break;
