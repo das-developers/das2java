@@ -54,6 +54,8 @@ import org.das2.qds.SemanticOps;
 import org.das2.qds.ops.Ops;
 import org.das2.util.DasMath;
 import org.das2.components.GrannyTextEditor;
+import org.das2.datum.DatumUtil;
+import org.das2.datum.InconvertibleUnitsException;
 import org.das2.util.GrannyTextRenderer;
 import org.das2.util.filesystem.FileSystemUtil;
 import org.das2.util.monitor.AlertNullProgressMonitor;
@@ -1863,17 +1865,18 @@ public class GraphUtil {
         Units u= dr.getUnits();
         int islash= lticks.indexOf('/');
         int minorMult= 0;
-        double[] minorList= null;
+        double[] minorList= null; 
+        double[] minorListAbs= null;
         String minorTicksSpec=null;
         if ( islash>-1 ) {
             minorTicksSpec = lticks.substring(islash+1);
             lticks= lticks.substring(0,islash);
             if ( minorTicksSpec.startsWith("+") ) {
                 TickVDescriptor minorT= calculateManualTicks( minorTicksSpec, dr, log );
-                if ( minorT!=null ) minorList= minorT.tickV.toDoubleArray(u);
+                if ( minorT!=null ) minorListAbs= minorT.tickV.toDoubleArray(u);
             } else if ( minorTicksSpec.startsWith("*") ) {
                 TickVDescriptor minorT= calculateManualTicks( minorTicksSpec, dr, log );
-                if ( minorT!=null ) minorList= minorT.tickV.toDoubleArray(u);
+                if ( minorT!=null ) minorListAbs= minorT.tickV.toDoubleArray(u);
             } else {
                 if ( minorTicksSpec.contains(",") ) {
                     String[] ss= minorTicksSpec.split(",");
@@ -1911,13 +1914,22 @@ public class GraphUtil {
                 }
                 double[] dticksMinor;
                 if ( minorList!=null ) {
+                    double minorUnitsMult=1;
+                    try { 
+                        minorUnitsMult= DatumUtil.parse(lticks.substring(1)).getUnits().convertDoubleTo( u.getOffsetUnits(), 1 );
+                    } catch ( ParseException | InconvertibleUnitsException ex ) {
+                        logger.log( Level.WARNING, ex.getMessage(), ex );
+                    }
                     dticksMinor= new double[ ntick*minorList.length ];
                     for ( int i=0; i<dticks.length; i++ ) {
                         double dd= dticks[i];
                         for ( int j=0; j<minorList.length; j++ ) {
-                            dticksMinor[i*minorList.length+j]= dd + minorList[j]; 
+                            dticksMinor[i*minorList.length+j]= dd + minorList[j] * minorUnitsMult; 
                         }
-                    }                    
+                    }
+                } else if ( minorListAbs!=null ) {
+                    dticksMinor= minorListAbs;
+                    
                 } else {
                     int minorTicks= minorMult>0 ? minorMult : updateTickVManualTicksMinor(dt);
                     dt= dt/minorTicks;
