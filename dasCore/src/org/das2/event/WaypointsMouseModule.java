@@ -37,15 +37,17 @@ public class WaypointsMouseModule extends MouseModule {
     @Override
     public void keyTyped(KeyEvent keyEvent) {
         logger.log(Level.FINE, "keyTyped {0} {1}", new Object[]{keyEvent.getKeyChar(), keyEvent.isMetaDown()});
-        if ( keyEvent.getKeyChar()>='1' && keyEvent.getKeyChar()<='9' ) { 
-            WaypointsDragRenderer r= (WaypointsDragRenderer)super.getDragRenderer();
+        WaypointsDragRenderer r= (WaypointsDragRenderer)super.getDragRenderer();
+        if ( keyEvent.getKeyChar()>='1' && keyEvent.getKeyChar()<='9' ) {     
             r.setWidth( ( keyEvent.getKeyChar()-'0' ) * 5 );
-            parent.repaint();
+        } else if ( keyEvent.getKeyChar()=='-' ) {
+            r.setWidth( Math.max( 1, r.getWidth() - 5 ) );
+        } else if ( keyEvent.getKeyChar()=='+' || keyEvent.getKeyChar()=='=' ) {
+            r.setWidth( Math.max( 1, r.getWidth() + 5 ) );
         } else if ( keyEvent.getKeyChar()=='w' ) { 
-            WaypointsDragRenderer r= (WaypointsDragRenderer)super.getDragRenderer();
             r.addWayPoint( );
-            parent.repaint();
         }
+        parent.repaint();
     }
     
     private javax.swing.event.EventListenerList listenerList = new javax.swing.event.EventListenerList();
