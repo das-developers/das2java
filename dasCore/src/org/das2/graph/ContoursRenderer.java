@@ -57,6 +57,7 @@ public class ContoursRenderer extends Renderer {
     }
     
     GeneralPath[] paths;
+    GeneralPath[] minorPaths;
     String[] pathLabels;
 
     Converter fontConverter= null;
@@ -201,6 +202,15 @@ public class ContoursRenderer extends Renderer {
                 g.draw(path);
             }
         }
+        
+        if ( minorPaths!=null ) {
+            g.setStroke( new BasicStroke(0.5f) );
+            for (GeneralPath path : minorPaths) {
+                if (path != null) {
+                    g.draw(path);
+                }
+            }
+        }
         logger.exiting( "ContoursRenderer", "render" );
 
     }
@@ -262,6 +272,7 @@ public class ContoursRenderer extends Renderer {
     }
 
     private QDataSet contoursDs; // the contours
+    private QDataSet minorContoursDs; // the contours
     
     private synchronized void updateContours() {
         QDataSet tds= (QDataSet) getDataSet();
@@ -291,6 +302,13 @@ public class ContoursRenderer extends Renderer {
         }
         long t0= System.currentTimeMillis();
         contoursDs= Contour.contour(tds, DDataSet.wrap(dv.toDoubleArray(units) ) );
+        
+        if ( lcontours.contains("/") ) {
+            minorContoursDs= Contour.contour(tds, DDataSet.wrap( ticks.minorTickV.toDoubleArray(units) ) );
+        } else {
+            minorContoursDs= null;
+        }
+        
         logger.log(Level.FINE, "contours calculated in {0}ms", System.currentTimeMillis()-t0);
     }
     
@@ -544,9 +562,28 @@ public class ContoursRenderer extends Renderer {
         
         logger.entering( "ContoursRenderer", "updatePlotImage" );
 
-        QDataSet xds = (QDataSet) DataSetOps.unbundle(contoursDs, 0 );
-        QDataSet yds = (QDataSet) DataSetOps.unbundle(contoursDs, 1 );
-        QDataSet zds=  (QDataSet) DataSetOps.unbundle(contoursDs, 2 );
+        calculateContourPixels(xAxis, yAxis, d0, true );
+        if ( minorContoursDs!=null ) {
+            calculateContourPixels(xAxis, yAxis, d0, false );
+        }
+
+        logger.exiting( "ContoursRenderer", "updatePlotImage" );
+        
+    }
+
+    private void calculateContourPixels(DasAxis xAxis, DasAxis yAxis, double d0, boolean major ) {
+        
+        QDataSet xds, yds, zds;
+        
+        if ( major ) {
+            xds = (QDataSet) DataSetOps.unbundle(contoursDs, 0 );
+            yds = (QDataSet) DataSetOps.unbundle(contoursDs, 1 );
+            zds=  (QDataSet) DataSetOps.unbundle(contoursDs, 2 );
+        } else {
+            xds = (QDataSet) DataSetOps.unbundle(minorContoursDs, 0 );
+            yds = (QDataSet) DataSetOps.unbundle(minorContoursDs, 1 );
+            zds=  (QDataSet) DataSetOps.unbundle(minorContoursDs, 2 );            
+        }
         QDataSet ids=  SemanticOps.xtagsDataSet(zds);
 
         Units xunits = xAxis.getUnits();
@@ -600,11 +637,12 @@ public class ContoursRenderer extends Renderer {
             n0 = n;
         }
 
-        paths = (GeneralPath[]) list.toArray(new GeneralPath[list.size()]);
-        pathLabels = (String[]) labels.toArray(new String[labels.size()]);
-
-        logger.exiting( "ContoursRenderer", "updatePlotImage" );
-        
+        if ( major ) {
+            paths = (GeneralPath[]) list.toArray(new GeneralPath[list.size()]);
+            pathLabels = (String[]) labels.toArray(new String[labels.size()]);
+        } else {
+            minorPaths= (GeneralPath[]) list.toArray(new GeneralPath[list.size()]);
+        }
     }
     
     /**
