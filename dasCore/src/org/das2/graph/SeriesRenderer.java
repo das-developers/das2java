@@ -1091,9 +1091,14 @@ public class SeriesRenderer extends Renderer {
                     GeneralPath path2= new GeneralPath(GeneralPath.WIND_NON_ZERO, pathLengthApprox );
                     //int x2= GraphUtil.clipPath( path1.getPathIterator(null), path2, 
                     //    GraphUtil.shrinkRectangle( getParent().getAxisClip(), 90 ) );
-                    int x2= GraphUtil.clipPath( path1.getPathIterator(null), path2, 
-                        GraphUtil.shrinkRectangle( getParent().getAxisClip(), 110 ) );
-                    logger.log(Level.FINE, "additionalClip: {0}", x2);
+                    DasPlot p= getParent();
+                    if ( p!=null ) {
+                        int x2= GraphUtil.clipPath( path1.getPathIterator(null), path2, 
+                            GraphUtil.shrinkRectangle( getParent().getAxisClip(), 110 ) );
+                        logger.log(Level.FINE, "additionalClip: {0}", x2);
+                    } else {
+                        logger.log(Level.FINE, "additionalClip skipped because no parent");
+                    }
                     path1= path2;
                 }
                 pathWasReduced= true;
