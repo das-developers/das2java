@@ -2337,6 +2337,25 @@ public class DataSetOps {
     }
     
     /**
+     * replace any component reference C, to explicit "|unbundle(C)"
+     * @param s the process string, like "X|fftPower(512,2)"
+     * @return canonical version, like "|unbundle(X)|fftPower(512,2)"
+     */
+    public static String makeProcessStringCanonical( String s ) {
+        if ( s.length()==0 || s.startsWith("|") ) {
+            return s;
+        } else {
+            int i= s.indexOf("|");
+            if ( i==-1 ) {
+                return "|unbundle("+s+")";
+            } else {
+                return "|unbundle("+s.substring(0,i)+")" + s.substring(i);
+                    
+            }
+        }
+    }
+    
+    /**
      * return the next command that changes dimensions.
      * @param s0 scanner 
      * @return the command, e.g. "|slice0"
@@ -2356,13 +2375,15 @@ public class DataSetOps {
     /**
      * indicate if the operators change dimensions of the dataset.  Often
      * this will result in true when the dimensions do not change, this is the better way to err.
-     * @param c0 old value for the process string, e.g. "slice0(0)"
-     * @param c1 new value for the process string, e.g. "slice0(0)|slice1(0)"
+     * @param c0 old value for the process string, e.g. "|slice0(0)"
+     * @param c1 new value for the process string, e.g. "|slice0(0)|slice1(0)"
      * @return true if the dimensions would be different.
      */
     public static boolean changesDimensions( String c0, String c1 ) {
         //if ( c.length()==0 && !c2.startsWith("|") ) return false;  //TODO: kludge to avoid true when adding component child.
         if ( c0==null || c1==null ) return true;
+        c0 = makeProcessStringCanonical(c0);
+        c1 = makeProcessStringCanonical(c1);
         Scanner s0= new Scanner( c0 );
         s0.useDelimiter("[\\(\\),]");
         Scanner s1= new Scanner( c1 );
