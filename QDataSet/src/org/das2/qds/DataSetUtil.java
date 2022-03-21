@@ -1941,7 +1941,7 @@ public class DataSetUtil {
         // if the ratio of successive numbers is always increasing this is a strong
         // hint that ratiometric spacing is more appropriate.  If non-zero, then
         // this is the ratio of the first to the last number.
-        final int everIncreasingLimit = total < 10 ?  5 : 100;
+        final int everIncreasingLimit = total < 10 ? 5 : 10;
 
         int ipeak=0;
         int peakv=(int) hist.value(0);
