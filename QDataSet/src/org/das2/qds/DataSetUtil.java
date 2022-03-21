@@ -1922,10 +1922,12 @@ public class DataSetUtil {
             diffs= DataSetOps.applyIndex( diffs, 0, r, false );
         }
 
-        logger.log(Level.FINE, "everIncreasing: {0}", everIncreasing);
-        logger.log(Level.FINE, "xHasFill: {0}", xHasFill);
-        logger.log(Level.FINE, "monoMag: {0}", monoMag);
-        logger.log(Level.FINE, "logScaleType: {0}", logScaleType);
+        if ( logger.isLoggable(Level.FINE) ) {
+            logger.log(Level.FINE, "everIncreasing: {0}", everIncreasing);
+            logger.log(Level.FINE, "xHasFill: {0}", xHasFill);
+            logger.log(Level.FINE, "monoMag: {0}", monoMag);
+            logger.log(Level.FINE, "logScaleType: {0}", logScaleType);
+        }
         
         QDataSet hist= ah.doit( diffs ); 
 
@@ -1939,7 +1941,7 @@ public class DataSetUtil {
         // if the ratio of successive numbers is always increasing this is a strong
         // hint that ratiometric spacing is more appropriate.  If non-zero, then
         // this is the ratio of the first to the last number.
-        final int everIncreasingLimit = total < 10 ? 5 : 10;
+        final int everIncreasingLimit = total < 10 ?  5 : 100;
 
         int ipeak=0;
         int peakv=(int) hist.value(0);
