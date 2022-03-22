@@ -132,7 +132,6 @@ public final class Ops {
      * @return the result the the same geometry.
      */
     public static MutablePropertyDataSet applyUnaryOp(QDataSet ds1, UnaryOp op) {
-        //TODO: handle JOIN from RPWS group, which is not a QUBE...
         WritableDataSet result;
         
         if ( SemanticOps.isJoin(ds1) || DataSetUtil.isQube(ds1)==false ) {
@@ -242,7 +241,6 @@ public final class Ops {
      * @return the result with the same geometry as the pair.
      */
     public static MutablePropertyDataSet applyBinaryOp( QDataSet ds1, QDataSet ds2, BinaryOp op ) {
-        //TODO: handle JOIN from RPWS group, which is not a QUBE...
         if ( ds1.rank()==ds2.rank() && ds1.rank()>0 ) {
             if ( ds1.length()!=ds2.length() ) {
                 throw new IllegalArgumentException("binary operation on datasets of different lengths: "+ ds1 + " " + ds2 );
