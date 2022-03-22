@@ -59,6 +59,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -96,6 +97,8 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     private Rectangle plotImageBounds;
     
     private byte[] raster;
+    private int[] rgbRaster;
+    
     private int rasterWidth,  rasterHeight;
     private int validCount;
     
@@ -132,6 +135,8 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                     logger.log(Level.INFO, "unable to find rebin for string \"{0}\"", t);
                 }
             }
+            t= getControl(CONTROL_KEY_SPECIAL_COLORS,"");
+            this.setSpecialColors(t);
         }
         update();
     }
@@ -142,10 +147,25 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         DasColorBar cb= getColorBar();
         if ( cb!=null ) {
             controls.put( CONTROL_KEY_COLOR_TABLE, getColorBar().getType().toString() );
+            controls.put( CONTROL_KEY_SPECIAL_COLORS, this.getSpecialColors() );
         }
         controls.put( CONTROL_KEY_REBIN, getRebinner().toString() );
         return formatControl(controls);
     }
+    
+    private String specialColors = "";
+
+    public static final String PROP_SPECIALCOLORS = "specialColors";
+
+    public String getSpecialColors() {
+        return specialColors;
+    }
+
+    public void setSpecialColors(String specialColors) {
+        String oldSpecialColors = this.specialColors;
+        this.specialColors = specialColors;
+        propertyChangeSupport.firePropertyChange(PROP_SPECIALCOLORS, oldSpecialColors, specialColors);
+    }    
     
     protected class RebinListener implements PropertyChangeListener {
         @Override
@@ -556,8 +576,15 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         logger.fine("converting to pixel map");
         int ny = rebinData.length(0);
         int nx = rebinData.length();
-
         pix = new byte[nx * ny];
+        return pix;
+    }
+    
+    private static int[] makePixMap(  QDataSet rebinData, int[] pix ) {
+        logger.fine("converting to pixel map");
+        int ny = rebinData.length(0);
+        int nx = rebinData.length();
+        pix = new int[nx * ny];
         return pix;
     }
 
@@ -609,6 +636,69 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         return validCount;
     }
 
+    /**
+     * transforms the simpleTableDataSet into a Raster byte array.  The rows of
+     * the table are adjacent in the output byte array.
+     */
+    private static int transformSimpleTableDataSetRGB( QDataSet rebinData, DasColorBar cb, String specialColors, 
+        boolean flipY, int[] pix ) {
+
+        if ( rebinData.rank()!=2 ) throw new IllegalArgumentException("rank 2 expected");
+
+        logger.fine("converting to pixel map");
+
+        int ny = rebinData.length(0);
+        int nx = rebinData.length();
+        int icolor;
+
+        Map<Double,Color> sc= new HashMap<>();
+        String[] ss= specialColors.split(";",-2);
+        for ( String s: ss ) {
+            String[] dc= s.split(":",-2);
+            sc.put(Double.parseDouble(dc[0]),org.das2.util.ColorUtil.decodeColor(dc[1]));
+        }
+        
+        Units units = SemanticOps.getUnits(rebinData);
+        if ( !units.isConvertibleTo( cb.getUnits() ) ) {
+            // we'll print a warning later
+            units= cb.getUnits();
+        }
+
+        QDataSet wds = SemanticOps.weightsDataSet( rebinData );
+        
+        Arrays.fill( pix, cb.getFillColor().getRGB() );
+
+        int validCount= 0;
+
+        for (int i = 0; i < nx; i++) {
+            for (int j = 0; j < ny; j++) {
+                if ( wds.value( i, j ) > 0.) {
+                    int index;
+                    if (flipY) {
+                        index = i + j * nx;
+                    } else {
+                        index = (i - 0) + (ny - j - 1) * nx;
+                    }
+                    double v= rebinData.value(i, j);
+                    Color c= sc.get(v);
+                    if ( c!=null ) {
+                        icolor = c.getRGB();
+                    } else {
+                        icolor = cb.rgbTransform( v, units );
+                    }
+                    pix[index] = icolor; 
+                    validCount++;
+                }
+            }
+        }
+        
+        if ( validCount==0 ) {
+            logger.fine("dataset contains no valid data");
+        }
+
+        return validCount;
+    }
+    
     private void reportCount() {
         if (updateImageCount % 10 == 0) {
             //System.err.println("  updates: "+updateImageCount+"   renders: "+renderCount );    
@@ -659,9 +749,10 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         
         logger.log(Level.FINE, "SpectrogramRenderer is rendering dataset {0} on {1}", new Object[] {  fds, Thread.currentThread().getName() } );
         
-        byte[] lraster= this.raster;  // make a local copy for thread safety.
-
-        DasColorBar lcolorBar= colorBar; // make a local copy
+        byte[] lraster= this.raster;       // make a local copy for thread safety, this.raster is a cache.
+        int[] lrgbRaster= this.rgbRaster;  // make a local copy for thread safety, this.rgbRaster is a cache.
+        
+        DasColorBar lcolorBar= colorBar;   // make a local copy
         if ( lcolorBar==null ) return;
         
         try {
@@ -690,6 +781,8 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                     }
                 }
 
+                boolean useRGBColor= getSpecialColors().trim().length()>0;
+                
                // synchronized (lockObject) { // TODO nested synchronized blocks unnecessary.
                 {
                     Rectangle plotImageBounds2= lparent.getUpdateImageBounds();
@@ -701,7 +794,8 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                     DasAxis.Memento lymemento= yAxis.getMemento();
                     DasAxis.Memento lcmemento= lcolorBar.getMemento();
                     
-                    if ( lraster != null
+                    boolean haveRaster= useRGBColor ? (lrgbRaster!=null ) : ( lraster!=null );
+                    if ( haveRaster 
                             && xmemento != null && ymemento != null 
                             && lxmemento.equals(xmemento)                             
                             && lymemento.equals(ymemento) 
@@ -907,11 +1001,15 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
 
                         logger.log(Level.FINEST, "done rebinning to pixel resolution" );
 
-                        lraster = makePixMap( rebinDataSet, lraster );
-
                         //t0= System.currentTimeMillis();
                         try {
-                            validCount= transformSimpleTableDataSet(rebinDataSet, lcolorBar, false, lraster );
+                            if ( useRGBColor ) {
+                                lrgbRaster= makePixMap(rebinDataSet,lrgbRaster);
+                                validCount= transformSimpleTableDataSetRGB(rebinDataSet, lcolorBar, specialColors, false, lrgbRaster );
+                            } else {
+                                lraster = makePixMap( rebinDataSet, lraster );
+                                validCount= transformSimpleTableDataSet(rebinDataSet, lcolorBar, false, lraster );
+                            }
                         } catch ( InconvertibleUnitsException ex ) {
                             System.err.println("zunits="+ SemanticOps.getUnits(fds)+"  colorbar="+lcolorBar.getUnits() );
                             logger.exiting( "org.das2.graph.SpectrogramRenderer", "updatePlotImage" );
@@ -922,17 +1020,26 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         rasterWidth = plotImageBounds2.width;
                         rasterHeight = plotImageBounds2.height;
                         raster= lraster;
+                        rgbRaster= lrgbRaster;
                     }
 
-                    IndexColorModel model = lcolorBar.getIndexColorModel();
-                    plotImage2 = new BufferedImage(plotImageBounds2.width, plotImageBounds2.height, BufferedImage.TYPE_BYTE_INDEXED, model);
+                    if ( useRGBColor ) {
+                        plotImage2 = new BufferedImage(plotImageBounds2.width, plotImageBounds2.height, BufferedImage.TYPE_INT_ARGB);
+                    } else {
+                        IndexColorModel model = lcolorBar.getIndexColorModel();
+                        plotImage2 = new BufferedImage(plotImageBounds2.width, plotImageBounds2.height, BufferedImage.TYPE_BYTE_INDEXED, model);
+                    }
 
                     WritableRaster r = plotImage2.getRaster();
 
                     try {
                         if ( plotImageBounds2.width==rasterWidth && plotImageBounds2.height==rasterHeight ) {
                             try {
-                                r.setDataElements(0, 0, rasterWidth, rasterHeight, lraster);
+                                if ( useRGBColor ) {
+                                    r.setDataElements(0, 0, rasterWidth, rasterHeight, lrgbRaster);
+                                } else {
+                                    r.setDataElements(0, 0, rasterWidth, rasterHeight, lraster);
+                                }
                             } catch (Exception e) {
                                 logger.log( Level.WARNING, e.getMessage(), e );
                             }
@@ -945,6 +1052,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                     plotImage = plotImage2;
                     plotImageBounds= plotImageBounds2;
                     raster= lraster;
+                    rgbRaster= lrgbRaster;
 
                     Rectangle rr= DasDevicePosition.toRectangle( lparent.getRow(), lparent.getColumn() );
 
@@ -1137,6 +1245,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
 
     protected final synchronized void clearPlotImage() {
         this.raster = null;
+        this.rgbRaster = null;
         this.plotImage = null;
     }
     

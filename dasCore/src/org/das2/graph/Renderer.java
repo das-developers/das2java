@@ -428,6 +428,14 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
     public static final String CONTROL_KEY_SYMBOL_SIZE= "symbolSize";
     
     /**
+     * mapping from one double value to color, like:<ul>
+     * <li>"0.0:white"
+     * </ul>
+     * This might be expanded to support "ge(100.0):red;lt(0):gray;within(0to100);green" and nominal values.
+     */
+    public static final String CONTROL_KEY_SPECIAL_COLORS="specialColors";
+        
+    /**
      * font size relative to the parent, so "" or "1em" is the same size.
      */
     public static final String CONTROL_KEY_FONT_SIZE= "fontSize";
