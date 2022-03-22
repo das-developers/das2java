@@ -192,7 +192,7 @@ public class PitchAngleDistributionRenderer extends Renderer {
         g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
 
         if ( colorBar==null ) return;
-
+        colorBar.setSpecialColors( this.getControl( "specialColors", "") );
         QDataSet ads= SemanticOps.xtagsDataSet(tds);
         QDataSet rds= SemanticOps.ytagsDataSet(tds); // this is why they are semanticOps.  ytagsDataSet is just used for convenience even though this is not the y values.
 
