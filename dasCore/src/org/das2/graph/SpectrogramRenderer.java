@@ -58,11 +58,14 @@ import java.beans.PropertyChangeListener;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.net.URL;
+import java.text.ParseException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Logger;
+import javafx.scene.Parent;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.das2.components.HorizontalSpectrogramAverager;
@@ -75,6 +78,7 @@ import org.das2.event.VerticalDragRangeSelectorMouseModule;
 import static org.das2.graph.Renderer.formatControl;
 import org.das2.util.LoggerManager;
 import org.das2.qds.DataSetOps;
+import org.das2.qds.IDataSet;
 import org.das2.qds.QDataSet;
 import org.das2.qds.SemanticOps;
 import org.das2.qds.examples.Schemes;
@@ -161,6 +165,10 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         return specialColors;
     }
 
+    /**
+     * set this to a comma-delineated list of name:value pairs,
+     * @param specialColors 
+     */
     public void setSpecialColors(String specialColors) {
         String oldSpecialColors = this.specialColors;
         this.specialColors = specialColors;
@@ -641,7 +649,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
      * the table are adjacent in the output byte array.
      */
     private static int transformSimpleTableDataSetRGB( QDataSet rebinData, DasColorBar cb, String specialColors, 
-        boolean flipY, int[] pix ) {
+        boolean flipY, int[] pix ) throws ParseException {
 
         if ( rebinData.rank()!=2 ) throw new IllegalArgumentException("rank 2 expected");
 
@@ -651,11 +659,13 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         int nx = rebinData.length();
         int icolor;
 
-        Map<Double,Color> sc= new HashMap<>();
-        String[] ss= specialColors.split(";",-2);
+        Map<String,Color> sc2= new LinkedHashMap<>();
+        String[] ss= specialColors.split(",",-2);
         for ( String s: ss ) {
             String[] dc= s.split(":",-2);
-            sc.put(Double.parseDouble(dc[0]),org.das2.util.ColorUtil.decodeColor(dc[1]));
+            if ( dc.length>1 ) {
+                sc2.put(dc[0],org.das2.util.ColorUtil.decodeColor(dc[1]));
+            }
         }
         
         Units units = SemanticOps.getUnits(rebinData);
@@ -680,12 +690,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         index = (i - 0) + (ny - j - 1) * nx;
                     }
                     double v= rebinData.value(i, j);
-                    Color c= sc.get(v);
-                    if ( c!=null ) {
-                        icolor = c.getRGB();
-                    } else {
-                        icolor = cb.rgbTransform( v, units );
-                    }
+                    icolor = cb.rgbTransform( v, units );
                     pix[index] = icolor; 
                     validCount++;
                 }
@@ -694,6 +699,38 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         
         if ( validCount==0 ) {
             logger.fine("dataset contains no valid data");
+        } else {
+            IDataSet pixds= IDataSet.wrap( pix, ny, nx );
+            for ( Entry<String,Color> e: sc2.entrySet() ) {
+                String k= e.getKey();
+                double rgb= e.getValue().getRGB();
+                QDataSet r;
+                if ( k.startsWith("within") ) {
+                    r= Ops.where( Ops.within( rebinData, k.substring(7,k.length()-1).replaceAll("\\+"," ") ) );
+                } else if ( k.startsWith("without") ) {
+                    r= Ops.where( Ops.without( rebinData, k.substring(7,k.length()-1).replaceAll("\\+"," ") ) );
+                } else if ( k.startsWith("lt") ) {
+                    r= Ops.where( Ops.lt( rebinData, k.substring(3,k.length()-1) ) );
+                } else if ( k.startsWith("gt") ) {
+                    r= Ops.where( Ops.gt( rebinData, k.substring(3,k.length()-1) ) );
+                } else if ( k.startsWith("eq") ) {
+                    r= Ops.where( Ops.eq( rebinData, k.substring(3,k.length()-1) ) );
+                } else {
+                    try {
+                        double d= Double.parseDouble(k);
+                        r= Ops.where( Ops.eq( rebinData, d ) );
+                    } catch ( NumberFormatException ex ) {
+                        throw new ParseException("unable to parse specialColors",0);
+                    }
+                }
+                for ( int i=0; i<r.length(); i++ ) {
+                    try {
+                        pixds.putValue( ny-1-(int)r.value(i,1), (int)r.value(i,0), rgb );
+                    } catch ( Exception ex ) {
+                        pixds.putValue( (int)r.value(i,1), (int)r.value(i,0), rgb );
+                    }
+                }
+            }
         }
 
         return validCount;
@@ -1005,7 +1042,16 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         try {
                             if ( useRGBColor ) {
                                 lrgbRaster= makePixMap(rebinDataSet,lrgbRaster);
-                                validCount= transformSimpleTableDataSetRGB(rebinDataSet, lcolorBar, specialColors, false, lrgbRaster );
+                                try {
+                                    validCount= transformSimpleTableDataSetRGB(rebinDataSet, lcolorBar, specialColors, false, lrgbRaster );
+                                } catch ( ParseException ex ) {
+                                    getParent().postException( this, ex );
+                                    try {
+                                        validCount= transformSimpleTableDataSetRGB(rebinDataSet, lcolorBar, "", false, lrgbRaster );
+                                    } catch ( ParseException ex2 ) {
+                                        throw new RuntimeException(ex2);
+                                    }
+                                }
                             } else {
                                 lraster = makePixMap( rebinDataSet, lraster );
                                 validCount= transformSimpleTableDataSet(rebinDataSet, lcolorBar, false, lraster );
