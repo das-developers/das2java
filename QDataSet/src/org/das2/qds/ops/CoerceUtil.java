@@ -13,6 +13,7 @@ import org.das2.qds.SemanticOps;
 import org.das2.qds.Slice0DataSet;
 import org.das2.qds.TrimDataSet;
 import org.das2.qds.WritableDataSet;
+import org.das2.qds.WritableJoinDataSet;
 
 /**
  * Utility class for reconciling the geometries of two datasets.  For example,
@@ -83,9 +84,11 @@ public class CoerceUtil {
      * @return an empty dataset where the results can be inserted, or null if createResult is false.
      */
     public static WritableDataSet coerce(QDataSet ds1, QDataSet ds2, boolean createResult, QDataSet[] operands) {
-        if (ds1.rank() == ds2.rank() && equalGeom(ds1, ds2)) {
-        } else if (ds1.rank() < ds2.rank()) {
-            if (ds1.rank() == 0) {
+        int ds1rank= ds1.rank();
+        int ds2rank= ds2.rank();
+        if (ds1rank == ds2rank && equalGeom(ds1, ds2)) {
+        } else if (ds1rank < ds2rank) {
+            if (ds1rank == 0) {
                 ds1 = increaseRank0(ds1, ds2);
             } else if (ds1.rank() == 1) {
                 ds1 = increaseRank1(ds1, ds2);
@@ -96,11 +99,11 @@ public class CoerceUtil {
             }
 
         } else {
-            if (ds2.rank() == 0) {
+            if (ds2rank == 0) {
                 ds2 = increaseRank0(ds2, ds1);
-            } else if (ds2.rank() == 1) {
+            } else if (ds2rank == 1) {
                 ds2 = increaseRank1(ds2, ds1);
-            } else if (ds2.rank() == 2) {
+            } else if (ds2rank == 2) {
                 ds2 = increaseRank2(ds2, ds1);
             } else {
                 throw new IllegalArgumentException("rank limit");
@@ -113,9 +116,14 @@ public class CoerceUtil {
             int [] dims= DataSetUtil.qubeDims(ds1);
             if ( dims==null ) dims= DataSetUtil.qubeDims(ds2);
             if ( dims==null ) {
-                throw new RuntimeException( "either ds1 or ds2 needs to be a qube" );
+                if ( ds2rank==0 ) {
+                    return Ops.copy(ds1);
+                } else {
+                    throw new RuntimeException( "either ds1 or ds2 needs to be a qube" );
+                }
+            } else {
+                result = DDataSet.create(dims);
             }
-            result = DDataSet.create(dims);
         }
         return result;
     }

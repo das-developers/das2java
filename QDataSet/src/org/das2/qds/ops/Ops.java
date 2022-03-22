@@ -133,7 +133,13 @@ public final class Ops {
      */
     public static MutablePropertyDataSet applyUnaryOp(QDataSet ds1, UnaryOp op) {
         //TODO: handle JOIN from RPWS group, which is not a QUBE...
-        DDataSet result = DDataSet.create(DataSetUtil.qubeDims(ds1));
+        WritableDataSet result;
+        
+        if ( SemanticOps.isJoin(ds1) || DataSetUtil.isQube(ds1)==false ) {
+            result = Ops.copy(ds1);
+        } else {
+            result = DDataSet.create(DataSetUtil.qubeDims(ds1));
+        }
         QDataSet wds= DataSetUtil.weightsDataSet(ds1);
 
         double fill= -1e38;
