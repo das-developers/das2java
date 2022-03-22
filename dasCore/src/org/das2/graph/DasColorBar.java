@@ -38,13 +38,19 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.swing.ImageIcon;
+import org.das2.datum.DatumRange;
+import org.das2.qds.QDataSet;
+import org.das2.qds.ops.Ops;
 
 /**
  * Axis that converts to RGB color instead of horizontal or vertical
@@ -99,6 +105,39 @@ public class DasColorBar extends DasAxis {
         setType(DasColorBar.Type.COLOR_WEDGE);
     }
     
+    Map<String,Color> theSpecialColors= Collections.emptyMap();
+    
+    private String specialColors = "";
+
+    public static final String PROP_SPECIALCOLORS = "specialColors";
+
+    public String getSpecialColors() {
+        return specialColors;
+    }
+
+    /**
+     * set this to a comma-delineated list of name:value pairs,
+     * @param specialColors 
+     */
+    public void setSpecialColors(String specialColors) {
+        String oldSpecialColors = this.specialColors;
+        this.specialColors = specialColors;
+        Map<String,Color> sc2= new LinkedHashMap<>();
+        String[] ss= specialColors.split(",",-2);
+        for ( String s: ss ) {
+            String[] dc= s.split(":",-2);
+            if ( dc.length>1 ) {
+                sc2.put(dc[0],org.das2.util.ColorUtil.decodeColor(dc[1]));
+            }
+        }
+        if ( specialColors.trim().length()==0 ) {
+            theSpecialColors= null;
+        } else {
+            theSpecialColors= sc2;
+        }
+        firePropertyChange(PROP_SPECIALCOLORS, oldSpecialColors, specialColors);
+    }        
+
     /**
      * convert the double to an RGB color.
      * @param data a data value
@@ -107,8 +146,59 @@ public class DasColorBar extends DasAxis {
      * @see Color#Color(int) 
      */
     public int rgbTransform(double data, Units units) {
+
         int icolor= (int)transform(data,units,0, ncolor);
         
+        if ( theSpecialColors!=null ) {
+            Datum datum= units.createDatum(data);
+            boolean haveRgbColor= false;
+            for ( Map.Entry<String,Color> e: theSpecialColors.entrySet() ) {
+                try {
+                    String k= e.getKey();
+                    double rgb= e.getValue().getRGB();
+                    QDataSet r;
+                    if ( k.startsWith("within") ) {
+                        String s= k.substring(7,k.length()-1);
+                        DatumRange dr= Ops.datumRange(s.replaceAll("\\+"," "));
+                        if ( dr.contains( datum ) ) {
+                            icolor= (int)rgb;
+                            haveRgbColor= true;
+                        }
+                    } else if ( k.startsWith("without") ) {
+                        String s= k.substring(7,k.length()-1);
+                        DatumRange dr= Ops.datumRange(s.replaceAll("\\+"," "));
+                        if ( !dr.contains( datum ) ) {
+                            icolor= (int)rgb;
+                            haveRgbColor= true;
+                        }
+                    } else if ( k.startsWith("lt") ) {
+                        if ( datum.lt( units.parse(k.substring(3,k.length()-1)) ) ) {
+                            icolor= (int)rgb;
+                            haveRgbColor= true;
+                        }
+                    } else if ( k.startsWith("gt") ) {
+                        if ( datum.gt( units.parse(k.substring(3,k.length()-1)) ) ) {
+                            icolor= (int)rgb;
+                            haveRgbColor= true;
+                        }
+                    } else if ( k.startsWith("eq") ) {
+                        if ( datum.equals(units.parse(k.substring(3,k.length()-1)) ) ) {
+                            icolor= (int)rgb;
+                            haveRgbColor= true;
+                        }
+                    } else {
+                        if ( datum.equals(units.parse(k)) ) {
+                            icolor= (int)rgb;
+                            haveRgbColor= true;
+                        }
+                    }
+                } catch ( ParseException ex ) {
+                    
+                }
+            }
+            if ( haveRgbColor ) return icolor;
+        }
+                    
         if ( units.isFill(data) ) {
             return fillColor;
         } else {
