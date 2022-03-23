@@ -638,10 +638,6 @@ public final class QubeDataSetIterator implements DataSetIterator {
                 return false;
             }
         } else {
-            if ( it.length==3 && it[0].index()==1 && it[1].index()==1 && it[2].index()==20 ) {
-                this.toString();
-                System.err.println("here628 stop");
-            }
             if ( it[0].length()==0 ) {
                 if ( monitor!=null ) monitor.finished();
                 return false;
