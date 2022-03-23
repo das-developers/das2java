@@ -167,6 +167,8 @@ public class SeriesRenderer extends Renderer {
     }
     Image psymImage;
     Image[] coloredPsyms;
+    Map<Color,Image> specialColorPsyms;
+    
     int cmx, cmy;
     FillRenderElement fillElement = new FillRenderElement();
     ErrorBarRenderElement errorElement = new ErrorBarRenderElement();
@@ -224,6 +226,21 @@ public class SeriesRenderer extends Renderer {
         propertyChangeSupport.firePropertyChange(PROP_SHOWLIMITS, oldShowLimits, showLimits);
     }
 
+    private String specialColors = "";
+
+    public static final String PROP_SPECIALCOLORS = "specialColors";
+
+    public String getSpecialColors() {
+        return specialColors;
+    }
+
+    public void setSpecialColors(String specialColors) {
+        String oldSpecialColors = this.specialColors;
+        this.specialColors = specialColors;
+        updatePsym();
+        propertyChangeSupport.firePropertyChange(PROP_SPECIALCOLORS, oldSpecialColors, specialColors);
+    }
+    
     /**
      * the selectionArea, which can be null.
      */
@@ -259,6 +276,7 @@ public class SeriesRenderer extends Renderer {
         setDrawError( getBooleanControl( CONTROL_KEY_DRAW_ERROR, drawError ) );
         setBackgroundThick( getControl( CONTROL_KEY_BACKGROUND_THICK, backgroundThick ) );
         setFillStyle( decodeFillStyle( getControl( CONTROL_KEY_FILL_STYLE, encodeFillStyle(fillStyle) ), fillStyle ) );
+        setSpecialColors( getControl( CONTROL_KEY_SPECIAL_COLORS, "" ) );
     }
 
     @Override
@@ -273,6 +291,7 @@ public class SeriesRenderer extends Renderer {
         controls.put( CONTROL_KEY_DRAW_ERROR, encodeBooleanControl( drawError ) );
         controls.put( CONTROL_KEY_BACKGROUND_THICK, backgroundThick );
         controls.put( CONTROL_KEY_FILL_STYLE, encodeFillStyle(fillStyle) );
+        controls.put( CONTROL_KEY_SPECIAL_COLORS, specialColors );
         return formatControl(controls);
     }
     
@@ -319,7 +338,8 @@ public class SeriesRenderer extends Renderer {
 
     private class PsymRenderElement implements RenderElement {
 
-        int[] colors; // store the color index  of each psym
+        int[] colors; // store the color index of each psym, greater than 999 is not valid.
+        int[] rgbColors;
 
         double[] dpsymsPathX; // store the location of the psyms here.
         double[] dpsymsPathY; // store the location of the psyms here.
@@ -349,9 +369,11 @@ public class SeriesRenderer extends Renderer {
 
             if (colorByDataSet != null) {
                 for (int i = 0; i < count; i++) {
-                    int icolor = colors[i];
-                    if ( icolor>=0 ) {
-                        g.drawImage(coloredPsyms[icolor], (int)dpsymsPathX[i] - cmx, (int)dpsymsPathY[i] - cmy, lparent);
+                    Image img= specialColorPsyms.get( new Color(rgbColors[i]) );
+                    if ( img==null ) {
+                        g.drawImage(coloredPsyms[colors[i]], (int)dpsymsPathX[i] - cmx, (int)dpsymsPathY[i] - cmy, lparent);
+                    } else {
+                        g.drawImage(img, (int)dpsymsPathX[i] - cmx, (int)dpsymsPathY[i] - cmy, lparent);
                     }
                 }
             } else {
@@ -426,7 +448,10 @@ public class SeriesRenderer extends Renderer {
                     
                 } else {
                     for (int i = 0; i < count; i++) {
-                        if ( colors[i]>=0 ) {
+                        if ( colors[i]>999 ) {
+                            graphics.setColor( new Color(rgbColors[i]) );
+                            psym.draw(graphics, dpsymsPathX[i], dpsymsPathY[i], fsymSize, fillStyle);
+                        } else if ( colors[i]>=0 && colors[i]<999 ) {
                             graphics.setColor(ccolors[colors[i]]);
                             psym.draw(graphics, dpsymsPathX[i], dpsymsPathY[i], fsymSize, fillStyle);
                         }
@@ -518,11 +543,14 @@ public class SeriesRenderer extends Renderer {
             DasColorBar fcolorBar= colorBar;
             
             Units zunits = null;
-            if (colorByDataSet1 != null && fcolorBar!=null ) {
-                zunits= SemanticOps.getUnits( colorByDataSet1 );
-                if ( !zunits.isConvertibleTo( fcolorBar.getUnits() ) ) {
-                    zunits= fcolorBar.getUnits(); // we will post warning later
+            if ( fcolorBar!=null ) {
+                if (colorByDataSet1 != null ) {
+                    zunits= SemanticOps.getUnits( colorByDataSet1 );
+                    if ( !zunits.isConvertibleTo( fcolorBar.getUnits() ) ) {
+                        zunits= fcolorBar.getUnits(); // we will post warning later
+                    }
                 }
+                fcolorBar.setSpecialColors(specialColors);
             }
 
             double x, y;            
@@ -532,6 +560,7 @@ public class SeriesRenderer extends Renderer {
             dpsymsPathX = new double[(lastIndex - firstIndex ) ];
             dpsymsPathY = new double[(lastIndex - firstIndex ) ];
             colors = new int[lastIndex - firstIndex + 2];
+            rgbColors= new int[lastIndex - firstIndex + 2];
 
             int index = firstIndex;
 
@@ -593,9 +622,11 @@ public class SeriesRenderer extends Renderer {
                                 if ( rgbColor ) {
                                     colors[i] = (int)colorByDataSet1.value(index);
                                 } else {
+                                    rgbColors[i]= fcolorBar.rgbTransform( colorByDataSet1.value(index), zunits );
                                     colors[i] = fcolorBar.indexColorTransform( colorByDataSet1.value(index), zunits );
                                 }
                             } else {
+                                rgbColors[i]= -1;
                                 colors[i] = -1;
                             }
                         } catch ( NullPointerException ex ) {
@@ -1557,6 +1588,7 @@ public class SeriesRenderer extends Renderer {
         DasColorBar lcolorBar=  this.colorBar;
         if (  colorByDataSetId != null && !colorByDataSetId.equals("") && lcolorBar!=null ) {
             initColoredPsyms(sx, sy, image, g, lparent, lcolorBar, rendering, dcmx, dcmy);
+            initSpecialColorPsyms(sx, sy, image, g, lparent, lcolorBar, rendering, dcmx, dcmy);
         }
         
         cmx = (int) dcmx;
@@ -1565,20 +1597,47 @@ public class SeriesRenderer extends Renderer {
         update();
     }
 
-    private void initColoredPsyms(int sx, int sy, BufferedImage image, Graphics2D g, DasPlot lparent, DasColorBar lcolorBar, Object rendering, double dcmx, double dcmy) {
+    private void initColoredPsyms(int sx, int sy, 
+        BufferedImage image, Graphics2D g, 
+        DasPlot lparent, DasColorBar lcolorBar, Object rendering, double dcmx, double dcmy) {
+        
         IndexColorModel model = lcolorBar.getIndexColorModel();
         coloredPsyms = new Image[model.getMapSize()];
         for (int i = 0; i < model.getMapSize(); i++) {
             Color c = new Color(model.getRGB(i));
-            image = new BufferedImage(sx, sy, BufferedImage.TYPE_INT_ARGB);
-            g = (Graphics2D) image.getGraphics();
-            g.setBackground(lparent.getBackground());
-            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, rendering);
-            g.setColor(c);
-            g.setStroke(new BasicStroke((float) lineWidth));
-            psym.draw(g, dcmx, dcmy, symSize, this.fillStyle);
+            image = drawPlotSymbolStamp(  c, sx, sy, lparent, rendering, dcmx, dcmy);
             coloredPsyms[i] = image;
         }
+    }
+
+    private void initSpecialColorPsyms(int sx, int sy, 
+        BufferedImage image, Graphics2D g, 
+        DasPlot lparent, DasColorBar lcolorBar, Object rendering, double dcmx, double dcmy) {
+                
+        specialColorPsyms= new LinkedHashMap<>();
+        
+        String[] ss= specialColors.split(",",-2);
+        for ( String s: ss ) {
+            String[] dc= s.split(":",-2);
+            if ( dc.length>1 ) {
+                Color c= org.das2.util.ColorUtil.decodeColor(dc[1]);
+                image= drawPlotSymbolStamp( c, sx, sy, lparent, rendering, dcmx, dcmy);
+                specialColorPsyms.put(c,image);
+            }
+        }
+    }
+    
+    private BufferedImage drawPlotSymbolStamp( Color c, int sx, int sy, DasPlot lparent, Object rendering, double dcmx, double dcmy) {
+        BufferedImage image;
+        Graphics2D g;
+        image = new BufferedImage(sx, sy, BufferedImage.TYPE_INT_ARGB);
+        g = (Graphics2D) image.getGraphics();
+        g.setBackground(lparent.getBackground());
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, rendering);
+        g.setColor(c);
+        g.setStroke(new BasicStroke((float) lineWidth));
+        psym.draw(g, dcmx, dcmy, symSize, this.fillStyle);
+        return image;
     }
 
    // private void reportCount() {
