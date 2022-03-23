@@ -131,7 +131,7 @@ public final class QubeDataSetIterator implements DataSetIterator {
 
         @Override
         public String toString() {
-            return all ? ":" : "" + start + ":" + stop + (step == 1 ? "" : ":" + step);
+            return ( all ? ":" : "" + start + ":" + stop + (step == 1 ? "" : ":" + step) ) + " @ "+index;
         }
     }
 
@@ -400,17 +400,37 @@ public final class QubeDataSetIterator implements DataSetIterator {
         }
     }
     
+    /**
+     * one iterator for each index
+     */
     private DimensionIterator[] it;
+    
+    /**
+     * one factory for each index
+     */
     private DimensionIteratorFactory[] fit;
     private boolean isAllIndexLists;
 
+    /**
+     * the rank of each dataset
+     */
     private int rank;
+    
+    /**
+     * dims of the current qube
+     */
     private int[] qube;
+    
+    /**
+     * the current dataset
+     */
     private QDataSet ds;
     private boolean allnext = true;  // we'll have to do a borrow to get started.
     
     private ProgressMonitor monitor;
 
+    private boolean debugMe= false;
+    
     /**
      * dataset iterator to help in implementing the complex indexing
      * types of python.  Each of the dimensions is set to iterate over all
@@ -425,17 +445,19 @@ public final class QubeDataSetIterator implements DataSetIterator {
         if ( ! DataSetUtil.validate(ds,problems) ) {
             throw new IllegalArgumentException("data doesn't validate: "+problems );
         }
-        it= new DimensionIterator[ ds.rank() ];
-        fit= new DimensionIteratorFactory[ ds.rank() ];
+        
+        this.rank = ds.rank();
+        it= new DimensionIterator[ this.rank ];
+        fit= new DimensionIteratorFactory[ this.rank ];
         
         if ( DataSetUtil.isQube(ds) ) {
             this.qube = DataSetUtil.qubeDims(ds);
             this.ds = ds;
         } else {
+            this.qube= null;
             this.ds = ds;
         }
-        this.rank = ds.rank();
-        for (int i = 0; i < ds.rank(); i++) {
+        for (int i = 0; i < this.rank; i++) {
             fit[i] = new StartStopStepIteratorFactory(0, null, 1);
         }
         initialize();
@@ -448,10 +470,11 @@ public final class QubeDataSetIterator implements DataSetIterator {
      * @param fits
      */
     private QubeDataSetIterator(QDataSet ds, DimensionIteratorFactory[] fits) {
-        if (Boolean.TRUE.equals(ds.property(QDataSet.QUBE))) {
+        if (Boolean.TRUE.equals(ds.property(QDataSet.QUBE))) { //TODO: why is this different?
             this.qube = DataSetUtil.qubeDims(ds);
             this.ds = ds;
         } else {
+            this.qube= null;
             this.ds = ds;
         }
         this.rank = ds.rank();
@@ -550,10 +573,22 @@ public final class QubeDataSetIterator implements DataSetIterator {
      */
     private void initialize() {
         boolean allLi= true;
+        boolean zeroLength= false;
         for (int i = 0; i < rank; i++) {
             int dimLength= dimLength(i);
+            if ( dimLength==0 ) zeroLength= true;
             it[i] = fit[i].newIterator(dimLength);
             if ( !( it[i] instanceof IndexListIterator ) ) allLi= false;
+        }
+        while ( zeroLength && it[0].hasNext() && qube==null ) {
+            it[0].nextIndex();
+            zeroLength= false;
+            for (int i = 1; i < rank; i++) {
+                int dimLength= dimLength(i);
+                if ( dimLength==0 ) zeroLength= true;
+                it[i] = fit[i].newIterator(dimLength);
+                if ( !( it[i] instanceof IndexListIterator ) ) allLi= false;
+            }
         }
         this.isAllIndexLists= allLi;
     }
@@ -603,6 +638,10 @@ public final class QubeDataSetIterator implements DataSetIterator {
                 return false;
             }
         } else {
+            if ( it.length==3 && it[0].index()==1 && it[1].index()==1 && it[2].index()==20 ) {
+                this.toString();
+                System.err.println("here628 stop");
+            }
             if ( it[0].length()==0 ) {
                 if ( monitor!=null ) monitor.finished();
                 return false;
@@ -622,7 +661,22 @@ public final class QubeDataSetIterator implements DataSetIterator {
                 if (i > 0) {
                     for (int j = i - 1; j >= 0; j--) {
                         if (it[j].hasNext()) {
-                            return true;
+                            if ( qube!=null ) {
+                                return true;
+                            } else {
+                                if ( j==0 ) {
+                                    int nslice;
+                                    int nextIndex= it[j].index();
+                                    do {
+                                        nextIndex++;
+                                        QDataSet sliceDs= ds.slice(nextIndex); // The slice of any QDataSet is a qube
+                                        nslice= DataSetUtil.product( DataSetUtil.qubeDims(sliceDs) );
+                                    } while ( nslice==0 && nextIndex<ds.length()-1 );
+                                    return nslice>0;
+                                } else {
+                                    return true;
+                                }
+                            }
                         }
                     }
                 }
@@ -643,11 +697,11 @@ public final class QubeDataSetIterator implements DataSetIterator {
         if (this.allnext) {
             for (int i = 0; i < (rank - 1); i++) {
                 if ( !( isAllIndexLists && ( it[i] instanceof IndexListIterator ) ) ) {
-                    it[i].nextIndex();
+                    if ( it[i].index()==-1 ) it[i].nextIndex();
                     if ( i==0 && monitor!=null ) monitor.setTaskProgress(it[0].index());
                 }
             }
-            allnext = false;
+            allnext = false; // This will never be true again
             if (rank == 0) {
                 return;
             }
@@ -655,7 +709,7 @@ public final class QubeDataSetIterator implements DataSetIterator {
 
         // implement borrow logic
         int i = rank - 1;
-        if (it[i].hasNext()) {
+        if (it[i].hasNext()) { // typical case, where we have more elements in the last index.
             it[i].nextIndex();
             if ( it[i] instanceof IndexListIterator ) { // all index lists need to be incremented together.
                 for ( int k=0; k<i; k++ ) {
@@ -666,7 +720,13 @@ public final class QubeDataSetIterator implements DataSetIterator {
                 }
             }
         } else {
-            if (i > 0) {
+            this.toString();
+            if ( debugMe ) {
+                //System.err.println("here stop Jeremy");
+                boolean wow=true;
+            }
+            boolean proceed= false;
+            while ( !proceed && i>0) {
                 for (int j = i - 1; j >= 0; j--) {
                     if (it[j].hasNext()) {
                         it[j].nextIndex();
@@ -680,14 +740,34 @@ public final class QubeDataSetIterator implements DataSetIterator {
                                 }
                             }
                         }
+                        boolean zeroLength= false;
                         for (int k = j + 1; k <= i; k++) {
                             it[k] = fit[k].newIterator(dimLength(k));
+                            if ( dimLength(k)==0 ) zeroLength=true;
                             it[k].nextIndex();
                         }
-                        break;
+                        if ( !zeroLength ) {
+                            proceed= true;
+                            break;
+                        } 
+                    } else {
+                        boolean zeroLength= false;
+                        if ( j==0 ) {
+                            throw new IllegalArgumentException("no next index");
+                        }
+                        for (int k = j + 1; k <= i; k++) {
+                            int nextDimLength= dimLength(k);
+                            it[k] = fit[k].newIterator(nextDimLength);
+                            if ( nextDimLength==0 ) zeroLength=true;
+                            it[k].nextIndex();
+                        }
+                        if ( zeroLength ) {
+                            break;
+                        }
                     }
                 }
-            } else {
+            } 
+            if ( !proceed ) {
                 throw new IllegalArgumentException("no more elements");
             }
         }
