@@ -697,7 +697,7 @@ public final class QubeDataSetIterator implements DataSetIterator {
         if (this.allnext) {
             for (int i = 0; i < (rank - 1); i++) {
                 if ( !( isAllIndexLists && ( it[i] instanceof IndexListIterator ) ) ) {
-                    if ( it[i].index()==-1 ) it[i].nextIndex();
+                    if ( it[i].index()<0 ) it[i].nextIndex();
                     if ( i==0 && monitor!=null ) monitor.setTaskProgress(it[0].index());
                 }
             }
