@@ -585,7 +585,7 @@ public final class QubeDataSetIterator implements DataSetIterator {
         boolean allLi= true;
         boolean zeroLength= false;
         initialNext= new boolean[rank];
-        initialNext[rank-1]= true;
+        if ( rank>0 ) initialNext[rank-1]= true;
         for (int i = 0; i < rank; i++) {
             initialNext[i]= true;
             int dimLength= dimLength(i);
