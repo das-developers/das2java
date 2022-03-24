@@ -54,8 +54,8 @@ public final class QubeDataSetIterator implements DataSetIterator {
     public interface DimensionIterator {
 
         /**
-         * true if there are more indeces in the iteration
-         * @return true if there are more indeces in the iteration
+         * true if there are more indices in the iteration
+         * @return true if there are more indices in the iteration
          */
         boolean hasNext();
 
@@ -86,7 +86,7 @@ public final class QubeDataSetIterator implements DataSetIterator {
     }
 
     /**
-     * Iterator for counting off indeces.  (3:15:2 in ds[3:15:2,:])
+     * Iterator for counting off indices.  (3:15:2 in ds[3:15:2,:])
      */    
     public static class StartStopStepIterator implements DimensionIterator {
 
@@ -137,7 +137,7 @@ public final class QubeDataSetIterator implements DataSetIterator {
     }
 
     /**
-     * generates iterator for counting off indeces.  (3:15:2 in ds[3:15:2,:])
+     * generates iterator for counting off indices.  (3:15:2 in ds[3:15:2,:])
      * Indices can be negative.
      */
     public static class StartStopStepIteratorFactory implements DimensionIteratorFactory {
@@ -183,7 +183,7 @@ public final class QubeDataSetIterator implements DataSetIterator {
     }
 
     /**
-     * Iterator that goes through a list of indeces.
+     * Iterator that goes through a list of indices.
      */
     public static class IndexListIterator implements DimensionIterator {
 
@@ -196,7 +196,7 @@ public final class QubeDataSetIterator implements DataSetIterator {
             }
             this.ds = ds;
             if ( ds.rank()!=1 ) {
-                throw new IllegalArgumentException("list of indeces dataset must be rank 1");
+                throw new IllegalArgumentException("list of indices dataset must be rank 1");
             }
             this.listIndex = -1;
         }
@@ -271,7 +271,7 @@ public final class QubeDataSetIterator implements DataSetIterator {
                 }
             }
         }
-        // check the first hundred indeces to see if they are non-integer.
+        // check the first hundred indices to see if they are non-integer.
         int n= Math.min( ds.length(), 100 );
         for ( int i=0; i<n; i++ ) {
             double v= ds.value(i);
@@ -304,7 +304,7 @@ public final class QubeDataSetIterator implements DataSetIterator {
             }
             this.ds = ds;
             if ( ds.rank()!=1 ) {
-                throw new IllegalArgumentException("list of indeces dataset must be rank 1");
+                throw new IllegalArgumentException("list of indices dataset must be rank 1");
             }
             checkValidIndexList(ds,-1);
         }
@@ -444,7 +444,7 @@ public final class QubeDataSetIterator implements DataSetIterator {
     /**
      * dataset iterator to help in implementing the complex indexing
      * types of python.  Each of the dimensions is set to iterate over all
-     * indeces (e.g ds[:,:,:])
+     * indices (e.g ds[:,:,:])
      * 
      * Client codes should create a new iterator, set the index iterator factories, then iterate.
      * @param ds the dataset we will iterate over.
