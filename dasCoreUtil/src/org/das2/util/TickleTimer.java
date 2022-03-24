@@ -2,9 +2,11 @@
 
 package org.das2.util;
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -26,7 +28,8 @@ public class TickleTimer {
     boolean firing=false; // true when the listener is being invoked.
     boolean retickle=false; // true when the tickleTimer was tickled while firing.
     List<String> messages;
-    
+    List<PropertyChangeListener> callbacks= new LinkedList<>();
+        
     static final Logger log= org.das2.util.LoggerManager.getLogger("das2.util");
     
     /**
@@ -78,6 +81,17 @@ public class TickleTimer {
                     tickle("retickle");
                 }
                 messages= new ArrayList<>();
+                List<PropertyChangeListener> callbacks= new ArrayList<>(TickleTimer.this.callbacks);
+                TickleTimer.this.callbacks.removeAll(callbacks);
+                PropertyChangeEvent pce= new PropertyChangeEvent( this, "running", true, false );
+                callbacks.forEach((pcl) -> {
+                    try {
+                        pcl.propertyChange( pce );
+                    } catch ( Exception ex ) {
+                        log.log( Level.WARNING, ex.getMessage(), ex );
+                    }
+                });
+                
             }
         };
     }
@@ -96,6 +110,17 @@ public class TickleTimer {
         if ( message!=null ) messages.add(message);
     }
     
+    public synchronized void tickle( String message, PropertyChangeListener callback ) {
+        tickleTime= System.currentTimeMillis();
+        if ( firing ) {
+            retickle= true;
+            return;
+        }
+        if ( !running ) startTimer();
+        if ( message!=null ) messages.add(message);
+        callbacks.add( callback );
+    }
+
     private final java.beans.PropertyChangeSupport propertyChangeSupport =  new java.beans.PropertyChangeSupport(this);
 
     public final void addPropertyChangeListener(java.beans.PropertyChangeListener l) {
