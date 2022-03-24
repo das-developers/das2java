@@ -188,7 +188,7 @@ public final class QubeDataSetIterator implements DataSetIterator {
     public static class IndexListIterator implements DimensionIterator {
 
         QDataSet ds;
-        int index;
+        int listIndex;
 
         public IndexListIterator(QDataSet ds) {
             if ( ds.rank()==0 ) {
@@ -198,39 +198,35 @@ public final class QubeDataSetIterator implements DataSetIterator {
             if ( ds.rank()!=1 ) {
                 throw new IllegalArgumentException("list of indeces dataset must be rank 1");
             }
-            this.index = -1;
+            this.listIndex = -1;
         }
 
         @Override
         public boolean hasNext() {
-            return index < ds.length()-1;
+            return listIndex+1 < ds.length();
         }
 
         @Override
         public int nextIndex() {
-            index++;
-            return (int) ds.value(index);
+            listIndex++;
+            return (int) ds.value(listIndex);
         }
 
         @Override
         public int index() {
-            if ( this.index==-1 ) {
-                return -1;
-            } else {
-                return (int) ds.value(index);
-            }
+            return (int) ds.value(listIndex);
         }
 
         @Override
         public int length() {
             return ds.length();
         }
-
+        
         @Override
         public String toString() {
             String dstr= ds.toString();
             dstr= dstr.replace("(dimensionless)", "");
-            return "[" + dstr  + " @ " +index + "]";
+            return "[" + dstr  + " @ " +listIndex + "]";
         }
     }
 
@@ -369,11 +365,7 @@ public final class QubeDataSetIterator implements DataSetIterator {
 
         @Override
         public int index() {
-            if ( hasNext ) {
-                return -1;
-            } else {
-                return index;
-            }
+            return index;
         }
 
         @Override
@@ -434,7 +426,16 @@ public final class QubeDataSetIterator implements DataSetIterator {
      * the current dataset
      */
     private QDataSet ds;
-    private boolean allnext = true;  // we'll have to do a borrow to get started.
+    
+    /**
+     * true indicates that the initial next call needs done.
+     */
+    private boolean[] initialNext;
+    
+    /**
+     * true indicates that some of the iterators need to be initialized.
+     */
+    private boolean allnext = true;  
     
     private ProgressMonitor monitor;
 
@@ -583,20 +584,41 @@ public final class QubeDataSetIterator implements DataSetIterator {
     private void initialize() {
         boolean allLi= true;
         boolean zeroLength= false;
+        initialNext= new boolean[rank];
+        initialNext[rank-1]= true;
         for (int i = 0; i < rank; i++) {
+            initialNext[i]= true;
             int dimLength= dimLength(i);
             if ( dimLength==0 ) zeroLength= true;
             it[i] = fit[i].newIterator(dimLength);
             if ( !( it[i] instanceof IndexListIterator ) ) allLi= false;
+            if ( i>0 && i<rank-1 ) { // each of these iterators must be for qubes.
+                if ( it[i].hasNext() ) {
+                    it[i].nextIndex();
+                    initialNext[i]= false;
+                } else {
+                    zeroLength= true;
+                }
+            }
         }
         while ( zeroLength && it[0].hasNext() && qube==null ) {
             it[0].nextIndex();
+            initialNext[0]= false;
             zeroLength= false;
             for (int i = 1; i < rank; i++) {
                 int dimLength= dimLength(i);
                 if ( dimLength==0 ) zeroLength= true;
                 it[i] = fit[i].newIterator(dimLength);
+                initialNext[i]= true;
                 if ( !( it[i] instanceof IndexListIterator ) ) allLi= false;
+                if ( i<rank-1 ) { // each of these iterators must be for qubes.
+                    if ( it[i].hasNext() ) {
+                        it[i].nextIndex();
+                    } else {
+                        zeroLength= true;
+                    }
+                    initialNext[i]= false;
+                }
             }
         }
         this.isAllIndexLists= allLi;
@@ -707,12 +729,13 @@ public final class QubeDataSetIterator implements DataSetIterator {
 
         if (this.allnext) {
             for (int i = 0; i < (rank - 1); i++) {
-                if ( !( isAllIndexLists && ( it[i] instanceof IndexListIterator ) ) ) {
-                    if ( it[i].index()<0 ) it[i].nextIndex();
-                    if ( i==0 && monitor!=null ) monitor.setTaskProgress(it[0].index());
+                if ( initialNext[i] ) {
+                    it[i].nextIndex();
+                    initialNext[i]= false;
                 }
+                if ( i==0 && monitor!=null ) monitor.setTaskProgress(it[0].index());
             }
-            allnext = false; // This will never be true again
+            this.allnext = false; // This will never be true again
             if (rank == 0) {
                 return;
             }
@@ -726,7 +749,7 @@ public final class QubeDataSetIterator implements DataSetIterator {
                 for ( int k=0; k<i; k++ ) {
                     if ( isAllIndexLists && ( it[k] instanceof IndexListIterator ) ) {
                         if ( k==0 && monitor!=null ) monitor.setTaskProgress(it[0].index());
-                        it[k].nextIndex();
+                        if ( ((IndexListIterator)it[k]).listIndex<((IndexListIterator)it[i]).listIndex ) it[k].nextIndex();
                     }
                 }
             }
