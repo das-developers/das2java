@@ -364,7 +364,11 @@ public final class QubeDataSetIterator implements DataSetIterator {
 
         @Override
         public int index() {
-            return index;
+            if ( hasNext ) {
+                return -1;
+            } else {
+                return index;
+            }
         }
 
         @Override
@@ -630,6 +634,12 @@ public final class QubeDataSetIterator implements DataSetIterator {
      */
     @Override
     public boolean hasNext() {
+        if ( logger.isLoggable( Level.FINE ) ) {
+            logger.fine("---- hasNext ----");
+            for ( DimensionIterator it1 : it ) {
+                logger.log(Level.FINE, "hasNext: {0}  of {1}", new Object[]{it1, this.ds});
+            }
+        }
         if (rank == 0) {
             if ( this.allnext ) {
                 return true;
@@ -748,7 +758,7 @@ public final class QubeDataSetIterator implements DataSetIterator {
                         } 
                     } else {
                         boolean zeroLength= false;
-                        if ( j==0 ) {
+                        if ( j==0 && qube==null ) {
                             throw new IllegalArgumentException("no next index");
                         }
                         for (int k = j + 1; k <= i; k++) {
@@ -763,7 +773,7 @@ public final class QubeDataSetIterator implements DataSetIterator {
                     }
                 }
             } 
-            if ( !proceed ) {
+            if ( !proceed && qube==null ) {
                 throw new IllegalArgumentException("no more elements");
             }
         }
