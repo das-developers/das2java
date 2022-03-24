@@ -519,27 +519,31 @@ public final class QubeDataSetIterator implements DataSetIterator {
      */
     public static QubeDataSetIterator sliceIterator( QDataSet ds, int sliceIndex ) {
         QubeDataSetIterator result;
-        if (ds.rank() == 0) {
-            throw new IllegalArgumentException("can't slice rank 0");
-        } else if (ds.rank() == 1) {
-            throw new IllegalArgumentException("can't slice rank 1");
-        } else if (ds.rank() == 2) {
-            result = new QubeDataSetIterator(ds, 
+        switch (ds.rank()) {
+            case 0:
+                throw new IllegalArgumentException("can't slice rank 0");
+            case 1:
+                throw new IllegalArgumentException("can't slice rank 1");
+            case 2: 
+                result = new QubeDataSetIterator(ds,
                     new DimensionIteratorFactory[]{new SingletonIteratorFactory(sliceIndex),
-                    new StartStopStepIteratorFactory(0, ds.length(sliceIndex), 1)});
-        } else if (ds.rank() == 3) {
-            result = new QubeDataSetIterator(ds,
+                        new StartStopStepIteratorFactory(0, ds.length(sliceIndex), 1)});
+                break;
+            case 3:
+                result = new QubeDataSetIterator(ds,
                     new DimensionIteratorFactory[]{new SingletonIteratorFactory(sliceIndex),
                         new StartStopStepIteratorFactory(0, ds.length(sliceIndex), 1),
                         new StartStopStepIteratorFactory(0, null, 1),});
-        } else if (ds.rank() == 4) {
-            result = new QubeDataSetIterator( ds,
+                break;
+            case 4:
+                result = new QubeDataSetIterator( ds,
                     new DimensionIteratorFactory[]{new SingletonIteratorFactory(sliceIndex),
                         new StartStopStepIteratorFactory(0, ds.length(sliceIndex), 1),
                         new StartStopStepIteratorFactory(0, null, 1),
                         new StartStopStepIteratorFactory(0, null, 1), } );
-        } else {
-            throw new IllegalArgumentException("rank limit");
+                break;
+            default:
+                throw new IllegalArgumentException("rank limit");
         }
         return result;
     }
