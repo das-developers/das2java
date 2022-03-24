@@ -49,6 +49,7 @@ public final class QubeDataSetIterator implements DataSetIterator {
      * i3= [0,1,0,1]
      * ds[i1,i2,i3]  # uses IndexListIterator
      *}</small></pre></blockquote>
+     * When index is called before hasNext, it must return -1 to indicate an uninitialized state.
      */
     public interface DimensionIterator {
 
@@ -213,7 +214,11 @@ public final class QubeDataSetIterator implements DataSetIterator {
 
         @Override
         public int index() {
-            return (int) ds.value(index);
+            if ( this.index==-1 ) {
+                return -1;
+            } else {
+                return (int) ds.value(index);
+            }
         }
 
         @Override
