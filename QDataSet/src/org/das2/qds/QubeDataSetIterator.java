@@ -132,7 +132,7 @@ public final class QubeDataSetIterator implements DataSetIterator {
 
         @Override
         public String toString() {
-            return ( all ? ":" : "" + start + ":" + stop + (step == 1 ? "" : ":" + step) ) + " @ "+index;
+            return all ? ":" : "" + start + ":" + stop + (step == 1 ? "" : ":" + step);
         }
     }
 
