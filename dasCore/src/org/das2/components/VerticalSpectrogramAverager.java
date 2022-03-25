@@ -369,10 +369,10 @@ public class VerticalSpectrogramAverager implements DataRangeSelectionListener {
                         title= "Summed " + title;
                         break;
                     case "integrate":
-                        QDataSet trimmed= Ops.trim( ds, Ops.dataset(xValue1), Ops.dataset(xValue2) );
-                        QDataSet dep1= (QDataSet) ds.property(QDataSet.DEPEND_1);
-                        if ( dep1==null ) dep1= Ops.indgen(ds.length(0));
-                        QDataSet normalize= Ops.reduceSum( Ops.diff( dep1 ), 1 );
+                        //QDataSet trimmed= Ops.trim( ds, Ops.dataset(xValue1), Ops.dataset(xValue2) );
+                        //QDataSet dep1= (QDataSet) ds.property(QDataSet.DEPEND_1);
+                        //if ( dep1==null ) dep1= Ops.indgen(ds.length(0));
+                        //QDataSet normalize= Ops.reduceSum( Ops.diff( dep1 ), 1 );
                         renderer.setException( new Exception("integrate is not implemented.") );
                         return;
                         //rebinned = Ops.reduceSum( trimmed, 1 );
