@@ -184,7 +184,7 @@ public class GitHubFileSystem extends HttpFileSystem {
     public static File getLocalRoot( URI root ) {
         
         String suri= root.toString();
-        Pattern fsp1= Pattern.compile( "(https?://[a-z.\\-]*/)(.*)(tree|blob|raw)/(.*?)/(.*)" );
+        Pattern fsp1= Pattern.compile( "(https?://[a-zA-Z0-9+.\\-]+/)(.*)(tree|blob|raw)/(.*?)/(.*)" );
         Matcher m1= fsp1.matcher( suri );
         if ( m1.matches() ) {
             String project= m1.group(2);
@@ -265,6 +265,9 @@ public class GitHubFileSystem extends HttpFileSystem {
                 throw new RuntimeException(ex);
             }
         }
+        
+        // Note that getLocalRoot(root) contains a copy of this code.  Both the URI and the 
+        // local root must be calculated, so we are unable to just call that routine.
         
         //if ( !branch.equals("master") ) {
         //    throw new IllegalArgumentException("branch must be master (for now)");
