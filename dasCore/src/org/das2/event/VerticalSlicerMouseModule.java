@@ -97,7 +97,7 @@ public class VerticalSlicerMouseModule extends MouseModule {
     public void keyTyped(KeyEvent keyEvent) {
         logger.log(Level.FINE, "keyTyped {0} {1}", new Object[]{keyEvent.getKeyChar(), keyEvent.isMetaDown()});
         if ( keyEvent.getKeyChar()=='c' ) { 
-            VerticalSliceSelectionRenderer r= (VerticalSliceSelectionRenderer) super.dragRenderer;
+            //VerticalSliceSelectionRenderer r= (VerticalSliceSelectionRenderer) super.dragRenderer;
             String text= xlocation.toString();
             StringSelection stringSelection = new StringSelection( text );
             Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
