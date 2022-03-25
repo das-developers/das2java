@@ -420,8 +420,5 @@ public class TickValuesStringSchemeEditor extends javax.swing.JPanel implements 
 
     @Override
     public void setContext(Object o) {
-        if ( o instanceof DasAxis ) {
-            DatumRange r= ((DasAxis)o).getDatumRange();
-        }
     }
 }
