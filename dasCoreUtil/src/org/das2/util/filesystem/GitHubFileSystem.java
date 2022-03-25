@@ -182,14 +182,13 @@ public class GitHubFileSystem extends HttpFileSystem {
      * @return the directory containing the resource.
      */
     public static File getLocalRoot( URI root ) {
-        String branch= "master";
         
         String suri= root.toString();
-        Pattern fsp1= Pattern.compile( "(https?://[a-z.]*/)(.*)(tree|blob|raw)/(.*?)/(.*)" );
+        Pattern fsp1= Pattern.compile( "(https?://[a-z.\\-]*/)(.*)(tree|blob|raw)/(.*?)/(.*)" );
         Matcher m1= fsp1.matcher( suri );
         if ( m1.matches() ) {
             String project= m1.group(2);
-            if ( project.endsWith("/-/") ) { // strange bug where U. Iowa server would add extra "-/"
+            if ( project.endsWith("/-/") ) { // gitlabs server U. Iowa server would add extra "-/"
                 project= project.substring(0,project.length()-2);
             }
             suri= m1.group(1)+project+m1.group(4)+"/" + m1.group(5);
@@ -198,12 +197,7 @@ public class GitHubFileSystem extends HttpFileSystem {
             } catch (URISyntaxException ex) {
                 throw new RuntimeException(ex);
             }
-            branch= m1.group(4);
         }
-        
-        //if ( !branch.equals("master") ) {
-        //    throw new IllegalArgumentException("branch must be master (for now)");
-        //}
         
         File local;
 
