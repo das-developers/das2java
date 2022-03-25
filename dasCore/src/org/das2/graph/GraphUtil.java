@@ -1218,15 +1218,12 @@ public class GraphUtil {
         int pathlenIndex = 0;
         int type;
 
-        if ( props==null ) props= new HashMap<>();
-        
         if (pathlen == null) {
             pathlen = new double[0];
         }
         
         if ( !it.isDone() ) {
-            type = it.currentSegment(point);
-            props.put( "PROP_FIRST_POINT", Arrays.copyOf( point, point.length ) );
+            if ( props!=null ) props.put( "PROP_FIRST_POINT", Arrays.copyOf( point, point.length ) );
         }
         
         while (!it.isDone()) {
@@ -1236,11 +1233,15 @@ public class GraphUtil {
             if (!Float.isNaN(fx0) && type == PathIterator.SEG_MOVETO && stopAtMoveTo) {
                 break;
             }
-            if (PathIterator.SEG_CUBICTO == type) {
-                throw new IllegalArgumentException("cubicto not supported");
-            } else if (PathIterator.SEG_QUADTO == type) {
-                throw new IllegalArgumentException("quadto not supported");
-            } else if (PathIterator.SEG_LINETO == type) {
+            switch (type) {
+                case PathIterator.SEG_CUBICTO:
+                    throw new IllegalArgumentException("cubicto not supported");
+                case PathIterator.SEG_QUADTO:
+                    throw new IllegalArgumentException("quadto not supported");
+                case PathIterator.SEG_LINETO:
+                    break;
+                default:
+                    break;
             }
 
             if (Float.isNaN(fx0)) {
@@ -1275,7 +1276,7 @@ public class GraphUtil {
 
         }
         
-        props.put( "PROP_LAST_POINT", Arrays.copyOf( point, point.length ) );
+        if ( props!=null ) props.put( "PROP_LAST_POINT", Arrays.copyOf( point, point.length ) );
 
         double remaining;
         if (pathlenIndex > 0) {
