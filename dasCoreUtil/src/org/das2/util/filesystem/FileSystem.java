@@ -390,7 +390,7 @@ public abstract class FileSystem  {
             if ( pathIncludesZipFileSystem(root) && registry.containsKey("zip") ) {
                 try {
                     String[] pzs= pathZipSplit(root);
-                    URI parent = new URI(pzs[0]); //getparent
+                    URI parent = new URI(pzs[0].replaceAll(" ","%20")); //getparent
                     String zipname = pzs[1];
                     String subdir = pzs[2];
                     FileSystem remote = FileSystem.create(parent);
@@ -418,7 +418,7 @@ public abstract class FileSystem  {
             } else if ( pathIncludesTarFileSystem(root) && registry.containsKey("tar") ) {
                 try {
                     String[] pzs= pathTarSplit(root);
-                    URI parent = new URI(pzs[0]); //getparent
+                    URI parent = new URI(pzs[0].replaceAll(" ","%20")); //getparent
                     String tarname = pzs[1];
                     String subdir = pzs[2];
                     FileSystem remote = FileSystem.create(parent);
