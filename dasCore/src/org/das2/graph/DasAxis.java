@@ -4626,22 +4626,19 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
             boolean bottomTicks = (orientation == BOTTOM || oppositeAxisVisible);
             boolean bottomTickLabels = (orientation == BOTTOM && tickLabelsVisible);
-            boolean topTicks = (orientation == TOP || oppositeAxisVisible);
             boolean topTickLabels = (orientation == TOP && tickLabelsVisible);
-            Rectangle bottomBounds = null;
-            Rectangle topBounds = null;
+            Rectangle bottomBounds;
+            Rectangle topBounds;
             Font tickLabelFont = getTickLabelFont();
             int tickSize = tickLabelFont.getSize() * 2 / 3;
             //Initialize bounds rectangle
-            if (bottomTicks) {
-                bottomBounds = new Rectangle(DMin, bottomPosition, DMax - DMin + 1, 1);
-                bottomBounds.height += tickSize;    //Add room for ticks
-            }
-            if (topTicks) {
-                topBounds = new Rectangle(DMin, topPosition, DMax - DMin + 1, 1);
-                topBounds.height += tickSize;   //Add room for ticks
-                topBounds.y -= tickSize;
-            }
+
+            bottomBounds = new Rectangle(DMin, bottomPosition, DMax - DMin + 1, 1);
+            bottomBounds.height += tickSize;    //Add room for ticks
+            
+            topBounds = new Rectangle(DMin, topPosition, DMax - DMin + 1, 1);
+            topBounds.height += tickSize;   //Add room for ticks
+            topBounds.y -= tickSize;
             
             int tick_label_gap = getFontMetrics(tickLabelFont).stringWidth(" ");
             //Add room for tick labels
@@ -4692,8 +4689,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             int rightPosition = getColumn().getDMaximum();
             int DMax = getRow().getDMaximum();
             int DMin = getRow().getDMinimum();
-            Rectangle leftBounds = null;
-            Rectangle rightBounds = null;
+            Rectangle leftBounds;
+            Rectangle rightBounds;
             Font tickLabelFont = getTickLabelFont();
             int tickSize = tickLabelFont.getSize() * 2 / 3;
             //Initialize bounds rectangle(s)
