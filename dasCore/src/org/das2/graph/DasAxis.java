@@ -4687,7 +4687,6 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         protected void verticalLayout() {
             boolean leftTicks = (orientation == LEFT || oppositeAxisVisible);
             boolean leftTickLabels = (orientation == LEFT && tickLabelsVisible);
-            boolean rightTicks = (orientation == RIGHT || oppositeAxisVisible);
             boolean rightTickLabels = (orientation == RIGHT && tickLabelsVisible);
             int leftPosition = getColumn().getDMinimum() - 1;
             int rightPosition = getColumn().getDMaximum();
@@ -4698,15 +4697,12 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             Font tickLabelFont = getTickLabelFont();
             int tickSize = tickLabelFont.getSize() * 2 / 3;
             //Initialize bounds rectangle(s)
-            if (leftTicks) {
-                leftBounds = new Rectangle(leftPosition, DMin, 1, DMax - DMin + 1);
-                leftBounds.width += tickSize; //Add room for ticks
-                leftBounds.x -= tickSize;
-            }
-            if (rightTicks) {
-                rightBounds = new Rectangle(rightPosition, DMin, 1, DMax - DMin + 1);
-                rightBounds.width += tickSize; //Add room for ticks 
-            }
+            leftBounds = new Rectangle(leftPosition, DMin, 1, DMax - DMin + 1);
+            leftBounds.width += tickSize; //Add room for ticks
+            leftBounds.x -= tickSize;
+
+            rightBounds = new Rectangle(rightPosition, DMin, 1, DMax - DMin + 1);
+            rightBounds.width += tickSize; //Add room for ticks 
                         
             int maxLabelWidth = getMaxLabelWidth();
             int tick_label_gap = getFontMetrics(tickLabelFont).stringWidth(" ");
