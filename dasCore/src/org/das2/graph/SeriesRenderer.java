@@ -2819,14 +2819,41 @@ public class SeriesRenderer extends Renderer {
             Polygon p = new Polygon(new int[]{2, 13, 13, 2}, new int[]{3, 7, 10, 10}, 4);
             g.fillPolygon(p);
         }
-
+        
         g.setColor(color);
         Stroke stroke0 = g.getStroke();
         getPsymConnector().drawLine(g, 2, 3, 13, 7, 1.5f);
         g.setStroke(stroke0);
-        // psym.draw(g, 7, 5, 3.f, fillStyle);
-        // psym.draw(g, 7, 5, 8.f, fillStyle);  // Bigger dot for summary plot (HACK)
-        psym.draw(g, 7, 5, listIconSymSize, fillStyle);  // the size of this is now settable
+        
+        if ( colorByDataSetId != null && !colorByDataSetId.equals("") ) {
+            double d1= colorBar.getDataRange().getMinimum();
+            double d2= colorBar.getDataRange().getMaximum();
+            double d3,d4;
+            if ( colorBar.isLog() ) {
+                d3= ( 2 * d1 * d2 ) / 3;
+                d4= ( 1 * d1 * d2 ) / 3;
+            } else {
+                d3= (  2 * d1 + d2 ) / 3;
+                d4= ( d1 + 2 * d2 ) / 3;
+            }
+            Color c;
+            c= new Color( colorBar.rgbTransform( d1, colorBar.getUnits() ) );
+            g.setColor(c);
+            psym.draw(g, 3, 9, listIconSymSize, fillStyle);
+            c= new Color( colorBar.rgbTransform( d3, colorBar.getUnits() ) );
+            g.setColor(c);
+            psym.draw(g, 7, 5, listIconSymSize, fillStyle);
+            c= new Color( colorBar.rgbTransform( d2, colorBar.getUnits() ) );
+            g.setColor(c);
+            psym.draw(g, 9, 7, listIconSymSize, fillStyle);
+            c= new Color( colorBar.rgbTransform( d4, colorBar.getUnits() ) );
+            g.setColor(c);
+            psym.draw(g, 11, 3, listIconSymSize, fillStyle);
+        } else {        
+            // psym.draw(g, 7, 5, 3.f, fillStyle);
+            // psym.draw(g, 7, 5, 8.f, fillStyle);  // Bigger dot for summary plot (HACK)
+            psym.draw(g, 7, 5, listIconSymSize, fillStyle);  // the size of this is now settable
+        }
     }
 
     private float listIconSymSize = 3.f;
