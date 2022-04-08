@@ -2830,11 +2830,19 @@ public class SeriesRenderer extends Renderer {
             double d2= colorBar.getDataRange().getMaximum();
             double d3,d4;
             if ( colorBar.isLog() ) {
-                d3= ( 2 * d1 * d2 ) / 3;
-                d4= ( 1 * d1 * d2 ) / 3;
-            } else {
-                d3= (  2 * d1 + d2 ) / 3;
-                d4= ( d1 + 2 * d2 ) / 3;
+                d1= Math.log(d1);
+                d2= Math.log(d2);
+            }
+            double t= d2-d1;
+            d3= (  2 * d1 + d2 ) / 3;
+            d4= ( d1 + 2 * d2 ) / 3;
+            d1= d1 + t*0.1;
+            d2= d2 - t*0.1;
+            if ( colorBar.isLog() ) {
+                d1= Math.pow( 10, d1 );
+                d2= Math.pow( 10, d2 );
+                d3= Math.pow( 10, d3 );
+                d4= Math.pow( 10, d4 );
             }
             Color c;
             c= new Color( colorBar.rgbTransform( d1, colorBar.getUnits() ) );
