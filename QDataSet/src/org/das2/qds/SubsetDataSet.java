@@ -323,9 +323,6 @@ public class SubsetDataSet extends AbstractDataSet {
     public Object property(String name) {
         Object v= properties.get(name);
         Object result= v!=null ? v : source.property(name);
-        if( name.startsWith("DELTA_") && result!=null ) {
-            System.err.println("line296: here DELTA");
-        }
         return result;
     }
 
