@@ -2346,7 +2346,18 @@ public class DasPlot extends DasCanvasComponent {
      * @return the Renderer
      */
     public synchronized Renderer[] getRenderers() {
-        return (Renderer[]) renderers.toArray(new Renderer[renderers.size()]);
+        Renderer[] rr= (Renderer[]) renderers.toArray(new Renderer[renderers.size()]);
+        while ( renderers.size()!=rr.length ) { // strange bug where run batch of TrajPlot would occasionally get a null.
+            rr= (Renderer[]) renderers.toArray(new Renderer[renderers.size()]);
+            logger.warning("things are transitioning");
+        }
+        
+        for ( int i=0; i<rr.length; i++ ) {
+            if ( rr[i]==null ) {
+                logger.warning("found null");
+            }
+        }
+        return rr;
     }
 
 
