@@ -8783,7 +8783,7 @@ public final class Ops {
             if ( b.length()!=3 ) throw new IllegalArgumentException("b.length()!=3");
             if ( a.length(0)!=3 ) throw new IllegalArgumentException("a.length(0)!=3");
             DDataSet result= DDataSet.createRank2(a.length(),3);
-            for ( int i=0; i<b.length(); i++ ) {
+            for ( int i=0; i<a.length(); i++ ) {
                 result.putValue( i, 0, a.value(i,1)*b.value(2) - a.value(i,2)*b.value(1) );
                 result.putValue( i, 1, a.value(i,2)*b.value(0) - a.value(i,0)*b.value(2) );
                 result.putValue( i, 2, a.value(i,0)*b.value(1) - a.value(i,1)*b.value(0) );
@@ -8796,7 +8796,7 @@ public final class Ops {
             if ( b.length(0)!=3 ) throw new IllegalArgumentException("b.length(0)!=3");
             if ( a.length()!=b.length() ) throw new IllegalArgumentException("a and b must have same number of elements");
             DDataSet result= DDataSet.createRank2(a.length(),3);
-            for ( int i=0; i<b.length(); i++ ) {
+            for ( int i=0; i<a.length(); i++ ) {
                 result.putValue( i, 0, a.value(i,1)*b.value(i,2) - a.value(i,2)*b.value(i,1) );
                 result.putValue( i, 1, a.value(i,2)*b.value(i,0) - a.value(i,0)*b.value(i,2) );
                 result.putValue( i, 2, a.value(i,0)*b.value(i,1) - a.value(i,1)*b.value(i,0) );
