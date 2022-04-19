@@ -369,11 +369,13 @@ public class SeriesRenderer extends Renderer {
 
             if (colorByDataSet != null) {
                 for (int i = 0; i < count; i++) {
-                    Image img= specialColorPsyms.get( new Color(rgbColors[i]) );
-                    if ( img==null ) {
-                        g.drawImage(coloredPsyms[colors[i]], (int)dpsymsPathX[i] - cmx, (int)dpsymsPathY[i] - cmy, lparent);
-                    } else {
-                        g.drawImage(img, (int)dpsymsPathX[i] - cmx, (int)dpsymsPathY[i] - cmy, lparent);
+                    if ( colors[i]!=-1 ) {
+                        Image img= specialColorPsyms.get( new Color(rgbColors[i]) );
+                        if ( img==null ) {
+                            g.drawImage(coloredPsyms[colors[i]], (int)dpsymsPathX[i] - cmx, (int)dpsymsPathY[i] - cmy, lparent);
+                        } else {
+                            g.drawImage(img, (int)dpsymsPathX[i] - cmx, (int)dpsymsPathY[i] - cmy, lparent);
+                        }
                     }
                 }
             } else {
