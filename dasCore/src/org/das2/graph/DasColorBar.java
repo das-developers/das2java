@@ -153,10 +153,9 @@ public class DasColorBar extends DasAxis {
             Datum datum= units.createDatum(data);
             boolean haveRgbColor= false;
             for ( Map.Entry<String,Color> e: theSpecialColors.entrySet() ) {
+                String k= e.getKey();
+                double rgb= e.getValue().getRGB();
                 try {
-                    String k= e.getKey();
-                    double rgb= e.getValue().getRGB();
-                    QDataSet r;
                     if ( k.startsWith("within") ) {
                         String s= k.substring(7,k.length()-1);
                         DatumRange dr= Ops.datumRange(s.replaceAll("\\+"," "));
@@ -165,7 +164,7 @@ public class DasColorBar extends DasAxis {
                             haveRgbColor= true;
                         }
                     } else if ( k.startsWith("without") ) {
-                        String s= k.substring(7,k.length()-1);
+                        String s= k.substring(7,k.length()-1);                        
                         DatumRange dr= Ops.datumRange(s.replaceAll("\\+"," "));
                         if ( !dr.contains( datum ) ) {
                             icolor= (int)rgb;
@@ -192,8 +191,9 @@ public class DasColorBar extends DasAxis {
                             haveRgbColor= true;
                         }
                     }
-                } catch ( ParseException ex ) {
-                    
+                } catch ( ParseException | NumberFormatException ex ) {
+                    System.err.println("error in specialColors: "+k);
+                    //ex.printStackTrace();
                 }
             }
             if ( haveRgbColor ) return icolor;
