@@ -2849,16 +2849,16 @@ public class SeriesRenderer extends Renderer {
             Color c;
             c= new Color( colorBar.rgbTransform( d1, colorBar.getUnits() ) );
             g.setColor(c);
-            psym.draw(g, 3, 9, listIconSymSize, fillStyle);
+            psym.draw(g, 3, 8, listIconSymSize, fillStyle);
             c= new Color( colorBar.rgbTransform( d3, colorBar.getUnits() ) );
             g.setColor(c);
-            psym.draw(g, 5, 5, listIconSymSize, fillStyle);
+            psym.draw(g, 5, 4, listIconSymSize, fillStyle);
             c= new Color( colorBar.rgbTransform( d2, colorBar.getUnits() ) );
             g.setColor(c);
-            psym.draw(g, 9, 7, listIconSymSize, fillStyle);
+            psym.draw(g, 9, 6, listIconSymSize, fillStyle);
             c= new Color( colorBar.rgbTransform( d4, colorBar.getUnits() ) );
             g.setColor(c);
-            psym.draw(g, 11, 3, listIconSymSize, fillStyle);
+            psym.draw(g, 11, 2, listIconSymSize, fillStyle);
         } else {        
             // psym.draw(g, 7, 5, 3.f, fillStyle);
             // psym.draw(g, 7, 5, 8.f, fillStyle);  // Bigger dot for summary plot (HACK)
