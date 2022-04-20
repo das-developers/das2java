@@ -789,6 +789,7 @@ public class DasPlot extends DasCanvasComponent {
                     if ( p!=null ) drawDecorator(plotGraphics, p );
                     
                 } catch ( RuntimeException ex ) {
+                    ex.printStackTrace();
                     logger.log( Level.WARNING, ex.getMessage(), ex );
                     //put breakpoint here:
                     //rend.render(plotGraphics, lxaxis, lyaxis, new NullProgressMonitor());
