@@ -2832,8 +2832,8 @@ public class SeriesRenderer extends Renderer {
             double d2= colorBar.getDataRange().getMaximum();
             double d3,d4;
             if ( colorBar.isLog() ) {
-                d1= Math.log(d1);
-                d2= Math.log(d2);
+                d1= Math.log10(d1);
+                d2= Math.log10(d2);
             }
             double t= d2-d1;
             d3= (  2 * d1 + d2 ) / 3;
@@ -2852,7 +2852,7 @@ public class SeriesRenderer extends Renderer {
             psym.draw(g, 3, 9, listIconSymSize, fillStyle);
             c= new Color( colorBar.rgbTransform( d3, colorBar.getUnits() ) );
             g.setColor(c);
-            psym.draw(g, 7, 5, listIconSymSize, fillStyle);
+            psym.draw(g, 5, 5, listIconSymSize, fillStyle);
             c= new Color( colorBar.rgbTransform( d2, colorBar.getUnits() ) );
             g.setColor(c);
             psym.draw(g, 9, 7, listIconSymSize, fillStyle);
