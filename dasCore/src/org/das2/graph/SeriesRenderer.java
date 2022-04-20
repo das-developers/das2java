@@ -2862,9 +2862,14 @@ public class SeriesRenderer extends Renderer {
             g.setColor(c);
             psym.draw(g, 11, 2, llistIconSymSize, fillStyle);
         } else {        
-            // psym.draw(g, 7, 5, 3.f, fillStyle);
-            // psym.draw(g, 7, 5, 8.f, fillStyle);  // Bigger dot for summary plot (HACK)
-            psym.draw(g, 7, 5, llistIconSymSize, fillStyle);  // the size of this is now settable
+            if ( llistIconSymSize<3.0 && psymConnector.equals( PsymConnector.NONE ) ) {
+                psym.draw(g, 3, 8, llistIconSymSize, fillStyle);
+                psym.draw(g, 5, 4, llistIconSymSize, fillStyle);
+                psym.draw(g, 9, 6, llistIconSymSize, fillStyle);
+                psym.draw(g, 11, 2, llistIconSymSize, fillStyle);    
+            } else {
+                psym.draw(g, 7, 5, llistIconSymSize, fillStyle);  // the size of this is now settable
+            }
         }
     }
 
