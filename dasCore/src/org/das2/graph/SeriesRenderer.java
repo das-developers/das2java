@@ -2827,9 +2827,11 @@ public class SeriesRenderer extends Renderer {
         getPsymConnector().drawLine(g, 2, 3, 13, 7, 1.5f);
         g.setStroke(stroke0);
         
+        float llistIconSymSize= Math.min( 12, symSize );
+        
         if ( colorByDataSetId != null && !colorByDataSetId.equals("") ) {
-            double d1= colorBar.getDataRange().getMinimum();
-            double d2= colorBar.getDataRange().getMaximum();
+            double d1= colorBar.getDatumRange().min().value();
+            double d2= colorBar.getDatumRange().max().value();
             double d3,d4;
             if ( colorBar.isLog() ) {
                 d1= Math.log10(d1);
@@ -2849,20 +2851,20 @@ public class SeriesRenderer extends Renderer {
             Color c;
             c= new Color( colorBar.rgbTransform( d1, colorBar.getUnits() ) );
             g.setColor(c);
-            psym.draw(g, 3, 8, listIconSymSize, fillStyle);
+            psym.draw(g, 3, 8, llistIconSymSize, fillStyle);
             c= new Color( colorBar.rgbTransform( d3, colorBar.getUnits() ) );
             g.setColor(c);
-            psym.draw(g, 5, 4, listIconSymSize, fillStyle);
+            psym.draw(g, 5, 4, llistIconSymSize, fillStyle);
             c= new Color( colorBar.rgbTransform( d2, colorBar.getUnits() ) );
             g.setColor(c);
-            psym.draw(g, 9, 6, listIconSymSize, fillStyle);
+            psym.draw(g, 9, 6, llistIconSymSize, fillStyle);
             c= new Color( colorBar.rgbTransform( d4, colorBar.getUnits() ) );
             g.setColor(c);
-            psym.draw(g, 11, 2, listIconSymSize, fillStyle);
+            psym.draw(g, 11, 2, llistIconSymSize, fillStyle);
         } else {        
             // psym.draw(g, 7, 5, 3.f, fillStyle);
             // psym.draw(g, 7, 5, 8.f, fillStyle);  // Bigger dot for summary plot (HACK)
-            psym.draw(g, 7, 5, listIconSymSize, fillStyle);  // the size of this is now settable
+            psym.draw(g, 7, 5, llistIconSymSize, fillStyle);  // the size of this is now settable
         }
     }
 
