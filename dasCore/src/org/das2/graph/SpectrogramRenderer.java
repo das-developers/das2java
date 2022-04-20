@@ -1274,7 +1274,11 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
 
     @Override
     public Icon getListIcon() {
-        return rebinnerEnum.getListIcon();
+        String rr= rebinnerEnum.toString();
+        String cb= colorBar.getType().toString();
+        URL url= SpectrogramRenderer.class.getResource("/images/icons/rebin/cb_"+rr+"_"+cb+".png");
+        return new ImageIcon(url);
+        //return rebinnerEnum.getListIcon();
     }
 
     @Override
