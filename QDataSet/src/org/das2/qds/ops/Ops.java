@@ -8754,59 +8754,60 @@ public final class Ops {
     
     /**
      * apply the cross product of a and b, where a or b may be rank 1, three-element vector,
-     * or both can be vector arrays of the same length.
+     * or both can be vector arrays of the same length.  In the case where only X and Y are provided (two-element vectors
+     * instead of three), then Z is automatically assumed to be zero.
      * @param a rank 1 ds[3] or rank 2 ds[n,3]
      * @param b rank 1 ds[3] or rank 2 ds[n,3]
      * @return ds[3] or rank 2 ds[n,3]
      */
     public static QDataSet crossProduct( QDataSet a, QDataSet b ) {
+        QDataSet ax,bx;
+        QDataSet ay,by;
+        QDataSet az,bz;
+
         if ( a.rank()==1 && b.rank()==1 ) {
-            if ( a.length()!=3 ) throw new IllegalArgumentException("a.length()!=3");
-            if ( b.length()!=3 ) throw new IllegalArgumentException("b.length()!=3");
-            DDataSet result= DDataSet.createRank1(3);
-            result.putValue( 0, a.value(1)*b.value(2) - a.value(2)*b.value(1) );
-            result.putValue( 1, a.value(2)*b.value(0) - a.value(0)*b.value(2) );
-            result.putValue( 2, a.value(0)*b.value(1) - a.value(1)*b.value(0) );
-            return result;
+            ax= a.slice(0);
+            ay= a.slice(1);
+            az= a.length()==2 ? Ops.dataset(0) : a.slice(2);
+            bx= b.slice(0);
+            by= b.slice(1);
+            bz= b.length()==2 ? Ops.dataset(0) : b.slice(2);
+
         } else if ( a.rank()==1 ) {
-            if ( a.length()!=3 ) throw new IllegalArgumentException("a.length()!=3");
-            if ( b.length(0)!=3 ) throw new IllegalArgumentException("b.length(0)!=3");
-            DDataSet result= DDataSet.createRank2(b.length(),3);
-            for ( int i=0; i<b.length(); i++ ) {
-                result.putValue( i, 0, a.value(1)*b.value(i,2) - a.value(2)*b.value(i,1) );
-                result.putValue( i, 1, a.value(2)*b.value(i,0) - a.value(0)*b.value(i,2) );
-                result.putValue( i, 2, a.value(0)*b.value(i,1) - a.value(1)*b.value(i,0) );
-            }
-            result.putProperty( QDataSet.DEPEND_0, b.property(QDataSet.DEPEND_0) );
-            return result;
+            ax= a.slice(0);
+            ay= a.slice(1);
+            az= a.length()==2 ? Ops.dataset(0) : a.slice(2);
+            bx= Ops.slice1(b,0);
+            by= Ops.slice1(b,1);
+            bz= b.length(0)==2 ? Ops.dataset(0) : Ops.slice1(b,2);
+
         } else if ( b.rank()==1 ) {
-            if ( b.length()!=3 ) throw new IllegalArgumentException("b.length()!=3");
-            if ( a.length(0)!=3 ) throw new IllegalArgumentException("a.length(0)!=3");
-            DDataSet result= DDataSet.createRank2(a.length(),3);
-            for ( int i=0; i<a.length(); i++ ) {
-                result.putValue( i, 0, a.value(i,1)*b.value(2) - a.value(i,2)*b.value(1) );
-                result.putValue( i, 1, a.value(i,2)*b.value(0) - a.value(i,0)*b.value(2) );
-                result.putValue( i, 2, a.value(i,0)*b.value(1) - a.value(i,1)*b.value(0) );
-            }
-            result.putProperty( QDataSet.DEPEND_0, a.property(QDataSet.DEPEND_0) );
-            return result;
+            ax= Ops.slice1(a,0);
+            ay= Ops.slice1(a,1);
+            az= a.length(0)==2 ? Ops.dataset(0) : Ops.slice1(a,2);
+            bx= b.slice(0);
+            by= b.slice(1);
+            bz= b.length()==2 ? Ops.dataset(0) : b.slice(2);
             
         } else if ( a.rank()==2 && b.rank()==2 ) {
-            if ( a.length(0)!=3 ) throw new IllegalArgumentException("a.length(0)!=3");
-            if ( b.length(0)!=3 ) throw new IllegalArgumentException("b.length(0)!=3");
-            if ( a.length()!=b.length() ) throw new IllegalArgumentException("a and b must have same number of elements");
-            DDataSet result= DDataSet.createRank2(a.length(),3);
-            for ( int i=0; i<a.length(); i++ ) {
-                result.putValue( i, 0, a.value(i,1)*b.value(i,2) - a.value(i,2)*b.value(i,1) );
-                result.putValue( i, 1, a.value(i,2)*b.value(i,0) - a.value(i,0)*b.value(i,2) );
-                result.putValue( i, 2, a.value(i,0)*b.value(i,1) - a.value(i,1)*b.value(i,0) );
-            }
-            result.putProperty( QDataSet.DEPEND_0, a.property(QDataSet.DEPEND_0) );
-            return result;
+            ax= Ops.slice1(a,0);
+            ay= Ops.slice1(a,1);
+            az= a.length(0)==2 ? Ops.dataset(0) : Ops.slice1(a,2);
+            bx= Ops.slice1(b,0);
+            by= Ops.slice1(b,1);
+            bz= b.length(0)==2 ? Ops.dataset(0) : Ops.slice1(b,2);
             
         } else {
             throw new IllegalArgumentException("a and b must be either 3-element rank 1 datasets, or rank 2 n by 3-elements");
         }
+        
+        QDataSet cx = Ops.subtract( Ops.multiply( ay, bz ), Ops.multiply( az, by ) );
+        QDataSet cy = Ops.subtract( Ops.multiply( az, bx ), Ops.multiply( ax, bz ) );
+        QDataSet cz = Ops.subtract( Ops.multiply( ax, by ), Ops.multiply( ay, bx ) );
+        
+        QDataSet tt= (QDataSet)cx.property( QDataSet.DEPEND_0 );
+        
+        return Ops.link( tt, Ops.bundle( cx, cy, cz ) );
     }
     
     private static QDataSet complexCoordinateSystem() {
