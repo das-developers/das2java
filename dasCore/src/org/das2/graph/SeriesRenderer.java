@@ -2824,7 +2824,7 @@ public class SeriesRenderer extends Renderer {
         
         g.setColor(color);
         Stroke stroke0 = g.getStroke();
-        getPsymConnector().drawLine(g, 2, 3, 13, 7, 1.5f);
+        getPsymConnector().drawLine(g, 2, 3, 13, 7, lineWidth );
         g.setStroke(stroke0);
         
         float llistIconSymSize= Math.min( 12, symSize );
