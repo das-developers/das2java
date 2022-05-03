@@ -3,8 +3,6 @@ package org.das2.components.propertyeditor;
 
 import org.das2.util.StringSchemeEditor;
 import java.awt.Component;
-import org.das2.datum.DatumRange;
-import org.das2.graph.DasAxis;
 
 /**
  * Example specialized editor that creates ticks specifications
