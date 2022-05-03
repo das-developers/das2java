@@ -35,6 +35,7 @@ public class SpectrogramRendererBeanInfo extends AccessLevelBeanInfo {
         new Property("cadenceCheck", AccessLevel.DASML, "isCadenceCheck", "setCadenceCheck", null),
         new Property("sliceRebinnedData", AccessLevel.DASML, "isSliceRebinnedData", "setSliceRebinnedData", null),
         new Property("print300dpi", AccessLevel.DASML, "isPrint300dpi", "setPrint300dpi", null),
+        new Property("specialColors", AccessLevel.DASML, "getSpecialColors", "setSpecialColors", null),
     };
     
     public SpectrogramRendererBeanInfo() {

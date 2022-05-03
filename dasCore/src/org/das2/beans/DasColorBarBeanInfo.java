@@ -37,7 +37,8 @@ public class DasColorBarBeanInfo extends AccessLevelBeanInfo {
     
     private static final Property[] properties = {
         new Property("type", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getType", "setType", EnumerationEditor.class),
-        new Property("fillColor", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getFillColor", "setFillColor", null )
+        new Property("fillColor", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getFillColor", "setFillColor", null ),
+        new Property("specialColors",AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getSpecialColors", "setSpecialColors", null )
     };
     
     public DasColorBarBeanInfo() {
