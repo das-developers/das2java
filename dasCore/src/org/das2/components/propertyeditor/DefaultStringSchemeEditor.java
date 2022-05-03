@@ -5,14 +5,11 @@ import org.das2.util.StringSchemeEditor;
 import java.awt.Component;
 
 /**
- * Example specialized editor that creates ticks specifications
+ * Fallback for any String property
  * @author jbf
  */
 public class DefaultStringSchemeEditor extends javax.swing.JPanel implements StringSchemeEditor {
 
-    /**
-     * Creates new form TickValuesEditor
-     */
     public DefaultStringSchemeEditor() {
         initComponents();
     }
