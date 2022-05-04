@@ -1,15 +1,11 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package org.das2.components.propertyeditor;
 
 import java.awt.Component;
 import org.das2.util.StringSchemeEditor;
 
 /**
- *
+ * Place holder for special editor for specialColors property.
  * @author jbf
  */
 public class SpecialColorsStringSchemeEditor extends javax.swing.JPanel implements StringSchemeEditor {
