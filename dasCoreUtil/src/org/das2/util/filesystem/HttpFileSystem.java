@@ -707,7 +707,7 @@ public class HttpFileSystem extends WebFileSystem {
     protected Map<String, Object> getHeadMeta(String f) throws IOException, CancelledOperationException {
 
         try {
-            URL ur = new URL(this.root.toURL(), f);
+            URL ur = new URL(this.root.toURL().toString() + ( f.length()>0 ? f.substring(1) : f ) );
             Map<String,String> meta= HttpUtil.getMetadata( ur, null );
             
             Map<String,Object> result= new HashMap<>();
