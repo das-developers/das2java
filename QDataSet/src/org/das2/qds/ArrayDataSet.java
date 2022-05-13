@@ -902,8 +902,16 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
                 if ( thisDep==null ) {
                     logger.log(Level.FINE, "joinProperties is dropping DEPEND_{0} because only one dataset has this property.", i);
                 } else {
-                    ArrayDataSet djoin= copy( thisDep ); //TODO: reconcile types
-                    ArrayDataSet ddep1= thatDep instanceof ArrayDataSet ? (ArrayDataSet) thatDep : maybeCopy( thatDep );
+                    ArrayDataSet djoin= copy( thisDep ); 
+                    ArrayDataSet ddep1;
+                    if ( thatDep instanceof ArrayDataSet ) {
+                        ddep1= (ArrayDataSet) thatDep;
+                        if ( ddep1.getComponentType()!=djoin.getComponentType() ) {
+                            ddep1= ArrayDataSet.copy( djoin.getComponentType(), ddep1 );
+                        }
+                    } else {
+                        ddep1= maybeCopy( thatDep );
+                    }
                     djoin= append( djoin, ddep1 );
                     result.put( "DEPEND_"+i, djoin );
                 }
