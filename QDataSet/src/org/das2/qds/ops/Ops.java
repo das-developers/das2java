@@ -12478,6 +12478,7 @@ public final class Ops {
      * the result will have this type as well.  Otherwise DDataSet is returned.
      * @param ds1 null or rank N dataset
      * @param ds2 rank N dataset with compatible geometry.
+     * @see #concatenate(org.das2.qds.QDataSet, org.das2.qds.QDataSet) which is the same thing.
      * @return 
      */
     public static QDataSet append( QDataSet ds1, QDataSet ds2 ) {
