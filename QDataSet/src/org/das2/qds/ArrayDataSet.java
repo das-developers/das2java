@@ -16,6 +16,7 @@ import org.das2.datum.EnumerationUnits;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
+import org.das2.qds.buffer.LongDataSet;
 import org.das2.util.LoggerManager;
 import org.das2.qds.ops.Ops;
 
@@ -703,7 +704,7 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
 
     /**
      * guess the type of the backing store, returning double.class
-     * if it cannot be determined.  TODO: Why not long.class?
+     * if it cannot be determined.
      * @param ds the dataset
      * @return the backing store class, one of double.class, float.class, int.class, short.class, or byte.class.
      * @see #copy(org.das2.qds.QDataSet) copy
@@ -715,6 +716,8 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
             return short.class;
         } else if ( ds instanceof IDataSet || ds instanceof IntDataSet ) {
             return int.class;
+        } else if ( ds instanceof LDataSet || ds instanceof LongDataSet ) {
+            return long.class;
         } else if ( ds instanceof FDataSet || ds instanceof FloatDataSet ) {
             return float.class;
         } else {
