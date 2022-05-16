@@ -686,7 +686,6 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
      * @see #guessBackingStore(org.das2.qds.QDataSet) 
      */
     public static ArrayDataSet copy( QDataSet ds ) {
-        //TODO: this should check that the data is a qube.
         if ( ds instanceof ArrayDataSet ) {
             return internalCopy( (ArrayDataSet)ds );
         } else if ( ds instanceof JoinDataSet && ds.length()>0 ) {
