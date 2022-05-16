@@ -706,7 +706,7 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
      * guess the type of the backing store, returning double.class
      * if it cannot be determined.
      * @param ds the dataset
-     * @return the backing store class, one of double.class, float.class, int.class, short.class, or byte.class.
+     * @return the backing store class, one of double.class, float.class, long.class, int.class, short.class, or byte.class.
      * @see #copy(org.das2.qds.QDataSet) copy
      */
     public static Class guessBackingStore( QDataSet ds ) {
