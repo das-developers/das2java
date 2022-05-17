@@ -19,6 +19,7 @@ import org.das2.graph.DasCanvasComponent;
 import org.das2.qds.IDataSet;
 import org.das2.qds.QDataSet;
 import org.das2.qds.ops.Ops;
+import org.das2.qds.util.DataSetBuilder;
 import org.das2.util.LoggerManager;
 
 /**
@@ -159,56 +160,113 @@ public class WaypointsDragRenderer extends AbstractDragRenderer {
      * @return a list of indices into yy.
      */
     protected QDataSet whereWithin( DasAxis xaxis, DasAxis yaxis, QDataSet xx, QDataSet yy ) {
-        if ( xx.rank()==0 ) {
-            int index= -1;
-            double ix= xaxis.transform(xx);
-            
-            if ( ix<pointerStart.x ) return IDataSet.createRank1(0);
-            
-            for ( int i=0; i<wayPoints.size(); i++ ) {
-                if ( ix<wayPoints.get(i).x ) {
-                    index= i;
-                    break;
+        switch (xx.rank()) {
+            case 0:
+                int index= -1;
+                double ix= xaxis.transform(xx);
+                
+                if ( ix<pointerStart.x ) return IDataSet.createRank1(0);
+
+                for ( int i=0; i<wayPoints.size(); i++ ) {
+                    if ( ix<wayPoints.get(i).x ) {
+                        index= i;
+                        break;
+                    }
                 }
-            }
-            if ( index==-1 ) {
-                if ( ix<pointerLocation.x ) {
-                    index= wayPoints.size();
+                if ( index==-1 ) {
+                    if ( ix<pointerLocation.x ) {
+                        index= wayPoints.size();
+                    }
                 }
-            }
-            if ( yy.rank()==0 ) {
-                yy= Ops.join(null,yy);
-            }
-            if ( yy.rank()==1 ) {
-                double alpha; // the normalized location between the two way points
-                double y;
-                if ( index==0 && wayPoints.isEmpty() ) {
-                    alpha= ( ix - pointerStart.x ) / ( pointerLocation.x - pointerStart.x );
-                    y= pointerStart.y + alpha * ( pointerLocation.y - pointerStart.y );
-                } else if ( index==0 ) {
-                    alpha= ( ix - pointerStart.x ) / ( wayPoints.get(index).x - pointerStart.x );
-                    y= pointerStart.y + alpha * ( wayPoints.get(index).y - pointerStart.y );
-                } else if ( index==wayPoints.size() ) {
-                    alpha= ( ix - wayPoints.get(index-1).x ) / ( pointerLocation.x - wayPoints.get(index-1).x );
-                    y=  wayPoints.get(index-1).y + alpha * ( pointerLocation.y - wayPoints.get(index-1).y );
-                } else if ( index>0 && index<wayPoints.size() ) {
-                    alpha= ( ix - wayPoints.get(index-1).x ) / (  wayPoints.get(index).x - wayPoints.get(index-1).x );
-                    y=  wayPoints.get(index-1).y + alpha * ( wayPoints.get(index).y - wayPoints.get(index-1).y );
+                if ( yy.rank()==0 ) {
+                    yy= Ops.join(null,yy);
+                }
+                if ( yy.rank()==1 ) {
+                    double alpha; // the normalized location between the two way points
+                    double y;
+                    if ( index==0 && wayPoints.isEmpty() ) {
+                        alpha= ( ix - pointerStart.x ) / ( pointerLocation.x - pointerStart.x );
+                        y= pointerStart.y + alpha * ( pointerLocation.y - pointerStart.y );
+                    } else if ( index==0 ) {
+                        alpha= ( ix - pointerStart.x ) / ( wayPoints.get(index).x - pointerStart.x );
+                        y= pointerStart.y + alpha * ( wayPoints.get(index).y - pointerStart.y );
+                    } else if ( index==wayPoints.size() ) {
+                        alpha= ( ix - wayPoints.get(index-1).x ) / ( pointerLocation.x - wayPoints.get(index-1).x );
+                        y=  wayPoints.get(index-1).y + alpha * ( pointerLocation.y - wayPoints.get(index-1).y );
+                    } else if ( index>0 && index<wayPoints.size() ) {
+                        alpha= ( ix - wayPoints.get(index-1).x ) / (  wayPoints.get(index).x - wayPoints.get(index-1).x );
+                        y=  wayPoints.get(index-1).y + alpha * ( wayPoints.get(index).y - wayPoints.get(index-1).y );
+                    } else {
+                        return IDataSet.createRank1(0);
+                    }
+                    double ymin= y - width;
+                    double ymax= y + width;
+                    Datum dymin= yaxis.invTransform( ymin );
+                    Datum dymax= yaxis.invTransform( ymax );
+                    QDataSet ww= Ops.within( yy, DatumRangeUtil.union( dymin, dymax ) );
+                    return Ops.where( ww );
                 } else {
-                    return IDataSet.createRank1(0);
+                    throw new IllegalArgumentException("yy must be rank 1");
                 }
-                double ymin= y - width;
-                double ymax= y + width;
-                Datum dymin= yaxis.invTransform( ymin );
-                Datum dymax= yaxis.invTransform( ymax );
-                QDataSet ww= Ops.within( yy, DatumRangeUtil.union( dymin, dymax ) );
-                return Ops.where( ww );
-            } else {
-                throw new IllegalArgumentException("yy must be rank 1");
-            }
-        } else {
-            throw new IllegalArgumentException("xx must be rank 0");
-        } 
+            case 1:
+                DataSetBuilder dsb= new DataSetBuilder( 1,100 );
+                
+                for ( int j=0; j<xx.length(); j++ ) {
+                    index= -1;
+                    ix= xaxis.transform(xx.slice(j)); 
+                    
+                    if ( ix<pointerStart.x ) continue;
+                    if ( ix>pointerLocation.x ) continue;
+                    
+                    for ( int i=0; i<wayPoints.size(); i++ ) {
+                        if ( ix<wayPoints.get(i).x ) {
+                            index= i;
+                            break;
+                        }
+                    }
+                    if ( index==-1 ) {
+                        if ( ix<pointerLocation.x ) {
+                            index= wayPoints.size();
+                        }
+                    }
+                    if ( yy.rank()==0 ) {
+                        yy= Ops.join(null,yy);
+                    }
+                    if ( yy.rank()==1 ) {
+                        double alpha; // the normalized location between the two way points
+                        double y;
+                        if ( index==0 && wayPoints.isEmpty() ) {
+                            alpha= ( ix - pointerStart.x ) / ( pointerLocation.x - pointerStart.x );
+                            y= pointerStart.y + alpha * ( pointerLocation.y - pointerStart.y );
+                        } else if ( index==0 ) {
+                            alpha= ( ix - pointerStart.x ) / ( wayPoints.get(index).x - pointerStart.x );
+                            y= pointerStart.y + alpha * ( wayPoints.get(index).y - pointerStart.y );
+                        } else if ( index==wayPoints.size() ) {
+                            alpha= ( ix - wayPoints.get(index-1).x ) / ( pointerLocation.x - wayPoints.get(index-1).x );
+                            y=  wayPoints.get(index-1).y + alpha * ( pointerLocation.y - wayPoints.get(index-1).y );
+                        } else if ( index>0 && index<wayPoints.size() ) {
+                            alpha= ( ix - wayPoints.get(index-1).x ) / (  wayPoints.get(index).x - wayPoints.get(index-1).x );
+                            y=  wayPoints.get(index-1).y + alpha * ( wayPoints.get(index).y - wayPoints.get(index-1).y );
+                        } else {
+                            return IDataSet.createRank1(0);
+                        }
+                        double ymin= y - width;
+                        double ymax= y + width;
+                        Datum dymin= yaxis.invTransform( ymin );
+                        Datum dymax= yaxis.invTransform( ymax );
+                        
+                        if ( Ops.within( yy.slice(j), DatumRangeUtil.union( dymin, dymax ) ).value()!=0 ) {
+                            dsb.nextRecord( j );
+                        }
+                        
+                    } else {
+                        throw new IllegalArgumentException("yy must be rank 1");
+                    }
+                }
+                return dsb.getDataSet();
+            default:
+                throw new IllegalArgumentException("xx must be rank 0");
+        }
     }
 
     /**
