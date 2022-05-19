@@ -8309,7 +8309,7 @@ public final class Ops {
                 UnitsConverter uc= UnitsConverter.IDENTITY;
                 
                 QDataSet translation= null;
-                Map user= getProperty( ds, QDataSet.USER_PROPERTIES, Map.class );
+                Map user= userProperties;
                 if ( user!=null ) {
                     translation= (QDataSet) user.get( "FFT_Translation" ); // kludge for Plasma Wave Group
                     if ( translation!=null && translation.rank()==1 ) {
@@ -8498,7 +8498,9 @@ public final class Ops {
                         
                         
                         if ( d0>=minD && d0<=maxD) {
-                            ((MutablePropertyDataSet)vds).putProperty( QDataSet.DEPEND_0, null ); // save space wasted by redundant freq tags.
+                            if ( translation==null ) {
+                                ((MutablePropertyDataSet)vds).putProperty( QDataSet.DEPEND_0, null ); // save space wasted by redundant freq tags.
+                            }
                             result.join(vds);
                             if ( dep0b!=null ) {
                                 dep0b.putValue(-1, d0 );
@@ -8515,7 +8517,10 @@ public final class Ops {
                 mon.finished();
                 
                 QDataSet dep1_= (QDataSet) result.property(QDataSet.DEPEND_1);
-                if ( dep1_.rank()==2 && dep1_.length()!=result.length() ) {
+                if ( dep1_==null ) {
+                    dep1_= (QDataSet)result.slice(0).property(QDataSet.DEPEND_0);
+                }
+                if ( dep1_!=null && dep1_.rank()==2 && dep1_.length()!=result.length() ) {
                     ((CdfSparseDataSet)dep1_).setLength(result.length()); // seems cheesy but it's true!
                 }
                 if ( dep0!=null && dep0b!=null ) {
@@ -8529,9 +8534,21 @@ public final class Ops {
                 
                 if ( title!=null ) result.putProperty( QDataSet.TITLE, title );
                 if ( userProperties!=null ) result.putProperty( QDataSet.USER_PROPERTIES, userProperties );
+                
+                if ( translation!=null && result.property(QDataSet.DEPEND_1)==null ) {
+                    JoinDataSet dep1jds= new JoinDataSet(2);
+                    for ( int i=0; i<result.length(); i++ ) {
+                        QDataSet sl1= (QDataSet)result.slice(i).property(QDataSet.DEPEND_0);
+                        dep1jds.join( sl1 );
+                    }
+                    dep1_= dep1jds;
+                    result.putProperty( QDataSet.DEPEND_1, dep1_ );
+                }
+                
                 if ( dep1_.rank()==1 ) {
                     result.putProperty( QDataSet.QUBE, Boolean.TRUE );
                 }
+                
                 result.putProperty( QDataSet.SCALE_TYPE, QDataSet.VALUE_SCALE_TYPE_LOG );
                 return result;
                 
