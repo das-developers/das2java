@@ -49,6 +49,7 @@ import javax.swing.table.TableModel;
 import org.das2.qds.DataSetUtil;
 import org.das2.qds.QDataSet;
 import org.das2.qds.SemanticOps;
+import org.das2.qds.ops.Ops;
 import org.das2.qds.util.QDataSetTableModel;
 
 /**
@@ -343,6 +344,11 @@ public class DisplayDataMouseModule extends MouseModule {
                 tds=SemanticOps.trim( ds, xrange, yrng );
             } else {
                 tds=SemanticOps.trim( ds, xrange, null ); // this may cause problems else where...
+            }
+            QDataSet dep0= (QDataSet) tds.property(QDataSet.DEPEND_0);
+            
+            if ( dep0!=null && dep0.length()>0 && Ops.gt( dep0.slice(dep0.length()-1), xrange.max() ).value()>0 ) {
+                tds= tds.trim(0,tds.length()-1); // weird bug where extra record is included, even if it is outside bounds.
             }
             tm= new QDataSetTableModel(tds);
             tcm= tm.getTableColumnModel();
