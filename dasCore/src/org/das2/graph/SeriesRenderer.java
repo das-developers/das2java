@@ -2830,8 +2830,9 @@ public class SeriesRenderer extends Renderer {
         float llistIconSymSize= Math.min( 12, symSize );
         
         if ( colorByDataSetId != null && !colorByDataSetId.equals("") ) {
-            double d1= colorBar.getDatumRange().min().value();
-            double d2= colorBar.getDatumRange().max().value();
+            Units cu= colorBar.getUnits();
+            double d1= colorBar.getDatumRange().min().doubleValue( cu );
+            double d2= colorBar.getDatumRange().max().doubleValue( cu );
             double d3,d4;
             if ( colorBar.isLog() ) {
                 d1= Math.log10(d1);
@@ -2849,16 +2850,16 @@ public class SeriesRenderer extends Renderer {
                 d4= Math.pow( 10, d4 );
             }
             Color c;
-            c= new Color( colorBar.rgbTransform( d1, colorBar.getUnits() ) );
+            c= new Color( colorBar.rgbTransform( d1, cu ) );
             g.setColor(c);
             psym.draw(g, 3, 8, llistIconSymSize, fillStyle);
-            c= new Color( colorBar.rgbTransform( d3, colorBar.getUnits() ) );
+            c= new Color( colorBar.rgbTransform( d3, cu ) );
             g.setColor(c);
             psym.draw(g, 5, 4, llistIconSymSize, fillStyle);
-            c= new Color( colorBar.rgbTransform( d2, colorBar.getUnits() ) );
+            c= new Color( colorBar.rgbTransform( d2, cu ) );
             g.setColor(c);
             psym.draw(g, 9, 6, llistIconSymSize, fillStyle);
-            c= new Color( colorBar.rgbTransform( d4, colorBar.getUnits() ) );
+            c= new Color( colorBar.rgbTransform( d4, cu ) );
             g.setColor(c);
             psym.draw(g, 11, 2, llistIconSymSize, fillStyle);
         } else {        
