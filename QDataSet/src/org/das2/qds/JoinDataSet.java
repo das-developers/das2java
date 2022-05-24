@@ -286,6 +286,12 @@ public class JoinDataSet extends AbstractDataSet {
         result.properties.putAll( this.properties );
         QDataSet dep0= (QDataSet) property( QDataSet.DEPEND_0 );
         if ( dep0!=null ) result.properties.put( QDataSet.DEPEND_0, dep0.trim(imin,imax) );
+        for ( int i=1; i<this.rank; i++ ) {
+            QDataSet dep= (QDataSet)this.property("DEPEND_"+i);
+            if ( dep!=null && dep.rank()>1 ) {
+                result.properties.put( "DEPEND_"+i, dep.trim(imin,imax) );
+            }
+        }
         return result;
     }
 
