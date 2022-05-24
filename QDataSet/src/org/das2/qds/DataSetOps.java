@@ -1726,8 +1726,6 @@ public class DataSetOps {
             } 
         }
         
-        MutablePropertyDataSet theResult;
-        
         if ( dimensions==null || !highRank ) {
             if ( bundleDs instanceof BundleDataSet ) {
                 QDataSet r= ((BundleDataSet)bundleDs).unbundle(j);
@@ -1743,12 +1741,12 @@ public class DataSetOps {
                 if ( dep0!=null && r.property(QDataSet.DEPEND_0)==null ) {
                     MutablePropertyDataSet rc= new DataSetWrapper(r);
                     rc.putProperty( QDataSet.DEPEND_0, dep0 );
-                    theResult= rc;
+                    return rc;
                 } else {
                     if ( r.property(QDataSet.BUNDLE_1)!=null ) {
                         logger.warning("unbundled dataset still has BUNDLE_1");
                     }
-                    theResult= new DataSetWrapper(r);
+                    return r;
                 }
 
             } else {
@@ -1805,112 +1803,102 @@ public class DataSetOps {
                     }
                 }
 
-                theResult= result;
+                return result;
             }
         } else if ( dimensions.length==1 || dimensions.length==2 ) {
-            
             if ( bundleDs.rank()==1 ) {
-                theResult= new DataSetWrapper( bundleDs.trim(is, is+len) );
+                return bundleDs.trim(is, is+len);
+            }
+            TrimStrideWrapper result= new TrimStrideWrapper(bundleDs);
+            result.setTrim( 1, is, is+len, 1 );
+            Integer ifirst= (Integer) bundle.property( QDataSet.START_INDEX, j  );
+            int first,last;
+            if ( ifirst!=null ) {
+                first= ifirst;
+                last= first+len-1;
             } else {
-                TrimStrideWrapper result= new TrimStrideWrapper(bundleDs);
-                result.setTrim( 1, is, is+len, 1 );
-                Integer ifirst= (Integer) bundle.property( QDataSet.START_INDEX, j  );
-                int first,last;
-                if ( ifirst!=null ) {
-                    first= ifirst;
-                    last= first+len-1;
-                } else {
-                    first= j; // I don't think this should happen, but...
-                    last= j;
-                }
-                Map<String,Object> props= DataSetUtil.getProperties( DataSetOps.slice0(bundle,first) );
-                Map<String,Object> props2= DataSetUtil.getProperties( DataSetOps.slice0(bundle,last) );
-                for ( Entry<String,Object> e: props2.entrySet() ) { // remove the properties that are not constant within the bundle by checking first against last.
-                    String ss= e.getKey();
-                    Object vv= props.get(ss);
-                    if ( vv!=null && !vv.equals( e.getValue() ) ) {
-                        props.put(ss,null);
-                    }
-                }
-                if ( last!=first ) {
-                    QDataSet bundleTrim= bundle.trim(first,last+1);
-                    MutablePropertyDataSet mds;
-                    mds= DataSetOps.makePropertiesMutable( bundleTrim );
-                    Ops.copyIndexedProperties( bundleTrim, mds );
-                    props.put( QDataSet.BUNDLE_1, mds );
-                }
-
-                if ( bundleDs.rank()>1 ) {
-                    if ( bundle.property(QDataSet.DEPEND_1,first)!=null && bundle.property(QDataSet.DEPEND_1,first)==bundle.property(QDataSet.DEPEND_1,last) ) {
-                        props.put( QDataSet.DEPEND_1, bundle.property(QDataSet.DEPEND_1,first) );
-                    }
-                    if ( bundle.property(QDataSet.BINS_1,first)!=null && bundle.property(QDataSet.BINS_1,first).equals(bundle.property(QDataSet.BINS_1,last)) ) {
-                        props.put( QDataSet.BINS_1, bundle.property(QDataSet.BINS_1,first) );
-                        props.remove( QDataSet.BUNDLE_1 );
-                    }
-                    if ( bundle.property(QDataSet.BUNDLE_1,first)!=null  && bundle.property(QDataSet.BUNDLE_1,first)==(bundle.property(QDataSet.BUNDLE_1,last) ) ) {
-                        props.put( QDataSet.BUNDLE_1, bundle.property(QDataSet.BUNDLE_1,first) );
-                    }
-                }
-
-                // allow unindexed properties to define property for all bundled datasets, for example USER_PROPERTIES or FILL
-                Map<String,Object> props3= DataSetUtil.getProperties(bundle, DataSetUtil.globalProperties(), null );
-                for ( Entry<String,Object> e: props3.entrySet() ) {
-                    String ss= e.getKey();
-                    Object vv= props.get( ss );
-                    if ( vv==null ) {
-                        props.put( ss, e.getValue() );
-                    }
-                }
-
-                Object o;
-                o= bundle.property(QDataSet.ELEMENT_NAME,j);
-                if ( o!=null ) props.put( QDataSet.NAME, o );
-                o= bundle.property(QDataSet.ELEMENT_LABEL,j);
-                if ( o!=null ) props.put( QDataSet.LABEL, o );
-                DataSetUtil.putProperties( props, result );
-                String[] testProps= DataSetUtil.correlativeProperties();
-                for ( int i=-1; i<testProps.length; i++ ) {
-                    String prop= ( i==-1 ) ? "DEPEND_0" : testProps[i];
-                    Object dep0= result.property(prop);
-                    if ( dep0!=null ) {
-                        if ( dep0 instanceof String ) { //TODO: we can get rid of this.  DEPEND_0 must never be a string.
-                            try {
-                                QDataSet dep0ds= unbundle( bundleDs, (String)dep0 );
-                                result.putProperty( prop, dep0ds );
-                            } catch ( IllegalArgumentException ex ) {
-                                throw new IllegalArgumentException("unable to find DEPEND_0 reference to \""+dep0+"\"");
-                            }
-                        }
-                    }
-                }
-                if ( result.property(QDataSet.DEPEND_0)==null ) { // last make the default DEPEND_0 be the first column, if it is a UT time.
-                    if ( ib>0 ) {
-                        Units u= (Units) bundle.property(QDataSet.UNITS,0);
-                        if ( u!=null && UnitsUtil.isTimeLocation(u) ) {
-                            result.putProperty( QDataSet.DEPEND_0, unbundle(bundleDs,0,false) );
-                        }
-                    }
-                }
-                if ( dimensions.length==2 ) {
-                    int[] qube= new int[] { result.length(), dimensions[0], dimensions[1] };
-                    theResult= Ops.maybeCopy( Ops.reform( result, qube ) );
-                } else {
-                    theResult= result;
+                first= j; // I don't think this should happen, but...
+                last= j;
+            }
+            Map<String,Object> props= DataSetUtil.getProperties( DataSetOps.slice0(bundle,first) );
+            Map<String,Object> props2= DataSetUtil.getProperties( DataSetOps.slice0(bundle,last) );
+            for ( Entry<String,Object> e: props2.entrySet() ) { // remove the properties that are not constant within the bundle by checking first against last.
+                String ss= e.getKey();
+                Object vv= props.get(ss);
+                if ( vv!=null && !vv.equals( e.getValue() ) ) {
+                    props.put(ss,null);
                 }
             }
-                        
+            if ( last!=first ) {
+                QDataSet bundleTrim= bundle.trim(first,last+1);
+                MutablePropertyDataSet mds;
+                mds= DataSetOps.makePropertiesMutable( bundleTrim );
+                Ops.copyIndexedProperties( bundleTrim, mds );
+                props.put( QDataSet.BUNDLE_1, mds );
+            }
+
+            if ( bundleDs.rank()>1 ) {
+                if ( bundle.property(QDataSet.DEPEND_1,first)!=null && bundle.property(QDataSet.DEPEND_1,first)==bundle.property(QDataSet.DEPEND_1,last) ) {
+                    props.put( QDataSet.DEPEND_1, bundle.property(QDataSet.DEPEND_1,first) );
+                }
+                if ( bundle.property(QDataSet.BINS_1,first)!=null && bundle.property(QDataSet.BINS_1,first).equals(bundle.property(QDataSet.BINS_1,last)) ) {
+                    props.put( QDataSet.BINS_1, bundle.property(QDataSet.BINS_1,first) );
+                    props.remove( QDataSet.BUNDLE_1 );
+                }
+                if ( bundle.property(QDataSet.BUNDLE_1,first)!=null  && bundle.property(QDataSet.BUNDLE_1,first)==(bundle.property(QDataSet.BUNDLE_1,last) ) ) {
+                    props.put( QDataSet.BUNDLE_1, bundle.property(QDataSet.BUNDLE_1,first) );
+                }
+            }
+
+            // allow unindexed properties to define property for all bundled datasets, for example USER_PROPERTIES or FILL
+            Map<String,Object> props3= DataSetUtil.getProperties(bundle, DataSetUtil.globalProperties(), null );
+            for ( Entry<String,Object> e: props3.entrySet() ) {
+                String ss= e.getKey();
+                Object vv= props.get( ss );
+                if ( vv==null ) {
+                    props.put( ss, e.getValue() );
+                }
+            }
+
+            Object o;
+            o= bundle.property(QDataSet.ELEMENT_NAME,j);
+            if ( o!=null ) props.put( QDataSet.NAME, o );
+            o= bundle.property(QDataSet.ELEMENT_LABEL,j);
+            if ( o!=null ) props.put( QDataSet.LABEL, o );
+            DataSetUtil.putProperties( props, result );
+            String[] testProps= DataSetUtil.correlativeProperties();
+            for ( int i=-1; i<testProps.length; i++ ) {
+                String prop= ( i==-1 ) ? "DEPEND_0" : testProps[i];
+                Object dep0= result.property(prop);
+                if ( dep0!=null ) {
+                    if ( dep0 instanceof String ) { //TODO: we can get rid of this.  DEPEND_0 must never be a string.
+                        try {
+                            QDataSet dep0ds= unbundle( bundleDs, (String)dep0 );
+                            result.putProperty( prop, dep0ds );
+                        } catch ( IllegalArgumentException ex ) {
+                            throw new IllegalArgumentException("unable to find DEPEND_0 reference to \""+dep0+"\"");
+                        }
+                    }
+                }
+            }
+            if ( result.property(QDataSet.DEPEND_0)==null ) { // last make the default DEPEND_0 be the first column, if it is a UT time.
+                if ( ib>0 ) {
+                    Units u= (Units) bundle.property(QDataSet.UNITS,0);
+                    if ( u!=null && UnitsUtil.isTimeLocation(u) ) {
+                        result.putProperty( QDataSet.DEPEND_0, unbundle(bundleDs,0,false) );
+                    }
+                }
+            }
+            if ( dimensions.length==2 ) {
+                int[] qube= new int[] { result.length(), dimensions[0], dimensions[1] };
+                return Ops.reform( result, qube );
+            } else {
+                return result;
+            }
         } else {
             throw new IllegalArgumentException("rank limit: >2 not supported");
         }
-        
-        String rt= (String)bundleDs.property(QDataSet.RENDER_TYPE);
-        if ( rt!=null && ( rt.startsWith("series") || rt.startsWith("scatter") || rt.startsWith("hugeScatter") ) ) {
-            theResult.putProperty( QDataSet.RENDER_TYPE, rt );
-        }
-        
-        return theResult;
-        
+
     }
 
     /**
