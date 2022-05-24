@@ -1608,6 +1608,23 @@ public class DataSetOps {
     }
 
     /**
+     * allow a bundle of datasets to use RENDER_TYPE property to indicate that each
+     * component should be plotted a particular way.
+     * @param bundle bundle of slices.
+     * @param slice a slice.
+     */
+    private static void maybeCopyRenderType( QDataSet bundle, MutablePropertyDataSet slice ) {
+        String renderType= (String) bundle.property(QDataSet.RENDER_TYPE);
+        if ( renderType!=null && 
+            ( renderType.startsWith("series") 
+            || renderType.startsWith("scatter") 
+            || renderType.startsWith("hugeScatter") ) ) {
+            slice= makePropertiesMutable(slice);
+            ((MutablePropertyDataSet)slice).putProperty(QDataSet.RENDER_TYPE, renderType);
+        }
+    }
+        
+    /**
      * Extract a bundled dataset from a bundle of datasets.  The input should
      * be a rank 2 dataset with the property BUNDLE_1 set to a bundle descriptor
      * dataset.  See BundleDataSet for more semantics.  Note we support the case
@@ -1746,7 +1763,9 @@ public class DataSetOps {
                     if ( r.property(QDataSet.BUNDLE_1)!=null ) {
                         logger.warning("unbundled dataset still has BUNDLE_1");
                     }
-                    return r;
+                    MutablePropertyDataSet rc= new DataSetWrapper(r);
+                    maybeCopyRenderType(bundleDs, rc);
+                    return rc;
                 }
 
             } else {
@@ -1767,6 +1786,8 @@ public class DataSetOps {
                         result.putProperty(names11, v);
                     }
                 }
+                
+                maybeCopyRenderType( bundleDs,result );
                 
                 String[] planeNames= new String[] { QDataSet.BIN_MAX_NAME, QDataSet.BIN_MIN_NAME, 
                     QDataSet.BIN_MINUS_NAME, QDataSet.BIN_PLUS_NAME,
