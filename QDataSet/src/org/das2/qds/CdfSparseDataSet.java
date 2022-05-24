@@ -48,6 +48,7 @@ public class CdfSparseDataSet extends AbstractDataSet {
      */
     public synchronized void putValues( int i0, QDataSet ds ) {
         if ( isImmutable() ) throw new IllegalArgumentException("dataset has been made immutable");
+        if ( ds==null ) throw new NullPointerException("putValues of null dataset ds");
         if ( ds instanceof MutablePropertyDataSet ) {
             if ( !((MutablePropertyDataSet)ds).isImmutable() ) {
                 ds= Ops.copy(ds);
