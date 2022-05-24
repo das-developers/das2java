@@ -2,6 +2,8 @@
 package org.das2.qds.ops;
 
 import java.awt.Color;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.lang.reflect.Array;
 import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
@@ -8415,40 +8417,94 @@ public final class Ops {
                         
                         QDataSet wds= DataSetUtil.weightsDataSet(wave);
                         
+                        double d0=0;
+                        if ( dep0!=null ) {
+                            d0= dep0.value(i) + uc.convert( offs.value( len/2 )  );
+                        } else if ( dep0i!=null ) {
+                            d0= dep0i.value(j*step+len/2);
+                        } else {
+                            dep0b= null;
+                        }                        
+                        
                         boolean hasFill= false;
                         for ( int k=0; k<wds.length(); k++ ) {
                             if ( wds.value(k)==0 ) {
                                 hasFill= true;
                             }
                         }
-                        if ( hasFill ) continue;
+                        if ( hasFill ) {
+                            logger.log(Level.FINER, "fill at {0}", Units.us2000.createDatum(d0));
+                            continue;
+                        }
                         
                         double switchCadenceCheck; // the cadence at the end of the interval.
                         currentDeltaTime= offs.value(10) - offs.value(0);
                         switchCadenceCheck=  dep1.value(len-1) - dep1.value(len-11);
 
-                        // does the cadence change?
-                        if ( Math.abs( switchCadenceCheck-currentDeltaTime ) / currentDeltaTime > 0.01 ) {
-                            logger.finer("cadence changes");
-                            continue;
+                        if ( false ) {
+                            new java.io.File("/tmp/ap/").mkdirs();
+                            try ( PrintWriter write= 
+                                new PrintWriter( 
+                                    new PrintWriter( String.format( "/tmp/ap/%09d.txt", j ) ) ) ) {
+                                write.println( String.format( "# %f %f %f", 
+                                    switchCadenceCheck, currentDeltaTime, Math.abs( switchCadenceCheck-currentDeltaTime ) / currentDeltaTime ) );
+                                for ( int iz=0; iz<offs.length(); iz++ ) {
+                                    write.print( Ops.datum( Ops.subtract( offs.slice(iz), offs.slice(0) ) ).doubleValue( Units.microseconds) );
+                                    write.print( " " );
+                                    write.print( Math.abs( switchCadenceCheck-currentDeltaTime ) / currentDeltaTime );
+                                    write.print( "\n" );
+                                } 
+                            } catch (FileNotFoundException ex) {
+                                Logger.getLogger(Ops.class.getName()).log(Level.SEVERE, null, ex);
+                            }
+                        }
+                            
+                        // does the cadence change between packets?
+                        boolean cadenceChangeDetect= Math.abs( switchCadenceCheck-currentDeltaTime ) / currentDeltaTime > 0.01;
+                        if ( cadenceChangeDetect ) {
+                            if ( translation!=null ) {
+                                logger.finer("cadence changes but translation allows");
+                            } else {
+                                logger.finer("cadence changes");
+                                continue;
+                            }
                         }
 
-                        // is there a gap?
+                        // is there a gap within the packet?
                         double avgCadence= ( offs.value(len-1) - offs.value(0) ) / ( len-1 );
                         if ( Math.abs( switchCadenceCheck/10-avgCadence ) / currentDeltaTime > 0.01 ) {
-                            logger.finer("gap detected");
-                            continue;
+                            if ( translation!=null ) {
+                                logger.finer("gap detected but translation allows");
+                            } else {
+                                logger.finer("gap detected");
+                                continue;
+                            }
                         }
                         currentDeltaTime= offs.value(10) - offs.value(0);
                         
                         
                         if ( Math.abs( lastDeltaTime-currentDeltaTime ) / currentDeltaTime > 0.01 ) {
                             QDataSet powxtags1= FFTUtil.getFrequencyDomainTagsForPower(dep1.trim(istart,istart+len));
+                            if ( translation!=null ) {
+                                switch (translation.rank()) {
+                                    case 0:
+                                        powxtags1= Ops.add( powxtags1, translation );
+                                        break;
+                                    case 1:
+                                        powxtags1= Ops.add( powxtags1, translation.slice(istart) );
+                                        break;
+                                    default:
+                                        throw new IllegalArgumentException("bad rank on FFT_Translation, expected rank 0 or rank 1");
+                                }
+                            }
                             QDataSet ytags= (QDataSet) result.property(QDataSet.DEPEND_1);
                             if ( ytags instanceof CdfSparseDataSet ) {
                                 ((CdfSparseDataSet)ytags).putValues( result.length(), powxtags1 );
                             } else {
                                 CdfSparseDataSet newYtags= new CdfSparseDataSet(2,ds.length()*len1);
+                                if ( ytags==null ) {
+                                    ytags= (QDataSet)result.slice(0).property(QDataSet.DEPEND_0);
+                                } 
                                 newYtags.putValues(0,ytags);
                                 newYtags.putValues(result.length(),powxtags1);
                                 newYtags.putProperty(QDataSet.UNITS,powxtags1.property(QDataSet.UNITS));
@@ -8479,24 +8535,14 @@ public final class Ops {
                                     fftDep1= Ops.add( fftDep1, translation );
                                     break;
                                 case 1:
-                                    fftDep1= Ops.add( fftDep1, translation.slice(i) );
+                                    fftDep1= Ops.add( fftDep1, translation.slice(istart) );
                                     break;
                                 default:
                                     throw new IllegalArgumentException("bad rank on FFT_Translation, expected rank 0 or rank 1");
                             }
                             ((MutablePropertyDataSet)vds).putProperty( QDataSet.DEPEND_0, fftDep1 );
                         }
-                        
-                        double d0=0;
-                        if ( dep0!=null ) {
-                            d0= dep0.value(i) + uc.convert( offs.value( len/2 )  );
-                        } else if ( dep0i!=null ) {
-                            d0= dep0i.value(j*step+len/2);
-                        } else {
-                            dep0b= null;
-                        }
-                        
-                        
+                                                                        
                         if ( d0>=minD && d0<=maxD) {
                             if ( translation==null ) {
                                 ((MutablePropertyDataSet)vds).putProperty( QDataSet.DEPEND_0, null ); // save space wasted by redundant freq tags.
