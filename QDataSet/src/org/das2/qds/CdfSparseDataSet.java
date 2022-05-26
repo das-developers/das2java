@@ -70,7 +70,7 @@ public class CdfSparseDataSet extends AbstractDataSet {
      */
     public synchronized void putValues( int i0, QDataSet ds ) {
         if ( isImmutable() ) throw new IllegalArgumentException("dataset has been made immutable");
-        if ( ds==null ) {
+        if ( ds==null && i0<length ) {
             throw new NullPointerException("putValues of null dataset ds");
         }
         if ( ds instanceof MutablePropertyDataSet ) {
@@ -197,10 +197,10 @@ public class CdfSparseDataSet extends AbstractDataSet {
         int ii1= indexInternal(i1);
         CdfSparseDataSet result= new CdfSparseDataSet(rank,i1-i0,dss[ii0]);
         synchronized ( this ) {
-            if ( i0>0 ) {
+            if ( ii0>0 ) {
                 result.putValues(0,dss[ii0]);
             }
-            for ( int ii=ii0+1; ii<ii1; ii++ ) {
+            for ( int ii=ii0+1; ii<=ii1; ii++ ) {
                 result.putValues(indexes[ii]-i0,dss[ii]);
             }
         }
