@@ -8501,11 +8501,10 @@ public final class Ops {
                             if ( ytags instanceof CdfSparseDataSet ) {
                                 ((CdfSparseDataSet)ytags).putValues( result.length(), powxtags1 );
                             } else {
-                                CdfSparseDataSet newYtags= new CdfSparseDataSet(2,ds.length()*len1);
                                 if ( ytags==null ) {
                                     ytags= (QDataSet)result.slice(0).property(QDataSet.DEPEND_0);
                                 } 
-                                newYtags.putValues(0,ytags);
+                                CdfSparseDataSet newYtags= new CdfSparseDataSet(2,ds.length()*len1,ytags);
                                 newYtags.putValues(result.length(),powxtags1);
                                 newYtags.putProperty(QDataSet.UNITS,powxtags1.property(QDataSet.UNITS));
                                 ytags= newYtags;
@@ -8536,6 +8535,7 @@ public final class Ops {
                                     break;
                                 case 1:
                                     fftDep1= Ops.add( fftDep1, translation.slice(istart) );
+                                    System.err.println("" + istart + ": "+translation.slice(istart) );
                                     break;
                                 default:
                                     throw new IllegalArgumentException("bad rank on FFT_Translation, expected rank 0 or rank 1");
