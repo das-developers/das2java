@@ -8352,6 +8352,8 @@ public final class Ops {
                 
                 boolean isMono= dep0==null ? true : DataSetUtil.isMonotonic(dep0);
                 
+                QDataSet lastTranslation= null; // when translation is applied, keep track of last one
+                
                 QDataSet nextSlice= null;
                 for ( int i=0; i<ds.length(); i++ ) {
                     QDataSet slicei;
@@ -8482,16 +8484,19 @@ public final class Ops {
                         }
                         currentDeltaTime= offs.value(10) - offs.value(0);
                         
-                        
-                        if ( Math.abs( lastDeltaTime-currentDeltaTime ) / currentDeltaTime > 0.01 ) {
+                        boolean newTranslationMode= translation!=null && lastTranslation!=null &&
+                            ( !translation.slice(istart).equals(lastTranslation) );
+                        if ( newTranslationMode || Math.abs( lastDeltaTime-currentDeltaTime ) / currentDeltaTime > 0.01 ) {
                             QDataSet powxtags1= FFTUtil.getFrequencyDomainTagsForPower(dep1.trim(istart,istart+len));
                             if ( translation!=null ) {
                                 switch (translation.rank()) {
                                     case 0:
                                         powxtags1= Ops.add( powxtags1, translation );
+                                        lastTranslation= translation;
                                         break;
                                     case 1:
                                         powxtags1= Ops.add( powxtags1, translation.slice(istart) );
+                                        lastTranslation= translation.slice(istart);
                                         break;
                                     default:
                                         throw new IllegalArgumentException("bad rank on FFT_Translation, expected rank 0 or rank 1");
@@ -8581,7 +8586,7 @@ public final class Ops {
                 if ( title!=null ) result.putProperty( QDataSet.TITLE, title );
                 if ( userProperties!=null ) result.putProperty( QDataSet.USER_PROPERTIES, userProperties );
                 
-                if ( translation!=null && result.property(QDataSet.DEPEND_1)==null ) {
+                if ( translation!=null && result.property(QDataSet.DEPEND_1)==null ) { //TODO: huh?
                     JoinDataSet dep1jds= new JoinDataSet(2);
                     for ( int i=0; i<result.length(); i++ ) {
                         QDataSet sl1= (QDataSet)result.slice(i).property(QDataSet.DEPEND_0);
