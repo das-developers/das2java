@@ -8,8 +8,7 @@ import org.das2.qds.ops.Ops;
  * dataset for modeling when data values repeat.  Instead of storing 
  * copies of the data, the get method looks up the index.  For example:
  * <pre>
- * ds= CdfSparseDataSet(1,200)
- * ds.putValues( 0, dataset(1) )
+ * ds= CdfSparseDataSet(1,200,dataset(1))
  * ds.putValues( 10, dataset(2) )
  * ds.putValues( 110, dataset(3) )
  * plot( ds )
@@ -19,21 +18,44 @@ import org.das2.qds.ops.Ops;
 public class CdfSparseDataSet extends AbstractDataSet {
 
     int rank;
+    
+    /**
+     * the number of records in the data set.
+     */
     int length;
+    
+    /**
+     * the indices for each dataset in dss.  Values starting at this index will have the value in the corresponding dss,
+     * and the first index must be 0.
+     */
     int[] indexes;
+    
+    /**
+     * the data to return, starting at this index.
+     */
     QDataSet[] dss;
-    int lastIndex;
+    
+    /**
+     * used with indexInternal, this is the last index looked up.  The idea is that often this will be correct and
+     * the value operation will be a constant-time operation, not logN time.
+     */
+    private int lastIndex;
             
     /**
      * create the DataSet with the given length.
      * @param rank the result rank.
      * @param length the result length.
+     * @param value all indices will have this value
      */
-    public CdfSparseDataSet( int rank, int length ) {
+    public CdfSparseDataSet( int rank, int length, QDataSet value ) {
+        if ( rank<1 ) throw new IllegalArgumentException("rank must be 1 or more");
         this.rank= rank;
+        if ( (this.rank-1)!=value.rank() ) {
+            throw new IllegalArgumentException("value rank must be the same as the rank");
+        }
         this.length= length;
-        indexes= new int[] { length };
-        dss= new QDataSet[] { null };
+        indexes= new int[] { 0, length };
+        dss= new QDataSet[] { value, null };
     }
 
     @Override
@@ -48,7 +70,9 @@ public class CdfSparseDataSet extends AbstractDataSet {
      */
     public synchronized void putValues( int i0, QDataSet ds ) {
         if ( isImmutable() ) throw new IllegalArgumentException("dataset has been made immutable");
-        if ( ds==null ) throw new NullPointerException("putValues of null dataset ds");
+        if ( ds==null ) {
+            throw new NullPointerException("putValues of null dataset ds");
+        }
         if ( ds instanceof MutablePropertyDataSet ) {
             if ( !((MutablePropertyDataSet)ds).isImmutable() ) {
                 ds= Ops.copy(ds);
@@ -166,14 +190,17 @@ public class CdfSparseDataSet extends AbstractDataSet {
             
     @Override
     public QDataSet trim(int i0, int i1) {
+        if ( i0<0 ) throw new IndexOutOfBoundsException();
+        if ( i1>length ) throw new IndexOutOfBoundsException();
+        if ( i0>i1 ) throw new IndexOutOfBoundsException();
         int ii0= indexInternal(i0);
         int ii1= indexInternal(i1);
-        CdfSparseDataSet result= new CdfSparseDataSet(rank,i1-i0);
+        CdfSparseDataSet result= new CdfSparseDataSet(rank,i1-i0,dss[ii0]);
         synchronized ( this ) {
-            if ( indexes[ii0]!=i0 ) {
+            if ( i0>0 ) {
                 result.putValues(0,dss[ii0]);
             }
-            for ( int ii=ii0+1; ii<=ii1; ii++ ) {
+            for ( int ii=ii0+1; ii<ii1; ii++ ) {
                 result.putValues(indexes[ii]-i0,dss[ii]);
             }
         }
