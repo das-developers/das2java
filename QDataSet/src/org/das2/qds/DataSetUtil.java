@@ -433,7 +433,7 @@ public class DataSetUtil {
                     QDataSet.VALID_MIN, QDataSet.VALID_MAX,
                     QDataSet.FILL_VALUE,
                     QDataSet.FORMAT, QDataSet.CADENCE,
-                    QDataSet.MONOTONIC, QDataSet.SCALE_TYPE,
+                    QDataSet.MONOTONIC, QDataSet.SCALE_TYPE, QDataSet.AVERAGE_TYPE, 
                     QDataSet.TYPICAL_MIN, QDataSet.TYPICAL_MAX, QDataSet.RENDER_TYPE,
                     QDataSet.QUBE,
                     QDataSet.NAME, QDataSet.LABEL, QDataSet.TITLE, QDataSet.DESCRIPTION,
@@ -486,7 +486,7 @@ public class DataSetUtil {
     }
 
     private static final String[] DIMENSION_PROPERTIES = new String[] {
-        QDataSet.UNITS, QDataSet.FORMAT, QDataSet.SCALE_TYPE,
+        QDataSet.UNITS, QDataSet.FORMAT, QDataSet.SCALE_TYPE, QDataSet.AVERAGE_TYPE,
         QDataSet.TYPICAL_MIN, QDataSet.TYPICAL_MAX,
         QDataSet.VALID_MIN, QDataSet.VALID_MAX, QDataSet.FILL_VALUE,
         QDataSet.NAME, QDataSet.LABEL, QDataSet.TITLE,
@@ -604,6 +604,7 @@ public class DataSetUtil {
             case QDataSet.FORMAT:
             case QDataSet.RENDER_TYPE:
             case QDataSet.SCALE_TYPE:
+            case QDataSet.AVERAGE_TYPE:
                 return PROPERTY_TYPE_STRING;
             case QDataSet.TYPICAL_MIN:
             case QDataSet.TYPICAL_MAX:

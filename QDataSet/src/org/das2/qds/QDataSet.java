@@ -404,6 +404,41 @@ public interface QDataSet {
     public final static String RENDER_TYPE="RENDER_TYPE";
     
     /**
+     * combining numbers is not allowed, and often nearest neighbor is a suitable result.
+     */
+    public static final String VALUE_AVERAGE_TYPE_NONE="none";
+    
+    /**
+     * typical averages sum(ds)/len(ds)
+     */
+    public static final String VALUE_AVERAGE_TYPE_LINEAR="linear";
+    
+    /**
+     * geometric mean where result is exp(sum(log(ds))/len(ds))
+     */
+    public static final String VALUE_AVERAGE_TYPE_GEOMETRIC="geometric";
+    
+    /**
+     * mod24 mean where avg([23,1]) is 0.
+     */
+    public static final String VALUE_AVERAGE_TYPE_MOD24="mod24";
+    
+    /**
+     * mod360 mean where avg([359,1]) is 0.
+     */
+    public static final String VALUE_AVERAGE_TYPE_MOD360="mod360";
+    
+    /**
+     * modpi mean where avg( [5*PI/6,7*PI/6] ) is 0.
+     */
+    public static final String VALUE_AVERAGE_TYPE_MODPI="modpi";
+    
+    /**
+     * modpi mean where avg( [5*TAU/6,7*TAU/6] ) is 0.
+     */
+    public static final String VALUE_AVERAGE_TYPE_MODTAU="modtau";
+    
+    /**
      * full-fidelity rendering of buckshot and connect-a-dot plots
      */
     public final static String VALUE_RENDER_TYPE_SERIES="series";

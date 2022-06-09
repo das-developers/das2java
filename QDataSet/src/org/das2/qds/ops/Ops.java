@@ -10768,6 +10768,8 @@ public final class Ops {
      * }
      * </pre>
      * 
+     * This looks at the AVERAGE_TYPE metadata, and when it is present, linear, log, none, mod360, mod24 are respected.
+     * 
      * @param vv rank 1 dataset having length L that is the data to be interpolated.
      * @param findex rank N dataset of fractional indices.  This must be dimensionless, between -0.5 and L-0.5 and is typically calculated by the findex command.
      * @return the result.  
@@ -10815,7 +10817,25 @@ public final class Ops {
         
         // Starting with v2014a_12, immodest extrapolations beyond 0.5 are no longer allowed.
         boolean noExtrapolate= true;
+        
+        String averageType= (String)vv.property(QDataSet.AVERAGE_TYPE);
+        
+        if ( averageType==null ) averageType= QDataSet.VALUE_AVERAGE_TYPE_LINEAR;
+        
+        double vmin= -Double.MAX_VALUE;
+        double vmax= Double.MAX_VALUE;
                
+        if ( !averageType.equals( QDataSet.VALUE_AVERAGE_TYPE_LINEAR ) ) {
+            Number v= (Number)vv.property(QDataSet.TYPICAL_MIN);
+            if ( v==null ) v= (Number)vv.property(QDataSet.VALID_MIN);
+            if ( v!=null ) vmin= v.doubleValue();
+            v= (Number)vv.property(QDataSet.TYPICAL_MAX);
+            if ( v==null ) v= (Number)vv.property(QDataSet.VALID_MAX);
+            if ( v!=null ) vmax= v.doubleValue();
+        }
+        
+        double v;  // the value for this iteration
+        
         while (it.hasNext()) {
             it.next();
 
@@ -10852,7 +10872,47 @@ public final class Ops {
                 double vv0 = vv.value(ic0);
                 double vv1 = vv.value(ic1);
 
-                it.putValue(result, vv0 + alpha * (vv1 - vv0));
+                switch ( averageType ) {
+                    case QDataSet.VALUE_AVERAGE_TYPE_LINEAR:
+                        it.putValue(result, vv0 + alpha * (vv1 - vv0));
+                        break;
+                    case QDataSet.VALUE_AVERAGE_TYPE_GEOMETRIC:
+                        it.putValue(result, Math.exp( Math.log(vv0) + alpha * (vv1/vv0) ) );
+                        break;
+                    case QDataSet.VALUE_AVERAGE_TYPE_MOD24:
+                        while ( vv1-vv0 > 12 ) vv1-=24;
+                        while ( vv0-vv1 > 12 ) vv0-=24;
+                        v= vv0 + alpha * (vv1 - vv0);
+                        if ( v<vmin ) v+= 24;
+                        if ( v>=vmax ) v-= 24;
+                        it.putValue(result, v);
+                        break;
+                    case QDataSet.VALUE_AVERAGE_TYPE_MOD360:
+                        while ( vv1-vv0 > 180 ) vv1-=360;
+                        while ( vv0-vv1 > 180 ) vv0-=360;
+                        v= vv0 + alpha * (vv1 - vv0);
+                        if ( v<vmin ) v+= 360;
+                        if ( v>=vmax ) v-= 360;
+                        it.putValue(result,v );
+                        break;
+                    case QDataSet.VALUE_AVERAGE_TYPE_MODPI:
+                        while ( vv1-vv0 > PI/2 ) vv1-=PI;
+                        while ( vv0-vv1 > PI/2 ) vv0-=PI;
+                        v= vv0 + alpha * (vv1 - vv0);
+                        if ( v<vmin ) v+= PI;
+                        if ( v>=vmax ) v-= PI;
+                        it.putValue(result, v);
+                        break;                        
+                    case QDataSet.VALUE_AVERAGE_TYPE_MODTAU:
+                        while ( vv1-vv0 > PI ) vv1-=TAU;
+                        while ( vv0-vv1 > PI ) vv0-=TAU;
+                        v= vv0 + alpha * (vv1 - vv0);
+                        if ( v<vmin ) v+= TAU;
+                        if ( v>=vmax ) v-= TAU;
+                        it.putValue(result, v);
+                        break;                        
+                }
+                
                 
             } else {
                 it.putValue(result, dfill );
@@ -12736,7 +12796,7 @@ public final class Ops {
                 ttSource= (QDataSet)dsSource.property( QDataSet.DEPEND_0 );
                 ff= findex( ttSource, ttTarget );
             }
-            boolean nn= UnitsUtil.isOrdinalMeasurement( SemanticOps.getUnits(dsSource) );
+            boolean nn= UnitsUtil.isOrdinalMeasurement( SemanticOps.getUnits(dsSource) ); // https://sourceforge.net/p/autoplot/feature-requests/593/
             if ( nn ) ff= Ops.round(ff);
             dsSource= interpolate( dsSource, ff );
             QDataSet tlimit= DataSetUtil.guessCadenceNew( ttSource, null );
