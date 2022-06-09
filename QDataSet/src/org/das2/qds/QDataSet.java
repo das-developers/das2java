@@ -250,6 +250,17 @@ public interface QDataSet {
     public final static String SCALE_TYPE="SCALE_TYPE";
     
     /**
+     * String, Indicates how numbers should be combined in this space.  Possible values are
+     * linear, geometric, mod24, mod360, and none.  The value "none" indicates that
+     * no averaging is allowed (for example with nominal data) and only nearest neighbor
+     * averaging can be done.  Note this is similar to SCALE_TYPE, where often 
+     * geometric AVERAGE_TYPE will have a log SCALE_TYPE.  When AVERAGE_TYPE is missing, 
+     * linear should be assumed.  See also https://spdf.gsfc.nasa.gov/istp_guide/vattributes.html#AVG_TYPE
+     * and https://sourceforge.net/p/autoplot/feature-requests/593/.
+     */
+    public final static String AVERAGE_TYPE="AVERAGE_TYPE";
+    
+    /**
      * String, Concise Human-consumable label suitable for a plot label (~10 chars).
      */
     public final static String LABEL="LABEL";
