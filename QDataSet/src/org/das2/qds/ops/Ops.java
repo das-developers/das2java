@@ -10768,7 +10768,7 @@ public final class Ops {
      * }
      * </pre>
      * 
-     * This looks at the AVERAGE_TYPE metadata, and when it is present, linear, log, none, mod360, mod24 are respected.
+     * This looks at the AVERAGE_TYPE metadata, and when it is present, linear, geometric, none, mod360, mod24, modpi, and modtau are respected.
      * 
      * @param vv rank 1 dataset having length L that is the data to be interpolated.
      * @param findex rank N dataset of fractional indices.  This must be dimensionless, between -0.5 and L-0.5 and is typically calculated by the findex command.
@@ -10910,13 +10910,39 @@ public final class Ops {
                         if ( v<vmin ) v+= TAU;
                         if ( v>=vmax ) v-= TAU;
                         it.putValue(result, v);
-                        break;                        
+                        break; 
+                    case QDataSet.VALUE_AVERAGE_TYPE_NONE:
+                        if ( alpha<0.5 ) {
+                            v= vv0;
+                        } else {
+                            v= vv1;
+                        }
+                        it.putValue(result, v);
+                        break;  
                 }
                 
                 
             } else {
-                it.putValue(result, dfill );
-                hasFill= true;
+                if ( averageType.equals(QDataSet.VALUE_AVERAGE_TYPE_NONE) ) {                    
+                    if ( alpha<0.5 ) {
+                        if( wds.value(ic0)>0 ) {
+                            v= vv.value(ic0);
+                        } else {
+                            v= dfill;
+                        }
+                    } else {
+                        if ( wds.value(ic1)>0 ) {
+                            v= vv.value(ic1);
+                        } else {
+                            v= dfill;
+                        }
+                    }
+                    it.putValue(result, v);
+                    
+                } else {
+                    it.putValue(result, dfill );
+                    hasFill= true;
+                }
             }
 
         }
