@@ -10867,8 +10867,24 @@ public final class Ops {
             } 
             
             double alpha = ff - ic0;
-
-            if ( wds.value(ic0)>0 && wds.value(ic1)>0 ) {
+            
+            if ( alpha==0.0 || alpha==1.0 || averageType.equals(QDataSet.VALUE_AVERAGE_TYPE_NONE ) ) {
+                if ( alpha<0.5 ) {
+                    if( wds.value(ic0)>0 ) {
+                        v= vv.value(ic0);
+                    } else {
+                        v= dfill;
+                    }
+                } else {
+                    if ( wds.value(ic1)>0 ) {
+                        v= vv.value(ic1);
+                    } else {
+                        v= dfill;
+                    }
+                }
+                it.putValue(result, v);
+                
+            } else if ( wds.value(ic0)>0 && wds.value(ic1)>0 ) {
                 double vv0 = vv.value(ic0);
                 double vv1 = vv.value(ic1);
 
@@ -10923,26 +10939,9 @@ public final class Ops {
                 
                 
             } else {
-                if ( averageType.equals(QDataSet.VALUE_AVERAGE_TYPE_NONE) ) {                    
-                    if ( alpha<0.5 ) {
-                        if( wds.value(ic0)>0 ) {
-                            v= vv.value(ic0);
-                        } else {
-                            v= dfill;
-                        }
-                    } else {
-                        if ( wds.value(ic1)>0 ) {
-                            v= vv.value(ic1);
-                        } else {
-                            v= dfill;
-                        }
-                    }
-                    it.putValue(result, v);
-                    
-                } else {
-                    it.putValue(result, dfill );
-                    hasFill= true;
-                }
+                it.putValue(result, dfill );
+                hasFill= true;
+
             }
 
         }
