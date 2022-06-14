@@ -83,7 +83,11 @@ public class FormatStringFormatter extends DefaultDatumFormatter {
     @Override
     public String format(Datum datum, Units units) {
         if ( UnitsUtil.isTimeLocation( datum.getUnits() ) ) {
-            return timeFormat.format(datum);
+            if ( timeFormat!=null ) {
+                return timeFormat.format(datum);
+            } else {
+                return TimeDatumFormatter.DAYS.format(datum) + 'T' + TimeDatumFormatter.MILLISECONDS.format(datum);
+            }
         } else {
             if ( integer ) {
                 return String.format( format, (int)datum.doubleValue(units) );
