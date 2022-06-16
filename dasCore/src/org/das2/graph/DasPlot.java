@@ -1252,7 +1252,7 @@ public class DasPlot extends DasCanvasComponent {
             repaint(); // come back soon
             return;
         }
-
+        
         String localPlotTitle;
         localPlotTitle= getTitle();
         
@@ -1355,14 +1355,6 @@ public class DasPlot extends DasCanvasComponent {
                     logger.log(Level.FINEST, " using cacheImage {0} {1} {2}", new Object[]{lcacheImageBounds, xmemento, ymemento});
                 }
 
-                //int reduceHeight=  getRow().getDMinimum() - clip.y;
-                //if ( reduceHeight>0 ) {
-                //    clip.y+= reduceHeight;
-                //    clip.height-= reduceHeight;
-                //}
-                //clip.translate( getX(), getY() );
-                //atGraphics.setClip(clip);
-
                 if ( lcacheImageBounds.width!=lcacheImage.getWidth() ) {
                     logger.log( Level.WARNING, " cbw: {0}  ciw:{1}", new Object[]{lcacheImageBounds.width, lcacheImage.getWidth()});
                 }
@@ -1421,12 +1413,7 @@ public class DasPlot extends DasCanvasComponent {
                 plotGraphics.translate(-x, -y);
                 plotGraphics.clip(cacheImageClip);
                 
-                // check mementos before drawing.  They should all be the same.  See https://sourceforge.net/tracker/index.php?func=detail&aid=3075655&group_id=199733&atid=970682
                 Renderer[] rends= getRenderers();
-
-                //for ( int i=0; i<rends.length; i++ ) {
-                //    System.err.println( "renderer #"+i+": " +rends[i] + " ds="+rends[i].getDataSet() );
-                //}
 
                 DasAxis lxaxis= (DasAxis)getXAxis().clone();
                 DasAxis lyaxis= (DasAxis)getYAxis().clone();
@@ -1451,15 +1438,9 @@ public class DasPlot extends DasCanvasComponent {
                             logger.log(Level.FINE,"skipping updatePlotImage because memento indicates things are okay");
                         }
                     }
-                    //Memento xmem2= getXAxis().getMemento();  // I showed that the mementos don't change.  THIS IS ONLY BECAUSE UPDATES ARE DONE ON THE EVENT THREAD
-                    //System.err.println("mementocheck: "+xmem2.equals(xmem));
                 }
 
                 drawCacheImage(plotGraphics,lxaxis,lyaxis);
-                //Memento xmem2= getXAxis().getMemento();  // I showed that the mementos don't change.  THIS IS ONLY BECAUSE UPDATES ARE DONE ON THE EVENT THREAD.  I'm not sure of this, making a local copy of the axes appears to fix the problem.
-                //if ( !xmem2.equals(xmem) ) {
-                //    System.err.println("mementocheck: "+xmem2.equals(xmem));
-                //}
                 
                 plotGraphics.dispose();
                 
