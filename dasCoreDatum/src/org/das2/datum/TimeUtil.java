@@ -550,7 +550,7 @@ public final class TimeUtil {
     public static TimeStruct toTimeStruct( Datum datum ) {
         
         if ( datum.isFill() ) {
-            throw new IllegalArgumentException("datum is not valid");
+            throw new IllegalArgumentException("datum is not valid, it is a fill.");
         }
         
         Units u= datum.getUnits();
