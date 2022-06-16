@@ -164,8 +164,8 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         return currentCanvas;
     }
 
-    private final List<Painter> topDecorators= Collections.synchronizedList(new LinkedList<Painter>());
-    private final List<Painter> bottomDecorators= Collections.synchronizedList(new LinkedList<Painter>());
+    private final List<Painter> topDecorators= Collections.synchronizedList(new LinkedList<>());
+    private final List<Painter> bottomDecorators= Collections.synchronizedList(new LinkedList<>());
     private final Painter[] emptyPainterArray= new Painter[0]; // so we can call atomic copy.
     
     /**
@@ -200,6 +200,32 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
             }
         }
         return null;
+    }
+
+    /**
+     * paint the top decorators above the data.
+     * @param g2 the graphics context, which is set for the canvas with 0,0 in the upper-left corner.
+     */
+    private void paintTopDecorators(Graphics2D g2) {
+        Painter[] decor;
+        decor= topDecorators.toArray(emptyPainterArray);
+        for ( Painter p : decor ) {
+            try {
+                long t0= System.currentTimeMillis();
+                Graphics2D g22= (Graphics2D) g2.create(); // create a graphics object in case they reset colors, etc.
+                //See https://sourceforge.net/p/autoplot/bugs/2140/
+                g22.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON );
+                g22.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
+                p.paint(g22);
+                long dt= System.currentTimeMillis()-t0;
+                if (  dt > 120 ) { // warn if painters are taking more than 120 ms to paint.
+                    System.err.println("painter is taking too long to paint ("+dt+" ms): "+p );
+                }
+            } catch ( Exception ex ) {
+                g2.drawString( "topDecorator causes exception: "+ex.toString(), 20, 20 );
+                ex.printStackTrace();
+            }
+        }
     }
 
     /* Canvas actions */
@@ -760,6 +786,9 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
                 g.drawString(s, getWidth() - width - 2 * height, getHeight() - metrics.getAscent() );
                 g.setFont(oldFont);
             }
+
+            paintTopDecorators(g);
+        
         }
         
         if ( doIncrementPaintCountTimer ) {
@@ -2215,25 +2244,8 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
                     logger.info("NullPointerException avoided, why is p1 or p2 null?");
                 }
             }
-            Painter[] decor;
-            decor= getCanvas().topDecorators.toArray(getCanvas().emptyPainterArray);
-            for ( Painter p : decor ) {
-                try {
-                    long t0= System.currentTimeMillis();
-                    Graphics2D g22= (Graphics2D) g2.create(); // create a graphics object in case they reset colors, etc.
-                    //See https://sourceforge.net/p/autoplot/bugs/2140/
-                    g22.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON );
-                    g22.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
-                    p.paint(g22);
-                    long dt= System.currentTimeMillis()-t0;
-                    if (  dt > 120 ) { // warn if painters are taking more than 120 ms to paint.
-                        System.err.println("painter is taking too long to paint ("+dt+" ms): "+p );
-                    }
-                } catch ( Exception ex ) {
-                    g.drawString( "topDecorator causes exception: "+ex.toString(), 20, 20 );
-                    ex.printStackTrace();
-                }
-            }
+            
+            getCanvas().paintTopDecorators(g2);
             g2.dispose();
         }
 
