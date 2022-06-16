@@ -199,6 +199,9 @@ public class SeriesRenderer extends Renderer {
             xds= getXTags(ds);
             yds= ytagsDataSet(ds);
             zds= colorByDataSet(ds);
+            if ( xds.rank()==2 && !SemanticOps.isBins(xds) ) {
+                logger.warning("xtags part of data is rank 2 but xtags are not bins.");
+            }
         }
     }
     
@@ -2388,7 +2391,7 @@ public class SeriesRenderer extends Renderer {
                 return;
             }
             if ( xds.rank()!=1 ) {
-                logger.fine("dataset xtags are not rank 1.");
+                logger.info("dataset xtags are not rank 1.");
                 return;
             }
             if ( vds.rank()!=1 ) {
