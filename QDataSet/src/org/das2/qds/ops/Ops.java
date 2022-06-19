@@ -6066,19 +6066,15 @@ public final class Ops {
                return DataSetUtil.asDataSet( DatumUtil.parse(sarg) ); //TODO: someone is going to want lookupUnits that will allocate new units.
             } catch (ParseException ex) {
                try {
-                   return DataSetUtil.asDataSet( Units.us2000.parse(sarg) );// rfe 543: ISO8601 support for time zones.  Back off feature.
+                   DatumRange dr= DatumRangeUtil.parseTimeRange(sarg); 
+                   return DataSetUtil.asDataSet(dr);                   
                } catch ( ParseException ex2 ) {
                    try {
-                      DatumRange dr= DatumRangeUtil.parseTimeRange(sarg); 
-                      if ( dr==null ) {
-                          EnumerationUnits eu= EnumerationUnits.create("default");
-                          Datum d= eu.createDatum(sarg);
-                          return DataSetUtil.asDataSet(d);
-                      } else {
-                         return DataSetUtil.asDataSet(dr);
-                      }
+                      return DataSetUtil.asDataSet( Units.us2000.parse(sarg) );// rfe 543: ISO8601 support for time zones.  Back off feature.
                    } catch ( ParseException ex1 ) {
-                       throw new IllegalArgumentException( "unable to parse string: "+sarg, ex1 ); //TODO: does this happen?
+                        EnumerationUnits eu= EnumerationUnits.create("default");
+                        Datum d= eu.createDatum(sarg);
+                        return DataSetUtil.asDataSet(d);                       
                    }
                }
             }
