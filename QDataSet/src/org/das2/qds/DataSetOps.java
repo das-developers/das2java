@@ -1227,6 +1227,13 @@ public class DataSetOps {
                     QDataSet dep= (QDataSet)odep;
                     if ( dep.rank()>2 ) { // remove the high rank data, the calling code should deal with it.
                         odep= null;
+                    } else if ( i==0 && dep.rank()==2 ) {
+                        if ( DataSetUtil.isConstant(dep) ) {
+                            odep= dep.slice(0);
+                        } else {
+                            logger.log(Level.FINE, "rank timetags vary with DEPEND_0, dropping dep: {0}", dep);
+                            odep= null;
+                        }
                     }
                 }
                 result.put("DEPEND_" + i, odep);
