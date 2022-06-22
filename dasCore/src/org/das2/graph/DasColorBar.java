@@ -475,6 +475,21 @@ public class DasColorBar extends DasAxis {
         public static final Type BLACK_BLUE = new Type("black_blue");
 
         /**
+         * white to red, introduced to show grayscale-like image with color for comparisons
+         */
+        public static final Type WHITE_RED = new Type("white_red");
+
+        /**
+         * white to green, introduced to show grayscale-like image with color for comparisons
+         */
+        public static final Type WHITE_GREEN = new Type("white_green");
+
+        /**
+         * white to blue, introduced to show grayscale-like image with color for comparisons
+         */
+        public static final Type WHITE_BLUE = new Type("white_blue");
+
+        /**
          * white to blue to black
          */
         public static final Type WHITE_BLUE_BLACK = new Type("white_blue_black");
@@ -700,10 +715,16 @@ public class DasColorBar extends DasAxis {
             } else if (this == BLUE_WHITE_RED_WEDGE) {
                 initializeBlueWhiteRedWedge(size, bottom, top);
             } else if (this == BLACK_RED) {
-                initializeWhiteRed(size, bottom, top);
+                initializeBlackRed(size, bottom, top);
             } else if (this == BLACK_GREEN ) {
-                initializeWhiteGreen(size, bottom, top);
+                initializeBlackGreen(size, bottom, top);
             } else if (this == BLACK_BLUE) {
+                initializeBlackBlue(size, bottom, top);
+            } else if (this == WHITE_RED) {
+                initializeWhiteRed(size, bottom, top);
+            } else if (this == WHITE_GREEN ) {
+                initializeWhiteGreen(size, bottom, top);
+            } else if (this == WHITE_BLUE) {
                 initializeWhiteBlue(size, bottom, top);
             } else if (this == WHITE_BLUE_BLACK) {
                 initializeWhiteBlueBlack(size, bottom, top);
@@ -858,26 +879,48 @@ public class DasColorBar extends DasAxis {
         
         private void initializeWhiteRed( int size, int bottom, int top ) {
             int [] index= { 0, 255 };
+            int [] red= { 255, 255 };
+            int [] green= { 255, 0 };
+            int [] blue= { 255, 0 };
+            colorTable = makeColorTable( index, red, green, blue, size, bottom, top );
+        }   
+        private void initializeWhiteGreen( int size, int bottom, int top ) {
+            int [] index= { 0, 255 };
+            int [] red= { 255, 0 };
+            int [] green= { 255, 255 };
+            int [] blue= { 255, 0 };
+            colorTable = makeColorTable( index, red, green, blue, size, bottom, top );
+        }   
+        private void initializeWhiteBlue( int size, int bottom, int top ) {
+            int [] index= { 0, 255 };
+            int [] red= { 255, 0 };
+            int [] green= { 255, 0 };
+            int [] blue= { 255, 255 };
+            colorTable = makeColorTable( index, red, green, blue, size, bottom, top );
+        }   
+
+        private void initializeBlackRed( int size, int bottom, int top ) {
+            int [] index= { 0, 255 };
             int [] red= { 0, 255 };
             int [] green= { 0, 0 };
             int [] blue= { 0, 0 };
             colorTable = makeColorTable( index, red, green, blue, size, bottom, top );
         }   
-        private void initializeWhiteGreen( int size, int bottom, int top ) {
+        private void initializeBlackGreen( int size, int bottom, int top ) {
             int [] index= { 0, 255 };
             int [] red= { 0, 0 };
             int [] green= { 0, 255 };
             int [] blue= { 0, 0 };
             colorTable = makeColorTable( index, red, green, blue, size, bottom, top );
         }   
-        private void initializeWhiteBlue( int size, int bottom, int top ) {
+        private void initializeBlackBlue( int size, int bottom, int top ) {
             int [] index= { 0, 255 };
             int [] red= { 0, 0 };
             int [] green= { 0, 0 };
             int [] blue= { 0, 255 };
             colorTable = makeColorTable( index, red, green, blue, size, bottom, top );
         }   
-
+        
         /**
          * Masafumi requested reversed IDL colorbar 2
          * @param size
