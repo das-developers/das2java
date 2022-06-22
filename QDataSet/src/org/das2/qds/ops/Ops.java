@@ -10650,7 +10650,11 @@ public final class Ops {
             throw new IllegalArgumentException("u must be monotonic");
         }
         if ( !DataSetUtil.isMonotonicAndIncreasingQuick(uu) ) {
-            throw new IllegalArgumentException("u must be monotonically increasing and non-repeating");
+            if ( Ops.reduceMin( Ops.diff(uu),0 ).value()==0 ) {
+                throw new IllegalArgumentException("u must be non-repeating");
+            } else {
+                throw new IllegalArgumentException("u must be monotonically increasing and non-repeating");
+            }
         }
         DDataSet result = DDataSet.create(DataSetUtil.qubeDims(vv));
         QubeDataSetIterator it = new QubeDataSetIterator(vv);
