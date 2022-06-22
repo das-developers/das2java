@@ -129,6 +129,11 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
     protected Units[] unitsArray;
     
     /**
+     * the datumFormatter to use for each column.
+     */
+    protected DatumFormatter[] formatterArray;
+    
+    /**
      * array of plane names that are also the column headers. namesArray[0]="x", namesArray[1]="y"
      */
     protected String[] namesArray;
@@ -799,7 +804,7 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
                         if ( j==0 && ltimeFormatter!=null ) { //TODO: this should be done by units.
                             s.append( ltimeFormatter.format( x.get(j) ) ).append("\t");
                         } else {
-                            DatumFormatter formatter = x.get(j).getFormatter();
+                            DatumFormatter formatter = formatterArray[j];
                             s.append(formatter.format(x.get(j), unitsArray[j])).append("\t");
                         }
                     }
@@ -813,7 +818,7 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
                             s.append("\"").append(o).append("\"\t");
                         } else {
                             Datum d = (Datum) o;
-                            DatumFormatter f = d.getFormatter();
+                            DatumFormatter f = formatterArray[j];
                             s.append(f.format(d, unitsArray[j])).append("\t");
                         }
                     }
@@ -1904,6 +1909,9 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
                 unitsArray    = new Units[2 + planes.size()];
                 unitsArray[0] = x.getUnits();
                 unitsArray[1] = y.getUnits();
+                formatterArray    = new DatumFormatter[2 + planes.size()];
+                formatterArray[0] = x.getFormatter();
+                formatterArray[1] = y.getFormatter();
                 namesArray    = new String[2 + planes.size()];
                 namesArray[0] = "x";
                 namesArray[1] = "y";
@@ -1915,18 +1923,22 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
                     Object value = entry.getValue();
                     if (value instanceof String) {
                         unitsArray[index] = EnumerationUnits.create("default");
+                        formatterArray[index] = EnumerationUnits.create("default").getDatumFormatterFactory().defaultFormatter();
                     } else {
                         if ( value instanceof Datum ) {
                             unitsArray[index] = ((Datum) value).getUnits();
+                            formatterArray[index] = ((Datum)value).getFormatter();
                         } else if ( value instanceof QDataSet ) {
                             QDataSet qds= (QDataSet)value;
                             if ( qds.rank()>0 ) {
                                 throw new IllegalArgumentException("qdatasets in planes must be rank 0");
                             } else {
                                 unitsArray[index] = SemanticOps.getUnits((QDataSet)value);
+                                formatterArray[index] = SemanticOps.getDatum( (QDataSet)value, ((QDataSet) value).value() ).getFormatter();
                             }
                         } else if ( value instanceof Number ) {
                             unitsArray[index]= Units.dimensionless;
+                            formatterArray[index]= Units.dimensionless.getDatumFormatterFactory().defaultFormatter();
                         } else {
                             throw new IllegalArgumentException("values must be rank 0 Datum or QDataSet, not " + value);
                         }
@@ -2307,7 +2319,6 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
             this.timeFormatter= null;
         } else {
             this.timeFormatter= TimeParser.create(timeFormat);
-            //TODO: 
         }
     }
 
