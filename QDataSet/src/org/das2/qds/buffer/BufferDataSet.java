@@ -1103,7 +1103,7 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
                 if ( dep0!=null ) {
                     BufferDataSet djoin=  copy( dep0 );
                     BufferDataSet dd1=  maybeCopy(w1);
-                    djoin= append( djoin, dd1 );
+                    djoin= (BufferDataSet)Ops.append( djoin, dd1 );
                     result.put( prop, djoin );
                 } else {
                     logger.log(Level.INFO, "dataset doesn''t have property \"{0}\" but other dataset does: {1}", new Object[]{prop, ths});

@@ -914,7 +914,8 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
                     } else {
                         ddep1= maybeCopy( thatDep );
                     }
-                    djoin= append( djoin, ddep1 );
+                    // Ops.append will reconcile, but the result will be an ArrayDataSet.
+                    djoin= (ArrayDataSet)Ops.append( djoin, ddep1 ); 
                     result.put( "DEPEND_"+i, djoin );
                 }
             } else if ( thatDep!=null && thatDep.rank()==1 ) {
@@ -949,7 +950,7 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
                     ArrayDataSet djoin=  copy( propds );
                     ArrayDataSet dd1=  maybeCopy(w1);
                     if ( djoin.rank>0 || ds1.rank==0 ) {
-                        djoin= append( djoin, dd1 );
+                        djoin= (ArrayDataSet)Ops.append( djoin, dd1 );
                     }
                     result.put( prop, djoin );
                 } else {
