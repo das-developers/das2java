@@ -1702,7 +1702,7 @@ public class DataSetUtil {
                     
                 } else {
                     for ( int i=0; i<dd.length(); i++ ) {
-                        QDataSet ee= Ops.extent(dd);
+                        QDataSet ee= Ops.extent(dd.slice(0));
                         Datum t1= DataSetUtil.asDatum( Ops.subtract( ee.slice(1), ee.slice(0) ) );
                         rw= rw==null ? t1 : ( rw.lt(t1) ? t1 : rw );
                     }
