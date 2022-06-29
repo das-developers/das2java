@@ -1224,6 +1224,14 @@ public final class Ops {
      * @throws org.das2.util.monitor.CancelledOperationException
      */
     public static QDataSet reduceMean(QDataSet ds, int dim, ProgressMonitor mon ) throws CancelledOperationException {
+        if ( dim==1 ) { // special code for bins, since this happens often
+            int[] qube= DataSetUtil.qubeDims(ds);
+            if ( qube!=null && qube[1]==2 ) {
+                QDataSet left= Ops.slice1( ds, 0 );
+                QDataSet right= Ops.slice1( ds, 1 );
+                return Ops.add( left, Ops.divide( Ops.subtract(left,right), 2 ) );
+            }
+        }
         return averageGen(ds, dim, new AverageOp() {
             @Override
             public void accum(double d1, double w1, double[] accum) {
