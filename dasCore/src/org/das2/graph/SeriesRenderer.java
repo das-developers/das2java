@@ -921,7 +921,7 @@ public class SeriesRenderer extends Renderer {
         DataGeneralPathBuilder pathBuilder= new DataGeneralPathBuilder(xAxis,yAxis);
 
         Datum sw = null;
-        try {// TODO: this really shouldn't be here, since we calculate it once.
+        try {// TODO: this really shouldn't be here, since we calculate it once.  We keep a cache of cadence, so this is okay
             sw= getCadence( xds, vds, firstIndex, lastIndex );
             // Note it uses a cached value that runs along with the data.
         } catch ( IllegalArgumentException ex ) {
@@ -937,6 +937,10 @@ public class SeriesRenderer extends Renderer {
                 Units xUnits = SemanticOps.getUnits(xds);
                 xSampleWidth = doubleValue( sw, xUnits.getOffsetUnits() );
                 logStep= false;
+                if ( xUnits==Units.decimalYear ) {
+                    xSampleWidth = Units.days.createDatum( xSampleWidth*366 ).doubleValue( Units.days );
+                    sw= Units.days.createDatum(xSampleWidth);
+                }
             }
             //double-check cadence
             int cadenceGapCount= 0;
