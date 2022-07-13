@@ -1612,7 +1612,12 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
             
             @Override
             protected void setValue(Object value) {
-                super.setValue( formatterArray[column].format( (Datum)value, unitsArray[column] ) );
+                Datum d= (Datum)value;
+                if ( d.isFill() ) {
+                    super.setValue("fill");
+                } else {
+                    super.setValue( formatterArray[column].format( (Datum)value, unitsArray[column] ) );
+                }
             }
             
         } );
