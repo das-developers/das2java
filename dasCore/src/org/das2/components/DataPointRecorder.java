@@ -1502,6 +1502,7 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
         public DatumComparator( int column ) {
             this.column= column;
         }
+        @Override
         public int compare(Object o1, Object o2) {
             if ( o1 instanceof String ) {
                 try {
@@ -1522,8 +1523,9 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
             return datum1.compareTo(datum2);
         }
 
+        @Override
         public boolean equals(Object o2) {
-            return this.equals(o2);
+            return this.compare( this, o2 )==0;
         }
     }
 
