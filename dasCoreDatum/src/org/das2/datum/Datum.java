@@ -617,6 +617,10 @@ public class Datum implements Comparable, Serializable {
             a= a.convertTo(this.units);
         }
         
+        if ( UnitsUtil.isNominalMeasurement(units) ) {
+            return this.toString().compareTo(a.toString());
+        }
+        
         double d= this.getValue().doubleValue() - a.getValue().doubleValue();
         
         if (d==0.) {
