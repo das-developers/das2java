@@ -63,7 +63,6 @@ import javax.swing.Action;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.DefaultRowSorter;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -78,7 +77,6 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.RowSorter;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -86,10 +84,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableColumnModel;
-import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
-import javax.swing.table.TableModel;
-import javax.swing.table.TableRowSorter;
 import org.das2.DasApplication;
 import org.das2.dataset.DataSetAdapter;
 import org.das2.datum.EnumerationUnits;
@@ -245,9 +240,9 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
         public String toString() {
             StringBuilder result = new StringBuilder("" + data[0] + " " + data[1]);
             if (planes != null) {
-                for ( Entry<String,Object> entry: planes.entrySet() ) {
+                planes.entrySet().forEach((entry) -> {
                     result.append(" ").append(entry.getValue());
-                }
+                });
             }
             return result.toString();
         }
@@ -330,12 +325,7 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
             throw new IllegalArgumentException("data must be sorted");
         } else {
             synchronized ( dataPoints ) {
-                Comparator comp= new Comparator() {
-                    @Override
-                    public int compare(Object o1, Object o2) {
-                        return ((DataPoint)o1).get(0).compareTo((Datum)o2);
-                    }
-                };
+                Comparator comp= (Comparator) (Object o1, Object o2) -> ((DataPoint)o1).get(0).compareTo((Datum)o2);
                 int index1= Collections.binarySearch( dataPoints, range.min(), comp );
                 if ( index1<0 ) index1= ~index1;
                 int index2= Collections.binarySearch( dataPoints, range.max(), comp );
@@ -670,11 +660,8 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
             
             final List<Integer> fselectMe= selectMe;
                 
-            Runnable run= new Runnable() {
-                @Override
-                public void run() {
-                    showSelection( fselectMe );
-                }
+            Runnable run= () -> {
+                showSelection( fselectMe );
             };
             SwingUtilities.invokeLater(run);
             return fiselect;
@@ -691,11 +678,8 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
     public void select( List<Integer> selection ) {
         final List<Integer> c= new ArrayList(selection);
         table.getSelectionModel().clearSelection();
-        Runnable run= new Runnable() {
-            @Override
-            public void run() {
-                showSelection( c );
-            }
+        Runnable run= () -> {
+            showSelection( c );
         };
         if ( SwingUtilities.isEventDispatchThread() ) {
             run.run();
@@ -707,9 +691,9 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
     private int showSelection( List<Integer> selectMe ) {
         table.getSelectionModel().clearSelection();
         
-        for ( Integer selectMe1 : selectMe ) {
+        selectMe.forEach((selectMe1) -> {
             table.getSelectionModel().addSelectionInterval(selectMe1, selectMe1);
-        }
+        });
 
         if ( selectMe.size()>0 ) {
             int iselect= selectMe.get(0);
@@ -1079,13 +1063,10 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
             
             modified = false;
 
-            Runnable run= new Runnable() {
-                @Override
-                public void run() {
-                    //table.getColumnModel();
-                    myTableModel.fireTableStructureChanged();
-                    table.repaint();
-                }
+            Runnable run= () -> {
+                //table.getColumnModel();
+                myTableModel.fireTableStructureChanged();
+                table.repaint();
             };
             SwingUtilities.invokeLater(run);      
         }
@@ -1273,16 +1254,12 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
                     if (status == JFileChooser.APPROVE_OPTION) {
                         final File loadFile = jj.getSelectedFile();
                         prefs.put("components.DataPointRecorder.lastFileLoad", loadFile.toString());
-                        Runnable run = new Runnable() {
-                            @Override
-                            public void run() {
-                                try {
-                                    loadFromFile(loadFile);
-                                    updateStatus();
-                                } catch (IOException e) {
-                                    DasApplication.getDefaultApplication().getExceptionHandler().handle(e);
-                                }
-
+                        Runnable run = () -> {
+                            try {
+                                loadFromFile(loadFile);
+                                updateStatus();
+                            } catch (IOException e1) {
+                                DasApplication.getDefaultApplication().getExceptionHandler().handle(e1);
                             }
                         };
                         new Thread(run).start();
@@ -1523,10 +1500,6 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
             return datum1.compareTo(datum2);
         }
 
-        @Override
-        public boolean equals(Object o2) {
-            return this.compare( this, o2 )==0;
-        }
     }
 
     /**
@@ -1614,12 +1587,9 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
                         logger.fine("ignore out of bounds point");
                     }
                 }
-                Runnable run= new Runnable() {
-                    @Override
-                    public void run() {
-                        deleteSelectionButton.setEnabled( table.getSelectedRowCount()>0 );
-                        clearSelectionButton.setEnabled( table.getSelectedRowCount()>0 );                
-                    }
+                Runnable run= () -> {
+                    deleteSelectionButton.setEnabled( table.getSelectedRowCount()>0 );
+                    clearSelectionButton.setEnabled( table.getSelectedRowCount()>0 );
                 };
                 if (SwingUtilities.isEventDispatchThread()) {
                     run.run();
@@ -2106,16 +2076,12 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
      * @see org.das2.dataset.DataSetUpdateEvent
      */
     public DataSetUpdateListener getAppendDataSetUpListener() {
-        return new DataSetUpdateListener() {
-            @Override
-            public void dataSetUpdated(DataSetUpdateEvent e) {
-                VectorDataSet ds = (VectorDataSet) e.getDataSet();
-                if (ds == null) {
-                    throw new RuntimeException("not supported, I need the DataSet in the update event");
-                } else {
-                    appendDataSet((VectorDataSet) e.getDataSet());
-                }
-
+        return (DataSetUpdateEvent e) -> {
+            VectorDataSet ds = (VectorDataSet) e.getDataSet();
+            if (ds == null) {
+                throw new RuntimeException("not supported, I need the DataSet in the update event");
+            } else {
+                appendDataSet((VectorDataSet) e.getDataSet());
             }
         };
     }
