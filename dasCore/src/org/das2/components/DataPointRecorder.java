@@ -27,6 +27,7 @@ import org.das2.components.propertyeditor.PropertyEditor;
 import org.das2.datum.format.DatumFormatter;
 import org.das2.system.DasLogger;
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
@@ -83,7 +84,9 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableColumnModel;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
@@ -1624,6 +1627,23 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
             }
         });
 
+        table.setDefaultRenderer( Datum.class, new DefaultTableCellRenderer() {
+            int row;
+            int column;
+            
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                this.column= column;
+                this.row= row;
+                return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column); //To change body of generated methods, choose Tools | Templates.
+            }
+            
+            @Override
+            protected void setValue(Object value) {
+                super.setValue( formatterArray[column].format( (Datum)value, unitsArray[column] ) );
+            }
+            
+        } );
         scrollPane = new JScrollPane(table);
         this.add(scrollPane, BorderLayout.CENTER);
 
