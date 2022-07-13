@@ -6546,6 +6546,38 @@ public final class Ops {
     }
     
     /**
+     * returns 1 where the dataset contains elements within the set, 0 where elements are not within the set.
+     * Note this cannot be used to check for fill data.
+     * @param ds a dataset
+     * @param set a dataset, typically rank 1, of values.
+     * @return 1 where the dataset contains elements within the set, 0 otherwise.
+     * @see #not(org.das2.qds.QDataSet) which negates
+     */
+    public static QDataSet withinSet( QDataSet ds, QDataSet set ) {
+        ArrayDataSet ids= ArrayDataSet.create( int.class, DataSetUtil.qubeDims(ds) );
+        if ( ds.rank()==1 ) {
+            for ( int i=0; i<ds.length(); i++ ) {
+                if ( Ops.total( Ops.eq( ds.slice(i), set ) )>0 ) {
+                    ids.putValue(i,1);
+                } else {
+                    ids.putValue(i,0);
+                }
+            }
+        } else {
+            QubeDataSetIterator it= new QubeDataSetIterator(ds);
+            while ( it.hasNext() ) {
+                it.next();
+                if ( Ops.total( Ops.eq( it.getRank0Value(ds), set ) ) > 0 ) {
+                    it.putValue( ids, 1 );
+                } else {
+                    it.putValue( ids, 0 );
+                }
+            }
+        }
+        return ids;
+    }
+            
+    /**
      * return non-zero where the data in ds are within the bounds.  In Jython,
      *<blockquote><pre>
      *print within( [0,1,2,3,4], '2 to 4' ) --> [ 0,0,1,1,0 ]
