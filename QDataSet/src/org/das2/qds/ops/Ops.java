@@ -6552,6 +6552,7 @@ public final class Ops {
      * @param set a dataset, typically rank 1, of values.
      * @return 1 where the dataset contains elements within the set, 0 otherwise.
      * @see #not(org.das2.qds.QDataSet) which negates
+     * @see #within(org.das2.qds.QDataSet, org.das2.qds.QDataSet) for within a range
      */
     public static QDataSet withinSet( QDataSet ds, QDataSet set ) {
         ArrayDataSet ids= ArrayDataSet.create( int.class, DataSetUtil.qubeDims(ds) );
@@ -6590,6 +6591,7 @@ public final class Ops {
      * @return rank N dataset containing non-zero where the condition is true.
      * @see #without(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      * @see #binsWithin(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
+     * @see #withinSet(org.das2.qds.QDataSet, org.das2.qds.QDataSet) points within a set.
      */
     public static QDataSet within( QDataSet ds, QDataSet bounds ) {
         if ( bounds==null ) {
