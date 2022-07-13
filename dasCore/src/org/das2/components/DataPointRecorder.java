@@ -62,6 +62,7 @@ import javax.swing.Action;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultRowSorter;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -76,6 +77,7 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.RowSorter;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -83,6 +85,8 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.TableColumn;
+import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
 import org.das2.DasApplication;
 import org.das2.dataset.DataSetAdapter;
 import org.das2.datum.EnumerationUnits;
@@ -303,27 +307,10 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
             }
             if (j < x.data.length) {
                 Datum d = x.get(j);
-                if ( j==0 && timeFormatter!=null && UnitsUtil.isTimeLocation( d.getUnits() ) ) {
-                    return timeFormatter.format(d);
-                } else {
-                    if ( d.isFill() ) {
-                        return "fill";
-                    } else {
-                        return d.getFormatter().format(d, unitsArray[j]);
-                    }
-                }
+                return d;
             } else {
-                Object o = x.getPlane(namesArray[j]);
-                if (o instanceof Datum) {
-                    Datum d = (Datum) o;
-                    if ( d.isFill() ) {
-                        return "fill";
-                    } else {
-                        return d.getFormatter().format(d, unitsArray[j]);
-                    }
-                } else {
-                    return (String) o;
-                }
+                Object d = x.getPlane(namesArray[j]);
+                return d;
             }            
         }
     }
@@ -1506,6 +1493,36 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
     public DataPointRecorder() {
         this(true);
     }
+    
+    class DatumComparator implements Comparator {
+        int column;
+        public DatumComparator( int column ) {
+            this.column= column;
+        }
+        public int compare(Object o1, Object o2) {
+            if ( o1 instanceof String ) {
+                try {
+                    o1= unitsArray[this.column].parse((String)o1);
+                } catch (ParseException ex) {
+                    logger.log(Level.SEVERE, null, ex);
+                }
+            }
+            if ( o2 instanceof String ) {
+                try {
+                    o2= unitsArray[this.column].parse((String)o2);
+                } catch (ParseException ex) {
+                    logger.log(Level.SEVERE, null, ex);
+                }
+            }
+            Datum datum1 = (Datum)o1;
+            Datum datum2 = (Datum)o2;
+            return datum1.compareTo(datum2);
+        }
+
+        public boolean equals(Object o2) {
+            return this.equals(o2);
+        }
+    }
 
     /**
      * create a DataPointRecorder.  When sorted is true, the data point recorder will only allow
@@ -1552,7 +1569,7 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
 
         table = new JTable(myTableModel);
         table.setAutoCreateRowSorter(true); // Java 1.6
-
+        
         table.getTableHeader().setReorderingAllowed(true);
         table.setColumnModel( new DefaultTableColumnModel() {
 
