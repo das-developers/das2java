@@ -498,6 +498,11 @@ public class AsciiParser {
                 bundleDescriptor = AsciiHeadersParser.parseMetadata(header, fieldNames, fieldLabels );
                 if ( bundleDescriptor.length()==fieldNames.length ) {
                     for ( int j=0; j<bundleDescriptor.length(); j++ ) {
+                        if ( j==0 && bundleDescriptor.property(QDataSet.UNITS,j)==null ) {
+                            if ( UnitsUtil.isTimeLocation(units[0]) && bundleDescriptor.property(QDataSet.UNITS,j)==null ) {
+                                bundleDescriptor.putProperty( QDataSet.UNITS, j, units[0]);    
+                            }
+                        }
                         String n= (String)bundleDescriptor.property(QDataSet.NAME,j);
                         if ( n!=null ) fieldNames[j]= n;
                         n= (String)bundleDescriptor.property(QDataSet.LABEL,j);
@@ -1170,6 +1175,9 @@ public class AsciiParser {
                 });
 
                 for ( int j=0; j<bundleDescriptor.length(); j++ ) {
+                    if ( j==0 && UnitsUtil.isTimeLocation(units[0]) && bundleDescriptor.property(QDataSet.UNITS,j)==null ) {
+                        bundleDescriptor.putProperty( QDataSet.UNITS, j, units[0]);
+                    }
                     Units u= (Units) bundleDescriptor.property( QDataSet.UNITS, j );
                     if ( u!=null ) {
                         this.fieldParsers[j]= UNITS_PARSER;
@@ -1183,15 +1191,15 @@ public class AsciiParser {
             } catch (ParseException ex) {
                 logger.log(Level.SEVERE, ex.getMessage(), ex);
                 if ( propertyPattern!=null ) {
-                Map<String,String> userProps= new LinkedHashMap<>();
-                for ( String line2: header.split("\n") ) {
-                    Matcher m2= propertyPattern.matcher(line2);
-                    if ( m2.matches() ) {
-                        userProps.put( m2.group(1).trim(), m2.group(2).trim() );
+                    Map<String,String> userProps= new LinkedHashMap<>();
+                    for ( String line2: header.split("\n") ) {
+                        Matcher m2= propertyPattern.matcher(line2);
+                        if ( m2.matches() ) {
+                            userProps.put( m2.group(1).trim(), m2.group(2).trim() );
+                        }
                     }
+                    builder.putProperty( QDataSet.USER_PROPERTIES, userProps );
                 }
-                builder.putProperty( QDataSet.USER_PROPERTIES, userProps );
-            }
             }
         } else {
             if ( propertyPattern!=null ) {
