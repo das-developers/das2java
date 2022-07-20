@@ -21,7 +21,6 @@ import org.das2.datum.DomainDivider;
 import org.das2.datum.DomainDividerUtil;
 import org.das2.datum.EnumerationUnits;
 import org.das2.datum.UnitsUtil;
-import org.das2.datum.format.FormatStringFormatter;
 import org.das2.qds.QDataSet;
 import org.das2.qds.SemanticOps;
 import org.das2.qds.ops.Ops;
@@ -217,6 +216,22 @@ public class TickVDescriptor {
 
     }
 
+    /**
+     * check that the two are element-for-element equal, looking only at the tick values.
+     * @param a
+     * @param b
+     * @return true if they are equal
+     */
+    public static boolean ticksEqual( TickVDescriptor a, TickVDescriptor b ) {
+        if ( a==null || b==null ) return false;
+        if ( DatumVector.datumVectorsEqual(a.tickV,b.tickV) ) {
+            if ( DatumVector.datumVectorsEqual(a.minorTickV,b.minorTickV) ) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     /**
      * Defining method for getting the range close to the given range,
      * but containing at least one minor(or major) tick interval.
