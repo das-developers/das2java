@@ -1247,7 +1247,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     
     @Override
     boolean isDirty() {
-        return super.isDirty() || ( drawTca && ( tcaIsLoading || tcaNeedsPainting ) );
+        return super.isDirty() || ( drawTca && tcaIsLoading );
     }
         
     private void maybeStartTcaTimer() {
@@ -1306,10 +1306,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         markDirty("tcaFunction");
         update();
 
-        if ( f==null ) {
-            this.tcaNeedsPainting= false;
-            this.tcaIsLoading= false;
-        }
+        this.tcaNeedsPainting= false;
+        this.tcaIsLoading= false;
+
         firePropertyChange("dataSetDescriptor", null, null );
         firePropertyChange("dataPath", null, null );
         firePropertyChange("tcaFunction", oldF, f );
@@ -2040,7 +2039,6 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                        updateTCAImmediately( );
                    } finally {
                        lcanvas.changePerformed( DasAxis.this, tcaLock );
-                       tcaNeedsPainting= true;
                        tcaIsLoading= false;
                    }
                 }
@@ -2064,7 +2062,6 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 lcanvas.performingChange( DasAxis.this, tcaLock );
                 tcaTimer.tickle("resetTickV", (PropertyChangeEvent evt) -> {
                     lcanvas.changePerformed( DasAxis.this, tcaLock );
-                    tcaNeedsPainting= true;
                     tcaIsLoading= false;
                 });
             }
@@ -2443,10 +2440,6 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
         g.dispose();
         getDasMouseInputAdapter().paint(graphics);
-
-        if ( tcaIsLoading==false ) {
-            tcaNeedsPainting= false;
-        }
         
     /* This was code was keeping axes from being printed on PC's
     if (getCanvas().isPrintingThread()) {
