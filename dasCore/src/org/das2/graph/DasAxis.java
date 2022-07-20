@@ -72,6 +72,7 @@ import org.das2.datum.DomainDividerUtil;
 import org.das2.datum.OrbitDatumRange;
 import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
+import static org.das2.graph.DasPlot.logger;
 import org.das2.math.fft.jnt.Factorize;
 import org.das2.system.RequestProcessor;
 import org.das2.util.LoggerManager;
@@ -1227,6 +1228,12 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         markDirty("tcaDataPath");
         update();
         firePropertyChange("dataPath", oldValue, dataset);
+    }
+    
+    @Override
+    protected void processEvent(AWTEvent e) {
+        super.processEvent(e);
+        repaint();
     }
     
     private boolean tcaIsLoading;
