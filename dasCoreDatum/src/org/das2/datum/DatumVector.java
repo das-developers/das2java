@@ -205,9 +205,10 @@ public final class DatumVector {
         return new DatumVector( dd, 0, dd.length, units );
     }
     
+    @Override
     public String toString() {
         Units units= this.getUnits();
-        StringBuffer result= new StringBuffer();
+        StringBuilder result= new StringBuilder();
         result.append("[");
         for ( int i=0; i< Math.min( 4, getLength() ); i++ ) {
             if ( i>0 ) result.append(", ");
@@ -215,7 +216,28 @@ public final class DatumVector {
             result.append(d.getFormatter().format(d,units));
         }
         if ( getLength()>4 ) result.append(", ...");
-        result.append(" "+units.toString()+" ]");
+        result.append(" ").append(units.toString()).append(" ]");
         return result.toString();
     }
+    
+    /**
+     * check that element-for-element the two are equal
+     * @param a
+     * @param b
+     * @return true if they are equal.
+     */
+    public static boolean datumVectorsEqual( DatumVector a, DatumVector b ) { 
+        if ( a==null || b==null ) return false;
+        if ( a.getLength()==b.getLength() ) {
+            for ( int i=0; i<a.getLength(); i++ ) {
+                if ( !a.get(i).equals(b.get(i)) ) {
+                    return false;
+                }
+            }
+            return true;
+        } else {
+            return false;
+        }
+    }
+        
 }
