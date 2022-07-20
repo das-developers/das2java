@@ -1229,6 +1229,15 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         firePropertyChange("dataPath", oldValue, dataset);
     }
     
+    private boolean tcaIsLoading;
+    
+    private boolean tcaNeedsPainting;
+    
+    @Override
+    boolean isDirty() {
+        return super.isDirty() || tcaIsLoading || tcaNeedsPainting;
+    }
+        
     private void maybeStartTcaTimer() {
         logger.fine("enter maybeStartTcaTimer");
         final DasCanvas lcanvas= getCanvas();
@@ -1237,6 +1246,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             logger.log( Level.FINER, "canvas is not yet set, returning");
             return;
         }
+        
+        tcaIsLoading= true;
         
         if ( lcanvas.isPendingChanges( tcaLock ) ) {
             logger.fine("tcatimer is already pending");
@@ -1257,6 +1268,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                             updateTCASoon();
                         } finally {
                             lcanvas.changePerformed( DasAxis.this, tcaLock );
+                            tcaNeedsPainting= true;
+                            tcaIsLoading= false;
                         }
                     }
                 });
@@ -2001,6 +2014,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         final DasCanvas lcanvas= getCanvas();
         logger.log(Level.FINE, "updateTCASoon {0}", lcanvas);
         if ( lcanvas!=null ) {
+            tcaIsLoading= true;
             lcanvas.registerPendingChange( this, tcaLock );
             RequestProcessor.invokeLater(new Runnable() {
                 @Override
@@ -2010,6 +2024,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                        updateTCAImmediately( );
                    } finally {
                        lcanvas.changePerformed( DasAxis.this, tcaLock );
+                       tcaNeedsPainting= true;
+                       tcaIsLoading= false;
                    }
                 }
             }, DasAxis.this );
@@ -2027,10 +2043,13 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         if ( drawTca && tcaFunction != null ) {  
             final DasCanvas lcanvas= getCanvas();
             if ( lcanvas!=null ) {
+                tcaIsLoading= true;
                 lcanvas.registerPendingChange( DasAxis.this, tcaLock );
                 lcanvas.performingChange( DasAxis.this, tcaLock );
                 tcaTimer.tickle("resetTickV", (PropertyChangeEvent evt) -> {
                     lcanvas.changePerformed( DasAxis.this, tcaLock );
+                    tcaNeedsPainting= true;
+                    tcaIsLoading= false;
                 });
             }
         }
@@ -2409,6 +2428,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         g.dispose();
         getDasMouseInputAdapter().paint(graphics);
 
+        if ( drawTca && tcaIsLoading==false ) {
+            tcaNeedsPainting= false;
+        }
+        
     /* This was code was keeping axes from being printed on PC's
     if (getCanvas().isPrintingThread()) {
     g.setClip(saveClip);
