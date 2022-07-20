@@ -3047,14 +3047,6 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
     }
 
     /**
-     * Do not use this unless you know what you are doing.
-     * @return the changes support object.
-     */
-    public ChangesSupport getChangesSupport() {
-        return stateSupport;
-    }
-    
-    /**
      * access the lock for an atomic operation. 
      * @see ChangesSupport
      * @return the lock.
