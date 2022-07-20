@@ -1,6 +1,4 @@
-/**
- * 
- */
+
 package org.das2.system;
 
 import java.beans.PropertyChangeListener;
@@ -14,6 +12,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.das2.util.LoggerManager;
 
 /**
  * Support class for encapsulating implementation of pendingChanges and mutator locks.
@@ -36,7 +35,7 @@ public class ChangesSupport {
     Map<Object,String> threads;
     
     WeakReference<Object> parent;
-    private static final Logger logger = Logger.getLogger("das2.system");
+    private static final Logger logger = LoggerManager.getLogger("das2.system.changes");
 
     /**
      * if the propertyChangeSupport is provided, then change messages will be sent to
@@ -85,25 +84,21 @@ public class ChangesSupport {
      * @param lockObject object identifying the change.
      */
     public synchronized void registerPendingChange(Object client, Object lockObject) {
-        String msg = "registerPendingChange " + lockObject + " by " + client + "  in " + parent.get();
-        logger.fine(msg);
+        logger.log(Level.FINE, "registerPendingChange {0} by {1} in {2}", new Object[]{lockObject, client, parent.get()});
         Object existingClient = changesPending.get(lockObject);
         if (existingClient != null) {
-            if (existingClient != client) {
+            if ( existingClient != client ) {
                 throw new IllegalStateException("lock object in use: " + lockObject + ", by " + changesPending.get(lockObject));
             } else if ( existingClient==client ) {
                 logger.log( Level.FINE, "bug 1075: second change registered but the first was not done."); // this is somewhat harmless.  Don't bug clients with this message.
-            } else {
-                //Note, it is okay to call this multiple times for the same client and lock object.
-                return;
-            }
+            } 
         }
         Integer count= changeCount.get(lockObject);
         if ( count==null ) {
             changeCount.put( lockObject, 1 );
         } else {
             changeCount.put( lockObject, count+1 );
-        }        
+        }
         boolean oldVal = this.isPendingChanges();
         changesPending.put(lockObject, client);
         threads.put( lockObject, Thread.currentThread().toString() );
@@ -115,6 +110,7 @@ public class ChangesSupport {
      * Map that goes from pending change to change manager.  
      *
      * @param changes a Map to which the changes will be added.
+     * @see #getChangesPending
      */
     public synchronized void pendingChanges( Map<Object,Object> changes ) {
         changes.putAll( changesPending );
@@ -200,6 +196,7 @@ public class ChangesSupport {
      * return a map listing the pending changes.  This is a thread-safe
      * read-only copy.
      * @return a map listing the pending changes.
+     * @see #pendingChanges
      */
     public synchronized Map getChangesPending() {
         if ( changesPending.isEmpty() ) {
