@@ -1147,6 +1147,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             return;
         }
         drawTca = b;
+        if ( !b ) {
+            this.tcaNeedsPainting= false;
+            this.tcaIsLoading= false;
+        }
+        
         markDirty("drawTca");
         update();
         firePropertyChange("showTca", oldValue, b);
@@ -1242,7 +1247,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     
     @Override
     boolean isDirty() {
-        return super.isDirty() || tcaIsLoading || tcaNeedsPainting;
+        return super.isDirty() || ( drawTca && ( tcaIsLoading || tcaNeedsPainting ) );
     }
         
     private void maybeStartTcaTimer() {
@@ -1301,6 +1306,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         markDirty("tcaFunction");
         update();
 
+        if ( f==null ) {
+            this.tcaNeedsPainting= false;
+            this.tcaIsLoading= false;
+        }
         firePropertyChange("dataSetDescriptor", null, null );
         firePropertyChange("dataPath", null, null );
         firePropertyChange("tcaFunction", oldF, f );
@@ -2435,7 +2444,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         g.dispose();
         getDasMouseInputAdapter().paint(graphics);
 
-        if ( drawTca && tcaIsLoading==false ) {
+        if ( tcaIsLoading==false ) {
             tcaNeedsPainting= false;
         }
         
