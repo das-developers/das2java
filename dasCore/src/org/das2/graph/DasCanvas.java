@@ -1335,6 +1335,27 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
     }
     
     /**
+     * scans through all the canvas components and returns true if any are in a "dirty" state and need
+     * repainting.
+     * @param c
+     * @return true if any canvas component is dirty.
+     */
+    public static boolean childIsDirty( DasCanvas c ) {
+        for ( DasCanvasComponent cc: c.getCanvasComponents() ) {
+            if ( cc.isDirty() ) {
+                logger.log(Level.INFO, "Still Dirty: {0}", cc);
+                return true;
+            }
+        }
+        
+        if ( c.isDirty() ) {
+            logger.log(Level.INFO,"Canvas is still dirty");
+            return true;
+        }
+        return false;
+    }
+    
+    /**
      * blocks until everything is idle, including no active monitors.
      * PRESENTLY THIS DOES NOT CHECK MONITORS!
      * @param monitors
@@ -1424,9 +1445,9 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
 
         int count=0;
         /** wait for registered pending changes.  TODO: this is cheesy */
-        if (stateSupport.isPendingChanges()) {
+        if (stateSupport.isPendingChanges() || childIsDirty(this) ) {
             logger.finer("waiting for pending changes");
-            while (stateSupport.isPendingChanges()) {
+            while (stateSupport.isPendingChanges() || childIsDirty(this) ) {
                 count++;
                 if ( count==100 ) {
                     logger.info("stateSupport.pendingChanges:");
