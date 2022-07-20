@@ -1449,12 +1449,20 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
             logger.finer("waiting for pending changes");
             while (stateSupport.isPendingChanges() || childIsDirty(this) ) {
                 count++;
+                if ( count%5==0 && childIsDirty(this) ) {
+                    for ( DasCanvasComponent cc: getCanvasComponents() ) {
+                        if ( cc.isDirty() ) { // there's a weird bug where sometimes the dirty flags aren't cleared.
+                            cc.update();
+                        }
+                    }
+                }
                 if ( count==100 ) {
                     logger.info("stateSupport.pendingChanges:");
                     for ( Object o: stateSupport.getChangesPending().entrySet() ) {
                         logger.log(Level.INFO, "  {0}", o);
                     }
                 }
+                
                 try {
                     Thread.sleep(100); 
                 } catch (InterruptedException ex) {
