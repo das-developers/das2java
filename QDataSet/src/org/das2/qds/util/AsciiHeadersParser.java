@@ -838,8 +838,8 @@ public class AsciiHeadersParser {
                 if ( inlineDataSets.containsKey((String)v) ) {
                     props1.put( name, inlineDataSets.get((String)v) );
                 } else {
-                    logger.log(Level.WARNING, "unable to resolve property {0}={1} of {2}.  No such dataset found.", new Object[]{name, v, datasets2.get(i)});
-                    throw new IllegalArgumentException("unable to resolve property "+name+"="+v+" of "+datasets2.get(i)+".  No such dataset found." );
+                    logger.log(Level.WARNING, "unable to resolve property \"{0}\"=\"{1}\" of \"{2}\".  No such dataset found.", new Object[]{name, v, datasets2.get(i)});
+                    throw new IllegalArgumentException("unable to resolve property \""+name+"\"=\""+v+"\" of \""+datasets2.get(i)+"\".  No such dataset found." );
                     //props1.put( name, v );
                 }
             } else {
