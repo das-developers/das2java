@@ -6551,8 +6551,8 @@ public final class Ops {
      * @param ds a dataset
      * @param set a dataset, typically rank 1, of values.
      * @return 1 where the dataset contains elements within the set, 0 otherwise.
-     * @see #not(org.das2.qds.QDataSet) which negates
-     * @see #within(org.das2.qds.QDataSet, org.das2.qds.QDataSet) for within a range
+     * @see #not(org.das2.qds.QDataSet)
+     * @see #within(org.das2.qds.QDataSet, org.das2.qds.QDataSet)
      */
     public static QDataSet withinSet( QDataSet ds, QDataSet set ) {
         ArrayDataSet ids= ArrayDataSet.create( int.class, DataSetUtil.qubeDims(ds) );
@@ -6585,13 +6585,12 @@ public final class Ops {
      *print within( ttag, 'orbit:rbspa-pp:172' )
      *</pre></blockquote>
      * 
-     * Note, before March 2, 2015, this would incorrectly return the where of the result.
      * @param ds rank N dataset where N &gt; 0
      * @param bounds a rank 1 bounding box, or rank 2 array of bounding boxes, or rank 2 events list
      * @return rank N dataset containing non-zero where the condition is true.
      * @see #without(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      * @see #binsWithin(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
-     * @see #withinSet(org.das2.qds.QDataSet, org.das2.qds.QDataSet) points within a set.
+     * @see #withinSet(org.das2.qds.QDataSet, org.das2.qds.QDataSet)
      */
     public static QDataSet within( QDataSet ds, QDataSet bounds ) {
         if ( bounds==null ) {
@@ -6642,7 +6641,7 @@ public final class Ops {
      * @param bounds a rank 1 bounding box, DatumRange, or two-element array.  
      * @return rank N dataset containing non-zero where the condition is true.
      * @see #without(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
-     * @see #where(java.lang.Object) where, which is often used with this.
+     * @see #where(java.lang.Object)
      * @see #binsWithin(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      */
     public static QDataSet within( Object ds, Object bounds ) {
