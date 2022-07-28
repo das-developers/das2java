@@ -9885,8 +9885,13 @@ public final class Ops {
                         for ( int i=0; i<ni; i++ ) {
                             if ( wds.value(i)>0 ) {
                                 count++;
-                                result[0]= Math.min( result[0], min.value(i) );
-                                result[1]= Math.max( result[1], max.value(i) );
+                                double a,b;
+                                a= result[0];
+                                b= min.value(i);
+                                result[0]= (a <= b) ? a : b; //Math.min( result[0], min.value(i) );
+                                a= result[1];
+                                b= max.value(i);
+                                result[1]= (a >= b) ? a : b; // Math.max( result[1], max.value(i) );
                             }
                         }       break;
                     }
@@ -9902,7 +9907,8 @@ public final class Ops {
                                     result[1]= Math.max( result[1], max.value(i,j) );
                                 }
                             }
-                        }       break;
+                        }       
+                        break;
                     }
                 default:
                     QubeDataSetIterator it = new QubeDataSetIterator(ds);
@@ -9913,7 +9919,8 @@ public final class Ops {
                             result[0] = Math.min(result[0], it.getValue(min));
                             result[1] = Math.max(result[1], it.getValue(max));
                         }
-                    }   break;
+                    }   
+                    break;
             }
             
             if ( count==0 ) {  // no valid data!
@@ -9998,9 +10005,8 @@ public final class Ops {
             case 1:
                 int n= ds.length();
                 for ( int i=0; i<n; i++ ) {
-                    double d= ds.value(i);
                     if ( valid.value(i)>0 ) {
-                        double min1= min.value(i); // Math.min requires we do extra redundent checks, and we leave this routine, but appearently this is no faster...
+                        double min1= min.value(i); // Math.min requires we do extra redundent checks, and we leave this routine
                         result[0]= result[0] < min1 ? result[0] : min1;
                         double max1= max.value(i);
                         result[1]= result[1] > max1 ? result[1] : max1;
