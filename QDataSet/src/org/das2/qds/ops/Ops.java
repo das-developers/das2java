@@ -13848,7 +13848,8 @@ public final class Ops {
         } else if ( zds.rank()==1 ) {
             Object o= zds.property(QDataSet.DEPEND_0);
             if ( o!=null && !( o instanceof QDataSet ) ) {
-                throw new IllegalArgumentException("Somehow a string got into DEPEND_0 property.");
+                logger.info("Somehow a string got into DEPEND_0 property.");
+                return false;
             }
             QDataSet dep0= (QDataSet) zds.property(QDataSet.DEPEND_0);
             if ( dep0!=null ) {
