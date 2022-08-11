@@ -447,7 +447,14 @@ public final class SemanticOps {
      * @return
      */
     public static QDataSet xtagsDataSet( QDataSet ds ) {
-        QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
+        Object odep0= ds.property(QDataSet.DEPEND_0);
+        if ( odep0!=null ) {
+            if ( odep0 instanceof String ) {
+                logger.info("Somehow a string got into QDataSet DEPEND_0 property...");
+                return null;
+            }
+        }
+        QDataSet dep0= (QDataSet)odep0;
         if ( dep0!=null ) return dep0;
         if ( isBundle(ds) && !isBins(ds) ){
             return DataSetOps.unbundle(ds,0);

@@ -680,6 +680,7 @@ public class AsciiHeadersParser {
             }
 
         } catch (JSONException | IllegalArgumentException ex) {
+            ex.printStackTrace();
             throw new ParseException( ex.toString(), 0 );
         }
     }
@@ -811,7 +812,11 @@ public class AsciiHeadersParser {
                             labels= (String[]) props1.get( PROP_ELEMENT_NAMES );
                         }
                         if ( labels!=null ) {
-                            return labels[ic-ids];
+                            if ( ic-ids>=labels.length ) {
+                                return ""; // http://solar.physics.montana.edu/FIREBIRD_II/Data/FU_3/hires/FU3_Hires_2018-10-01_L2.txt
+                            } else {
+                                return labels[ic-ids];
+                            }
                         }
                     }
                 }
@@ -827,6 +832,9 @@ public class AsciiHeadersParser {
 
         @Override
         public synchronized void putProperty( String name, int ic, Object v ) {
+            if ( name.equals("DEPEND_0" ) ) {
+                System.err.println("HERE DEPEND_0");
+            }
             String dsname= datasets2.get(ic);
             int i= datasets.get(dsname);
             Map<String,Object> props1= props.get( i );
@@ -972,6 +980,9 @@ public class AsciiHeadersParser {
         Iterator it= jo.keys();
         for ( ; it.hasNext(); ) {
              String key= (String) it.next();
+             if ( key.equals("DEPEND_0") ) {
+                 System.err.println("Stop here");
+             }
              Object o= jo.get(key);
              if ( !( o instanceof JSONObject ) ) {
                  Object oUserProperties=bd.property( QDataSet.USER_PROPERTIES );
@@ -1084,7 +1095,12 @@ public class AsciiHeadersParser {
                             logger.log(Level.WARNING, "invalid value for property {0}: {1}", new Object[]{prop, sv});
                         } else {
                             Object v= coerceToType( prop, sv );
-                            bd.putProperty( prop, ids, v );
+                            try {
+                                bd.putProperty( prop, ids, v );
+                            } catch ( IllegalArgumentException ex ) {
+                                bd.putProperty( prop, ids, null );
+                                ex.printStackTrace();
+                            }
                         }
                      }
                  }

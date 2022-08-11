@@ -2,6 +2,8 @@
 package org.das2.qds.util;
 
 import java.util.Enumeration;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.das2.datum.Units;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
@@ -15,6 +17,7 @@ import org.das2.qds.QDataSet;
 import org.das2.qds.RankZeroDataSet;
 import org.das2.qds.SemanticOps;
 import org.das2.qds.ops.Ops;
+import org.das2.util.LoggerManager;
 
 /**
  * provides a TreeModel representation of the dataset's properties.
@@ -22,6 +25,8 @@ import org.das2.qds.ops.Ops;
  */
 public class ValuesTreeModel extends DefaultTreeModel {
 
+    private static final Logger logger= LoggerManager.getLogger("qdataset.treemodel");
+        
     // number of trailing elements to show
     private static final int TAIL_COUNT = 3;
 
@@ -213,7 +218,18 @@ public class ValuesTreeModel extends DefaultTreeModel {
 
         QDataSet bundle= (QDataSet)ds.property( QDataSet.BUNDLE_0 );
 
-        QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
+        Object odep0= ds.property(QDataSet.DEPEND_0);        
+        QDataSet dep0;
+        if ( odep0!=null ) {
+            if ( odep0 instanceof QDataSet ) {
+                dep0= (QDataSet) odep0;
+            } else {
+                logger.log(Level.WARNING, "dep0 is not a QDataSet: {0}", odep0);
+                dep0= null;
+            }
+        } else {
+            dep0= null;
+        }
         QDataSet wdsDep0= null;
         if ( dep0!=null ) wdsDep0= DataSetUtil.weightsDataSet(dep0);
 
