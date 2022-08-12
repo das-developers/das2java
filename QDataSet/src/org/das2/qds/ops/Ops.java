@@ -13522,11 +13522,11 @@ public final class Ops {
             if ( ds2.rank()==0 ) {
                 ds= BundleDataSet.createRank0Bundle();
                 ds.bundle(ds2);
-            } else if ( ds2.rank()==2 && Ops.isBundle(ds2) ) {
-                ds= new BundleDataSet( ds2.rank() );
-                for ( int i=0; i<ds2.length(0); i++ ) {
-                    ds.bundle(Ops.unbundle(ds2,i));
-                }
+//            } else if ( ds2.rank()==2 && Ops.isBundle(ds2) ) {
+//                ds= new BundleDataSet( ds2.rank() );
+//                for ( int i=0; i<ds2.length(0); i++ ) {
+//                    ds.bundle(Ops.unbundle(ds2,i));
+//                }
             } else {
                 ds = new BundleDataSet( ds2.rank()+1 );
                 ds.bundle(ds2);
