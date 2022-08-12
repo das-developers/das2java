@@ -648,10 +648,10 @@ public class AsciiHeadersParser {
     
     /**
      * attempt to parse the JSON metadata stored in the header.  The header lines must
-     * be prefixed with hash (#).  Loosely formatted test is converted into
+     * be prefixed with hash (#).  Loosely formatted text is converted into
      * nicely-formatted JSON and then parsed with a JSON parser.  Note the Java
      * JSON parser itself is pretty loose, for example allowing 1-word strings to
-     * go without quotes delimiters.  The scheme for this header is either:<ul>
+     * go without quote delimiters.  The scheme for this header is either:<ul>
      * <li>"rich ascii" or http://autoplot.org/richAscii
      * <li>"hapi" https://github.com/hapi-server/data-specification/blob/master/hapi-dev/HAPI-data-access-spec-dev.md#info
      * </ul>
@@ -832,9 +832,6 @@ public class AsciiHeadersParser {
 
         @Override
         public synchronized void putProperty( String name, int ic, Object v ) {
-            if ( name.equals("DEPEND_0" ) ) {
-                System.err.println("HERE DEPEND_0");
-            }
             String dsname= datasets2.get(ic);
             int i= datasets.get(dsname);
             Map<String,Object> props1= props.get( i );
@@ -842,16 +839,26 @@ public class AsciiHeadersParser {
                 props1= new LinkedHashMap<>();
                 props.put( i, props1 );
             }
-            if ( name.startsWith( "DEPEND_" ) && !(name.equals("DEPEND_0") ) && v instanceof String ) {
-                if ( inlineDataSets.containsKey((String)v) ) {
-                    props1.put( name, inlineDataSets.get((String)v) );
+            if ( name.equals( QDataSet.DEPENDNAME_1 ) ) {
+                QDataSet dep1= inlineDataSets.get((String)v);
+                if ( dep1!=null ) {
+                    props1.put( QDataSet.DEPEND_1, inlineDataSets.get((String)v) );
                 } else {
                     logger.log(Level.WARNING, "unable to resolve property \"{0}\"=\"{1}\" of \"{2}\".  No such dataset found.", new Object[]{name, v, datasets2.get(i)});
-                    throw new IllegalArgumentException("unable to resolve property \""+name+"\"=\""+v+"\" of \""+datasets2.get(i)+"\".  No such dataset found." );
-                    //props1.put( name, v );
+                    props1.put( name, v );
                 }
             } else {
-                props1.put( name, v );
+                if ( name.startsWith( "DEPEND_" ) && !(name.equals("DEPEND_0") ) && v instanceof String ) {
+                    if ( inlineDataSets.containsKey((String)v) ) {
+                        props1.put( name, inlineDataSets.get((String)v) );
+                    } else {
+                        logger.log(Level.WARNING, "unable to resolve property \"{0}\"=\"{1}\" of \"{2}\".  No such dataset found.", new Object[]{name, v, datasets2.get(i)});
+                        throw new IllegalArgumentException("unable to resolve property \""+name+"\"=\""+v+"\" of \""+datasets2.get(i)+"\".  No such dataset found." );
+                        //props1.put( name, v );
+                    }
+                } else {
+                    props1.put( name, v );
+                }
             }
         }
 
@@ -971,6 +978,21 @@ public class AsciiHeadersParser {
     }
 
     /**
+     * convert JSONArray of strings or numbers to Java array
+     * @param array the JSONArray
+     * @param c the Java class of the objects.
+     * @return the Java array
+     * @throws JSONException 
+     */
+    private static Object convertJsonArray( JSONArray array, Class c ) throws JSONException {
+        Object result= Array.newInstance( c, array.length() );
+        for ( int i=0; i<array.length(); i++ ) {
+            Array.set( result, i, array.get(i) );
+        }
+        return result;
+    }
+    
+    /**
      * return a map of metadata for each column or bundled dataset.
      * @param jo
      * @return
@@ -980,9 +1002,6 @@ public class AsciiHeadersParser {
         Iterator it= jo.keys();
         for ( ; it.hasNext(); ) {
              String key= (String) it.next();
-             if ( key.equals("DEPEND_0") ) {
-                 System.err.println("Stop here");
-             }
              Object o= jo.get(key);
              if ( !( o instanceof JSONObject ) ) {
                  Object oUserProperties=bd.property( QDataSet.USER_PROPERTIES );
@@ -1077,19 +1096,45 @@ public class AsciiHeadersParser {
                         } else {
                             bd.putProperty( QDataSet.LABEL, ids, sv );
                         }
+                     } else if ( prop.equals("DEPEND_0") ) {
+                         //bd.putProperty( QDataSet.DEPENDNAME_0, ids, sv );
+                     } else if ( prop.equals("DEPEND_1") ) {
+                         bd.putProperty( QDataSet.DEPENDNAME_1, ids, sv );
                      } else {
                         if ( sv instanceof JSONArray ) {
                             JSONArray asv= (JSONArray)sv;
                             Object item= asv.get(0);
-                            boolean homogenious= true;
+                            Class clas= item.getClass();
+                            boolean allSameValue= true;
+                            boolean allSameClass= true;
                             for ( int i=1; i<asv.length(); i++ ) {
-                                if ( !item.equals(asv.get(i)) ) homogenious= false;
+                                if ( !item.equals(asv.get(i)) ) allSameValue= false;
+                                if ( !item.getClass().equals(clas) ) allSameClass= false;
                             }
-                            if ( homogenious ) {
+                            if ( allSameValue ) {
                                 Object v= coerceToType( prop, item );
                                 bd.putProperty( prop, ids, v );
                             } else {
-                                logger.log(Level.WARNING, "invalid value for property {0}: {1}", new Object[]{prop, sv});
+                                if ( DataSetUtil.isDimensionProperty(prop) ) {
+                                    logger.log(Level.WARNING, "invalid value for property {0}: {1}", new Object[]{prop, sv});
+                                } else {
+                                    Object oUserProperties=bd.property( QDataSet.USER_PROPERTIES, ids );
+                                    if ( oUserProperties==null ) { //TODO: still needs attention
+                                        if ( oUserProperties==null ) {
+                                            oUserProperties= new LinkedHashMap<>();
+                                            bd.putProperty( QDataSet.USER_PROPERTIES, ids, oUserProperties );
+                                        }
+                                    }
+                                    if ( oUserProperties!=null ) {
+                                        if ( !( oUserProperties instanceof Map ) ) throw new IllegalArgumentException("USER_PROPERTIES is not a map");
+                                        Map<String,Object> userProperties= (Map<String,Object>)oUserProperties ;
+                                        if ( allSameClass ) {
+                                            userProperties.put( prop, convertJsonArray( asv, clas ) );
+                                        } else {
+                                            userProperties.put( prop, convertJsonArray( asv, Object.class ) );
+                                        }
+                                    }
+                                }
                             }
                         } else if ( sv instanceof JSONObject ) {
                             logger.log(Level.WARNING, "invalid value for property {0}: {1}", new Object[]{prop, sv});
