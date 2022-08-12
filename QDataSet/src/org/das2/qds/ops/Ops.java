@@ -13521,10 +13521,16 @@ public final class Ops {
             BundleDataSet ds;
             if ( ds2.rank()==0 ) {
                 ds= BundleDataSet.createRank0Bundle();
+                ds.bundle(ds2);
+            } else if ( ds2.rank()==2 && Ops.isBundle(ds2) ) {
+                ds= new BundleDataSet( ds2.rank() );
+                for ( int i=0; i<ds2.length(0); i++ ) {
+                    ds.bundle(Ops.unbundle(ds2,i));
+                }
             } else {
                 ds = new BundleDataSet( ds2.rank()+1 );
+                ds.bundle(ds2);
             }
-            ds.bundle(ds2);
             QDataSet dep0= (QDataSet) ds2.property(QDataSet.DEPEND_0);
             if ( dep0!=null ) ds.putProperty( QDataSet.DEPEND_0, dep0 );
             return ds;
