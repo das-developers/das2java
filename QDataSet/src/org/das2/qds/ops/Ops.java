@@ -13532,7 +13532,7 @@ public final class Ops {
                 ds.bundle(ds2);
             }
             QDataSet dep0= (QDataSet) ds2.property(QDataSet.DEPEND_0);
-            if ( dep0!=null ) ds.putProperty( QDataSet.DEPEND_0, dep0 );
+            if ( dep0!=null && ds.rank()<3 ) ds.putProperty( QDataSet.DEPEND_0, dep0 );
             return ds;
         } else if ( ds2==null ) {
             throw new NullPointerException("ds2 is null while ds1 ("+ds1+") is not null.");
