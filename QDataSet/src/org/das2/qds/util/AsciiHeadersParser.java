@@ -236,7 +236,7 @@ public class AsciiHeadersParser {
 
     /**
      * calculate the bundle descriptor, possibly folding together columns to create
-     * high rank datasets.
+     * high rank datasets, reading JSONHeadedASCII (rich ascii)
      * @param jp the JSON object describing
      * @param columns column names.
      * @param columnLabels human-consumable labels for each column
@@ -247,9 +247,11 @@ public class AsciiHeadersParser {
 
         BundleDescriptor bd= new BundleDescriptor();
 
+        String dep0Name= null;
+        
         //Map<Integer,String> dsNames= new LinkedHashMap();  // enumeration of all the names that are not in line.
         Map<String,Integer> dsToPosition= new LinkedHashMap<>(); // name to the index of first column
-
+        
         int ids= 0; // index of the dataset in the bundleDescriptor.
 
         Map<JSONObject, String> messages= new LinkedHashMap<>();
@@ -488,11 +490,26 @@ public class AsciiHeadersParser {
                             snames[icol+j]= name;
                         }
                     }
+
+                    if ( icol==0 ) {
+                        if ( jo1.optString("dtype","").equals("UTC") ) {
+                           dep0Name=name;
+                        }
+                    }
+
                 }
 
             } catch ( JSONException ex ) {
                 logger.log( Level.WARNING, "Exception encountered when handling {0}:", jsonName);
                 logger.log( Level.WARNING, ex.toString(), ex );
+            }
+        }
+        
+        if ( dep0Name!=null ) {
+            for ( int i=0; i<bd.length(); i++ ) {
+                if ( bd.property( QDataSet.DEPENDNAME_0, i)==null ) {
+                    bd.putProperty( QDataSet.DEPENDNAME_0, i, dep0Name );
+                }
             }
         }
 
