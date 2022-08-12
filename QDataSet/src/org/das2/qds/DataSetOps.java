@@ -1768,7 +1768,8 @@ public class DataSetOps {
                     return rc;
                 } else {
                     if ( r.property(QDataSet.BUNDLE_1)!=null ) {
-                        logger.warning("unbundled dataset still has BUNDLE_1");
+                        https://github.com/das-developers/das2java/issues/34
+                        logger.fine("unbundled dataset still has BUNDLE_1"); // bundle of bundle is okay. 
                     }
                     MutablePropertyDataSet rc= new DataSetWrapper(r);
                     maybeCopyRenderType(bundleDs, rc);
