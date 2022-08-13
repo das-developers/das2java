@@ -492,7 +492,7 @@ public class AsciiHeadersParser {
                     }
 
                     if ( icol==0 ) {
-                        if ( jo1.optString("dtype","").equals("UTC") ) {
+                        if ( jo1.optString("dtype","").equals("UTC") || jo1.optString("UNITS","").equals("UTC") ) {
                            dep0Name=name;
                         }
                     }
@@ -507,8 +507,10 @@ public class AsciiHeadersParser {
         
         if ( dep0Name!=null ) {
             for ( int i=0; i<bd.length(); i++ ) {
-                if ( bd.property( QDataSet.DEPENDNAME_0, i)==null ) {
-                    bd.putProperty( QDataSet.DEPENDNAME_0, i, dep0Name );
+                if ( !dep0Name.equals( bd.property( QDataSet.NAME, i ) ) ) {
+                    if ( bd.property( QDataSet.DEPENDNAME_0, i)==null ) {
+                        bd.putProperty( QDataSet.DEPENDNAME_0, i, dep0Name );
+                    }
                 }
             }
         }
