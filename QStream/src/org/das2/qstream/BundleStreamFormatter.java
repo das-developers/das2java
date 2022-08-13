@@ -1,8 +1,6 @@
 
 package org.das2.qstream;
 
-import java.awt.Color;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
@@ -20,7 +18,6 @@ import org.das2.qds.DataSetUtil;
 import org.das2.qds.QDataSet;
 import org.das2.qds.SemanticOps;
 import org.das2.qds.ops.Ops;
-import test.BundleBinsDemo;
 
 /**
  * Like SimpleStreamFormatter, but this correctly handles bundles.
@@ -41,7 +38,7 @@ public class BundleStreamFormatter {
         String s;
         Units u;
         Number n;
-        s= (String) bds.property(QDataSet.DEPENDNAME_0,i);
+        s= (String) bds.property(QDataSet.DEPENDNAME_0,i); 
         if ( s!=null ) {
             build.append( String.format( "        <property name=\"DEPENDNAME_0\" type=\"String\" value=\"%s\"/>\n", s ) );
         } else {
