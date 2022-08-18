@@ -2117,7 +2117,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * recalculate the tick positions.
      */
     protected void updateTickV() {
-        boolean lautoTickV= getAutoTickV();
+        boolean lautoTickV= autoTickV;
         String lticks= tickValues;
         
         DatumRange dr= getDatumRange();

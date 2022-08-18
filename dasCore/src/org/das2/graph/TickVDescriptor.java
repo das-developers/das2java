@@ -20,6 +20,7 @@ import java.util.Map;
 import org.das2.datum.DomainDivider;
 import org.das2.datum.DomainDividerUtil;
 import org.das2.datum.EnumerationUnits;
+import org.das2.datum.LogLinDomainDivider;
 import org.das2.datum.UnitsUtil;
 import org.das2.qds.QDataSet;
 import org.das2.qds.SemanticOps;
@@ -475,8 +476,21 @@ public class TickVDescriptor {
         double logMax = Math.log10(max);
         int ntick0 = (int) (Math.floor(logMax * 0.999) - Math.ceil(logMin * 1.001) + 1);
 
-        if (ntick0 < 2) {
-            TickVDescriptor result = bestTickVLinear(minD, maxD, nTicksMin, nTicksMax, fin);
+        if ( max/min < 300 ) {
+            
+            DomainDivider dd = LogLinDomainDivider.create();
+            DatumVector dv = dd.boundaries( minD, maxD );
+            int ilim=3;
+            while ( ilim>0 && dv.getLength()<3 ) {
+                ilim--;
+                dd = dd.finerDivider(false);
+                dv = dd.boundaries( minD, maxD );
+            }
+            DatumVector dvMinor = dd.finerDivider(true).boundaries(minD, maxD);
+            
+            Units u1= dv.getUnits();
+            TickVDescriptor result = new TickVDescriptor( dvMinor.toDoubleArray(u1), dv.toDoubleArray(u1), u1 );
+                
             int ii = 0;
 
             DatumVector majortics = result.getMajorTicks();
