@@ -476,7 +476,7 @@ public class TickVDescriptor {
         double logMax = Math.log10(max);
         int ntick0 = (int) (Math.floor(logMax * 0.999) - Math.ceil(logMin * 1.001) + 1);
 
-        if ( max/min < 300 ) {
+        if ( max/min < 200 ) {
             
             DomainDivider dd = LogLinDomainDivider.create();
             DatumVector dv = dd.boundaries( minD, maxD );
