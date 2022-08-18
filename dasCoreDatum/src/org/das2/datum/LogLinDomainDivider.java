@@ -11,6 +11,14 @@ package org.das2.datum;
 public class LogLinDomainDivider implements DomainDivider {
     private LinearDomainDivider decadeDivider;
 
+    /**
+     * create a way to access this class directly.
+     * @return 
+     */
+    public static LogLinDomainDivider create() {
+        return new LogLinDomainDivider();
+    }
+    
     protected LogLinDomainDivider() {
         this(new LinearDomainDivider());
     }
