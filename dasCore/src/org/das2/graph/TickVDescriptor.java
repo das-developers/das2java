@@ -484,9 +484,14 @@ public class TickVDescriptor {
             while ( ilim>0 && dv.getLength()<3 ) {
                 ilim--;
                 dd = dd.finerDivider(false);
-                dv = dd.boundaries( minD, maxD );
+                dv = dd.boundaries( minD, maxD );   
             }
             DatumVector dvMinor = dd.finerDivider(true).boundaries(minD, maxD);
+            
+            int numMinorPerMajor= (dvMinor.getLength()-1) / (dv.getLength()-1);
+            if ( numMinorPerMajor==2 ) {
+                dvMinor= dd.finerDivider(true).finerDivider(true).boundaries(minD, maxD);
+            }
             
             Units u1= dv.getUnits();
             TickVDescriptor result = new TickVDescriptor( dvMinor.toDoubleArray(u1), dv.toDoubleArray(u1), u1 );
