@@ -480,7 +480,7 @@ public class TickVDescriptor {
             
             DomainDivider dd = LogLinDomainDivider.create();
             DatumVector dv = dd.boundaries( minD, maxD );
-            int ilim=3;
+            int ilim=20; // something arbitrarily high but not so much that the computer will perform poorly
             while ( ilim>0 && dv.getLength()<3 ) {
                 ilim--;
                 dd = dd.finerDivider(false);
@@ -488,9 +488,11 @@ public class TickVDescriptor {
             }
             DatumVector dvMinor = dd.finerDivider(true).boundaries(minD, maxD);
             
-            int numMinorPerMajor= (dvMinor.getLength()-1) / (dv.getLength()-1);
-            if ( numMinorPerMajor==2 ) {
-                dvMinor= dd.finerDivider(true).finerDivider(true).boundaries(minD, maxD);
+            if ( dv.getLength()>1 ) { // this should true in 99.99999% of cases
+                int numMinorPerMajor= (dvMinor.getLength()-1) / (dv.getLength()-1);
+                if ( numMinorPerMajor==2 ) {
+                    dvMinor= dd.finerDivider(true).finerDivider(true).boundaries(minD, maxD);
+                }
             }
             
             Units u1= dv.getUnits();
