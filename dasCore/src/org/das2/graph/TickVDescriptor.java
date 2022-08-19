@@ -489,11 +489,9 @@ public class TickVDescriptor {
             DatumVector dvMinor = dd.finerDivider(true).boundaries(minD, maxD);
             dvMinor.getLength();
             if ( dv.getLength()>1 ) { // this should true in 99.99999% of cases
-                if ( nTicksMax>7 ) { // and we have room
-                    int numMinorPerMajor= (dvMinor.getLength()-1) / (dv.getLength()-1);
-                    if ( numMinorPerMajor==2 ) {
-                        dvMinor= dd.finerDivider(true).finerDivider(true).boundaries(minD, maxD);
-                    }
+                int numMinorPerMajor= (dvMinor.getLength()-1) / (dv.getLength()-1);
+                if ( numMinorPerMajor==2 ) {
+                    dvMinor= dd.finerDivider(true).finerDivider(true).boundaries(minD, maxD);
                 }
             }
             
