@@ -92,8 +92,10 @@ public final class Slice1DataSet extends AbstractDataSet {
                         if ( addContext ) DataSetUtil.addContext( this, new Slice0DataSet(dep1,index,false) );
                     }   break;
                 case 2:
-                    if ( addContext ) DataSetUtil.addContext( this, new Slice1DataSet(dep1,index,false) );
-                    break;
+                    if ( dep1.property(QDataSet.BINS_1)==null ) {
+                        if ( addContext ) DataSetUtil.addContext( this, new Slice1DataSet(dep1,index,false) );
+                        break;
+                    }
                 default: 
                     System.err.println( "slice on non-qube, dep1 has rank="+dep1.rank() );
                     break;
