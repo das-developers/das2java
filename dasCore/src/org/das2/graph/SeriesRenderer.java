@@ -1693,8 +1693,12 @@ public class SeriesRenderer extends Renderer {
            return;
         }
         
-        if ( xds.rank()==2 && SemanticOps.isRank3JoinOfRank2Waveform(dataSet) ) {
-            xds= DataSetOps.slice1(xds,0); //BINS dataset
+        if ( xds.rank()==2 ) {
+            if ( SemanticOps.isRank3JoinOfRank2Waveform(dataSet) ) {
+                xds= DataSetOps.slice1(xds,0); //BINS dataset
+            } else if ( xds.property(QDataSet.BINS_1)!=null ) {
+                xds= Ops.reduceMean( xds, 1 );
+            }
         }
 
         QDataSet wxds= SemanticOps.weightsDataSet( xds );
@@ -2399,8 +2403,12 @@ public class SeriesRenderer extends Renderer {
                 return;
             }
             if ( xds.rank()!=1 ) {
-                logger.info("dataset xtags are not rank 1.");
-                return;
+                if ( xds.rank()==2 && xds.property(QDataSet.BINS_1)!=null ) {
+                    logger.info("dataset xtags is a bins dataset");
+                } else {
+                    logger.info("dataset xtags are not rank 1.");
+                    return;
+                }
             }
             if ( vds.rank()!=1 ) {
                 logger.fine("dataset is rank 2 and not a bundle.");
