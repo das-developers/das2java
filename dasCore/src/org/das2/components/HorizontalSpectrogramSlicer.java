@@ -59,6 +59,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.das2.components.propertyeditor.PropertyEditor;
+import org.das2.datum.DatumRange;
 import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
@@ -411,7 +412,9 @@ public class HorizontalSpectrogramSlicer implements DataPointSelectionListener {
         
         QDataSet sliceDataSet;
         
-        if ( yds.rank()==2 ) {
+        String ystr;
+        
+        if ( yds.rank()==2 && yds.property(QDataSet.BINS_1)==null ) {
             QDataSet xds= SemanticOps.xtagsDataSet(tds1);
             int ix= org.das2.qds.DataSetUtil.closestIndex( xds, xValue );
             QDataSet yds1= yds.slice(ix);
@@ -456,10 +459,22 @@ public class HorizontalSpectrogramSlicer implements DataPointSelectionListener {
             sx.putProperty( QDataSet.UNITS, xds.property(QDataSet.UNITS ) );
             s1.putProperty( QDataSet.DEPEND_0, sx );
             sliceDataSet= s1;
+            DatumFormatter yformatter= yy.getFormatter();
+            ystr=  yformatter.format(yy);
+            ySlice= yy;
             
         } else {
             iy= org.das2.qds.DataSetUtil.closestIndex( yds, yValue );
-            yy= DataSetUtil.asDatum(yds.slice(iy));  //TODO: https://bugs-pw.physics.uiowa.edu/mantis/view.php?id=455
+            if ( yds.rank()==1 ) {
+                yy= DataSetUtil.asDatum(yds.slice(iy));  //TODO: https://bugs-pw.physics.uiowa.edu/mantis/view.php?id=455
+                DatumFormatter yformatter= yy.getFormatter();
+                ystr=  yformatter.format(yy);
+                ySlice= yy;
+            } else {
+                DatumRange ydr= DataSetUtil.asDatumRange(yds.slice(iy));  //TODO: https://bugs-pw.physics.uiowa.edu/mantis/view.php?id=455
+                ystr= ydr.toString();
+                ySlice= ydr.middle();
+            }
             sliceDataSet= DataSetOps.slice1( tds1, iy );
             
         }
@@ -482,12 +497,9 @@ public class HorizontalSpectrogramSlicer implements DataPointSelectionListener {
             formatter = xValue.getFormatter();
         }
         
-        DatumFormatter yformatter= yy.getFormatter();
-        
         String title= parentPlot.getTitle().trim();
         if ( title.length()>0 ) title= title+"!c";
-        myPlot.setTitle( title +  "x: " + formatter.format(xValue)  + " y: " + yformatter.format(yy) );
-        ySlice= yy;
+        myPlot.setTitle( title +  "x: " + formatter.format(xValue)  + " y: " + ystr );
             
         if ( !myPlot.getXAxis().getLabel().equals( sourceXAxis.getLabel() ) ) {
             myPlot.getXAxis().setLabel( sourceXAxis.getLabel() );
