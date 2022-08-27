@@ -890,6 +890,12 @@ public class SeriesRenderer extends Renderer {
                 if ( m!=null ) binMax= m;
                 m= (QDataSet) vds.property(QDataSet.BIN_MIN);
                 if ( m!=null ) binMin= m;
+            } 
+            if ( deltaPlusY==null ) {
+                if ( vds.rank()==2 && QDataSet.VALUE_BINS_MIN_MAX.equals(vds.property(QDataSet.BINS_1)) ) {
+                    binMin= Ops.slice1( vds,0 );
+                    binMax= Ops.slice1( vds,1 );
+                }
             } else {
                 binMax= Ops.add( vds, deltaPlusY );
                 binMin= Ops.subtract( vds, deltaMinusY );
