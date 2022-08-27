@@ -238,6 +238,9 @@ public class DataSetOps {
         if ( dep1.rank()==2 && Schemes.isRank2Bins(dep1) ) {
             dep1= Ops.reduceBins( dep1 );
         }
+        if ( dep0.rank()==2 && Schemes.isRank2Bins(dep0) ) {
+            dep0= Ops.reduceBins( dep0 );
+        }
         boolean dep1rank2= dep1!=null && dep1.rank()==2;
         for ( int i=0; i<ds.length(); i++ ) {
             for ( int j=0; j<ds.length(i); j++ ) {
@@ -1055,7 +1058,8 @@ public class DataSetOps {
         sbundle= props.get( QDataSet.BUNDLE_0 );
         QDataSet bundle0= ( sbundle instanceof QDataSet ) ? (QDataSet) sbundle : null;
 
-        if ( dep0!=null && dep1!=null && dep0.rank()>1 && dep1.rank()>1 ) {
+        if ( dep0!=null && dep1!=null && dep0.rank()>1 && dep1.rank()>1 
+                && dep0.property(QDataSet.BINS_1)==null && dep1.property(QDataSet.BINS_1)==null) {
             throw new IllegalArgumentException("both DEPEND_0 and DEPEND_1 have rank>1");
         }
 
@@ -1119,6 +1123,8 @@ public class DataSetOps {
         }
 
         if ( dep0!=null && dep0.rank()==1 ) { //TODO: find documentation for rank 2 depend_0...
+            DataSetUtil.addContext( result, dep0.slice( index ) );
+        } else if ( dep0!=null && dep0.rank()==2 && dep0.property(QDataSet.BINS_1)!=null ) {
             DataSetUtil.addContext( result, dep0.slice( index ) );
         } else {
             if ( dep1==null && props.get( "DEPEND_0__"+index )==null ) { // bundle dataset  //TODO: this needs more review
