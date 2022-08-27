@@ -1229,7 +1229,7 @@ public final class Ops {
             if ( qube!=null && qube[1]==2 ) {
                 QDataSet left= Ops.slice1( ds, 0 );
                 QDataSet right= Ops.slice1( ds, 1 );
-                return Ops.add( left, Ops.divide( Ops.subtract(left,right), 2 ) );
+                return Ops.add( left, Ops.divide( Ops.subtract(right,left), 2 ) );
             }
         }
         return averageGen(ds, dim, new AverageOp() {
