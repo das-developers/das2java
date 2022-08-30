@@ -2986,7 +2986,9 @@ public final class Ops {
     // logic operators
     /**
      * element-wise logical or function.  
-     * returns 1 where ds1 is non-zero or ds2 is non-zero.
+     * returns 1 where ds1 is non-zero or ds2 is non-zero.  Note
+     * that or(fill,1) is currently fill, not 1, as are all binary
+     * operators.
      * @param ds1
      * @param ds2
      * @return
