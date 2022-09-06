@@ -188,13 +188,18 @@ public class SubsetDataSet extends AbstractDataSet {
         }
         if ( dep!=null ) {
             SubsetDataSet dim= new SubsetDataSet( dep );
-            switch (dim.rank()) {
+            switch (dep.rank()) {
                 case 1:
                     dim.applyIndex(0,idx);
                     break;
                 case 2:
-                    dim.applyIndex(1,idx);
-                    break;
+                    if ( dep.property(QDataSet.BINS_1)!=null ) {
+                        dim.applyIndex(0,idx);
+                        break;
+                    } else {
+                        dim.applyIndex(1,idx);
+                        break;
+                    }
                 case 3:
                     dim.applyIndex(2,idx);
                     break;
