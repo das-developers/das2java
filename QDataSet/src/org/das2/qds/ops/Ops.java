@@ -9778,7 +9778,7 @@ public final class Ops {
 
         logger.entering(CLASSNAME, "extent" );
         
-        if ( DataSetUtil.validate(ds,null) ) {
+        if ( !DataSetUtil.validate(ds,null) ) {
             throw new IllegalArgumentException("data does not validate: "+ds);
         }
         QDataSet max = ds;
