@@ -3201,7 +3201,7 @@ public class DataSetUtil {
                         }
                     }
                     if ( outOfOrder ) {
-                        problems.add( "BINS_1 is min,max min is greater than max" );
+                        logger.info( "validate finds BINS_1 is min,max and min is greater than max, but not marking this as invalid." );
                     }
                 }
                 if ( obds!=null ) { // 2060: check for constant units in BUNDLE_1
