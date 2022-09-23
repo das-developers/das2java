@@ -1764,6 +1764,11 @@ public class DataSetUtil {
                 logger.log(Level.INFO, "CADENCE units ({0}) are inconvertible to {1}", new Object[]{qu, u.getOffsetUnits() }); // bugfix: offset units should be reported.
             }
         }
+        
+        if ( xds.length()>=100000000 && xds instanceof IndexGenDataSet  ) {
+            logger.fine("removing guessCadenceCheck for huge dataset");
+            return DRank0DataSet.create(1.0);
+        }
 
         if (yds == null) {
             yds = DataSetUtil.replicateDataSet(xds.length(), 1.0);
