@@ -376,6 +376,10 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         SwingUtilities.invokeLater(run);
     }
     
+    /**
+     * creates a new KeyAdapter, and should probably be private.
+     * @return 
+     */
     public KeyAdapter getKeyAdapter() {
         return new KeyAdapter() {
             @Override
