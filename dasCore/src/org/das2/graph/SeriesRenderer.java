@@ -1689,7 +1689,11 @@ public class SeriesRenderer extends Renderer {
         }
         
         if ( yds.rank()==2 ) {
-            yds= DataSetOps.slice1( yds, 0 );
+            QDataSet yds1= DataSetOps.slice1( yds, 0 );
+            if ( Ops.total( Ops.valid(yds1), 0 ).value()==0 ) {
+                yds1= DataSetOps.slice1( yds, yds.length(0)/3 ); // jbf had data which started will fill in each record.
+            }
+            yds= yds1;
         }
 
         if ( yds.rank()==3 ) {
