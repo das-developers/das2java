@@ -23,11 +23,15 @@
 
 package org.das2.util.filesystem;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.regex.Pattern;
 import org.das2.util.filesystem.FileSystem.FileSystemOfflineException;
-import java.io.*;
-import java.net.*;
-import java.util.*;
-import java.util.regex.*;
+
 
 /**
  *
@@ -75,9 +79,10 @@ public class LocalFileSystem extends FileSystem {
             }
         }
         boolean b= new File("xxx").equals(new File("XXX"));
-        properties.put( PROP_CASE_INSENSITIVE, Boolean.valueOf( b ) );
+        properties.put( PROP_CASE_INSENSITIVE, b );
     }
     
+    @Override
     public boolean isDirectory(String filename) {
         return new File( localRoot, filename ).isDirectory();
     }
@@ -91,6 +96,7 @@ public class LocalFileSystem extends FileSystem {
         return filename;
     }
     
+    @Override
     public String[] listDirectory(String directory) {
         File f= new File( localRoot, directory );
         if ( !f.canRead() || ( f.getParentFile()!=null && f.isHidden() ) ) {
@@ -101,23 +107,21 @@ public class LocalFileSystem extends FileSystem {
             return new String[0];
         }
         List<String> result= new ArrayList();
-        for ( int i=0; i<files.length; i++ ) {
-            if ( ! files[i].isHidden() ) { // Windows 7 hides "c:/Documents and Settings", and we get bugs if this is presented.
-                result.add( files[i].getName() + ( files[i].isDirectory() ? "/" : "" ) );
+        for (File file : files) {
+            if (!file.isHidden()) {
+                // Windows 7 hides "c:/Documents and Settings", and we get bugs if this is presented.
+                result.add(file.getName() + (file.isDirectory() ? "/" : ""));
             }
         }
         return result.toArray( new String[result.size()] );
     }
     
+    @Override
     public String[] listDirectory(String directory, String regex ) {
         File f= new File( localRoot, directory );
         final Pattern pattern= Pattern.compile(regex);
         if ( !f.canRead() || ( f.getParentFile()!=null && f.isHidden() ) ) throw new IllegalArgumentException("cannot read directory " +f );
-        File[] files= f.listFiles( new FilenameFilter() {
-            public boolean accept( File file, String name ) {
-                return pattern.matcher(name).matches() && ! file.isHidden();
-            }
-        } );
+        File[] files= f.listFiles( (File file, String name) -> pattern.matcher(name).matches() && ! file.isHidden() );
         if ( files==null ) {
             throw new IllegalStateException("unable to list directory: "+f );
         }
@@ -126,6 +130,7 @@ public class LocalFileSystem extends FileSystem {
         return result;
     }
     
+    @Override
     public String toString() {
         String s= String.valueOf(localRoot);
         s= s.replaceAll("\\\\","/");
@@ -133,6 +138,7 @@ public class LocalFileSystem extends FileSystem {
         return "lfs "+s;
     }
     
+    @Override
     public FileObject getFileObject(String filename) {
 //        try { // simulate slow filesystem
 //            Thread.sleep(1000);
