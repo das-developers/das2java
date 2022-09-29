@@ -183,6 +183,14 @@ public interface QDataSet {
     public static int MAX_HIGH_RANK=8;
     
     /**
+     * reference value for the size of a dataset where we would expect to start seeing
+     * performance degradation.  For example, a linear algorithm totalling the dataset
+     * would perform within one second when the dataset is within this limit.  This is
+     * of course a somewhat arbitrary limit, but it shows what the expectations are.
+     */
+    public static long LIMIT_HUGE_DATASET=100000000;
+    
+    /**
      * type Units indicating the units of the dataset in the enumeration of
      * org.das2.datum.Units, as in org.das2.datum.Units.km.  New unit types
      * can be introduced with Units.lookup.  For example,
