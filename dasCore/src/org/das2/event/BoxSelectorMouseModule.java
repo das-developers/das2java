@@ -42,7 +42,13 @@ public class BoxSelectorMouseModule extends MouseModule {
     DasAxis xaxis, yaxis;
     DataSetConsumer dataSetConsumer;
     javax.swing.event.EventListenerList listenerList = new javax.swing.event.EventListenerList();
+    
+    /**
+     * lastMouseEvent is used for ...  I don't know because it was never documented, but I can see that getBoxSelectionEvent
+     * must be called for this to be set.
+     */
     MouseDragEvent lastMouseEvent;
+    
     /** when true, box selections are remembered, and tweaks to corners are allowed. */
     boolean tweakable = false;
     BoxSelectionEvent lastSelectionEvent = null;
