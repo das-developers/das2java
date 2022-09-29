@@ -3047,6 +3047,35 @@ public class DataSetUtil {
     }
 
     /**
+     * return the total number of values in the dataset, as a long.  For qubes this is the product
+     * of the dimension lengths, for other datasets we create a dataset of lengths
+     * and total all the elements.
+     * @param ds
+     * @return the number of values in the dataset.
+     */
+    public static long totalLengthAsLong(QDataSet ds) {
+        if ( ds.rank()==0 ) return 1;
+        if ( ds.rank()==1 ) return ds.length();
+        int[] qube= DataSetUtil.qubeDims(ds); 
+        if ( qube==null ) {
+            LengthsDataSet lds= new LengthsDataSet(ds);
+            QubeDataSetIterator it= new QubeDataSetIterator(lds);
+            long total= 0;
+            while ( it.hasNext() ) {
+                it.next();
+                total+= it.getValue(lds);
+            }
+            return total;
+        } else {
+            long total= qube[0];
+            for ( int i=1; i<qube.length; i++ ) {
+                total*= qube[i];
+            }
+            return total;
+        }
+    }
+    
+    /**
      * return the total number of values in the dataset.  For qubes this is the product
      * of the dimension lengths, for other datasets we create a dataset of lengths
      * and total all the elements.
