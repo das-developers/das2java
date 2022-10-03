@@ -8884,25 +8884,25 @@ public final class Ops {
             ax= a.slice(0);
             ay= a.slice(1);
             az= a.length()==2 ? Ops.dataset(0) : a.slice(2);
-            bx= Ops.slice1(b,0);
-            by= Ops.slice1(b,1);
-            bz= b.length(0)==2 ? Ops.dataset(0) : Ops.slice1(b,2);
+            bx= Ops.unbundle(b,0);
+            by= Ops.unbundle(b,1);
+            bz= b.length(0)==2 ? Ops.dataset(0) : Ops.unbundle(b,2);
 
         } else if ( b.rank()==1 ) {
-            ax= Ops.slice1(a,0);
-            ay= Ops.slice1(a,1);
-            az= a.length(0)==2 ? Ops.dataset(0) : Ops.slice1(a,2);
+            ax= Ops.unbundle(a,0);
+            ay= Ops.unbundle(a,1);
+            az= a.length(0)==2 ? Ops.dataset(0) : Ops.unbundle(a,2);
             bx= b.slice(0);
             by= b.slice(1);
             bz= b.length()==2 ? Ops.dataset(0) : b.slice(2);
             
         } else if ( a.rank()==2 && b.rank()==2 ) {
-            ax= Ops.slice1(a,0);
-            ay= Ops.slice1(a,1);
-            az= a.length(0)==2 ? Ops.dataset(0) : Ops.slice1(a,2);
-            bx= Ops.slice1(b,0);
-            by= Ops.slice1(b,1);
-            bz= b.length(0)==2 ? Ops.dataset(0) : Ops.slice1(b,2);
+            ax= Ops.unbundle(a,0);
+            ay= Ops.unbundle(a,1);
+            az= a.length(0)==2 ? Ops.dataset(0) : Ops.unbundle(a,2);
+            bx= Ops.unbundle(b,0);
+            by= Ops.unbundle(b,1);
+            bz= b.length(0)==2 ? Ops.dataset(0) : Ops.unbundle(b,2);
             
         } else {
             throw new IllegalArgumentException("a and b must be either 3-element rank 1 datasets, or rank 2 n by 3-elements");
@@ -8911,7 +8911,7 @@ public final class Ops {
         QDataSet cx = Ops.subtract( Ops.multiply( ay, bz ), Ops.multiply( az, by ) );
         QDataSet cy = Ops.subtract( Ops.multiply( az, bx ), Ops.multiply( ax, bz ) );
         QDataSet cz = Ops.subtract( Ops.multiply( ax, by ), Ops.multiply( ay, bx ) );
-        
+
         QDataSet tt= (QDataSet)cx.property( QDataSet.DEPEND_0 );
         
         return Ops.link( tt, Ops.bundle( cx, cy, cz ) );
@@ -9198,16 +9198,16 @@ public final class Ops {
      * @return bundle of X, Y, and remaining data.
      */
     public static QDataSet polarToCartesian( QDataSet ds ) {
-        QDataSet rad= slice1(ds,0);
+        QDataSet rad= unbundle(ds,0);
         Units runits= SemanticOps.getUnits(rad);
-        QDataSet angle= slice1(ds,1);
+        QDataSet angle= unbundle(ds,1);
         Double mult= isAngleRange( angle, true );
         if ( mult==null ) {
             mult= isAngleRange( rad, true );
             if ( mult!=null ) {
                 logger.fine("assuming first bundled dataset is angle");
                 angle= rad;
-                rad= slice1(ds,1);
+                rad= unbundle(ds,1);
             }
         }
         WritableDataSet result= copy(ds);
@@ -10831,7 +10831,7 @@ public final class Ops {
         if ( vv.rank()==2 ) {
             QDataSet result= null;
             for ( int j=0; j<vv.length(0); j++ ) {
-                QDataSet vvj= interpolate( Ops.slice1(vv,j),findex );
+                QDataSet vvj= interpolate( Ops.unbundle(vv,j),findex );
                 result= Ops.bundle(result,vvj);
             }
             QDataSet dep1= (QDataSet)vv.property(QDataSet.DEPEND_1);
@@ -11773,7 +11773,7 @@ public final class Ops {
                     throw new IllegalArgumentException("rank 2 waveform is not supported, use flattenWaveform first.");
                 } else {
                     for ( int j=0; j<ds.length(0); j++ ) {
-                        QDataSet result1= BinAverage.boxcar( slice1(ds,j), size );
+                        QDataSet result1= BinAverage.boxcar( unbundle(ds,j), size );
                         for ( int i=0; i<ds.length(); i++ ) {
                             result.putValue( i,j, result1.value(i) );
                         }
@@ -11825,7 +11825,7 @@ public final class Ops {
                 break;
             case 2:
                 for ( int j=0; j<yy.length(0); j++ ) {
-                    QDataSet yy1= Ops.slice1(yy, j);
+                    QDataSet yy1= Ops.unbundle(yy, j);
                     fit= new LinFit( xx.trim(0,size), yy1.trim(0,size) );
                     for ( int i=0; i<size/2; i++ ) {
                         yysmooth.putValue( i, j, xx.value(i)*fit.getB() + fit.getA() );
@@ -12232,7 +12232,7 @@ public final class Ops {
         if ( ds.rank()==2 ) {
             ArrayDataSet res= ArrayDataSet.copy(ds);
             for ( int j=0; j<ds.length(0); j++ ) {
-                QDataSet in1= Ops.slice1(ds,j);
+                QDataSet in1= Ops.unbundle(ds,j);
                 QDataSet r= where(valid(in1)); // note rank 2 supports fill.
                 if ( r.length()<=ds.length()/2 ) {
                     for ( int i=0; i<in1.length(); i++ ) {
@@ -14094,7 +14094,7 @@ public final class Ops {
             }
         } 
         if ( z.rank()==2 && y.rank()==1 && isBundle(z) ) {
-            QDataSet z1= DataSetOps.slice1(z,z.length(0)-1);
+            QDataSet z1= DataSetOps.unbundle(z,z.length(0)-1);
             return link( x, y, z1 );
         }
         
