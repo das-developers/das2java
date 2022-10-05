@@ -11711,6 +11711,7 @@ public final class Ops {
      * @param ds rank 2 dataset.
      * @param size the boxcar size
      * @return smoothed dataset with the same geometry.
+     * @see #detrend1(org.das2.qds.QDataSet, int) 
      */
     public static QDataSet smooth1(QDataSet ds, int size) {
         switch (ds.rank()) {
@@ -11863,6 +11864,19 @@ public final class Ops {
         return detrend( dataset(yy), size );
     }
            
+    /**
+     * remove D/C and low-frequency components from the data by subtracting
+     * out the smoothed data with a boxcar of the given size, along each
+     * record. Points on the end are zero.
+     * @param yy rank 2 dataset
+     * @param size size of the boxcar
+     * @return dataset 
+     * @see #smooth1(org.das2.qds.QDataSet, int) 
+     */
+    public static QDataSet detrend1( QDataSet yy, int size ) {
+        return subtract( yy, smooth1( yy, size ) );
+    }
+    
     /**
      * remove the data which is 3 sigmas from the mean of the data.
      * @param ds rank 1 dataset.
