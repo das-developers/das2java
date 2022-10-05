@@ -636,6 +636,26 @@ public class OperationsProcessor {
                             throw new IllegalArgumentException("expected argument to butterworth filter");
                         }
                     }
+                } else if ( cmd.equals("|butterworth1") ) { //int order, Datum f, boolean lowp 
+                    if ( ds.length()>0 ) {
+                        if ( s.hasNextInt() ) {
+                            int order= s.nextInt();
+                            String f= s.next();
+                            String arg= s.next();
+                            if ( s.hasNext() ) {
+                                String flow= f;
+                                String fhigh= arg;
+                                arg= s.next();
+                                arg= arg.toLowerCase();
+                                ds= Ops.butterworth1( ds, order, Units.hertz.parse(flow), Units.hertz.parse(fhigh), arg.startsWith("t") ); 
+                            } else {
+                                arg= arg.toLowerCase();
+                                ds= Ops.butterworth1( ds, order, Units.hertz.parse(f), arg.startsWith("t") );
+                            }
+                        } else {
+                            throw new IllegalArgumentException("expected argument to butterworth filter");
+                        }
+                    }                    
                 } else if ( cmd.equals("|flattenWaveform") ) {
                     ds= DataSetOps.flattenWaveform( ds );
                     
@@ -683,6 +703,10 @@ public class OperationsProcessor {
                     String comp= s.next();
                     int icomp= Integer.parseInt(comp);
                     ds= Ops.detrend(ds, icomp);
+                } else if ( cmd.equals("|detrend1") ) {
+                    String comp= s.next();
+                    int icomp= Integer.parseInt(comp);
+                    ds= Ops.detrend1(ds, icomp);
                 } else if ( cmd.equals("|smoothfit") ) {
                     String comp= s.next();
                     int icomp= Integer.parseInt(comp);
