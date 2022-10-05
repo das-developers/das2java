@@ -2224,20 +2224,31 @@ public final class Ops {
     
     /**
      * Perform Butterworth filter for high pass or low pass.
-     * @param in the rank 1 waveform
+     * @param in the rank 1 waveform or rank 2 waveform
      * @param order the order of the filter (2,3,4)
      * @param f the frequency, e.g. Units.hertz.createDatum(10)
      * @param lowp true for low pass, false for high pass.
      * @return the dataset in the same form.
      */    
     public static QDataSet butterworth( QDataSet in, int order, Datum f, boolean lowp ) {
-        Butterworth b= new Butterworth( in, order, f, lowp );
-        return b.filter();
+        if ( in.rank()==2 && Schemes.isRank2Waveform(in) ) {
+            JoinDataSet result= new JoinDataSet(2);
+            for ( int i=0; i<in.length(); i++ ) {
+                Butterworth b= new Butterworth( in.slice(i), order, f, lowp );
+                result.join(b.filter());
+            }
+            DataSetUtil.putProperties( DataSetUtil.getProperties(in), result);
+            return result;
+    
+        } else {
+            Butterworth b= new Butterworth( in, order, f, lowp );
+            return b.filter();
+        }
     }
 
     /**
      * Perform Butterworth filter for notch or band pass or band reject.
-     * @param in the rank 1 waveform
+     * @param in the rank 1 waveform or rank 2 waveform
      * @param order the order of the filter (2,3,4)
      * @param flow the lower band limit, e.g. Units.hertz.createDatum(10)
      * @param fhigh the higher band limit, e.g. Units.hertz.createDatum(20)
@@ -2245,54 +2256,19 @@ public final class Ops {
      * @return the dataset in the same form.
      */
     public static QDataSet butterworth( QDataSet in, int order, Datum flow, Datum fhigh, boolean pass ) {
-        Butterworth b= new Butterworth( in, order, flow, fhigh, pass );
-        return b.filter();
-    }
-    
-    /**
-     * Perform Butterworth filter for high pass or low pass.
-     * @param in the rank 2 waveform
-     * @param order the order of the filter (2,3,4)
-     * @param f the frequency, e.g. Units.hertz.createDatum(10)
-     * @param lowp true for low pass, false for high pass.
-     * @return the dataset in the same form.
-     */    
-    public static QDataSet butterworth1( QDataSet in, int order, Datum f, boolean lowp ) {
-        if ( in.rank()==2 ) {
-            throw new IllegalArgumentException("data must be rank 2");
+        if ( in.rank()==2 && Schemes.isRank2Waveform(in) ) {
+            JoinDataSet result= new JoinDataSet(2);
+            for ( int i=0; i<in.length(); i++ ) {        
+                Butterworth b= new Butterworth( in.slice(i), order, flow, fhigh, pass );
+                result.join(b.filter());
+            }
+            DataSetUtil.putProperties( DataSetUtil.getProperties(in), result);
+            return result;
+        } else {
+            Butterworth b= new Butterworth( in, order, flow, fhigh, pass );
+            return b.filter();
         }
-        JoinDataSet result= new JoinDataSet(2);
-        for ( int i=0; i<in.length(); i++ ) {
-            Butterworth b= new Butterworth( in.slice(i), order, f, lowp );
-            result.join(b.filter());
-        }
-        DataSetUtil.putProperties( DataSetUtil.getProperties(in), result);
-        return result;
-    }
-
-    /**
-     * Perform Butterworth filter for notch or band pass or band reject.
-     * @param in the rank 2 waveform
-     * @param order the order of the filter (2,3,4)
-     * @param flow the lower band limit, e.g. Units.hertz.createDatum(10)
-     * @param fhigh the higher band limit, e.g. Units.hertz.createDatum(20)
-     * @param pass true for band pass, false for band reject.
-     * @return the dataset in the same form.
-     */
-    public static QDataSet butterworth1( QDataSet in, int order, Datum flow, Datum fhigh, boolean pass ) {
-        if ( in.rank()==2 ) {
-            throw new IllegalArgumentException("data must be rank 2");
-        }
-        JoinDataSet result= new JoinDataSet(2);
-        for ( int i=0; i<in.length(); i++ ) {        
-            Butterworth b= new Butterworth( in.slice(i), order, flow, fhigh, pass );
-            result.join(b.filter());
-        }
-        DataSetUtil.putProperties( DataSetUtil.getProperties(in), result);
-        return result;
-    }
-    
-        
+    }        
     
     /**
      * Solves each of a set of cubic equations of the form:
