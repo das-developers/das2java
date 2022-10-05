@@ -128,6 +128,9 @@ public class LengthDragRenderer extends LabelDragRenderer {
             String label1;
             label1= String.format( "\u0394x%s: %s \u0394y%s: %s %s", sdiv, runString, sdiv, riseString, radString );
             
+            if ( showReciprocalDeltaX ) {
+                label1 += "!c"+ncycles+ "/\u0394x: "+ DatumUtil.asOrderOneUnits( Units.dimensionless.createDatum(1).divide(run) );
+            }
             if ( showSlope ) {
                 label1 += "!cm: "+ UnitsUtil.divideToString( rise, run );
             }
@@ -216,6 +219,18 @@ public class LengthDragRenderer extends LabelDragRenderer {
         return new Rectangle[] { dirtyBounds, myDirtyBounds };
     }
     
+    private boolean showReciprocalDeltaX = false;
+
+    public static final String PROP_SHOWRECIPROCAL = "showReciprocal";
+
+    public boolean isShowReciprocalDeltaX () {
+        return showReciprocalDeltaX;
+    }
+
+    public void setShowReciprocalDeltaX(boolean showReciprocal) {
+        this.showReciprocalDeltaX = showReciprocal;
+    }
+
     /**
      * true if the slope should be shown
      */
