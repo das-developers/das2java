@@ -74,6 +74,11 @@
                         <description>Removes DC and low-frequency components by subtracting out smooth of a function.</description>
                     </bookmark>
                     <bookmark>
+                        <title>Detrend Rank 2 Waveform</title>
+                        <filter>|detrend1(10)</filter>
+                        <description>Removes DC and low-frequency components over the first dimension (not zeroth).</description>
+                    </bookmark>
+                    <bookmark>
                         <title>Normalize</title>
                         <filter>|normalize()</filter>
                         <description>Normalize the data so that the maximum value is 1.</description>
