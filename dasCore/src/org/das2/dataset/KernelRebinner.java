@@ -5,8 +5,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.DasException;
 import org.das2.datum.Datum;
+import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.LoggerManager;
 import org.das2.datum.Units;
+import org.das2.datum.UnitsUtil;
 import org.das2.qds.DDataSet;
 import org.das2.qds.QDataSet;
 import org.das2.qds.SemanticOps;
@@ -21,10 +23,32 @@ public class KernelRebinner implements DataSetRebinner {
     private static final Logger logger= LoggerManager.getLogger("das2.data.rebinner");
     
     public QDataSet makeKernel( RebinDescriptor ddX, RebinDescriptor ddY, Datum xwidth, Datum ywidth ) {
-        Datum xx= ddX.binStart(0).add(xwidth);
-        int nx = 4 + Math.max( 1, ddX.whichBin( xx.doubleValue(xx.getUnits()), xx.getUnits() ) );
-        Datum yy= ddY.binStart(0).add(ywidth);
-        int ny = 4 + Math.max( 1, ddY.whichBin( yy.doubleValue(yy.getUnits()), yy.getUnits() ) );
+        
+        int nx;
+        try {
+            Datum xx;
+            if ( UnitsUtil.isRatiometric(xwidth.getUnits() ) ) {
+                xx = ddX.binStart(0).add(ddX.binStart(0).multiply(1.+xwidth.convertTo(Units.percentIncrease).value()/100));
+            } else {
+                xx = ddX.binStart(0).add(xwidth);
+            }
+            nx= 4 + Math.max( 1, ddX.whichBin( xx.doubleValue(xx.getUnits()), xx.getUnits() ) );
+        } catch ( InconvertibleUnitsException ex ) {
+            nx= 4;
+        }
+        int ny;
+        try {
+            Datum yy;
+            if ( UnitsUtil.isRatiometric(ywidth.getUnits() ) ) {
+                ywidth.convertTo(Units.percentIncrease);
+                yy= ddY.binStart(0).add(ddY.binStart(0).multiply(1.+ywidth.convertTo(Units.percentIncrease).value()/100));
+            } else {
+                yy= ddY.binStart(0).add(ywidth);
+            }
+            ny = 4 + Math.max( 1, ddY.whichBin( yy.doubleValue(yy.getUnits()), yy.getUnits() ) );
+        } catch ( InconvertibleUnitsException ex ) {
+            ny= 4;
+        }
         DDataSet k= DDataSet.createRank2( nx,ny );
         for ( int i=0; i<nx; i++ ) {
             for ( int j=0; j<ny; j++ ) {
