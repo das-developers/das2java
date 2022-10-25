@@ -35,6 +35,7 @@ import org.das2.datum.CacheTag;
 import org.das2.datum.DatumRange;
 import org.das2.datum.DatumRangeUtil;
 import org.das2.datum.DatumUtil;
+import org.das2.datum.DatumVector;
 import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
@@ -6087,6 +6088,8 @@ public final class Ops {
             return DataSetUtil.asDataSet( ((Number)arg0).doubleValue() );
         } else if ( arg0 instanceof Datum ) {
             return DataSetUtil.asDataSet( (Datum)arg0 );
+        } else if ( arg0 instanceof DatumVector ) {
+            return DataSetUtil.asDataSet( (DatumVector)arg0 );
         } else if ( arg0 instanceof Boolean ) {
             return DataSetUtil.asDataSet( ((Boolean)arg0) ? 1.0 : 0.0 );
         } else if ( arg0 instanceof DatumRange ) {
