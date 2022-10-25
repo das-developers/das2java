@@ -6074,6 +6074,7 @@ public final class Ops {
      *   <li>Strings to rank 0 datasets with units ("5 s" or "2014-01-01T00:00")
      *   <li>Datums to rank 0 datasets
      *   <li>DatumRanges to rank 1 bins
+     *   <li>DatumVector to rank 1 datasets.
      * </ul>
      * @param arg0 null,QDataSet,Number,Datum,DatumRange,String,List,or array.
      * @throws IllegalArgumentException if the argument cannot be parsed or converted.
