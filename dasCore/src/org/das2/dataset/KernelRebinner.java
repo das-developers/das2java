@@ -92,41 +92,46 @@ public class KernelRebinner implements DataSetRebinner {
         if (ds == null) {
             throw new NullPointerException("null data set");
         }        
-        
-        QDataSet zds= ds;
-        QDataSet wds= org.das2.qds.DataSetUtil.weightsDataSet(ds);
-        
-        QDataSet xds= SemanticOps.xtagsDataSet(ds);
-        QDataSet yds= SemanticOps.ytagsDataSet(ds);
-                
-        QDataSet xBinWidth= org.das2.qds.DataSetUtil.guessCadenceNew( xds, zds );
-        QDataSet yBinWidth= org.das2.qds.DataSetUtil.guessCadenceNew( yds, zds.slice(0) );
-        
-        if ( xBinWidth==null ) {
-            xBinWidth= Ops.dataset( ddX.binWidthDatum() );
-        }
-        
-        if ( yBinWidth==null ) {
-            yBinWidth= Ops.dataset( ddY.binWidthDatum() );
-        }
-        
+
         long t0= System.currentTimeMillis();
         
-        Units xUnits= SemanticOps.getUnits(xds);
-        Units zUnits= SemanticOps.getUnits(zds);
-        Units yUnits= SemanticOps.getUnits(yds);
+        if ( ds.rank()==2 ) { // make it into a rank 3 dataset
+            ds= Ops.join(null,ds); 
+        }
         
         int nx= ddX.numberOfBins();
-        int ny= ddY.numberOfBins();
-        
-        logger.log(Level.FINEST, "Allocating rebinData and rebinWeights: {0} x {1}", new Object[]{nx, ny});
+        int ny= ddY.numberOfBins();        
         
         DDataSet rebinData= DDataSet.createRank2( nx, ny );
         DDataSet rebinWeights= DDataSet.createRank2( nx, ny );
-        
-        int nTables = 1; // TODO: Rank 3 support and Rank 2 bundle of x,y,z
-        for (int iTable = 0; iTable < nTables; iTable++) {
             
+        int nTables = ds.length(); // TODO: Rank 3 support and Rank 2 bundle of x,y,z
+        for (int iTable = 0; iTable < nTables; iTable++) {
+        
+            QDataSet zds= ds.slice(iTable);
+            
+            QDataSet wds= org.das2.qds.DataSetUtil.weightsDataSet(zds);
+
+            QDataSet xds= SemanticOps.xtagsDataSet(zds);
+            QDataSet yds= SemanticOps.ytagsDataSet(zds);
+
+            QDataSet xBinWidth= org.das2.qds.DataSetUtil.guessCadenceNew( xds, zds );
+            QDataSet yBinWidth= org.das2.qds.DataSetUtil.guessCadenceNew( yds, zds.slice(0) );
+
+            if ( xBinWidth==null ) {
+                xBinWidth= Ops.dataset( ddX.binWidthDatum() );
+            }
+
+            if ( yBinWidth==null ) {
+                yBinWidth= Ops.dataset( ddY.binWidthDatum() );
+            }
+
+            Units xUnits= SemanticOps.getUnits(xds);
+            Units zUnits= SemanticOps.getUnits(zds);
+            Units yUnits= SemanticOps.getUnits(yds);
+
+            logger.log(Level.FINEST, "Allocating rebinData and rebinWeights: {0} x {1}", new Object[]{nx, ny});
+                    
             QDataSet kernel= makeKernel( ddX, ddY, Ops.datum(xBinWidth), Ops.datum(yBinWidth) );
             QDataSet kxds= (QDataSet) kernel.property(QDataSet.DEPEND_0);
             QDataSet kyds= (QDataSet) kernel.property(QDataSet.DEPEND_1);
