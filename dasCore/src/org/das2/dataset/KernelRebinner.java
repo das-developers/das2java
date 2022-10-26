@@ -1,6 +1,7 @@
 
 package org.das2.dataset;
 
+import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.DasException;
@@ -13,6 +14,7 @@ import org.das2.qds.DDataSet;
 import org.das2.qds.QDataSet;
 import org.das2.qds.SemanticOps;
 import org.das2.qds.ops.Ops;
+import org.das2.qds.util.AsciiFormatter;
 
 /**
  * Revisit Larry's KernalRebinner, where each point is spread out using 
@@ -22,33 +24,8 @@ import org.das2.qds.ops.Ops;
 public class KernelRebinner implements DataSetRebinner {
     private static final Logger logger= LoggerManager.getLogger("das2.data.rebinner");
     
-    public QDataSet makeKernel( RebinDescriptor ddX, RebinDescriptor ddY, Datum xwidth, Datum ywidth ) {
+    public QDataSet makeFlatKernel( RebinDescriptor ddX, RebinDescriptor ddY, int nx, int ny ) {
         
-        int nx;
-        try {
-            Datum xx;
-            if ( UnitsUtil.isRatiometric(xwidth.getUnits() ) ) {
-                xx = ddX.binStart(0).add(ddX.binStart(0).multiply(1.+xwidth.convertTo(Units.percentIncrease).value()/100));
-            } else {
-                xx = ddX.binStart(0).add(xwidth);
-            }
-            nx= 4 + Math.max( 1, ddX.whichBin( xx.doubleValue(xx.getUnits()), xx.getUnits() ) );
-        } catch ( InconvertibleUnitsException ex ) {
-            nx= 4;
-        }
-        int ny;
-        try {
-            Datum yy;
-            if ( UnitsUtil.isRatiometric(ywidth.getUnits() ) ) {
-                ywidth.convertTo(Units.percentIncrease);
-                yy= ddY.binStart(0).add(ddY.binStart(0).multiply(1.+ywidth.convertTo(Units.percentIncrease).value()/100));
-            } else {
-                yy= ddY.binStart(0).add(ywidth);
-            }
-            ny = 4 + Math.max( 1, ddY.whichBin( yy.doubleValue(yy.getUnits()), yy.getUnits() ) );
-        } catch ( InconvertibleUnitsException ex ) {
-            ny= 4;
-        }
         DDataSet k= DDataSet.createRank2( nx,ny );
         for ( int i=0; i<nx; i++ ) {
             for ( int j=0; j<ny; j++ ) {
@@ -57,19 +34,103 @@ public class KernelRebinner implements DataSetRebinner {
         }
         for ( int i=0; i<nx; i++ ) {  // taper the edges
             k.putValue(i,0,0.3);
-            k.putValue(i,0,0.6);
+            k.putValue(i,1,0.6);
             k.putValue(i,ny-1,0.3);
             k.putValue(i,ny-2,0.6);
         }
-        for ( int j=0; j<ny; j++ ) {  // taper the edges
+        for ( int j=1; j<ny-1; j++ ) {  // taper the edges
             k.putValue(0,j,0.3);
             k.putValue(1,j,0.6);
             k.putValue(nx-1,j,0.3);
             k.putValue(nx-2,j,0.6);
         }
-        double nn= Ops.total(k);
+        return k;
         
-        return Ops.link( Ops.linspace( xwidth.negative(), xwidth, nx ), Ops.linspace( ywidth.negative(), ywidth, ny ), Ops.divide( k, nn ) );
+    }
+    
+    public QDataSet makeBilinearKernel( RebinDescriptor ddX, RebinDescriptor ddY, int nx, int ny ) {
+        
+        double nx2= nx/2;
+        double ny2= ny/2;
+        
+        DDataSet k= DDataSet.createRank2( nx,ny );
+        for ( int i=0; i<nx; i++ ) {
+            for ( int j=0; j<ny; j++ ) {
+                k.putValue( i, j, nx2 + ny2 - Math.abs(nx2-i) - Math.abs(ny2-j) );
+            }
+        }
+        
+        return k;
+    }
+    
+    private QDataSet makeKernel( RebinDescriptor ddX, RebinDescriptor ddY, Datum xwidth, Datum ywidth ) {
+        String type= "flat";
+        int nx, ny;
+        QDataSet k;
+        if ( type.equals("flat") ) {
+            try {
+                Datum xx;
+                if ( UnitsUtil.isRatiometric(xwidth.getUnits() ) ) {
+                    xx = ddX.binStart(0).add(ddX.binStart(0).multiply(1.+xwidth.convertTo(Units.percentIncrease).value()/100));
+                } else {
+                    xx = ddX.binStart(0).add(xwidth);
+                }
+                nx= 4 + Math.max( 1, ddX.whichBin( xx.doubleValue(xx.getUnits()), xx.getUnits() ) );
+            } catch ( InconvertibleUnitsException ex ) {
+                nx= 4;
+            }
+            try {
+                Datum yy;
+                if ( UnitsUtil.isRatiometric(ywidth.getUnits() ) ) {
+                    ywidth.convertTo(Units.percentIncrease);
+                    yy= ddY.binStart(0).add(ddY.binStart(0).multiply(1.+ywidth.convertTo(Units.percentIncrease).value()/100));
+                } else {
+                    yy= ddY.binStart(0).add(ywidth);
+                }
+                ny = 4 + Math.max( 1, ddY.whichBin( yy.doubleValue(yy.getUnits()), yy.getUnits() ) );
+            } catch ( InconvertibleUnitsException ex ) {
+                ny= 4;
+            }
+            k = makeFlatKernel(ddX, ddY, nx, ny);
+        } else if ( type.equals("bilinear") ) {
+            try {
+                Datum xx;
+                if ( UnitsUtil.isRatiometric(xwidth.getUnits() ) ) {
+                    xx = ddX.binStart(0).add(ddX.binStart(0).multiply(1.+xwidth.convertTo(Units.percentIncrease).value()/100));
+                } else {
+                    xx = ddX.binStart(0).add(xwidth);
+                }
+                nx= (int)( 1.5 * Math.max( 1, ddX.whichBin( xx.doubleValue(xx.getUnits()), xx.getUnits() ) ) );
+            } catch ( InconvertibleUnitsException ex ) {
+                nx= 4;
+            }
+            try {
+                Datum yy;
+                if ( UnitsUtil.isRatiometric(ywidth.getUnits() ) ) {
+                    ywidth.convertTo(Units.percentIncrease);
+                    yy= ddY.binStart(0).add(ddY.binStart(0).multiply(1.+ywidth.convertTo(Units.percentIncrease).value()/100));
+                } else {
+                    yy= ddY.binStart(0).add(ywidth);
+                }
+                ny = (int)( 1.5 * Math.max( 1, ddY.whichBin( yy.doubleValue(yy.getUnits()), yy.getUnits() ) ) );
+            } catch ( InconvertibleUnitsException ex ) {
+                ny= 4;
+            }
+            k = makeBilinearKernel(ddX, ddY, nx, ny);
+        } else {
+            throw new IllegalArgumentException("bad type:" + type );
+        }
+        
+        try {
+            new AsciiFormatter().formatToFile( "/tmp/ap/kernel.txt", k );
+        } catch (IOException ex) {
+            Logger.getLogger(KernelRebinner.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        double nn= Ops.total(k);
+        k= Ops.divide( k, nn );
+
+        return Ops.link( Ops.linspace( xwidth.negative(), xwidth, nx ), Ops.linspace( ywidth.negative(), ywidth, ny ), k );
     }
     
     private void applyKernel(QDataSet kernel, int x, int y, double value, double weight, DDataSet ss, DDataSet ww) {
@@ -157,8 +218,8 @@ public class KernelRebinner implements DataSetRebinner {
             logger.log(Level.FINEST, "Allocating rebinData and rebinWeights: {0} x {1}", new Object[]{nx, ny});
                     
             QDataSet kernel= makeKernel( ddX, ddY, Ops.datum(xBinWidth), Ops.datum(yBinWidth) );
-            QDataSet kxds= (QDataSet) kernel.property(QDataSet.DEPEND_0);
-            QDataSet kyds= (QDataSet) kernel.property(QDataSet.DEPEND_1);
+            //QDataSet kxds= (QDataSet) kernel.property(QDataSet.DEPEND_0);
+            //QDataSet kyds= (QDataSet) kernel.property(QDataSet.DEPEND_1);
             
             int [] ibiny= new int[yds.length()];
             for (int j=0; j < ibiny.length; j++) {
