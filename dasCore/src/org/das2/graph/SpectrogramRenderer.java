@@ -66,6 +66,7 @@ import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.das2.components.HorizontalSpectrogramAverager;
+import org.das2.dataset.KernelRebinner;
 import org.das2.dataset.LanlNNRebinner;
 import org.das2.dataset.ScatterRebinner;
 import org.das2.dataset.TriScatRebinner;
@@ -208,6 +209,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         public static final RebinnerEnum scatter;
         public static final RebinnerEnum triScat= new RebinnerEnum( new TriScatRebinner(), "triScat" );
         public static final RebinnerEnum nnTriScat;
+        public static final RebinnerEnum kernel= new RebinnerEnum( new KernelRebinner(), "kernel" );
         
 
         static {
@@ -1275,7 +1277,12 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     @Override
     public Icon getListIcon() {
         String rr= rebinnerEnum.toString();
-        String cb= colorBar.getType().toString();
+        String cb;
+        if ( colorBar==null ) {
+            cb = DasColorBar.Type.GRAYSCALE.toString(); // transitional case
+        } else {
+            cb = colorBar.getType().toString();
+        }
         URL url= SpectrogramRenderer.class.getResource("/images/icons/rebin/cb_"+rr+"_"+cb+".png");
         if ( url==null ) {
             return rebinnerEnum.getListIcon();
