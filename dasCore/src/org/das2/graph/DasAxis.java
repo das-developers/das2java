@@ -1370,7 +1370,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         try {
 
             JoinDataSet ltcaData= new JoinDataSet(2);
-            ArrayDataSet ex= ArrayDataSet.copy( ltcaFunction.exampleInput() ); // can be rank 0 or rank 1.
+            QDataSet exampleInput= ltcaFunction.exampleInput();
+            ArrayDataSet ex= ArrayDataSet.copy( exampleInput ); // can be rank 0 or rank 1.
             QDataSet bds= (QDataSet) ex.property(QDataSet.BUNDLE_0);
             Units tcaUnits;
             if ( bds==null ) {
