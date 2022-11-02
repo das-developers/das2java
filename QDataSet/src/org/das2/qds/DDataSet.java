@@ -380,8 +380,10 @@ public final class DDataSet extends ArrayDataSet {
      * @param value the value, which is cast to this internal type.
      */
     public void addValue( int i0, int i1, double value ) {
-        checkImmutable();
-        back[  i0 * len1 + i1 ]+= value;
+        if ( value!=0.0 ) {
+            checkImmutable();
+            back[  i0 * len1 + i1 ]+= value;
+        }
     }
 
     /**
