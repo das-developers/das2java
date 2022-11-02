@@ -56,7 +56,9 @@ public class KernelRebinner implements DataSetRebinner {
         DDataSet kernel= DDataSet.createRank2( nx,ny );
         for ( int i=0; i<nx; i++ ) {
             for ( int j=0; j<ny; j++ ) {
-                kernel.putValue( i, j, Math.min( nx2 - Math.abs(nx2-i), ny2 - Math.abs(ny2-j) ) );
+                // kernel.putValue( i, j, Math.min( nx2 - Math.abs(nx2-i), ny2 - Math.abs(ny2-j) ) );
+                double v= Math.max( 1. - Math.sqrt( Math.pow( Math.abs(nx2-i)/nx2, 2 ) + Math.pow( Math.abs(ny2-j)/ny2, 2 ) ), 0.00 );
+                kernel.putValue( i, j, v );
             }
         }
         int nx14= (int)Math.floor( nx/4 );
@@ -128,6 +130,7 @@ public class KernelRebinner implements DataSetRebinner {
                 ny= 2;
             }
             k = makeFlatKernel(ddX, ddY, nx, ny);
+            
         } else if ( type.equals("bilinear") ) {
             try {
                 Datum xx;
@@ -136,9 +139,9 @@ public class KernelRebinner implements DataSetRebinner {
                 } else {
                     xx = ddX.binStart(0).add(xwidth);
                 }
-                nx= 2 + (int)( 2.0 * Math.max( 1, ddX.whichBin( xx.doubleValue(xx.getUnits()), xx.getUnits() ) ) );
+                nx= 2 + (int)Math.ceil( 2.0 * Math.max( 1, ddX.whichBin( xx.doubleValue(xx.getUnits()), xx.getUnits() ) ) );
             } catch ( InconvertibleUnitsException ex ) {
-                nx= 2;
+                nx= 1;
             }
             try {
                 Datum yy;
@@ -148,11 +151,12 @@ public class KernelRebinner implements DataSetRebinner {
                 } else {
                     yy= ddY.binStart(0).add(ywidth);
                 }
-                ny = 2 + (int)( 2.0 * Math.max( 1, ddY.whichBin( yy.doubleValue(yy.getUnits()), yy.getUnits() ) ) );
+                ny = 2 + (int)Math.ceil( 2.0 * Math.max( 1, ddY.whichBin( yy.doubleValue(yy.getUnits()), yy.getUnits() ) ) );
             } catch ( InconvertibleUnitsException ex ) {
                 ny= 2;
             }
             k = makeBilinearKernel(ddX, ddY, nx, ny);
+            
         } else if ( type.equals("circle") ) {
             try {
                 Datum xx;
@@ -178,6 +182,7 @@ public class KernelRebinner implements DataSetRebinner {
                 ny= 2;
             }
             k = makeCircleKernel(ddX, ddY, nx, ny);
+            
         } else {
             throw new IllegalArgumentException("bad type:" + type );
         }
