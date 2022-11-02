@@ -311,15 +311,17 @@ public class KernelRebinner implements DataSetRebinner {
             QDataSet kernel= makeKernel( ddX, ddY, Ops.datum(xBinWidth), Ops.datum(yBinWidth) );
             QDataSet mask= org.das2.qds.DataSetUtil.weightsDataSet(kernel);
             
-            int [] ibiny;
+            int [] ibiny=null; 
             QDataSet ydss=null;
             if ( yds.rank()==1 ) {
                 ibiny = new int[yds.length()];
                 for (int j=0; j < ibiny.length; j++) {
                     ibiny[j]= ddY.whichBin( yds.value(j), yUnits );
                 }
-            } else {
+            } else if ( yds.rank()==2 ) {
                 ydss= yds;
+            } else {
+                throw new IllegalArgumentException("yds rank must be 1 or 2");
             }
             
             for ( int i=0; i<xds.length(); i++) {
@@ -335,9 +337,9 @@ public class KernelRebinner implements DataSetRebinner {
                     for (int j=0; j < ibiny.length; j++) {
                         ibiny[j]= ddY.whichBin( yds.value(j), yUnits );
                     }
-                } else {
-                    throw new IllegalArgumentException("yds rank must be 1 or 2");
                 }
+                assert ibiny!=null;
+                
                 for (int j = 0; j < ibiny.length; j++) {
                     if ( ibiny[j]==-1 ) continue;
                     double z = zds.value(i,j);
