@@ -11,10 +11,10 @@ import org.das2.datum.LoggerManager;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
 import org.das2.qds.DDataSet;
+import org.das2.qds.IndexGenDataSet;
 import org.das2.qds.QDataSet;
 import org.das2.qds.SemanticOps;
 import org.das2.qds.ops.Ops;
-import org.das2.qds.util.AsciiFormatter;
 
 /**
  * Revisit Larry's KernalRebinner, where each point is spread out using 
@@ -24,7 +24,7 @@ import org.das2.qds.util.AsciiFormatter;
 public class KernelRebinner implements DataSetRebinner {
     private static final Logger logger= LoggerManager.getLogger("das2.data.rebinner");
     
-    public QDataSet makeFlatKernel( RebinDescriptor ddX, RebinDescriptor ddY, int nx, int ny ) {
+    public static QDataSet makeFlatKernel( RebinDescriptor ddX, RebinDescriptor ddY, int nx, int ny ) {
         
         DDataSet k= DDataSet.createRank2( nx,ny );
         for ( int i=0; i<nx; i++ ) {
@@ -48,15 +48,51 @@ public class KernelRebinner implements DataSetRebinner {
         
     }
     
-    public QDataSet makeBilinearKernel( RebinDescriptor ddX, RebinDescriptor ddY, int nx, int ny ) {
+    public static QDataSet makeBilinearKernel( RebinDescriptor ddX, RebinDescriptor ddY, int nx, int ny ) {
         
         double nx2= nx/2;
         double ny2= ny/2;
         
+        DDataSet kernel= DDataSet.createRank2( nx,ny );
+        for ( int i=0; i<nx; i++ ) {
+            for ( int j=0; j<ny; j++ ) {
+                kernel.putValue( i, j, Math.min( nx2 - Math.abs(nx2-i), ny2 - Math.abs(ny2-j) ) );
+            }
+        }
+        int nx14= (int)Math.floor( nx/4 );
+        int ny14= (int)Math.floor( ny/4 );
+        int nx34= (int)Math.ceil( nx - nx/4 );
+        int ny34= (int)Math.ceil( ny - ny/4 );
+        DDataSet mask= DDataSet.createRank2( nx,ny );
+        for ( int i=nx14; i<nx34; i++ ) {
+            for ( int j=ny14; j<ny34; j++ ) {
+                //w.putValue( i, j, Math.sin( (float)( nx - nx/2 )/nx ) + Math.sin( (float)( ny - ny/2 )/ny ) );
+                mask.putValue( i, j, 1 );
+            }
+        }
+        mask.putProperty( QDataSet.NAME, "mask" );
+        
+        kernel.putProperty( QDataSet.WEIGHTS,mask );
+        kernel.putProperty( QDataSet.NAME, "bilinear" );
+        
+        return kernel;
+    }
+    
+    public static QDataSet makeCircleKernel( RebinDescriptor ddX, RebinDescriptor ddY, int nx, int ny ) {
+        
+        double nx2= nx/2;
+        double ny2= ny/2;
+        double nx4= nx/4;
+        
         DDataSet k= DDataSet.createRank2( nx,ny );
         for ( int i=0; i<nx; i++ ) {
             for ( int j=0; j<ny; j++ ) {
-                k.putValue( i, j, nx2 + ny2 - Math.abs(nx2-i) - Math.abs(ny2-j) );
+                double r= Math.sqrt( Math.pow( Math.abs(nx2-i), 2 ) + Math.pow( Math.abs(ny2-j), 2 ) );
+                if ( r>nx4 && r<nx2 ) {
+                    k.putValue( i, j, 1 );
+                } else {
+                    k.putValue( i, j, 0 );
+                }
             }
         }
         
@@ -64,7 +100,7 @@ public class KernelRebinner implements DataSetRebinner {
     }
     
     private QDataSet makeKernel( RebinDescriptor ddX, RebinDescriptor ddY, Datum xwidth, Datum ywidth ) {
-        String type= "flat";
+        String type= "bilinear";
         int nx, ny;
         QDataSet k;
         if ( type.equals("flat") ) {
@@ -75,9 +111,9 @@ public class KernelRebinner implements DataSetRebinner {
                 } else {
                     xx = ddX.binStart(0).add(xwidth);
                 }
-                nx= 4 + Math.max( 1, ddX.whichBin( xx.doubleValue(xx.getUnits()), xx.getUnits() ) );
+                nx= 2 + Math.max( 1, ddX.whichBin( xx.doubleValue(xx.getUnits()), xx.getUnits() ) );
             } catch ( InconvertibleUnitsException ex ) {
-                nx= 4;
+                nx= 2;
             }
             try {
                 Datum yy;
@@ -87,9 +123,9 @@ public class KernelRebinner implements DataSetRebinner {
                 } else {
                     yy= ddY.binStart(0).add(ywidth);
                 }
-                ny = 4 + Math.max( 1, ddY.whichBin( yy.doubleValue(yy.getUnits()), yy.getUnits() ) );
+                ny = 2 + Math.max( 1, ddY.whichBin( yy.doubleValue(yy.getUnits()), yy.getUnits() ) );
             } catch ( InconvertibleUnitsException ex ) {
-                ny= 4;
+                ny= 2;
             }
             k = makeFlatKernel(ddX, ddY, nx, ny);
         } else if ( type.equals("bilinear") ) {
@@ -100,9 +136,9 @@ public class KernelRebinner implements DataSetRebinner {
                 } else {
                     xx = ddX.binStart(0).add(xwidth);
                 }
-                nx= (int)( 1.5 * Math.max( 1, ddX.whichBin( xx.doubleValue(xx.getUnits()), xx.getUnits() ) ) );
+                nx= 2 + (int)( 2.0 * Math.max( 1, ddX.whichBin( xx.doubleValue(xx.getUnits()), xx.getUnits() ) ) );
             } catch ( InconvertibleUnitsException ex ) {
-                nx= 4;
+                nx= 2;
             }
             try {
                 Datum yy;
@@ -112,28 +148,51 @@ public class KernelRebinner implements DataSetRebinner {
                 } else {
                     yy= ddY.binStart(0).add(ywidth);
                 }
-                ny = (int)( 1.5 * Math.max( 1, ddY.whichBin( yy.doubleValue(yy.getUnits()), yy.getUnits() ) ) );
+                ny = 2 + (int)( 2.0 * Math.max( 1, ddY.whichBin( yy.doubleValue(yy.getUnits()), yy.getUnits() ) ) );
             } catch ( InconvertibleUnitsException ex ) {
-                ny= 4;
+                ny= 2;
             }
             k = makeBilinearKernel(ddX, ddY, nx, ny);
+        } else if ( type.equals("circle") ) {
+            try {
+                Datum xx;
+                if ( UnitsUtil.isRatiometric(xwidth.getUnits() ) ) {
+                    xx = ddX.binStart(0).add(ddX.binStart(0).multiply(1.+xwidth.convertTo(Units.percentIncrease).value()/100));
+                } else {
+                    xx = ddX.binStart(0).add(xwidth);
+                }
+                nx= 2 + (int)( 2.0 * Math.max( 1, ddX.whichBin( xx.doubleValue(xx.getUnits()), xx.getUnits() ) ) );
+            } catch ( InconvertibleUnitsException ex ) {
+                nx= 2;
+            }
+            try {
+                Datum yy;
+                if ( UnitsUtil.isRatiometric(ywidth.getUnits() ) ) {
+                    ywidth.convertTo(Units.percentIncrease);
+                    yy= ddY.binStart(0).add(ddY.binStart(0).multiply(1.+ywidth.convertTo(Units.percentIncrease).value()/100));
+                } else {
+                    yy= ddY.binStart(0).add(ywidth);
+                }
+                ny = 2 + (int)( 2.0 * Math.max( 1, ddY.whichBin( yy.doubleValue(yy.getUnits()), yy.getUnits() ) ) );
+            } catch ( InconvertibleUnitsException ex ) {
+                ny= 2;
+            }
+            k = makeCircleKernel(ddX, ddY, nx, ny);
         } else {
             throw new IllegalArgumentException("bad type:" + type );
         }
         
-        try {
-            new AsciiFormatter().formatToFile( "/tmp/ap/kernel.txt", k );
-        } catch (IOException ex) {
-            Logger.getLogger(KernelRebinner.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-        double nn= Ops.total(k);
-        k= Ops.divide( k, nn );
+        //try {
+        //    new AsciiFormatter().formatToFile( "/tmp/ap/kernel.txt", k );
+        //} catch (IOException ex) {
+        //    Logger.getLogger(KernelRebinner.class.getName()).log(Level.SEVERE, null, ex);
+        //}
 
         return Ops.link( Ops.linspace( xwidth.negative(), xwidth, nx ), Ops.linspace( ywidth.negative(), ywidth, ny ), k );
     }
     
-    private void applyKernel(QDataSet kernel, int x, int y, double value, double weight, DDataSet ss, DDataSet ww) {
+    private void applyKernel(QDataSet kernel, QDataSet mask, int x, int y, double value, double weight, 
+            DDataSet ss, DDataSet ww, DDataSet mm ) {
         
         int x0,x1;
         int y0,y1;
@@ -158,9 +217,12 @@ public class KernelRebinner implements DataSetRebinner {
         for ( int i=x0; i<x1; i++ ) {
             for ( int j=y0; j<y1; j++ ) {
                 try {
-                    double w= weight * kernel.value( i-xbase, j-ybase );
+                    int ik= i-xbase;
+                    int jk= j-ybase;
+                    double w= weight * kernel.value( ik, jk);
                     ss.addValue( i, j, value * w );
                     ww.addValue( i, j, w );
+                    mm.addValue( i, j, mask.value( ik, jk ) * w );
                 } catch ( ArrayIndexOutOfBoundsException e ) {
                     //throw new RuntimeException(e);
                 }
@@ -187,8 +249,20 @@ public class KernelRebinner implements DataSetRebinner {
         int nx= ddX.numberOfBins();
         int ny= ddY.numberOfBins();        
         
+        /**
+         * total contribution for each pixel, which must be normalized at some point
+         */
         DDataSet rebinData= DDataSet.createRank2( nx, ny );
+        
+        /**
+         * total contribution weights for each pixel
+         */
         DDataSet rebinWeights= DDataSet.createRank2( nx, ny );
+        
+        /**
+         * kernels can contribute to an average, but if it's the only point in the average, then it should not be used.
+         */
+        DDataSet rebinMask= DDataSet.createRank2( nx, ny );
             
         int nTables = ds.length(); // TODO: Rank 3 support and Rank 2 bundle of x,y,z
         for (int iTable = 0; iTable < nTables; iTable++) {
@@ -204,22 +278,28 @@ public class KernelRebinner implements DataSetRebinner {
             QDataSet yBinWidth= org.das2.qds.DataSetUtil.guessCadenceNew( yds, zds.slice(0) );
 
             if ( xBinWidth==null ) {
-                xBinWidth= Ops.dataset( ddX.binWidthDatum() );
+                if ( xds instanceof IndexGenDataSet ) {
+                    xBinWidth= Ops.dataset( 1 );
+                } else {
+                    xBinWidth= Ops.dataset( ddX.binWidthDatum() );
+                }
             }
 
             if ( yBinWidth==null ) {
-                yBinWidth= Ops.dataset( ddY.binWidthDatum() );
+                if ( yds instanceof IndexGenDataSet ) {
+                    yBinWidth= Ops.dataset( 1 );
+                } else {
+                    yBinWidth= Ops.dataset( ddY.binWidthDatum() );
+                }
             }
 
             Units xUnits= SemanticOps.getUnits(xds);
-            Units zUnits= SemanticOps.getUnits(zds);
             Units yUnits= SemanticOps.getUnits(yds);
 
             logger.log(Level.FINEST, "Allocating rebinData and rebinWeights: {0} x {1}", new Object[]{nx, ny});
                     
             QDataSet kernel= makeKernel( ddX, ddY, Ops.datum(xBinWidth), Ops.datum(yBinWidth) );
-            //QDataSet kxds= (QDataSet) kernel.property(QDataSet.DEPEND_0);
-            //QDataSet kyds= (QDataSet) kernel.property(QDataSet.DEPEND_1);
+            QDataSet mask= org.das2.qds.DataSetUtil.weightsDataSet(kernel);
             
             int [] ibiny= new int[yds.length()];
             for (int j=0; j < ibiny.length; j++) {
@@ -237,7 +317,7 @@ public class KernelRebinner implements DataSetRebinner {
                     if ( ibiny[j]==-1 ) continue;
                     double z = zds.value(i,j);
                     double w = wds.value(i,j);
-                    applyKernel( kernel, ibinx, ibiny[j], z, w, rebinData, rebinWeights );
+                    applyKernel( kernel, mask, ibinx, ibiny[j], z, w, rebinData, rebinWeights, rebinMask );
                 }
             }
         }
@@ -245,9 +325,11 @@ public class KernelRebinner implements DataSetRebinner {
         logger.finest("normalize sums by weights");
         for ( int i=0; i<nx; i++ ) {
             QDataSet w1= rebinWeights.slice(i);
+            QDataSet m1= rebinMask.slice(i);
             for ( int j=0; j<ny; j++ ) {
                 double w11= w1.value(j);
-                if ( w11 > 0. ) {
+                double m11= m1.value(j);
+                if ( w11>0. && m11>0. ) {
                     rebinData.putValue( i, j, rebinData.value(i,j)/w11 );
                 } else {
                     rebinData.putValue( i, j, Double.NaN );
