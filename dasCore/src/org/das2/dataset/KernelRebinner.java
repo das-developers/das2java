@@ -280,7 +280,12 @@ public class KernelRebinner implements DataSetRebinner {
             QDataSet yds= SemanticOps.ytagsDataSet(zds);
 
             QDataSet xBinWidth= org.das2.qds.DataSetUtil.guessCadenceNew( xds, zds );
-            QDataSet yBinWidth= org.das2.qds.DataSetUtil.guessCadenceNew( yds, zds.slice(0) );
+            QDataSet yBinWidth;
+            if ( yds.rank()==1 ) {
+                yBinWidth= org.das2.qds.DataSetUtil.guessCadenceNew( yds, zds.slice(0) );
+            } else {
+                yBinWidth= org.das2.qds.DataSetUtil.guessCadenceNew( yds.slice(0), zds.slice(0) );
+            }
 
             if ( xBinWidth==null ) {
                 if ( xds instanceof IndexGenDataSet ) {
@@ -306,9 +311,15 @@ public class KernelRebinner implements DataSetRebinner {
             QDataSet kernel= makeKernel( ddX, ddY, Ops.datum(xBinWidth), Ops.datum(yBinWidth) );
             QDataSet mask= org.das2.qds.DataSetUtil.weightsDataSet(kernel);
             
-            int [] ibiny= new int[yds.length()];
-            for (int j=0; j < ibiny.length; j++) {
-                ibiny[j]= ddY.whichBin( yds.value(j), yUnits );
+            int [] ibiny;
+            QDataSet ydss=null;
+            if ( yds.rank()==1 ) {
+                ibiny = new int[yds.length()];
+                for (int j=0; j < ibiny.length; j++) {
+                    ibiny[j]= ddY.whichBin( yds.value(j), yUnits );
+                }
+            } else {
+                ydss= yds;
             }
             
             for ( int i=0; i<xds.length(); i++) {
@@ -318,7 +329,16 @@ public class KernelRebinner implements DataSetRebinner {
                     continue;
                     //ibinx= ddX.whichBin( kxds.value(kxds.length()-1), xUnits );
                 }
-                for (int j = 0; j < yds.length(); j++) {
+                if ( ydss!=null ) {
+                    yds= ydss.slice(i);
+                    ibiny = new int[yds.length()];
+                    for (int j=0; j < ibiny.length; j++) {
+                        ibiny[j]= ddY.whichBin( yds.value(j), yUnits );
+                    }
+                } else {
+                    throw new IllegalArgumentException("yds rank must be 1 or 2");
+                }
+                for (int j = 0; j < ibiny.length; j++) {
                     if ( ibiny[j]==-1 ) continue;
                     double z = zds.value(i,j);
                     double w = wds.value(i,j);
