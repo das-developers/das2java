@@ -209,8 +209,8 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         public static final RebinnerEnum scatter;
         public static final RebinnerEnum triScat= new RebinnerEnum( new TriScatRebinner(), "triScat" );
         public static final RebinnerEnum nnTriScat;
-        public static final RebinnerEnum kernel= new RebinnerEnum( new KernelRebinner(), "kernel" );
-        
+        public static final RebinnerEnum kernelFlat= new RebinnerEnum( new KernelRebinner( KernelRebinner.Type.flat ), "kernelFlat" );
+        public static final RebinnerEnum kernelCone= new RebinnerEnum( new KernelRebinner( KernelRebinner.Type.cone ), "kernelCone" );
 
         static {
             AverageTableRebinner rebinner = new AverageTableRebinner();

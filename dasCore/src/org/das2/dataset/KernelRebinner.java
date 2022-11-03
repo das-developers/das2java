@@ -23,6 +23,18 @@ import org.das2.qds.ops.Ops;
  */
 public class KernelRebinner implements DataSetRebinner {
     private static final Logger logger= LoggerManager.getLogger("das2.data.rebinner");
+
+    public enum Type {
+        flat,
+        cone,
+        circle,
+    }
+    
+    Type type;
+    
+    public KernelRebinner( Type t ) {
+        this.type = t;
+    }
     
     public static QDataSet makeFlatKernel( RebinDescriptor ddX, RebinDescriptor ddY, int nx, int ny ) {
         
@@ -48,7 +60,7 @@ public class KernelRebinner implements DataSetRebinner {
         
     }
     
-    public static QDataSet makeBilinearKernel( RebinDescriptor ddX, RebinDescriptor ddY, int nx, int ny ) {
+    public static QDataSet makeConeKernel( RebinDescriptor ddX, RebinDescriptor ddY, int nx, int ny ) {
         
         double nx2= nx/2;
         double ny2= ny/2;
@@ -102,89 +114,85 @@ public class KernelRebinner implements DataSetRebinner {
     }
     
     private QDataSet makeKernel( RebinDescriptor ddX, RebinDescriptor ddY, Datum xwidth, Datum ywidth ) {
-        String type= "bilinear";
+        
         int nx, ny;
         QDataSet k;
-        if ( type.equals("flat") ) {
-            try {
-                Datum xx;
-                if ( UnitsUtil.isRatiometric(xwidth.getUnits() ) ) {
-                    xx = ddX.binStart(0).add(ddX.binStart(0).multiply(1.+xwidth.convertTo(Units.percentIncrease).value()/100));
-                } else {
-                    xx = ddX.binStart(0).add(xwidth);
-                }
-                nx= 2 + Math.max( 1, ddX.whichBin( xx.doubleValue(xx.getUnits()), xx.getUnits() ) );
-            } catch ( InconvertibleUnitsException ex ) {
-                nx= 2;
-            }
-            try {
-                Datum yy;
-                if ( UnitsUtil.isRatiometric(ywidth.getUnits() ) ) {
-                    ywidth.convertTo(Units.percentIncrease);
-                    yy= ddY.binStart(0).add(ddY.binStart(0).multiply(1.+ywidth.convertTo(Units.percentIncrease).value()/100));
-                } else {
-                    yy= ddY.binStart(0).add(ywidth);
-                }
-                ny = 2 + Math.max( 1, ddY.whichBin( yy.doubleValue(yy.getUnits()), yy.getUnits() ) );
-            } catch ( InconvertibleUnitsException ex ) {
-                ny= 2;
-            }
-            k = makeFlatKernel(ddX, ddY, nx, ny);
-            
-        } else if ( type.equals("bilinear") ) {
-            try {
-                Datum xx;
-                if ( UnitsUtil.isRatiometric(xwidth.getUnits() ) ) {
-                    xx = ddX.binStart(0).add(ddX.binStart(0).multiply(1.+xwidth.convertTo(Units.percentIncrease).value()/100));
-                } else {
-                    xx = ddX.binStart(0).add(xwidth);
-                }
-                nx= 2 + (int)Math.ceil( 2.0 * Math.max( 1, ddX.whichBin( xx.doubleValue(xx.getUnits()), xx.getUnits() ) ) );
-            } catch ( InconvertibleUnitsException ex ) {
-                nx= 1;
-            }
-            try {
-                Datum yy;
-                if ( UnitsUtil.isRatiometric(ywidth.getUnits() ) ) {
-                    ywidth.convertTo(Units.percentIncrease);
-                    yy= ddY.binStart(0).add(ddY.binStart(0).multiply(1.+ywidth.convertTo(Units.percentIncrease).value()/100));
-                } else {
-                    yy= ddY.binStart(0).add(ywidth);
-                }
-                ny = 2 + (int)Math.ceil( 2.0 * Math.max( 1, ddY.whichBin( yy.doubleValue(yy.getUnits()), yy.getUnits() ) ) );
-            } catch ( InconvertibleUnitsException ex ) {
-                ny= 2;
-            }
-            k = makeBilinearKernel(ddX, ddY, nx, ny);
-            
-        } else if ( type.equals("circle") ) {
-            try {
-                Datum xx;
-                if ( UnitsUtil.isRatiometric(xwidth.getUnits() ) ) {
-                    xx = ddX.binStart(0).add(ddX.binStart(0).multiply(1.+xwidth.convertTo(Units.percentIncrease).value()/100));
-                } else {
-                    xx = ddX.binStart(0).add(xwidth);
-                }
-                nx= 2 + (int)( 2.0 * Math.max( 1, ddX.whichBin( xx.doubleValue(xx.getUnits()), xx.getUnits() ) ) );
-            } catch ( InconvertibleUnitsException ex ) {
-                nx= 2;
-            }
-            try {
-                Datum yy;
-                if ( UnitsUtil.isRatiometric(ywidth.getUnits() ) ) {
-                    ywidth.convertTo(Units.percentIncrease);
-                    yy= ddY.binStart(0).add(ddY.binStart(0).multiply(1.+ywidth.convertTo(Units.percentIncrease).value()/100));
-                } else {
-                    yy= ddY.binStart(0).add(ywidth);
-                }
-                ny = 2 + (int)( 2.0 * Math.max( 1, ddY.whichBin( yy.doubleValue(yy.getUnits()), yy.getUnits() ) ) );
-            } catch ( InconvertibleUnitsException ex ) {
-                ny= 2;
-            }
-            k = makeCircleKernel(ddX, ddY, nx, ny);
-            
-        } else {
-            throw new IllegalArgumentException("bad type:" + type );
+
+        switch (type) {
+            case flat:
+                try {
+                    Datum xx;
+                    if ( UnitsUtil.isRatiometric(xwidth.getUnits() ) ) {
+                        xx = ddX.binStart(0).add(ddX.binStart(0).multiply(1.+xwidth.convertTo(Units.percentIncrease).value()/100));
+                    } else {
+                        xx = ddX.binStart(0).add(xwidth);
+                    }
+                    nx= 2 + Math.max( 1, ddX.whichBin( xx.doubleValue(xx.getUnits()), xx.getUnits() ) );
+                } catch ( InconvertibleUnitsException ex ) {
+                    nx= 2;
+                }   try {
+                    Datum yy;
+                    if ( UnitsUtil.isRatiometric(ywidth.getUnits() ) ) {
+                        ywidth.convertTo(Units.percentIncrease);
+                        yy= ddY.binStart(0).add(ddY.binStart(0).multiply(1.+ywidth.convertTo(Units.percentIncrease).value()/100));
+                    } else {
+                        yy= ddY.binStart(0).add(ywidth);
+                    }
+                    ny = 2 + Math.max( 1, ddY.whichBin( yy.doubleValue(yy.getUnits()), yy.getUnits() ) );
+                } catch ( InconvertibleUnitsException ex ) {
+                    ny= 2;
+                }   k = makeFlatKernel(ddX, ddY, nx, ny);
+                break;
+            case cone:
+                try {
+                    Datum xx;
+                    if ( UnitsUtil.isRatiometric(xwidth.getUnits() ) ) {
+                        xx = ddX.binStart(0).add(ddX.binStart(0).multiply(1.+xwidth.convertTo(Units.percentIncrease).value()/100));
+                    } else {
+                        xx = ddX.binStart(0).add(xwidth);
+                    }
+                    nx= 2 + (int)Math.ceil( 2.0 * Math.max( 1, ddX.whichBin( xx.doubleValue(xx.getUnits()), xx.getUnits() ) ) );
+                } catch ( InconvertibleUnitsException ex ) {
+                    nx= 1;
+                }   try {
+                    Datum yy;
+                    if ( UnitsUtil.isRatiometric(ywidth.getUnits() ) ) {
+                        ywidth.convertTo(Units.percentIncrease);
+                        yy= ddY.binStart(0).add(ddY.binStart(0).multiply(1.+ywidth.convertTo(Units.percentIncrease).value()/100));
+                    } else {
+                        yy= ddY.binStart(0).add(ywidth);
+                    }
+                    ny = 2 + (int)Math.ceil( 2.0 * Math.max( 1, ddY.whichBin( yy.doubleValue(yy.getUnits()), yy.getUnits() ) ) );
+                } catch ( InconvertibleUnitsException ex ) {
+                    ny= 2;
+                }   k = makeConeKernel(ddX, ddY, nx, ny);
+                break;
+            case circle:
+                try {
+                    Datum xx;
+                    if ( UnitsUtil.isRatiometric(xwidth.getUnits() ) ) {
+                        xx = ddX.binStart(0).add(ddX.binStart(0).multiply(1.+xwidth.convertTo(Units.percentIncrease).value()/100));
+                    } else {
+                        xx = ddX.binStart(0).add(xwidth);
+                    }
+                    nx= 2 + (int)( 2.0 * Math.max( 1, ddX.whichBin( xx.doubleValue(xx.getUnits()), xx.getUnits() ) ) );
+                } catch ( InconvertibleUnitsException ex ) {
+                    nx= 2;
+                }   try {
+                    Datum yy;
+                    if ( UnitsUtil.isRatiometric(ywidth.getUnits() ) ) {
+                        ywidth.convertTo(Units.percentIncrease);
+                        yy= ddY.binStart(0).add(ddY.binStart(0).multiply(1.+ywidth.convertTo(Units.percentIncrease).value()/100));
+                    } else {
+                        yy= ddY.binStart(0).add(ywidth);
+                    }
+                    ny = 2 + (int)( 2.0 * Math.max( 1, ddY.whichBin( yy.doubleValue(yy.getUnits()), yy.getUnits() ) ) );
+                } catch ( InconvertibleUnitsException ex ) {
+                    ny= 2;
+                }   k = makeCircleKernel(ddX, ddY, nx, ny);
+                break;
+            default:
+                throw new IllegalArgumentException("bad type:" + type );
         }
         
         //try {
