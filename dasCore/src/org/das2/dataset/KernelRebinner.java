@@ -27,7 +27,7 @@ public class KernelRebinner implements DataSetRebinner {
     public enum Type {
         flat,
         cone,
-        circle,
+        disk,
     }
     
     Type type;
@@ -167,7 +167,7 @@ public class KernelRebinner implements DataSetRebinner {
                     ny= 2;
                 }   k = makeConeKernel(ddX, ddY, nx, ny);
                 break;
-            case circle:
+            case disk:
                 try {
                     Datum xx;
                     if ( UnitsUtil.isRatiometric(xwidth.getUnits() ) ) {
