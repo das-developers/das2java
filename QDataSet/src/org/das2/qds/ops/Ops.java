@@ -51,6 +51,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.das2.qds.AbstractDataSet;
 import org.das2.qds.ArrayDataSet;
+import org.das2.qds.BDataSet;
 import org.das2.qds.demos.RipplesDataSet;
 import org.das2.qds.BundleDataSet;
 import org.das2.qds.CdfSparseDataSet;
@@ -13983,11 +13984,13 @@ public final class Ops {
     
     /**
      * Return data where the DEPEND_0 tags are 
-     * monotonically increasing and non repeating. Instead of sorting the data, simply replace repeat records with
-     * a fill record.
+     * monotonically increasing and non repeating. Instead of sorting the data, simply 
+     * replace repeat timetags with a fill record.  Note, this does not modify the
+     * original dataset (besides the timetags), but instead adds a WEIGHTS plane.
      * @param ds the dataset
      * @return the dataset, sorted if necessary.
      * TODO: It's surprising that monotonic doesn't imply non-repeating, and this really needs to be revisited.
+     * TODO: conside the impact of not modifying the timetags, which greatly increases memory needs.
      * @see DataSetUtil#isMonotonicAndIncreasingQuick
      */
     public static QDataSet ensureMonotonicAndIncreasingWithFill( QDataSet ds ) {
@@ -14014,10 +14017,13 @@ public final class Ops {
         }
         
         QDataSet wds= DataSetUtil.weightsDataSet(dep0);
+        BDataSet wdsNew= BDataSet.create( DataSetUtil.qubeDims(wds) );
+                
         int i;
 
         for ( i=0; i<dep0.length() && wds.value(i)==0; i++ ) {
             // find first valid point.
+            wdsNew.putValue( i, 1 );
         }
 
         if ( i==ds.length() ) {
@@ -14035,8 +14041,10 @@ public final class Ops {
             if ( w==0 ) continue;
             if ( d <= last  ) {
                 mdep0.putValue(i,fill);
+                // wdsNew.putValue( i,0 ); // it's already zero.
             } else {
                 last = d; 
+                wdsNew.putValue( i,1 );
             }
         }
         
@@ -14044,6 +14052,7 @@ public final class Ops {
         
         MutablePropertyDataSet mpds= DataSetOps.makePropertiesMutable(ds);
         mpds.putProperty( QDataSet.DEPEND_0, mdep0 );
+        mpds.putProperty( QDataSet.WEIGHTS, wdsNew );
                 
         return mpds;
         
