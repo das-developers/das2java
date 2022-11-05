@@ -2528,7 +2528,7 @@ public class SeriesRenderer extends Renderer {
                 }
 
                 if (fillToReference) {
-                    fillElement.update(xAxis, yAxis, vds, monitor.getSubtaskMonitor("fillElement.update"));
+                    fillElement.update(xAxis, yAxis, ds, monitor.getSubtaskMonitor("fillElement.update"));
                     logger.log( Level.FINER, "fillElement.update complete ({0}ms)", System.currentTimeMillis()-t0 );
                 }
 
