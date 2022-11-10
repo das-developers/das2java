@@ -4233,8 +4233,20 @@ public class DataSetUtil {
                             dr= dr.next();
                         } else {
                             logger.log(Level.FINE, "found next data after {0} steps", count);
-//                            QDataSet box= SemanticOps.bounds(ds1);
-//                            DatumRange xdr= DataSetUtil.asDatumRange(box.slice(0));
+                            
+                            QDataSet box= SemanticOps.bounds(ds1);
+                            
+                            DatumRange xdr;
+                            if ( SemanticOps.isRank2Waveform(ds1) ) {
+                                xdr = DataSetUtil.asDatumRange(box.slice(0));
+                                DatumRange ddr = DataSetUtil.asDatumRange(box.slice(1));
+                                xdr = DatumRangeUtil.union( xdr.min().subtract(ddr.min()), xdr.max().add(ddr.max()) );
+                            } else {
+                                xdr= DataSetUtil.asDatumRange(box.slice(0));
+                            }
+                            if ( xdr.width().lt( dr0.width() ) ) {
+                                dr= DatumRangeUtil.createCentered( xdr.middle(), dr.width() );
+                            }
 //                            
 //                            if ( DatumRangeUtil.normalize( dr, xdr.min() ) > 0.2 && DatumRangeUtil.normalize( dr, xdr.max() ) < 0.8 ) {
 //                                dr= DatumRangeUtil.createCentered( xdr.middle(), dr.width() );
@@ -4301,7 +4313,22 @@ public class DataSetUtil {
                             logger.log(Level.FINER, "no records found in range ({0} steps): {1}", new Object[] { count, dr } );
                             dr= dr.previous();
                         } else {
-                            logger.log(Level.FINE, "found next data after {0} steps", count);
+                            logger.log(Level.FINE, "found previous data after {0} steps", count);
+                            
+                            QDataSet box= SemanticOps.bounds(ds1);
+                            
+                            DatumRange xdr;
+                            if ( SemanticOps.isRank2Waveform(ds1) ) {
+                                xdr = DataSetUtil.asDatumRange(box.slice(0));
+                                DatumRange ddr = DataSetUtil.asDatumRange(box.slice(1));
+                                xdr = DatumRangeUtil.union( xdr.min().subtract(ddr.min()), xdr.max().add(ddr.max()) );
+                            } else {
+                                xdr= DataSetUtil.asDatumRange(box.slice(0));
+                            }
+                            if ( xdr.width().lt( dr0.width() ) ) {
+                                dr= DatumRangeUtil.createCentered( xdr.middle(), dr.width() );
+                            }
+                            
 //                            QDataSet box= SemanticOps.bounds(ds1);
 //                            DatumRange xdr= DataSetUtil.asDatumRange(box.slice(0));
 //                            if ( DatumRangeUtil.normalize( dr, xdr.min() ) > 0.2 && DatumRangeUtil.normalize( dr, xdr.max() ) < 0.8 ) {
