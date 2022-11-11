@@ -124,9 +124,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     /** This indicates the axis ticks should go down */
     private static final int DOWN = 996;
 
-    /* Constants defining the action commands and labels for the scan buttons. */
-    private static final String SCAN_PREVIOUS_LABEL = "<< step";
-    private static final String SCAN_NEXT_LABEL = "step >>";
+    /* Constants defining the action commands and labels for the scan/step buttons. */
+    private static final String STEP_PREVIOUS_LABEL = "<< step";
+    private static final String STEP_NEXT_LABEL = "step >>";
     
     /* GENERAL AXIS INSTANCE MEMBERS */
     protected DataRange dataRange;
@@ -173,12 +173,12 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      */
     public void setNextAction( String label, AbstractAction abstractAction) {
         if ( !DasApplication.getDefaultApplication().isHeadless() ) {
-            ActionListener[] als= this.scanNext.getActionListeners();
+            ActionListener[] als= this.stepNext.getActionListeners();
             for ( ActionListener al : als ) {
-                this.scanNext.removeActionListener(al);
+                this.stepNext.removeActionListener(al);
             }
-            this.scanNext.setAction(abstractAction);
-            this.scanNext.setText(""+ label +" >>" );
+            this.stepNext.setAction(abstractAction);
+            this.stepNext.setText(""+ label +" >>" );
         }
     }
 
@@ -189,12 +189,12 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      */
     public void setPreviousAction( String label,AbstractAction abstractAction) {
         if ( !DasApplication.getDefaultApplication().isHeadless() ) {
-            ActionListener[] als= this.scanPrevious.getActionListeners();
+            ActionListener[] als= this.stepPrevious.getActionListeners();
             for ( ActionListener al : als ) {
-                this.scanPrevious.removeActionListener(al);
+                this.stepPrevious.removeActionListener(al);
             }
-            this.scanPrevious.setAction(abstractAction);
-            this.scanPrevious.setText("<< "+label );
+            this.stepPrevious.setAction(abstractAction);
+            this.stepPrevious.setText("<< "+label );
         }
     }
 
@@ -233,8 +233,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     private PropertyChangeListener dataRangePropertyListener;
     protected JPanel primaryInputPanel;
     protected JPanel secondaryInputPanel;
-    private ScanButton scanPrevious;
-    private ScanButton scanNext;
+    private ScanButton stepPrevious;
+    private ScanButton stepNext;
 
     /**
      * limits of the scan range.  Scan buttons will only be shown with within this range.  If not set, then there is no limit to range
@@ -355,8 +355,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         maybeInitializeInputPanels();
         maybeInitializeScanButtons();
         if ( !DasApplication.getDefaultApplication().isHeadless() ) {
-            scanNext.setEnabled( true );
-            scanPrevious.setEnabled( true );
+            stepNext.setEnabled( true );
+            stepPrevious.setEnabled( true );
         }
         add(primaryInputPanel);
         add(secondaryInputPanel);
@@ -526,13 +526,13 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
     private void maybeInitializeScanButtons() {
         if (!DasApplication.getDefaultApplication().isHeadless()) {
-            scanPrevious = new DasAxis.ScanButton(SCAN_PREVIOUS_LABEL);
-            scanNext = new DasAxis.ScanButton(SCAN_NEXT_LABEL);
+            stepPrevious = new DasAxis.ScanButton(STEP_PREVIOUS_LABEL);
+            stepNext = new DasAxis.ScanButton(STEP_NEXT_LABEL);
             ActionListener al = createScanActionListener();
-            scanPrevious.addActionListener(al);
-            scanNext.addActionListener(al);
-            add(scanPrevious);
-            add(scanNext);
+            stepPrevious.addActionListener(al);
+            stepNext.addActionListener(al);
+            add(stepPrevious);
+            add(stepNext);
         }
     }
 
@@ -543,9 +543,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 LoggerManager.logGuiEvent(e);                
                 String command = e.getActionCommand();
                 DasLogger.getLogger(DasLogger.GUI_LOG).log(Level.FINE, "event {0}", command);
-                if (command.equals(SCAN_PREVIOUS_LABEL)) {
+                if (command.equals(STEP_PREVIOUS_LABEL)) {
                     if ( scanRange==null || scanRange.intersects(getDatumRange().previous()) ) scanPrevious();
-                } else if (command.equals(SCAN_NEXT_LABEL)) {
+                } else if (command.equals(STEP_NEXT_LABEL)) {
                     if ( scanRange==null || scanRange.intersects(getDatumRange().next()) ) scanNext();
                 }
             }
@@ -992,17 +992,17 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     public void setScanRange( DatumRange range ) {
         DatumRange old= this.scanRange;
         this.scanRange= range;
-        if ( scanNext!=null ) { // headless will have null scanNext
+        if ( stepNext!=null ) { // headless will have null scanNext
             SwingUtilities.invokeLater( new Runnable() {
                 @Override
                 public void run() {
                     DatumRange range= getScanRange();
                     if ( range==null ) {
-                        scanNext.setToolTipText(null);
-                        scanPrevious.setToolTipText(null);
+                        stepNext.setToolTipText(null);
+                        stepPrevious.setToolTipText(null);
                     } else {
-                        scanNext.setToolTipText("<html><em><sub>scan limited to<br>"+range.toString());
-                        scanPrevious.setToolTipText("<html><em><sub>scan limited to<br>"+range.toString());
+                        stepNext.setToolTipText("<html><em><sub>scan limited to<br>"+range.toString());
+                        stepPrevious.setToolTipText("<html><em><sub>scan limited to<br>"+range.toString());
                     }
                 }
             });
@@ -3788,9 +3788,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
 
         //Add room for the scan buttons (if present)
-        if (scanPrevious != null && scanNext != null) {
-            Dimension prevSize = scanPrevious.getPreferredSize();
-            Dimension nextSize = scanPrevious.getPreferredSize();
+        if (stepPrevious != null && stepNext != null) {
+            Dimension prevSize = stepPrevious.getPreferredSize();
+            Dimension nextSize = stepPrevious.getPreferredSize();
             int minX = Math.min(DMin - prevSize.width, bounds.x);
             int maxX = Math.max(DMax + nextSize.width, bounds.x + bounds.width);
             bounds.x = minX;
@@ -4702,14 +4702,14 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 secondaryInputPanel.setBounds(-100, -100, 0, 0);
             }
 
-            if (scanPrevious != null && scanNext != null) {
-                Dimension preferred = scanPrevious.getPreferredSize();
+            if (stepPrevious != null && stepNext != null) {
+                Dimension preferred = stepPrevious.getPreferredSize();
                 int x = DMin - preferred.width - DasAxis.this.getX();
                 int y = (orientation == BOTTOM ? bottomPosition : topPosition - preferred.height) - DasAxis.this.getY();
-                scanPrevious.setBounds(x, y, preferred.width, preferred.height);
-                preferred = scanNext.getPreferredSize();
+                stepPrevious.setBounds(x, y, preferred.width, preferred.height);
+                preferred = stepNext.getPreferredSize();
                 x = DMax - DasAxis.this.getX();
-                scanNext.setBounds(x, y, preferred.width, preferred.height);
+                stepNext.setBounds(x, y, preferred.width, preferred.height);
             }
         }
 
@@ -4796,19 +4796,19 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     }
 
     private void refreshScanButtons(boolean reset) {
-        if ( scanNext==null ) return; // headless
+        if ( stepNext==null ) return; // headless
         if ( scanRange!=null ) {
             if ( !scanRange.getUnits().isConvertibleTo(getDatumRange().getUnits()) ) {
                   scanRange=null;
             }
         }
-        if ( reset || scanPrevious.hover ) {
+        if ( reset || stepPrevious.hover ) {
             boolean t= ( scanRange==null || ( false ? scanRange.intersects(getDatumRange().next()) : scanRange.intersects(getDatumRange().previous()) ) );
-            scanPrevious.hover= t;
+            stepPrevious.hover= t;
         }
-        if ( reset || scanNext.hover ) {
+        if ( reset || stepNext.hover ) {
             boolean t= ( scanRange==null || ( true ? scanRange.intersects(getDatumRange().next()) : scanRange.intersects(getDatumRange().previous()) ) );
-            scanNext.hover= t;
+            stepNext.hover= t;
         }
     }
 
@@ -4818,9 +4818,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * @param tooltip text for popup tooltip
      */
     public void setNextActionLabel( String label, String tooltip ) {
-        if ( scanNext!=null ) {
-            scanNext.setText(label);
-            scanNext.setToolTipText(tooltip);
+        if ( stepNext!=null ) {
+            stepNext.setText(label);
+            stepNext.setToolTipText(tooltip);
         }
     }
     
@@ -4830,9 +4830,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * @param tooltip text for popup tooltip
      */
     public void setPreviousActionLabel( String label, String tooltip ) {
-        if ( scanPrevious!=null ) {
-            scanPrevious.setText(label);
-            scanPrevious.setToolTipText(tooltip);
+        if ( stepPrevious!=null ) {
+            stepPrevious.setText(label);
+            stepPrevious.setToolTipText(tooltip);
         }
     }
     
@@ -4851,7 +4851,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             setContentAreaFilled(false);
             setText(text);
             setFocusable(false);
-            nextButton= SCAN_NEXT_LABEL.equals(text);
+            nextButton= STEP_NEXT_LABEL.equals(text);
 
             setBorder(new CompoundBorder(
                     new LineBorder(Color.BLACK),
