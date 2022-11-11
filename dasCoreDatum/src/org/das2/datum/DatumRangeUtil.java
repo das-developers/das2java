@@ -1782,11 +1782,17 @@ public class DatumRangeUtil {
         return result;
     }
     
-    
+    /**
+     * create a new DatumRange.  In the case where lower is greater than
+     * upper, the two will be reversed automatically.
+     * @param lower
+     * @param upper
+     * @return 
+     */
     public static DatumRange newDimensionless(double lower, double upper) {
         return new DatumRange( Datum.create(lower), Datum.create(upper) );
     }
-	 
+    
     /** Parse the datum range in the context of units.
      * @param str input like "5 to 15 cm"
      * @param units unit like Units.km

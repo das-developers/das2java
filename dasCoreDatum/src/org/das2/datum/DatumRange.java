@@ -349,10 +349,57 @@ public class DatumRange implements Comparable, Serializable {
      * @param max the maximum value which is greater than or equal to the min.
      * @param units the units of the two doubles.
      * @return the DatumRange
+     * @see #newRange(double, double) 
+     * @deprecated
      */
     public static DatumRange newDatumRange(double min, double max, Units units) {
         return new DatumRange( Datum.create(min,units), Datum.create(max,units) );
     }
     
+    /**
+     * create a new DatumRange.  In the case where lower is greater than
+     * upper, the two will be reversed automatically.
+     * @param lower the lower bound
+     * @param upper the upper bound
+     * @return a new DatumRange
+     */
+    public static DatumRange newRange( Datum lower, Datum upper ) {
+        if ( lower.gt(upper) ) {
+            return new DatumRange( lower, upper );
+        } else {
+            return new DatumRange( upper, lower );
+        }
+    }
+    
+    /**
+     * create a new DatumRange.  In the case where lower is greater than
+     * upper, the two will be reversed automatically.
+     * @param lower the lower bound
+     * @param upper the upper bound
+     * @param units the units
+     * @return a new DatumRange
+     */
+    public static DatumRange newRange( double lower, double upper, Units units ) {
+        if ( lower>upper ) {
+            return new DatumRange( lower, upper, units );
+        } else {
+            return new DatumRange( lower, upper, units );
+        }
+    }
+    
+    /**
+     * create a new DatumRange.  In the case where lower is greater than
+     * upper, the two will be reversed automatically.
+     * @param lower
+     * @param upper
+     * @return 
+     */
+    public static DatumRange newRange( double lower, double upper ) {
+        if ( lower>upper ) {
+            return new DatumRange( lower, upper, Units.dimensionless );
+        } else {
+            return new DatumRange( lower, upper, Units.dimensionless );
+        }
+    }    
 }
 
