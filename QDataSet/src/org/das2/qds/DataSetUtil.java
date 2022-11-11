@@ -2375,6 +2375,15 @@ public class DataSetUtil {
             }
         }
         
+        if ( dxds.length()>4 ) {
+            QDataSet limit= Ops.divide( dxds.slice(0), 10000 );
+            QDataSet gcd1= DataSetUtil.gcd( dxds.trim(0,dxds.length()/2), limit );
+            QDataSet gcd2= DataSetUtil.gcd( dxds.trim(dxds.length()/2,dxds.length()), limit );
+            if ( Ops.divide( gcd1, limit ).value()>10 && Ops.divide( gcd2, limit ).value()>10 ) {
+                return Ops.lesserOf( gcd1, gcd2 );
+            }
+        }
+                
         // linear spacing
         {
                     
@@ -4212,7 +4221,8 @@ public class DataSetUtil {
                 }
                 if ( !validBounds(bounds) 
                         || !SemanticOps.getUnits(bounds).isConvertibleTo(dr.getUnits() ) 
-                        || !DataSetUtil.asDatumRange(bounds).intersects(dr) ) {
+                        || DataSetUtil.asDatumRange(bounds).max().lt(dr.min()) ) {
+                    
                     dr= dr.next();
                 } else {
                     DatumRange limit= DataSetUtil.asDatumRange(bounds);
@@ -4272,6 +4282,116 @@ public class DataSetUtil {
     }
 
     /**
+     * return the number of times a gap in data occurs.  This considers the cadence
+     * and waveform-type data.  If the data cadence cannot be determined, then
+     * return 0.
+     * @param ds
+     * @return the number of data breaks
+     */
+    private static int countDataBreaks( QDataSet ds ) {
+        if ( ds.rank()==2 && SemanticOps.isRank2Waveform(ds) ) {
+            int gaps= 0;
+            QDataSet lastBounds=null;
+            QDataSet xtags= Ops.xtags(ds);
+            for ( int i=0; i<ds.length(); i++ ) {
+                QDataSet ds1= ds.slice(i);
+                QDataSet xtags1= Ops.xtags(ds1);
+                QDataSet cadence= DataSetUtil.guessCadence( xtags1, ds1 );
+                if ( cadence==null ) return 0;
+                QDataSet bounds= Ops.add( Ops.extent(xtags1), xtags.slice(i) );
+                gaps+= countDataBreaks( ds1 );
+                if ( lastBounds!=null ) {
+                    QDataSet lastX= lastBounds.slice(1);
+                    QDataSet firstX= bounds.slice(0);
+                    if ( Ops.gt( Ops.subtract(firstX, lastX), cadence ).value()>0 ) {
+                        gaps+=1;
+                    }
+                }
+                lastBounds= bounds;
+            }
+            return gaps;            
+        } else if ( ds.rank()>1 ) {
+            int gaps= 0;
+            QDataSet lastBounds=null;
+            for ( int i=0; i<ds.length(); i++ ) {
+                QDataSet ds1= ds.slice(i);
+                QDataSet xtags1= Ops.xtags(ds1);
+                QDataSet cadence= DataSetUtil.guessCadence( xtags1, ds1 );
+                if ( cadence==null ) return 0;
+                QDataSet bounds= Ops.extent(xtags1);
+                gaps+= countDataBreaks( ds1 );
+                if ( lastBounds!=null ) {
+                    QDataSet lastX= lastBounds.slice(1);
+                    QDataSet firstX= bounds.slice(0);
+                    if ( Ops.gt( Ops.subtract(firstX, lastX), cadence ).value()>0 ) {
+                        gaps+=1;
+                    }
+                }
+                lastBounds= bounds;
+            }
+            return gaps;
+        } else {
+            QDataSet xtags= Ops.xtags(ds);
+            QDataSet cadence= DataSetUtil.guessCadence( xtags, ds );
+            if ( cadence==null ) return 0; 
+            QDataSet r= Ops.where( Ops.gt( Ops.diff( xtags ), cadence ) );
+            int gaps= r.length();
+            return gaps;
+        }
+    }
+    
+    /**
+     * is data found at the time t, or might it be within a gap in the data?
+     * @param ds any time-series dataset
+     * @param t the time
+     * @return true if t is within data.
+     */
+    public static boolean isDataAt( QDataSet ds, Datum t ) {
+        QDataSet tt= Ops.xtags(ds);
+        if ( tt==null ) throw new IllegalArgumentException("data must have timetags");
+        if ( ds.rank()>2 ) {
+            for ( int i=0; i<ds.length(); i++ ) {
+                if ( isDataAt(ds.slice(i),t) ) {
+                    return true;
+                }
+            }
+            return false;
+        } else if ( SemanticOps.isRank2Waveform(ds) ) {
+            QDataSet ff= Ops.findex( tt, t );
+            int i= (int)ff.value();
+            if ( i<0 ) i=0;
+            QDataSet ds1= ds.slice(i);
+            QDataSet tt1= Ops.xtags(ds1);
+            if ( tt1==null ) throw new IllegalArgumentException("data slices must have timetags");
+            QDataSet bounds= Ops.extent(tt1);
+            DatumRange xbounds= Ops.datumRange( Ops.add( bounds, tt.slice(i) ) );
+            if ( t.le( xbounds.min() ) ) {
+                return false;
+            } else if ( t.ge( xbounds.max() ) ) {
+                return false;
+            } else {
+                return isDataAt( ds1,t.subtract(Ops.datum(tt.slice(i))) );
+            }
+        } else {
+            QDataSet ff= Ops.findex( tt, t );        
+            QDataSet cadence= guessCadence( tt, ds );
+            if ( cadence==null ) return true;
+            Datum dcadence= Ops.datum(cadence).divide(1.95);
+            int i= (int)ff.value();
+            if ( i>0 ) {
+                if ( t.minus( Ops.datum(tt.slice(i)) ).abs().lt(dcadence) ) {
+                    return true;
+                } else if ( i+1<tt.length() && Ops.datum(tt.slice(i+1)).minus(t).abs().lt(dcadence) ) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+            return false;
+        }
+    }
+    
+    /**
      * return the previous interval (typically time) containing data, centered on data, with the
      * roughly the same width.
      * @param ds the dataset
@@ -4294,8 +4414,8 @@ public class DataSetUtil {
                     bounds= SemanticOps.bounds(ds).slice(0);
                 }
                 if ( !validBounds(bounds) 
-                        || !SemanticOps.getUnits(bounds).isConvertibleTo(dr.getUnits() ) 
-                        || !DataSetUtil.asDatumRange(bounds).intersects(dr) ) {
+                        || !SemanticOps.getUnits(bounds).isConvertibleTo(dr.getUnits() )
+                        || DataSetUtil.asDatumRange(bounds).min().gt(dr.max()) ) {
                     dr= dr.previous();
                 } else {
                     DatumRange limit= DataSetUtil.asDatumRange(bounds);
@@ -4321,24 +4441,21 @@ public class DataSetUtil {
                             
                             QDataSet box= SemanticOps.bounds(ds1);
                             
+                            boolean doRecenter= false;
                             DatumRange xdr;
                             if ( SemanticOps.isRank2Waveform(ds1) ) {
                                 xdr = DataSetUtil.asDatumRange(box.slice(0));
                                 DatumRange ddr = DataSetUtil.asDatumRange(box.slice(1));
                                 xdr = DatumRangeUtil.union( xdr.min().subtract(ddr.min()), xdr.max().add(ddr.max()) );
+                                int dataBreaks= countDataBreaks(ds1);
+                                if ( dataBreaks<4 ) doRecenter= true;
                             } else {
                                 xdr= DataSetUtil.asDatumRange(box.slice(0));
                             }
-                            if ( xdr.width().lt( dr0.width() ) ) {
+                            if ( xdr.width().lt( dr0.width() ) && doRecenter ) {
                                 dr= DatumRangeUtil.createCentered( xdr.middle(), dr.width() );
                             }
                             
-//                            QDataSet box= SemanticOps.bounds(ds1);
-//                            DatumRange xdr= DataSetUtil.asDatumRange(box.slice(0));
-//                            if ( DatumRangeUtil.normalize( dr, xdr.min() ) > 0.2 && DatumRangeUtil.normalize( dr, xdr.max() ) < 0.8 ) {
-//                                dr= DatumRangeUtil.createCentered( xdr.middle(), dr.width() );
-//                                logger.log(Level.FINE, "recenter the data" );
-//                            }
                             break;
                         }
                     }
