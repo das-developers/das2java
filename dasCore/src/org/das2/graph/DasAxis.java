@@ -986,8 +986,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     
     /**
      * limit the scan buttons to operate within this range.
+     * Setting this to null will remove the limit.
      * http://sourceforge.net/p/autoplot/bugs/473/
-     * @param range the range to limit the scanning
+     * @param range null or the range to limit the scanning
      */
     public void setScanRange( DatumRange range ) {
         DatumRange old= this.scanRange;
@@ -4861,7 +4862,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 public void mousePressed(MouseEvent e) {
                     if (e.getButton() == MouseEvent.BUTTON1) {
                         setForeground(Color.LIGHT_GRAY);
-                        pressed = scanRange==null || ( nextButton ? scanRange.intersects(getDatumRange().next()) : scanRange.intersects(getDatumRange().previous()) );
+                        pressed = scanRange==null 
+                                || ( nextButton 
+                                     ? scanRange.intersects(getDatumRange().next()) 
+                                     : scanRange.intersects(getDatumRange().previous()) );
                         repaint();
                     }
                 }
@@ -4875,7 +4879,15 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 }
                 @Override
                 public void mouseEntered(MouseEvent e) {
-                    hover = scanRange==null || scanRange.width().value()==0 || ( nextButton ? scanRange.intersects(getDatumRange().next()) : scanRange.intersects(getDatumRange().previous()) );
+                    //hover = scanRange==null 
+                    //        || scanRange.width().value()==0 
+                    //        || ( nextButton 
+                    //             ? scanRange.intersects(getDatumRange().next()) 
+                    //             : scanRange.intersects(getDatumRange().previous()) );
+                    hover= true;
+                    if ( !hover ) {
+                        logger.finest("hover false");
+                    }
                     repaint();
                 }
                 @Override
@@ -4901,6 +4913,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, aaOn);
                 super.paintComponent(g2);
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, aaHint);
+            } else {
+                logger.finer("not drawing step button");
             }
         }
 
