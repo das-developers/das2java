@@ -276,25 +276,24 @@ public class KernelRebinner implements DataSetRebinner {
          * kernels can contribute to an average, but if it's the only point in the average, then it should not be used.
          */
         DDataSet rebinMask= DDataSet.createRank2( nx, ny );
-            
-        int nTables = ds.length(); // TODO: Rank 3 support and Rank 2 bundle of x,y,z
-        for (int iTable = 0; iTable < nTables; iTable++) {
         
-            QDataSet zds= ds.slice(iTable);
-            
-            QDataSet wds= org.das2.qds.DataSetUtil.weightsDataSet(zds);
-
-            QDataSet xds= SemanticOps.xtagsDataSet(zds);
-            QDataSet yds= SemanticOps.ytagsDataSet(zds);
+        if ( ds.rank()==1 || ( ds.rank()==2 && SemanticOps.isBundle(ds) ) ) {
+            QDataSet zds, xds, yds, wds;
+            if ( ds.rank()==1 ) {
+                yds= ds; // TODO: nasty shameful code will break when I clean up this model.
+                xds= SemanticOps.xtagsDataSet(yds);
+                zds= (QDataSet) ds.property(QDataSet.PLANE_0);
+                if ( zds==null ) zds= Ops.zeros( yds.length() );
+            } else {
+                zds= Ops.unbundle( ds, ds.length(0)-1 );
+                xds= SemanticOps.xtagsDataSet(ds);
+                yds= SemanticOps.ytagsDataSet(ds);
+            }
+            wds= Ops.valid( zds );
 
             QDataSet xBinWidth= org.das2.qds.DataSetUtil.guessCadenceNew( xds, zds );
-            QDataSet yBinWidth;
-            if ( yds.rank()==1 ) {
-                yBinWidth= org.das2.qds.DataSetUtil.guessCadenceNew( yds, zds.slice(0) );
-            } else {
-                yBinWidth= org.das2.qds.DataSetUtil.guessCadenceNew( yds.slice(0), zds.slice(0) );
-            }
-
+            QDataSet yBinWidth= org.das2.qds.DataSetUtil.guessCadenceNew( yds, zds );
+            
             if ( xBinWidth==null ) {
                 if ( xds instanceof IndexGenDataSet ) {
                     xBinWidth= Ops.dataset( 1 );
@@ -310,7 +309,6 @@ public class KernelRebinner implements DataSetRebinner {
                     yBinWidth= Ops.dataset( ddY.binWidthDatum() );
                 }
             }
-
             Units xUnits= SemanticOps.getUnits(xds);
             Units yUnits= SemanticOps.getUnits(yds);
 
@@ -318,41 +316,97 @@ public class KernelRebinner implements DataSetRebinner {
                     
             QDataSet kernel= makeKernel( ddX, ddY, Ops.datum(xBinWidth), Ops.datum(yBinWidth) );
             QDataSet mask= org.das2.qds.DataSetUtil.weightsDataSet(kernel);
-            
-            int [] ibiny=null; 
-            QDataSet ydss=null;
-            if ( yds.rank()==1 ) {
-                ibiny = new int[yds.length()];
-                for (int j=0; j < ibiny.length; j++) {
-                    ibiny[j]= ddY.whichBin( yds.value(j), yUnits );
-                }
-            } else if ( yds.rank()==2 ) {
-                ydss= yds;
-            } else {
-                throw new IllegalArgumentException("yds rank must be 1 or 2");
+                        
+            for ( int i=0; i<xds.length(); i++) {
+                int ibinx,ibiny;
+                ibinx= ddX.whichBin( xds.value(i), xUnits );
+                if ( ibinx==-1 ) continue;
+                ibiny= ddY.whichBin( yds.value(i), yUnits );
+                if ( ibiny==-1 ) continue;
+                double z = zds.value(i);
+                double w = wds.value(i);
+                applyKernel( kernel, mask, ibinx, ibiny, z, w, rebinData, rebinWeights, rebinMask );
             }
             
-            for ( int i=0; i<xds.length(); i++) {
-                int ibinx;
-                ibinx= ddX.whichBin( xds.value(i), xUnits );
-                if ( ibinx==-1 ) {
-                    continue;
-                    //ibinx= ddX.whichBin( kxds.value(kxds.length()-1), xUnits );
+        } else {
+            
+            int nTables = ds.length(); // TODO: Rank 2 bundle of x,y,z
+            for (int iTable = 0; iTable < nTables; iTable++) {
+
+                QDataSet zds= ds.slice(iTable);
+
+                QDataSet wds= org.das2.qds.DataSetUtil.weightsDataSet(zds);
+
+                QDataSet xds= SemanticOps.xtagsDataSet(zds);
+                QDataSet yds= SemanticOps.ytagsDataSet(zds);
+
+                QDataSet xBinWidth= org.das2.qds.DataSetUtil.guessCadenceNew( xds, zds );
+                QDataSet yBinWidth;
+                if ( yds.rank()==1 ) {
+                    yBinWidth= org.das2.qds.DataSetUtil.guessCadenceNew( yds, zds.slice(0) );
+                } else {
+                    yBinWidth= org.das2.qds.DataSetUtil.guessCadenceNew( yds.slice(0), zds.slice(0) );
                 }
-                if ( ydss!=null ) {
-                    yds= ydss.slice(i);
+
+                if ( xBinWidth==null ) {
+                    if ( xds instanceof IndexGenDataSet ) {
+                        xBinWidth= Ops.dataset( 1 );
+                    } else {
+                        xBinWidth= Ops.dataset( ddX.binWidthDatum() );
+                    }
+                }
+
+                if ( yBinWidth==null ) {
+                    if ( yds instanceof IndexGenDataSet ) {
+                        yBinWidth= Ops.dataset( 1 );
+                    } else {
+                        yBinWidth= Ops.dataset( ddY.binWidthDatum() );
+                    }
+                }
+
+                Units xUnits= SemanticOps.getUnits(xds);
+                Units yUnits= SemanticOps.getUnits(yds);
+
+                logger.log(Level.FINEST, "Allocating rebinData and rebinWeights: {0} x {1}", new Object[]{nx, ny});
+
+                QDataSet kernel= makeKernel( ddX, ddY, Ops.datum(xBinWidth), Ops.datum(yBinWidth) );
+                QDataSet mask= org.das2.qds.DataSetUtil.weightsDataSet(kernel);
+
+                int [] ibiny=null; 
+                QDataSet ydss=null;
+                if ( yds.rank()==1 ) {
                     ibiny = new int[yds.length()];
                     for (int j=0; j < ibiny.length; j++) {
                         ibiny[j]= ddY.whichBin( yds.value(j), yUnits );
                     }
+                } else if ( yds.rank()==2 ) {
+                    ydss= yds;
+                } else {
+                    throw new IllegalArgumentException("yds rank must be 1 or 2");
                 }
-                assert ibiny!=null;
-                
-                for (int j = 0; j < ibiny.length; j++) {
-                    if ( ibiny[j]==-1 ) continue;
-                    double z = zds.value(i,j);
-                    double w = wds.value(i,j);
-                    applyKernel( kernel, mask, ibinx, ibiny[j], z, w, rebinData, rebinWeights, rebinMask );
+
+                for ( int i=0; i<xds.length(); i++) {
+                    int ibinx;
+                    ibinx= ddX.whichBin( xds.value(i), xUnits );
+                    if ( ibinx==-1 ) {
+                        continue;
+                        //ibinx= ddX.whichBin( kxds.value(kxds.length()-1), xUnits );
+                    }
+                    if ( ydss!=null ) {
+                        yds= ydss.slice(i);
+                        ibiny = new int[yds.length()];
+                        for (int j=0; j < ibiny.length; j++) {
+                            ibiny[j]= ddY.whichBin( yds.value(j), yUnits );
+                        }
+                    }
+                    assert ibiny!=null;
+
+                    for (int j = 0; j < ibiny.length; j++) {
+                        if ( ibiny[j]==-1 ) continue;
+                        double z = zds.value(i,j);
+                        double w = wds.value(i,j);
+                        applyKernel( kernel, mask, ibinx, ibiny[j], z, w, rebinData, rebinWeights, rebinMask );
+                    }
                 }
             }
         }
