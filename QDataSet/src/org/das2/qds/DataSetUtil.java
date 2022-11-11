@@ -4210,7 +4210,9 @@ public class DataSetUtil {
                 } else {
                     bounds= SemanticOps.bounds(ds).slice(0);
                 }
-                if ( !validBounds(bounds) || !SemanticOps.getUnits(bounds).isConvertibleTo(dr.getUnits() ) || !DataSetUtil.asDatumRange(bounds).contains(dr) ) {
+                if ( !validBounds(bounds) 
+                        || !SemanticOps.getUnits(bounds).isConvertibleTo(dr.getUnits() ) 
+                        || !DataSetUtil.asDatumRange(bounds).intersects(dr) ) {
                     dr= dr.next();
                 } else {
                     DatumRange limit= DataSetUtil.asDatumRange(bounds);
@@ -4291,7 +4293,9 @@ public class DataSetUtil {
                 } else {
                     bounds= SemanticOps.bounds(ds).slice(0);
                 }
-                if ( !validBounds(bounds) || !SemanticOps.getUnits(bounds).isConvertibleTo(dr.getUnits() ) || !DataSetUtil.asDatumRange(bounds).contains(dr) ) {
+                if ( !validBounds(bounds) 
+                        || !SemanticOps.getUnits(bounds).isConvertibleTo(dr.getUnits() ) 
+                        || !DataSetUtil.asDatumRange(bounds).intersects(dr) ) {
                     dr= dr.previous();
                 } else {
                     DatumRange limit= DataSetUtil.asDatumRange(bounds);
