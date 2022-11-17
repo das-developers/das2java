@@ -188,7 +188,7 @@ public interface QDataSet {
      * would perform within one second when the dataset is within this limit.  This is
      * of course a somewhat arbitrary limit, but it shows what the expectations are.
      */
-    public static long LIMIT_HUGE_DATASET=100000000;
+    public static long LIMIT_HUGE_DATASET=1000000000;
     
     /**
      * type Units indicating the units of the dataset in the enumeration of
