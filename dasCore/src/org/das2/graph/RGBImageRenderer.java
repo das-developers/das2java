@@ -63,7 +63,7 @@ public class RGBImageRenderer extends Renderer {
         QDataSet dep1;
 
         if ( lds==null || lds.length() == 0) {
-            getParent().postMessage( this, "null data set", Level.INFO, null, null );
+            postMessage( "null data set", Level.INFO, null, null );
             return;
         }
         
@@ -86,7 +86,7 @@ public class RGBImageRenderer extends Renderer {
             double dx2= ( dep0.value(n-1)- dep0.value(n-2) );
             boolean xlog= (dx2/dx1)>10.;
             if ( xAxis.isLog()!=xlog ) {
-                getParent().postMessage( this, "xaxis must be " + ( xlog ? "log" : "linear" ) + ", for this image",  Level.INFO, null, null );
+                postMessage( "xaxis must be " + ( xlog ? "log" : "linear" ) + ", for this image",  Level.INFO, null, null );
                 return;
             }
         }
@@ -96,7 +96,7 @@ public class RGBImageRenderer extends Renderer {
             double dy2= ( dep1.value(n-1)- dep1.value(n-2) );
             boolean ylog= (dy2/dy1)>10.;
             if ( yAxis.isLog()!=ylog ) {
-                getParent().postMessage( this, "yaxis must be " + ( ylog ? "log" : "linear" )+ ", for this image",  Level.INFO, null, null );
+                postMessage( "yaxis must be " + ( ylog ? "log" : "linear" )+ ", for this image",  Level.INFO, null, null );
                 return;
             }
         }        
@@ -186,10 +186,10 @@ public class RGBImageRenderer extends Renderer {
         iy1= iy1+1;
         
         if ( ix0==ix1 ) {
-            getParent().postMessage( this, "image is off screen",  Level.INFO, null, null );
+            postMessage( "image is off screen",  Level.INFO, null, null );
         }
         if ( iy0==iy1 ) {
-            getParent().postMessage( this, "image is off screen",  Level.INFO, null, null );
+            postMessage( "image is off screen",  Level.INFO, null, null );
         }
         
         if ( ix0>0 || ix1<w || iy0>0 || iy1<h ) {

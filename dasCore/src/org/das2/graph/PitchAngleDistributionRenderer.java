@@ -167,20 +167,19 @@ public class PitchAngleDistributionRenderer extends Renderer {
     public void render(Graphics2D g1, DasAxis xAxis, DasAxis yAxis) {
 
         QDataSet tds= (QDataSet)ds;
-        DasPlot parent= getParent();
         if (tds == null) {
             logger.fine("null data set");
-            parent.postMessage(this, "no data set", DasPlot.INFO, null, null);
+            postMessage("no data set", DasPlot.INFO, null, null);
             return;
         }
 
         if ( !( SemanticOps.isTableDataSet(tds) ) ) {
-            parent.postException( this, new IllegalArgumentException("expected Table: " +tds ) );
+            postException( new IllegalArgumentException("expected Table: " +tds ) );
             return;
         }
 
         if ( !xAxis.getUnits().isConvertibleTo( yAxis.getUnits() ) ) {
-            parent.postException( this,
+            postException( 
                     new IllegalArgumentException("x and y axes have different units, x="
                     +xAxis.getUnits() + " y="+yAxis.getUnits()  ) );
             return;

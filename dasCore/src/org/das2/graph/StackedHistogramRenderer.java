@@ -137,17 +137,17 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
         QDataSet xtysData= getDataSet();
         
         if ( xtysData==null ) {
-            getParent().postMessage(this, "null data set", DasPlot.WARNING, null, null);
+            postMessage( "null data set", DasPlot.WARNING, null, null);
             return;
         }
         
         if ( xtysData.length()==0 ) {
-            getParent().postMessage(this, "empty data set", DasPlot.WARNING, null, null);
+            postMessage( "empty data set", DasPlot.WARNING, null, null);
             return;
         }
 
         if ( xtysData.rank()!=2 ) {
-            getParent().postMessage(this, "dataset is not rank 2", DasPlot.WARNING, null, null);
+            postMessage( "dataset is not rank 2", DasPlot.WARNING, null, null);
             return;
         }
         
@@ -303,17 +303,17 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
         
         if ( xtysData==null ) {
             this.plotImage= null;
-            getParent().postMessage(this, "null data set", DasPlot.WARNING, null, null);
+            postMessage( "null data set", DasPlot.WARNING, null, null);
             return;
         }
         
         if ( xtysData.length()==0 ) {
-            getParent().postMessage(this, "empty data set", DasPlot.WARNING, null, null);
+            postMessage( "empty data set", DasPlot.WARNING, null, null);
             return;
         }
 
         if ( xtysData.rank()!=2 ) {
-            getParent().postMessage(this, "dataset is not rank 2", DasPlot.WARNING, null, null);
+            postMessage( "dataset is not rank 2", DasPlot.WARNING, null, null);
             return;
         }
         
@@ -351,7 +351,7 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
         if ( !zunits.isConvertibleTo( zAxis.getUnits() ) ) {
             String msg= "dataset z units are \""+zunits+"\" while z axis are \"" + zAxis.getUnits() + "\"";
             zunits= zAxis.getUnits();
-            getParent().postMessage(this, msg, DasPlot.WARNING, null, null);
+            postMessage( msg, DasPlot.WARNING, null, null);
         }
 
         int[] yBases= new int[ data.length(0) ];

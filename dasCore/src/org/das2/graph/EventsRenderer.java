@@ -439,7 +439,6 @@ public class EventsRenderer extends Renderer {
         if ( vds==null ) {
             return null;
         }
-        DasPlot parent= getParent();
         if ( vds.rank()==2 ) {
             QDataSet dep0= (QDataSet) vds.property(QDataSet.DEPEND_0);
             if ( dep0==null ) {
@@ -477,7 +476,7 @@ public class EventsRenderer extends Renderer {
                         xmaxs= Ops.add( xmins, xmaxs );
                     }
                 } else {
-                    parent.postMessage( this, "DEPEND_0 is rank 2 but not bins", DasPlot.WARNING, null, null );
+                    postMessage( "DEPEND_0 is rank 2 but not bins", DasPlot.WARNING, null, null );
                     logger.exiting( "EventsRenderer", "makeCanonical", "null" );
                     return null;
                 }
@@ -497,7 +496,7 @@ public class EventsRenderer extends Renderer {
                 colors= Ops.replicate( getColor().getRGB(), xmins.length() );
 
             } else {
-                parent.postMessage( this, "rank 2 dataset must have dep0 of rank 1 or rank 2 bins", DasPlot.WARNING, null, null );
+                postMessage( "rank 2 dataset must have dep0 of rank 1 or rank 2 bins", DasPlot.WARNING, null, null );
                 logger.exiting( "EventsRenderer", "makeCanonical", "null");
                 return null;
             }
@@ -527,7 +526,7 @@ public class EventsRenderer extends Renderer {
                     }
                     msgs= vds;
                 } else {
-                    parent.postMessage( this, "DEPEND_0 is rank 2 but not bins", DasPlot.WARNING, null, null );
+                    postMessage( "DEPEND_0 is rank 2 but not bins", DasPlot.WARNING, null, null );
                     logger.exiting( "EventsRenderer", "makeCanonical", "null");
                     return null;
                 }
@@ -550,7 +549,7 @@ public class EventsRenderer extends Renderer {
                 xmaxs= Ops.add(dep0, org.das2.qds.DataSetUtil.asDataSet(width) );                
                 msgs= vds;
             } else {
-                parent.postMessage( this, "dataset is not correct form", DasPlot.WARNING, null, null );
+                postMessage( "dataset is not correct form", DasPlot.WARNING, null, null );
                 logger.exiting( "EventsRenderer", "makeCanonical", "null");
                 return null;
             }
@@ -575,7 +574,7 @@ public class EventsRenderer extends Renderer {
             colors= Ops.replicate( irgb, xmins.length() );
             msgs= Ops.replicate(vds,1);
         } else {            
-            parent.postMessage( this, "dataset must be rank 0, 1 or 2", DasPlot.WARNING, null, null );
+            postMessage( "dataset must be rank 0, 1 or 2", DasPlot.WARNING, null, null );
             logger.exiting( "EventsRenderer", "makeCanonical", "null");
             return null;
         }

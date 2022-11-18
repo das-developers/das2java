@@ -62,9 +62,12 @@ import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
+import org.das2.CancelledOperationException;
 import org.das2.components.propertyeditor.Displayable;
 import org.das2.dataset.DataSetAdapter;
 import org.das2.datum.Datum;
+import static org.das2.graph.DasPlot.INFO;
+import static org.das2.graph.DasPlot.SEVERE;
 import org.das2.util.LoggerManager;
 import org.das2.qds.DataSetUtil;
 import org.das2.qds.QDataSet;
@@ -151,6 +154,51 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
         return ymemento;
     }
 
+    /**
+     * post the message, checking to see that there is a parent first.
+     * @param message the message
+     * @param messageType the message type, DasPlot.INFO, DasPlot.WARNING, or DasPlot.SEVERE.  
+     * @param x the X position or null
+     * @param y the Y position or null
+     */
+    public void postMessage( String message, int messageType, Datum x, Datum y) {
+        DasPlot lparent= this.parent;
+        if ( lparent==null ) return;
+        lparent.postMessage( this, message, messageType, x, y);
+    }
+    
+
+    /**
+     * Notify user of an exception, in the context of the plot.  A position in
+     * the data space may be specified to locate the text within the data context.
+     * Note either or both x or y may be null.  Messages must only be posted while the
+     * Renderer's render method is called, not during updatePlotImage.  All messages are
+     * cleared before the render step. (TODO:check on this)
+     *
+     * @param message the text to be displayed, may contain granny text.
+     * @param messageLevel allows java.util.logging.Level to be used, for example Level.INFO, Level.WARNING, and Level.SEVERE
+     * @param x if non-null, the location on the x axis giving context for the text.
+     * @param y if non-null, the location on the y axis giving context for the text.
+     */
+    public void postMessage(String message, Level messageLevel, Datum x, Datum y) {
+        DasPlot lparent= this.parent;
+        if ( lparent==null ) return;
+        lparent.postMessage(this, message, messageLevel, x, y);
+    }
+
+    /**
+     * notify user of an exception, in the context of the plot.  This is similar
+     * to postMessage(renderer, exception.getMessage(), DasPlot.SEVERE, null, null )
+     * except that it does catch CancelledOperationExceptions and reduced the
+     * severity since the user probably initiated the condition.
+     * @param exception the exception to post.
+     */
+    public void postException( Exception exception ) {
+        DasPlot lparent= this.parent;
+        if ( lparent==null ) return;
+        lparent.postException( this, exception );
+    }    
+    
     public static boolean isTableDataSet( QDataSet ds ) {
         return SemanticOps.isTableDataSet(ds);
     }

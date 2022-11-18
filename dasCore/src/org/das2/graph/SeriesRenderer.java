@@ -304,7 +304,7 @@ public class SeriesRenderer extends Renderer {
         if ( ds.rank()==2 && SemanticOps.isBundle(ds) ) {
             vds= SemanticOps.ytagsDataSet(ds);
         } else if ( ds.rank()==2 ) {
-            getParent().postMessage(this, "dataset is rank 2 and not a bundle", DasPlot.INFO, null, null);
+            postMessage( "dataset is rank 2 and not a bundle", DasPlot.INFO, null, null);
             return null;
         } else {
             vds = (QDataSet) ds;

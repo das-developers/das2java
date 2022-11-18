@@ -387,7 +387,7 @@ public class PolarPlotRenderer extends Renderer {
             if ( wds.value(i)>0 ) break;
         }
         if ( i==ads.length() ) {
-            getParent().postMessage( this,"no valid data", Level.WARNING, null, null );
+            postMessage( "no valid data", Level.WARNING, null, null );
             return;
         }
         
@@ -538,7 +538,7 @@ public class PolarPlotRenderer extends Renderer {
         }
         
         if ( xAxis.getUnits()!=yAxis.getUnits() ) {
-            getParent().postMessage( this, "xaxis and yaxis should have same units", Level.WARNING, null, null );
+            postMessage( "xaxis and yaxis should have same units", Level.WARNING, null, null );
             return;
         }
         double x0= xAxis.transform(0,yunits);
