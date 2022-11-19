@@ -80,6 +80,51 @@ public class Schemes {
     }
     
     /**
+     * array of bounding boxes, joined by the zeroth dimension.
+     * @return array of bounding boxes
+     */
+    public static QDataSet arrayOfBoundingBox( ) {
+        Ops.randomSeed(0);
+        QDataSet xx = Ops.floor( Ops.add( Ops.multiply( Ops.randn(100), 10 ), 100) );
+        xx= Ops.putProperty( xx, QDataSet.UNITS, Units.MeV );
+        QDataSet yy = (MutablePropertyDataSet) Ops.randn(100);
+
+        QDataSet bx = Ops.extent(xx);
+        QDataSet by = Ops.extent(yy);
+
+        QDataSet xx2 = Ops.floor( Ops.add( Ops.multiply( Ops.randn(100), 12), 170 ) );
+        xx2= Ops.putProperty( xx2, QDataSet.UNITS, Units.MeV );
+        QDataSet yy2 = Ops.add( Ops.randn(100), 2 );
+
+        QDataSet bx2 = Ops.extent(xx2);
+        QDataSet by2 = Ops.extent(yy2);
+
+        QDataSet xx3 = Ops.floor( Ops.add( Ops.multiply( Ops.randn(100),12), 140) );
+        xx3= Ops.putProperty( xx3, QDataSet.UNITS, Units.MeV );
+        QDataSet yy3 = Ops.subtract( Ops.randn(100), 1);
+
+        QDataSet bx3 = Ops.extent(xx3);
+        QDataSet by3 = Ops.extent(yy3);
+
+        JoinDataSet bounds = (JoinDataSet)Ops.join(Ops.join(bx,by),Ops.join(bx2,by2));
+        bounds.join( Ops.join(bx3,by3) );
+        return bounds;
+        
+    }
+    
+    /**
+     * return true if the data is a rank 3 array of bounding boxes.  Presently only
+     * 2-D bounding boxes are allowed.  The zeroth dimension is the number of boxes,
+     * and each slice is a bounding box.
+     * @param ds
+     * @return true if the data is a rank 3 array of bounding boxes.
+     */
+    public static boolean isArrayOfBoundingBox( QDataSet ds ) {
+        int[] dims= DataSetUtil.qubeDims(ds);
+        return ds.rank()==3 && dims!=null && dims[1]==2 && dims[2]==2 ;
+    }
+    
+    /**
      * return a rank 2 waveform, where the waveform is stored in packets.
      * DEPEND_0 is the time for each packet, and DEPEND_1 is the difference in
      * time for each measurement to the packet time.  Note the additional requirement
