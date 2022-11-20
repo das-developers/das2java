@@ -225,7 +225,13 @@ public class JoinDataSet extends AbstractDataSet {
     public Object property(String name) {
         Object result= properties.get(name);
         if ( result==null && name.equals(QDataSet.UNITS) && datasets.size()>0 ) {
-            return datasets.get(0).property(name); // all joined datasets must have the same length.
+            Object p0= datasets.get(0).property(name);
+            Object p1= datasets.get(datasets.size()-1).property(name);
+            if ( p0==p1 || ( p0!=null && p0.equals(p1) ) ) {
+                return p0;
+            } else {
+                return null;
+            }
         } else {
             return result;
         }
