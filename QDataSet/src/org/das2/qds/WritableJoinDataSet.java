@@ -35,7 +35,11 @@ public class WritableJoinDataSet extends JoinDataSet implements WritableDataSet 
         for ( int i=0; i<src.length(); i++ ) {
             QDataSet ds1= src.slice(i);
             if ( !DataSetUtil.isQube(ds1) ) {
-                throw new IllegalArgumentException("src contains slices that are not qubes.");
+                if ( ds1 instanceof JoinDataSet ) {
+                    result.join( copy( ds1 ) );
+                } else {
+                    throw new IllegalArgumentException("src contains slices that are not qubes.");
+                }
             }
             result.join( Ops.copy(ds1) );
         }
