@@ -469,6 +469,11 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
     public static final String CONTROL_KEY_FILL_COLOR= "fillColor";
     public static final String CONTROL_KEY_FILL_DIRECTION= "fillDirection"; // "above" "below" "none" "both"
     
+    /**
+     * used by boundsRenderer, the texture of the fill: solid, hash
+     */
+    public static final String CONTROL_KEY_FILL_TEXTURE= "fillTexture";
+    
     public static final String CONTROL_KEY_COLOR_TABLE= "colorTable";
     public static final String CONTROL_KEY_LINE_THICK= "lineThick";
     public static final String CONTROL_KEY_LINE_STYLE= "lineStyle";
