@@ -245,7 +245,7 @@ public class BoundsRenderer extends Renderer {
             }
             g.setColor( this.fillColor );
             
-            if ( fillTexture.equals("hash") ) {
+            if ( fillTexture.equals("hash") || fillTexture.equals("crosshash") ) {
                 Shape oldClip= g.getClip();
                 Rectangle2D r= pbox.getBounds2D();
                 g.setClip(pbox);
@@ -259,7 +259,25 @@ public class BoundsRenderer extends Renderer {
                     xx= xx+10;
                 }
                 g.setClip(oldClip);
-            } else {
+            } 
+            
+            if ( fillTexture.equals("backhash") || fillTexture.equals("crosshash") ) {
+                Shape oldClip= g.getClip();
+                Rectangle2D r= pbox.getBounds2D();
+                g.setClip(pbox);
+                double xx= r.getX();
+                double yy= r.getY();
+                double w= r.getHeight();
+                double limxx= xx + r.getWidth() + w; // 45 deg
+                while ( xx<limxx ) {
+                    Line2D.Double line= new Line2D.Double( xx-w, yy, xx, yy+w );
+                    g.draw(line);
+                    xx= xx+10;
+                }
+                g.setClip(oldClip);
+            } 
+            
+            if ( fillTexture.equals("") || fillTexture.equals("solid") ) {
                 g.fill(pbox);
             }
             
