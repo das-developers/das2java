@@ -544,12 +544,32 @@ public class PolarPlotRenderer extends Renderer {
         double x0= xAxis.transform(0,yunits);
         double y0= yAxis.transform(0,yunits);
 
+        // get the radii as a bins dataset n,2
+        if ( !SemanticOps.isBins(rds) ) {
+            QDataSet cadence= DataSetUtil.guessCadence( rds, null );
+            DDataSet newRds= DDataSet.createRank2( rds.length(), 2 );
+            if ( cadence==null ) {
+                for ( int i=0; i<rds.length(); i++ ) {
+                    double c = ( i==0 ) ? ( rds.value(1)-rds.value(0) ) : ( rds.value(i) - rds.value(i-1) );
+                    newRds.putValue( i, 0, rds.value(i)-c/2 );
+                    newRds.putValue( i, 1, rds.value(i)+c/2 );
+                }
+            } else {
+                double c= cadence.value();
+                for ( int i=0; i<rds.length(); i++ ) {
+                    newRds.putValue( i, 0, rds.value(i)-c/2 );
+                    newRds.putValue( i, 1, rds.value(i)+c/2 );
+                }
+            }
+            rds= newRds;
+        }
+                
         //boolean useBelzier= true;
         for ( int iflip=0; iflip<2; iflip++ ) {
             if ( !mirror && iflip==1 ) continue;
             for ( int j=0; j<rds.length()-1; j++ ) {
-                double v1= rds.value( j ); // sure wish we'd been testing this so I'd know where the old code worked.
-                double v2= rds.value( j+1 );
+                double v1= rds.value( j,0 ); 
+                double v2= rds.value( j,1 );
                 double r0x= ( xAxis.transform(v1,yunits) ) - x0; // inner ring radius at y=0
                 double r0y= y0 - ( yAxis.transform(v1,yunits) ); // inner ring radius at x=0, equal to r0x when isotropic (round)
                 double r1x= ( xAxis.transform(v2,yunits) ) - x0; // outer ring radius at y=0
@@ -615,12 +635,12 @@ public class PolarPlotRenderer extends Renderer {
                         int zz= colorBar.rgbTransform( tds.value(i,j), zunits );
                         g.setColor( new Color(zz) );
                         GeneralPath gp= new GeneralPath( GeneralPath.WIND_NON_ZERO,6);
-                        gp.moveTo( xx[i][j], yy[i][j] );
-                        gp.lineTo( xx[i][j+1], yy[i][j+1] );
+                        gp.moveTo( xx[i][j], yy[i][j] );    //  x0 + cos(a0) * r0x,  y0 - sin(a0) * r0y
+                        gp.lineTo( xx[i][j+1], yy[i][j+1] );//  x0 + cos(a0) * r1x,  y0 - sin(a0) * r1y
                         
                         Arc2D arc0 = new Arc2D.Double( x0-r0x, y0-r0y, r0x*2, r0y*2, Math.toDegrees(a0), Math.toDegrees(a1-a0), Arc2D.OPEN );
                         gp.append( arc0.getPathIterator(null), true );
-                        gp.lineTo( xx[i+1][j+1], yy[i+1][j+1] );
+                        gp.lineTo( xx[i+1][j+1], yy[i+1][j+1] ); // x0 + cos(a1) * r1x, y0 - sin(a1) * r1y
                         
                         Arc2D arc1 = new Arc2D.Double( x0-r1x, y0-r1y, r1x*2, r1y*2, Math.toDegrees(a1), Math.toDegrees(a0-a1), Arc2D.OPEN );
                         gp.append( arc1.getPathIterator(null), true );
