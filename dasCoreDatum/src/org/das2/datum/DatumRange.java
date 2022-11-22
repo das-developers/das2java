@@ -364,7 +364,7 @@ public class DatumRange implements Comparable, Serializable {
      * @return a new DatumRange
      */
     public static DatumRange newRange( Datum lower, Datum upper ) {
-        if ( lower.gt(upper) ) {
+        if ( lower.le(upper) ) {
             return new DatumRange( lower, upper );
         } else {
             return new DatumRange( upper, lower );
