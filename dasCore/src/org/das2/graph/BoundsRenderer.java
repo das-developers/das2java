@@ -51,6 +51,9 @@ public class BoundsRenderer extends Renderer {
     private GeneralPath context=null;
     
     public static QDataSet doAutorange( QDataSet ds ) {
+        if ( ds.length()==0 ) {
+            return null;
+        }
         if ( Schemes.isBoundingBox(ds) ) {
             QDataSet xxx= Ops.slice0( ds,0 );
             QDataSet yyy= Ops.slice0( ds,1 );
