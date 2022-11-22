@@ -192,7 +192,16 @@ public class DatumRangeEditor extends JComponent implements PropertyEditor, Tabl
         String text = editor.getText();
         try {
             DatumRange dr = parseText(text);
-            if (!dr.equals(value)) {
+            if ( !Double.isFinite(dr.min().value()) ) {
+                if ( !Double.isFinite(value.min().value()) ) {
+                    editor.setText("1 to 100");
+                    dr = parseText(text);
+                } else {
+                    editor.setText(value.toString());
+                    return value;
+                }
+            }
+            if (!dr.equals(value) ) {
                 DatumRange oldValue = value;
                 value = dr;
                 firePropertyChange("value", oldValue, value);
