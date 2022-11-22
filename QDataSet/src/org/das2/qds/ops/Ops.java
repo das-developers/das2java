@@ -14784,6 +14784,9 @@ public final class Ops {
     private static int dimensionCount( QDataSet dss, boolean noImplicit ) {
         int dim=1;
         QDataSet ds= dss;
+        if ( Schemes.isArrayOfBoundingBox(ds) ) {
+            return 3;
+        }
         while ( ds.rank()>0 ) {
             if ( ds.property("JOIN_0")!=null ) {
 
