@@ -29,6 +29,19 @@ import static org.das2.qds.ops.Ops.ripples;
  * Note all QDataSets are "duck-typed," meaning if they happen to meet the 
  * requirements of an interface then they are an instance of the interface.
  * 
+ * All schemes can be executed using reflection, looking for methods starting
+ * with "is".  This Jython code scans through the class looking for all the 
+ * methods which make a dataset:
+ * <pre>{@code
+ * mm= dir( Schemes )
+ * i=0
+ * for m in mm:
+ * if ( m[0:2]=='is' ):
+ *     continue
+ * else:
+ *     i=i+1
+ * }</pre>
+ * 
  * @author jbf 
  */
 public class Schemes {
