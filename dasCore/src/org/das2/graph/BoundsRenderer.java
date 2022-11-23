@@ -182,69 +182,57 @@ public class BoundsRenderer extends Renderer {
         QDataSet mins;
         QDataSet maxs;
         if ( Schemes.isBoundingBox(d) || Schemes.isBoundingBox(d.slice(0) )) {
+            if ( d.rank()==2 ) { 
+                // make it a single-element rank 3
+                d= Ops.join( null, d );
+            }
             GeneralPath pbox= new GeneralPath();
-            if ( d.rank()==3 ) {
-                for ( int i=0; i<ds.length(); i++ ) {
-                //mins= Ops.dataset( ds.slice(0).slice(0), ds.slice(1).slice(0) )
-                    QDataSet d1= d.slice(i);
-                    Path2D.Double p= new Path2D.Double();
-                    if ( polar ) { 
-                        double x0= xAxis.transform(0,xAxis.getUnits());
-                        double y0= yAxis.transform(0,yAxis.getUnits());
-                        QDataSet radDs= d1.slice(1); // 2.8830 to 22.495 
-                        double v1= radDs.slice(0).value();
-                        double v2= radDs.slice(1).value();
-                        QDataSet angds= d1.slice(0); // 22.363 to 78.915
-                        double a0= Ops.datum( angds.slice(0) ).value( ); // Units.radians );
-                        double a1= Ops.datum( angds.slice(1) ).value( ); // Units.radians );
-                        double r0x= ( xAxis.transform(v1,xAxis.getUnits()) ) - x0; // inner ring radius at y=0
-                        double r0y= y0 - ( yAxis.transform(v1,yAxis.getUnits()) ); // inner ring radius at x=0, equal to r0x when isotropic (round)
-                        double r1x= ( xAxis.transform(v2,xAxis.getUnits()) ) - x0; // outer ring radius at y=0
-                        double r1y= y0 - ( yAxis.transform(v2,yAxis.getUnits()) ); // outer ring radius at x=0, equal to r1x when isotropic (round)
-                    
-                        //GeneralPath gp= new GeneralPath( GeneralPath.WIND_NON_ZERO,6);
-                        
-                        p.moveTo( x0 + cos(a0) * r0x,  y0 - sin(a0) * r0y );
-                        p.lineTo( x0 + cos(a0) * r1x,  y0 - sin(a0) * r1y );
-                        
-                        Arc2D arc0 = new Arc2D.Double( x0-r1x, y0-r1y, r1x*2, r1y*2, Math.toDegrees(a0), Math.toDegrees(a1-a0), Arc2D.OPEN );
-                        p.append( arc0.getPathIterator(null), true );
-                        //p.lineTo( x0 + cos(a1) * r1x, y0 - sin(a1) * r1y );
-                        p.lineTo( x0 + cos(a1) * r0x, y0 - sin(a1) * r0y );
-                        
-                        Arc2D arc1 = new Arc2D.Double( x0-r0x, y0-r0y, r0x*2, r0y*2, Math.toDegrees(a1), Math.toDegrees(a0-a1), Arc2D.OPEN );
-                        p.append( arc1.getPathIterator(null), true );
-                        p.lineTo( x0 + cos(a0) * r0x,  y0 - sin(a0) * r0y );
-                        
-                    } else {
-                        double x0= xAxis.transform(d1.slice(0).slice(0));
-                        double x1= xAxis.transform(d1.slice(0).slice(1));
-                        double y0= yAxis.transform(d1.slice(1).slice(0));
-                        double y1= yAxis.transform(d1.slice(1).slice(1));
-                        p.moveTo( x0, y1 );
-                        p.lineTo( x1, y1 );
-                        p.lineTo( x1, y0 );
-                        p.lineTo( x0, y0 );
-                        p.lineTo( x0, y1 );
-                    }
-                    pbox.append( p, false );
-                    
+            
+            for ( int i=0; i<d.length(); i++ ) {
+            //mins= Ops.dataset( ds.slice(0).slice(0), ds.slice(1).slice(0) )
+                QDataSet d1= d.slice(i);
+                Path2D.Double p= new Path2D.Double();
+                if ( polar ) { 
+                    double x0= xAxis.transform(0,xAxis.getUnits());
+                    double y0= yAxis.transform(0,yAxis.getUnits());
+                    QDataSet radDs= d1.slice(1); // 2.8830 to 22.495 
+                    double v1= radDs.slice(0).value();
+                    double v2= radDs.slice(1).value();
+                    QDataSet angds= d1.slice(0); // 22.363 to 78.915
+                    double a0= Ops.datum( angds.slice(0) ).value( ); // Units.radians );
+                    double a1= Ops.datum( angds.slice(1) ).value( ); // Units.radians );
+                    double r0x= ( xAxis.transform(v1,xAxis.getUnits()) ) - x0; // inner ring radius at y=0
+                    double r0y= y0 - ( yAxis.transform(v1,yAxis.getUnits()) ); // inner ring radius at x=0, equal to r0x when isotropic (round)
+                    double r1x= ( xAxis.transform(v2,xAxis.getUnits()) ) - x0; // outer ring radius at y=0
+                    double r1y= y0 - ( yAxis.transform(v2,yAxis.getUnits()) ); // outer ring radius at x=0, equal to r1x when isotropic (round)
+
+                    //GeneralPath gp= new GeneralPath( GeneralPath.WIND_NON_ZERO,6);
+
+                    p.moveTo( x0 + cos(a0) * r0x,  y0 - sin(a0) * r0y );
+                    p.lineTo( x0 + cos(a0) * r1x,  y0 - sin(a0) * r1y );
+
+                    Arc2D arc0 = new Arc2D.Double( x0-r1x, y0-r1y, r1x*2, r1y*2, Math.toDegrees(a0), Math.toDegrees(a1-a0), Arc2D.OPEN );
+                    p.append( arc0.getPathIterator(null), true );
+                    //p.lineTo( x0 + cos(a1) * r1x, y0 - sin(a1) * r1y );
+                    p.lineTo( x0 + cos(a1) * r0x, y0 - sin(a1) * r0y );
+
+                    Arc2D arc1 = new Arc2D.Double( x0-r0x, y0-r0y, r0x*2, r0y*2, Math.toDegrees(a1), Math.toDegrees(a0-a1), Arc2D.OPEN );
+                    p.append( arc1.getPathIterator(null), true );
+                    p.lineTo( x0 + cos(a0) * r0x,  y0 - sin(a0) * r0y );
+
+                } else {
+                    double x0= xAxis.transform(d1.slice(0).slice(0));
+                    double x1= xAxis.transform(d1.slice(0).slice(1));
+                    double y0= yAxis.transform(d1.slice(1).slice(0));
+                    double y1= yAxis.transform(d1.slice(1).slice(1));
+                    p.moveTo( x0, y1 );
+                    p.lineTo( x1, y1 );
+                    p.lineTo( x1, y0 );
+                    p.lineTo( x0, y0 );
+                    p.lineTo( x0, y1 );
                 }
-            } else {
-                mins= Ops.link( 
-                    Ops.slice0( d,0 ), 
-                    Ops.join( d.slice(1).slice(0), d.slice(1).slice(0) ) );
-                maxs= Ops.link( 
-                    Ops.slice0( d,0 ), 
-                    Ops.join( d.slice(1).slice(1), d.slice(1).slice(1) ) );
-                if ( mins.property(QDataSet.UNITS)==null && UnitsUtil.isRatioMeasurement(yAxis.getUnits()) ) {
-                    mins= Ops.putProperty( mins, QDataSet.UNITS, yAxis.getUnits() );
-                }
-                if ( maxs.property(QDataSet.UNITS)==null && UnitsUtil.isRatioMeasurement(yAxis.getUnits()) ) {
-                    maxs= Ops.putProperty( maxs, QDataSet.UNITS, yAxis.getUnits() );
-                }
-                pbox= GraphUtil.getPath(xAxis,yAxis,
-                    Ops.append(mins,Ops.append(Ops.reverse(maxs),mins.slice(0))),false,false);
+                pbox.append( p, false );
+
             }
             g.setColor( this.fillColor );
             
