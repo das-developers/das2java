@@ -42,6 +42,7 @@ import static org.das2.qds.ops.Ops.ripples;
  *     i=i+1
  * }</pre>
  * 
+ * @see https://github.com/autoplot/dev/blob/master/bugs/2022/20220125/showAllRanks.md
  * @author jbf 
  */
 public class Schemes {
@@ -65,6 +66,7 @@ public class Schemes {
      * 
      * @return a bounding box for the data.
      * @see org.das2.qds.DataSetUtil#asDatumRange(org.das2.qds.QDataSet) 
+     * @see #arrayOfBoundingBox() 
      */
     public static QDataSet boundingBox( ) {
         try {
@@ -95,6 +97,7 @@ public class Schemes {
     /**
      * array of bounding boxes, joined by the zeroth dimension.
      * @return array of bounding boxes
+     * @see #boundingBox() 
      */
     public static QDataSet arrayOfBoundingBox( ) {
         Ops.randomSeed(0);
