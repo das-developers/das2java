@@ -3,9 +3,7 @@ package org.das2.graph;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.awt.Polygon;
 import java.awt.Shape;
-import java.awt.TexturePaint;
 import java.awt.geom.Arc2D;
 import java.awt.geom.Area;
 import java.awt.geom.GeneralPath;
@@ -14,7 +12,6 @@ import java.awt.geom.Path2D;
 import java.awt.geom.Rectangle2D;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
 import org.das2.qds.QDataSet;
 import org.das2.qds.examples.Schemes;
@@ -24,7 +21,12 @@ import static java.lang.Math.sin;
 
 /**
  * Draw the region bounded by the dataset.  If the dataset is a bounding box, the box is drawn.  If the
- * data is a rank 2 time series with bins (N by 2), then it is drawn.
+ * data is a rank 2 time series with bins (N by 2), then it is drawn.  This supports the following
+ * types:<ul>
+ * <li> bounding box
+ * <li> array of bounding box
+ * <li> array of bins
+ * </ul>
  * @author jbf
  * @see org.das2.qds.examples.Schemes#isBoundingBox(org.das2.qds.QDataSet) 
  */
