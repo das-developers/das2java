@@ -228,6 +228,8 @@ public class GitHubFileSystem extends HttpFileSystem {
             return "";
         } else if ( h.equals("jfaden.net") && path.startsWith("/git") ) {
             return "/git";
+        } else if ( h.equals("gitlab.com") ) {
+            return "";
         } else {
             return null;
         }
@@ -569,7 +571,9 @@ public class GitHubFileSystem extends HttpFileSystem {
                     URL url= new URL( n );
                     return url;
                 } else {
-                    String n= root.getScheme() + "://" + root.getHost() + '/' + spath + "/raw/"+branch+"/" + strjoin( path, "/", base+baseOffset, -1 ) + filename;
+                    String pp= strjoin( path, "/", base+baseOffset, -1 );
+                    if ( pp.length()>0 ) pp= "/" + pp;
+                    String n= root.getScheme() + "://" + root.getHost() + '/' + spath + "/raw/" + branch + pp + filename;
                     URL url= new URL( n );
                     return url;
                 }
