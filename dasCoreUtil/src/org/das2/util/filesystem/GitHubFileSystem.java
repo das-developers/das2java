@@ -572,7 +572,7 @@ public class GitHubFileSystem extends HttpFileSystem {
                     return url;
                 } else {
                     String pp= strjoin( path, "/", base+baseOffset, -1 );
-                    if ( pp.length()>0 ) pp= "/" + pp;
+                    if ( pp.length()>0 ) pp= "/" + pp; 
                     String n= root.getScheme() + "://" + root.getHost() + '/' + spath + "/raw/" + branch + pp + filename;
                     URL url= new URL( n );
                     return url;
