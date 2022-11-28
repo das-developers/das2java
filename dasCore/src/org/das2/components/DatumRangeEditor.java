@@ -192,8 +192,8 @@ public class DatumRangeEditor extends JComponent implements PropertyEditor, Tabl
         String text = editor.getText();
         try {
             DatumRange dr = parseText(text);
-            if ( !Double.isFinite(dr.min().value()) ) {
-                if ( !Double.isFinite(value.min().value()) ) {
+            if ( !Double.isFinite(dr.min().doubleValue(dr.getUnits())) ) {
+                if ( !Double.isFinite(value.min().doubleValue(value.getUnits())) ) {
                     editor.setText("1 to 100");
                     dr = parseText(text);
                 } else {
