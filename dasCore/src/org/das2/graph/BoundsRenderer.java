@@ -182,7 +182,6 @@ public class BoundsRenderer extends Renderer {
         propertyChangeSupport.firePropertyChange(PROP_POLAR, old, polar);
     }
 
-    
     @Override
     public void render(Graphics2D g1, DasAxis xAxis, DasAxis yAxis ) {
         Graphics2D g= (Graphics2D)g1;
@@ -252,43 +251,7 @@ public class BoundsRenderer extends Renderer {
                 pbox.append( p, false );
 
             }
-            g.setColor( this.fillColor );
-            
-            if ( fillTexture.equals("hash") || fillTexture.equals("crosshash") ) {
-                Shape oldClip= g.getClip();
-                Rectangle2D r= pbox.getBounds2D();
-                g.setClip(pbox);
-                double xx= r.getX();
-                double yy= r.getY();
-                double w= r.getHeight();
-                double limxx= xx + r.getWidth() + w; // 45 deg
-                while ( xx<limxx ) {
-                    Line2D.Double line= new Line2D.Double( xx, yy, xx-w, yy+w );
-                    g.draw(line);
-                    xx= xx+10;
-                }
-                g.setClip(oldClip);
-            } 
-            
-            if ( fillTexture.equals("backhash") || fillTexture.equals("crosshash") ) {
-                Shape oldClip= g.getClip();
-                Rectangle2D r= pbox.getBounds2D();
-                g.setClip(pbox);
-                double xx= r.getX();
-                double yy= r.getY();
-                double w= r.getHeight();
-                double limxx= xx + r.getWidth() + w; // 45 deg
-                while ( xx<limxx ) {
-                    Line2D.Double line= new Line2D.Double( xx-w, yy, xx, yy+w );
-                    g.draw(line);
-                    xx= xx+10;
-                }
-                g.setClip(oldClip);
-            } 
-            
-            if ( fillTexture.equals("") || fillTexture.equals("solid") ) {
-                g.fill(pbox);
-            }
+            doTheFilling(g, pbox);
             
             g.setColor( this.getColor() );
             g.draw(pbox);
@@ -301,16 +264,58 @@ public class BoundsRenderer extends Renderer {
             }
             if ( maxs.property(QDataSet.UNITS)==null && UnitsUtil.isRatioMeasurement(yAxis.getUnits()) ) {
                 maxs= Ops.putProperty( maxs, QDataSet.UNITS, yAxis.getUnits() );
-            }            
+            }       
+            QDataSet s1= mins.trim(0,1);
             GeneralPath path= GraphUtil.getPath(xAxis,yAxis,
-                Ops.append(mins,Ops.append(Ops.reverse(maxs),mins.slice(0))),false,false);
-            g.setColor( this.fillColor );
-            g.fill(path);
+                Ops.append(mins,Ops.append(Ops.reverse(maxs),s1)),false,false);
+            
+            doTheFilling(g, path);
+            
             g.setColor( this.getColor() );
             g.draw(path);
             context= path;
         }
         
+    }
+
+    private void doTheFilling(Graphics2D g, GeneralPath pbox) {
+        g.setColor( this.fillColor );
+        
+        if ( fillTexture.equals("hash") || fillTexture.equals("crosshash") ) {
+            Shape oldClip= g.getClip();
+            Rectangle2D r= pbox.getBounds2D();
+            g.setClip(pbox);
+            double xx= r.getX();
+            double yy= r.getY();
+            double w= r.getHeight();
+            double limxx= xx + r.getWidth() + w; // 45 deg
+            while ( xx<limxx ) {
+                Line2D.Double line= new Line2D.Double( xx, yy, xx-w, yy+w );
+                g.draw(line);
+                xx= xx+10;
+            }
+            g.setClip(oldClip);
+        }
+        
+        if ( fillTexture.equals("backhash") || fillTexture.equals("crosshash") ) {
+            Shape oldClip= g.getClip();
+            Rectangle2D r= pbox.getBounds2D();
+            g.setClip(pbox);
+            double xx= r.getX();
+            double yy= r.getY();
+            double w= r.getHeight();
+            double limxx= xx + r.getWidth() + w; // 45 deg
+            while ( xx<limxx ) {
+                Line2D.Double line= new Line2D.Double( xx-w, yy, xx, yy+w );
+                g.draw(line);
+                xx= xx+10;
+            }
+            g.setClip(oldClip);
+        }
+        
+        if ( fillTexture.equals("") || fillTexture.equals("solid") ) {
+            g.fill(pbox);
+        }
     }
     
     
