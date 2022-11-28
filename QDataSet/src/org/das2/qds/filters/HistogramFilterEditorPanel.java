@@ -190,14 +190,18 @@ public class HistogramFilterEditorPanel extends AbstractFilterEditorPanel {
         QDataSet extent= Ops.extent(dep0);
         QDataSet s= extent.slice(0);
         Units u= SemanticOps.getUnits(s);
-        if ( UnitsUtil.isTimeLocation(u) ) {
-            minimumTF.setText( extent.slice(0).toString().trim() );
-            maximumTF.setText( extent.slice(1).toString().trim() );
-            binsizeTF.setText( Ops.subtract( dep0.slice(1), dep0.slice(0) ).toString().trim() );        
+        if ( manualCB.isSelected() ) {
+            logger.fine("manual, skip");
         } else {
-            minimumTF.setText( String.valueOf( extent.slice(0).value() ) );
-            maximumTF.setText( String.valueOf( extent.slice(1).value() ) );
-            binsizeTF.setText( String.valueOf( Ops.subtract( dep0.slice(1), dep0.slice(0) ).value() ) );
+            if ( UnitsUtil.isTimeLocation(u) ) {
+                minimumTF.setText( extent.slice(0).toString().trim() );
+                maximumTF.setText( extent.slice(1).toString().trim() );
+                binsizeTF.setText( Ops.subtract( dep0.slice(1), dep0.slice(0) ).toString().trim() );        
+            } else {
+                minimumTF.setText( String.valueOf( extent.slice(0).value() ) );
+                maximumTF.setText( String.valueOf( extent.slice(1).value() ) );
+                binsizeTF.setText( String.valueOf( Ops.subtract( dep0.slice(1), dep0.slice(0) ).value() ) );
+            }
         }
     }
 }
