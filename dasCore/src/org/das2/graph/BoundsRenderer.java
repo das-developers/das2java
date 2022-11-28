@@ -107,11 +107,15 @@ public class BoundsRenderer extends Renderer {
 
     @Override
     public void setControl(String s) {
+        String oldControl= getControl();
         super.setControl(s);
         this.color= getColorControl( "color", color );
         this.fillColor= getColorControl( "fillColor", fillColor );
         this.fillTexture= getControl( "fillTexture", fillTexture );
         this.polar= getBooleanControl( "polar", false );
+        if ( !oldControl.equals(s) ) {
+            updateCacheImage();
+        }
     }    
     
     public Color getColor() {
@@ -121,6 +125,9 @@ public class BoundsRenderer extends Renderer {
     public void setColor(Color string) {
         Color oldColor = this.color;
         this.color = string;
+        if ( !string.equals(oldColor) ) {
+            updateCacheImage();
+        }
         propertyChangeSupport.firePropertyChange(PROP_COLOR, oldColor, string);
     }
 
@@ -131,6 +138,9 @@ public class BoundsRenderer extends Renderer {
     public void setFillColor( Color color ) {
         Color oldColor = this.fillColor;
         this.fillColor = color;
+        if ( !oldColor.equals(oldColor) ) {
+            updateCacheImage();
+        }
         propertyChangeSupport.firePropertyChange(PROP_COLOR, oldColor, color );
     }
     
@@ -143,9 +153,12 @@ public class BoundsRenderer extends Renderer {
     }
 
     public void setFillTexture(String fillTexture) {
-        String oldFillTexture = this.fillTexture;
+        String old = this.fillTexture;
         this.fillTexture = fillTexture;
-        propertyChangeSupport.firePropertyChange(PROP_FILLTEXTURE, oldFillTexture, fillTexture);
+        if ( !old.equals(fillTexture) ) {
+            updateCacheImage();
+        }
+        propertyChangeSupport.firePropertyChange(PROP_FILLTEXTURE, old, fillTexture);
     }
 
     private boolean polar = false;
@@ -161,9 +174,12 @@ public class BoundsRenderer extends Renderer {
      * @param polar 
      */
     public void setPolar(boolean polar) {
-        boolean oldPolar = this.polar;
+        boolean old = this.polar;
         this.polar = polar;
-        propertyChangeSupport.firePropertyChange(PROP_POLAR, oldPolar, polar);
+        if ( old!=polar ) {
+            updateCacheImage();
+        }
+        propertyChangeSupport.firePropertyChange(PROP_POLAR, old, polar);
     }
 
     
