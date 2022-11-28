@@ -91,7 +91,7 @@ public class Schemes {
      * @return true if the dataset is a bounding box.
      */
     public static boolean isBoundingBox( QDataSet ds ) {
-        return ds.rank()==2 && ds.length(0)==2 && ds.length()>0;
+        return ds.rank()==2 && ds.length(0)==2 && ds.length()==2;
     }
     
     /**
