@@ -482,15 +482,19 @@ public class DataSetAdapter {
             if ( obj != null ) {
                 if ( obj instanceof Double ) {
                     properties.put(QDataSet.VALID_MIN, (Double)obj);
+                } else if ( obj instanceof Datum ) {
+                    properties.put(QDataSet.VALID_MIN, ((Datum)obj).doubleValue(source.getYUnits()) );
                 } else {
                     logger.warning("property "+DataSet.PROPERTY_Y_VALID_MIN+" should be type Double");
                 }
             }
 
-			obj = hack(dasProps, DataSet.PROPERTY_Y_VALID_MAX, sPlaneID);
+            obj = hack(dasProps, DataSet.PROPERTY_Y_VALID_MAX, sPlaneID);
             if ( obj != null ) {
                 if ( obj instanceof Double ) {
                     properties.put(QDataSet.VALID_MAX, (Double)obj);
+                } else if ( obj instanceof Datum ) {
+                    properties.put(QDataSet.VALID_MAX, ((Datum)obj).doubleValue(source.getYUnits()) );                    
                 } else {
                     logger.warning("property "+DataSet.PROPERTY_Y_VALID_MAX+" should be type Double");
                 }
