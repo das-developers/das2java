@@ -73,10 +73,10 @@ public class KernelRebinner implements DataSetRebinner {
                 kernel.putValue( i, j, v );
             }
         }
-        int nx14= (int)Math.floor( nx/4 );
-        int ny14= (int)Math.floor( ny/4 );
-        int nx34= (int)Math.ceil( nx - nx/4 );
-        int ny34= (int)Math.ceil( ny - ny/4 );
+        int nx14= nx/4; 
+        int ny14= ny/4;
+        int nx34= (int)Math.ceil( nx - nx/4. ); // thanks, FindBugs!
+        int ny34= (int)Math.ceil( ny - ny/4. );
         DDataSet mask= DDataSet.createRank2( nx,ny );
         for ( int i=nx14; i<nx34; i++ ) {
             for ( int j=ny14; j<ny34; j++ ) {
