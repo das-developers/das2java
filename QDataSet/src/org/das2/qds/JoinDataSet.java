@@ -12,6 +12,7 @@ package org.das2.qds;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import org.das2.datum.Units;
 
 /**
  * Create a higher rank dataset with dim 0 being a JOIN dimension.  Join implies
@@ -144,13 +145,21 @@ public class JoinDataSet extends AbstractDataSet {
         if ( ds.rank()!=this.rank-1 ) {
             throw new IllegalArgumentException("dataset rank must be "+(this.rank-1)+", it is rank "+ds.rank() );
         }
-//TODO  JoinDataSet is used produce a bounds object of BINS datasets with different units.  Should this be allowed?  "strict" JOINs won't allow this.
-//        QDataSet units= (QDataSet) property(QDataSet.UNITS);
-//        if ( units==null ) {
-//            properties.put( QDataSet.UNITS, ds.property(QDataSet.UNITS) );
-//        } else {
-//            if ( units!=ds.property(QDataSet.UNITS) ) throw new IllegalArgumentException("joined dataset has units: "+ds.property(QDataSet.UNITS)+ " and this has units: "+units );
-//        }
+        
+        // JoinDataSet is used produce a bounds object of BINS datasets with different units.  This is allowed, 
+        // but the "JOIN_0" property is cleared.  "strict" JOINs won't allow this.
+        if ( properties.get(QDataSet.JOIN_0)!=null && datasets.size()>0 ) {
+            QDataSet firstDataSet = datasets.get(0);
+            Units units0= SemanticOps.getUnits(firstDataSet);
+            Units units1= SemanticOps.getUnits(ds);
+            if ( !units1.isConvertibleTo(units0) ) {
+                properties.remove(QDataSet.JOIN_0);
+                properties.remove(QDataSet.UNITS);
+            } else if ( units0==units1 ) {
+                properties.put(QDataSet.UNITS,units0);
+            }
+        }
+        
         if ( ds.rank()==0 ) {
             QDataSet context= (QDataSet) ds.property(QDataSet.CONTEXT_0);
             if ( context!=null ) {
