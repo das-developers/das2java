@@ -387,7 +387,7 @@ public class GraphUtil {
 
         QDataSet tagds= (QDataSet) yds.property(QDataSet.DEPEND_0);
         if ( tagds==null ) tagds= new IndexGenDataSet(yds.length());
-        QDataSet cadence= DataSetUtil.guessCadence( tagds, yds );
+        QDataSet cadence= (QDataSet)tagds.property(QDataSet.CADENCE);
         double dcadence;
         if ( cadence==null || cadence.rank()>0 ) {
             dcadence=Double.MAX_VALUE;
@@ -417,7 +417,7 @@ public class GraphUtil {
         boolean histogram= mode.equals(CONNECT_MODE_HISTOGRAM);
         boolean scatter= mode.equals(CONNECT_MODE_SCATTER);
         
-        double lastTag= tagds.value(0);
+        double lastTag= tagds.length()>0 ? tagds.value(0) : -999;
                 
         for (int index = 0; index < n; index++) {
             //double t = index;
