@@ -278,6 +278,16 @@ public class BoundsRenderer extends Renderer {
             g.setColor( this.getColor() );
             g.draw(path);
             context= path;
+        } else if ( d.rank()==2 && ds.length(0)==3 ) { // TODO: What's the scheme for this data set?  Working on the output of contour
+            QDataSet xx= Ops.slice1( ds, 0 );
+            QDataSet yy= Ops.slice1( ds, 1 );
+            GeneralPath path= GraphUtil.getPath( xAxis,yAxis,
+                xx, yy, false,false);
+            doTheFilling(g, path);
+            
+            g.setColor( this.getColor() );
+            g.draw(path);
+            context= path;
             
         } else {
             mins= Ops.slice1( d,0 );
