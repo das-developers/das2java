@@ -7,6 +7,7 @@ package org.das2.graph;
 
 import java.awt.Rectangle;
 import java.awt.Shape;
+import java.awt.geom.Area;
 import java.awt.geom.GeneralPath;
 
 /**
@@ -43,7 +44,12 @@ public class SelectionUtil {
         } else if ( r instanceof TickCurveRenderer ) {
             return ((TickCurveRenderer)r).selectionArea();
         } else if ( r instanceof BoundsRenderer ) {
-            return ((BoundsRenderer)r).selectionArea();
+            Area a= ((BoundsRenderer)r).selectionArea();
+            if ( a==null ) {
+                return SelectionUtil.NULL;
+            } else {
+                return a;
+            }
         } else {
             Rectangle rect= DasDevicePosition.toRectangle( r.getParent().getRow(), r.getParent().getColumn() );
             rect= new Rectangle( rect.x+5, rect.y+5, rect.width-10, rect.height-10 );
