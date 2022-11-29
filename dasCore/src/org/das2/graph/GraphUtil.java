@@ -56,6 +56,8 @@ import org.das2.util.DasMath;
 import org.das2.components.GrannyTextEditor;
 import org.das2.datum.DatumUtil;
 import org.das2.datum.InconvertibleUnitsException;
+import org.das2.qds.DataSetUtil;
+import org.das2.qds.IndexGenDataSet;
 import org.das2.util.GrannyTextRenderer;
 import org.das2.util.filesystem.FileSystemUtil;
 import org.das2.util.monitor.AlertNullProgressMonitor;
@@ -361,11 +363,12 @@ public class GraphUtil {
         }
     }
     /**
-     * get the path for the points, checking for breaks in the data from fill values.
+     * get the path for the points, checking for breaks in the data from fill values or breaks suggested by 
+     * linear cadence in the DEPEND_0 of yds.
      * @param xAxis the x axis.
      * @param yAxis the y axis.
      * @param xds the x values.
-     * @param yds the y values.
+     * @param yds the y values, possibly containing a DEPEND_0.
      * @param mode one of CONNECT_MODE_SERIES, CONNECT_MODE_SCATTER, or CONNECT_MODE_HISTOGRAM
      * @param clip limit path to what's visible for each axis.
      * @see #CONNECT_MODE_SERIES
@@ -382,6 +385,16 @@ public class GraphUtil {
         Units xUnits = SemanticOps.getUnits(xds);
         Units yUnits = SemanticOps.getUnits(yds);
 
+        QDataSet tagds= (QDataSet) yds.property(QDataSet.DEPEND_0);
+        if ( tagds==null ) tagds= new IndexGenDataSet(yds.length());
+        QDataSet cadence= DataSetUtil.guessCadence( tagds, yds );
+        double dcadence;
+        if ( cadence==null || cadence.rank()>0 ) {
+            dcadence=Double.MAX_VALUE;
+        } else {
+            dcadence= cadence.value();
+        }
+        
         //QDataSet tagds= SemanticOps.xtagsDataSet(xds); // yes, it's true, I think because of orbit plots
 
         //double xSampleWidth= Double.MAX_VALUE; // old code had 1e31.  MAX_VALUE is better.
@@ -404,16 +417,22 @@ public class GraphUtil {
         boolean histogram= mode.equals(CONNECT_MODE_HISTOGRAM);
         boolean scatter= mode.equals(CONNECT_MODE_SCATTER);
         
+        double lastTag= tagds.value(0);
+                
         for (int index = 0; index < n; index++) {
             //double t = index;
             double x = xds.value(index);
             double y = yds.value(index);
+            double tag= tagds.value(index);
+            double dtag= tag - lastTag; 
             double i = xAxis.transform(x, xUnits);
             double j = yAxis.transform(y, yUnits);
             boolean v= rclip==null || rclip.contains( i,j);
-            if ( wds.value(index)==0 || Double.isNaN(y)) {
+            if ( dtag > dcadence ) skippedLast=true;
+            lastTag= tag;
+            if ( wds.value(index)==0 || Double.isNaN(y) ) {
                 skippedLast = true;
-            } else if ( skippedLast ) { //|| (t - t0) > xSampleWidth ) { // remove use of t until it is compared with physical data, not dimensionless
+            } else if ( skippedLast ) { 
                 newPath.moveTo((float) i, (float) j);
                 if ( scatter ) {
                     newPath.lineTo((float) i, (float) j);
