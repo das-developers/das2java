@@ -163,13 +163,13 @@ public class BoundsRenderer extends Renderer {
         return color;
     }
 
-    public void setColor(Color string) {
-        Color oldColor = this.color;
-        this.color = string;
-        if ( !string.equals(oldColor) ) {
+    public void setColor(Color color) {
+        Color old = this.color;
+        this.color = color;
+        if ( !color.equals(old) ) {
             updateCacheImage();
         }
-        propertyChangeSupport.firePropertyChange(PROP_COLOR, oldColor, string);
+        propertyChangeSupport.firePropertyChange(PROP_COLOR, old, color);
     }
 
     public Color getFillColor() {
@@ -177,12 +177,12 @@ public class BoundsRenderer extends Renderer {
     }
     
     public void setFillColor( Color color ) {
-        Color oldColor = this.fillColor;
+        Color old = this.fillColor;
         this.fillColor = color;
-        if ( !oldColor.equals(oldColor) ) {
+        if ( !color.equals(old) ) {
             updateCacheImage();
         }
-        propertyChangeSupport.firePropertyChange(PROP_COLOR, oldColor, color );
+        propertyChangeSupport.firePropertyChange(PROP_COLOR, old, color );
     }
     
     private String fillTexture = "solid"; // solid, hash, none
