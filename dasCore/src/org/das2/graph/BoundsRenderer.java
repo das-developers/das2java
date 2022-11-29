@@ -18,6 +18,7 @@ import org.das2.qds.examples.Schemes;
 import org.das2.qds.ops.Ops;
 import static java.lang.Math.cos;
 import static java.lang.Math.sin;
+import org.das2.qds.SemanticOps;
 
 /**
  * Draw the region bounded by the dataset.  If the dataset is a bounding box, the box is drawn.  If the
@@ -33,7 +34,7 @@ import static java.lang.Math.sin;
 public class BoundsRenderer extends Renderer {
 
     private void expectDs() {
-        throw new IllegalArgumentException("Expect rank 2 bins or rank 3 array of bins dataset");
+        getParent().postException( this, new IllegalArgumentException("Expect rank 2 bins or rank 3 array of bins dataset") );
     }
 
     @Override
@@ -195,7 +196,10 @@ public class BoundsRenderer extends Renderer {
             return;
         }
         if ( d.length()==0 ) return;
-        if ( !( d.rank()==2 || d.rank()==3 ) ) expectDs();
+        if ( !( d.rank()==1 || d.rank()==2 || d.rank()==3 ) ) {
+            expectDs();
+            return;
+        }
         QDataSet mins;
         QDataSet maxs;
         if ( Schemes.isBoundingBox(d) || Schemes.isBoundingBox(d.slice(0) )) {
@@ -256,6 +260,17 @@ public class BoundsRenderer extends Renderer {
             g.setColor( this.getColor() );
             g.draw(pbox);
             context= pbox;
+        } else if ( d.rank()==1 ) {
+            QDataSet xx= SemanticOps.xtagsDataSet(d);
+            QDataSet yy= d;
+            GeneralPath path= GraphUtil.getPath( xAxis,yAxis,
+                Ops.link( xx, yy ), false,false);
+            doTheFilling(g, path);
+            
+            g.setColor( this.getColor() );
+            g.draw(path);
+            context= path;
+            
         } else {
             mins= Ops.slice1( d,0 );
             maxs= Ops.slice1( d,1 );
