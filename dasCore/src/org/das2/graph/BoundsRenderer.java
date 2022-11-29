@@ -3,6 +3,8 @@ package org.das2.graph;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.geom.Arc2D;
 import java.awt.geom.Area;
@@ -10,6 +12,7 @@ import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
 import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.das2.datum.UnitsUtil;
@@ -18,6 +21,9 @@ import org.das2.qds.examples.Schemes;
 import org.das2.qds.ops.Ops;
 import static java.lang.Math.cos;
 import static java.lang.Math.sin;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import org.das2.qds.DataSetUtil;
 import org.das2.qds.SemanticOps;
 
 /**
@@ -58,6 +64,32 @@ public class BoundsRenderer extends Renderer {
             return new Area(context);
         }
     }
+
+    @Override
+    public Icon getListIcon() {
+        Image i = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = (Graphics2D) i.getGraphics();
+
+        g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
+        
+        Shape pbox= new Rectangle2D.Double(0,0,15,15);
+        
+        GeneralPath p= new GeneralPath();
+        p.append( pbox.getPathIterator(null), true );
+        p.closePath();
+        
+        doTheFilling( g, p );
+        g.setColor( this.getColor() );
+        g.draw(p);
+            
+        return new ImageIcon(i);
+    }
+
+    @Override
+    public String getListLabel() {
+        return "" + ( getLegendLabel().length()> 0 ? getLegendLabel() +" " : "bounds" );
+    }
+    
     
     private GeneralPath context=null;
     
