@@ -39,7 +39,11 @@ public class BoundsRenderer extends Renderer {
 
     @Override
     public boolean acceptsDataSet(QDataSet ds) {
-        return ds.rank()==2 && ds.length(0)==2;
+        if ( ds.rank()==1 || Schemes.isBoundingBox(ds) || Schemes.isArrayOfBoundingBox(ds) ) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     @Override
@@ -48,7 +52,11 @@ public class BoundsRenderer extends Renderer {
     }
     
     public Area selectionArea() {
-        return new Area(context);
+        if ( context==null ) {
+            return null;
+        } else {            
+            return new Area(context);
+        }
     }
     
     private GeneralPath context=null;
