@@ -2351,6 +2351,16 @@ public class DataSetUtil {
             }
         }
         
+        if ( xds instanceof IndexGenDataSet ) {
+            IDataSet result= IDataSet.createRank0();
+            result.putValue( 1 );
+            Units u= (Units)xds.property(QDataSet.UNITS);
+            if ( u!=null ) {
+                result.putProperty( QDataSet.UNITS, u.getOffsetUnits() );
+            }
+            return result;
+        }
+        
         QDataSet dephhLinear;
         int idephhLinear;
         int scoreLinear;
