@@ -130,6 +130,12 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     
     /* GENERAL AXIS INSTANCE MEMBERS */
     protected DataRange dataRange;
+    
+    // the height of the canvas when we last updated
+    private int parentHeight;
+    
+    // the width of the canvas when we last updated
+    private int parentWidth;
 
     /**
      * get the userDatumFormatter, which converts Datums into Strings.  This
@@ -2244,9 +2250,15 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     protected void paintComponent(Graphics graphics) {
         logger.finest("enter DasAxis.paintComponent");
 
-        if (getCanvas().isValueAdjusting()) {
+        DasCanvas canvas= getCanvas();
+        
+        if (canvas.isValueAdjusting()) {
             return;
         }
+        
+        // prevent incorrect clip
+        if ( canvas.getHeight()!=parentHeight ) return;
+        if ( canvas.getWidth()!=parentWidth ) return;
         
         try {
             updateTickLength();
@@ -3450,15 +3462,18 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         if ( getFont()==null ) {
             return;
         }
+        this.parentHeight= getParent().getHeight();
+        this.parentWidth= getParent().getWidth();
         Rectangle oldBounds = this.getBounds();
-        setBounds(getAxisBounds());
-        //setBounds(getAxisBoundsNew());
+        Rectangle newBounds = getAxisBounds();
+        
+        setBounds(newBounds);
         invalidate();
         TickVDescriptor ltickV= tickV;
         if (ltickV == null || ltickV.tickV.getUnits().isConvertibleTo(getUnits())) {
             validate();
         }
-        firePropertyChange(PROP_BOUNDS, oldBounds, getBounds());
+        firePropertyChange(PROP_BOUNDS, oldBounds, newBounds);
     }
 
     /**
