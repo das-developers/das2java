@@ -1,8 +1,4 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package org.das2.qds.filters;
 
 import java.util.regex.Matcher;
@@ -14,7 +10,7 @@ import org.das2.qds.SemanticOps;
 import org.das2.qds.ops.Ops;
 
 /**
- *
+ * Controller for histogram filter allows automatic mode and min/max/bins.
  * @author jbf
  */
 public class HistogramFilterEditorPanel extends AbstractFilterEditorPanel {
