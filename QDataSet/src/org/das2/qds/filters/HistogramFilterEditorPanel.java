@@ -19,6 +19,8 @@ import org.das2.qds.ops.Ops;
  */
 public class HistogramFilterEditorPanel extends AbstractFilterEditorPanel {
 
+    static String PROP_REGEX = "\\|histogram\\(\\s*(\\S+)\\s*,\\s*(\\S+)\\s*,\\s*(\\S+(\\s+\\S+))?\\s*\\)";
+
     /**
      * Creates new form HistogramFilterEditorPanel
      */
@@ -158,9 +160,7 @@ public class HistogramFilterEditorPanel extends AbstractFilterEditorPanel {
 
     @Override
     public void setFilter(String filter) {
-        String dec= FilterEditorPanelUtil.decimalRegexSloppy();
-        String decw= "\\s*("+dec+")\\s*";
-        Pattern p1= Pattern.compile("\\|histogram\\("+decw+","+decw+","+decw+"\\)");
+        Pattern p1= Pattern.compile( PROP_REGEX );
         Pattern p2= Pattern.compile("\\|histogram\\(\\s*\\)");
         Matcher m= p1.matcher(filter);
         Matcher n= p2.matcher(filter);
