@@ -2255,10 +2255,12 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         if (canvas.isValueAdjusting()) {
             return;
         }
-        
+
         // prevent incorrect clip
-        if ( canvas.getHeight()!=parentHeight ) return;
-        if ( canvas.getWidth()!=parentWidth ) return;
+        if ( canvas.getHeight()!=parentHeight && parentHeight<100 ) {
+            return;
+        }
+        if ( canvas.getWidth()!=parentWidth && parentWidth<100 ) return;
         
         try {
             updateTickLength();
