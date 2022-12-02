@@ -355,6 +355,13 @@ public final class Ops {
         for ( String s: ss ) {
             m3.remove( s );
         }
+        
+        // https://sourceforge.net/p/autoplot/bugs/2490/
+        String rt= (String)ds1.property(QDataSet.RENDER_TYPE);
+        if ( rt!=null ) {
+            result.putProperty( QDataSet.RENDER_TYPE, rt );
+        }
+        
         // because this contains FILL_VALUE, etc that are no longer correct.  
         // My guess is that anything with a BUNDLE_1 property shouldn't have 
         // been passed into this routine anyway.
