@@ -6316,6 +6316,7 @@ public final class Ops {
      * </ul>
      * @param arg0 null, QDataSet, String, array or List.
      * @throws IllegalArgumentException if the argument cannot be parsed or converted.
+     * @see #boundsDataset(java.lang.String) 
      * @return DatumRange
      */
     public static DatumRange datumRange( Object arg0 ) {
@@ -6349,7 +6350,7 @@ public final class Ops {
                 }
                 j[i]= d.doubleValue(u);
             }
-            return DatumRange.newDatumRange( j[0], j[1], u );
+            return DatumRange.newRange( j[0], j[1], u );
 
         } else if ( arg0.getClass().isArray() ) { 
             double[] j= new double[ Array.getLength(arg0) ];
@@ -6367,7 +6368,7 @@ public final class Ops {
                 }
                 j[i]= d.doubleValue(u);
             }
-            return DatumRange.newDatumRange( j[0], j[1], u );
+            return DatumRange.newRange( j[0], j[1], u );
             
         } else {
             String sarg0= String.valueOf( arg0 );
@@ -13544,6 +13545,47 @@ public final class Ops {
      */
     public static QDataSet ytags( QDataSet ds ) {
         return SemanticOps.ytagsDataSet(ds);
+    }
+    
+    /**
+     * This returns one of a bounds dataset:<ul>
+     * <li>rank 1 bounds (a datumRange)
+     * <li>rank 2 bounding box
+     * <li>rank 2 bounding qube (three or more dimensions)
+     * </ul>
+     * <table>
+     * <tr><td>2002-03-02/2002-03-03<br>2002-03-02<br>orbit:crres:6<br>5 to 50</td><td>rank 1 bounds (a datumRange)</td></tr>
+     * <tr><td>2002-03-02/2002-03-03;5 to 50</td><td>rank 2 bounding box</td></tr>
+     * <tr><td>2002-03-02T01:01/2002-03-02T01:02;5 to 50 eV;90 to 180 deg</td><td>rank 2 bounding qube</td></tr>
+     * </table>
+     * Note dataset("5 to 50") presently parses to a rank 0 nominal dataset, not a rank 1 range.
+     * @param s string representation of a dataset
+     * @return a rank 1 or rank 2 bounds dataset.
+     * @see #datumRange(java.lang.Object) 
+     */
+    public static QDataSet boundsDataset( String s ) {
+        String[] ss= s.split(";",-2);
+        if ( ss.length==1 ) {
+            if ( s.contains("to") ) {
+                ss= s.split("to");
+                if ( ss.length==2 ) {
+                    Datum d1= datum(ss[0]);
+                    Datum d2= datum(ss[1]);
+                    return dataset(DatumRange.newRange(d1, d2));
+                } else {
+                    return dataset(datumRange(ss[0]));
+                }
+            } else {
+                return dataset(datumRange(ss[0]));
+            }
+        } else {
+            JoinDataSet jds= new JoinDataSet(2);
+            for ( int i=0; i<ss.length; i++ ) {
+                jds.join( dataset(datumRange(ss[i])) );
+            }
+            jds.makeImmutable();
+            return jds;
+        }
     }
     
     /**
