@@ -345,7 +345,12 @@ public class KernelRebinner implements DataSetRebinner {
                 if ( yds.rank()==1 ) {
                     yBinWidth= org.das2.qds.DataSetUtil.guessCadenceNew( yds, zds.slice(0) );
                 } else {
-                    yBinWidth= org.das2.qds.DataSetUtil.guessCadenceNew( yds.slice(0), zds.slice(0) );
+                    if ( yds.rank()==2 && QDataSet.VALUE_BINS_MIN_MAX.equals(yds.property(QDataSet.BINS_1)) ) {
+                        yBinWidth= Ops.reduceMax( Ops.subtract( Ops.slice1(yds,1), Ops.slice1(yds,0) ), 0 );
+                        yds= Ops.reduceMean( yds,1 );
+                    } else {
+                        yBinWidth= org.das2.qds.DataSetUtil.guessCadenceNew( yds.slice(0), zds.slice(0) );
+                    }
                 }
 
                 if ( xBinWidth==null ) {
