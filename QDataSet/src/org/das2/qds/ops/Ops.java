@@ -12559,7 +12559,7 @@ public final class Ops {
         QDataSet w1= DataSetUtil.weightsDataSet(ds);
         QDataSet dep0ds= (QDataSet) ds.property(QDataSet.DEPEND_0);
         DDataSet dep0= null;
-        if ( dep0ds!=null ) {
+        if ( dep0ds!=null && dep0ds.rank()==1 ) {
             dep0= DDataSet.createRank1( ds.length()-1 );
             DataSetUtil.putProperties( DataSetUtil.getProperties(dep0ds), dep0 );
         }
@@ -12571,7 +12571,7 @@ public final class Ops {
             } else {
                 result.putValue(i,fill);
             }
-            if ( dep0ds!=null ) {
+            if ( dep0ds!=null && dep0ds.rank()==1 ) {
                 assert dep0!=null;
                 dep0.putValue(i, ( dep0ds.value(i) + ( dep0ds.value(i+1) - dep0ds.value(i) ) / 2 ) );
             }
