@@ -128,9 +128,7 @@ public final class Ops {
 
     /**
      * apply the unary operation (such as "cos") to the dataset, propagating
-     * DEPEND_0 through DEPEND_3 are propagated.  TODO: This should be reviewed
-     * for speed (iterator is known to be slow) and other metadata that can 
-     * be preserved.
+     * DEPEND_0 through DEPEND_3 and other appropriate metadata.
      * @param ds1 the argument
      * @param op the operation for each element.
      * @return the result the the same geometry.
@@ -205,8 +203,8 @@ public final class Ops {
     }
  
     /**
-     * apply the unary operation (such as "cos") to the dataset.
-     * DEPEND_[0-3] is propagated.
+     * apply the unary operation (such as "cos") to the dataset, propagating
+     * DEPEND_0 through DEPEND_3 and other appropriate metadata.
      * @param ds1 the argument which can be converted to a dataset.
      * @param op the operation for each element.
      * @return the result the the same geometry.
