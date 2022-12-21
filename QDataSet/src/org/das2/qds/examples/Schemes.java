@@ -987,14 +987,12 @@ public class Schemes {
      * @see #rank1AtXYScatter() 
      */
     public static QDataSet xyzScatter() {
-        QDataSet xx= Ops.outerProduct( Ops.linspace( "2015-03-01T00:00", "2015-03-01T10:00", 150 ), Ops.ones(30) );
-        QDataSet yy= Ops.outerProduct( Ops.ones(150), Ops.linspace( 10., 40., 30 ) );
-        QDataSet zz= Ops.ripples( 150, 30 );
-        xx= Ops.reform( xx, new int[] {4500} );
-        yy= Ops.reform( yy, new int[] {4500} );
-        yy= Ops.putProperty( yy, QDataSet.UNITS, Units.hertz );
-        zz= Ops.reform( zz, new int[] {4500} );
-        zz= Ops.putProperty( zz, QDataSet.DEPEND_0, xx );
+        //QDataSet xx= Ops.outerProduct( Ops.linspace( "2015-03-01T00:00", "2015-03-01T10:00", 150 ), Ops.ones(30) );
+        //QDataSet yy= Ops.outerProduct( Ops.ones(150), Ops.linspace( 10., 40., 30 ) );
+        //QDataSet zz= Ops.ripples( 150, 30 );
+        QDataSet xx= Ops.append(Ops.randn(300),Ops.add(2,Ops.randn(300)));
+        QDataSet yy= Ops.append(Ops.randn(300),Ops.add(-3,Ops.randn(300)));
+        QDataSet zz= Ops.sin( Ops.add( xx, yy ) );
         QDataSet result= Ops.bundle( xx,yy,zz );
         return result;
     }
