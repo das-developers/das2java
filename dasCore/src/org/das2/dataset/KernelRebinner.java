@@ -255,7 +255,9 @@ public class KernelRebinner implements DataSetRebinner {
 
         long t0= System.currentTimeMillis();
         
-        if ( ds.rank()==2 ) { // make it into a rank 3 dataset
+        boolean isBundle= SemanticOps.isBundle(ds);
+        
+        if ( ds.rank()==2 && !isBundle ) { // make it into a rank 3 dataset
             ds= Ops.join(null,ds); 
         }
         
@@ -277,7 +279,7 @@ public class KernelRebinner implements DataSetRebinner {
          */
         DDataSet rebinMask= DDataSet.createRank2( nx, ny );
         
-        if ( ds.rank()==1 || ( ds.rank()==2 && SemanticOps.isBundle(ds) ) ) {
+        if ( ds.rank()==1 || ( ds.rank()==2 && isBundle ) ) {
             QDataSet zds, xds, yds, wds;
             if ( ds.rank()==1 ) {
                 yds= ds; // TODO: nasty shameful code will break when I clean up this model.
