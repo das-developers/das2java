@@ -1559,6 +1559,9 @@ public class SeriesRenderer extends Renderer {
         MutablePropertyDataSet xds1= Ops.copy(xds.trim(firstIndex,lastIndex));
         QDataSet yds1= yds.trim(firstIndex,lastIndex);
         xds1.putProperty(QDataSet.CADENCE,null);
+        if ( xds1.rank()==2 ) {
+            return null;
+        }
         cadencec= SemanticOps.guessXTagWidth( xds1, yds1 );
         xdsc= xds;
         ydsc= yds;
@@ -1708,6 +1711,11 @@ public class SeriesRenderer extends Renderer {
                 xds= DataSetOps.slice1(xds,0); //BINS dataset
             } else if ( xds.property(QDataSet.BINS_1)!=null ) {
                 xds= Ops.reduceMean( xds, 1 );
+            } else { 
+                firstIndex= 0;
+                lastIndex= xds.length();
+                dataIsMonotonic= false;
+                return;
             }
         }
 
@@ -2405,7 +2413,7 @@ public class SeriesRenderer extends Renderer {
         QDataSet xds = getXTags(dataSet);
 
         Units yunits;
-        
+
         if ( dataSet.rank()>0 && dataSet.rank()<3 && !SemanticOps.isRank2Waveform(dataSet) ) {  // xtags are rank 2 bins can happen too
             vds= ytagsDataSet(ds);
             if ( vds==null ) {
@@ -2471,8 +2479,10 @@ public class SeriesRenderer extends Renderer {
                     unitsWarning= true;
                 }
             }
-        } 
+        }
 
+        boolean isAlongTrajectory= vds!=null && vds.rank()==1 && xds.rank()==2 && xds.length(0)==2 && xds.property(QDataSet.BINS_1)==null;                    
+       
         plottable = SemanticOps.getUnits(xds).isConvertibleTo(xAxis.getUnits());
         xunitsWarning= false;
         if ( !plottable ) {
@@ -2618,6 +2628,8 @@ public class SeriesRenderer extends Renderer {
                         psymConnectorElement.update(xAxis, yAxis, dataSet, monitor.getSubtaskMonitor("psymConnectorElement.update")); 
                     } else if ( dataSet.rank()==0 ) {
                         psymConnectorElement.update(xAxis, yAxis, dataSet, monitor.getSubtaskMonitor("psymConnectorElement.update")); 
+                    } else if ( isAlongTrajectory ) {
+                        psymConnectorElement.update(xAxis, yAxis, xds, monitor.getSubtaskMonitor("psymConnectorElement.update")); 
                     } else {
                         psymConnectorElement.update(xAxis, yAxis, vds, monitor.getSubtaskMonitor("psymConnectorElement.update"));
                     }
@@ -2630,9 +2642,13 @@ public class SeriesRenderer extends Renderer {
                 if ( dataSet.rank()==0 ) {
                     
                 } else {
-                    errorElement.update(xAxis, yAxis, vds, monitor.getSubtaskMonitor("errorElement.update"));
+                    if ( !isAlongTrajectory ) {
+                        errorElement.update(xAxis, yAxis, vds, monitor.getSubtaskMonitor("errorElement.update"));
+                    }
                     if ( vds!=null && vds.rank()==1 && dataSet.rank()==2 && SemanticOps.isBundle(dataSet) ) {
                         psymsElement.update(xAxis, yAxis, dataSet, monitor.getSubtaskMonitor("psymsElement.update"));     // color scatter
+                    } else if ( isAlongTrajectory ) {
+                        psymsElement.update(xAxis, yAxis, xds, monitor.getSubtaskMonitor("psymsElement.update"));     // color scatter
                     } else {
                         psymsElement.update(xAxis, yAxis, vds, monitor.getSubtaskMonitor("psymsElement.update"));
                     }
@@ -2764,10 +2780,18 @@ public class SeriesRenderer extends Renderer {
                     return SelectionUtil.NULL;
                 }
                 
+                QDataSet xx= xds;
+                QDataSet yy= ds2;
+                
+                if ( xds.rank()==2 && xds.length(0)==2 ) {
+                    xx= Ops.slice1( xds, 0 );
+                    yy= Ops.slice1( xds, 1 );
+                }
+                
                 QDataSet reduce = VectorUtil.reduce2D(
-                    xds, ds2,
+                    xx, yy,
                     0,
-                    xds.length(),
+                    xx.length(),
                     widthx.divide(xaxis.getColumn().getWidth()/5.),
                     widthy.divide(yaxis.getRow().getHeight()/5.)
                     );
