@@ -28,6 +28,7 @@ import org.das2.qds.DDataSet;
 import org.das2.qds.JoinDataSet;
 import org.das2.qds.QDataSet;
 import org.das2.qds.SemanticOps;
+import org.das2.qds.examples.Schemes;
 import org.das2.qds.ops.Ops;
 
 /**
@@ -456,11 +457,17 @@ public class RGBImageRenderer extends Renderer {
             QDataSet yy= (QDataSet)ds.property( QDataSet.DEPEND_1 );
             if ( xx!=null ) {
                 xrange= Ops.extent(xx);
+                if ( Schemes.isUniformRatiometricCadence(xx) ) {
+                    xrange= Ops.putProperty( xrange, QDataSet.SCALE_TYPE, QDataSet.VALUE_SCALE_TYPE_LOG );
+                }
             } else {
                 xrange= DDataSet.wrap( new double[] { 0, ds.length() } );
             }
             if ( yy!=null ) {
                 yrange= Ops.extent(yy);
+                if ( Schemes.isUniformRatiometricCadence(yy) ) {
+                    yrange= Ops.putProperty( yrange, QDataSet.SCALE_TYPE, QDataSet.VALUE_SCALE_TYPE_LOG );
+                }
             } else {
                 yrange= DDataSet.wrap( new double[] { 0, ds.length(0) } );
             }
