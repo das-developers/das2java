@@ -675,6 +675,23 @@ public final class TimeUtil {
         return new int[] { ts.year, ts.month, ts.day, ts.hour, ts.minute, seconds, millis, micros };
     }
     
+    private static String[] times = new String[]{"1972-01-01T00:00:00.000Z", "1972-07-01T00:00:00.000Z",
+        "1973-01-01T00:00:00.000Z", "1974-01-01T00:00:00.000Z", "1975-01-01T00:00:00.000Z", "1976-01-01T00:00:00.000Z",
+        "1977-01-01T00:00:00.000Z", "1978-01-01T00:00:00.000Z", "1979-01-01T00:00:00.000Z", "1980-01-01T00:00:00.000Z",
+        "1981-07-01T00:00:00.000Z", "1982-07-01T00:00:00.000Z", "1983-07-01T00:00:00.000Z", "1985-07-01T00:00:00.000Z",
+        "1988-01-01T00:00:00.000Z", "1990-01-01T00:00:00.000Z", "1991-01-01T00:00:00.000Z", "1992-07-01T00:00:00.000Z",
+        "1993-07-01T00:00:00.000Z", "1994-07-01T00:00:00.000Z", "1996-01-01T00:00:00.000Z", "1997-07-01T00:00:00.000Z",
+        "1999-01-01T00:00:00.000Z", "2006-01-01T00:00:00.000Z", "2009-01-01T00:00:00.000Z", "2012-07-01T00:00:00.000Z",
+        "2015-07-01T00:00:00.000Z", "2017-01-01T00:00:00.000Z"};
+
+    private static long[] tt2000s = new long[]{-883655957816000000L, -867931156816000000L,
+        -852033555816000000L, -820497554816000000L, -788961553816000000L, -757425552816000000L,
+        -725803151816000000L, -694267150816000000L, -662731149816000000L, -631195148816000000L,
+        -583934347816000000L, -552398346816000000L, -520862345816000000L, -457703944816000000L,
+        -378734343816000000L, -315575942816000000L, -284039941816000000L, -236779140816000000L,
+        -205243139816000000L, -173707138816000000L, -126273537816000000L, -79012736816000000L,
+        -31579135816000000L, 189345665184000000L, 284040066184000000L, 394372867184000000L,
+        488980868184000000L, 536500869184000000L};
     
     /**
      * returns the 7-element array of components from the time location datum:
@@ -683,10 +700,68 @@ public final class TimeUtil {
      * @return seven-element int array.
      */
     public static int[] fromDatum( Datum time ) {
-        TimeStruct ts= toTimeStruct( time );
-        int seconds= (int)( ts.seconds+0.0000000005 );
-        int nanos= (int)( ( ts.seconds+0.0000000005 - seconds ) * 100000000 ) + ts.nanos;
-        return new int[] { ts.year, ts.month, ts.day, ts.hour, ts.minute, seconds, nanos };
+        Units u= time.getUnits();
+        if ( u==Units.cdfTT2000 ) {
+            long tt2000;
+            if ( time instanceof Datum.Long ) {
+                tt2000= ((Datum.Long)time).longValue(Units.cdfTT2000);
+            } else {
+                tt2000= (long)time.doubleValue(Units.cdfTT2000); // TODO: stupid, all Datums should have long access
+            }
+
+            int i= Arrays.binarySearch( tt2000s, tt2000 );
+
+            int [] result= new int[7];
+
+            long tt2000base;
+            String timebase;
+            if ( i>=0 ) {
+                tt2000base= tt2000;
+                timebase= times[i];
+            } else if ( i==-1 ) {
+                throw new IllegalArgumentException("cdfTT2000 before 1972-01-01 is not supported.");
+            } else {
+                tt2000base= tt2000s[-2-i];
+                timebase= times[-2-i];
+            }
+
+            result[0]= Integer.parseInt(timebase.substring(0,4));
+            result[1]= Integer.parseInt(timebase.substring(5,7));
+            result[2]= Integer.parseInt(timebase.substring(8,10));
+
+            long elapsedNanos= tt2000 - tt2000base;
+
+            result[6]= (int)( elapsedNanos % 1000000000 );
+            elapsedNanos = elapsedNanos - result[6];
+
+            int elapsedSeconds= (int)( elapsedNanos / 1000000000 );
+            result[5]= elapsedSeconds % 60;
+            elapsedSeconds= elapsedSeconds - result[5];
+
+            result[4]= elapsedSeconds % 3600 / 60;
+            elapsedSeconds= elapsedSeconds - result[4] * 60;
+
+            result[3]= elapsedSeconds % 86400 / 3600;
+            elapsedSeconds= elapsedSeconds - result[3] * 3600;
+
+            int elapsedDays= elapsedSeconds / 86400;
+
+            int jd0= julianDay( result[0], result[1], result[2] );
+            int jd= jd0 + elapsedDays;
+
+            TimeStruct ts= julianToGregorian( jd );
+            result[0]= ts.year;
+            result[1]= ts.month;
+            result[2]= ts.day;
+
+            return result;
+
+        } else {
+            TimeStruct ts= toTimeStruct( time );
+            int seconds= (int)( ts.seconds+0.0000000005 );
+            int nanos= (int)( ( ts.seconds+0.0000000005 - seconds ) * 100000000 ) + ts.nanos;
+            return new int[] { ts.year, ts.month, ts.day, ts.hour, ts.minute, seconds, nanos };
+        }
     }
     
     /**
