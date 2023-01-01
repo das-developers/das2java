@@ -675,6 +675,11 @@ public final class TimeUtil {
         return new int[] { ts.year, ts.month, ts.day, ts.hour, ts.minute, seconds, millis, micros };
     }
     
+    /** 
+     * times and corresponding CDF_TT2000 value.  This code will be updated every six months along with LeapSecondsConverter.java.
+     * @see LeapSecondsConverter#updateLeapSeconds() 
+     * @see https://github.com/autoplot/dev/blob/master/bugs/sf/2496/tabulateCDFTT2000.jy
+     */
     private static String[] times = new String[]{"1972-01-01T00:00:00.000Z", "1972-07-01T00:00:00.000Z",
         "1973-01-01T00:00:00.000Z", "1974-01-01T00:00:00.000Z", "1975-01-01T00:00:00.000Z", "1976-01-01T00:00:00.000Z",
         "1977-01-01T00:00:00.000Z", "1978-01-01T00:00:00.000Z", "1979-01-01T00:00:00.000Z", "1980-01-01T00:00:00.000Z",
@@ -684,6 +689,11 @@ public final class TimeUtil {
         "1999-01-01T00:00:00.000Z", "2006-01-01T00:00:00.000Z", "2009-01-01T00:00:00.000Z", "2012-07-01T00:00:00.000Z",
         "2015-07-01T00:00:00.000Z", "2017-01-01T00:00:00.000Z"};
 
+    /** 
+     * times and corresponding CDF_TT2000 value.  This code will be updated every six months along with LeapSecondsConverter.java.
+     * @see LeapSecondsConverter#updateLeapSeconds() 
+     * @see https://github.com/autoplot/dev/blob/master/bugs/sf/2496/tabulateCDFTT2000.jy
+     */
     private static long[] tt2000s = new long[]{-883655957816000000L, -867931156816000000L,
         -852033555816000000L, -820497554816000000L, -788961553816000000L, -757425552816000000L,
         -725803151816000000L, -694267150816000000L, -662731149816000000L, -631195148816000000L,
