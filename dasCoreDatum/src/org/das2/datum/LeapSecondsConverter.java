@@ -38,6 +38,14 @@ public class LeapSecondsConverter extends UnitsConverter {
     private static long tt2000_en= -1;
     private static int tt2000_c=-1;
 
+    /**
+     * This reads in the table of leap seconds.  This will need to be updated once every six months, when
+     * a new leap second is announced.
+     * @throws IOException
+     * @throws MalformedURLException
+     * @throws NumberFormatException 
+     * @see TimeUtil#tt2000s
+     */
     private static void updateLeapSeconds() throws IOException, MalformedURLException, NumberFormatException {
         URL url = LeapSecondsConverter.class.getResource("/orbits/CDFLeapSeconds.txt");
         logger.log(Level.FINE, "try reading leap seconds from {0}", url);
