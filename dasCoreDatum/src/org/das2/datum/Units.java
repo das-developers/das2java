@@ -575,7 +575,7 @@ public abstract class Units {
      * @throws InconvertibleUnitsException when the conversion is not possible.
      */
     private static UnitsConverter getConverterInternal( final Units fromUnits, final Units toUnits ) {
-        logger.log(Level.FINE, "fromUnits={0} {1} toUnits={2} {3}", new Object[]{fromUnits,fromUnits.hashCode(), toUnits,toUnits.hashCode()});
+        logger.log(Level.FINER, "fromUnits={0} {1} toUnits={2} {3}", new Object[]{fromUnits,fromUnits.hashCode(), toUnits,toUnits.hashCode()});
         if (fromUnits == toUnits) {
             return UnitsConverter.IDENTITY;
         }
@@ -597,7 +597,6 @@ public abstract class Units {
                     visited.put(next, current);
                     queue.add(next);
                     if (next == toUnits) {
-                        logger.log(Level.FINE, "build conversion from {0} to {1}", new Object[]{fromUnits, toUnits});
                         return buildConversion(fromUnits, toUnits, visited);
                     }
                 }
@@ -607,6 +606,7 @@ public abstract class Units {
     }
     
     private static UnitsConverter buildConversion(Units fromUnits, Units toUnits, Map parentMap) {
+        logger.log(Level.FINE, "build conversion from {0} to {1}", new Object[]{fromUnits, toUnits});
         ArrayList list = new ArrayList();
         Units current = toUnits;
         while (current != null) {
@@ -618,6 +618,7 @@ public abstract class Units {
             Units a = (Units)list.get(i);
             Units b = (Units)list.get(i - 1);
             UnitsConverter c = (UnitsConverter)a.conversionMap.get(b);
+            logger.log(Level.FINE, "append conversion from {0} to {1}", new Object[]{a,b});
             converter = converter.append(c);
         }
         fromUnits.registerConverter(toUnits, converter);
