@@ -800,11 +800,34 @@ public final class TimeUtil {
             result= fromJulianDayAndOffset( jd0, elapsedSeconds, nanos );
 
             return result;
-            
+        } else if ( u==Units.cdfEpoch ) { // positive number of milliseconds since 0000-00-00.
+            double dval= time.doubleValue(u);
+            double dmsec= dval % 86400000;
+            int nanos= (int)( ( dmsec % 1000 ) * 1000000 );
+            int sec= (int)( dmsec / 1000 );
+            int julianDay= (int)( ( dval - dmsec ) / 86400000 - 730485.0 + 2451545 );
+            return fromJulianDayAndOffset( julianDay, sec, nanos );
+                    
+        } else if ( u==Units.us2000 ) { 
+            double dval= time.doubleValue(u);
+            double dusec= dval % 86400000000.;
+            int nanos= (int)( ( dusec % 1000000 ) * 1000 );
+            int sec= (int)( Math.floor( dusec / 1000000 ) );
+            int julianDay= (int)( ( dval - dusec ) / 86400000000. + 2451545 );
+            return fromJulianDayAndOffset( julianDay, sec, nanos );
+
+        } else if ( u==Units.mj1958 ) { 
+            double dval= time.doubleValue(u);
+            double dsec= ( dval % 1. ) * 86400.; //TODO: negative values?
+            int sec= (int)( Math.floor( dsec ) );
+            int nanos= (int)( ( dsec - sec ) * 1000000000 );
+            int julianDay= (int)Math.floor( dval ) + 2436205;
+            return fromJulianDayAndOffset( julianDay, sec, nanos );
+
         } else {
             TimeStruct ts= toTimeStruct( time );
             int seconds= (int)( ts.seconds+0.0000000005 );
-            int nanos= (int)( ( ts.seconds+0.0000000005 - seconds ) * 100000000 ) + ts.nanos;
+            int nanos= (int)( ( ts.seconds+0.0000000005 - seconds ) * 1000000000 ) + ts.nanos;
             return new int[] { ts.year, ts.month, ts.day, ts.hour, ts.minute, seconds, nanos };
         }
     }
