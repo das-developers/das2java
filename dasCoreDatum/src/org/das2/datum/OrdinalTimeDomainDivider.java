@@ -18,9 +18,9 @@ public class OrdinalTimeDomainDivider implements DomainDivider {
     /**
      * indicates if the first ordinal value of the field is zero or one.
      */
-    private final static int[] ZEROONE = new int[]{0, 1, 1, 0, 0, 0, 0, 0};
-    private final static int[] MODULO = new int[]{10000, 12, 30, 24, 60, 60, 1000, 1000};
-    private static final int N_DIGITS = 8;
+    private final static int[] ZEROONE = new int[]{0, 1, 1, 0, 0, 0, 0};
+    private final static int[] MODULO = new int[]{10000, 12, 30, 24, 60, 60, 1000000000 };
+    private static final int N_DIGITS = 7;
     private final static List<Integer>[] FACTORS = new List[N_DIGITS];
 
 
@@ -37,8 +37,7 @@ public class OrdinalTimeDomainDivider implements DomainDivider {
     private final static int ARR_HOUR = 3;
     private final static int ARR_MINUTE = 4;
     private final static int ARR_SECOND = 5;
-    private final static int ARR_MILLIS = 6;
-    private final static int ARR_MICROS = 7;
+    private final static int ARR_NANOS = 6;
 
     /**
      * years and seconds divider, which should be used if non-null.
@@ -374,7 +373,7 @@ public class OrdinalTimeDomainDivider implements DomainDivider {
             tmax = TimeUtil.convert((int)r.max().doubleValue(), 1, 1, 0, 0, 0, out );
             return new DatumRange( tmin, tmax, out );
         }
-        int[] tarr = floor(TimeUtil.toTimeArray(v), significand, digit);
+        int[] tarr = floor(TimeUtil.fromDatum(v), significand, digit);
         Datum dstart = TimeUtil.toDatum(tarr);
         tarr[digit] = tarr[digit] + significand;
         Datum dstop = TimeUtil.toDatum(tarr);
