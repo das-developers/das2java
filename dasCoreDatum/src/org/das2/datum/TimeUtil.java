@@ -753,10 +753,42 @@ public final class TimeUtil {
     }
     
     /**
+     * returns the instant after the last leap second. So for example,
+     * lastLeapSecond(datum('2020-01-01T00:00')) &rarr; datum('2017-01-01T00:00Z')
+     * This code is introduced only to provide some transparency to leap second
+     * handling.  Note that leap seconds before 1970-01-01 are not supported.
+     * Note that most time units do not include leap seconds, so 
+     * TimeUtil.lastLeapSecond(datum('2016-12-31T23:60Z')) uses us2000 internally
+     * and the result is 2017-01-01T00:00Z, not 2015-01-01T00:00Z as one might
+     * expect.
+     * @param t a time after 1970-01-01
+     * @return the instant after the last leap second.
+     */
+    public static Datum lastLeapSecond( Datum t ) {
+        long tt2000= (long)( t.doubleValue(Units.cdfTT2000) );
+        int i= Arrays.binarySearch( tt2000s, tt2000 );
+        TimeStruct timebase;
+        if ( i>=0 ) {
+            timebase= ttTimes[i];
+        } else if ( i==-1 ) {
+            throw new IllegalArgumentException("cdfTT2000 before 1972-01-01 is not supported.");
+        } else {
+            timebase= ttTimes[-2-i];
+        }
+        return toDatum(timebase);
+    }
+            
+    /**
      * returns the 7-element array of components from the time location datum:
      * 0:year, 1:month, 2:day, 3:hour, 4:minute, 5:second, 6:nanoseconds
+     * Note special care is taken to not use units conversions which introduce
+     * noise into the numbers, so the following units are handled directly:
+     * cdfTT2000, cdfEpoch, us2000, and mj1958.  Also, a separate leap seconds
+     * table provides the leap seconds, since these are easily managed within
+     * code, removing the external dependence on a file.
      * @param time
      * @return seven-element int array.
+     * @see #fromJulianDayAndOffset(int, int, int) 
      */
     public static int[] fromDatum( Datum time ) {
         Units u= time.getUnits();
