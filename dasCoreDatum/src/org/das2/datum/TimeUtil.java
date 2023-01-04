@@ -802,7 +802,7 @@ public final class TimeUtil {
             return result;
         } else if ( u==Units.cdfEpoch ) { // positive number of milliseconds since 0000-00-00.
             double dval= time.doubleValue(u);
-            double dmsec= dval % 86400000;
+            double dmsec= dval % 86400000; // okay since all values are positive
             int nanos= (int)( ( dmsec % 1000 ) * 1000000 );
             int sec= (int)( dmsec / 1000 );
             int julianDay= (int)( ( dval - dmsec ) / 86400000 - 730485.0 + 2451545 );
@@ -810,7 +810,7 @@ public final class TimeUtil {
                     
         } else if ( u==Units.us2000 ) { 
             double dval= time.doubleValue(u);
-            double dusec= dval % 86400000000.;
+            double dusec= getSecondsSinceMidnight(time) * 1000000;
             int nanos= (int)( ( dusec % 1000000 ) * 1000 );
             int sec= (int)( Math.floor( dusec / 1000000 ) );
             int julianDay= (int)( ( dval - dusec ) / 86400000000. + 2451545 );
@@ -818,7 +818,7 @@ public final class TimeUtil {
 
         } else if ( u==Units.mj1958 ) { 
             double dval= time.doubleValue(u);
-            double dsec= ( dval % 1. ) * 86400.; //TODO: negative values?
+            double dsec= getSecondsSinceMidnight( time );
             int sec= (int)( Math.floor( dsec ) );
             int nanos= (int)( ( dsec - sec ) * 1000000000 );
             int julianDay= (int)Math.floor( dval ) + 2436205;
