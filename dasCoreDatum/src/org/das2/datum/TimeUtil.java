@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.util.*;
 
 import java.text.ParseException;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.datum.format.TimeDatumFormatter;
@@ -763,19 +764,23 @@ public final class TimeUtil {
      * expect.
      * @param t a time after 1970-01-01
      * @return the instant after the last leap second.
+     * @see #fromDatum which uses similar code.
      */
     public static Datum lastLeapSecond( Datum t ) {
         long tt2000= (long)( t.doubleValue(Units.cdfTT2000) );
         int i= Arrays.binarySearch( tt2000s, tt2000 );
         TimeStruct timebase;
+        long tt2000base;
         if ( i>=0 ) {
             timebase= ttTimes[i];
+            tt2000base= tt2000s[i];
         } else if ( i==-1 ) {
             throw new IllegalArgumentException("cdfTT2000 before 1972-01-01 is not supported.");
         } else {
             timebase= ttTimes[-2-i];
+            tt2000base= tt2000s[-2-i];
         }
-        return toDatum(timebase);
+        return Units.cdfTT2000.createDatum(tt2000base);
     }
             
     /**
@@ -789,6 +794,7 @@ public final class TimeUtil {
      * @param time
      * @return seven-element int array.
      * @see #fromJulianDayAndOffset(int, int, int) 
+     * @see #lastLeapSecond(org.das2.datum.Datum) which uses similar code and is not used because Java doesn't have tuple results.
      */
     public static int[] fromDatum( Datum time ) {
         Units u= time.getUnits();
