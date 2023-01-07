@@ -1161,6 +1161,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         
         markDirty("drawTca");
         update();
+        //System.err.println( "line1164 isDirty: "+isDirty() );
         firePropertyChange("showTca", oldValue, b);
     }
 
@@ -1311,11 +1312,12 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         this.tcaFunction= f;
         maybeStartTcaTimer();
         markDirty("tcaFunction");
-        update();
-
+        
         this.tcaNeedsPainting= false;
-        this.tcaIsLoading= false;
+        this.tcaIsLoading= true;
 
+        update();
+        //System.err.println( "line1320 isDirty: "+isDirty() );
         firePropertyChange("dataSetDescriptor", null, null );
         firePropertyChange("dataPath", null, null );
         firePropertyChange("tcaFunction", oldF, f );
