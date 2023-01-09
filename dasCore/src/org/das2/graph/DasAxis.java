@@ -1314,7 +1314,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         markDirty("tcaFunction");
         
         this.tcaNeedsPainting= false;
-        this.tcaIsLoading= true;
+        this.tcaIsLoading= false;
 
         update();
         //System.err.println( "line1320 isDirty: "+isDirty() );
