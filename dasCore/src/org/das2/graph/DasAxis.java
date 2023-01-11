@@ -2063,7 +2063,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      */
     protected void resetTickV( TickVDescriptor ticks ) {
         TickVDescriptor oldTicks = this.tickV;
-        boolean doUpdateTicks= false;
+        boolean doUpdateTicks= true;  // false results in failure to update ticks in tests.
         if ( oldTicks!=null && ticks!=null 
                 && oldTicks.minorTickV.getLength()==ticks.minorTickV.getLength() ) {
             for ( int i=0; i<ticks.minorTickV.getLength(); i++ ) {
@@ -4879,7 +4879,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     public void repaint() {
         //repaintCount++;
         //System.err.println( "DasAxis repaintCount: "+repaintCount );
-        super.repaint(); //To change body of generated methods, choose Tools | Templates.
+         super.repaint(); //To change body of generated methods, choose Tools | Templates.
     }
     
     private final class ScanButton extends JButton {
