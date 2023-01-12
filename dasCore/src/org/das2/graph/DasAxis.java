@@ -2026,7 +2026,6 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             } finally {
                 tcaProgress.finished();
                 repaint();
-                this.markDirty("repaint after tca update");
             }
         }
     }
