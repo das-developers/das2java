@@ -2026,6 +2026,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             } finally {
                 tcaProgress.finished();
                 repaint();
+                this.markDirty("repaint after tca update");
             }
         }
     }
@@ -2062,22 +2063,38 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      */
     protected void resetTickV( TickVDescriptor ticks ) {
         TickVDescriptor oldTicks = this.tickV;
-        this.tickV= ticks;
-        datumFormatter = resolveFormatter(tickV);
-        if ( drawTca && tcaFunction != null ) {  
-            final DasCanvas lcanvas= getCanvas();
-            if ( lcanvas!=null ) {
-                tcaIsLoading= true;
-                lcanvas.registerPendingChange( DasAxis.this, tcaLock );
-                lcanvas.performingChange( DasAxis.this, tcaLock );
-                tcaTimer.tickle("resetTickV", (PropertyChangeEvent evt) -> {
-                    lcanvas.changePerformed( DasAxis.this, tcaLock );
-                    tcaIsLoading= false;
-                });
+        boolean doUpdateTicks= true;  // false results in failure to update ticks in tests.
+        if ( oldTicks!=null && ticks!=null 
+                && oldTicks.minorTickV.getLength()==ticks.minorTickV.getLength() ) {
+            for ( int i=0; i<ticks.minorTickV.getLength(); i++ ) {
+                if ( !oldTicks.minorTickV.get(i).equals(ticks.minorTickV.get(i)) ) {
+                    doUpdateTicks= true;
+                }
             }
+        } else {
+            doUpdateTicks= true;
         }
-        firePropertyChange(PROPERTY_TICKS, oldTicks, this.tickV);
-        repaint();
+
+        if ( doUpdateTicks ) {
+        
+            this.tickV= ticks;
+            datumFormatter = resolveFormatter(tickV);
+            if ( drawTca && tcaFunction != null ) {  
+                final DasCanvas lcanvas= getCanvas();
+                if ( lcanvas!=null ) {
+                    tcaIsLoading= true;
+                    lcanvas.registerPendingChange( DasAxis.this, tcaLock );
+                    lcanvas.performingChange( DasAxis.this, tcaLock );
+                    tcaTimer.tickle("resetTickV", (PropertyChangeEvent evt) -> {
+                        lcanvas.changePerformed( DasAxis.this, tcaLock );
+                        tcaIsLoading= false;
+                    });
+                }
+            }
+            firePropertyChange(PROPERTY_TICKS, oldTicks, this.tickV);
+        
+            repaint();
+        }
     }
 
     private boolean getAutoTickV() {
@@ -4855,7 +4872,15 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             stepPrevious.setToolTipText(tooltip);
         }
     }
+
+    private int repaintCount= 0;
     
+    @Override
+    public void repaint() {
+        //repaintCount++;
+        //System.err.println( "DasAxis repaintCount: "+repaintCount );
+         super.repaint(); //To change body of generated methods, choose Tools | Templates.
+    }
     
     private final class ScanButton extends JButton {
 
