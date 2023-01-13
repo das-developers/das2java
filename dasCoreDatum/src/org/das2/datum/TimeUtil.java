@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.util.*;
 
 import java.text.ParseException;
-import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.datum.format.TimeDatumFormatter;
@@ -769,15 +768,12 @@ public final class TimeUtil {
     public static Datum lastLeapSecond( Datum t ) {
         long tt2000= (long)( t.doubleValue(Units.cdfTT2000) );
         int i= Arrays.binarySearch( tt2000s, tt2000 );
-        TimeStruct timebase;
         long tt2000base;
         if ( i>=0 ) {
-            timebase= ttTimes[i];
             tt2000base= tt2000s[i];
         } else if ( i==-1 ) {
             throw new IllegalArgumentException("cdfTT2000 before 1972-01-01 is not supported.");
         } else {
-            timebase= ttTimes[-2-i];
             tt2000base= tt2000s[-2-i];
         }
         return Units.cdfTT2000.createDatum(tt2000base);
