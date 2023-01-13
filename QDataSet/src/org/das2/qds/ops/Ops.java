@@ -9095,7 +9095,79 @@ public final class Ops {
     }
     
     /**
-     * scipy chirp function, used for testing.
+     * return events list containing start and stop times of continuous blocks in
+     * time.  The parameter lastBlocks allows serial processing of data, so that intervals
+     * spanning extent boundaries will be correctly identified, once.  If the last 
+     * timetag of times is within the cadence of the stop of the extent, then this block will be dropped, 
+     * but its start is noted in the property "partialBlockStart."  If first timetag is within cadence 
+     * of the start, then the last block of lastTimes will be added.  Note the labels for each interval
+     * are the indices of the first and last (exclusive) continuous segment.
+     * @param cadence null or the cadence
+     * @param extent null or the interval containing the times.
+     * @param lastBlocks null or the preceeding interval times.
+     * @param times the times for the interval
+     * @return an events list containing the start and stop times.
+     */
+    public static QDataSet identifyContinuousBlocks( Datum cadence, DatumRange extent, QDataSet lastBlocks, QDataSet times ) {
+        if ( extent==null ) {
+            // don't clip due to boundary issues
+            extent= Ops.datumRange( extent(times) );
+        }
+                        
+        Datum lastBreak;
+        int lastBreakIndex;
+        
+        Datum lastTime= extent.min();
+        if ( Ops.datum(times.slice(0)).subtract(lastTime).le(cadence) ) {
+            if ( lastBlocks!=null ) {
+                lastBreak= Ops.datum( lastBlocks.property( "partialBlockStart" ) );
+                lastBreakIndex= (int)lastBlocks.property( "partialBlockStartIndex" );
+                if ( lastBreak==null ) {
+                    lastBreak= Ops.datum( times.slice(0) );
+                    lastBreakIndex= 0;
+                }
+            } else {
+                lastBreak= null;
+                lastBreakIndex= 0;
+            }
+        } else {
+            lastTime= Ops.datum( times.slice(0) );
+            lastBreak = lastTime;
+            lastBreakIndex = 0;
+            
+        }
+        
+        QDataSet events= null;
+        
+        for ( int i=0; i<times.length(); i++ ) {
+            Datum t= Ops.datum(times.slice(i));
+            if ( t.subtract(lastTime).gt(cadence) ) {
+                if ( lastBreak!=null ) {
+                    events= createEvent( events, DatumRange.newRange( lastBreak, lastTime ), 0x000000, 
+                            String.format( "%d to %d", lastBreakIndex, i ) );
+                }
+                lastBreak= t;
+                lastBreakIndex = i;
+            }
+            lastTime= t;
+        }
+        
+        if ( extent.max().subtract(lastTime).lt(cadence) ) {
+            events= putProperty( events, "partialBlockStart", lastBreak );
+            events= putProperty( events, "partialBlockStartIndex", lastBreakIndex - times.length() );
+        } else {
+            if ( lastBreak!=null ) {
+                events= createEvent( events, DatumRange.newRange( lastBreak, lastTime ), 0x000000, 
+                        String.format( "%d to %d", lastBreakIndex, times.length() ) );
+            }    
+        }
+        
+        return events;
+        
+    }
+    
+    /**
+     * SciPy chirp function, used for testing.
      * @param t Times at which to evaluate the waveform.
      * @param df0 Frequency (e.g. Hz) at time t=0.
      * @param dt1 Time at which `f1` is specified.
