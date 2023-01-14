@@ -636,6 +636,32 @@ public class AsciiParser {
     /**
      * The DelimParser splits each record into fields using a delimiter like ","
      * or "\\s+".
+     *
+     * @param line a single record to read
+     * @param delimRegex the delimiter, such as "," or "\t" or "\s+"
+     * @param expectedColumnCount -1 or the number of columns we expect to see.
+     * @return the record parser that will split each line into fields
+     * @throws java.io.IOException
+     * @throws IllegalArgumentException if the positive expectedColumnCount doesn't match the result.
+     */
+    public DelimParser setDelimParser(String line, String delimRegex, int expectedColumnCount ) throws IOException {
+        
+        DelimParser result = createDelimParser(line, delimRegex, -1);
+        
+        if ( expectedColumnCount>-1 ) {
+            if ( result.fieldCount!=expectedColumnCount ) {
+                throw new IllegalArgumentException("expectedColumnCount isn't correct.  Expected "+
+                        expectedColumnCount+", got "+result.fieldCount);
+            }
+        }
+        this.setRecordParser( result );
+        
+        return result;
+    }
+    
+    /**
+     * The DelimParser splits each record into fields using a delimiter like ","
+     * or "\\s+".
      * @param in
      * @param delimRegex the delimiter, such as "," or "\t" or "\s+"
      * @return the record parser that will split each line into fields
