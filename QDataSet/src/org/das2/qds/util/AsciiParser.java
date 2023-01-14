@@ -13,6 +13,7 @@ import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
 import org.das2.util.monitor.ProgressMonitor;
 import java.io.*;
+import java.nio.charset.Charset;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -40,6 +41,7 @@ import org.das2.qds.SparseDataSetBuilder;
 import org.das2.qds.WritableDataSet;
 import org.das2.qds.ops.Ops;
 import org.das2.util.LoggerManager;
+import org.das2.util.monitor.NullProgressMonitor;
 
 /**
  * Class for reading ASCII tables into a QDataSet.  This parses a file by breaking
@@ -961,11 +963,23 @@ public class AsciiParser {
     }
     
     /**
+     * 
+     * @param str the data, encoded in a UTF-8 string
+     * @param mon null or a progress monitor
+     * @return the data
+     * @throws IOException 
+     */
+    public WritableDataSet readString(String str,ProgressMonitor mon) throws IOException {
+        Reader in= new InputStreamReader( new ByteArrayInputStream(str.getBytes(Charset.forName("UTF-8"))) );
+        return readStream(in, null, mon);
+    }
+    
+    /**
      * read in the stream, including the first record if non-null.
      * @param in the stream, which is not closed.
      * @param firstRecord, if non-null, parse this record first.  This allows information to be extracted about the
      * records, then fed into this loop.
-     * @param mon a monitor
+     * @param mon null or a progress monitor
      * @return the dataset.
      * @throws java.io.IOException
      */
@@ -977,6 +991,8 @@ public class AsciiParser {
         int iline = -1;
         int irec = 0;
 
+        if ( mon==null ) mon= new NullProgressMonitor();
+        
         mon.started();
 
         DataSetBuilder builder = new DataSetBuilder(2, 100, recordParser.fieldCount());
