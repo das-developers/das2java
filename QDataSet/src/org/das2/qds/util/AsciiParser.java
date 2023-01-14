@@ -617,16 +617,16 @@ public class AsciiParser {
      * or "\\s+".
      *
      * @param filename filename to read in.
-     * @param delim the delimiter, such as "," or "\t" or "\s+"
+     * @param delimRegex the delimiter, such as "," or "\t" or "\s+"
      * @return the record parser that will split each line into fields
      * @throws java.io.IOException
      */
-    public DelimParser setDelimParser(String filename, String delim) throws IOException {
+    public DelimParser setDelimParser(String filename, String delimRegex) throws IOException {
         FileReader r= null;
         DelimParser result=null;
         try {
             r= new FileReader(filename);
-            result= setDelimParser(r, delim);
+            result= setDelimParser(r, delimRegex);
         } finally {
             if ( r!=null ) r.close();
         }
