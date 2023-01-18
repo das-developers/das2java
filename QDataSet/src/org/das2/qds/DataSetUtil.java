@@ -3568,7 +3568,18 @@ public class DataSetUtil {
                 throw new IllegalArgumentException("expected min,max for BINS_0 because we are not allowing sloppy.");
             }
         }
-        return new DatumRange( dmin, dmax, u );
+        Datum d1= Datum.create( dmin, u );
+        Datum d2= Datum.create( dmax, u );
+        if ( UnitsUtil.isNominalMeasurement(u) ) {
+            // begin funky code.  Nominal strings are sorted now by value, not by ordinal, so this must be consistent.
+            if ( d1.le(d2) ) {
+                return new DatumRange( d1, d2 );
+            } else {
+                return new DatumRange( d2, d1 );
+            }
+        } else {
+            return new DatumRange( d1, d2 );
+        }
     }
 
     /**
