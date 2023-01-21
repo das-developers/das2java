@@ -443,7 +443,7 @@ public class FileSystemUtil {
     public static File createTempFile( File localFile, int timeoutSeconds ) {
         File f= FileSystem.settings().getLocalCacheDir();
         f= new File( f, "temp" );
-        f= new File( f, localFile.toString() ); // TODO: check Windows.
+        f= new File( f, localFile.toString() );
         return f;
     }
     
