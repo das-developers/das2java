@@ -6967,7 +6967,9 @@ public final class Ops {
      * @return the dataset, possibly converted to a mutable dataset.
      */
     public static MutablePropertyDataSet putProperty( QDataSet ds, String name, Object value ) {
-        
+        if ( ds==null ) {
+            throw new IllegalArgumentException("dataset ds is null");
+        }
         MutablePropertyDataSet mds;
         if ( !( ds instanceof MutablePropertyDataSet ) ) {
             mds= ArrayDataSet.maybeCopy(ds);  // https://sourceforge.net/p/autoplot/bugs/1357/ should this be DataSetWrapper.wrap?
@@ -9120,10 +9122,15 @@ public final class Ops {
         Datum lastTime= extent.min();
         if ( Ops.datum(times.slice(0)).subtract(lastTime).le(cadence) ) {
             if ( lastBlocks!=null ) {
-                lastBreak= Ops.datum( lastBlocks.property( "partialBlockStart" ) );
-                lastBreakIndex= (int)lastBlocks.property( "partialBlockStartIndex" );
-                if ( lastBreak==null ) {
-                    lastBreak= Ops.datum( times.slice(0) );
+                if ( lastBlocks.property( "partialBlockStart" )!=null ) {
+                    lastBreak= Ops.datum( lastBlocks.property( "partialBlockStart" ) );
+                    lastBreakIndex= (int)lastBlocks.property( "partialBlockStartIndex" );
+                    if ( lastBreak==null ) {
+                        lastBreak= Ops.datum( times.slice(0) );
+                        lastBreakIndex= 0;
+                    }
+                } else {
+                    lastBreak= null;
                     lastBreakIndex= 0;
                 }
             } else {
@@ -9153,6 +9160,10 @@ public final class Ops {
         }
         
         if ( extent.max().subtract(lastTime).lt(cadence) ) {
+            if ( events==null ) {
+                events= createEvent( events, DatumRange.newRange( lastBreak, lastTime ), 0x000000, 
+                            String.format( "%d to %d", lastBreakIndex, times.length() ) );
+            }
             events= putProperty( events, "partialBlockStart", lastBreak );
             events= putProperty( events, "partialBlockStartIndex", lastBreakIndex - times.length() );
         } else {
