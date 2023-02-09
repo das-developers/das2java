@@ -201,7 +201,7 @@ public class FFTUtil {
         
         int i1;
         for ( i1=0; i1<result.length(); i1++ ) {
-            result.putValue(i1,2*ComplexArray.magnitude2(ca,i1+1) / binsize );
+            result.putValue(i1, 2 * ComplexArray.magnitude2(ca,i1+1) / binsize );
         }
         
         Units u= (Units) vds.property( QDataSet.UNITS );
