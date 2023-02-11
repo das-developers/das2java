@@ -633,7 +633,7 @@ public class DasAnnotation extends DasCanvasComponent {
                 g.fillRoundRect(anchorRect.x, anchorRect.y, anchorRect.width, anchorRect.height, em * 2, em * 2);
             }
             g.setColor( c0 );
-         }
+        }
             
         if ( gtr==null || !getString().equals("") ) {
             if (borderType == BorderType.RECTANGLE || borderType == BorderType.NONE) {
@@ -687,6 +687,9 @@ public class DasAnnotation extends DasCanvasComponent {
                     g.draw(r);
                 } else if (borderType == BorderType.ROUNDED_RECTANGLE) {
                     g.drawRoundRect(r.x, r.y, r.width, r.height, em * 2, em * 2);
+                } else if (borderType==BorderType.UNDERSCORE ) {
+                    int y= r.y+r.height;
+                    g.drawLine( r.x+em, y, r.x + r.width-2*em, y );
                 }
             }
             
@@ -702,6 +705,8 @@ public class DasAnnotation extends DasCanvasComponent {
                     }
                 } else if ( anchorBorderType==BorderType.ROUNDED_RECTANGLE ) {
                     g.drawRoundRect(anchorRect.x, anchorRect.y, anchorRect.width, anchorRect.height, em * 2, em * 2);
+                } else if ( anchorBorderType==BorderType.UNDERSCORE ) {
+                    g.draw(anchorRect);
                 }
             }
         }
