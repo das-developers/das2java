@@ -9,5 +9,5 @@ package org.das2.graph;
  * Border types.
  */
 public enum BorderType {
-    NONE, RECTANGLE, ROUNDED_RECTANGLE
+    NONE, RECTANGLE, ROUNDED_RECTANGLE, UNDERSCORE
 }
