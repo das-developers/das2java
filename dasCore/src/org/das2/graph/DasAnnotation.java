@@ -781,38 +781,47 @@ public class DasAnnotation extends DasCanvasComponent {
      */
     private Rectangle getAnchorBounds() {
         Rectangle anchorRect= new Rectangle();
-        if ( ( anchorType==AnchorType.PLOT || anchorType==AnchorType.DATA ) && plot!=null && xrange!=null && yrange!=null ) {
-            if ( anchorBorderType==BorderType.NONE && showArrow ) { // this is really confusing, when you can't see the anchor.
-                try {
-                    anchorRect.x= (int)(plot.getXAxis().transform( pointAtX ) );
-                } catch ( InconvertibleUnitsException ex ) {
-                    if ( pointAtX.getUnits()==Units.dimensionless && UnitsUtil.isRatioMeasurement(plot.getXAxis().getUnits())  ) {
-                        anchorRect.x= (int)(plot.getXAxis().transform( pointAtX.value(), plot.getXAxis().getUnits() ) );
-                    } else {
-                        logger.info("unable to convert x units for annotation");
-                        anchorRect.x= getColumn().getDMiddle();
+        if ( ( anchorType==AnchorType.DATA ) ) {
+            if ( plot!=null && xrange!=null && yrange!=null ) {
+                if ( anchorBorderType==BorderType.NONE && showArrow ) { // this is really confusing, when you can't see the anchor.
+                    try {
+                        anchorRect.x= (int)(plot.getXAxis().transform( pointAtX ) );
+                    } catch ( InconvertibleUnitsException ex ) {
+                        if ( pointAtX.getUnits()==Units.dimensionless && UnitsUtil.isRatioMeasurement(plot.getXAxis().getUnits())  ) {
+                            anchorRect.x= (int)(plot.getXAxis().transform( pointAtX.value(), plot.getXAxis().getUnits() ) );
+                        } else {
+                            logger.info("unable to convert x units for annotation");
+                            anchorRect.x= getColumn().getDMiddle();
+                        }
+                    }
+                    try {
+                        anchorRect.y= (int)(plot.getYAxis().transform( pointAtY ) );
+                    } catch ( InconvertibleUnitsException ex ) {
+                        if ( pointAtY.getUnits()==Units.dimensionless && UnitsUtil.isRatioMeasurement(plot.getYAxis().getUnits()) ) {
+                            anchorRect.y= (int)(plot.getYAxis().transform( pointAtY.value(), plot.getYAxis().getUnits() ) );
+                        } else {
+                            logger.info("unable to convert y units for annotation");
+                            anchorRect.y= getRow().getDMiddle();
+                        }
+                    }
+                    anchorRect.width= 1;
+                    anchorRect.height= 1;
+                } else {
+                    anchorXToData(anchorRect);
+                    anchorYToData(anchorRect);
+                }
+                if ( splitAnchorType ) {
+                    if ( verticalAnchorType==AnchorType.CANVAS ) {
+                        anchorRect.y= getRow().getDMinimum();
+                        anchorRect.height= getRow().getHeight();
                     }
                 }
-                try {
-                    anchorRect.y= (int)(plot.getYAxis().transform( pointAtY ) );
-                } catch ( InconvertibleUnitsException ex ) {
-                    if ( pointAtY.getUnits()==Units.dimensionless && UnitsUtil.isRatioMeasurement(plot.getYAxis().getUnits()) ) {
-                        anchorRect.y= (int)(plot.getYAxis().transform( pointAtY.value(), plot.getYAxis().getUnits() ) );
-                    } else {
-                        logger.info("unable to convert y units for annotation");
-                        anchorRect.y= getRow().getDMiddle();
-                    }
-                }
-                anchorRect.width= 1;
-                anchorRect.height= 1;
             } else {
-                anchorXToData(anchorRect);
-                anchorYToData(anchorRect);
-            }
-            if ( splitAnchorType ) {
-                if ( verticalAnchorType==AnchorType.CANVAS ) {
-                    anchorRect.y= getRow().getDMinimum();
-                    anchorRect.height= getRow().getHeight();
+                anchorRect= DasDevicePosition.toRectangle( getRow(), getColumn() );
+                if ( splitAnchorType ) {
+                    if ( verticalAnchorType==AnchorType.DATA ) {
+                        anchorYToData(anchorRect);
+                    }
                 }
             }
         } else {
