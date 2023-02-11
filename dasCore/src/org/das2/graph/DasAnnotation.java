@@ -535,7 +535,7 @@ public class DasAnnotation extends DasCanvasComponent {
     public void paintComponent(Graphics g1) {
         
         Graphics2D g = (Graphics2D) g1.create(); 
-        
+
         double em2 = g.getFont().getSize();
         
         Stroke stroke0= g.getStroke();
@@ -643,6 +643,14 @@ public class DasAnnotation extends DasCanvasComponent {
             }
 
             g.setColor(ltextColor);
+
+            if ( ( rotate % 360 ) !=0 ) {
+                Rectangle bb= getAnnotationBubbleBoundsNoRotation();
+                double midx= bb.x + bb.width/2;
+                double midy= bb.y + bb.height/2;
+                g.rotate( -rotate*Math.PI/180., midx, midy );
+            }
+
 
             if ( gtr!=null ) {
                 try {
@@ -919,11 +927,37 @@ public class DasAnnotation extends DasCanvasComponent {
      */
     private Rectangle getAnnotationBubbleBounds() {
 
-        int em = (int) getEmSize();
+        Rectangle r = getAnnotationBubbleBoundsNoRotation();
+               
+        if ( rotate!=0 ) {
+            int rot= rotate % 360;
+            if ( rot==90 || rot==270 ) {
+                Rectangle nr= new Rectangle();
+                switch ( anchorPosition ) {
+                    case Center:
+                        nr.x= r.x + r.width/2 - r.height/2;
+                        nr.y= r.y + r.height/2 - r.width/2;
+                        nr.width= r.height;
+                        nr.height= r.width;
+                        break;
+                    case NE:
+                        nr.x= r.x + r.width - r.height;
+                        nr.y= r.y;
+                        nr.width= r.height;
+                        nr.height= r.width;
+                        break;
+                }
+                r= nr;
+            }
+        }
         
+        return r;
+    }
+
+    private Rectangle getAnnotationBubbleBoundsNoRotation() {
+        int em = (int) getEmSize();
         Rectangle anchor= getAnchorBounds();
         DasCanvas canvas= getCanvas();
-        
         Rectangle r;
         if ( gtr==null ) {
             if ( img==null ) {
@@ -934,10 +968,8 @@ public class DasAnnotation extends DasCanvasComponent {
         } else {
             r= gtr.getBounds();
         }
-
         int xoffset=0;
         int yoffset=0;
-        
         if ( anchorOffset.length()>0 ) {
             String[] ss= anchorOffset.split(",");
             if ( ss.length==2 ) {
@@ -961,7 +993,6 @@ public class DasAnnotation extends DasCanvasComponent {
                 logger.log(Level.WARNING, "anchorOffset is misformatted: {0}", anchorOffset);
             }
         }
-
         if ( null!=anchorPosition ) switch (anchorPosition) {
             case NW:
                 r.x = anchor.x + em + xoffset ;
@@ -1050,7 +1081,6 @@ public class DasAnnotation extends DasCanvasComponent {
             default:
                 break;
         }
-        
         if ( gtr==null ) {
             r.x-= em/2;
             r.y-= em/2;
@@ -1062,7 +1092,6 @@ public class DasAnnotation extends DasCanvasComponent {
             r.width+= em;
             r.height+= em;
         }
-               
         return r;
     }
 
@@ -1353,6 +1382,31 @@ public class DasAnnotation extends DasCanvasComponent {
         }
         firePropertyChange(PROP_REFERENCEY, oldReferenceY, referenceY);
     }
+    
+    private int rotate = 0;
+
+    public static final String PROP_ROTATE = "rotate";
+
+    public int getRotate() {
+        return rotate;
+    }
+
+    public void setRotate(int rotate) {
+        int oldRotate = this.rotate;
+        this.rotate = rotate;
+        if ( boundsCalculated==true ) {
+            boundsCalculated= false;
+            SwingUtilities.invokeLater( new Runnable() {
+                @Override
+                public void run() {
+                    resize();
+                }
+            } );
+        }
+        repaint();
+        firePropertyChange(PROP_ROTATE, oldRotate, rotate);
+    }
+
     
     private PlotSymbol symbol = DefaultPlotSymbol.NONE;
 
