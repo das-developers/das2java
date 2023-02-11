@@ -30,17 +30,17 @@ public class DatumRange implements Comparable, Serializable {
             throw new IllegalArgumentException( "min > max: "+s1+" > "+s2 + " width=" + ( DatumUtil.asOrderOneUnits(s2.subtract(s1)) ) ) ;
         }
         if ( s1.isFinite() && s1.isFill() ) {
-            //throw new IllegalArgumentException( "s1 is fill" ) ;
+            throw new IllegalArgumentException( "s1 is fill" ) ;
         }
         if ( s2.isFinite() && s2.isFill() ) {
-            //throw new IllegalArgumentException( "s2 is fill" ) ;
+            throw new IllegalArgumentException( "s2 is fill" ) ;
         }
-//        if ( !Double.isFinite( s1.doubleValue(s1.getUnits() ) ) ) {
-//            logger.warning("s1 is not finite");
-//        }
-//        if ( !Double.isFinite( s2.doubleValue(s2.getUnits() ) ) ) {
-//            logger.warning("s2 is not finite");
-//        }
+        if ( !Double.isFinite( s1.doubleValue(s1.getUnits() ) ) ) {
+            throw new IllegalArgumentException( "s1 is not finite");
+        }
+        if ( !Double.isFinite( s2.doubleValue(s2.getUnits() ) ) ) {
+            throw new IllegalArgumentException( "s2 is not finite");
+        }
         this.s1=s1;
         if ( s1.getUnits()==s2.getUnits() ) {
             this.s2= s2;
