@@ -216,12 +216,12 @@ public class DasAnnotation extends DasCanvasComponent {
         } else if ( anchorPosition==AnchorPosition.NE ) {
             dx= -dx;
         } else if ( anchorPosition==AnchorPosition.OutsideNE ) {
-            dy= -dy;
         } else if ( anchorPosition==AnchorPosition.OutsideSE ) {
             dy= -dy;
         } else if ( anchorPosition==AnchorPosition.OutsideNW ) {
-            dy= -dy;
+            dx= -dx;
         } else if ( anchorPosition==AnchorPosition.OutsideSW ) {
+            dx= -dx;
             dy= -dy;
         } else if ( anchorPosition==AnchorPosition.SW ) {
             dy= -dy;
@@ -233,11 +233,16 @@ public class DasAnnotation extends DasCanvasComponent {
         } else if ( anchorPosition==AnchorPosition.OutsideNNE ) {
             dx= -dx;
             dy= -dy;
+        } else if ( anchorPosition==AnchorPosition.OutsideSSE ) {
+            dx= -dx;
         } else if ( anchorPosition==AnchorPosition.Center ) {
             dy= -dy;
         } else if ( anchorPosition==AnchorPosition.W ) {
             dy= -dy;
         } else if ( anchorPosition==AnchorPosition.E ) {
+            dx= -dx;
+            dy= -dy;
+        } else if ( anchorPosition==AnchorPosition.OutsideW ) {
             dx= -dx;
             dy= -dy;
         } else if ( anchorPosition==AnchorPosition.OutsideE ) {
