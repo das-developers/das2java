@@ -370,8 +370,8 @@ public class GitHubFileSystem extends HttpFileSystem {
             if ( sroot.substring(ii).startsWith("/" + branch+"/") ) {
                 ii= ii+ branch.length() + 1;
             }
-            String searchChild1= projectRoot + "/tree/" + mysteryDash + branch + sroot.substring(ii);
-            String searchChild2= projectRoot + "/blob/" + mysteryDash + branch + sroot.substring(ii);
+            String searchChild1= projectRoot + mysteryDash + "/tree/" + branch + sroot.substring(ii);
+            String searchChild2= projectRoot + mysteryDash + "/blob/" + branch + sroot.substring(ii);
             //https://jfaden.net/git/jbfaden/public/tree/master/2021
             //int icount=0;
             for ( URL u: listing ) {
