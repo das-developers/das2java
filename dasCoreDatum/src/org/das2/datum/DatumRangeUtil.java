@@ -2200,6 +2200,8 @@ public class DatumRangeUtil {
      */
     public static DatumRange union( Datum d1, Datum d2 ) {
         Units units= d1.getUnits();
+        if ( d1.isFill() ) return new DatumRange( d2, d2 );
+        if ( d2.isFill() ) return new DatumRange( d1, d1 );
         double s1= d1.doubleValue(units);
         double s2= d2.doubleValue(units);
         return new DatumRange( Math.min(s1,s2), Math.max(s1, s2), units );
@@ -2218,6 +2220,7 @@ public class DatumRangeUtil {
         if ( range==null ) {
             return new DatumRange( include, include );
         }
+        if ( include.isFill() ) return range;
         Units units= range.getUnits();
         double s11= range.min().doubleValue(units);
         double s12= include.doubleValue(units);
