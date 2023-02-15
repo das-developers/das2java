@@ -298,6 +298,19 @@ public class GitHubFileSystem extends HttpFileSystem {
         return host.contains("https://abbith.physics.uiowa.edu");
     }
     
+    /**
+     * return the root of the github project.
+     * @return 
+     */
+    private String getGitProjectRoot( ) {
+        String[] ss= root.toString().split("/");
+        StringBuilder sb= new StringBuilder(ss[0]);
+        for ( int i=1; i<this.baseOffset+5; i++ ) {
+            sb.append("/").append(ss[i]);
+        }
+        return sb.toString();
+    }
+    
     @Override
     public String[] listDirectory(String directory) throws IOException {
         if ( !directory.endsWith("/") ) directory= directory+"/";
@@ -358,9 +371,14 @@ public class GitHubFileSystem extends HttpFileSystem {
             
             String mysteryDash= mysteryDash(surl) ? "/-" : "";
             
+            String projectRoot = getGitProjectRoot();         
+                    
             int ii= sroot.indexOf(spath) + spath.length();
-            String searchChild1= sroot.substring(0,ii) + mysteryDash + "/tree/" + branch + sroot.substring(ii);
-            String searchChild2= sroot.substring(0,ii) + mysteryDash + "/blob/" + branch + sroot.substring(ii);
+            if ( sroot.substring(ii).startsWith("/" + branch+"/") ) {
+                ii= ii+ branch.length() + 1;
+            }
+            String searchChild1= projectRoot + "/tree/" + mysteryDash + branch + sroot.substring(ii);
+            String searchChild2= projectRoot + "/blob/" + mysteryDash + branch + sroot.substring(ii);
             //https://jfaden.net/git/jbfaden/public/tree/master/2021
             int icount=0;
             for ( URL u: listing ) {
@@ -368,10 +386,12 @@ public class GitHubFileSystem extends HttpFileSystem {
                 //if ( su.contains("readme.md") ) {
                 //    System.err.println("here for debugging");
                 //}
-                if ( icount==81 ) {
+                if ( icount==92 ) {
                     System.err.println("here for debugging");
                 }
                 icount++;
+                // listing   "https://github.com/autoplot/dev/blob/master/bugs/sf/2507/empty.dat" // this is the problem
+                // searchfor "https://github.com/autoplot/dev/master/blob/bugs/sf/2507/"          // this is the problem
                 if ( !su.startsWith(searchChild1) ) {
                     if ( !su.startsWith(searchChild2) ) {
                         continue;
@@ -379,15 +399,10 @@ public class GitHubFileSystem extends HttpFileSystem {
                 }
                 if ( su.contains("/blob/"+branch+"/") // These are files
                         && !su.endsWith(".gitkeep") ) {
-                    result.add( su.substring( parentLen + ("blob/"+branch+"/").length() ) );
+                    result.add( su.substring( searchChild1.length() ) );
                 } else if ( su.contains("/tree/"+branch+"/") ) {
                     if ( su.length()>parentLen ) {
-                        String ss= u.toString().substring( parentLen ); // e.g. "tree/master/bugs"
-                        if ( withinGitRepo.length()==0 ) {
-                            ss= ss.substring("tree/".length());
-                        }
-                        ss= ss.substring( branch.length() );
-                        ss= ss.substring( withinGitRepo.length() + 1) ;
+                        String ss= su.substring( searchChild1.length() );
                         if ( ss.length()>1 
                                 && !ss.contains("#start-of-content") 
                                 && !ss.contains("#content-body") 
