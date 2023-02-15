@@ -325,23 +325,12 @@ public class GitHubFileSystem extends HttpFileSystem {
         }
         
         String[] path= root.getPath().split("/",-2);
+        
+        // spath is the directory within the server, pointing the the project directory.
         String spath= path[0] + '/' + path[1] + '/' + path[2] ;
-        String withinGitRepo= path[3];
         
-        // number of elements after the host to the base.
-        int gitPathElements;
-        
-        int base;
-        if ( path[3+baseOffset].equals(branch) ) {
-            base= 4;
-            gitPathElements= 3;
-        } else if ( path.length>4+baseOffset && path[4+baseOffset].equals(branch) ) { // https://research-git.uiowa.edu/space-physics/juno/ap-script/-/
-            base= 5;
-            gitPathElements= 4;
-            spath= path[0] + '/' + path[1] + '/' + path[2] + '/' + path[3];
-        } else {
-            base= 3;
-            gitPathElements= 3;
+        if ( baseOffset==1 ) {
+            spath = spath + '/' + path[3];
         }
         
         InputStream urlStream= null ;
@@ -350,6 +339,9 @@ public class GitHubFileSystem extends HttpFileSystem {
             String surl= url.toString();
             if ( mysteryDash(surl) ) {
                 surl= surl.replace("raw/master", "-/tree/master");
+                url= new URL(surl);
+            } else {
+                surl= surl.replace("raw/master", "tree/master");
                 url= new URL(surl);
             }
             
@@ -371,6 +363,7 @@ public class GitHubFileSystem extends HttpFileSystem {
             
             String mysteryDash= mysteryDash(surl) ? "/-" : "";
             
+            // the root of the project, for example "https://jfaden.net/git/jbfaden/public"
             String projectRoot = getGitProjectRoot();         
                     
             int ii= sroot.indexOf(spath) + spath.length();
@@ -380,18 +373,20 @@ public class GitHubFileSystem extends HttpFileSystem {
             String searchChild1= projectRoot + "/tree/" + mysteryDash + branch + sroot.substring(ii);
             String searchChild2= projectRoot + "/blob/" + mysteryDash + branch + sroot.substring(ii);
             //https://jfaden.net/git/jbfaden/public/tree/master/2021
-            int icount=0;
+            //int icount=0;
             for ( URL u: listing ) {
                 String su= u.toString();
                 //if ( su.contains("readme.md") ) {
                 //    System.err.println("here for debugging");
                 //}
-                if ( icount==92 ) {
-                    System.err.println("here for debugging");
-                }
-                icount++;
+                //if ( icount==76 ) {
+                //    System.err.println("here for debugging");
+                //}
+                //icount++;
                 // listing   "https://github.com/autoplot/dev/blob/master/bugs/sf/2507/empty.dat" // this is the problem
                 // searchfor "https://github.com/autoplot/dev/master/blob/bugs/sf/2507/"          // this is the problem
+                //"https://jfaden.net/git/jbfaden/public/blob/master/2023/20230215/afile.csv"
+                //"https://jfaden.net/git/jbfaden/public/blob/master/2023/20230215/"
                 if ( !su.startsWith(searchChild1) ) {
                     if ( !su.startsWith(searchChild2) ) {
                         continue;
