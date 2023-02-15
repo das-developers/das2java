@@ -465,7 +465,13 @@ public class AsciiParser {
                 }
             }
                       
-            if ( line==null ) return null;
+            if ( line==null || parseCount==0 ) {
+                for ( int i=0; i<fieldCount; i++ ) { // If there were labels, these would result in nominal units.  Reset these.
+                    units[i]= Units.dimensionless;
+                    fieldParsers[i]= UNITS_PARSER;
+                }
+                return null;
+            }
             
             // check for ISO8601 times.
             String[] fields= new String[result.fieldCount];
@@ -518,7 +524,7 @@ public class AsciiParser {
             }
             if ( result!=null ) result.header= header;
         }
-
+        
         
         return result;
     }
@@ -1130,7 +1136,9 @@ public class AsciiParser {
         }
 
         WritableDataSet result= builder.getDataSet();
-        
+        if ( result.length()!=irec ) { // this will happen if one non-record was read
+            result= (WritableDataSet)result.trim(0,irec);
+        }
         if ( recordStart>0 ) {
             result= (WritableDataSet)result.trim(recordStart,result.length());
         }
@@ -1810,6 +1818,8 @@ public class AsciiParser {
             }
             
             if ( guessUnits ) {
+                Units[] units0= Arrays.copyOf( units, this.fieldCount );
+                FieldParser[] fieldParsers0= Arrays.copyOf( fieldParsers, this.fieldCount );
                 initializeUnitsByGuessing( ss, irec );
                 int nonEnumCount=0;
                 for ( j=0; j<fieldCount; j++ ) {
@@ -1820,9 +1830,12 @@ public class AsciiParser {
                 if ( nonEnumCount>=fieldCount/2 ) {
                     guessUnits= false;
                     parseMeta( "", builder ); // we must reset the bundle descriptor
+                } else {
+                    System.arraycopy( units0, 0, units, 0, this.fieldCount );
+                    System.arraycopy( fieldParsers0, 0, fieldParsers, 0, this.fieldCount );
                 }
             }
-
+            
             Exception firstException= null;
             for (j = 0; j < fieldCount; j++) {
                 tryCount++;
@@ -1842,10 +1855,8 @@ public class AsciiParser {
                             }
                             failCount++;
                         }
-                        if ( builder!=null ) builder.putValue(irec, j, -1e31 ); //TODO
+                        if ( builder!=null ) builder.putValue(irec, j, -1e31 ); 
                     }
-                    //TODO
-                    
                 }
             }
             logger.log(Level.FINE, "line {0} okayCount: {1} failCount: {2}", new Object[]{irec, okayCount, failCount});
