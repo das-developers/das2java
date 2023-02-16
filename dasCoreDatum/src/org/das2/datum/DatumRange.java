@@ -226,10 +226,9 @@ public class DatumRange implements Comparable, Serializable {
      * @param min the new min normalized with respect to this range.  0.0 is this range's min, 1.0 is this range's max.
      * @param max the new max with normalized with respect to this range.  0.0 is this range's min, 1.0 is this range's max.
      * @return new DatumRange.
-     * @deprecated Use DatumRangeUtil.rescale
      * @see DatumRangeUtil#rescale(org.das2.datum.DatumRange, double, double) 
      */
-    public DatumRange rescale( double min, double max ) {
+    private DatumRange rescale( double min, double max ) {
         Datum w= width();
         if ( !w.isFinite() ) {
             throw new RuntimeException("width is not finite in rescale");
@@ -239,17 +238,6 @@ public class DatumRange implements Comparable, Serializable {
             throw new RuntimeException("width is zero!");
         }
         return new DatumRange( s1.add( w.multiply(min) ), s1.add( w.multiply(max) ) );
-    }
-    
-    /**
-     * returns the position within this, where 0. is the min(), and 1. is the max()
-     * @param d a datum to normalize with respect to the range.
-     * @return a double indicating the normalized datum.
-     * @deprecated Use DatumRangeUtil.normalize
-     * @see DatumRangeUtil#normalize(org.das2.datum.DatumRange, org.das2.datum.Datum) 
-     */
-    public double normalize( Datum d ) {
-        return d.subtract(s1).divide(width()).doubleValue(Units.dimensionless);
     }
     
     /**
@@ -282,7 +270,8 @@ public class DatumRange implements Comparable, Serializable {
      * this will be a range with a min equal to this datum's max, and the same width.
      * Some implementations of DatumRange may return a range with a different width
      * than this DatumRange's width, for example, when advancing month-by-month
-     * with a MonthDatumRange.
+     * with a MonthDatumRange.  When there is no next interval, then this same
+     * range will be returned.
      * @return the next DatumRange covering the space defined by Units. 
      */
     public DatumRange next() {
@@ -291,7 +280,8 @@ public class DatumRange implements Comparable, Serializable {
     
     /**
      * returns the previous DatumRange covering the space defined by Units.  See
-     * next().
+     * next().  When there is no previous interval, then this same range will be
+     * returned.
      * @return the previous DatumRange covering the space defined by Units
      */
     public DatumRange previous() {
