@@ -72,6 +72,7 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.TableColumn;
 import org.das2.DasApplication;
+import org.das2.datum.DatumRangeUtil;
 import org.das2.datum.EnumerationUnits;
 import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.UnitsUtil;
@@ -345,7 +346,7 @@ public class DataPointRecorderNew extends JPanel {
      * return the selected index, or -1 if no elements are found.
      */
     public void select(DatumRange xrange, DatumRange yrange) {
-        Datum mid= xrange.rescale( 0.5,0.5 ).min();
+        Datum mid= DatumRangeUtil.rescale( xrange,0.5,0.5 ).min();
         synchronized (dataPoints) {
             List<Integer> selectMe = new ArrayList();
             int iclosest= -1;
