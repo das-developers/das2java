@@ -8425,7 +8425,7 @@ public final class Ops {
                 
                 boolean isMono= dep0==null ? true : DataSetUtil.isMonotonic(dep0);
                 
-                QDataSet lastTranslation= null; // when translation is applied, keep track of last one
+                double lastTranslation=-999; // always in the same units as translation
                 
                 QDataSet nextSlice= null;
                 for ( int i=0; i<ds.length(); i++ ) {
@@ -8454,7 +8454,7 @@ public final class Ops {
                         GeneralFFT fft = GeneralFFT.newDoubleFFT(len);
                         QDataSet wave;
                         QDataSet offs;
-                        
+                                
                         if ( istart+len <= slicei.length() ) {
                             wave= slicei.trim( istart,istart+len );
                             if ( dep1.rank()==1 ) {
@@ -8490,6 +8490,8 @@ public final class Ops {
                         
                         if ( wave==null || offs==null ) continue;
                         
+                        Datum t0 = datum( ((QDataSet)wave.property(QDataSet.DEPEND_0)).slice(0) );
+                        logger.log(Level.FINER, "fftPower t0:{0}", t0);
                         QDataSet wds= DataSetUtil.weightsDataSet(wave);
                         
                         double d0=0;
@@ -8556,19 +8558,22 @@ public final class Ops {
                         }
                         currentDeltaTime= ( offs.value(10) - offs.value(0) ) / 10.;
                         
-                        boolean newTranslationMode= translation!=null && lastTranslation!=null &&
-                            ( !translation.slice(istart).equals(lastTranslation) );
+                        boolean newTranslationMode= false;
+                        if ( translation!=null && translation.rank()==1 ) {
+                            newTranslationMode = !( translation.value(istart)==lastTranslation );
+                        }
+                                                 
                         if ( newTranslationMode || Math.abs( lastDeltaTime-currentDeltaTime ) / currentDeltaTime > 0.01 ) {
                             QDataSet powxtags1= FFTUtil.getFrequencyDomainTagsForPower(dep1.trim(istart,istart+len));
                             if ( translation!=null ) {
                                 switch (translation.rank()) {
                                     case 0:
                                         powxtags1= Ops.add( powxtags1, translation );
-                                        lastTranslation= translation;
+                                        lastTranslation= translation.value();
                                         break;
                                     case 1:
                                         powxtags1= Ops.add( powxtags1, translation.slice(istart) );
-                                        lastTranslation= translation.slice(istart);
+                                        lastTranslation= translation.value(istart);
                                         break;
                                     default:
                                         throw new IllegalArgumentException("bad rank on FFT_Translation, expected rank 0 or rank 1");
@@ -8579,7 +8584,7 @@ public final class Ops {
                                 ((CdfSparseDataSet)ytags).putValues( result.length(), powxtags1 );
                             } else {
                                 if ( ytags==null ) {
-                                    ytags= (QDataSet)result.slice(0).property(QDataSet.DEPEND_0);
+                                    ytags= powxtags1;
                                 } 
                                 CdfSparseDataSet newYtags= new CdfSparseDataSet(2,ds.length()*len1,ytags);
                                 newYtags.putValues(result.length(),powxtags1);
@@ -8600,11 +8605,18 @@ public final class Ops {
                         QDataSet vds= FFTUtil.fftPower( fft, wave, window, powxtags );
                         //QDataSet vds= FFTUtil.fftPower( fft, wave );
                         
-                        if ( cadenceChangeDetect || j==0 ) {
-                            String s= String.format( "changeDet j:%4d change:%s dt:%f fft:%f", j, cadenceChangeDetect, currentDeltaTime, vds.value(0) );
-                            System.err.println( s );
-                            
-                        }
+//                        if ( t0.gt(datum("2022-04-24T14:00:25.246Z")) && t0.lt(datum("2022-04-24T14:00:25.331Z")) ) {
+//                            String s= String.format( "changeDet j:%4d %s change:%s dt:%f fft:%e", j, t0, cadenceChangeDetect, currentDeltaTime, vds.value(0) );
+//                            System.err.println( s );
+//                            s= String.format( "           : %e %e ", wave.slice(0).value(), powxtags.slice(0).value() );
+//                            System.err.println( s );
+//                        }
+//                        
+//                        if ( false && ( cadenceChangeDetect || j==0 ) ) {
+//                            String s= String.format( "changeDet j:%4d %s change:%s dt:%f fft:%e", j, t0, cadenceChangeDetect, currentDeltaTime, vds.value(0) );
+//                            System.err.println( s );
+//                            
+//                        }
                                 
                         if ( windowNonUnity ) {
                             vds= Ops.multiply( vds, DataSetUtil.asDataSet( 1/normalization ) );
