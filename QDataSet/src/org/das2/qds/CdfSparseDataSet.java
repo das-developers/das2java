@@ -204,7 +204,7 @@ public class CdfSparseDataSet extends AbstractDataSet {
                 result.putValues(indexes[ii]-i0,dss[ii]);
             }
         }
-        result.properties.putAll( this.properties );
+        DataSetUtil.putProperties( DataSetUtil.getDimensionProperties( this, null ), result );
         return result;
     }
 }
