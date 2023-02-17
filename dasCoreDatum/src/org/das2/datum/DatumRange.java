@@ -234,7 +234,7 @@ public class DatumRange implements Comparable, Serializable {
      * @return new DatumRange.
      * @see DatumRangeUtil#rescale(org.das2.datum.DatumRange, double, double) 
      */
-    private DatumRange rescale( double min, double max ) {
+    public DatumRange rescale( double min, double max ) {
         Datum w= width();
         if ( !w.isFinite() ) {
             throw new RuntimeException("width is not finite in rescale");
