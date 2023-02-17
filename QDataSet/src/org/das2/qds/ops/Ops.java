@@ -8395,11 +8395,11 @@ public final class Ops {
                 }
                 if ( translation!=null ) logger.fine("translation will be applied");
                 
-                double currentDeltaTime; // ten times the spacing.
+                double currentDeltaTime; // the current delta time in units offset from the dep1 (e.g. microseconds if us2000).
                 if ( dep1.rank()==1 ) {
-                    currentDeltaTime= dep1.value(10) - dep1.value(0);
+                    currentDeltaTime= ( dep1.value(10) - dep1.value(0) ) / 10;
                 } else {
-                    currentDeltaTime= dep1.value(0,10) - dep1.value(0,0);
+                    currentDeltaTime= ( dep1.value(0,10) - dep1.value(0,0) ) / 10;
                 }
                 double lastDeltaTime= currentDeltaTime;
                 
@@ -8445,8 +8445,6 @@ public final class Ops {
                         if ( dep0i.property(QDataSet.VALID_MIN)!=null ) minD= ((Number)dep0i.property(QDataSet.VALID_MIN)).doubleValue(); else minD= Double.NEGATIVE_INFINITY;
                         if ( dep0i.property(QDataSet.VALID_MAX)!=null ) maxD= ((Number)dep0i.property(QDataSet.VALID_MAX)).doubleValue(); else maxD= Double.POSITIVE_INFINITY;
                     }
-                    
-                    double currentCadence=0;
                     
                     for ( int j=0; j<len1D; j++ ) { // loop over packets (for example, 1024-element packets)
                         
@@ -8515,7 +8513,6 @@ public final class Ops {
                         }
                         
                         double packetEndDeltaTime; // the cadence at the end of the packet.
-                        currentDeltaTime= ( offs.value(10) - offs.value(0) ) / 10.;
                         packetEndDeltaTime=  ( offs.value(len-1) - offs.value(len-11) ) / 10.;
 
                         if ( false ) {
