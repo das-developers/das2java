@@ -1,8 +1,3 @@
-/*
- * DatumRangeUtil.java
- *
- * Created on September 16, 2004, 2:35 PM
- */
 
 package org.das2.datum;
 
@@ -14,7 +9,7 @@ import org.das2.datum.format.DatumFormatter;
 import org.das2.datum.format.TimeDatumFormatter;
 
 /**
- *
+ * Utility functions for DatumRanges.
  * @author  Jeremy
  */
 public class DatumRangeUtil {
