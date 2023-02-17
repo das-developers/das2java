@@ -41,6 +41,12 @@ public class DatumRange implements Comparable, Serializable {
 //        if ( !Double.isFinite( s2.doubleValue(s2.getUnits() ) ) ) {
 //            logger.warning("s2 is not finite");
 //        }
+        this.s1=s1;
+        if ( s1.getUnits()==s2.getUnits() ) {
+            this.s2= s2;
+        } else {
+            this.s2=s2.convertTo(s1.getUnits());
+        }
     }
     
     /**
