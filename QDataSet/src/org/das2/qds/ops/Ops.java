@@ -8446,7 +8446,9 @@ public final class Ops {
                         if ( dep0i.property(QDataSet.VALID_MAX)!=null ) maxD= ((Number)dep0i.property(QDataSet.VALID_MAX)).doubleValue(); else maxD= Double.POSITIVE_INFINITY;
                     }
                     
-                    for ( int j=0; j<len1D; j++ ) {
+                    double currentCadence=0;
+                    
+                    for ( int j=0; j<len1D; j++ ) { // loop over packets (for example, 1024-element packets)
                         
                         mon.setTaskProgress(i*len1D+j);
                         
@@ -8463,7 +8465,7 @@ public final class Ops {
                                 offs= dep1.slice(i).trim( istart,istart+len );
                             }
                         } else {
-                            if ( i+1<ds.length() ) { // we can get this record.
+                            if ( i+1<ds.length() ) { // we can get this record, where the packet spans two records (often because of slide)
                                 if ( nextSlice==null ) {
                                     nextSlice= ds.slice(i+1);
                                 }
@@ -8512,9 +8514,9 @@ public final class Ops {
                             continue;
                         }
                         
-                        double switchCadenceCheck; // the cadence at the end of the interval.
-                        currentDeltaTime= offs.value(10) - offs.value(0);
-                        switchCadenceCheck=  dep1.value(len-1) - dep1.value(len-11);
+                        double packetEndDeltaTime; // the cadence at the end of the packet.
+                        currentDeltaTime= ( offs.value(10) - offs.value(0) ) / 10.;
+                        packetEndDeltaTime=  ( offs.value(len-1) - offs.value(len-11) ) / 10.;
 
                         if ( false ) {
                             new java.io.File("/tmp/ap/").mkdirs();
@@ -8522,11 +8524,11 @@ public final class Ops {
                                 new PrintWriter( 
                                     new PrintWriter( String.format( "/tmp/ap/%09d.txt", j ) ) ) ) {
                                 write.println( String.format( "# %f %f %f", 
-                                    switchCadenceCheck, currentDeltaTime, Math.abs( switchCadenceCheck-currentDeltaTime ) / currentDeltaTime ) );
+                                    packetEndDeltaTime, currentDeltaTime, Math.abs( packetEndDeltaTime-currentDeltaTime ) / currentDeltaTime ) );
                                 for ( int iz=0; iz<offs.length(); iz++ ) {
                                     write.print( Ops.datum( Ops.subtract( offs.slice(iz), offs.slice(0) ) ).doubleValue( Units.microseconds) );
                                     write.print( " " );
-                                    write.print( Math.abs( switchCadenceCheck-currentDeltaTime ) / currentDeltaTime );
+                                    write.print( Math.abs( packetEndDeltaTime-currentDeltaTime ) / currentDeltaTime );
                                     write.print( "\n" );
                                 } 
                             } catch (FileNotFoundException ex) {
@@ -8535,7 +8537,7 @@ public final class Ops {
                         }
                             
                         // does the cadence change between packets?
-                        boolean cadenceChangeDetect= Math.abs( switchCadenceCheck-currentDeltaTime ) / currentDeltaTime > 0.01;
+                        boolean cadenceChangeDetect= Math.abs( packetEndDeltaTime-currentDeltaTime ) / currentDeltaTime > 0.01;
                         if ( cadenceChangeDetect ) {
                             if ( translation!=null ) {
                                 logger.finer("cadence changes but translation allows");
@@ -8546,8 +8548,8 @@ public final class Ops {
                         }
 
                         // is there a gap within the packet?
-                        double avgCadence= ( offs.value(len-1) - offs.value(0) ) / ( len-1 );
-                        if ( Math.abs( switchCadenceCheck/10-avgCadence ) / currentDeltaTime > 0.01 ) {
+                        double avgCadence= ( offs.value(len-1) - offs.value(0) ) / ( len-1 ); // for the entire packet
+                        if ( Math.abs( packetEndDeltaTime -avgCadence ) / currentDeltaTime > 0.01 ) {
                             if ( translation!=null ) {
                                 logger.finer("gap detected but translation allows");
                             } else {
@@ -8555,7 +8557,7 @@ public final class Ops {
                                 continue;
                             }
                         }
-                        currentDeltaTime= offs.value(10) - offs.value(0);
+                        currentDeltaTime= ( offs.value(10) - offs.value(0) ) / 10.;
                         
                         boolean newTranslationMode= translation!=null && lastTranslation!=null &&
                             ( !translation.slice(istart).equals(lastTranslation) );
@@ -8601,6 +8603,12 @@ public final class Ops {
                         QDataSet vds= FFTUtil.fftPower( fft, wave, window, powxtags );
                         //QDataSet vds= FFTUtil.fftPower( fft, wave );
                         
+                        if ( cadenceChangeDetect || j==0 ) {
+                            String s= String.format( "changeDet j:%4d change:%s dt:%f fft:%f", j, cadenceChangeDetect, currentDeltaTime, vds.value(0) );
+                            System.err.println( s );
+                            
+                        }
+                                
                         if ( windowNonUnity ) {
                             vds= Ops.multiply( vds, DataSetUtil.asDataSet( 1/normalization ) );
                         }
@@ -8613,7 +8621,6 @@ public final class Ops {
                                     break;
                                 case 1:
                                     fftDep1= Ops.add( fftDep1, translation.slice(istart) );
-                                    System.err.println("" + istart + ": "+translation.slice(istart) );
                                     break;
                                 default:
                                     throw new IllegalArgumentException("bad rank on FFT_Translation, expected rank 0 or rank 1");
