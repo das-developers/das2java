@@ -851,6 +851,9 @@ public class AsciiParser {
      * @param fp the parser
      */
     public void setFieldParser(int field, FieldParser fp) {
+        if ( field>=this.fieldParsers.length ) {
+            throw new ArrayIndexOutOfBoundsException("parser expects only "+this.fieldParsers.length+" fields");
+        }
         FieldParser oldFp = this.fieldParsers[field];
         this.fieldParsers[field] = fp;
         if (fp == UNITS_PARSER && UnitsUtil.isTimeLocation(units[field])) {
@@ -997,6 +1000,13 @@ public class AsciiParser {
         int iline = -1;
         int irec = 0;
 
+        if ( logger.isLoggable(Level.FINE) ) {
+            logger.fine("Reading stream with field parsers:");
+            for ( int i=0; i<recordParser.fieldCount(); i++ ) {
+                logger.log(Level.FINE, "  field {0}: {1}", new Object[]{i, fieldParsers[i]});
+            }
+            logger.fine("Reading stream with field parsers:");
+        }
         if ( mon==null ) mon= new NullProgressMonitor();
         
         mon.started();
@@ -1859,7 +1869,7 @@ public class AsciiParser {
                     }
                 }
             }
-            logger.log(Level.FINE, "line {0} okayCount: {1} failCount: {2}", new Object[]{irec, okayCount, failCount});
+            logger.log(Level.FINER, "line {0} okayCount: {1} failCount: {2}", new Object[]{irec, okayCount, failCount});
             if ( firstException!=null && failCount>0 && failCount<fieldCount ) {
                 if ( showException ) {
                     if ( firstException instanceof ParseException ) {
@@ -2223,7 +2233,7 @@ public class AsciiParser {
         if (useOldCode) {
             initializeUnitsByGuessingOld(ss, lineNumber);
         } else {
-            logger.log(Level.FINE, "guess units at line {0}", lineNumber);
+            logger.log(Level.FINER, "guess units at line {0}", lineNumber);
             for (int i = 0; i < ss.length; i++) {
                 String field= ss[i].trim();
                 if ( field.length()==0 ) continue;
