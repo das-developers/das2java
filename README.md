@@ -1,8 +1,12 @@
 # das2java
 
-This is the Java Swing GUI library used by [Autoplot](http://autoplot.org/), 
+This is the Java Data Analysis library used by [Autoplot](http://autoplot.org/), 
 [MIDL](http://sd-www.jhuapl.edu/MIDL/) and small 
-[das2 apps](https://das2.org/demo-apps.html).  This repository contains all
+[das2 apps](https://das2.org/demo-apps.html).  It is based on Java/Swing, where
+the DasCanvas is embedded within the GUI and by adding DasPlot objects and
+data Renderers.  Mouse events are converted
+into more abstract events with science coordinates, allowing rich interactive graphics tools to be built.
+This repository contains all
 history back to 2003 at the start of the [das2 project](https://das2.org/das2overview2020piker.mp4).
 
 These libraries were originally created in support of the 
