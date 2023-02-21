@@ -838,11 +838,20 @@ public class FileStorageModel {
             return false;
         } else {
             String name= getNameFor( file );
-            Matcher m= pattern.matcher( name );
-            return m.matches();
+            return containsName(name);
         }
     }
 
+    /**
+     * return true if the name came (or could come) from this FileStorageModel.
+     * @param name the name within the filesystem.
+     * @return true if the name came (or could come) from this FileStorageModel.
+     */
+    public boolean containsName( String name ) {
+        Matcher m= pattern.matcher( name );
+        return m.matches();
+    }
+    
     /**
      * Provides a way to recover the model name of a file.  The returned File from getFilesFor can be anywhere,
      * so it would be good to provide a way to get it back into a FSM name.  For example, a filesystem
