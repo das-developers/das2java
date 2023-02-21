@@ -793,7 +793,14 @@ public class TimeParser {
             fieldHandlers.put("enum",new EnumFieldHandler());
         }
         
+        if ( fieldHandlers.get("ignore")==null ) {
+            fieldHandlers.put("ignore",new IgnoreFieldHandler());
+        }
 
+        if ( fieldHandlers.get("x")==null ) {
+            fieldHandlers.put("x",new IgnoreFieldHandler());
+        }
+        
         logger.log(Level.FINE, "new TimeParser({0},...)", formatString);
         
         startTime = new TimeUtil.TimeStruct();
@@ -967,6 +974,14 @@ public class TimeParser {
 
             int span=1;
 
+            String  fieldRegex ;
+            if (lengths[i] == -1) {
+                 fieldRegex ="(.*)";
+            } else {
+                String dots = ".........";
+                 fieldRegex ="(" + dots.substring(0, lengths[i]) + ")";
+            }
+            
             if ( qualifiers[i]!=null ) {
                 String[] ss2= qualifiers[i].split(";");
                 for ( String ss21 : ss2 ) {
@@ -1085,6 +1100,9 @@ public class TimeParser {
                                     startLsd= lsd;
                                     stopTimeDigit= i;
                                 }   break;
+                            case "regex":
+                                 fieldRegex = val;
+                                break;
                             default:
                                 if ( !fieldHandlers.containsKey(fc[i]) ) {
                                     throw new IllegalArgumentException("unrecognized/unsupported field: "+name + " in "+qual );
@@ -1156,13 +1174,8 @@ public class TimeParser {
                     logger.log(Level.FINER, "lsd is now {0}, width={1}", new Object[]{lsd, lsdMult});
                 }
             }
-
-            String dots = ".........";
-            if (lengths[i] == -1) {
-                regex1.append("(.*)");
-            } else {
-                regex1.append("(").append(dots.substring(0, lengths[i])).append(")");
-            }
+            
+            regex1.append( fieldRegex );
             regex1.append( quotePattern(delim[i]) );
 
         }
