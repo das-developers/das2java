@@ -8542,7 +8542,6 @@ public final class Ops {
                                 logger.finer("cadence changes but translation allows");
                             } else {
                                 logger.finer("cadence changes");
-                                continue;
                             }
                         }
 
