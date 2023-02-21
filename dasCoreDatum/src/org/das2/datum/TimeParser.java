@@ -1101,7 +1101,8 @@ public class TimeParser {
                                     stopTimeDigit= i;
                                 }   break;
                             case "regex":
-                                 fieldRegex = val;
+                                //TODO: Evil regex, where you can craft regexs which will cause Denial of Service (ReDoS)
+                                fieldRegex = val;
                                 break;
                             default:
                                 if ( !fieldHandlers.containsKey(fc[i]) ) {
