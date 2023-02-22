@@ -8237,10 +8237,8 @@ public final class Ops {
      * to the DEPEND_0 dimension.  This is used to indicate that the waveform
      * collected with respect to a carrier tone, and the result should be translated.
      *
-     * No normalization is done with non-unity windows.  TODO: This probably should be done.  
-     * I verified this is not done, see 
-     * https://github.com/autoplot/dev/bugs/sf/1317/testWindowFunctionNormalization.jy
-     * TODO: This should be rechecked.  I'm pretty sure it's done.
+     * Normalization is done with non-unity windows.  (See 
+     * https://github.com/autoplot/dev/bugs/sf/1317/testWindowFunctionNormalization.jy )
      *
      * @param ds rank 2 dataset ds(N,M) with M&gt;len, rank 3 with the same cadence, or rank 1.
      * @param window window to apply to the data before performing FFT (Hann,Unity,etc.)
@@ -8538,18 +8536,15 @@ public final class Ops {
                         // does the cadence change between packets?
                         boolean cadenceChangeDetect= Math.abs( packetEndDeltaTime-currentDeltaTime ) / currentDeltaTime > 0.01;
                         if ( cadenceChangeDetect ) {
-                            if ( translation!=null ) {
-                                logger.finer("cadence changes but translation allows");
-                            } else {
-                                logger.finer("cadence changes");
-                            }
+                            logger.finer("cadence changes");
                         }
 
                         // is there a gap within the packet?
                         double avgCadence= ( offs.value(len-1) - offs.value(0) ) / ( len-1 ); // for the entire packet
                         if ( Math.abs( packetEndDeltaTime -avgCadence ) / currentDeltaTime > 0.01 ) {
                             if ( translation!=null ) {
-                                logger.finer("gap detected but translation allows");
+                                logger.finer("gap detected");
+                                continue;
                             } else {
                                 logger.finer("gap detected");
                                 continue;
