@@ -192,9 +192,9 @@ public class FFTUtil {
         Units xUnits= (Units)powxTags.property( QDataSet.UNITS );
         if ( xUnits.isConvertibleTo(Units.hertz) ) {
             UnitsConverter uc= xUnits.getConverter(Units.hertz);
-            binsize= ( uc.convert( powxTags.value( 0 ) ) ) ;
+            binsize= ( uc.convert( powxTags.value( 1 ) - powxTags.value(0) ) ) ;
         } else {
-            binsize= powxTags.value(0) ;
+            binsize= powxTags.value(1) - powxTags.value(0) ;
         }
         
         DDataSet result= DDataSet.createRank1( powxTags.length() );
@@ -246,9 +246,9 @@ public class FFTUtil {
         double binsize;
         if ( xUnits.isConvertibleTo(Units.hertz) ) {
             UnitsConverter uc= xUnits.getConverter(Units.hertz);
-            binsize= 2 * ( uc.convert( xtags.value( xtags.length()/2 ) ) ) / fft.size();
+            binsize= uc.convert( xtags.value(1) - xtags.value(0) );
         } else {
-            binsize= 2 * ( xtags.value( xtags.length()/2 ) ) / fft.size();
+            binsize= ( xtags.value(1) - xtags.value(0) );
         }
 
         DDataSet result= DDataSet.createRank2(xtags.length(),2);
@@ -303,9 +303,9 @@ public class FFTUtil {
         double binsize;
         if ( xUnits.isConvertibleTo(Units.seconds) ) {
             UnitsConverter uc= xUnits.getConverter(Units.seconds);
-            binsize= 1 / ( uc.convert( dep0.value( 1 ) ) );
+            binsize= 1 / ( uc.convert( ( dep0.value(1) - dep0.value(0) ) ) );
         } else {
-            binsize= 1 / ( dep0.value( 1 ));
+            binsize= 1 / ( dep0.value(1) - dep0.value(0) );
         }
         
         DDataSet result= DDataSet.createRank2(xtags.length(),2);
