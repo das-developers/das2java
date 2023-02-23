@@ -25,6 +25,8 @@ package org.das2.util.filesystem;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
+import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -40,7 +42,19 @@ import java.util.Map;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
 import org.das2.util.LoggerManager;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 /**
  * HTML utilities, such as getting a directory listing, where a "file" is a link
@@ -71,6 +85,33 @@ public class HtmlUtil {
     @Deprecated
     public static void consumeStream( InputStream err ) throws IOException {
         HttpUtil.consumeStream(err);
+    }
+    
+    private static URL[] getDirectoryListingAmazonS3( URL root, String content ) {
+        try {
+            Reader reader = new StringReader(content);
+            DocumentBuilder builder= DocumentBuilderFactory.newInstance().newDocumentBuilder();
+            InputSource source = new InputSource(reader);
+            Document document= builder.parse(source);
+            
+            XPathFactory factory= XPathFactory.newInstance();
+            javax.xml.xpath.XPath xpath= factory.newXPath();
+            NodeList fs= (NodeList) xpath.evaluate( "/ListBucketResult/Contents/Key", document, XPathConstants.NODESET );
+            
+            int n= fs.getLength();
+            URL[] result= new URL[n];
+            for ( int i=0; i<n; i++ ) {
+                org.w3c.dom.Node nn= fs.item(i);
+                try {
+                    result[i]= new URL( root, nn.getTextContent() );
+                } catch ( Exception e ) {
+                    
+                }
+            }
+            return result;
+        } catch (SAXException | IOException | XPathExpressionException | ParserConfigurationException ex) {
+            throw new RuntimeException(ex);
+        }
     }
     
     /**
@@ -127,6 +168,9 @@ public class HtmlUtil {
         logger.log(Level.FINER, "read listing data in {0} millis", (System.currentTimeMillis() - t0));
         String content= contentBuffer.toString();
 
+        if ( content.startsWith("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<ListBucketResult")) {
+            return getDirectoryListingAmazonS3( url, content );
+        }
         //TODO: use getLinks to get all the links.
         
         String hrefRegex= "(?i)href\\s*=\\s*([\"'])(.+?)\\1";
