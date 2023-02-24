@@ -13587,7 +13587,11 @@ public final class Ops {
         int[] newArray= new int[qube.length+1];
         newArray[0]= nrec;
         System.arraycopy( qube, 0, newArray, 1, qube.length );
-        return reform( ds, newArray );
+        MutablePropertyDataSet mpds= (MutablePropertyDataSet) reform( ds, newArray );
+        if ( nrec==ds.length() ) {
+            mpds.putProperty(QDataSet.DEPEND_0,ds.property(QDataSet.DEPEND_0));    
+        }
+        return mpds;
     }
     
     /**
