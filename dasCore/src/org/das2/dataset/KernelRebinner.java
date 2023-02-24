@@ -255,7 +255,7 @@ public class KernelRebinner implements DataSetRebinner {
 
         long t0= System.currentTimeMillis();
         
-        boolean isBundle= SemanticOps.isBundle(ds);
+        boolean isBundle= SemanticOps.isBundle(ds) && ds.length(0)<4;
         
         if ( ds.rank()==2 && !isBundle ) { // make it into a rank 3 dataset
             ds= Ops.join(null,ds); 
@@ -343,15 +343,18 @@ public class KernelRebinner implements DataSetRebinner {
                 QDataSet yds= SemanticOps.ytagsDataSet(zds);
 
                 QDataSet xBinWidth= org.das2.qds.DataSetUtil.guessCadenceNew( xds, zds );
+                if ( xBinWidth==null ) xBinWidth= org.das2.qds.DataSetUtil.guessCadence( xds, zds );
                 QDataSet yBinWidth;
                 if ( yds.rank()==1 ) {
                     yBinWidth= org.das2.qds.DataSetUtil.guessCadenceNew( yds, zds.slice(0) );
+                    if ( yBinWidth==null ) yBinWidth= org.das2.qds.DataSetUtil.guessCadence( yds, zds.slice(0) );
                 } else {
                     if ( yds.rank()==2 && QDataSet.VALUE_BINS_MIN_MAX.equals(yds.property(QDataSet.BINS_1)) ) {
                         yBinWidth= Ops.reduceMax( Ops.subtract( Ops.slice1(yds,1), Ops.slice1(yds,0) ), 0 );
                         yds= Ops.reduceMean( yds,1 );
                     } else {
                         yBinWidth= org.das2.qds.DataSetUtil.guessCadenceNew( yds.slice(0), zds.slice(0) );
+                        if ( yBinWidth==null ) yBinWidth= org.das2.qds.DataSetUtil.guessCadence( yds.slice(0), zds.slice(0) );
                     }
                 }
 
