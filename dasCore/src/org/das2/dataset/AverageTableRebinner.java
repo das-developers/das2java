@@ -302,6 +302,13 @@ public class AverageTableRebinner implements DataSetRebinner {
             }
         } else {
             xds= SemanticOps.xtagsDataSet(tds);
+            QDataSet deltaPlus= (QDataSet)xds.property(QDataSet.BIN_PLUS);
+            if ( deltaPlus==null ) deltaPlus= (QDataSet)xds.property(QDataSet.DELTA_PLUS);
+            QDataSet deltaMinus= (QDataSet)xds.property(QDataSet.BIN_MINUS);
+            if ( deltaMinus==null ) deltaPlus= (QDataSet)xds.property(QDataSet.DELTA_MINUS);
+            if ( deltaPlus!=null && deltaPlus.rank()==0 && deltaMinus!=null && deltaMinus.rank()==0 ) {
+                return DataSetUtil.asDatum(deltaPlus).add( DataSetUtil.asDatum(deltaMinus) );
+            }
             QDataSet yds= SemanticOps.ytagsDataSet(tds);
             if ( xds==null ) {
                 return xunits.createDatum(1);
@@ -312,7 +319,12 @@ public class AverageTableRebinner implements DataSetRebinner {
                 } else {
                     r= DataSetUtil.guessCadenceNew( xds, null );
                 }
-                if ( r==null ) return xunits.getOffsetUnits().createDatum(Double.MAX_VALUE);
+                if ( r==null ) {
+                    r= DataSetUtil.guessCadence( xds, null );
+                    if ( r==null ) {
+                        return xunits.getOffsetUnits().createDatum(Double.MAX_VALUE);
+                    }
+                }
                 Datum rd= DataSetUtil.asDatum(r);
                 return rd;
             } else {
