@@ -38,6 +38,7 @@ public class DasPlotBeanInfo extends AccessLevelBeanInfo {
         new Property("oversize", AccessLevel.DASML, "isOverSize", "setOverSize", null ),
         new Property("legendPosition", AccessLevel.DASML, "getLegendPosition", "setLegendPosition", null ),
         new Property("legendRelativeFontSize", AccessLevel.DASML, "getLegendRelativeFontSize", "setLegendRelativeFontSize", null ),
+        new Property("legendWidthLimitPx", AccessLevel.DASML, "getLegendWidthLimitPx", "setLegendWidthLimitPx", null ),
         new Property("logLevel", AccessLevel.DASML, "getLogLevel", "setLogLevel", null ), 
         new Property("logTimeoutSec", AccessLevel.DASML, "getLogTimeoutSec", "setLogTimeoutSec", null ),
         new Property("isotropic", AccessLevel.DASML, "isIsotropic", "setIsotropic", null ),

@@ -61,6 +61,7 @@ import java.awt.event.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.*;
 import java.io.IOException;
 import java.nio.channels.*;
@@ -148,10 +149,28 @@ public class DasPlot extends DasCanvasComponent {
 		}
 	}
         
+    
+    private int legendWidthLimitPx = 100;
+
+    public static final String PROP_LEGEND_WIDTH_LIMIT_PX = "legendWidthLimitPx";
+
     /**
      * width of plot required to show the legend labels.
      */
-    final int LEGEND_X_SIZE_LIMIT=100;
+    public int getLegendWidthLimitPx() {
+        return legendWidthLimitPx;
+    }
+
+    /**
+     * width of plot required to show the legend labels.
+     * @param legendWidthLimitPx 
+     */
+    public void setLegendWidthLimitPx(int legendWidthLimitPx) {
+        int oldLegendWidthLimitPx = this.legendWidthLimitPx;
+        this.legendWidthLimitPx = legendWidthLimitPx;
+        firePropertyChange(PROP_LEGEND_WIDTH_LIMIT_PX, oldLegendWidthLimitPx, legendWidthLimitPx);
+        repaint();
+    }
 
 	/**
      * title for the plot
@@ -1527,7 +1546,7 @@ public class DasPlot extends DasCanvasComponent {
 
         List<LegendElement> llegendElements= this.legendElements==null ? null : new ArrayList(this.legendElements);
         if ( llegendElements!=null && llegendElements.size() > 0 && displayLegend 
-                && ( xSize>LEGEND_X_SIZE_LIMIT || legendPosition==LegendPosition.OutsideNE ) ) {
+                && ( xSize>legendWidthLimitPx || legendPosition==LegendPosition.OutsideNE ) ) {
             drawLegend(graphics,llegendElements);
         }
         
@@ -1862,7 +1881,7 @@ public class DasPlot extends DasCanvasComponent {
             logger.log(Level.FINER, "DasPlot setBounds {0}", bounds);
             if ( !bounds.equals(oldBounds) ) {
                 setBounds(bounds);
-                SwingUtilities.invokeLater( new Runnable() {
+                SwingUtilities.invokeLater(new Runnable() {
                    @Override
                    public void run() {
                        List<Renderer> renderers1= Arrays.asList(getRenderers());
