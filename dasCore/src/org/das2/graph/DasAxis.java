@@ -3006,7 +3006,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 break;
             case LEFT:
                 //offset = zeroOrPosTickLen + (int)this.blLabelRect.getWidth() + fm.stringWidth(" ") + labelFont.getSize() / 2 + (int) gtr.getDescent();
-                offset = getColumn().getDMinimum() - blLabelRect.x + labelFont.getSize() / 2 + (int) gtr.getDescent();
+                offset = getColumn().getDMinimum() - blLabelRect.x + labelFont.getSize() / 2 + (int) gtr.getDescent() - getAxisOffsetPixels();
                 break;
             default:
                 if ( trLabelRect==null ) {
