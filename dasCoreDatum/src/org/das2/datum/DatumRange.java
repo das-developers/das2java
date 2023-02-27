@@ -371,7 +371,7 @@ public class DatumRange implements Comparable, Serializable {
      */
     public static DatumRange newRange( double lower, double upper, Units units ) {
         if ( lower>upper ) {
-            return new DatumRange( lower, upper, units );
+            return new DatumRange( upper, lower, units );
         } else {
             return new DatumRange( lower, upper, units );
         }
@@ -386,7 +386,7 @@ public class DatumRange implements Comparable, Serializable {
      */
     public static DatumRange newRange( double lower, double upper ) {
         if ( lower>upper ) {
-            return new DatumRange( lower, upper, Units.dimensionless );
+            return new DatumRange( upper, lower, Units.dimensionless );
         } else {
             return new DatumRange( lower, upper, Units.dimensionless );
         }
