@@ -413,6 +413,32 @@ public class DataSetOps {
     }
 
     /**
+     * adds an element to the array
+     * @param array length N array
+     * @param value the value to append
+     * @return array with the element, length N+1.
+     */
+    public static int[] addElement(int[] array, int value) {
+        int[] result = new int[array.length + 1];
+        System.arraycopy(array, 0, result, 0, array.length);
+        result[array.length]= value;
+        return result;
+    }
+    
+    /**
+     * adds an element to the beginning of an array
+     * @param array length N array
+     * @param value the value to append
+     * @return array with the element, length N+1.
+     */
+    public static int[] addElement( int value, int[] array ) {
+        int[] result = new int[array.length + 1];
+        System.arraycopy(array, 0, result, 1, array.length);
+        result[0]= value;
+        return result;
+    }
+    
+    /**
      * pull out a subset of the dataset by reducing the number of columns in the
      * last dimension.  This does not reduce rank.  This assumes the dataset has no
      * row with length&gt;end.
