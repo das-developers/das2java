@@ -36,6 +36,7 @@ public class DasPlotBeanInfo extends AccessLevelBeanInfo {
         new Property("drawBackground", AccessLevel.DASML, "getDrawBackground", "setDrawBackground", null),
         new Property("preview", AccessLevel.DASML, "isPreviewEnabled", "setPreviewEnabled", null ),
         new Property("oversize", AccessLevel.DASML, "isOverSize", "setOverSize", null ),
+        new Property("longTitles", AccessLevel.DASML, "isLongTitles", "setLongTitles", null ),
         new Property("legendPosition", AccessLevel.DASML, "getLegendPosition", "setLegendPosition", null ),
         new Property("legendRelativeFontSize", AccessLevel.DASML, "getLegendRelativeFontSize", "setLegendRelativeFontSize", null ),
         new Property("legendWidthLimitPx", AccessLevel.DASML, "getLegendWidthLimitPx", "setLegendWidthLimitPx", null ),
