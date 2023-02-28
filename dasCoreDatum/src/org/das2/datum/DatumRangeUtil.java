@@ -82,8 +82,12 @@ public class DatumRangeUtil {
         } else if ( UnitsUtil.isTimeLocation( dr.getUnits() )
                 && ( dr.min().lt( MIN_TIME ) || dr.max().gt( MAX_TIME ) ) ) {
             return false;
-        } else if ( log && dr.max().divide(dr.min()).doubleValue(Units.dimensionless) > 1e100 ) {
-            return false;
+        } else if ( log ) {
+            if ( !UnitsUtil.isRatioMeasurement( dr.getUnits() ) ) {
+                return false;
+            } else {
+                return !( dr.max().divide(dr.min()).doubleValue(Units.dimensionless) > 1e100 );
+            }
         }
         return true;
     }
