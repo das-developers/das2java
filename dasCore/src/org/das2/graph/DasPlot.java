@@ -82,6 +82,7 @@ import org.das2.event.DasMouseInputAdapter;
 import org.das2.event.LengthMouseModule;
 import org.das2.graph.DasAxis.Memento;
 import org.das2.qds.DataSetUtil;
+import org.das2.util.ColorUtil;
 
 /**
  * DasPlot is the 2D plot containing a horizontal X axis and vertical Y
@@ -96,6 +97,8 @@ public class DasPlot extends DasCanvasComponent {
 	private static final List<CustomizerKey> CUSTOMIZER_KEYS = new ArrayList<>();
 	private static final Map<CustomizerKey, Customizer> PLOT_CUSTOMIZERS = new HashMap<>();
 
+    private static final boolean DEBUG_GRAPHICS = System.getProperty("das2.graph.dasplot.debuggraphics","false").equals("true");
+    
 	/**
 	 * Return a list of keys of all current customizing objects in the order they would be invoked.
 	 * @return the keys
@@ -1526,6 +1529,16 @@ public class DasPlot extends DasCanvasComponent {
 //                graphics.fillRoundRect( r.x, r.y, r.width, r.height, 3, 3 );
 //                graphics.setColor( c );
 //            }
+
+            if ( DEBUG_GRAPHICS ) {
+                Rectangle r= gtr.getBounds();
+                r.translate( titleX, titleY );
+                Graphics2D g = (Graphics2D) graphics.create();
+                g.setColor( ColorUtil.CADET_BLUE );
+                g.drawRect( r.x, r.y, r.width, r.height );
+                g.dispose();
+            }
+            
             boolean drawBack=isOpaqueBackground();
             if ( drawBack ) {
                 Rectangle2D back= gtr.getBounds2D();
