@@ -400,13 +400,14 @@ public class Schemes {
     }   
 
     /**
-     * return true of the data has a uniform cadence.  Note that 
+     * return true of the data has a uniform cadence in log space.  Note that 
      * the CADENCE property is ignored.
      * @param ds a rank 1 dataset
      * @return true if the data has uniform cadence.
      */
     public static boolean isUniformRatiometricCadence( QDataSet ds ) {
         if ( ds.rank()!=1 ) return false;
+        if ( !UnitsUtil.isRatioMeasurement( SemanticOps.getUnits(ds) ) ) return false;
         double dv= Math.log( ds.value(1)/ds.value(0) );
         double manyDv= Math.log( ds.value(ds.length()-1) / ds.value(0) ) / ( ds.length()-1 );
         return ( ( manyDv - dv ) / dv ) < 0.001;
