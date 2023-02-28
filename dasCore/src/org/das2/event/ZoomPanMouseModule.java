@@ -19,6 +19,8 @@ import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import javax.swing.SwingUtilities;
+import org.das2.datum.Units;
+import org.das2.datum.UnitsUtil;
 
 /**
  * Provide navigation similar to Google Maps, where drag events result a pan on the axes, and mouse wheel events
@@ -199,9 +201,13 @@ public class ZoomPanMouseModule extends MouseModule {
         Point p2 = e.getPoint();
         if (axisIsAdjustable(xAxis)) {
             DatumRange dr;
-            if (xAxis.isLog()) {
-                Datum delta = xAxis.invTransform(p0.getX()).divide(xAxis.invTransform(p2.getX()));
-                dr = new DatumRange(xAxisRange0.min().multiply(delta), xAxisRange0.max().multiply(delta));
+            if (xAxis.isLog() ) {
+                if ( UnitsUtil.isRatioMeasurement( xAxis.getUnits() ) ) {
+                    Datum delta = xAxis.invTransform(p0.getX()).divide(xAxis.invTransform(p2.getX()));
+                    dr = new DatumRange(xAxisRange0.min().multiply(delta), xAxisRange0.max().multiply(delta));
+                } else {
+                    dr = xAxisRange0;
+                }
             } else {
                 Datum delta = xAxis.invTransform(p0.getX()).subtract(xAxis.invTransform(p2.getX()));
                 dr = new DatumRange(xAxisRange0.min().add(delta), xAxisRange0.max().add(delta));
@@ -212,8 +218,12 @@ public class ZoomPanMouseModule extends MouseModule {
         if (axisIsAdjustable(yAxis)) {
             DatumRange dr;
             if (yAxis.isLog()) {
-                Datum ydelta = yAxis.invTransform(p0.getY()).divide(yAxis.invTransform(p2.getY()));
-                dr = new DatumRange(yAxisRange0.min().multiply(ydelta), yAxisRange0.max().multiply(ydelta));
+                if ( UnitsUtil.isRatioMeasurement( yAxis.getUnits() ) ) {
+                    Datum ydelta = yAxis.invTransform(p0.getY()).divide(yAxis.invTransform(p2.getY()));
+                    dr = new DatumRange(yAxisRange0.min().multiply(ydelta), yAxisRange0.max().multiply(ydelta));
+                } else {
+                    dr = yAxisRange0;
+                }
             } else {
                 Datum ydelta = yAxis.invTransform(p0.getY()).subtract(yAxis.invTransform(p2.getY()));
                 dr = new DatumRange(yAxisRange0.min().add(ydelta), yAxisRange0.max().add(ydelta));
