@@ -1870,9 +1870,14 @@ public class DasPlot extends DasCanvasComponent {
             Rectangle bounds = new Rectangle();
             bounds.x = getColumn().getDMinimum() - 1 - (int)( lineThicknessDouble/2. );
             bounds.y = getRow().getDMinimum() - 1 - (int)( lineThicknessDouble/2. );
-            // if legend label is outside the plot, then we'll do something here.  Note this will cause the data to be drawn out-of-bounds as well.
-
+            
             bounds.width = getColumn().getDMaximum() - bounds.x + 1 + (int)( lineThicknessDouble / 2 );
+            
+            if ( longTitles ) { // extend over the Y axis.
+                bounds.x = getYAxis().getBounds().x;
+                int yaxiswidth= getColumn().getDMinimum() - getYAxis().getBounds().x;
+                bounds.width = ( getColumn().getDMaximum() - bounds.x )  + yaxiswidth; // allow to extend a semetrical amount
+            }
             bounds.height = getRow().getDMaximum() - bounds.y + 1 + (int)( lineThicknessDouble / 2 );
             if ( displayTitle && !getTitle().equals("") ) {
                 bounds.y -= titleHeight;
@@ -2925,6 +2930,28 @@ public class DasPlot extends DasCanvasComponent {
         firePropertyChange(PROP_OVERSIZE, oldOverSize, overSize);
     }
 
+    private boolean longTitles = false;
+
+    public static final String PROP_LONGTITLES = "longTitles";
+
+    /**
+     * long titles means it won't clip at the axis bounds, at the risk of affecting codes which expect the old boundaries.
+     * @return the longTitles property
+     */
+    public boolean isLongTitles() {
+        return longTitles;
+    }
+
+    /**
+     * long titles means it won't clip at the axis bounds, at the risk of affecting codes which expect the old boundaries.
+     * @param longTitles
+     */
+    public void setLongTitles(boolean longTitles) {
+        boolean oldLongTitles = this.longTitles;
+        this.longTitles = longTitles;
+        firePropertyChange(PROP_LONGTITLES, oldLongTitles, longTitles);
+    }
+    
     /**
      * the log level for the messages on the screen.
      */
