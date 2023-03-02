@@ -51,6 +51,8 @@ public class DasAnnotation extends DasCanvasComponent {
 
     private static final Logger logger= LoggerManager.getLogger("das2.graph.annotation");
     
+    private static final boolean DEBUG_GRAPHICS = System.getProperty("das2.graph.dasannotation.debuggraphics","false").equals("true");
+        
     String templateString;
     GrannyTextRenderer gtr;
     BufferedImage img;
@@ -529,6 +531,16 @@ public class DasAnnotation extends DasCanvasComponent {
         
         Graphics2D g = (Graphics2D) g1.create(); 
 
+        if ( DEBUG_GRAPHICS ) {
+            Rectangle r= getBounds();
+            Graphics2D g_ = (Graphics2D) g.create();
+            g_.translate( -getX(), -getY() );
+            g_.setClip(null);
+            g_.setColor( org.das2.util.ColorUtil.STEEL_BLUE );
+            g_.drawRect( r.x, r.y, r.width, r.height );
+            g_.dispose();
+        }
+        
         double em2 = g.getFont().getSize();
         
         Stroke stroke0= g.getStroke();
@@ -629,21 +641,39 @@ public class DasAnnotation extends DasCanvasComponent {
         }
             
         if ( gtr==null || !getString().equals("") ) {
-            if (borderType == BorderType.RECTANGLE || borderType == BorderType.NONE) {
-                g.fill(r);
-            } else if (borderType == BorderType.ROUNDED_RECTANGLE) {
-                g.fillRoundRect(r.x, r.y, r.width, r.height, em * 2, em * 2);
-            }
-
-            g.setColor(ltextColor);
-
-            if ( ( rotate % 360 ) !=0 ) {
-                Rectangle bb= getAnnotationBubbleBoundsNoRotation();
+            Rectangle bb= getAnnotationBubbleBoundsNoRotation();
+            int rot= rotate % 360;
+            
+            if ( ( rot ) !=0 ) {    
                 double midx= bb.x + bb.width/2;
                 double midy= bb.y + bb.height/2;
-                g.rotate( -rotate*Math.PI/180., midx, midy );
+                if ( rot == -90 || rot==90 || rot==270 ) {
+                    if ( rot==-90 ) {
+                        if ( anchorPosition==AnchorPosition.NE ) {
+                            g.translate( getX(), getY() );
+                            g.rotate( -rotate*Math.PI/180. );
+                            g.translate( 0, bb.height );
+                            g.translate( -getX(), -getY() );
+                        } else if ( anchorPosition==AnchorPosition.NW ) {
+                            g.translate( getX(), getY() );
+                            g.rotate( -rotate*Math.PI/180. );
+                            g.translate( 0, - bb.height ); 
+                            g.translate( -getX(), -getY() );
+                        } else if ( anchorPosition==AnchorPosition.Center ) {
+                            g.translate( getX(), getY() );
+                            g.rotate( -rotate*Math.PI/180. );
+                            g.translate( 0, - bb.height ); 
+                            g.translate( -getX(), -getY() );
+                        }
+                        
+                        
+                        //g.translate( -gtr.getAscent()+2*em, 0 );
+                    }
+                } else {
+                    g.rotate( -rotate*Math.PI/180., midx, midy );
+                }
             }
-
+            g.setColor(ltextColor);
 
             if ( gtr!=null ) {
                 try {
@@ -685,12 +715,12 @@ public class DasAnnotation extends DasCanvasComponent {
                 
             if (borderType != BorderType.NONE) {
                 if (borderType == BorderType.RECTANGLE) {
-                    g.draw(r);
+                    g.draw(bb);
                 } else if (borderType == BorderType.ROUNDED_RECTANGLE) {
-                    g.drawRoundRect(r.x, r.y, r.width, r.height, em * 2, em * 2);
+                    g.drawRoundRect(bb.x, bb.y, bb.width, bb.height, em * 2, em * 2);
                 } else if (borderType==BorderType.UNDERSCORE ) {
-                    int y= r.y+r.height;
-                    g.drawLine( r.x+em, y, r.x + r.width-2*em, y );
+                    int y= bb.y+bb.height;
+                    g.drawLine( bb.x+em, y, bb.x + bb.width-2*em, y );
                 }
             }
             
@@ -924,7 +954,7 @@ public class DasAnnotation extends DasCanvasComponent {
                
         if ( rotate!=0 ) {
             int rot= rotate % 360;
-            if ( rot==90 || rot==270 ) {
+            if ( rot==90 || rot==270 || rot==-90 ) {
                 Rectangle nr= new Rectangle();
                 switch ( anchorPosition ) {
                     case Center:
@@ -939,7 +969,12 @@ public class DasAnnotation extends DasCanvasComponent {
                         nr.width= r.height;
                         nr.height= r.width;
                         break;
-                }
+                    case NW:
+                        nr.x= r.x;
+                        nr.y= r.y;
+                        nr.width= r.height;
+                        nr.height= r.width;
+                        break;                }
                 r= nr;
             }
         }
