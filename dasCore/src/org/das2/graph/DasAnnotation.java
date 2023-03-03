@@ -974,7 +974,10 @@ public class DasAnnotation extends DasCanvasComponent {
                         nr.y= r.y;
                         nr.width= r.height;
                         nr.height= r.width;
-                        break;                }
+                        break;                
+                    default:
+                        logger.info("this rotation is not supported");
+                }
                 r= nr;
             }
         }
