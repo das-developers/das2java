@@ -310,9 +310,7 @@ public class AverageTableRebinner implements DataSetRebinner {
                 return DataSetUtil.asDatum(deltaPlus).add( DataSetUtil.asDatum(deltaMinus) );
             }
             QDataSet yds= SemanticOps.ytagsDataSet(tds);
-            if ( xds==null ) {
-                return xunits.createDatum(1);
-            } else if ( xds.length()>2 ) {
+            if ( xds.length()>2 ) {
                 QDataSet r;
                 if ( tds.length(0)==3 && xds.length()==yds.length() ) {
                     r= DataSetUtil.guessCadenceNew( xds, yds );
