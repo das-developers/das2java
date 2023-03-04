@@ -641,6 +641,14 @@ public class DasAnnotation extends DasCanvasComponent {
         }
             
         if ( gtr==null || !getString().equals("") ) {
+            if (borderType == BorderType.RECTANGLE || borderType == BorderType.NONE) {
+                g.fill(r);
+            } else if (borderType == BorderType.ROUNDED_RECTANGLE) {
+                g.fillRoundRect(r.x, r.y, r.width, r.height, em * 2, em * 2);
+            }
+
+            g.setColor(ltextColor);
+
             Rectangle bb= getAnnotationBubbleBoundsNoRotation();
             int rot= rotate % 360;
             
