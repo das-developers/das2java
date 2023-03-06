@@ -286,6 +286,10 @@ public class ExpandToFillGapsFilterEditorPanel extends AbstractFilterEditorPanel
     private void updateAutoMessage() {
         if ( ds!=null ) {    
             QDataSet ttags= (QDataSet)ds.property(QDataSet.DEPEND_0);
+            if ( ttags==null ) {
+                aboutDataLabel.setText( "dataset didn't have timetags.");
+                return;
+            }
             QDataSet dts= Ops.abs( Ops.diff(ttags) );
             Datum cadenceMin= Ops.datum( Ops.reduceMin( dts, 0 ) );
             Datum twiceCadenceMin= cadenceMin.multiply(2);
