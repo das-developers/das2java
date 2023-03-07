@@ -2378,6 +2378,7 @@ public class DataSetOps {
         }
         switch (p) {
             case "|smooth":
+            case "|reducex":
             case "|nop":
             case "|trim":
             case "|magnitude":
@@ -2388,9 +2389,14 @@ public class DataSetOps {
             case "|medianFilter":
             case "|copy":
             case "|setDepend0Cadence":
+            case "|setDepend1Cadence":
             case "|expandToFillGaps":
             case "|expandWaveform":
             case "|cleanData":
+            case "|sortInTime":
+            case "|flatten":
+            case "|flattenWaveform":
+            case "|monotonicSubset":                  
                 return false;
             default:
                 return true;
@@ -2412,13 +2418,27 @@ public class DataSetOps {
             return false;
         }
         switch (p) {
-            case "|negate":
-            case "|monotonicSubset":                
+            case "|negate":              
             case "|multiply":
             case "|divide":
             case "|add":
+            case "|subtract": 
             case "|pow": 
-            case "|subtract": // TODO: many more!
+            case "|exp10": 
+            case "|log10": 
+            case "|sqrt": 
+            case "|sin":
+            case "|cos":
+            case "|fftPower":
+            case "|setUnits":
+            case "|normalize":
+            case "|toDegrees":
+            case "|toRadians":
+            case "|collapse1":
+            case "|collapse2":
+            case "|setFillValue":
+            case "|setValidRange":                
+            case "|valid":                
                 return false;
             default:
                 return true;
