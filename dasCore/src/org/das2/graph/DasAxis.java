@@ -2366,6 +2366,15 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 g.draw(trTitleRect);
             }
             g.setStroke( stroke0 );
+            
+            Rectangle r= getBounds();
+            if ( r!=null ) {
+                g.setColor( org.das2.util.ColorUtil.CHOCOLATE );
+                r.width= r.width-1;
+                r.height= r.height-1;
+                g.draw(r);
+            }
+
             g.setColor( DEBUG_COLORS[ (debugColorIndex++) % 2 ] );
             
         }
