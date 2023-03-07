@@ -2364,7 +2364,7 @@ public class DataSetOps {
     public static QDataSet sprocess( String c, QDataSet fillDs, ProgressMonitor mon ) throws Exception {
         return OperationsProcessor.process( fillDs, c, mon );
     }
-
+ 
     /**
      * indicate if this one operator changes the dimensions.  For example, 
      * |smooth doesn't change the dimensions, but fftPower and slice do.
@@ -2396,6 +2396,35 @@ public class DataSetOps {
                 return true;
         }
     }
+    
+    /**
+     * indicate if this one operator changes the independent dimensions.  For example, 
+     * |smooth doesn't change the dimensions, but |multiply also doesn't change the independent dimension.
+     * @param p the filter, e.g. "|smooth"
+     * @return true if the dimensions change. 
+     */
+    public static boolean changesIndependentDimensions( String p ) {
+        int j= p.indexOf('(');
+        if ( j>-1 ) {
+            p= p.substring(0,j);
+        }
+        if ( !changesDimensions(p) ) {
+            return false;
+        }
+        switch (p) {
+            case "|negate":
+            case "|monotonicSubset":                
+            case "|multiply":
+            case "|divide":
+            case "|add":
+            case "|pow": 
+            case "|subtract": // TODO: many more!
+                return false;
+            default:
+                return true;
+        }
+    }
+    
     
     /**
      * replace any component reference C, to explicit "|unbundle(C)"
@@ -2432,6 +2461,71 @@ public class DataSetOps {
         }
         return null;
     }
+    
+    /**
+     * return the next command that changes dimensions.
+     * @param s0 scanner 
+     * @return the command, e.g. "|slice0"
+     */
+    private static String nextIndependentDimensionChangingCommand( Scanner s0 ) {
+        while ( s0.hasNext() ) {
+            String cmd= s0.next();
+            if ( cmd.startsWith("|") ) {
+                if ( changesIndependentDimensions(cmd) ) {
+                    return cmd;
+                }
+            }
+        }
+        return null;
+    }    
+                
+    /**
+     * indicate if the operators change dimensions of the dataset.  Often
+     * this will result in true when the dimensions do not change, this is the better way to err.
+     * @param c0 old value for the process string, e.g. "|slice0(0)"
+     * @param c1 new value for the process string, e.g. "|slice0(0)|slice1(0)"
+     * @return true if the dimensions would be different.
+     */
+    public static boolean changesIndependentDimensions( String c0, String c1 ) {
+        if ( c0==null || c1==null ) return true;
+        c0 = makeProcessStringCanonical(c0);
+        c1 = makeProcessStringCanonical(c1);
+        Scanner s0= new Scanner( c0 );
+        s0.useDelimiter("[\\(\\),]");
+        Scanner s1= new Scanner( c1 );
+        s1.useDelimiter("[\\(\\),]");
+        boolean slicesChangesDim= false;
+        String cmd0= nextIndependentDimensionChangingCommand( s0 );
+        String cmd1= nextIndependentDimensionChangingCommand( s1 );
+        while ( cmd0!=null && cmd1!=null ) {
+            if ( !cmd1.equals(cmd0) ) {
+                return true;
+            }
+            if ( cmd0.startsWith("|slices") && cmd0.length()==7 ) { // multi dimensional slice
+                Pattern skipPattern= Pattern.compile("\\'\\:?\\'");
+                while ( s0.hasNextInt() || s0.hasNext( skipPattern ) ) {
+                    if ( s0.hasNextInt() && s1.hasNextInt() ) {
+                        s0.nextInt();
+                        s1.nextInt();
+                    } else if ( s0.hasNext( skipPattern ) && s1.hasNext( skipPattern ) ) {
+                        s0.next();
+                        s1.next();
+                    } else {
+                        slicesChangesDim= true;
+                        s0.next();
+                        s1.next();
+                    }
+                }
+            }
+            cmd0= nextIndependentDimensionChangingCommand( s0 );
+            cmd1= nextIndependentDimensionChangingCommand( s1 );                
+        }
+        
+        boolean res= slicesChangesDim || cmd0!=null || cmd1!=null;
+        logger.log(Level.FINE, "  changesDimensions {0} , {1} ->{2}", new Object[]{c0, c1, res});
+        return res;
+    }
+
     
     /**
      * indicate if the operators change dimensions of the dataset.  Often
