@@ -481,7 +481,8 @@ public class Schemes {
                 Units u1= (Units) bundle1.property(QDataSet.UNITS,1);
                 if ( u1==null ) u1= Units.dimensionless;
                 Units u3= (Units) bundle1.property(QDataSet.UNITS,bundle1.length()-1);
-                if ( u3!=null && UnitsUtil.isOrdinalMeasurement(u3) && u0.getOffsetUnits().isConvertibleTo(u1) ) {
+                boolean t1t2= UnitsUtil.isTimeLocation(u0) && UnitsUtil.isTimeLocation(u1);
+                if ( t1t2 || ( u3!=null && UnitsUtil.isOrdinalMeasurement(u3) && u0.getOffsetUnits().isConvertibleTo(u1) ) ) {
                     if ( u0.isConvertibleTo(u1) ) {
                         QDataSet isge= Ops.ge( Ops.slice1( ds, 1 ), Ops.slice1( ds, 0 ) );
                         return Ops.total(isge) == Ops.total( Ops.valid( Ops.slice1(ds,0) ) );
