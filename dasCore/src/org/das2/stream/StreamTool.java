@@ -514,7 +514,7 @@ public class StreamTool {
                 } else if (root.getTagName().equals("comment")) {
                     struct.handler.streamComment(new StreamComment(doc.getDocumentElement()));
                 } else {
-                    throw new StreamException("Unexpected xml header, expecting stream or exception, received: " + root.getTagName());
+                    logger.info( "Got extra stream header, ignoring." );
                 }
                 struct.descriptorCount++;
             } catch (SAXException ex) {
