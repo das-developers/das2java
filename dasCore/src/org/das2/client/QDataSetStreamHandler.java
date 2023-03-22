@@ -46,7 +46,9 @@ public class QDataSetStreamHandler implements StreamHandler {
     private Map<Integer,DataSetBuilder> xbuilders;
     private Map<Integer,DataSetBuilder[]> builders;
     
-    // as each id is retired (for example, packet id 01 gets a new definition), put its data into the result.
+    /**
+     * as each id is retired (for example, packet id 01 gets a new definition), put its data into the result.
+     */
     private QDataSet jds= null;
     
     private Map<Integer,String> schemes;
@@ -57,6 +59,9 @@ public class QDataSetStreamHandler implements StreamHandler {
     private String streamTitle;
     private Map streamProperties;
     
+    /**
+     * TODO: mission statement, how does this compare to jds?
+     */
     private QDataSet ds=null;
     
     //private Object collectionMode= MODE_SPLIT_BY_PACKET_DESCRIPTOR;
@@ -413,6 +418,9 @@ public class QDataSetStreamHandler implements StreamHandler {
         
     }
     
+    /**
+     * TODO: mission statement
+     */
     public void collectDataSet( ) {
         QDataSet xds1= currentXBuilder.getDataSet();
         QDataSet ds1;
@@ -507,6 +515,20 @@ public class QDataSetStreamHandler implements StreamHandler {
             }
         }
         if ( ds==null ) return null;
+        
+        if ( ds instanceof JoinDataSet ) {
+            if ( ds.length()<2 ) {
+                //TODO: consider slice
+            } else {
+                if ( appendable( ds.slice(0), ds.slice(1) ) ) {
+                    ds= jds.slice(0);
+                    for ( int i=1; i<jds.length(); i++ ) {
+                        ds= Ops.append( ds, jds.slice(i) );
+                    }
+                }
+            }
+        }
+        
         ds= Ops.putProperty( ds, QDataSet.TITLE, streamTitle );
         Object oxCacheRange= streamProperties.get( "xCacheRange" );
         if ( oxCacheRange!=null ) {
@@ -531,6 +553,22 @@ public class QDataSetStreamHandler implements StreamHandler {
         ds= Ops.putProperty( ds, QDataSet.USER_PROPERTIES, streamProperties );
         
         return ds;
+    }
+
+    /**
+     * check if data is a join of dissimilar spectrograms or similar bundles.  TODO: this is not a thorough
+     * test.
+     * @param s0
+     * @param s1
+     * @return true if the two can be appended.
+     */
+    private boolean appendable(QDataSet s0, QDataSet s1) {
+        if ( s0.rank()==s1.rank() ) {
+            if ( s0.rank()==1 || ( SemanticOps.isBundle(s0) && SemanticOps.isBundle(s1) && s0.length(0)==s1.length(0) ) ) {
+                return true;
+            }
+        }
+        return false;
     }
     
 }
