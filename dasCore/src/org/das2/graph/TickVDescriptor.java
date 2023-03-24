@@ -490,10 +490,10 @@ public class TickVDescriptor {
                 dd = dd.finerDivider(false);
                 dv = dd.boundaries( minD, maxD );
             }
-            if ( dv.getLength()>nTicksMax ) {
-                dd = dd.coarserDivider(false);
-                dv = dd.boundaries( minD, maxD );
-            }
+            //if ( dv.getLength()>nTicksMax ) {
+            //    dd = dd.coarserDivider(false);
+            //    dv = dd.boundaries( minD, maxD );
+            //}
             DatumVector dvMinor = dd.finerDivider(true).boundaries(minD, maxD);
             dvMinor.getLength();
             if ( dv.getLength()>1 ) { // this should true in 99.99999% of cases
