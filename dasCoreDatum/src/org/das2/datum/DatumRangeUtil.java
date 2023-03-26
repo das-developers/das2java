@@ -505,7 +505,7 @@ public class DatumRangeUtil {
         return null;
     }
 
-    private static final String simpleFloat= "\\d?\\.?\\d+";
+    private static final String simpleFloat= "\\d*?\\.?\\d+";
     public static final String iso8601duration= "P(\\d+Y)?(\\d+M)?(\\d+D)?(T(\\d+H)?(\\d+M)?("+simpleFloat+"S)?)?";
     public static final Pattern iso8601DurationPattern= Pattern.compile(iso8601duration);
 
