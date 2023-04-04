@@ -24,20 +24,20 @@
 
 package org.das2.graph;
 
-import org.das2.datum.DatumRange;
-import org.das2.datum.Units;
-import org.das2.datum.Datum;
-import org.das2.graph.event.DasUpdateListener;
-import org.das2.graph.event.DasUpdateEvent;
-import org.das2.system.DasLogger;
-
-import javax.swing.event.EventListenerList;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.event.EventListenerList;
+import org.das2.datum.Datum;
+import org.das2.datum.DatumRange;
+import org.das2.datum.Units;
+import org.das2.graph.event.DasUpdateEvent;
+import org.das2.graph.event.DasUpdateListener;
 import org.das2.util.LoggerManager;
 
 public class DataRange implements Cloneable {
@@ -368,7 +368,7 @@ public class DataRange implements Cloneable {
     }
     
     public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
-        propertyChangeDelegate.addPropertyChangeListener(propertyName, listener);
+        propertyChangeDelegate.removePropertyChangeListener(propertyName, listener);
     }
     
     protected void firePropertyChange(String propertyName, double oldValue, double newValue) {
