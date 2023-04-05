@@ -772,7 +772,7 @@ public class TimeParser {
      */
     private TimeParser(String formatString, Map<String,FieldHandler> fieldHandlers) {
 
-        // note this is outside of the spec at http://tsds.org//uri_templates
+        // note this is outside of the spec at https://github.com/hapi-server/uri-templates/wiki/Specification
         if ( fieldHandlers.get("o")==null ) {
             fieldHandlers.put("o",new OrbitFieldHandler());
         }
@@ -850,7 +850,7 @@ public class TimeParser {
             while ( ssi.length()>pp && ( Character.isDigit(ssi.charAt(pp)) || ssi.charAt(pp) == '-') ) {
                 pp++;
             }
-            if (pp > 0) { // Note length ($5Y) is not supported in http://tsds.org/uri_templates.
+            if (pp > 0) { // Note length ($5Y) is not supported in https://github.com/hapi-server/uri-templates/wiki/Specification
                 lengths[i] = Integer.parseInt(ssi.substring(0, pp));
             } else {
                 lengths[i] = 0; // determine later by field type
@@ -1026,7 +1026,7 @@ public class TimeParser {
                                 span= Integer.parseInt(val);
                                 break;
                             case "delta":
-                                span= Integer.parseInt(val); // see http://tsds.org/uri_templates
+                                span= Integer.parseInt(val); // see https://github.com/hapi-server/uri-templates/wiki/Specification
                                 break;
                             case "resolution":
                                 span= Integer.parseInt(val);
@@ -1275,7 +1275,8 @@ public class TimeParser {
      * Note also that often $(Y) is used where %{Y} is used.  These are equivalent, and useful when $() interferes with parsing
      * elsewhere.
      *
-     * An effort has begun to try and unify to an agreeable specification for this.  See http://tsds.org/uri_templates
+     * URI_Templates is a public project with translations to Java, JavaScript, and Python, and provides an specification for 
+     * this.  See https://github.com/hapi-server/uri-templates/wiki/Specification .
      * <pre>{@code
      *  $[fieldLength]<1-char code>  or
      *  $[fieldLength](<code>)
