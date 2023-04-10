@@ -99,7 +99,7 @@ show:
 
 
 install: $(INST_LIB_JARS) $(INST_SCRIPTS)
-	mvn install
+	-mvn install
 
 $(INST_DOC)/dasCore/index.html:target/site/apidocs/index.html
 	if [ ! -e $(INST_DOC)/dasCore ]; then mkdir -p $(INST_DOC)/dasCore; fi
@@ -114,7 +114,7 @@ clean:
 
 distclean:
 	rm -r target
-       
+
 	
 # maven build phases are (from apach.org):
 #
