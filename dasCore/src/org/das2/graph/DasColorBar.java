@@ -677,6 +677,7 @@ public class DasColorBar extends DasAxis {
                 double gg= (green[ii]*(1-a) + green[ii+1]*a)/(double)255.;
                 double bb= (blue[ii]*(1-a) + blue[ii+1]*a)/(double)255.;
                 colorTable[i]= new Color((float)rr,(float)gg,(float)bb).getRGB();
+//                System.err.println( String.format( "%4d %4.2f %3f %3f %3f", i, a, rr, gg, bb ) );
             }
 
             colorTable[ncolor-1]= fillColor;
