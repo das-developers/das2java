@@ -66,12 +66,19 @@ public class LogLinDomainDivider implements DomainDivider {
             // divide min to first boundary
             double decadeOffset = Math.pow(10, Math.floor(Math.log10(min.doubleValue())));
             Datum mmin = min.divide(decadeOffset);
+            //Datum mmax = logBoundaries.get(0).divide(decadeOffset);
             Datum mmax = logBoundaries.get(0).divide(decadeOffset);
             double[] bounds = decadeDivider.boundaries(mmin, mmax).toDoubleArray(mmin.getUnits());
-            // We don't store the last value because it will get included in the next span.
-            for (int i = 0; i < bounds.length-1; i++)
+            int n;
+            if ( decadeDivider.getSignificand()==1 ) {
+                // We don't store the last value because it will get included in the next span.
+                n= bounds.length-1;
+            } else {
+                n= bounds.length;
+            }
+            for (int i = 0; i < n; i++) {
                 result[index++] = bounds[i] * decadeOffset;
-
+            }
         }
         if (numLogBoundaries > 1) {
             // divide complete decades.  Skip the last value in each decade
@@ -122,7 +129,14 @@ public class LogLinDomainDivider implements DomainDivider {
             double decadeOffset = Math.pow(10, Math.floor(Math.log10(min.doubleValue())));
             Datum mmin = min.divide(decadeOffset);
             Datum mmax = logBoundaries.get(0).divide(decadeOffset);
-            bc += decadeDivider.boundaryCount(mmin, mmax) - 1; //subtract 1 to avoid double count
+            long n;
+            if ( decadeDivider.getSignificand()==1 ) {
+                // We don't store the last value because it will get included in the next span.
+                n= decadeDivider.boundaryCount(mmin, mmax)-1;//subtract 1 to avoid double count
+            } else {
+                n= decadeDivider.boundaryCount(mmin, mmax);
+            }
+            bc += n; //subtract 1 to avoid double count
 
             // count divisions between last boundary and max
             double maxd= Math.floor(Math.log10(max.doubleValue()));
