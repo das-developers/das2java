@@ -40,6 +40,12 @@ import org.das2.graph.event.DasUpdateEvent;
 import org.das2.graph.event.DasUpdateListener;
 import org.das2.util.LoggerManager;
 
+/**
+ * A DataRange is a mutable object representing a range, used to bind to axes together.  This
+ * creates something of a "hard link" between two axes, unlike the "soft link" which is created
+ * when BeansBinding is used.
+ * @author jbf
+ */
 public class DataRange implements Cloneable {
     
     private static final Logger logger= LoggerManager.getLogger("dass2.graph.axis");
