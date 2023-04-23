@@ -11,8 +11,8 @@ import java.util.logging.Logger;
  * implemented correctly.  Consider using this object whenever you see
  * pairs of Datums in interfaces and codes (e.g. tbegin,tend), they are probably
  * a DatumRange!
+ * @see org.das2.graph.DataRange mutable object used to link two axes together.
  */
-
 public class DatumRange implements Comparable, Serializable {
     
     private static final Logger logger = LoggerManager.getLogger("das2.datum");

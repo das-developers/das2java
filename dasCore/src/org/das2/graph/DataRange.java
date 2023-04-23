@@ -43,8 +43,9 @@ import org.das2.util.LoggerManager;
 /**
  * A DataRange is a mutable object representing a range, used to bind to axes together.  This
  * creates something of a "hard link" between two axes, unlike the "soft link" which is created
- * when BeansBinding is used.
+ * when BeansBinding is used.  Note the DatumRange object, found in org.das2.datum is immutable.
  * @author jbf
+ * @see DatumRange
  */
 public class DataRange implements Cloneable {
     
