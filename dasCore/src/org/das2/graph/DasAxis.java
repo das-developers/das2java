@@ -4363,7 +4363,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         if (tickLabelsVisible == b) {
             return;
         }
-        boolean oldValue = ticksVisible;
+        boolean oldValue = tickLabelsVisible;
         tickLabelsVisible = b;
         update();
         firePropertyChange("tickLabelsVisible", oldValue, b);
