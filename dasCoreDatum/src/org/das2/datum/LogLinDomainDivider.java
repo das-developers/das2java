@@ -1,5 +1,7 @@
 package org.das2.datum;
 
+import java.util.ArrayList;
+
 /**
  * A DomainDivider which divides logarithmically (base 10), with linear subdivisions.
  * It provides divisions such as <ul>
@@ -9,7 +11,11 @@ package org.das2.datum;
  * @author ed
  */
 public class LogLinDomainDivider implements DomainDivider {
-    private LinearDomainDivider decadeDivider;
+    
+    /**
+     * linear divisions within the decade 1.0 to 10.0.
+     */
+    private LinearDomainDivider linearDivider;
 
     /**
      * create a way to access this class directly.
@@ -23,13 +29,13 @@ public class LogLinDomainDivider implements DomainDivider {
         this(new LinearDomainDivider());
     }
 
-    private LogLinDomainDivider(LinearDomainDivider decadeDivider) {
-        this.decadeDivider = decadeDivider;
+    private LogLinDomainDivider(LinearDomainDivider linearDivider) {
+        this.linearDivider = linearDivider;
     }
 
     @Override
     public DomainDivider coarserDivider(boolean superset) {
-        LinearDomainDivider d = (LinearDomainDivider) decadeDivider.coarserDivider(superset);
+        LinearDomainDivider d = (LinearDomainDivider) linearDivider.coarserDivider(superset);
         if  (d.boundaryCount(Datum.create(1.0), Datum.create(10.0 )) < 1) {
             // revert to straight log division
             return new LogDomainDivider();
@@ -41,7 +47,7 @@ public class LogLinDomainDivider implements DomainDivider {
     @Override
     public DomainDivider finerDivider(boolean superset) {
         // Make the linear subidivision finer.
-        return new LogLinDomainDivider((LinearDomainDivider)decadeDivider.finerDivider(superset));
+        return new LogLinDomainDivider((LinearDomainDivider)linearDivider.finerDivider(superset));
     }
 
     @Override
@@ -50,108 +56,36 @@ public class LogLinDomainDivider implements DomainDivider {
             System.err.println("min and max must be finite");
            // throw new IllegalArgumentException("min and max must be finite" );
         }
+        ArrayList<Datum> bb= new ArrayList<>();
         
-        long nb = boundaryCount(min,max);
-        if (nb > MAX_BOUNDARIES )
-            throw new IllegalArgumentException("too many divisions requested ("+boundaryCount(min, max)+")");
+        double decade = Math.pow(10, Math.floor(Math.log10(min.doubleValue())));
+        double nextDecade= decade*10;
+        if (nextDecade>max.value() ) {
+            nextDecade= max.value();
+        }
+        DatumRange current= linearDivider.rangeContaining(min.divide(decade));
+        current= DatumRange.newRange( current.min().multiply(decade), current.max().multiply(decade) );
 
-        DomainDivider logDivider = new LogDomainDivider();
-        DatumVector logBoundaries = logDivider.boundaries(min, max);
-        int numLogBoundaries = logBoundaries.getLength();
-        double result[] = new double[(int)nb];
-        int index = 0;
-
-        /* There's some code repetition between this and boundaryCount below */
-        if (numLogBoundaries > 0) {
-            // divide min to first boundary
-            double decadeOffset = Math.pow(10, Math.floor(Math.log10(min.doubleValue())));
-            Datum mmin = min.divide(decadeOffset);
-            //Datum mmax = logBoundaries.get(0).divide(decadeOffset);
-            Datum mmax = logBoundaries.get(0).divide(decadeOffset);
-            double[] bounds = decadeDivider.boundaries(mmin, mmax).toDoubleArray(mmin.getUnits());
-            int n;
-            if ( decadeDivider.getSignificand()==1 ) {
-                // We don't store the last value because it will get included in the next span.
-                n= bounds.length-1;
-            } else {
-                n= bounds.length;
+        while ( current.min().lt(max) ) {
+            while ( current.min().value()<nextDecade ) {
+                if ( current.min().value()>0 ) {
+                    bb.add(current.min());
+                }
+                current=current.next();
             }
-            for (int i = 0; i < n; i++) {
-                result[index++] = bounds[i] * decadeOffset;
+            current= DatumRange.newRange( current.min(), current.min().add( current.width().multiply(10) ) );
+            nextDecade= nextDecade*10;
+            if (nextDecade>max.value() ) {
+               nextDecade= max.value();
             }
         }
-        if (numLogBoundaries > 1) {
-            // divide complete decades.  Skip the last value in each decade
-            // because it gets repeated as the first value of the next.
-            double[] bounds = decadeDivider.boundaries(Datum.create(1), Datum.create(10)).toDoubleArray(Units.dimensionless);
-            for (int dec = 0; dec < numLogBoundaries-1; dec++) {
-                double decadeOffset = logBoundaries.get(dec).doubleValue();
-                for (int i = 0; i < bounds.length-1; i++)
-                    result[index++] = bounds[i] * decadeOffset;
-            }
-
-        }
-        if (numLogBoundaries > 0) {
-            // divide last boundary to max
-            double decadeOffset = logBoundaries.get(numLogBoundaries-1).doubleValue();
-            Datum mmin = logBoundaries.get(numLogBoundaries-1).divide(decadeOffset);
-            Datum mmax = max.divide(decadeOffset);
-            double[] bounds = decadeDivider.boundaries(mmin, mmax).toDoubleArray(mmax.getUnits());
-            for (int i = 0; i < bounds.length; i++)
-                result[index++] = bounds[i] * decadeOffset;
-        } else {
-            // There are no log boundaries; divide min to max
-            double decadeOffset = Math.pow(10, Math.floor(Math.log10(min.doubleValue())));
-            Datum mmin = min.divide(decadeOffset);
-            Datum mmax = max.divide(decadeOffset);
-            double[] bounds = decadeDivider.boundaries(mmin, mmax).toDoubleArray(mmin.getUnits());
-            for (int i = 0; i < bounds.length; i++)
-                result[index++] = bounds[i] * decadeOffset;
-        }
- 
-        return DatumVector.newDatumVector(result, min.getUnits());
+        DatumVector result= DatumVector.newDatumVector( bb.toArray(new Datum[bb.size()]), current.getUnits() );
+        return result;
     }
 
     @Override
     public long boundaryCount(Datum min, Datum max) {
-        DomainDivider logDivider = new LogDomainDivider();
-        DatumVector logBoundaries = logDivider.boundaries(min, max);
-        long bc=0;
-        int numLogBoundaries = logBoundaries.getLength();
-
-        if (numLogBoundaries > 1) { // count the whole-decade boundaries
-            long divsPerDecade = decadeDivider.boundaryCount(Datum.create(0), Datum.create(10)) - 1;
-            bc = divsPerDecade * (numLogBoundaries -1);
-        }
-
-        if (numLogBoundaries > 0) {
-            // count divisions between min and first boundary
-            double decadeOffset = Math.pow(10, Math.floor(Math.log10(min.doubleValue())));
-            Datum mmin = min.divide(decadeOffset);
-            Datum mmax = logBoundaries.get(0).divide(decadeOffset);
-            long n;
-            if ( decadeDivider.getSignificand()==1 ) {
-                // We don't store the last value because it will get included in the next span.
-                n= decadeDivider.boundaryCount(mmin, mmax)-1;//subtract 1 to avoid double count
-            } else {
-                n= decadeDivider.boundaryCount(mmin, mmax);
-            }
-            bc += n; //subtract 1 to avoid double count
-
-            // count divisions between last boundary and max
-            double maxd= Math.floor(Math.log10(max.doubleValue()));
-            decadeOffset = Math.pow(10, maxd );
-            mmin = logBoundaries.get(numLogBoundaries-1).divide(decadeOffset);
-            mmax = max.divide(decadeOffset);
-            bc += decadeDivider.boundaryCount(mmin, mmax); 
-        } else {
-            // There are no log boundaries, so just count from min to max
-            double decadeOffset = Math.pow(10, Math.floor(Math.log10(min.doubleValue())));
-            Datum mmin = min.divide(decadeOffset);
-            Datum mmax = max.divide(decadeOffset);
-            bc += decadeDivider.boundaryCount(mmin, mmax);
-        }
-        return bc;
+        return boundaries(min,max).getLength();
     }
 
     @Override
@@ -162,7 +96,7 @@ public class LogLinDomainDivider implements DomainDivider {
 
         //Datum mmin = decade.min().divide(decadeOffset);
         //Datum mmax = decade.max().divide(decadeOffset);
-        DatumRange range = decadeDivider.rangeContaining(v.divide(decadeOffset));
+        DatumRange range = linearDivider.rangeContaining(v.divide(decadeOffset));
 
         return new DatumRange(range.min().multiply(decadeOffset), range.max().multiply(decadeOffset));
     }
@@ -173,12 +107,12 @@ public class LogLinDomainDivider implements DomainDivider {
      * @return
      */
     protected int sigFigs() {
-        return 0-decadeDivider.getExponent();
+        return 0-linearDivider.getExponent();
     }
 
     @Override
     public String toString() {
-        return "loglin decadeDivider="+decadeDivider;
+        return "loglin decadeDivider="+linearDivider;
     }
 
     public static void main(String[] args) {
