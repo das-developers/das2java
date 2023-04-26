@@ -65,15 +65,17 @@ public class LogLinDomainDivider implements DomainDivider {
         }
         DatumRange current= linearDivider.rangeContaining(min.divide(decade));
         current= DatumRange.newRange( current.min().multiply(decade), current.max().multiply(decade) );
+        Datum m=current.min();
 
-        while ( current.min().lt(max) ) {
-            while ( current.min().value()<nextDecade ) {
-                if ( current.min().value()>0 ) {
-                    bb.add(current.min());
+        while ( m.lt(max) ) {
+            while ( m.value()<nextDecade ) {
+                if ( m.ge(min) ) {
+                    bb.add(m);
                 }
                 current=current.next();
+                m= current.min();
             }
-            current= DatumRange.newRange( current.min(), current.min().add( current.width().multiply(10) ) );
+            current= DatumRange.newRange( m, m.add( current.width().multiply(10) ) );
             nextDecade= nextDecade*10;
             if (nextDecade>max.value() ) {
                nextDecade= max.value();
