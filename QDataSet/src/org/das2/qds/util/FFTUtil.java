@@ -209,7 +209,7 @@ public class FFTUtil {
             for ( int i=0; i<result.length(); i++ ) {
                 result.putValue( i, result.value(i) / 1e6 );
             }
-            result.putProperty( QDataSet.UNITS, SemanticOps.lookupUnits("(V/m)^2/Hz") );
+            result.putProperty( QDataSet.UNITS, Units.lookupUnits("(V/m)^2/Hz") );
         }
 
         result.putProperty( QDataSet.DEPEND_0, powxTags );
@@ -455,6 +455,11 @@ public class FFTUtil {
     }
     
     /**
+     * limit the number of times the warning "timetags do not appear to be uniform" is printed
+     */
+    private static int debugPrintCount=12;
+    
+    /**
      * return the frequency tags for the given time offset tags, so 
      * <code>f[i]=  i / n*T</code>
      * where <code>T= time[1] - time[0]</code> and <code>n= len(time)</code>.
@@ -480,7 +485,15 @@ public class FFTUtil {
             Tcheck= x.value(1)-x.value(0);
         }
         if ( Math.abs( ( T-Tcheck ) / ( T ) ) > 0.001 ) {
-            System.err.println("WARNING: timetags do not appear to be uniform: "+x );
+            if ( debugPrintCount>0 ) {
+                debugPrintCount--;
+                System.err.println("WARNING: timetags do not appear to be uniform: "+x );
+                System.err.println( String.format( "t[0]=%s t[1]=%s t[%d]=%s", 
+                        Ops.subtract( timeDomainTags.slice(0), timeDomainTags.slice(0) ),
+                        Ops.subtract( timeDomainTags.slice(1), timeDomainTags.slice(0) ),
+                        timeDomainTags.length()-1,
+                        Ops.subtract( timeDomainTags.slice(timeDomainTags.length()-1), timeDomainTags.slice(0) ) ) );
+            }
         }
         int n21= n/2+1;
         Units frequencyUnit= UnitsUtil.getInverseUnit( timeUnit.getOffsetUnits() );
