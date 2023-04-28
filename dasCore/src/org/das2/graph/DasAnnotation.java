@@ -549,7 +549,7 @@ public class DasAnnotation extends DasCanvasComponent {
         
         g.translate( -getX(), -getY() );
 
-        if ( anchorType!=AnchorType.CANVAS && plot!=null ) {
+        if ( plot!=null ) {
             Rectangle r= DasDevicePosition.toRectangle( plot.getRow(), plot.getColumn() );
             g.setClip( r );
         }
@@ -1298,8 +1298,10 @@ public class DasAnnotation extends DasCanvasComponent {
             this.plot.getXAxis().removePropertyChangeListener(plotListener);
             this.plot.getYAxis().removePropertyChangeListener(plotListener);
         }
-        p.getXAxis().addPropertyChangeListener(plotListener);
-        p.getYAxis().addPropertyChangeListener(plotListener);
+        if ( p!=null ) {
+            p.getXAxis().addPropertyChangeListener(plotListener);
+            p.getYAxis().addPropertyChangeListener(plotListener);
+        }
         this.plot= p;
     }
     
