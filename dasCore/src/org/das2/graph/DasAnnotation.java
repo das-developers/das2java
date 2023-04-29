@@ -549,7 +549,7 @@ public class DasAnnotation extends DasCanvasComponent {
         
         g.translate( -getX(), -getY() );
 
-        if ( plot!=null ) {
+        if ( anchorType!=AnchorType.CANVAS && plot!=null ) {
             Rectangle r= DasDevicePosition.toRectangle( plot.getRow(), plot.getColumn() );
             g.setClip( r );
         }
