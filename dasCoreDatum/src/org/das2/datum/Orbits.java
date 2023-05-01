@@ -90,7 +90,6 @@ public class Orbits {
                         String fsc= sc.replace("-","_");
                         urls.add( new URL( "http://www-pw.physics.uiowa.edu/rbsp/orbits/"+fsc ) );
                         urls.add( new URL( "https://emfisis.physics.uiowa.edu/pub/orbits/"+fsc ) );
-                        urls.add( new URL( "ftp://virbo.org/mirror/stevens.lanl.gov/pub/projects/rbsp/autoplot/orbits/"+fsc ) );
                         URL lurl= Orbits.class.getResource("/orbits/"+fsc );
                         if ( lurl==null ) {
                             LOGGER.warning("null found in orbits URLs indicates expected orbit was not found on classpath");
@@ -112,6 +111,8 @@ public class Orbits {
                         break;
                            
                     default:
+                        fsc= sc.replace("-","_");
+                        urls.add( new URL( "https://raw.githubusercontent.com/das-developers/meta/main/orbits/"+fsc+".dat" ) );
                         urls.add( new URL( "https://das2.org/Orbits/"+sc+".dat" ) );
                         break;
                 }
