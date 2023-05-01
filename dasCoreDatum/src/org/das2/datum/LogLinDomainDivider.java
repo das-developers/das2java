@@ -79,9 +79,9 @@ public class LogLinDomainDivider implements DomainDivider {
             if ( linearDivider.getSignificand()==1 ) {
                 m= u.createDatum(nextDecade);
             } else if ( linearDivider.getSignificand()==2 ) {
-                m= u.createDatum(nextDecade).add( current.width().multiply(10) );
+                m= u.createDatum(nextDecade).multiply(2);
             } else if ( linearDivider.getSignificand()==5 ) {
-                m= u.createDatum(nextDecade).add( current.width().multiply(10) );
+                m= u.createDatum(nextDecade).multiply(5);
             }
             current= DatumRange.newRange( m, m.add( current.width().multiply(10) ) );
             if ( linearDivider.getSignificand()==1 ) {
