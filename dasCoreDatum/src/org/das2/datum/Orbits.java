@@ -73,6 +73,7 @@ public class Orbits {
      * This now uses special code for rbspb-pp and rbspa-pp that looks at UIowa, LANL and at virbo.org.
      * 
      * @param sc the string identifier for the spacecraft, such as "rbspa-pp"
+     * @param source is a list which where the location used is inserted.
      * @return the list of orbits found for the spacecraft.
      */
     private static LinkedHashMap<String,DatumRange> readOrbits( String sc, List<URL> source ) throws IOException {
