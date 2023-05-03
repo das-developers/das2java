@@ -112,7 +112,7 @@ public class Orbits {
                         break;
                            
                     default:
-                        urls.add( new URL( "https://raw.githubusercontent.com/das-developers/meta/main/orbits/"+fsc+".dat" ) );
+                        urls.add( new URL( "https://raw.githubusercontent.com/das-developers/meta/main/orbits/"+sc+".dat" ) );
                         urls.add( new URL( "https://das2.org/Orbits/"+sc+".dat" ) );
                         break;
                 }
