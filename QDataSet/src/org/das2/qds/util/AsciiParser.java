@@ -1356,7 +1356,7 @@ public class AsciiParser {
                         return dwhereWithin.contains(d) ? 1 : -1;
                     } catch ( InconvertibleUnitsException ex ) {
                         if ( UnitsUtil.isRatioMeasurement(units[iwhereParm]) ) {
-                            dwhereWithin= DatumRange.newDatumRange( dwhereWithin.min().value(), dwhereWithin.max().value(), units[iwhereParm] );
+                            dwhereWithin= DatumRange.newRange( dwhereWithin.min().value(), dwhereWithin.max().value(), units[iwhereParm] );
                             return dwhereWithin.contains(d) ? 1 : -1;
                         } else {
                             throw ex;
@@ -1686,10 +1686,14 @@ public class AsciiParser {
                 }
                 fieldUnits[i]= null;
             } else {
-                if (isColumnHeaders) {
-                    logger.log(Level.FINEST, "first parsed line does not appear to be column header because of field #{0}: {1}", new Object[]{i, ss[i]});
+                if ( i==ss.length-1 ) {  // if this is the last column, then just assume a comment was added to a record and call it "field"+i
+                    fieldNames[i] = "field"+i;
+                } else {
+                    if (isColumnHeaders) {
+                        logger.log(Level.FINEST, "first parsed line does not appear to be column header because of field #{0}: {1}", new Object[]{i, ss[i]});
+                    }
+                    isColumnHeaders = false;
                 }
-                isColumnHeaders = false;
             }
         }
 
