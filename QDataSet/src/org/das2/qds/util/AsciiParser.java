@@ -1908,7 +1908,11 @@ public class AsciiParser {
 
         @Override
         public int fieldCount(String line) {
-            return fields(line).length;
+            if ( line.endsWith(",") ) {
+                return fields(line).length+1;
+            } else {
+                return fields(line).length;
+            }
         }
 
         public void setSkipField(int ifield, boolean skip) {
