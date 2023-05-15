@@ -101,7 +101,7 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
             }
         }
         String[] misc= new String[] { "&rarr;", "&uarr;", "&#0229;", "&infin;", "&cong;", "&le;", "&ne;", "&ge;", 
-            "&sup2", "&sup3", "&dagger;", "&deg;", "&int;" };
+            "&sup2;", "&sup3;", "&dagger;", "&deg;", "&int;" };
         for ( int i=0; i<15; i++ ) {
             if ( i<misc.length ) {
                 miscTab.add( miscButton(misc[i]) );
