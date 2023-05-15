@@ -8376,7 +8376,7 @@ public final class Ops {
                 
                 assert dep1!=null;
                 if ( dep1==null ) {
-                    throw new IllegalArgumentException("fftPower cannot be performed without independent parameter tags");
+                    throw new IllegalArgumentException("fftPower cannot be performed without independent parameter (usually time) tags");
                 }
                 
                 UnitsConverter uc= UnitsConverter.IDENTITY;
