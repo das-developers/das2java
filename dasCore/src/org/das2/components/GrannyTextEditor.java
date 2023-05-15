@@ -4,13 +4,19 @@ package org.das2.components;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Desktop;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Enumeration;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractButton;
 import javax.swing.JColorChooser;
 import javax.swing.JOptionPane;
@@ -101,13 +107,13 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
             }
         }
         String[] misc= new String[] { "&rarr;", "&uarr;", "&#0229;", "&infin;", "&cong;", "&le;", "&ne;", "&ge;", 
-            "&sup2;", "&sup3;", "&dagger;", "&deg;", "&int;" };
+            "&sup2;", "&sup3;", "&dagger;", "&deg;", "&int;", "", "More..." };
         for ( int i=0; i<15; i++ ) {
             if ( i<misc.length ) {
                 miscTab.add( miscButton(misc[i]) );
             } else {
                 miscTab.add( new javax.swing.JLabel(" ") );
-            }
+            } 
         }
     }
 
@@ -132,6 +138,16 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
     private javax.swing.JButton miscButton( String s ) {
         javax.swing.JButton result= new javax.swing.JButton("<html>"+s);
         result.addActionListener((ActionEvent e) -> {
+            if ( s.equals("More...") ) {  // Yes, I coded this and I'm proud of it.
+                // https://www.freeformatter.com/html-entities.html
+                String target= "https://www.freeformatter.com/html-entities.html";
+                try {
+                    Desktop.getDesktop().browse( new URI(target) );
+                    JOptionPane.showMessageDialog(this,"opening "+target);
+                } catch (URISyntaxException | IOException ex) {
+                } 
+                
+            }
             if ( ( e.getModifiers() & ActionEvent.CTRL_MASK ) == ActionEvent.CTRL_MASK ) {
                 String s1= Entities.decode(s);
                 if ( s1.length()==0 ) {
