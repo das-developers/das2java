@@ -18,6 +18,7 @@ import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractButton;
+import javax.swing.JButton;
 import javax.swing.JColorChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -48,6 +49,7 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
     JPanel canvas;
     GrannyTextRenderer gtr;
     TickleTimer tickleTimer;
+    JButton myEntityButton;
     
     /**
      * Creates new form GrannyTextEditor
@@ -110,10 +112,15 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
             "&sup2;", "&sup3;", "&dagger;", "&deg;", "&int;", "", "More..." };
         for ( int i=0; i<15; i++ ) {
             if ( i<misc.length ) {
-                miscTab.add( miscButton(misc[i]) );
+                JButton b= miscButton(misc[i]);
+                if ( misc[i].length()==0 ) {
+                    myEntityButton= b;
+                }
+                miscTab.add( b );
             } else {
                 miscTab.add( new javax.swing.JLabel(" ") );
             } 
+            
         }
     }
 
@@ -138,11 +145,15 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
     private javax.swing.JButton miscButton( String s ) {
         javax.swing.JButton result= new javax.swing.JButton("<html>"+s);
         result.addActionListener((ActionEvent e) -> {
-            String sel= s;
+            String sel= result.getText().substring(6);
             if ( sel.equals("More...") ) {  // Yes, I coded this and I'm proud of it.
                 sel= Entities.pickEntityGUI();
                 if ( sel.isEmpty() ){
                     return;
+                }
+                if ( myEntityButton!=null ) {
+                    myEntityButton.setText("<html>"+sel);
+                    myEntityButton.repaint();
                 }
             }
             if ( ( e.getModifiers() & ActionEvent.CTRL_MASK ) == ActionEvent.CTRL_MASK ) {
