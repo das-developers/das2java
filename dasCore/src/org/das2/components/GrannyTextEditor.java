@@ -146,7 +146,7 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
                     JOptionPane.showMessageDialog(this,"opening "+target);
                 } catch (URISyntaxException | IOException ex) {
                 } 
-                
+                return;
             }
             if ( ( e.getModifiers() & ActionEvent.CTRL_MASK ) == ActionEvent.CTRL_MASK ) {
                 String s1= Entities.decode(s);
