@@ -5,15 +5,36 @@
  */
 package org.das2.util;
 
+import java.awt.BorderLayout;
+import java.awt.Desktop;
+import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map.Entry;
+import javax.swing.AbstractAction;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
 
 public class Entities {
 
-    static final HashMap decoder = new HashMap(300);
+    /**
+     * decoder goes from &amp;rho; to "&rho;"
+     */
+    static final HashMap<String,String> decoder = new HashMap(300);
     static final String[] encoder = new String[0x100];
 
     /**
-     * utility method for decoding entities like &amp;rho; into unicode.
+     * utility method for decoding entities like &amp;rho; into UNICODE.
      * Malformed entities (like &#03B1; instead of &#x03B1;) are formatted as "???"
      * @param str string e.g. "&rho; degrees"
      * @return string with Unicode characters for entities.
@@ -369,5 +390,59 @@ public class Entities {
         add("&rsaquo", 8250);
         add("&euro", 8364);
 
+    }
+    
+    /**
+     * provide a picker GUI
+     * @return empty string or the selected character HTML.
+     */
+    public static String pickEntityGUI() {
+        Object[][] rowData;
+        
+        Object[] columns= new String[] { "Character", "Number" };
+        List<String[]> items= new ArrayList<>();
+        
+        for ( Entry<String,String> e: decoder.entrySet() ) {
+            items.add( new String[] { e.getValue(), e.getKey()+";" } );
+        }
+        
+        rowData= items.toArray( new String[items.size()][] );
+                
+        JTable t= new JTable(rowData,columns);
+        t.setFont( Font.decode("sans-14") );
+        t.setSelectionMode( ListSelectionModel.SINGLE_SELECTION );
+        
+        JScrollPane p= new JScrollPane(t);
+        
+        // also https://www.reilldesign.com/tutorials/character-entity-reference-chart.html
+        JButton l= new JButton( new AbstractAction("See also https://www.freeformatter.com/html-entities.html") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String target= "https://www.freeformatter.com/html-entities.html";
+                try {
+                    Desktop.getDesktop().browse( new URI(target) );
+                } catch (URISyntaxException | IOException ex) {
+                } 
+            }
+        });
+        JPanel panel= new JPanel();
+        panel.setLayout(new BorderLayout());
+        
+        panel.add(l,BorderLayout.NORTH);
+        panel.add(p);
+        
+        if ( JOptionPane.showConfirmDialog( null, panel, "HTML Entities", JOptionPane.OK_CANCEL_OPTION )==JOptionPane.OK_OPTION ) {
+            if ( t.getSelectedRow()==-1 ) {
+                return "";
+            } else {
+                return (String)rowData[t.getSelectedRow()][1];
+            }
+        } else {
+            return "";
+        }
+    }
+    
+    public static void main( String[] args ) {
+        System.err.println("pick: " + pickEntityGUI() );
     }
 }

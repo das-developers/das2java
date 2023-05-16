@@ -138,25 +138,22 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
     private javax.swing.JButton miscButton( String s ) {
         javax.swing.JButton result= new javax.swing.JButton("<html>"+s);
         result.addActionListener((ActionEvent e) -> {
-            if ( s.equals("More...") ) {  // Yes, I coded this and I'm proud of it.
-                // https://www.freeformatter.com/html-entities.html
-                String target= "https://www.freeformatter.com/html-entities.html";
-                try {
-                    Desktop.getDesktop().browse( new URI(target) );
-                    JOptionPane.showMessageDialog(this,"opening "+target);
-                } catch (URISyntaxException | IOException ex) {
-                } 
-                return;
+            String sel= s;
+            if ( sel.equals("More...") ) {  // Yes, I coded this and I'm proud of it.
+                sel= Entities.pickEntityGUI();
+                if ( sel.isEmpty() ){
+                    return;
+                }
             }
             if ( ( e.getModifiers() & ActionEvent.CTRL_MASK ) == ActionEvent.CTRL_MASK ) {
-                String s1= Entities.decode(s);
+                String s1= Entities.decode(sel);
                 if ( s1.length()==0 ) {
-                    doInsert( s, null );
+                    doInsert( sel, null );
                 } else {
                     doInsert( s1, null );
                 }
             } else {
-                doInsert( s, null );
+                doInsert( sel, null );
             }
         } );
         return result;
