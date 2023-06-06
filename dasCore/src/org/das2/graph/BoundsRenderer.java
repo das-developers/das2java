@@ -78,7 +78,7 @@ public class BoundsRenderer extends Renderer {
         p.append( pbox.getPathIterator(null), true );
         p.closePath();
         
-        fillWithTexture(g, p, fillColor, fillTexture );
+        GraphUtil.fillWithTexture(g, p, fillColor, fillTexture );
         g.draw(p);
             
         return new ImageIcon(i);
@@ -294,7 +294,7 @@ public class BoundsRenderer extends Renderer {
                 pbox.append( p, false );
 
             }
-            fillWithTexture(g, pbox, fillColor, fillTexture);
+            GraphUtil.fillWithTexture(g, pbox, fillColor, fillTexture);
             g.draw(pbox);
             context= pbox;
         } else if ( d.rank()==1 ) {
@@ -302,7 +302,7 @@ public class BoundsRenderer extends Renderer {
             QDataSet yy= d;
             GeneralPath path= GraphUtil.getPath( xAxis,yAxis,
                 Ops.link( xx, yy ), false,false);
-            fillWithTexture(g, path, fillColor, fillTexture);
+            GraphUtil.fillWithTexture(g, path, fillColor, fillTexture);
             g.draw(path);
             context= path;
         } else if ( d.rank()==2 && ds.length(0)==3 ) { // TODO: What's the scheme for this data set?  Working on the output of contour
@@ -310,7 +310,7 @@ public class BoundsRenderer extends Renderer {
             QDataSet yy= Ops.slice1( ds, 1 );
             GeneralPath path= GraphUtil.getPath( xAxis,yAxis,
                 xx, yy, false,false);
-            fillWithTexture(g, path, this.fillColor, this.fillTexture);
+            GraphUtil.fillWithTexture(g, path, this.fillColor, this.fillTexture);
             g.draw(path);
             context= path;
             
@@ -327,60 +327,13 @@ public class BoundsRenderer extends Renderer {
             GeneralPath path= GraphUtil.getPath(xAxis,yAxis,
                 Ops.append(mins,Ops.append(Ops.reverse(maxs),s1)),false,false);
             
-            fillWithTexture(g, path, this.fillColor, fillTexture );
+            GraphUtil.fillWithTexture(g, path, this.fillColor, fillTexture );
             g.draw(path);
             context= path;
         }
         
     }
 
-    /**
-     * fill the region using the specified fillTexture.
-     * @param g the graphics context
-     * @param pbox a general path
-     * @param fillColor if non-null, set this color to fill and return to the original color
-     * @param fillTexture one of the enumerations: hash, crosshash, backhash, and solid (and "" is an alias for solid)
-     */
-    public static void fillWithTexture( Graphics2D g, GeneralPath pbox, Color fillColor, String fillTexture) {
-        Color oldColor= g.getColor();
-        if ( fillColor!=null ) g.setColor(fillColor);
-        if ( fillTexture.equals("hash") || fillTexture.equals("crosshash") ) {
-            Shape oldClip= g.getClip();
-            Rectangle2D r= pbox.getBounds2D();
-            g.setClip(pbox);
-            double xx= r.getX();
-            double yy= r.getY();
-            double w= r.getHeight();
-            double limxx= xx + r.getWidth() + w; // 45 deg
-            while ( xx<limxx ) {
-                Line2D.Double line= new Line2D.Double( xx, yy, xx-w, yy+w );
-                g.draw(line);
-                xx= xx+10;
-            }
-            g.setClip(oldClip);
-        }
-        
-        if ( fillTexture.equals("backhash") || fillTexture.equals("crosshash") ) {
-            Shape oldClip= g.getClip();
-            Rectangle2D r= pbox.getBounds2D();
-            g.setClip(pbox);
-            double xx= r.getX();
-            double yy= r.getY();
-            double w= r.getHeight();
-            double limxx= xx + r.getWidth() + w; // 45 deg
-            while ( xx<limxx ) {
-                Line2D.Double line= new Line2D.Double( xx-w, yy, xx, yy+w );
-                g.draw(line);
-                xx= xx+10;
-            }
-            g.setClip(oldClip);
-        }
-        
-        if ( fillTexture.equals("") || fillTexture.equals("solid") ) {
-            g.fill(pbox);
-        }
-        if ( fillColor!=null ) g.setColor(oldColor);
-    }
     
     
 }

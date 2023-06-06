@@ -12,6 +12,7 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
@@ -77,6 +78,56 @@ public class GraphUtil {
             g.fillRect(1, -s + 2, s - 2, s - 4);
             return new Rectangle(0, (int) -fontSize, (int) fontSize, (int) fontSize);
         };
+    }
+
+    /**
+     * fill the region using the specified fillTexture.
+     * @param g the graphics context
+     * @param pbox a general path
+     * @param fillColor if non-null, set this color to fill and return to the original color
+     * @param fillTexture one of the enumerations: hash, crosshash, backhash, and solid (and "" is an alias for solid)
+     */
+    public static void fillWithTexture(Graphics2D g, GeneralPath pbox, Color fillColor, String fillTexture) {
+        Color oldColor = g.getColor();
+        if (fillColor != null) {
+            g.setColor(fillColor);
+        }
+        if (fillTexture.equals("hash") || fillTexture.equals("crosshash")) {
+            Shape oldClip = g.getClip();
+            Rectangle2D r = pbox.getBounds2D();
+            g.setClip(pbox);
+            double xx = r.getX();
+            double yy = r.getY();
+            double w = r.getHeight();
+            double limxx = xx + r.getWidth() + w; // 45 deg
+            while (xx < limxx) {
+                Line2D.Double line = new Line2D.Double(xx, yy, xx - w, yy + w);
+                g.draw(line);
+                xx = xx + 10;
+            }
+            g.setClip(oldClip);
+        }
+        if (fillTexture.equals("backhash") || fillTexture.equals("crosshash")) {
+            Shape oldClip = g.getClip();
+            Rectangle2D r = pbox.getBounds2D();
+            g.setClip(pbox);
+            double xx = r.getX();
+            double yy = r.getY();
+            double w = r.getHeight();
+            double limxx = xx + r.getWidth() + w; // 45 deg
+            while (xx < limxx) {
+                Line2D.Double line = new Line2D.Double(xx - w, yy, xx, yy + w);
+                g.draw(line);
+                xx = xx + 10;
+            }
+            g.setClip(oldClip);
+        }
+        if (fillTexture.equals("") || fillTexture.equals("solid")) {
+            g.fill(pbox);
+        }
+        if (fillColor != null) {
+            g.setColor(oldColor);
+        }
     }
     
     /**
