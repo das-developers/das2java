@@ -80,6 +80,11 @@ public class GraphUtil {
         };
     }
 
+    public static String FILL_TEXTURE_CROSSHASH="crosshash";
+    public static String FILL_TEXTURE_HASH="hash";
+    public static String FILL_TEXTURE_BACKHASH="backhash";
+    public static String FILL_TEXTURE_SOLID="solid";
+    
     /**
      * fill the region using the specified fillTexture.
      * @param g the graphics context
