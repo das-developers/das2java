@@ -91,6 +91,7 @@ public class GraphUtil {
      * @param pbox a general path
      * @param fillColor if non-null, set this color to fill and return to the original color
      * @param fillTexture one of the enumerations: hash, crosshash, backhash, and solid (and "" is an alias for solid)
+     * @see Renderer#CONTROL_KEY_FILL_TEXTURE
      */
     public static void fillWithTexture(Graphics2D g, GeneralPath pbox, Color fillColor, String fillTexture) {
         Color oldColor = g.getColor();

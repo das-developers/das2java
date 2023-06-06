@@ -469,11 +469,6 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
     public static final String CONTROL_KEY_FILL_COLOR= "fillColor";
     public static final String CONTROL_KEY_FILL_DIRECTION= "fillDirection"; // "above" "below" "none" "both"
     
-    /**
-     * used by boundsRenderer, the texture of the fill: solid, hash
-     */
-    public static final String CONTROL_KEY_FILL_TEXTURE= "fillTexture";
-    
     public static final String CONTROL_KEY_COLOR_TABLE= "colorTable";
     public static final String CONTROL_KEY_LINE_THICK= "lineThick";
     public static final String CONTROL_KEY_LINE_STYLE= "lineStyle";
@@ -487,7 +482,13 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
      * This might be expanded to support "ge(100.0):red;lt(0):gray;within(0to100);green" and nominal values.
      */
     public static final String CONTROL_KEY_SPECIAL_COLORS="specialColors";
-        
+    
+    /**
+     * when filling a region, use this texture (solid,hash,backhash,crosshash) to fill.
+     * @see GraphUtil#fillWithTexture(java.awt.Graphics2D, java.awt.geom.GeneralPath, java.awt.Color, java.lang.String) 
+     */
+    public static final String CONTROL_KEY_FILL_TEXTURE="fillTexture";
+    
     /**
      * font size relative to the parent, so "" or "1em" is the same size.
      */

@@ -244,6 +244,20 @@ public class SeriesRenderer extends Renderer {
         propertyChangeSupport.firePropertyChange(PROP_SPECIALCOLORS, oldSpecialColors, specialColors);
     }
     
+    private String fillTexture = "";
+
+    public static final String PROP_FILLTEXTURE = "fillTexture";
+
+    public String getFillTexture() {
+        return fillTexture;
+    }
+
+    public void setFillTexture(String fillTexture) {
+        String oldFillTexture = this.fillTexture;
+        this.fillTexture = fillTexture;
+        propertyChangeSupport.firePropertyChange(PROP_FILLTEXTURE, oldFillTexture, fillTexture);
+    }
+
     /**
      * the selectionArea, which can be null.
      */
@@ -280,6 +294,7 @@ public class SeriesRenderer extends Renderer {
         setBackgroundThick( getControl( CONTROL_KEY_BACKGROUND_THICK, backgroundThick ) );
         setFillStyle( decodeFillStyle( getControl( CONTROL_KEY_FILL_STYLE, encodeFillStyle(fillStyle) ), fillStyle ) );
         setSpecialColors( getControl( CONTROL_KEY_SPECIAL_COLORS, "" ) );
+        setFillTexture( getControl( CONTROL_KEY_FILL_TEXTURE, "" ) );
     }
 
     @Override
@@ -295,6 +310,7 @@ public class SeriesRenderer extends Renderer {
         controls.put( CONTROL_KEY_BACKGROUND_THICK, backgroundThick );
         controls.put( CONTROL_KEY_FILL_STYLE, encodeFillStyle(fillStyle) );
         controls.put( CONTROL_KEY_SPECIAL_COLORS, specialColors );
+        controls.put( CONTROL_KEY_FILL_TEXTURE, fillTexture );
         return formatControl(controls);
     }
     
@@ -712,8 +728,7 @@ public class SeriesRenderer extends Renderer {
             }
             g.setStroke(new BasicStroke((float) lineWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ));
             if ( errorBarType==ErrorBarType.SHADE ) {
-                g.setColor( fillColor );
-                g.fill(lp);
+                GraphUtil.fillWithTexture( g, lp, fillColor, fillTexture);
             } else {
                 g.draw(lp);
             }
@@ -1321,7 +1336,7 @@ public class SeriesRenderer extends Renderer {
                 g.draw( new java.awt.geom.Line2D.Double( (double)column.getDMinimum(), y, (double)column.getDMaximum(), y ) );
             } else {
                 g.setColor(fillColor);
-                g.fill(fillToRefPath1);
+                GraphUtil.fillWithTexture( g, fillToRefPath1, null, fillTexture);
                 g.draw(fillToRefPath1);
             }
             return 0;
