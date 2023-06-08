@@ -200,7 +200,12 @@ public class GraphUtil {
         
 
     /**
-     * return a GrannyTextEditor with the Das2Core extras added.
+     * return a GrannyTextEditor with the Das2Core extras added.  Examples
+     * include:<ul>psym;circles;size=0.5em;color=red
+     * <li>block
+     * <li>img;http://autoplot.org/wiki/images/Logo96.png;50%
+     * </ul>
+     * 
      * @return
      */
     public static GrannyTextRenderer newGrannyTextRenderer() {
