@@ -747,6 +747,7 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
         synchronized (this.dataPoints) {
             dataPoints1= new ArrayList(this.dataPoints);
         }
+        char delim= file.getName().endsWith(".csv") ? ',' : '\t';
         FileOutputStream out = new FileOutputStream(file);
         try (BufferedWriter r = new BufferedWriter(new OutputStreamWriter(out))) {
             StringBuilder header = new StringBuilder();
@@ -756,7 +757,8 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
                 if ( !s.endsWith(")") ) {
                     s= s+"()"; // backward compatibility
                 }
-                header.append(s).append("\t");
+                if ( j>0 ) header.append(delim);
+                header.append(s);
             }
             r.write(header.toString());
             r.newLine();
@@ -775,25 +777,27 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
                     }
                     StringBuilder s = new StringBuilder();
                     for (int j = 0; j < 2; j++) {
+                        if ( j>0 ) s.append(delim);
                         if ( j==0 && ltimeFormatter!=null ) { //TODO: this should be done by units.
-                            s.append( ltimeFormatter.format( x.get(j) ) ).append("\t");
+                            s.append( ltimeFormatter.format( x.get(j) ) );
                         } else {
                             DatumFormatter formatter = formatterArray[j];
-                            s.append(formatter.format(x.get(j), unitsArray[j])).append("\t");
+                            s.append(formatter.format(x.get(j), unitsArray[j]));
                         }
                     }
                     for (int j = 2; j < namesArray.length; j++) {
+                        s.append(delim);
                         Object o = x.getPlane(namesArray[j]);
                         if ( o==null ) {
                             //x.getPlane(planesArray[j]); // for debugging
                             throw new IllegalArgumentException("unable to find plane: "+namesArray[j]);
                         }
                         if (unitsArray[j] == null) {
-                            s.append("\"").append(o).append("\"\t");
+                            s.append("\"").append(o).append("\"");
                         } else {
                             Datum d = (Datum) o;
                             DatumFormatter f = formatterArray[j];
-                            s.append(f.format(d, unitsArray[j])).append("\t");
+                            s.append(f.format(d, unitsArray[j]));
                         }
                     }
                     r.write(s.toString());
@@ -1167,7 +1171,8 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
      */
     public boolean saveAs() {
         JFileChooser jj = new JFileChooser();
-        jj.setFileFilter( new FileNameExtensionFilter( "Flat Ascii Tables", "dat", "txt" ) );
+        jj.addChoosableFileFilter( new FileNameExtensionFilter( "Flat ASCII Tables", "dat", "txt", "csv" ) );
+        jj.addChoosableFileFilter( new FileNameExtensionFilter( "CSV ASCII Tables", "csv" ) );
         String lastFileString = prefs.get("components.DataPointRecorder.lastFileSave", "");
         if (lastFileString.length()>0) {
             File lastFile= new File(lastFileString);
@@ -1178,7 +1183,7 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
         if (status == JFileChooser.APPROVE_OPTION) {
             try {
                 File pathname= jj.getSelectedFile();
-                if ( !( pathname.toString().endsWith(".dat") || pathname.toString().endsWith(".txt") ) ) {
+                if ( !( pathname.toString().endsWith(".dat") || pathname.toString().endsWith(".txt")  || pathname.toString().endsWith(".csv")) ) {
                     pathname= new File( pathname.getAbsolutePath() + ".dat" );
                 }
                 DataPointRecorder.this.saveFile = pathname;
