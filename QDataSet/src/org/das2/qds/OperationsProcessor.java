@@ -777,6 +777,11 @@ public class OperationsProcessor {
                     String arg= getStringArg( s.next() );
                     ds= Ops.setValidRange( ds, arg );
                     
+                } else if ( cmd.equals("|timeShift") ) {
+                    Units u= SemanticOps.getUnits( SemanticOps.xtagsDataSet(ds) );
+                    String arg= getStringArg( s.next() );
+                    ds= Ops.timeShift( ds, u.getOffsetUnits().parse(arg) );
+                    
                 } else if ( cmd.equals("|monotonicSubset") ) {
                     WritableDataSet wds= Ops.copy(ds);
                     ds= Ops.monotonicSubset(wds);

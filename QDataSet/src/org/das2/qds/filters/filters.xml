@@ -214,6 +214,11 @@
                         <description>Set the numerical value marking invalid data.</description>
                     </bookmark>
                     <bookmark>
+                        <title>Time Shift</title>
+                        <filter>|timeShift('5hr')</filter>
+                        <description>Shift the data in time by this amount.</description>
+                    </bookmark>
+                    <bookmark>
                         <title>Monotonic Subset</title>
                         <filter>|monotonicSubset()</filter>
                         <description>Ensure the data is monotonically increasing by removing records.</description>

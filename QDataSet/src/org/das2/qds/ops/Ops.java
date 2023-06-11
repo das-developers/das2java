@@ -77,6 +77,8 @@ import org.das2.qds.DataSetAnnotations;
 import static org.das2.qds.DataSetUtil.propertyNames;
 import org.das2.qds.IndexGenDataSet;
 import org.das2.qds.IndexListDataSetIterator;
+import static org.das2.qds.SemanticOps.isJoin;
+import static org.das2.qds.SemanticOps.isTimeSeries;
 import org.das2.qds.SortDataSet;
 import org.das2.qds.SparseDataSet;
 import org.das2.qds.SubsetDataSet;
@@ -12884,6 +12886,38 @@ public final class Ops {
                 throw new RuntimeException("appended result didn't validate, contact support.");
             }
             return result;
+        }
+    }
+    
+    /**
+     * Shift the DEPEND_0 or the time column of a rank 2 dataset by the amount.  For example, to
+     * compare two time series recorded with times from different time zones.
+     * @param ds the data which is a time series.
+     * @param delta the amount to add to each timetag.
+     * @return data in the same form but with the times shifted.
+     * @see Schemes#isTimeSeries(org.das2.qds.QDataSet) 
+     */
+    public static QDataSet timeShift( QDataSet ds, Datum delta ) {
+        if ( isJoin(ds) ) {
+            JoinDataSet result= new JoinDataSet(ds.rank());
+            for ( int i=0; i<ds.length(); i++ ) {
+                result.join( timeShift(ds.slice(i), delta));
+            }
+            return result;
+            
+        } else if ( SemanticOps.isBundle(ds) && ds.property(QDataSet.DEPEND_0)==null ) {
+            QDataSet dep0= (QDataSet) Ops.unbundle( ds, 0 );
+            dep0= Ops.add( dep0, delta );
+            QDataSet result= Ops.bundle( dep0 );
+            for ( int i=1; i<ds.length(0); i++ ) {
+                result= Ops.bundle( result, Ops.unbundle(ds,i) );
+            }
+            return result;
+            
+        } else {
+            QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
+            dep0= Ops.add( dep0, delta );
+            return link( dep0, ds );
         }
     }
     
