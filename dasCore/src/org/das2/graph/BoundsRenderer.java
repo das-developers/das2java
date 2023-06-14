@@ -295,6 +295,7 @@ public class BoundsRenderer extends Renderer {
 
             }
             GraphUtil.fillWithTexture(g, pbox, fillColor, fillTexture);
+            g.setColor( this.getColor() );
             g.draw(pbox);
             context= pbox;
         } else if ( d.rank()==1 ) {
@@ -303,6 +304,7 @@ public class BoundsRenderer extends Renderer {
             GeneralPath path= GraphUtil.getPath( xAxis,yAxis,
                 Ops.link( xx, yy ), false,false);
             GraphUtil.fillWithTexture(g, path, fillColor, fillTexture);
+            g.setColor( this.getColor() );
             g.draw(path);
             context= path;
         } else if ( d.rank()==2 && ds.length(0)==3 ) { // TODO: What's the scheme for this data set?  Working on the output of contour
@@ -311,6 +313,7 @@ public class BoundsRenderer extends Renderer {
             GeneralPath path= GraphUtil.getPath( xAxis,yAxis,
                 xx, yy, false,false);
             GraphUtil.fillWithTexture(g, path, this.fillColor, this.fillTexture);
+            g.setColor( this.getColor() );
             g.draw(path);
             context= path;
             
@@ -328,6 +331,7 @@ public class BoundsRenderer extends Renderer {
                 Ops.append(mins,Ops.append(Ops.reverse(maxs),s1)),false,false);
             
             GraphUtil.fillWithTexture(g, path, this.fillColor, fillTexture );
+            g.setColor( this.getColor() );
             g.draw(path);
             context= path;
         }
