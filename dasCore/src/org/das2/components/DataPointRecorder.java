@@ -900,26 +900,34 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
                     continue;
                 }
                 if ( delimCheck && !line.contains("\t") ) {
-                    Pattern p= Pattern.compile("([\\s\\,\\;])");
-                    Matcher m= p.matcher(line);
-                    if ( m.find() ) {
-                        char cdelim= m.group(1).charAt(0);
-                        if ( Character.isWhitespace(cdelim) ) {
+                    String[] ss1= line.split("\\;");
+                    String[] ss2= line.split("\\,");
+                    if ( ss1.length>1 && ss1.length>ss2.length ) {
+                        delim= ";";
+                    } else if ( ss2.length>1 ) {
+                        delim= ",";
+                    } else {
+                        String[] ss3= line.split("\\t");
+                        if ( ss3.length==1 ) { // if there are no tabs, then use white space.
                             delim= "\\s+";
-                        } else {
-                            delim= m.group(1);
                         }
                     }
                 }
                 delimCheck= false;
                 
                 mon.setTaskProgress(linenum);
-                if (line.startsWith("## ") || line.length()>0 && Character.isJavaIdentifierStart( line.charAt(0) ) ) {
-                    if ( unitsArray1!=null ) continue;
+                if ( unitsArray1==null 
+                        && ( line.startsWith("## ") || 
+                        ( line.length()>0 && Character.isJavaIdentifierStart( line.charAt(0) ) ) ||
+                        ( line.length()>1 && line.charAt(0)=='"' && Character.isJavaIdentifierStart( line.charAt(1) ) ) ) ) {
                     while ( line.startsWith("#") ) line = line.substring(1);
                     String[] s = line.split(delim,-2);
                     for ( int i=0; i<s.length; i++ ) {
-                        s[i]= s[i].trim();
+                        String s1= s[i].trim();
+                        if ( s1.startsWith("\"") && s1.endsWith("\"") ) {
+                            s1= s1.substring(1,s1.length()-1);
+                        }
+                        s[i]= s1;
                     }
                     if ( s[s.length-1].length()==0 ) {
                         s= Arrays.copyOf(s,s.length-1);
@@ -932,11 +940,19 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
                         if (m.matches()) {
                             //System.err.printf("%d %s\n", i, m.group(1) );
                             planesArray1[i] = m.group(1).trim();
-                            switch (m.group(2).trim()) {
+                            String sunits= m.group(2).trim();
+                            if ( i==12 ) {
+                                System.err.println("stop here 12");
+                            }
+                            if ( sunits.endsWith("(ordinal)") ) { // Autoplot export to csv
+                                sunits= "ordinal";
+                            }
+                            switch (sunits) {
                                 case "UTC":
                                     unitsArray1[i] = Units.cdfTT2000;
                                     break;
                                 case "ordinal":
+                                case "nominal": // note this is not used but should be
                                 case "class java.lang.StringUnit(ordinal)":
                                     unitsArray1[i] = EnumerationUnits.create("default");
                                     break;
@@ -953,7 +969,12 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
                 }
                 String[] s = line.split(delim,-2);
                 for ( int i=0; i<s.length; i++ ) {
-                    s[i]= s[i].trim();
+                    String s1= s[i];
+                    s1=s1.trim();
+                    if ( s1.startsWith("\"") && s1.endsWith("\"") ) {
+                        s1= s1.substring(1,s1.length()-1);
+                    }
+                    s[i]= s1;
                 }
                 if (unitsArray1 == null) {
                     // support for legacy files
