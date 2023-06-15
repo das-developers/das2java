@@ -85,7 +85,7 @@ build: $(BUILD_JAR) $(BUILD_DEPEND_JARS) $(BUILD_SCRIPTS) #\
 # target/site/apidocs/index.html
 
 $(BUILD_JAR) $(BUILD_DEPEND_JARS):
-	mvn -Dmaven.javadoc.skip=true package
+	mvn -Dmaven.javadoc.skip=true install
 
 target/site/apidocs/index.html:
 	mvn generate-sources javadoc:javadoc
@@ -99,7 +99,8 @@ show:
 
 
 install: $(INST_LIB_JARS) $(INST_SCRIPTS)
-	-mvn install
+
+#-mvn -Dmaven.javadoc.skip=true install
 
 $(INST_DOC)/dasCore/index.html:target/site/apidocs/index.html
 	if [ ! -e $(INST_DOC)/dasCore ]; then mkdir -p $(INST_DOC)/dasCore; fi
