@@ -941,9 +941,6 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
                             //System.err.printf("%d %s\n", i, m.group(1) );
                             planesArray1[i] = m.group(1).trim();
                             String sunits= m.group(2).trim();
-                            if ( i==12 ) {
-                                System.err.println("stop here 12");
-                            }
                             if ( sunits.endsWith("(ordinal)") ) { // Autoplot export to csv
                                 sunits= "ordinal";
                             }
