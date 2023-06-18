@@ -5,7 +5,6 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.InputMismatchException;
 import java.util.List;
-import java.util.Map;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -13,16 +12,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
-import org.das2.datum.DatumRangeUtil;
 import org.das2.datum.DatumUtil;
-import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.Units;
 import org.das2.util.LoggerManager;
 import org.das2.util.StringTools;
 import org.das2.util.monitor.NullProgressMonitor;
 import org.das2.util.monitor.ProgressMonitor;
-import org.das2.qds.ReferenceCache;
-import static org.das2.qds.DataSetOps.flattenRank2;
 import static org.das2.qds.DataSetOps.grid;
 import static org.das2.qds.DataSetOps.slice1;
 import static org.das2.qds.DataSetOps.slice2;
@@ -33,7 +28,7 @@ import org.das2.qds.util.BinAverage;
 import org.das2.qds.util.Reduction;
 
 /**
- * Extract the sprocess from DataSetOps.
+ * Implement process chain like "|cleanData()|accum()", performing each command of the sequence.
  * @author jbf
  */
 public class OperationsProcessor {
