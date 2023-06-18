@@ -12690,7 +12690,10 @@ public final class Ops {
     /**
      * return an array that is the running sum of each element in the array,
      * starting with the value accum.
-     * Result[i]= accum + total( ds[0:i+1] )
+     * <br>
+     * Result[i]= accum + total( ds[0:i] ) + ds[i]
+     * <br>
+     * If a fill value is encountered, then zero is added to the accumulation.
      * @param accumDs the initial value of the running sum.  Last value of Rank 0 or Rank 1 dataset is used, or may be null.
      * @param ds each element is added to the running sum
      * @return the running of each element in the array.
@@ -12701,25 +12704,21 @@ public final class Ops {
             throw new IllegalArgumentException("only rank 1");
         }
         double accum=0;
-        QDataSet accumDep0Ds;
-        double accumDep0=0;
-        QDataSet dep0ds= (QDataSet) ds.property(QDataSet.DEPEND_0);
+        
         Units units;
         UnitsConverter uc= null;
+        
+        QDataSet wds= DataSetUtil.weightsDataSet(ds);
+        
         if ( accumDs==null ) {
-            accumDep0= dep0ds!=null ? dep0ds.value(0) : 0;
             units= Units.dimensionless;
         } else if ( accumDs.rank()==0 ) {
             accum= accumDs.value();
-            accumDep0Ds= (QDataSet) accumDs.property( QDataSet.CONTEXT_0 );
-            if ( accumDep0Ds!=null ) accumDep0= accumDep0Ds.value(); else accumDep0=0;
             units= SemanticOps.getUnits(accumDs);
             Units ddUnits= SemanticOps.getUnits(ds);
             uc= UnitsConverter.getConverter( ddUnits, units.getOffsetUnits() );
         } else if ( accumDs.rank()==1 ) {
             accum= accumDs.value(accumDs.length()-1);
-            accumDep0Ds= (QDataSet)  accumDs.property( QDataSet.DEPEND_0 );
-            if ( accumDep0Ds!=null ) accumDep0= accumDep0Ds.value(accumDs.length()); else accumDep0=0;
             units= SemanticOps.getUnits(accumDs);
             Units ddUnits= SemanticOps.getUnits(ds);
             uc= UnitsConverter.getConverter( ddUnits, units.getOffsetUnits() );
@@ -12729,22 +12728,19 @@ public final class Ops {
         if ( uc==UnitsConverter.IDENTITY ) uc=null;        
         WritableDataSet result= zeros( ds );
         result.putProperty( QDataSet.UNITS, units );
-        DDataSet dep0= null;
-        if ( dep0ds!=null ) {
-            dep0= DDataSet.createRank1( ds.length() );
-            DataSetUtil.putProperties( DataSetUtil.getProperties(dep0ds), dep0 );
-        }
+        
         for ( int i=0; i<result.length(); i++ ) {
-            double d= ds.value(i);
-            accum+= uc==null ?  d: uc.convert(d);
-            result.putValue(i,accum);
-            if ( dep0ds!=null ) {
-                assert dep0!=null;
-                dep0.putValue(i, ( accumDep0 + dep0ds.value(i)) / 2 );
-                accumDep0= dep0ds.value(i);
+            if ( wds.value(i)>0 ) {
+                double d= ds.value(i);
+                accum+= uc==null ?  d: uc.convert(d);
+                result.putValue(i,accum);
+            } else {
+                result.putValue(i,accum);
             }
         }
-
+        
+        result.putProperty( QDataSet.DEPEND_0, ds.property(QDataSet.DEPEND_0) );
+        
         return result;
     }
 
