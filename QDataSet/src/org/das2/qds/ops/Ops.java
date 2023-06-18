@@ -12740,6 +12740,8 @@ public final class Ops {
         }
         
         result.putProperty( QDataSet.DEPEND_0, ds.property(QDataSet.DEPEND_0) );
+        String label= (String) ds.property(QDataSet.LABEL);
+        if ( label!=null ) result.putProperty(QDataSet.LABEL, "accum("+label+")" );
         
         return result;
     }
