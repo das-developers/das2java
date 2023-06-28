@@ -91,6 +91,7 @@ import org.das2.datum.EnumerationUnits;
 import org.das2.datum.TimeLocationUnits;
 import org.das2.datum.TimeParser;
 import org.das2.datum.UnitsUtil;
+import org.das2.datum.format.DatumFormatterFactory;
 import org.das2.qds.DataSetOps;
 import org.das2.qds.DataSetUtil;
 import org.das2.qds.QDataSet;
@@ -1639,7 +1640,14 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
                 if ( d.isFill() ) {
                     super.setValue("fill");
                 } else {
-                    super.setValue( formatterArray[column].format( (Datum)value, unitsArray[column] ) );
+                    Units u= unitsArray[column];
+                    if ( formatterArray==null ) {
+                        DatumFormatterFactory f= u.getDatumFormatterFactory();
+                        String s= f.defaultFormatter().format(d,u);
+                        super.setValue( s );
+                    } else {
+                        super.setValue( formatterArray[column].format( d, unitsArray[column] ) );
+                    }
                 }
             }
             
