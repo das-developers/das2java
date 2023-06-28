@@ -779,11 +779,19 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
                     StringBuilder s = new StringBuilder();
                     for (int j = 0; j < 2; j++) {
                         if ( j>0 ) s.append(delim);
+                        Units u= unitsArray[j];
                         if ( j==0 && ltimeFormatter!=null ) { //TODO: this should be done by units.
                             s.append( ltimeFormatter.format( x.get(j) ) );
                         } else {
-                            DatumFormatter formatter = formatterArray[j];
-                            s.append(formatter.format(x.get(j), unitsArray[j]));
+                            if ( formatterArray!=null ) {
+                                DatumFormatter formatter = formatterArray[j];
+                                s.append(formatter.format(x.get(j), u));
+                            } else {
+                                DatumFormatterFactory f= u.getDatumFormatterFactory();
+                                Datum d= x.get(j);
+                                String sval= f.defaultFormatter().format(d,u);
+                                s.append(sval);
+                            }
                         }
                     }
                     for (int j = 2; j < namesArray.length; j++) {
@@ -793,12 +801,20 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
                             //x.getPlane(planesArray[j]); // for debugging
                             throw new IllegalArgumentException("unable to find plane: "+namesArray[j]);
                         }
-                        if (unitsArray[j] == null) {
+                        Units u= unitsArray[j];
+                        if ( u == null) {
                             s.append("\"").append(o).append("\"");
                         } else {
-                            Datum d = (Datum) o;
-                            DatumFormatter f = formatterArray[j];
-                            s.append(f.format(d, unitsArray[j]));
+                            if ( formatterArray!=null ) {
+                                Datum d = (Datum) o;
+                                DatumFormatter f = formatterArray[j];
+                                s.append(f.format(d, u));
+                            } else {
+                                DatumFormatterFactory f= u.getDatumFormatterFactory();
+                                Datum d= (Datum) o;
+                                String sval= f.defaultFormatter().format(d,u);
+                                s.append(sval);
+                            }
                         }
                     }
                     r.write(s.toString());
