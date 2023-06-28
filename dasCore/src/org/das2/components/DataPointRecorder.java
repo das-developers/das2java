@@ -1646,7 +1646,7 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
                         String s= f.defaultFormatter().format(d,u);
                         super.setValue( s );
                     } else {
-                        super.setValue( formatterArray[column].format( d, unitsArray[column] ) );
+                        super.setValue( formatterArray[column].format( d, unitsArray[column] ) ); 
                     }
                 }
             }
