@@ -57,6 +57,7 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
     public GrannyTextEditor() {
         initComponents();
         //psymButton.setVisible(false);
+        plotElementButton.setVisible(false);
         canvas= new JPanel() {
             @Override
             protected void paintComponent(Graphics g1) {
@@ -138,6 +139,9 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
         } else if ( id.equals("img") ) {
             imageButton.setVisible(true);
             imageButton.setEnabled(true);
+        } else if ( id.equals("plotElement") ) {
+            plotElementButton.setVisible(true);
+            plotElementButton.setEnabled(true);
         }
         
     }
@@ -211,6 +215,9 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
         imageSizeCB = new javax.swing.JCheckBox();
         imageSizeTF = new javax.swing.JTextField();
         jLabel8 = new javax.swing.JLabel();
+        plotElementPanel = new javax.swing.JPanel();
+        jLabel9 = new javax.swing.JLabel();
+        peNumber = new javax.swing.JTextField();
         renderPanel = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTextArea1 = new javax.swing.JTextArea();
@@ -229,6 +236,7 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
         underlineButton = new javax.swing.JButton();
         psymButton = new javax.swing.JButton();
         imageButton = new javax.swing.JButton();
+        plotElementButton = new javax.swing.JButton();
         greekTab = new javax.swing.JPanel();
         miscTab = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
@@ -484,6 +492,33 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
+        jLabel9.setText("Plot Element Number:");
+
+        peNumber.setText(" ");
+
+        javax.swing.GroupLayout plotElementPanelLayout = new javax.swing.GroupLayout(plotElementPanel);
+        plotElementPanel.setLayout(plotElementPanelLayout);
+        plotElementPanelLayout.setHorizontalGroup(
+            plotElementPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(plotElementPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(plotElementPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(plotElementPanelLayout.createSequentialGroup()
+                        .addGap(12, 12, 12)
+                        .addComponent(peNumber, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jLabel9))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        plotElementPanelLayout.setVerticalGroup(
+            plotElementPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(plotElementPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel9)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(peNumber, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(48, Short.MAX_VALUE))
+        );
+
         renderPanel.setLayout(new java.awt.BorderLayout());
 
         jTextArea1.setColumns(20);
@@ -608,6 +643,7 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
         });
 
         psymButton.setText("Psym");
+        psymButton.setToolTipText("Add a symbol with given color and shape");
         psymButton.setEnabled(false);
         psymButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -616,10 +652,20 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
         });
 
         imageButton.setText("Image");
+        imageButton.setToolTipText("Insert an image from a url");
         imageButton.setEnabled(false);
         imageButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 imageButtonActionPerformed(evt);
+            }
+        });
+
+        plotElementButton.setText("PlotElement");
+        plotElementButton.setToolTipText("insert a symbol based on a plot element");
+        plotElementButton.setEnabled(false);
+        plotElementButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                plotElementButtonActionPerformed(evt);
             }
         });
 
@@ -640,7 +686,9 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
                     .addGroup(extensionsTabLayout.createSequentialGroup()
                         .addComponent(psymButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(imageButton)))
+                        .addComponent(imageButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(plotElementButton)))
                 .addGap(0, 199, Short.MAX_VALUE))
         );
         extensionsTabLayout.setVerticalGroup(
@@ -654,7 +702,8 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(extensionsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(psymButton)
-                    .addComponent(imageButton))
+                    .addComponent(imageButton)
+                    .addComponent(plotElementButton))
                 .addContainerGap(29, Short.MAX_VALUE))
         );
 
@@ -849,6 +898,14 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
         // TODO add your handling code here:
     }//GEN-LAST:event_jRadioButton1ActionPerformed
 
+    private void plotElementButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_plotElementButtonActionPerformed
+         if ( JOptionPane.OK_OPTION==
+                JOptionPane.showConfirmDialog( this, plotElementPanel, "Plot Element Options", JOptionPane.OK_CANCEL_OPTION ) ) {
+            String textb= "!(painter;legend;plotElement="+peNumber.getText()+")";
+            doInsert( textb, null );
+        }
+    }//GEN-LAST:event_plotElementButtonActionPerformed
+
     private void updateImage() {
         String oldString= gtr.getString();
         try {
@@ -921,6 +978,7 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
     private javax.swing.JRadioButton jRadioButton1;
     private javax.swing.JRadioButton jRadioButton11;
     private javax.swing.JRadioButton jRadioButton2;
@@ -939,6 +997,9 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
     private javax.swing.JRadioButton noneConnectorRB;
     private javax.swing.JRadioButton noneFillStyleRB;
     private javax.swing.JRadioButton outlineFillStyleRB;
+    private javax.swing.JTextField peNumber;
+    private javax.swing.JButton plotElementButton;
+    private javax.swing.JPanel plotElementPanel;
     private javax.swing.ButtonGroup plotSymbolButtonGroup;
     private javax.swing.JButton psymButton;
     private javax.swing.JCheckBox psymColorCB;
