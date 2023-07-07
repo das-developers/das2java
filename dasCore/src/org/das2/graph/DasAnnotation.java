@@ -790,24 +790,36 @@ public class DasAnnotation extends DasCanvasComponent {
         Point2D p2d= GraphUtil.lineRectangleIntersection( tail2d, head2d, rect2d );
         Point p= p2d==null ? head : new Point( (int)p2d.getX(), (int)p2d.getY() );
 
-        g2.setStroke( new BasicStroke( (float) (em2/4), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ) );
 
         Point head0 = new Point( head );
-        if ( pointAtOffset.length()>0 ) {
-            Line2D line= new Line2D.Double( head.x, head.y, p.x, p.y );
-            double lengthPixels= GraphUtil.parseLayoutLength( pointAtOffset, line.getP1().distance(line.getP2()), getEmSize() );
-            Line2D newLine= GraphUtil.shortenLine(line, lengthPixels, 0 );
-            head= new Point( (int)newLine.getP1().getX(), (int)newLine.getP1().getY() );
-        }
 
         if ( showArrow ) {
+            
+            if ( pointAtOffset.length()>0 ) {
+                Line2D line= new Line2D.Double( head.x, head.y, p.x, p.y );
+                double lengthPixels= GraphUtil.parseLayoutLength( pointAtOffset, line.getP1().distance(line.getP2()), getEmSize() );
+                Line2D newLine= GraphUtil.shortenLine(line, lengthPixels, 0 );
+                head= new Point( (int)newLine.getP1().getX(), (int)newLine.getP1().getY() );
+            }
+            
             Color glowColor= getCanvas().getBackground();
-            g2.setColor( new Color( glowColor.getRed(), glowColor.getGreen(), glowColor.getBlue(), 128 ) );
-            Arrow.paintArrow(g2, head, p, em2, this.arrowStyle );
-
+            
+            if ( gtr.isGlow() ) {
+                // match the 1-pixel glow around the text
+                float linethink= (float) ( (em2 / 12) );
+                if ( linethink<2 ) linethink=2;
+                g2.setStroke( new BasicStroke( linethink, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ) );
+                g2.setColor( Color.WHITE );
+                Arrow.paintArrow(g2, head, p, em2, this.arrowStyle );
+            } else {
+                g2.setStroke( new BasicStroke( (float) (em2/4), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ) );
+                g2.setColor( new Color( glowColor.getRed(), glowColor.getGreen(), glowColor.getBlue(), 128 ) );
+                Arrow.paintArrow(g2, head, p, em2, this.arrowStyle );
+            }
             g2.setStroke( stroke0 );
             g2.setColor( fore );
             Arrow.paintArrow(g2, head, p, em2, this.arrowStyle );
+            
         }
 
         if ( DefaultPlotSymbol.NONE!=symbol ) {
