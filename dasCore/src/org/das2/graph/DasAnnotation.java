@@ -1448,6 +1448,17 @@ public class DasAnnotation extends DasCanvasComponent {
         firePropertyChange(PROP_ROTATE, oldRotate, rotate);
     }
 
+    public static final String PROP_GLOW = "glow";
+
+    public boolean isGlow() {
+        return this.gtr.isGlow();
+    }
+
+    public void setGlow(boolean glow) {
+        boolean oldGlow = isGlow();
+        this.gtr.setGlow(glow);
+        firePropertyChange(PROP_GLOW, oldGlow, glow);
+    }
     
     private PlotSymbol symbol = DefaultPlotSymbol.NONE;
 
