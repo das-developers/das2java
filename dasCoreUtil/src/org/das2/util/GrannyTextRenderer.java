@@ -344,6 +344,21 @@ public class GrannyTextRenderer {
     }
     
     /**
+     * if true, then draw a contrasting color around the label.
+     */
+    private boolean glow = false;
+
+    public static final String PROP_GLOW = "glow";
+
+    public boolean isGlow() {
+        return glow;
+    }
+
+    public void setGlow(boolean glow) {
+        this.glow = glow;
+    }
+
+    /**
      * draw the current string.  Note the first line will be above iy, and following lines will
      * be below iy.  This is to be consistent with Graphics2D.drawString.
      *
@@ -352,6 +367,16 @@ public class GrannyTextRenderer {
      * @param iy The y position of the baseline of the first line of text.
      */
     public void draw( Graphics ig, float ix, float iy ) {
+        if ( glow ) {
+            Color color0= ig.getColor();
+            Color backColor0= color0.getRed()<128 ? Color.WHITE : Color.BLACK;
+            ig.setColor(backColor0);
+            this.draw( ig, ig.getFont(), ix-1, iy, true);
+            this.draw( ig, ig.getFont(), ix+1, iy, true);
+            this.draw( ig, ig.getFont(), ix, iy-1, true);
+            this.draw( ig, ig.getFont(), ix, iy+1, true);
+            ig.setColor(color0);
+        }
         this.draw( ig, ig.getFont(), ix, iy, true);
     }
     
