@@ -809,7 +809,7 @@ public class DasAnnotation extends DasCanvasComponent {
                 float linethink= (float) ( (em2 / 12) );
                 if ( linethink<2 ) linethink=2;
                 g2.setStroke( new BasicStroke( linethink, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ) );
-                g2.setColor( Color.WHITE );
+                g2.setColor( glowColor );
                 Arrow.paintArrow(g2, head, p, em2, this.arrowStyle );
             } else {
                 g2.setStroke( new BasicStroke( (float) (em2/4), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ) );
