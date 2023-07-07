@@ -29,6 +29,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.das2.qds.buffer.BufferDataSet;
 import org.das2.datum.CacheTag;
@@ -98,6 +99,7 @@ import org.das2.qds.util.LinFit;
 import org.das2.qds.math.Contour;
 import org.das2.util.ColorUtil;
 import org.das2.util.JsonUtil;
+import org.das2.util.StringTools;
 
 /**
  * A fairly complete set of operations for QDataSets, including binary operations
@@ -13776,7 +13778,14 @@ public final class Ops {
             } else {
                 BundleDataSet ds= new BundleDataSet( ds1.rank() + 1 );
                 ds.bundle(ds1);
-                ds.bundle(ds2);                
+                ds.bundle(ds2);  
+                QDataSet dep0= (QDataSet)ds1.property(QDataSet.DEPEND_0);
+                if ( dep0!=null ) {
+                    QDataSet dep1= (QDataSet)ds2.property(QDataSet.DEPEND_0);
+                    if ( dep1.length()>0 && equivalent( dep0.slice(0), dep1.slice(0) ) ) {
+                        ds.putProperty( QDataSet.DEPEND_0, dep0 );
+                    }
+                }
                 return ds;
             }
         } else if ( ds1 instanceof BundleDataSet && ds1.rank()-1==ds2.rank() ) {
@@ -15470,6 +15479,134 @@ public final class Ops {
         return result;
         
     };
+    
+    /**
+     * parse the string into a rank 2 matrix
+     * @param smat a string like '[[1,0,0],[0,1,0],[0,0,1]]'
+     * @return rank 2 matrix.
+     */
+    public static final QDataSet matrixParse( String smat ) {
+        Pattern p= Pattern.compile("\\[\\[(.*)\\,(.*)\\,(.*)\\]\\,\\[(.*)\\,(.*)\\,(.*)\\]\\,\\[(.*)\\,(.*)\\,(.*)\\]\\]");
+        Matcher m= p.matcher(smat);
+        if ( m.matches() ) {
+            return DDataSet.wrap( 
+                    new double[] {
+                        Double.parseDouble(m.group(1)), Double.parseDouble(m.group(2)), Double.parseDouble(m.group(3)), 
+                        Double.parseDouble(m.group(4)), Double.parseDouble(m.group(5)), Double.parseDouble(m.group(6)),
+                        Double.parseDouble(m.group(7)), Double.parseDouble(m.group(8)), Double.parseDouble(m.group(9)) },
+                    new int[] { 3,3 } 
+            );
+        } else {
+            throw new IllegalArgumentException("smat must be [[d,d,d],[d,d,d],[d,d,d]]");
+        }
+    }
+    
+    /**
+     * return the matrix rotating about one axis.
+     * @param seq
+     * @param angle
+     * @return 
+     */
+    public static final QDataSet matrixFromEuler( String seq, Datum angle ) {
+        if ( seq.length()!=1 ) {
+            throw new IllegalArgumentException("Only x, y, or z supported");
+        }
+        double ang= angle.doubleValue(Units.radians);
+        
+        switch ( seq.charAt(0) ) {
+            case 'x':
+                return DDataSet.wrap( new double[] { 1, 0, 0, 
+                    0, Math.cos(ang), -Math.sin(ang),
+                    0, Math.sin(ang), Math.cos(ang)}, 
+                    new int[] { 3, 3 } );
+            case 'y':
+                return DDataSet.wrap( new double[] { Math.cos(ang), 0, Math.sin(ang), 
+                    0, 1, 0,
+                    -Math.sin(ang), 0, Math.cos(ang) },
+                    new int[] { 3, 3 } );
+            case 'z':
+                return DDataSet.wrap( new double[] { Math.cos(ang), Math.sin(ang), 0,
+                    -Math.sin(ang), Math.cos(ang), 0,
+                    0, 0, 1 }, 
+                    new int[] { 3, 3 } );
+            default:
+                throw new IllegalArgumentException("component must be x,y, or z");
+        }
+    }
+    
+    /**
+     * matrix multiply the components of vector <code>v</code> by matrix <code>m</code>.  Argument <code>v</code> can also be a 
+     * rank 2 series of vectors (vv[n,3]), and argument <code>m</code> can be an array of matrices (mm[n,3,3]).
+     * @param m matrix or array of matrices
+     * @param v vector or array of vectors
+     * @return vectors in the same form as <code>b</code>
+     * @see #bundle(org.das2.qds.QDataSet, org.das2.qds.QDataSet, org.das2.qds.QDataSet) bundle for creating vectors from 
+     * components.
+     * @see #slice1(org.das2.qds.QDataSet, int) for extracting components from the result.
+     */
+    public static final QDataSet matrixMultiply( QDataSet m, QDataSet v ) {
+        if ( m.rank()==2 && m.length()==3 && m.length(0)==3 ) {
+            if ( v.length()==3 && v.rank()==1 ) {
+                MutablePropertyDataSet result= DDataSet.wrap( new double[] { 
+                    m.value(0,0) * v.value(0) + m.value(0,1) * v.value(1) + m.value(0,2) * v.value(2),
+                    m.value(1,0) * v.value(0) + m.value(1,1) * v.value(1) + m.value(1,2) * v.value(2),
+                    m.value(2,0) * v.value(0) + m.value(2,1) * v.value(1) + m.value(2,2) * v.value(2) } );
+                Map<String,Object> props= Ops.copyProperties(v);
+                props.remove(QDataSet.LABEL);
+                props.remove(QDataSet.TITLE);
+                DataSetUtil.putProperties( props, result );
+                return result;
+            } else if ( v.rank()==2 ) {
+                MutablePropertyDataSet result= DataSetOps.makePropertiesMutable( Ops.bundle( 
+                    Ops.add( Ops.add( Ops.multiply( m.value(0,0), Ops.slice1( v, 0 ) ), 
+                                      Ops.multiply( m.value(0,1), Ops.slice1( v, 1 ) ) ), 
+                                      Ops.multiply( m.value(0,2), Ops.slice1( v, 2 ) ) ), 
+                    Ops.add( Ops.add( Ops.multiply( m.value(1,0), Ops.slice1( v, 0 ) ), 
+                                      Ops.multiply( m.value(1,1), Ops.slice1( v, 1 ) ) ), 
+                                      Ops.multiply( m.value(1,2), Ops.slice1( v, 2 ) ) ), 
+                    Ops.add( Ops.add( Ops.multiply( m.value(2,0), Ops.slice1( v, 0 ) ), 
+                                      Ops.multiply( m.value(2,1), Ops.slice1( v, 1 ) ) ), 
+                                      Ops.multiply( m.value(2,2), Ops.slice1( v, 2 ) ) ) 
+                ) );
+                Map<String,Object> props= Ops.copyProperties(v);
+                props.remove(QDataSet.LABEL);
+                props.remove(QDataSet.TITLE);
+                DataSetUtil.putProperties( props, result );
+                return result;
+            } else {
+                throw new IllegalArgumentException("v must be vector or array of vectors");
+            }
+        } else if ( m.rank()==3 && m.length(0)==3 && m.length(0,0)==3 ) {
+            QDataSet a00= Ops.slices( m, ":", 0, 0 );
+            QDataSet a01= Ops.slices( m, ":", 0, 1 );
+            QDataSet a02= Ops.slices( m, ":", 0, 2 );
+            QDataSet a10= Ops.slices( m, ":", 1, 0 );
+            QDataSet a11= Ops.slices( m, ":", 1, 1 );
+            QDataSet a12= Ops.slices( m, ":", 1, 2 );
+            QDataSet a20= Ops.slices( m, ":", 2, 0 );
+            QDataSet a21= Ops.slices( m, ":", 2, 1 );
+            QDataSet a22= Ops.slices( m, ":", 2, 2 );
+            
+            MutablePropertyDataSet result= DataSetOps.makePropertiesMutable( Ops.bundle( 
+                    Ops.add( Ops.add( Ops.multiply( a00, Ops.slice1( v, 0 ) ), 
+                                      Ops.multiply( a01, Ops.slice1( v, 1 ) ) ), 
+                                      Ops.multiply( a02, Ops.slice1( v, 2 ) ) ), 
+                    Ops.add( Ops.add( Ops.multiply( a10, Ops.slice1( v, 0 ) ), 
+                                      Ops.multiply( a11, Ops.slice1( v, 1 ) ) ), 
+                                      Ops.multiply( a12, Ops.slice1( v, 2 ) ) ), 
+                    Ops.add( Ops.add( Ops.multiply( a20, Ops.slice1( v, 0 ) ), 
+                                      Ops.multiply( a21, Ops.slice1( v, 1 ) ) ), 
+                                      Ops.multiply( a22, Ops.slice1( v, 2 ) ) ) 
+                ) );
+            Map<String,Object> props= Ops.copyProperties(v);
+                props.remove(QDataSet.LABEL);
+                props.remove(QDataSet.TITLE);
+                DataSetUtil.putProperties( props, result );
+                return result;
+        } else {
+            throw new IllegalArgumentException("m must be matrix or array of matrices, v must be vector or array of vectors");
+        }
+    }
     
     /**
      * return the gamma function for numbers greater than 0.  This will 
