@@ -8,6 +8,7 @@
  */
 package org.das2.qds;
 
+import java.io.IOException;
 import java.lang.reflect.Array;
 import java.text.DecimalFormat;
 import java.text.ParseException;
@@ -46,6 +47,7 @@ import org.das2.datum.format.TimeDatumFormatter;
 import org.das2.util.LoggerManager;
 import org.das2.qds.examples.Schemes;
 import org.das2.qds.ops.Ops;
+import org.das2.qds.util.AsciiFormatter;
 import org.das2.qds.util.AutoHistogram;
 import org.das2.qds.util.LinFit;
 
@@ -2120,8 +2122,23 @@ public class DataSetUtil {
             }
         }
 
+//        try {
+//            // dump to text data file and figure out what's going on.
+//            QDataSet bins= (QDataSet)hist.property(QDataSet.DEPEND_0);
+//            new AsciiFormatter().formatToFile( 
+//                    new java.io.File( String.format( "/tmp/ap/cadence_0038_%04d.dat", hist.length() ) ),
+//                    bins, hist ) ;
+//        } catch (IOException ex) {
+//            logger.log(Level.SEVERE, null, ex);
+//        }
+//        
+//        if ( haveResult && t<1000 ) {
+//            // do something here
+//        }
+        
         // one last sanity check, for the PlasmaWaveGroup file:///home/jbf/project/autoplot/data/qds/gapBug/gapBug.qds?Frequency
-        if ( t<65 && log ) {
+        final int LIMIT_YTAGS_LENGTH_CHECK=160;
+        if ( t<LIMIT_YTAGS_LENGTH_CHECK && log ) {
             double s= Math.abs( ss/nn );
             int skip=0;
             int bigSkip=0;
@@ -2146,7 +2163,7 @@ public class DataSetUtil {
             MutablePropertyDataSet result= DRank0DataSet.create(ss/nn);
 
             // 1582: one last check, because the gaps in the spectrogram come up way too often! 
-            if ( t<65 ) {
+            if ( t<LIMIT_YTAGS_LENGTH_CHECK ) {
                 QDataSet r;
                 QDataSet tresult= Ops.multiply(result,1.10);
                 if ( log && logDiff!=null ) {
