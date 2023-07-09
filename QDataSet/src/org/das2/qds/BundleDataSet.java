@@ -131,6 +131,7 @@ public final class BundleDataSet extends AbstractDataSet {
             }
         }
         // This can't be done carelessly, because test037_breakCounter_2 shows a problem.
+        // https://github.com/das-developers/das2java/issues/63
 //        QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
 //        QDataSet thisDep0= (QDataSet) super.property( QDataSet.DEPEND_0 );
 //        if ( thisDep0==null && dep0!=null ) {   
