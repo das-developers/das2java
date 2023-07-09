@@ -13783,7 +13783,8 @@ public final class Ops {
                 if ( dep0!=null ) {
                     QDataSet dep1= (QDataSet)ds2.property(QDataSet.DEPEND_0);
                     if ( dep1.length()>0 && equivalent( dep0.slice(0), dep1.slice(0) ) ) {
-                        ds.putProperty( QDataSet.DEPEND_0, dep0 );
+                        //ds.putProperty( QDataSet.DEPEND_0, dep0 );
+                        logger.fine("consider https://github.com/das-developers/das2java/issues/63");
                     }
                 }
                 return ds;
