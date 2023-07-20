@@ -38,18 +38,35 @@ public class DefaultDatumFormatter extends DatumFormatter {
 
     private String formatString;
     private NumberFormat format;
+    
+    /**
+     * if non-null, use this.
+     */
+    private String stringFormat;
 
     /** Available for use by subclasses */
     protected DefaultDatumFormatter() {
     }
 
+    /**
+     * create a formatter
+     * @param formatString, passed to DecimalFormat's applyPattern, also supporting %d, %.2f, and %.2e
+     * @throws ParseException 
+     * @see  java.text.DecimalFormat#applyPattern(java.lang.String) 
+     */
     public DefaultDatumFormatter(String formatString) throws ParseException {
         if (formatString.equals("")) {
             this.formatString = "";
             format = null;
+            stringFormat= null;
         } else {
             this.formatString = formatString;
             format = NumberFormatUtil.getDecimalFormat(formatString);
+            if ( formatString.startsWith("%") && ( formatString.endsWith("e") || formatString.endsWith("f") || formatString.endsWith("d") ) ) {
+                this.stringFormat= formatString;
+            } else {
+                this.stringFormat= null;
+            }
         }
     }
 
@@ -69,7 +86,9 @@ public class DefaultDatumFormatter extends DatumFormatter {
             return "" + d;
         }
         String result;
-        if (format == null) {
+        if ( stringFormat!=null ) {
+            result= String.format( stringFormat, d );
+        } else if (format == null) {
             double resolution = datum.getResolution(units.getOffsetUnits());
             result = formatLimitedResolution(d, resolution);
         } else {
