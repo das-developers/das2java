@@ -1771,6 +1771,12 @@ public final class TimeUtil {
         }
     }
     
+    /**
+     * check to see if the string is parseable as a time.
+     * @param string any string
+     * @return true if the string is clearly a time.
+     * @see #create(java.lang.String) 
+     */
     public static boolean isValidTime( String string ) {
         try {
             create( string );
