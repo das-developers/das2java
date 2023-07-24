@@ -478,6 +478,11 @@ public class DasPlot extends DasCanvasComponent {
                 boundRect.x = mrect.x;
                 mrect.y= yAxis.getRow().getDMinimum(); // em/5 determined by experiment.
                 break;
+            case OutsideSE:
+                mrect.x = xAxis.getColumn().getDMaximum() + em + maxIconWidth;
+                boundRect.x = mrect.x;
+                mrect.y= yAxis.getRow().getDMaximum() - em;
+                break;
             default:
                 throw new IllegalArgumentException("not supported: "+legendPosition);
         }
@@ -538,11 +543,11 @@ public class DasPlot extends DasCanvasComponent {
         
         msgx= mrect.x;
         msgy= mrect.y;
-        if ( legendPosition!=LegendPosition.OutsideNE ) {
+        if ( legendPosition!=LegendPosition.OutsideNE && legendPosition!=LegendPosition.OutsideSE ) {
             msgx+= maxIconWidth + em/4;
         }
         
-        if ( legendPosition!=LegendPosition.OutsideNE ) {
+        if ( ( legendPosition!=LegendPosition.OutsideNE && legendPosition!=LegendPosition.OutsideSE ) ) {
             Rectangle legendBounds= new Rectangle( mrect.x - em / 4, mrect.y - em/4, mrect.width + em / 2, mrect.height + em/2 );
             int canvasWidth= getParent().getWidth();
             Rectangle clip= legendBounds.intersection( new Rectangle( 0, getRow().getDMinimum(), 2*canvasWidth, getRow().getHeight() ) );

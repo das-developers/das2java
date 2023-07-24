@@ -17,7 +17,8 @@ public enum LegendPosition implements Enumeration {
     NE, // corner of plot
     SW,
     SE,
-    OutsideNE;
+    OutsideNE,
+    OutsideSE;
 
     @Override
     public Icon getListIcon() {
@@ -37,6 +38,8 @@ public enum LegendPosition implements Enumeration {
             g.fillRect(7,7,5,5);
         } else if ( this==OutsideNE ) {
             g.fillRect(12,2,5,5);
+        } else if ( this==OutsideSE ) {
+            g.fillRect(12,8,5,5);
         }
         return new ImageIcon(im);
     }
