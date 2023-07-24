@@ -97,6 +97,7 @@ public final class Slice1DataSet extends AbstractDataSet {
                         break;
                     }
                     if ( dep1.property(QDataSet.BINS_1).equals(QDataSet.VALUE_BINS_MIN_MAX) ) {
+                        if ( addContext ) DataSetUtil.addContext( this, new Slice0DataSet(dep1,index,false) );
                         break;
                     }
                 default: 
