@@ -142,6 +142,16 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
     protected String[] namesArray;
     
     /**
+     * the default name for the first column
+     */
+    private String xname = "x";
+    
+    /**
+     * the default name for the second column
+     */
+    private String yname = "y";
+    
+    /**
      * value to use when the dataset input does not contain the bundled dataset (plane).
      */
     protected Datum[] defaultsArray;
@@ -504,8 +514,8 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
     public QDataSet getSelectedDataPoints() {
         if ( unitsArray[0]==null ) return null;
         DataSetBuilder builder= new DataSetBuilder( 2, dataPoints.size(), namesArray.length );
-        builder.setName( 0, "x" );
-        builder.setName( 1, "y" );
+        builder.setName( 0, xname );
+        builder.setName( 1, yname );
         builder.setFillValue( -1e31 );
         for ( int i=2; i<namesArray.length; i++ ) {
             builder.setName(i, namesArray[i] );
@@ -1003,7 +1013,7 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
                         }
                     }
                     planesArray1 = new String[s.length];
-                    System.arraycopy( new String[]{"X", "Y", "comment"}, 0, planesArray1, 0, planesArray1.length );
+                    System.arraycopy( new String[]{"x", "y", "comment"}, 0, planesArray1, 0, planesArray1.length );
                     for ( int i=3; i<planesArray1.length; i++ ) {
                         planesArray1[i]= "comment"+i;
                     }
@@ -1582,7 +1592,7 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
 
         this.add(menuBar, BorderLayout.NORTH);
 
-        namesArray = new String[]{"X", "Y"};
+        namesArray = new String[]{xname, yname};
         unitsArray = new Units[]{null, null};
 
         table = new JTable(myTableModel);
@@ -1898,6 +1908,52 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
         }
     }
     
+    private void updateTableGUI() {
+        Runnable run= () -> {
+            updateStatus();
+            updateClients();
+            table.repaint();
+        };
+        SwingUtilities.invokeLater(run);
+    }
+    /**
+     * set the x column name
+     * @param name a legal column name
+     * @see Ops#safeName(java.lang.String) 
+     */
+    public void setXname( String name ) {
+        if ( !Ops.isSafeName(name) ) throw new IllegalArgumentException("xname must be a safe name");
+        this.xname= name;
+        updateTableGUI();
+    }
+    
+    /**
+     * set the y column name
+     * @param name a legal column name
+     * @see Ops#safeName(java.lang.String) 
+     */
+    public void setYname( String name ) {
+        if ( !Ops.isSafeName(name) ) throw new IllegalArgumentException("yname must be a safe name");
+        this.yname= name;
+        updateTableGUI();
+    }
+    
+    /**
+     * return the x column name
+     * @return 
+     */
+    public String getXname( ) {
+        return this.xname;
+    }
+    
+    /**
+     * return the y column name
+     * @return 
+     */
+    public String setYname( ) {
+        return this.yname;
+    }
+    
     /**
      * add a record, which should be a rank 1 bundle.
      * @param ds 
@@ -1974,8 +2030,8 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
                 formatterArray[0] = x.getFormatter();
                 formatterArray[1] = y.getFormatter();
                 namesArray    = new String[2 + planes.size()];
-                namesArray[0] = "x";
-                namesArray[1] = "y";
+                namesArray[0] = xname;
+                namesArray[1] = yname;
                 int index = 2;
                 for ( Iterator i = planes.entrySet().iterator(); i.hasNext();) {
                     Entry entry= (Entry)i.next();
