@@ -1324,6 +1324,29 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
     }
 
+    private int tcaRows = -1;
+
+    public static final String PROP_TCAROWS = "tcaRows";
+
+    /**
+     * the explicit number of TCA rows used to allocate space (not including time location).  If negative, this is ignored.
+     * @return tcaRows
+     */
+    public int getTcaRows() {
+        return tcaRows;
+    }
+
+    /**
+     * the explicit number of additional TCA rows used to allocate space (not including time location).  If negative, this is ignored.
+     * @param tcaRows 
+     */
+    public void setTcaRows(int tcaRows) {
+        int oldTcaRows = this.tcaRows;
+        this.tcaRows = tcaRows;
+        update();
+        firePropertyChange(PROP_TCAROWS, oldTcaRows, tcaRows);
+    }
+    
     private String tcaLabels="";
 
     public static final String PROP_TCALABELS = "tcaLabels";
@@ -3619,11 +3642,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             QDataSet ltcaData= tcaData;
             String[] ltcaLabels= this.tcaLabels.split(";");
             
-            if (drawTca && ( ltcaLabels.length>1 || ltcaData != null && ltcaData.length() != 0 ) ) {
+            if (drawTca && ( tcaRows>=0 || ltcaLabels.length>1 || ltcaData != null && ltcaData.length() != 0 ) ) {
                 int DMin = getColumn().getDMinimum();
                 Font tickLabelFont = getTickLabelFont();
                 int tick_label_gap = getFontMetrics(tickLabelFont).stringWidth(" ");
-                int lines= getTickLines() - 1;
+                int lines= tcaRows>=0 ? tcaRows : ( getTickLines() - 1 );
                 int tcaHeight = (tickLabelFont.getSize() + getLineSpacing()) * lines;
                 int maxLabelWidth = getMaxLabelWidth();
                 bounds.height += tcaHeight;
@@ -4686,7 +4709,12 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             } else {
                 verticalLayout();
             }
-            if (drawTca && getOrientation() == BOTTOM && tcaData != null) {
+            if ( tcaRows>=0 ) {
+                Rectangle bounds = primaryInputPanel.getBounds();
+                int tcaHeight = (getTickLabelFont().getSize() + getLineSpacing()) * Math.min( MAX_TCA_LINES, tcaRows );
+                bounds.height += tcaHeight;
+                primaryInputPanel.setBounds(bounds);
+            } else if (drawTca && getOrientation() == BOTTOM && tcaData != null) {
                 Rectangle bounds = primaryInputPanel.getBounds();
                 int tcaHeight = (getTickLabelFont().getSize() + getLineSpacing()) * Math.min( MAX_TCA_LINES, tcaData.length(0));
                 bounds.height += tcaHeight;
