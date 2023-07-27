@@ -14928,10 +14928,12 @@ public final class Ops {
             if ( !u1.isConvertibleTo(u2) ) return false;
             if ( !CoerceUtil.equalGeom( ds1, ds2 ) ) return false;
             QDataSet eq= eq( ds1, ds2 );
+            QDataSet veq= eq( valid(ds1), valid(ds2) );
             QubeDataSetIterator it= new QubeDataSetIterator(eq);
             while ( it.hasNext() ) {
                 it.next();
-                if ( it.getValue(eq)==0 ) return false;
+                if ( it.getValue(eq)==0 || it.getValue(veq)==0 ) return false;
+                
             }
             return true;
         }
