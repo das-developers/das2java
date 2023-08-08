@@ -349,7 +349,11 @@ public class DataSetOps {
                 DataSetUtil.putProperties( DataSetUtil.getDimensionProperties(dep2,null), zds );
                 return Ops.link( xds, yds, zds, fds );
             } else {
-                return Ops.link( xds, yds, fds );
+                if ( dep1==null ) {
+                    return Ops.link( xds, fds );
+                } else {
+                    return Ops.link( xds, yds, fds );
+                }
             }
         } else  {
             return fds;
@@ -366,6 +370,13 @@ public class DataSetOps {
      */
     public static QDataSet flattenWaveform( final QDataSet ds ) {
         if ( ds.rank()==1 ) throw new IllegalArgumentException("data is rank 1 and already flat.");
+        if ( ds.rank()==3 ) {
+            QDataSet result= null;
+            for ( int i=0; i<ds.length(); i++ ) {
+                result= Ops.join( result, flattenWaveform(ds.slice(i)) );
+            }
+            return result;
+        }
         QDataSet dep1= (QDataSet) ds.property( QDataSet.DEPEND_1 );
         if ( dep1==null ) throw new IllegalArgumentException("data does not have DEPEND_1, and is not a rank 2 waveform.");
         if ( dep1.rank()==1 ) {
