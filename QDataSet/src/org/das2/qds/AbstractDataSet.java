@@ -185,6 +185,11 @@ public abstract class AbstractDataSet implements QDataSet, MutablePropertyDataSe
                     if ( this.rank()>0 && dep0.length()!=this.length() ) {
                         logger.log(Level.WARNING, "DEPEND_0 is incorrect length, its length is {0} should be {1}", new Object[]{dep0.length(), this.length()});
                     }
+                    if ( this==value ) {
+                        logger.log(Level.WARNING, "{0} is self-referential, causing infinite loop", name);
+                        logger.log(Level.WARNING, "ignoring putProperty call" );
+                        return;
+                    }
                 } else if ( value instanceof String ) {
                     logger.warning("Use DEPENDNAME_0 instead of DEPEND_0");
                 }
