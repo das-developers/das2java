@@ -2232,6 +2232,11 @@ public class TimeParser {
                     if ( m.matches() ) {
                         span= Integer.parseInt(m.group(1));
                     }
+                    p= Pattern.compile("delta=(\\d+)"); // TODO: multiple qualifiers
+                    m= p.matcher(qual);
+                    if ( m.matches() ) {
+                        span= Integer.parseInt(m.group(1));
+                    }
                 }
                 switch (handlers[idigit]) {
                     case 0:
