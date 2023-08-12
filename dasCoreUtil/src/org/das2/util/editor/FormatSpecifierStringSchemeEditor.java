@@ -1,8 +1,4 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package org.das2.util.editor;
 
 import java.awt.Component;
@@ -149,22 +145,22 @@ public class FormatSpecifierStringSchemeEditor extends javax.swing.JPanel implem
 
     @Override
     public void setValue(String v) {
-        
+        templTextField.setText(v);
     }
 
     @Override
     public String getValue() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return templTextField.getText();
     }
 
     @Override
     public Component getComponent() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return this;
     }
 
     @Override
     public void setContext(Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        
     }
 
 
