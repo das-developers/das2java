@@ -25,6 +25,7 @@ package org.das2.datum.format;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
+import java.util.IllegalFormatException;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
 import org.das2.datum.DatumVector;
@@ -87,7 +88,11 @@ public class DefaultDatumFormatter extends DatumFormatter {
         }
         String result;
         if ( stringFormat!=null ) {
-            result= String.format( stringFormat, d );
+            try {
+                result= String.format( stringFormat, d );
+            } catch ( IllegalFormatException ex ) {
+                return datum.toString();
+            }
         } else if (format == null) {
             double resolution = datum.getResolution(units.getOffsetUnits());
             result = formatLimitedResolution(d, resolution);
