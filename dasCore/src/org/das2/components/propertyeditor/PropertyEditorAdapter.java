@@ -87,6 +87,9 @@ public class PropertyEditorAdapter implements TableCellEditor {
             }
             
             StringSchemeEditor edit= this.stringEditors.get(propertyName);
+            if ( node.getParent() instanceof PropertyTreeNode ) {
+                edit.setContext( ((PropertyTreeNode)node.getParent()).getValue() );
+            }
             
             if ( edit!=null ) {
                 ((StringWithSchemeEditor)editor).setCustomEditor( edit );
