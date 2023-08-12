@@ -75,7 +75,9 @@ public class PropertyEditor extends JComponent {
     public final static Object MULTIPLE= new Object();
 
     PropertyEditorAdapter editor;
-            
+
+    private static final Map<String,StringSchemeEditor> stringEditors= new HashMap<>();
+                
     static {
         HashSet set = new HashSet();
 
@@ -97,6 +99,8 @@ public class PropertyEditor extends JComponent {
         set.add(org.das2.graph.DasColorBar.Type.class);
         set.add(org.das2.graph.SpectrogramRenderer.RebinnerEnum.class);
         editableTypes = Collections.unmodifiableSet(set);
+        addStringEditor("org.das2.graph.DasAxis","format", new AxisFormatStringSchemeEditor() );
+
     }
     private JTable table;
     private JButton closeButton;
@@ -283,8 +287,6 @@ public class PropertyEditor extends JComponent {
         }
     }
 
-    private static final Map<String,StringSchemeEditor> stringEditors= new HashMap<>();
-    
     /**
      * add a special editor for string properties with the particular name.
      * @param propertyName the property name, like "label"
