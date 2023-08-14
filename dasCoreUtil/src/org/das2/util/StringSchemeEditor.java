@@ -30,9 +30,9 @@ public interface StringSchemeEditor {
     
     /**
      * some clients of this code may provide a context for the string, so for example
-     * a preview could be created or units detected.  This method can be ignored,
-     * and the code should assume a context will be provided.  This is typically
-     * the object containing the property.
+     * a preview could be created or units detected or null to clear the context.  
+     * This method can be ignored, and the code should assume a context will be 
+     * provided.  This is typically the object containing the property.  
      * @param o 
      */
     public void setContext( Object o );
