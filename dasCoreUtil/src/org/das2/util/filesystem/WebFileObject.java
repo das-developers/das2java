@@ -631,10 +631,11 @@ public class WebFileObject extends FileObject {
         Date remoteDate;
         long remoteLength=0;
         
-        if ( isLocal() ) { // isLocal does a careful check of timestamps, and minds the limits on access.
+        if ( isLocal() ) { 
+            // isLocal has done a careful check of timestamps, and minds the limits on access, put dummy values in for remoteDate and remoteLength.
             remoteDate = new Date(localFile.lastModified());
             remoteLength= localFile.length();
-             // TODO: I don't understand this code. jbf
+            
         } else if (wfs instanceof HttpFileSystem && !wfs.isOffline() ) {
             URL url = wfs.getURL(this.getNameExt());
 
@@ -716,18 +717,20 @@ public class WebFileObject extends FileObject {
             
             // check for ETag.
             String remoteETag= metadata==null ? null : metadata.get( WebProtocol.META_ETAG );
-            if ( download && remoteETag!=null ) {
-                String localETag= getLocalETag( getLocalFile() );
-                if ( localETag.length()>0 && localETag.equals(remoteETag ) ) {
-                    logger.fine("etag hasn't changed, don't download."); 
-                    download= false;
-                    //TODO: This isn't really correct.  The client das2 should request the resource, which will send back a 304 (not modified).
-                }
-            } else if ( remoteETag!=null ) {
-                String localETag= getLocalETag( getLocalFile() );
-                if ( localETag.length()>0 && !localETag.equals(remoteETag ) ) {
-                    logger.fine("etag has changed, do download.");
-                    download= true;
+            if ( remoteETag!=null ) {
+                if ( download ) {
+                    String localETag= getLocalETag( getLocalFile() );
+                    if ( localETag.length()>0 && localETag.equals(remoteETag ) ) {
+                        logger.fine("etag hasn't changed, don't download."); 
+                        download= false;
+                        //TODO: This isn't really correct.  The client das2 should request the resource, which will send back a 304 (not modified).
+                    }
+                } else {
+                    String localETag= getLocalETag( getLocalFile() );
+                    if ( localETag.length()>0 && !localETag.equals(remoteETag ) ) {
+                        logger.fine("etag has changed, do download.");
+                        download= true;
+                    }
                 }
             }
             
