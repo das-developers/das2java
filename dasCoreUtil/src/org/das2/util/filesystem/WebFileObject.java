@@ -618,6 +618,13 @@ public class WebFileObject extends FileObject {
         }
     }
 
+    /**
+     * Check the freshness of the file object, comparing local timestamp to the server timestamp.
+     * @param firstMeta a map where metadata should be put for future use
+     * @return
+     * @throws org.das2.util.filesystem.FileSystem.FileSystemOfflineException
+     * @throws IOException 
+     */
     private synchronized boolean doCheckFreshness( Map<String,Object> firstMeta ) throws FileSystemOfflineException, IOException {
         boolean download;
         
@@ -712,8 +719,15 @@ public class WebFileObject extends FileObject {
             if ( download && remoteETag!=null ) {
                 String localETag= getLocalETag( getLocalFile() );
                 if ( localETag.length()>0 && localETag.equals(remoteETag ) ) {
-                    logger.fine("etag hasn't changed, don't download.");
+                    logger.fine("etag hasn't changed, don't download."); 
                     download= false;
+                    //TODO: This isn't really correct.  The client das2 should request the resource, which will send back a 304 (not modified).
+                }
+            } else if ( remoteETag!=null ) {
+                String localETag= getLocalETag( getLocalFile() );
+                if ( localETag.length()>0 && !localETag.equals(remoteETag ) ) {
+                    logger.fine("etag has changed, do download.");
+                    download= true;
                 }
             }
             
