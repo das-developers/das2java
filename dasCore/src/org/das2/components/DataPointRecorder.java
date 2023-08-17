@@ -27,12 +27,15 @@ import org.das2.components.propertyeditor.PropertyEditor;
 import org.das2.datum.format.DatumFormatter;
 import org.das2.system.DasLogger;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
+import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.geom.Ellipse2D;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -92,9 +95,12 @@ import org.das2.datum.TimeLocationUnits;
 import org.das2.datum.TimeParser;
 import org.das2.datum.UnitsUtil;
 import org.das2.datum.format.DatumFormatterFactory;
+import org.das2.graph.DasPlot;
+import org.das2.graph.Painter;
 import org.das2.qds.DataSetOps;
 import org.das2.qds.DataSetUtil;
 import org.das2.qds.QDataSet;
+import org.das2.qds.RecordIterator;
 import org.das2.qds.SemanticOps;
 import org.das2.qds.ops.Ops;
 import org.das2.qds.util.DataSetBuilder;
@@ -1209,6 +1215,43 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
         };
     }
 
+    /**
+     * convenient method returns a painter which will draw the first two columns over/under a plot.
+     * @param p the plot
+     * @return the Painter, which uses the plot's x axis and y axis.
+     */
+    public Painter getFeedbackPainter( DasPlot p ) {
+        return (Graphics2D g) -> {
+            QDataSet ds = DataPointRecorder.this.getDataPoints();
+            if (ds!=null) {
+                for (int i = 0; i<ds.length(); i++) {
+                    QDataSet d= ds.slice(i);
+                    QDataSet x1 = d.slice(0);
+                    QDataSet y1 = d.slice(1);
+                    double xd = p.getXAxis().transform(x1);
+                    double yd = p.getYAxis().transform(y1);
+                    g.setColor( new Color(200,200,140,200) );
+                    g.fill(new Ellipse2D.Double(xd-3,yd-3,7.,7.));
+                    g.setColor( Color.BLACK );
+                    g.draw(new Ellipse2D.Double(xd-3,yd-3,7.,7.));
+                }
+            }
+            ds = DataPointRecorder.this.getSelectedDataPoints();
+            if (ds!=null) {
+                for (int i = 0; i<ds.length(); i++) {
+                    QDataSet d= ds.slice(i);
+                    QDataSet x2 = d.slice(0);
+                    QDataSet y2 = d.slice(1);
+                    double xd = p.getXAxis().transform(x2);
+                    double yd = p.getYAxis().transform(y2);
+                    g.setColor( new Color(200,200,140,200) );
+                    g.fill(new Ellipse2D.Double(xd-7,yd-7,14,14));
+                    g.setColor( Color.BLACK );
+                    g.draw(new Ellipse2D.Double(xd-7,yd-7,14,14));
+                }
+            }
+        };
+    }
     
     /**
      * return true if the file was saved, false if cancel
