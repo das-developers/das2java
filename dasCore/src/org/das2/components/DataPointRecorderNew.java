@@ -93,7 +93,7 @@ import org.das2.qds.util.DataSetBuilder;
  * This is the old recorder but:
  * 1. uses QDataSet to handle the data.  No more strange internal object.
  * 2. allows the columns to be declared explicitly by code, and data is merged in by name.
- * @deprecated use DataPointRecorder, which is this code.  DataPointRecorderNew is left because of use in Jython scripts.
+ * @deprecated use DataPointRecorder, which has the same functionality as this "new" code.  DataPointRecorderNew is left because of use in Jython scripts.
  * @author  jbf
  */
 public class DataPointRecorderNew extends JPanel {
