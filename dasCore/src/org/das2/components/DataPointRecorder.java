@@ -2071,6 +2071,16 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
                 unitsArray[1] = y.getUnits();
                 formatterArray    = new DatumFormatter[2 + planes.size()];
                 formatterArray[0] = x.getFormatter();
+                if ( UnitsUtil.isTimeLocation( x.getUnits() ) && this.timeFormatter!=null ) {
+                    formatterArray[0] = new DatumFormatter() {
+                        @Override
+                        public String format(Datum datum) {
+                            return DataPointRecorder.this.timeFormatter.format(datum);
+                        }
+                    };
+                } else {
+                    formatterArray[0] = x.getFormatter();
+                }
                 formatterArray[1] = y.getFormatter();
                 namesArray    = new String[2 + planes.size()];
                 namesArray[0] = xname;
@@ -2452,7 +2462,7 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
     }
     
     private String timeFormat = "$Y-$m-$dT$H:$M:$S.$(subsec,places=3)Z";
-    private TimeParser timeFormatter= TimeParser.create(timeFormat);
+    protected TimeParser timeFormatter= TimeParser.create(timeFormat);
 
     /**
      * Get the value of timeFormat
@@ -2475,6 +2485,16 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
             this.timeFormatter= null;
         } else {
             this.timeFormatter= TimeParser.create(timeFormat);
+            if ( this.formatterArray!=null ) {
+                if ( UnitsUtil.isTimeLocation( this.unitsArray[0] ) ) {
+                    formatterArray[0] = new DatumFormatter() {
+                        @Override
+                        public String format(Datum datum) {
+                            return DataPointRecorder.this.timeFormatter.format(datum);
+                        }
+                    }; 
+                }
+            }
         }
     }
 
