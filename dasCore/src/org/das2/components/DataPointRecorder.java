@@ -409,7 +409,21 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
         }
         myTableModel.fireTableDataChanged();
     }
-    
+            
+    /**
+     * delete all rows, clearing the component and firing off update event.
+     */
+    public void deleteAllRows() {
+        synchronized (dataPoints) {
+            dataPoints.clear();
+        }
+        updateClients();
+        updateStatus();
+        if ( active ) {
+            fireDataSetUpdateListenerDataSetUpdated(new DataSetUpdateEvent(this));
+        }
+        myTableModel.fireTableDataChanged();
+    }
 
     private class MyDataSetDescriptor extends DataSetDescriptor {
 
