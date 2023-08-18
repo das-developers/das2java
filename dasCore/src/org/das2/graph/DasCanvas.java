@@ -787,7 +787,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
                 g.setFont(oldFont);
             }
 
-            paintTopDecorators(g);
+            //paintTopDecorators(g);
         
         }
         
