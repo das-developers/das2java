@@ -2110,8 +2110,18 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
                         formatterArray[index] = EnumerationUnits.create("default").getDatumFormatterFactory().defaultFormatter();
                     } else {
                         if ( value instanceof Datum ) {
-                            unitsArray[index] = ((Datum) value).getUnits();
-                            formatterArray[index] = ((Datum)value).getFormatter();
+                            Datum d= ((Datum) value);
+                            unitsArray[index] = d.getUnits();
+                            if ( UnitsUtil.isTimeLocation(d.getUnits()) && this.timeFormatter!=null ) {
+                                formatterArray[index] = new DatumFormatter() {
+                                    @Override
+                                    public String format(Datum datum) {
+                                        return DataPointRecorder.this.timeFormatter.format(datum);
+                                    }
+                                };
+                            } else {
+                                formatterArray[index] = ((Datum)value).getFormatter();
+                            }
                         } else if ( value instanceof QDataSet ) {
                             QDataSet qds= (QDataSet)value;
                             if ( qds.rank()>0 ) {
@@ -2500,13 +2510,15 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
         } else {
             this.timeFormatter= TimeParser.create(timeFormat);
             if ( this.formatterArray!=null ) {
-                if ( UnitsUtil.isTimeLocation( this.unitsArray[0] ) ) {
-                    formatterArray[0] = new DatumFormatter() {
-                        @Override
-                        public String format(Datum datum) {
-                            return DataPointRecorder.this.timeFormatter.format(datum);
-                        }
-                    }; 
+                for ( int i=0; i<this.unitsArray.length; i++ ) {
+                    if ( UnitsUtil.isTimeLocation( this.unitsArray[i] ) ) {
+                        formatterArray[i] = new DatumFormatter() {
+                            @Override
+                            public String format(Datum datum) {
+                                return DataPointRecorder.this.timeFormatter.format(datum);
+                            }
+                        }; 
+                    }
                 }
             }
         }
