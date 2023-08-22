@@ -301,7 +301,7 @@ public class DasColorBar extends DasAxis {
     }
     
     @Override
-    protected Rectangle getAxisBounds() {
+    public Rectangle getAxisBounds() {
         int x = getColumn().getDMinimum();
         int y = getRow().getDMinimum();
         int width = getColumn().getDMaximum() - x;
