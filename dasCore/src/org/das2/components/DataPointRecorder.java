@@ -2157,7 +2157,33 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
                 throw new RuntimeException("inconvertible units: got \"" + y.getUnits() + "\", expected \"" + unitsArray[1] + "\"");
             }
 
-            insertInternal(new DataPoint(x, y, new LinkedHashMap(planes)));
+            x= Datum.create( x.doubleValue(x.getUnits()), x.getUnits(), formatterArray[0] );
+            y= Datum.create( y.doubleValue(y.getUnits()), y.getUnits(), formatterArray[1] );
+            LinkedHashMap planesCopy= new LinkedHashMap();
+            int columnIndex=2; 
+            for ( Iterator i = planes.entrySet().iterator(); i.hasNext();) {
+                Entry entry= (Entry)i.next();
+                Object key = entry.getKey();
+                Object value = entry.getValue();
+                if ( UnitsUtil.isTimeLocation( unitsArray[columnIndex] )  ) {
+                    if ( value instanceof Datum ) {
+                        Datum d= (Datum)value;
+                        Datum dCopy= Datum.create( d.doubleValue(d.getUnits()), d.getUnits(), formatterArray[columnIndex] );
+                        planesCopy.put( key, dCopy );
+                    } else if ( value instanceof QDataSet ) {
+                        QDataSet qds= (QDataSet)value;
+                        if ( qds.rank()>0 ) {
+                            throw new IllegalArgumentException("qdatasets in planes must be rank 0");
+                        } else {
+                            Datum dCopy= Datum.create( qds.value(), unitsArray[columnIndex], formatterArray[columnIndex] );
+                            planesCopy.put( key, dCopy );
+                        }
+                    }
+                } else { 
+                    planesCopy.put( key, value );
+                }
+            }
+            insertInternal(new DataPoint(x, y, planesCopy));
         }
         if (active) {
             fireDataSetUpdateListenerDataSetUpdated(new DataSetUpdateEvent(this));
