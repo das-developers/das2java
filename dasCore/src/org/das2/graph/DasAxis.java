@@ -3623,7 +3623,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * extend across the plot.
      * @return Rectangle containing the axes and its labels.
      */
-    protected Rectangle getAxisBounds() {
+    public Rectangle getAxisBounds() {
         Rectangle bounds;
 
         try {
