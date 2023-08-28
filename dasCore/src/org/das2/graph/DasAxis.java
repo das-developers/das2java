@@ -249,17 +249,42 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     private DatumRange scanRange;
     
     private boolean animated = ("on".equals(DasProperties.getInstance().get("visualCues")));
-    /* Rectangles representing different areas of the axis */
+    
     private Rectangle blLineRect;
     private Rectangle trLineRect;
-    private Rectangle blTickRect;  // bottom or left rectangle bounds for the ticks  (green in DEBUG_GRAPHICS)
-    private Rectangle trTickRect;  // top or right rectangle bounds for the ticks    (green in DEBUG_GRAPHICS)
-    private Rectangle blLabelRect; // bottom or left rectangle bounds for the tick labels  (blue)
-    private Rectangle trLabelRect; // top or right rectangle bounds for the tick labels    (blue)
-    private Rectangle blTitleRect; // bottom or left rectangle bounds for the axis label   (grey)
-    private Rectangle trTitleRect; // top or right rectangle bounds for the axis label     (grey)
-    private Integer leftXOverride = null;  // this is deprecated, use labelOffset instead.
-    private String labelOffset= ""; // empty string means default, or "5em" or "50px" etc.
+    /**
+     * bottom or left rectangle bounds for the ticks  (green in DEBUG_GRAPHICS)
+     */
+    private Rectangle blTickRect;  
+    /**
+     * top or right rectangle bounds for the ticks    (green in DEBUG_GRAPHICS)
+     */
+    private Rectangle trTickRect;  
+    
+    /**
+     * bottom or left rectangle bounds for the tick labels  (blue in DEBUG_GRAPHICS)
+     */
+    private Rectangle blLabelRect; 
+    /**
+     * top or right rectangle bounds for the tick labels    (blue in DEBUG_GRAPHICS)
+     */
+    private Rectangle trLabelRect;
+    /**
+     * bottom or left rectangle bounds for the axis label   (grey in DEBUG_GRAPHICS)
+     */
+    private Rectangle blTitleRect;
+    /**
+     * top or right rectangle bounds for the axis label     (grey in DEBUG_GRAPHICS)
+     */
+    private Rectangle trTitleRect; 
+    /**
+     * this is deprecated, use labelOffset instead.
+     */
+    private Integer leftXOverride = null;  
+    /**
+     * empty string means default, or "5em" or "50px" etc.
+     */
+    private String labelOffset= ""; 
     
     private boolean flipped;
     /* TIME LOCATION UNITS RELATED INSTANCE MEMBERS */
