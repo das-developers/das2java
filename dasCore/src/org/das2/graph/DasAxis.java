@@ -3029,7 +3029,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 offset = tickLabelFont.getSize() + zeroOrPosTickLen + fm.stringWidth(" ") + labelFont.getSize() + labelFont.getSize() / 2;
                 if ( drawTca && tcaData != null ) {
                     offset += Math.min( MAX_TCA_LINES, tcaData.length(0) ) * (tickLabelFont.getSize() + getLineSpacing());
-                }   if ( labelOffset.length()>0 && axisLabel.length()>0 ) {
+                } else if ( formatString.length()>0 ) {
+                    offset += blLabelRect.height - ( 2 *( tickLabelFont.getSize() + getLineSpacing() ) );
+                }
+                if ( labelOffset.length()>0 && axisLabel.length()>0 ) {
                     offset= tickLabelFont.getSize() + (int)DasDevicePosition.parseLayoutStr( labelOffset, getEmSize(), getRow().getHeight(), 0 );
                 }
                 break;
