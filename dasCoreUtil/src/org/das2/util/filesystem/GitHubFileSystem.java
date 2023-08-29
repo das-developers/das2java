@@ -38,6 +38,9 @@ import static org.das2.util.filesystem.HtmlUtil.getInputStream;
 import static org.das2.util.filesystem.WebFileSystem.localRoot;
 import org.das2.util.monitor.CancelledOperationException;
 import org.das2.util.monitor.ProgressMonitor;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * GitHubFileSystem allows GitHub directories to be mounted directly, even 
@@ -311,6 +314,62 @@ public class GitHubFileSystem extends HttpFileSystem {
         return sb.toString();
     }
     
+    /**
+     * At some point, Gitlab started returning the filename listing in a 
+     * separate JSON response.
+     * @param directory
+     * @return
+     * @throws IOException 
+     */
+    public String[] listDirectoryGitlab( String directory ) throws IOException {
+        try {
+            String[] path= root.getPath().split("/",-2);
+            // wget -O - 'https://abbith.physics.uiowa.edu/jbf/juno/-/refs/master/logs_tree/team/trajPlot?format=json&offset=0' | json_pp
+            
+            StringBuilder sb= new StringBuilder();
+            sb.append(root.getScheme())
+                    .append("://")
+                    .append(root.getHost())
+                    .append('/')
+                    .append(path[1])
+                    .append('/')
+                    .append(path[2])
+                    .append("/-/refs/")
+                    .append(branch)
+                    .append("/logs_tree");
+            if ( path.length>3 && path[3].equals(branch) ) {
+                for ( int i=4; i<path.length-1; i++ ) {
+                    sb.append( "/" );
+                    sb.append( path[i] );
+                }
+            } else {
+                for ( int i=1; i<path.length-1; i++ ) {
+                    sb.append( "/" );
+                    sb.append( path[i] );
+                }                
+            }
+            sb.append("?format=json&offset=0");
+            
+            URL url= new URL(sb.toString());
+            
+            String s= HtmlUtil.readToString( url );
+            
+            JSONArray ja= new JSONArray(s);
+            
+            String[] result= new String[ja.length()];
+            for ( int i=0; i<result.length; i++ ) {
+                result[i]= ja.getJSONObject(i).getString("file_name");
+            }
+            return result;
+            
+        } catch (JSONException ex) {
+            logger.log(Level.SEVERE, null, ex);
+            return new String[0];
+        } catch (CancelledOperationException ex) {
+            throw new IOException("cancel pressed");
+        }
+    }
+    
     @Override
     public String[] listDirectory(String directory) throws IOException {
         if ( !directory.endsWith("/") ) directory= directory+"/";
@@ -322,6 +381,11 @@ public class GitHubFileSystem extends HttpFileSystem {
                 ss[i]= ss[i] + '/';
             }
             return ss;
+        }
+        
+        if ( root.toString().startsWith("https://abbith.physics.uiowa.edu/") 
+                || root.toString().startsWith("https://research-git.uiowa.edu/") ) {
+            return listDirectoryGitlab( directory );
         }
         
         String[] path= root.getPath().split("/",-2);
