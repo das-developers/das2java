@@ -99,7 +99,7 @@ public class Orbits {
                         }   
                         break;
                     case "crres":
-                        urls.add( new URL( "https://das2.org/Orbits/crres.dat" ) );
+                        urls.add( new URL( "https://space.physics.uiowa.edu/das2/Orbits/crres.dat" ) );
                         break;
                     case "cassini":
                         urls.add( new URL( "http://www-pw.physics.uiowa.edu/~jbf/cassini/cassiniOrbits.txt" ) );
@@ -113,7 +113,7 @@ public class Orbits {
                            
                     default:
                         urls.add( new URL( "https://raw.githubusercontent.com/das-developers/meta/main/orbits/"+sc+".dat" ) );
-                        urls.add( new URL( "https://das2.org/Orbits/"+sc+".dat" ) );
+                        urls.add( new URL( "https://space.physics.uiowa.edu/das2/Orbits/"+sc+".dat" ) );
                         break;
                 }
             }
