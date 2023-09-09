@@ -5235,9 +5235,9 @@ public final class Ops {
      * two events lists.  The list will contain labels starting
      * with insert, delete, and update, and the values.
      * 
-     * @param tE
-     * @param tB
-     * @return 
+     * @param tE sorted rank 2 events dataset with records of [start, stop, color, label ]
+     * @param tB sorted rank 2 events dataset with records of [start, stop, color, label ]
+     * @return events list of differences
      */
     public static QDataSet eventsDiff( QDataSet tE, QDataSet tB ) {
         int iE= 0;
@@ -5484,7 +5484,7 @@ public final class Ops {
 
     /**
      * return a dataset with X and Y forming a circle, introduced as a convenient way to indicate planet location.
-     * @param dradius
+     * @param dradius a real number representing the dimensionless radius
      * @return QDataSet that when plotted is a circle.
      */
     public static QDataSet circle( double dradius ) {
@@ -5524,8 +5524,8 @@ public final class Ops {
     /**
      * return a dataset with X and Y forming a ellipse, introduced as a convenient way to indicate 
      * planet location of any planet, according to Masafumi.
-     * @param xwidth 
-     * @param ywidth
+     * @param xwidth a real number representing the width of the ellipse in the X direction
+     * @param ywidth a real number representing the width of the ellipse in the Y direction
      * @return QDataSet that when plotted is an ellipse.
      */
     public static QDataSet ellipse( double xwidth, double ywidth ) {
@@ -5672,7 +5672,7 @@ public final class Ops {
     /**
      * pick out the timetags and sort the data based on these.  This
      * only works when a dataset has DEPEND_0.
-     * @param ds
+     * @param ds a dataset with tags in DEPEND_0.
      * @return the data sorted by DEPEND_0.
      */
     public static QDataSet sortInTime( QDataSet ds ) {
@@ -5799,8 +5799,8 @@ public final class Ops {
         
     /**
      * element-wise sin.
-     * @param ds
-     * @return
+     * @param ds the angles in radians or degrees, and data without units are treated as radians.
+     * @return the sin of the angles
      */
     public static QDataSet sin(QDataSet ds) {
         MutablePropertyDataSet result= applyUnaryOp(ds, (UnaryOp) (double d1) -> Math.sin(d1) );
@@ -5808,6 +5808,12 @@ public final class Ops {
         return result;
     }
 
+    /**
+     * return the sin of the real number, which is to be in radians.
+     * @param ds the angle in radians
+     * @return the sin of the angle
+     * @see Math#sin(double) 
+     */
     public static double sin( double ds ) {
         return Math.sin( ds );
     }
@@ -5817,9 +5823,10 @@ public final class Ops {
     }   
     
     /**
-     * element-wise arcsin.
-     * @param ds
-     * @return
+     * element-wise arcsin, the inverse of the sin function.
+     * @param ds the values
+     * @return the angles for the values in radians
+     * @see Math#asin(double) 
      */
     public static QDataSet asin(QDataSet ds) {
         MutablePropertyDataSet result= applyUnaryOp(ds, (UnaryOp) (double d1) -> Math.asin(d1) );
@@ -5827,6 +5834,11 @@ public final class Ops {
         return result;
     }
     
+    /**
+     * return the asin of the real number in radians.
+     * @param ds the sin of the angle
+     * @return the angle in radians
+     */
     public static double asin( double ds ) {
         return Math.asin( ds );
     }
@@ -5837,8 +5849,8 @@ public final class Ops {
 
     /**
      * element-wise cos.
-     * @param ds
-     * @return
+     * @param ds the angles in radians or degrees, and data without units are treated as radians.
+     * @return the cos of the angles
      */
     public static QDataSet cos(QDataSet ds) {
         MutablePropertyDataSet result= applyUnaryOp(ds, (UnaryOp) (double d1) -> Math.cos(d1) );
@@ -5846,6 +5858,12 @@ public final class Ops {
         return result;
     }
 
+    /**
+     * return the cos of the real number, which is to be in radians.
+     * @param ds the angle in radians
+     * @return the cos of the angle
+     * @see Math#cos(double) 
+     */    
     public static double cos( double ds ) {
         return Math.cos( ds );
     }
@@ -5855,9 +5873,10 @@ public final class Ops {
     }   
     
     /**
-     * element-wise arccos.
-     * @param ds
-     * @return
+     * element-wise arccos, the inverse of the cos function.
+     * @param ds the values
+     * @return the angles for the values in radians
+     * @see Math#acos(double) 
      */
     public static QDataSet acos(QDataSet ds) {
         MutablePropertyDataSet result= applyUnaryOp(ds, (UnaryOp) (double d1) -> Math.acos(d1) );
@@ -5866,6 +5885,11 @@ public final class Ops {
 
     }
     
+    /**
+     * return the acos of the real number in radians.
+     * @param ds the cos of the angle
+     * @return the angle in radians
+     */    
     public static double acos( double ds ) {
         return Math.acos( ds );
     }
@@ -5875,9 +5899,10 @@ public final class Ops {
     }   
     
     /**
-     * element-wise tan.
-     * @param ds
-     * @return
+     * element-wise trigonometric tangent (tan) function 
+     * @param ds the angles for the values in radians or degrees
+     * @return the tangent of each angle 
+     * @see Math#tan(double) 
      */
     public static QDataSet tan(QDataSet ds) {
         MutablePropertyDataSet result= applyUnaryOp(ds, (UnaryOp) (double a) -> Math.tan(a) );
@@ -5885,6 +5910,11 @@ public final class Ops {
         return result;
     }
     
+    /**
+     * return the trigonometric tangent of the real number in radians.
+     * @param ds the angle in radians
+     * @return the tan in radians
+     */    
     public static double tan( double ds ) {
         return Math.tan( ds );
     }
@@ -5894,9 +5924,10 @@ public final class Ops {
     }   
     
     /**
-     * element-wise atan.
-     * @param ds
-     * @return
+     * element-wise arc tangent function
+     * @param ds the values
+     * @return the angles in radians
+     * @see Math#atan(double) 
      */
     public static QDataSet atan(QDataSet ds) {
         MutablePropertyDataSet result= applyUnaryOp(ds, (UnaryOp) (double a) -> Math.atan(a) );
@@ -5904,6 +5935,12 @@ public final class Ops {
         return result;
     }
 
+    /**
+     * arc tangent function
+     * @param ds the value
+     * @return the angle in radians
+     * @see Math#atan(double) 
+     */    
     public static double atan( double ds ) {
         return Math.atan( ds );
     }
@@ -5934,6 +5971,21 @@ public final class Ops {
         return result;
     }
     
+    /**
+     * 4-quadrant arc tangent. From the Java atan2 documentation:
+     * "Returns the angle <i>theta</i> from the conversion of rectangular 
+     * coordinates ({@code x},&nbsp;{@code y}) to polar coordinates 
+     * (r,&nbsp;<i>theta</i>).  This method computes the phase <i>theta</i> 
+     * by computing an arc tangent of {@code y/x} in the range of 
+     * -<i>pi</i> to <i>pi</i>."
+     * <p>Note different languages have different 
+     * argument order.  Microsoft Office uses atan2(x,y); IDL uses atan(y,x);  
+     * Matlab uses atan2(y,x); and NumPy uses arctan2(y,x).</p>
+     * @param y the y position
+     * @param x the x position
+     * @return the angle in radians
+     * @see Math#atan2(double, double) 
+     */
     public static double atan2( double y, double x ) {
         return Math.atan2( y, x );
     }
@@ -5943,9 +5995,10 @@ public final class Ops {
     }
     
     /**
-     * element-wise cosh.
-     * @param ds
-     * @return
+     * element-wise hyperbolic cosine
+     * @param ds the data
+     * @return the hyperbolic cosine of each element of ds
+     * @see Math#cosh(double) 
      */
     public static QDataSet cosh(QDataSet ds) {
         MutablePropertyDataSet result= 
@@ -6008,8 +6061,8 @@ public final class Ops {
      * <code>expm1(x)</code>&nbsp;+&nbsp;1 is much closer to the true
      * result of <i>e</i><sup>xx</sup> than <code>exp(x)</code>.
      *
-     * @param xx
-     * @return
+     * @param xx the values
+     * @return the values <i>e</i><sup>x</sup>&nbsp;-1
      */
     public static QDataSet expm1(QDataSet xx) {
         MutablePropertyDataSet result= 
@@ -6389,8 +6442,8 @@ public final class Ops {
     /**
      * convert the data to radians by multiplying each element by PI/180.
      * This does not check the units of the data, but a future version might.
-     * @param ds
-     * @return 
+     * @param ds data values in degrees
+     * @return the data in radians
      */
     public static QDataSet toRadians(QDataSet ds) {
         MutablePropertyDataSet result= applyUnaryOp(ds, (UnaryOp) (double y) -> y * Math.PI / 180. );
@@ -6406,8 +6459,8 @@ public final class Ops {
     /**
      * convert the data to degrees by multiplying each element by 180/PI.
      * This does not check the units of the data, but a future version might.
-     * @param ds
-     * @return 
+     * @param ds values in radians
+     * @return the data in degrees
      */
     public static QDataSet toDegrees(QDataSet ds) {
         MutablePropertyDataSet result= applyUnaryOp(ds, (UnaryOp) (double y) -> y * 180 / Math.PI );
@@ -6822,7 +6875,7 @@ public final class Ops {
     
     /**
      * return a rank 1 hashcodes of each record the dataset, with one hashcodes value for each record.  The 
-     * value of hashcodes should repeat if the record repeats.  
+     * value of hashcodes should repeat if the record repeats.  For a rank 1 dataset, the values are returned.
      * 
      * NOTE: This is under-implemented and should not be used
      * without understanding the code.
