@@ -2751,6 +2751,7 @@ public final class Ops {
      * @param ds1 the numerator
      * @param ds2 the divisor
      * @return the remainder after the division
+     * @see #sawtooth(org.das2.qds.QDataSet) 
      */
     public static QDataSet modp(QDataSet ds1, QDataSet ds2) {
         Units u1= SemanticOps.getUnits(ds1).getOffsetUnits();
@@ -4866,10 +4867,10 @@ public final class Ops {
 
     /**
      * generates a sawtooth from the tags, where a peak occurs with a period 2*PI.
-     * All values of T should be ge zero.  TODO: I think there should be a modp 
-     * function that is always positive. (-93 % 10 &rarr;7 though...)
+     * All values of T should be ge zero. 
      * @param t the independent values
      * @return /|/|/| sawtooth wave with a period of 2 PI.
+     * @see #modp(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      */
     public static QDataSet sawtooth( QDataSet t ) {
         QDataSet modt= divide( modp( t, DataSetUtil.asDataSet(TAU) ), TAU );
@@ -4889,9 +4890,12 @@ public final class Ops {
     /**
      * provide explicit method for appending two events scheme datasets.  This will probably be 
      * deprecated, and this was added at 17:30 for a particular need.
-     * @param ev1
-     * @param ev2
-     * @return 
+     * @param ev1 an events dataset which is rank 2 with records of [start,stop,color,label]
+     * @param ev2 an events dataset which is rank 2 with records of [start,stop,color,label]
+     * @return events list containing both events
+     * @deprecated since append works with events datasets.
+     * @see #append(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
+     * @see https://github.com/autoplot/dev/blob/master/demos/2023/20230909/demoCreateEvent.jy
      */
     public static QDataSet appendEvents( QDataSet ev1, QDataSet ev2 ) {
         QDataSet result= ev1;
