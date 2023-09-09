@@ -7601,7 +7601,7 @@ public final class Ops {
     /**
      * remove the fill values from the rank 1 dataset, returning a smaller dataset.
      * This was introduced to support the mash-up dialog.
-     * @param ds
+     * @param ds the dataset, with VALID_MIN, VALID_MAX, or FILL_VALUE indicating the invalid data points.
      * @return dataset with the values removed.
      */
     public static WritableDataSet removeFill( QDataSet ds ) {
@@ -7636,7 +7636,7 @@ public final class Ops {
     }
     
     /**
-     * apply the indices 
+     * apply the indices to the dataset, resorting the 0th dimension using the indices of r.
      * @param ds values to return, a rank 1 N-element dataset, or rank 2 N by m element dataset.
      * @param r the indices.
      * @return data a dataset with the geometry of ds and the units of values.
@@ -7710,10 +7710,11 @@ public final class Ops {
     
     /**
      * apply the indices to the given dimension.
-     * @param ds
-     * @param dimension
-     * @param indices
-     * @return 
+     * @param ds rank N qube of data.
+     * @param dimension the dimension on which the indices should be applied.
+     * @param indices the indices to apply.
+     * @return the data with in indices applied.
+     * @see https://github.com/autoplot/dev/blob/master/demos/2023/20230909/demoApplyIndex.jy
      * @see SubsetDataSet
      */
     public static MutablePropertyDataSet applyIndex( QDataSet ds, int dimension, QDataSet indices ) {
