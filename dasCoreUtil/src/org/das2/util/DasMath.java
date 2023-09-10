@@ -53,11 +53,32 @@ public class DasMath {
         return result;
     }
     
+    /**
+     * round the decimal to the number of fractional decimal places.  For example,
+     * <code>DasMath.roundNFractionalDigits(1.2345678,3)==1.23</code>
+     * Note the name implies that there will be three decimals in the fractional
+     * part, but this implementation will return only two.
+     * 
+     * @param x a double
+     * @param n number of decimal places
+     * @return the number rounded to the number of decimal places.
+     * @see #roundNSignificantDigits(double, int) 
+     * @see https://github.com/autoplot/dev/blob/master/demos/2023/20230910/roundNDigits.jy
+     */
     public static double roundNFractionalDigits(double x,int n) {                
         double tenToN= Math.pow(10,n-1);
         return Math.round( x * tenToN ) / tenToN;        
     }
     
+    /**
+     * Round the double to n significant digits by removing the exponent to make the number order one, 
+     * then rounding the mantissa, then replacing the exponent.
+     * @param x a double
+     * @param n number of decimal places
+     * @return the number rounded to the number of decimal places.
+     * @see #roundNFractionalDigits(double, int) 
+     * @see https://github.com/autoplot/dev/blob/master/demos/2023/20230910/roundNDigits.jy
+     */
     public static double roundNSignificantDigits(double x,int n) {
         double sign= x<0 ? -1 : 1;
         double exp= Math.pow(10,Math.floor(Math.log10(sign*x)));
@@ -141,6 +162,9 @@ public class DasMath {
     
     /**
      * just like modulo (%) function, but negative numbers return positive phase. 
+     * @param x the numerator
+     * @param t the devisor
+     * @return the modulo, which will always be positive
      */
     public static double modp(double x, double t) {
         double result= x % t;
@@ -148,13 +172,22 @@ public class DasMath {
     }
 
     /**
-     * just like modulo (%) function, but negative numbers return positive phase. 
+     * just like modulo (%) function, but negative numbers return positive phase.
+     * @param x the numerator
+     * @param t the devisor
+     * @return the modulo, which will always be positive
      */
     public static int modp( int x, int t) {
         int result= x % t;
         return result >= 0 ? result : t + result;
     }
     
+    /**
+     * returns the bigger number of two numbers
+     * @param x1 a number 
+     * @param x2 a number
+     * @return the greater of the two numbers
+     */
     public static double biggerOf(double x1, double x2) {
         return ( x1>x2 ) ? x1 : x2;
     }
@@ -198,7 +231,7 @@ public class DasMath {
     }
     
     
-   /*
+   /**
     * Returns the greatest common divisor of a group of numbers.  This is useful for
     * a number of visualization techniques, for instance when you need to integerize
     * your data, the binsize should be the gcd.  An error parameter is provided to
@@ -206,6 +239,9 @@ public class DasMath {
     * surpassed.
     *
     * org.das2.datum.DatumUtil has a private copy of this code.
+    * @param A the array of numbers
+    * @param error the limit of the error to deal with numerical noise
+    * @return the greatest common divisor (GCD)
     */
     public static double gcd( double[] A, double error ) {
         double guess= A[0];
@@ -242,7 +278,7 @@ public class DasMath {
      * return the median of the list length N, which is the value at index N/2 of 
      * the sorted list.  This does not return the average for even-length lists.
      * and there is no checking for NaNs or fill values.
-     * @param A
+     * @param A the list of numbers
      * @return the median of the list
      */
     public static double median( double[] A ) {
@@ -252,7 +288,7 @@ public class DasMath {
     
     /**
      * return the maximum of the list
-     * @param A the list
+     * @param A the list of numbers
      * @return the maximum of the list
      */
     public static double max( double[] A ) {
