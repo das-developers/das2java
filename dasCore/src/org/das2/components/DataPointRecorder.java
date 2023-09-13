@@ -2149,6 +2149,61 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
 
             }
             
+            if ( formatterArray==null ) {
+                formatterArray    = new DatumFormatter[2 + planes.size()];
+                formatterArray[0] = x.getFormatter();
+                if ( UnitsUtil.isTimeLocation( x.getUnits() ) && this.timeFormatter!=null ) {
+                    formatterArray[0] = new DatumFormatter() {
+                        @Override
+                        public String format(Datum datum) {
+                            return DataPointRecorder.this.timeFormatter.format(datum);
+                        }
+                    };
+                } else {
+                    formatterArray[0] = x.getFormatter();
+                }
+                formatterArray[1] = y.getFormatter();
+                namesArray    = new String[2 + planes.size()];
+                namesArray[0] = xname;
+                namesArray[1] = yname;
+                int index = 2;
+                for ( Iterator i = planes.entrySet().iterator(); i.hasNext();) {
+                    Entry entry= (Entry)i.next();
+                    Object key = entry.getKey();
+                    namesArray[index] = String.valueOf(key).trim();
+                    Object value = entry.getValue();
+                    if (value instanceof String) {
+                        formatterArray[index] = EnumerationUnits.create("default").getDatumFormatterFactory().defaultFormatter();
+                    } else {
+                        if ( value instanceof Datum ) {
+                            Datum d= ((Datum) value);
+                            if ( UnitsUtil.isTimeLocation(d.getUnits()) && this.timeFormatter!=null ) {
+                                formatterArray[index] = new DatumFormatter() {
+                                    @Override
+                                    public String format(Datum datum) {
+                                        return DataPointRecorder.this.timeFormatter.format(datum);
+                                    }
+                                };
+                            } else {
+                                formatterArray[index] = ((Datum)value).getFormatter();
+                            }
+                        } else if ( value instanceof QDataSet ) {
+                            QDataSet qds= (QDataSet)value;
+                            if ( qds.rank()>0 ) {
+                                throw new IllegalArgumentException("qdatasets in planes must be rank 0");
+                            } else {
+                                formatterArray[index] = SemanticOps.getDatum( (QDataSet)value, ((QDataSet) value).value() ).getFormatter();
+                            }
+                        } else if ( value instanceof Number ) {
+                            formatterArray[index]= Units.dimensionless.getDatumFormatterFactory().defaultFormatter();
+                        } else {
+                            throw new IllegalArgumentException("values must be rank 0 Datum or QDataSet, not " + value);
+                        }
+                    }
+                    index++;
+                }
+            }
+            
             if (!x.getUnits().isConvertibleTo(unitsArray[0])) {
                 throw new RuntimeException("inconvertible units: got \"" + x.getUnits() + "\", expected \"" + unitsArray[0] + "\"");
             }
