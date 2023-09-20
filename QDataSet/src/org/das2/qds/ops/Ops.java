@@ -4103,7 +4103,7 @@ public final class Ops {
     /**
      * return new dataset filled with zeros.
      * @param len0
-     * @return
+     * @return rank 1 dataset
      * @see #fltarr(int) fltarr, which stores the data in 4-byte floats.
      */
     public static WritableDataSet zeros(int len0) {
@@ -4114,7 +4114,7 @@ public final class Ops {
      * return new dataset filled with zeros.
      * @param len0
      * @param len1
-     * @return
+     * @return rank 2 dataset
      */
     public static WritableDataSet zeros(int len0, int len1) {
         return replicate(0.0, len0, len1);
@@ -4125,12 +4125,24 @@ public final class Ops {
      * @param len0
      * @param len1
      * @param len2
-     * @return
+     * @return rank 3 dataset
      */
     public static WritableDataSet zeros(int len0, int len1, int len2) {
         return replicate(0.0, len0, len1, len2);
     }
 
+    /**
+     * return new dataset filled with zeros.
+     * @param len0
+     * @param len1
+     * @param len2
+     * @param len3
+     * @return rank 4 dataset
+     */
+    public static WritableDataSet zeros(int len0, int len1, int len2, int len3) {
+        return replicate(0.0, len0, len1, len2, len3);
+    }
+    
     /**
      * return a new dataset filled with zeroes that has the same geometry as
      * the given dataset.
