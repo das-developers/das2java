@@ -2,7 +2,6 @@
 package org.das2.qds.filters;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.util.logging.Level;
@@ -16,6 +15,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
+import org.das2.qds.DataSetUtil;
 import org.das2.qds.QDataSet;
 import static org.das2.qds.filters.AbstractFilterEditorPanel.logger;
 
@@ -26,7 +26,6 @@ import static org.das2.qds.filters.AbstractFilterEditorPanel.logger;
 public class SlicesFilterEditorPanel extends AbstractFilterEditorPanel implements FilterEditorPanel {
     
     static final long t0= System.currentTimeMillis();
-    int[] qube= null;
     JSpinner[] spinners= new JSpinner[8];
     JCheckBox[] checkboxs= new JCheckBox[8];
     int rank= 8;
@@ -141,6 +140,7 @@ public class SlicesFilterEditorPanel extends AbstractFilterEditorPanel implement
         String[] depNames1= FilterEditorPanelUtil.getDimensionNames(ds);
         int rmCount= this.rank-ds.rank();
         this.rank= ds.rank();
+        int[] qube= DataSetUtil.qubeDims(ds);
         for ( int i=0; i<rank; i++ ) {
             QDataSet dep= (QDataSet) ds.property("DEPEND_"+i);
             if ( checkboxs[i]==null ) {
@@ -150,20 +150,25 @@ public class SlicesFilterEditorPanel extends AbstractFilterEditorPanel implement
             checkboxs[i].setToolTipText("slice on "+depNames1[i]);
             int max;
             if ( dep==null ) {
-                max= Integer.MAX_VALUE;
+                if ( qube!=null ) {
+                    max= qube[i];
+                } else {
+                    max= Integer.MAX_VALUE;
+                }
             } else {
                 if ( dep.rank()==1 ) {
                     max= dep.length();
                 } else if ( dep.rank()==2 ) { 
                     max= dep.length(0);
                 } else {
+                    logger.info("dataset has high-rank dep");
                     max= Integer.MAX_VALUE;                    
                 }
             }
             int val= ((Integer)spinners[i].getValue());
             if ( val<0 ) val=0;
-            if ( val>=max ) val= max;
-            spinners[i].setModel( new SpinnerNumberModel( val, 0, max, 1 ) );
+            if ( val>=max ) val= max-1;
+            spinners[i].setModel( new SpinnerNumberModel( val, 0, max-1, 1 ) );
         }
         for ( int i=ds.rank(); i<ds.rank()+rmCount; i++ ) {
             try {
