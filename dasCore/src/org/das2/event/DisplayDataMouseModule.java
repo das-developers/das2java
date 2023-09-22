@@ -41,6 +41,8 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
@@ -66,6 +68,7 @@ public class DisplayDataMouseModule extends MouseModule {
     private Renderer currentRenderer;
     private DatumRange xrange;
     private DatumRange yrange;
+    private QDataSet theData;  // the current render's dataset
 
     /** 
      * Creates a new instance of DisplayDataMouseModule
@@ -190,6 +193,10 @@ public class DisplayDataMouseModule extends MouseModule {
                     int i= myPanel2.getRenderersComboBox().getSelectedIndex();
                     if ( i<rends.length ) setDataSet( rends[i].getDataSet(), xrange, yrange ); // thread safety
                 }
+            });
+            
+            myPanel2.getMyEdit().getSelectionModel().addListSelectionListener((ListSelectionEvent e) -> {
+                updateRecordCountMessage();
             });
             
             myFrame.getContentPane().add(myPanel2);
@@ -353,23 +360,10 @@ public class DisplayDataMouseModule extends MouseModule {
             tm= new QDataSetTableModel(tds);
             tcm= tm.getTableColumnModel();
             if ( dep1!=null && dep1.rank()==2 ) {
-                myPanel2.getMyEdit().getTableHeader().setToolTipText("Column labels reported are from the first record");
+               myPanel2.getMyEdit().getTableHeader().setToolTipText("Column labels reported are from the first record");
             }
-            if ( tds.rank()==1 ) {
-                myPanel2.getMessageLabel().setText( tds.length() + " records.  Right-click to copy data to clipboard." );
-            } else {
-                if ( tds.length()>0 ) {
-                    int[] qube= DataSetUtil.qubeDims(tds );
-                    int[] qube1= DataSetUtil.qubeDims(tds.slice(0) );
-                    if ( qube!=null ) {
-                        myPanel2.getMessageLabel().setText( tds.length() + " records, each is "+ DataSetUtil.toString(qube1) );
-                    } else {
-                        myPanel2.getMessageLabel().setText( tds.length() + " records, first is "+ DataSetUtil.toString(qube1) );
-                    }
-                } else {
-                    myPanel2.getMessageLabel().setText( "no records" );
-                }
-            }
+            theData= tds;
+            updateRecordCountMessage();
             
         } catch ( RuntimeException ex ) {
             logger.log( Level.SEVERE, ex.getMessage(), ex );
@@ -385,6 +379,34 @@ public class DisplayDataMouseModule extends MouseModule {
         //myEdit.setColumnModel(new DefaultTableColumnModel() );
         //myEdit.setColumnModel(tcm); // error with rank 1.
 
+    }
+
+    public void updateRecordCountMessage() {
+        QDataSet tds= theData;
+        String message;
+        if ( tds==null ) {
+            message= "no data";
+        } else if ( tds.rank()==1 ) {
+            message= "" + tds.length() + " records.  Right-click to copy data to clipboard.";
+        } else {
+            if ( tds.length()>0 ) {
+                int[] qube= DataSetUtil.qubeDims(tds );
+                int[] qube1= DataSetUtil.qubeDims(tds.slice(0) );
+                if ( qube!=null ) {
+                    message= ""+ tds.length() + " records, each is "+ DataSetUtil.toString(qube1);
+                } else {
+                    message = "" + tds.length() + " records, first is "+ DataSetUtil.toString(qube1);
+                }
+            } else {
+                message= "no records";
+            }
+        }
+        int nselect= myPanel2.getMyEdit().getSelectedRows().length;
+        if ( nselect>0 ) {
+            message= message + " ("+nselect+" selected)";
+        }
+        
+        myPanel2.getMessageLabel().setText( message );
     }
     
     @Override
