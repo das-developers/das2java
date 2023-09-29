@@ -25,6 +25,8 @@ package org.das2.datum;
 
 import java.io.Serializable;
 import org.das2.datum.format.DatumFormatter;
+import org.das2.datum.format.TimeDatumFormatter;
+import org.das2.datum.format.TimeDatumFormatterFactory;
         
 /**
  * <p>A Datum is a number in the context of a Unit, for example "15 microseconds."
@@ -716,7 +718,19 @@ public class Datum implements Comparable, Serializable {
      */
     public static Datum create( double value, Units units, double resolution ) {
         Datum result= units.createDatum( value, resolution );
-        result.formatter= units.getDatumFormatterFactory().defaultFormatter();
+        Datum res= units.getOffsetUnits().createDatum(resolution);
+        if ( false && UnitsUtil.isTimeLocation(units) ) {
+            double nanos= res.doubleValue( Units.nanoseconds );
+            if ( nanos<1000 ) {
+                result.formatter= TimeDatumFormatter.formatterForScale( TimeUtil.NANO, null );
+            } else if ( nanos<1000000 ) {
+                result.formatter= TimeDatumFormatter.formatterForScale( TimeUtil.MICRO, null );
+            } else {
+                result.formatter= units.getDatumFormatterFactory().defaultFormatter();
+            }
+        } else {
+            result.formatter= units.getDatumFormatterFactory().defaultFormatter();
+        }
         return result;
     }
     
