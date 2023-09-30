@@ -32,6 +32,13 @@ public abstract class DatumFormatterFactory {
     /** provided for use by subclasses */
     protected DatumFormatterFactory() {}
     
+    /**
+     * return a new formatter using the specified format.  For example, for times
+     * this might be $Y-$m-$dT$H:$M:$S.
+     * @param format
+     * @return
+     * @throws java.text.ParseException 
+     */
     public abstract DatumFormatter newFormatter(String format) throws java.text.ParseException;
     
     public abstract DatumFormatter defaultFormatter();
