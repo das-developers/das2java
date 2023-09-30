@@ -719,7 +719,7 @@ public class Datum implements Comparable, Serializable {
     public static Datum create( double value, Units units, double resolution ) {
         Datum result= units.createDatum( value, resolution );
         Datum res= units.getOffsetUnits().createDatum(resolution);
-        if ( false && UnitsUtil.isTimeLocation(units) ) {
+        if ( UnitsUtil.isTimeLocation(units) ) {
             double nanos= res.doubleValue( Units.nanoseconds );
             if ( nanos<1000 ) {
                 result.formatter= TimeDatumFormatter.formatterForScale( TimeUtil.NANO, null );
