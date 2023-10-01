@@ -30,10 +30,12 @@ import javax.swing.table.TableRowSorter;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
 import org.das2.datum.EnumerationUnits;
+import org.das2.datum.TimeUtil;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
 import org.das2.datum.format.DatumFormatter;
 import org.das2.datum.format.FormatStringFormatter;
+import org.das2.datum.format.TimeDatumFormatter;
 import org.das2.util.LoggerManager;
 import org.das2.qds.DataSetOps;
 import org.das2.qds.DataSetUtil;
@@ -94,7 +96,12 @@ public class QDataSetTableModel extends AbstractTableModel {
         int i = 0;
         if (dep0 != null) {
             units[i] = SemanticOps.getUnits(dep0);
-            df[i]= units[i].getDatumFormatterFactory().defaultFormatter();
+            Datum dt= Ops.datum( DataSetUtil.guessCadence( dep0,null ) );
+            if ( dt!=null && UnitsUtil.isTimeLocation(units[i]) && dt.lt( Units.milliseconds.createDatum(1) ) ) {
+                df[i]= TimeDatumFormatter.formatterForScale( TimeUtil.NANO, null );
+            } else {
+                df[i]= units[i].getDatumFormatterFactory().defaultFormatter();
+            }
             labels[i] = (String) dep0.property(QDataSet.LABEL);
             i++;
         }
