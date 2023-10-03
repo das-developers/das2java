@@ -280,8 +280,12 @@ public final class DataGeneralPathBuilder {
                 }
                 pen= PEN_UP;
             }
-            if ( moduloy!=0 && Math.abs(y-lasty)>moduloy/2 ) {
-                pen= PEN_UP;
+            if ( moduloy!=0 ) {
+                if (  Math.abs(y-lasty)>moduloy/2 ) {
+                    pen= PEN_UP;
+                } else {
+                    
+                }
             }
         }
         if ( pen==PEN_UP ) {

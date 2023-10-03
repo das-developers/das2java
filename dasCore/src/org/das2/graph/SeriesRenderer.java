@@ -1097,7 +1097,11 @@ public class SeriesRenderer extends Renderer {
             pathBuilder.setHistogramMode(histogram);
             if ( moduloY.value()>0 ) {
                 try {
-                    pathBuilder.setModuloY(moduloY);
+                    if ( yAxis.getUnits()==Units.dimensionless ) {
+                        pathBuilder.setModuloY(Units.dimensionless.createDatum(moduloY.doubleValue(moduloY.getUnits())));
+                    } else {
+                        pathBuilder.setModuloY(moduloY);
+                    }
                 } catch ( InconvertibleUnitsException ex ) {
                     logger.log( Level.SEVERE, ex.getMessage(), ex );
                 }
