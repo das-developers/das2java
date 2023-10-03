@@ -295,6 +295,7 @@ public class SeriesRenderer extends Renderer {
         setFillStyle( decodeFillStyle( getControl( CONTROL_KEY_FILL_STYLE, encodeFillStyle(fillStyle) ), fillStyle ) );
         setSpecialColors( getControl( CONTROL_KEY_SPECIAL_COLORS, "" ) );
         setFillTexture( getControl( CONTROL_KEY_FILL_TEXTURE, "" ) );
+        setModuloY( decodeDatum( getControl( CONTROL_KEY_MODULO_Y, encodeDatum(moduloY) ), moduloY ) );
     }
 
     @Override
@@ -311,6 +312,7 @@ public class SeriesRenderer extends Renderer {
         controls.put( CONTROL_KEY_FILL_STYLE, encodeFillStyle(fillStyle) );
         controls.put( CONTROL_KEY_SPECIAL_COLORS, specialColors );
         controls.put( CONTROL_KEY_FILL_TEXTURE, fillTexture );
+        controls.put( CONTROL_KEY_MODULO_Y, encodeDatum(moduloY) );
         return formatControl(controls);
     }
     

@@ -66,6 +66,7 @@ import org.das2.CancelledOperationException;
 import org.das2.components.propertyeditor.Displayable;
 import org.das2.dataset.DataSetAdapter;
 import org.das2.datum.Datum;
+import org.das2.datum.DatumUtil;
 import static org.das2.graph.DasPlot.INFO;
 import static org.das2.graph.DasPlot.SEVERE;
 import org.das2.util.LoggerManager;
@@ -497,6 +498,12 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
     public static final String CONTROL_KEY_REFERENCE= "reference";
     public static final String CONTROL_KEY_DRAW_ERROR= "drawError";
     
+    /**
+     * modulo Y indicates that a difference in 23 hours is the same as -1 hours.
+     */
+    public static final String CONTROL_KEY_MODULO_Y= "moduloY";
+    public static final String CONTROL_KEY_MODULO_X= "moduloX";
+    
     public static final String PROP_CONTROL= "control";
 
     /**
@@ -874,6 +881,19 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
     public static String encodeFillStyle( FillStyle fillStyle ) {
         return fillStyle.toString();
     } 
+    
+    public static String encodeDatum( Datum d ) {
+        return d.toString();
+    }
+    
+    public static Datum decodeDatum( String s, Datum deft ) {
+        try {
+            return DatumUtil.parse(s);
+        } catch (ParseException ex) {
+            Logger.getLogger(Renderer.class.getName()).log(Level.SEVERE, null, ex);
+            return deft;
+        }
+    }
     
     /*
      * returns the AffineTransform to transform data from the last updatePlotImage call
