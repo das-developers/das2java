@@ -1093,6 +1093,13 @@ public class SeriesRenderer extends Renderer {
             
             DataGeneralPathBuilder pathBuilder= getPathBuilderForData( xAxis, yAxis, xds, vds );
             pathBuilder.setHistogramMode(histogram);
+            if ( moduloY.value()>0 ) {
+                try {
+                    pathBuilder.setModuloY(moduloY);
+                } catch ( InconvertibleUnitsException ex ) {
+                    logger.log( Level.SEVERE, ex.getMessage(), ex );
+                }
+            }
                 
             /* fuzz the xSampleWidth */
             double xSampleWidthExact= pathBuilder.getCadenceDouble();
@@ -3340,6 +3347,29 @@ public class SeriesRenderer extends Renderer {
         propertyChangeSupport.firePropertyChange(PROP_ERRORBARTYPE, oldErrorBarType, errorBarType);
     }
 
+    /**
+     * insert breaks where data jumps over a certain distance
+     * @param d a distance limit, like 12 hours
+     * @return a dataset with fill values inserted
+     */
+    private Datum moduloY = Units.dimensionless.createDatum(0);
+
+    public static final String PROP_MODULO_Y = "moduloY";
+
+    public Datum getModuloY() {
+        return moduloY;
+    }
+
+    /**
+     * set the distance the data exist within, for example "24hr" for Magnetic Local Time
+     * @param modulo 
+     */
+    public void setModuloY(Datum modulo) {
+        Datum oldModulo = this.moduloY;
+        this.moduloY = modulo;
+        updateCacheImage();
+        propertyChangeSupport.firePropertyChange(PROP_MODULO_Y, oldModulo, modulo);
+    }
 
     /**
      * Holds value of property resetDebugCounters.

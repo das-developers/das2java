@@ -49,6 +49,7 @@ public final class DataGeneralPathBuilder {
     private Datum pendingy= null;
     
     private double lastx=-Double.MAX_VALUE;
+    private double lasty=-Double.MAX_VALUE;
     
     private double lastIX= -Double.MAX_VALUE; // always the position of the data, not the histogram corners
     private double lastIY= -Double.MAX_VALUE;
@@ -58,6 +59,10 @@ public final class DataGeneralPathBuilder {
     
     private double cadence=0.0; // this is the cadence used to identify breaks in the data.
     private double cadenceExact= 1e38; // this is the cadence requested by the client
+    
+    private double moduloy=0; // non-zero means a jump in y will also cause a break.
+    private double modulox=0;
+    
     private boolean logStep= false;
     private boolean histogramFillFlag;
     
@@ -103,6 +108,14 @@ public final class DataGeneralPathBuilder {
                 
             }
         }
+    }
+    
+    /**
+     * set the value for which two values of Y are equivalent.
+     * @param mody 
+     */
+    public void setModuloY(Datum mody) {
+        this.moduloy= mody.doubleValue( this.yaxis.getUnits() );
     }
     
     /**
@@ -267,6 +280,9 @@ public final class DataGeneralPathBuilder {
                 }
                 pen= PEN_UP;
             }
+            if ( moduloy!=0 && Math.abs(y-lasty)>moduloy/2 ) {
+                pen= PEN_UP;
+            }
         }
         if ( pen==PEN_UP ) {
             if ( valid ) {
@@ -334,6 +350,7 @@ public final class DataGeneralPathBuilder {
             
         }
         lastx= x;
+        lasty= y;
     }
     
     /**
