@@ -15,7 +15,7 @@ import org.das2.qds.ops.Ops;
  */
 public class HistogramFilterEditorPanel extends AbstractFilterEditorPanel {
 
-    static String PROP_REGEX = "\\|histogram\\(\\s*(\\S+)\\s*,\\s*(\\S+)\\s*,\\s*(\\S+(\\s+\\S+))?\\s*\\)";
+    static String PROP_REGEX = "\\|histogram\\(\\s*([^,]+)\\s*,\\s*([^,]+)\\s*,\\s*([^,]+(\\s*[^,]+\\s*))?\\)";
 
     /**
      * Creates new form HistogramFilterEditorPanel
