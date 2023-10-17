@@ -2181,6 +2181,10 @@ public class TimeParser {
             }
         }
 
+        if ( start==null ) {
+            start= TimeUtil.toDatum( new int[] { 1000, 1, 1, 0, 0, 0, 0 } );
+        }
+        
         TimeUtil.TimeStruct timel = TimeUtil.toTimeStruct(start);
         TimeUtil.TimeStruct timeWidthl= new TimeUtil.TimeStruct();        
         copyTime( timeWidth, timeWidthl ); // make a local copy in case future versions allow variable time widths.
