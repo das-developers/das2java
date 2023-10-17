@@ -215,7 +215,7 @@ public final class DatumVector {
             Datum d= get(i);
             result.append(d.getFormatter().format(d,units));
         }
-        if ( getLength()>4 ) result.append(", ...");
+        if ( getLength()>4 ) result.append(", ... (len=").append(getLength()).append(")");
         result.append(" ").append(units.toString()).append(" ]");
         return result.toString();
     }
