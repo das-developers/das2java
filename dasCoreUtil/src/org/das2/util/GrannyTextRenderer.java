@@ -822,6 +822,19 @@ public class GrannyTextRenderer {
         return buffer.toString();
     }
     
+    /**
+     * count the number of lines in the string, breaking on "!c" or "&lt;br&gt;", ignoring empty lines at the beginning.
+     * @param s the string
+     * @return the number of lines
+     */
+    public static int lineCount( String s ) {
+        String[] ss= s.split("(\\!c|\\!C|\\<br\\>)");
+        int emptyLines=0;
+        while ( emptyLines<ss.length && ss[emptyLines].trim().length()==0 ) {
+            emptyLines++;
+        }
+        return ss.length - emptyLines;
+    }
 //    
 //    /**
 //     * useful for debugging.

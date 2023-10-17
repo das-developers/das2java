@@ -265,6 +265,17 @@ public class DasServer {
             if(conn instanceof HttpURLConnection){
                 HttpURLConnection httpConn = (HttpURLConnection) conn;
                 int nStatus = httpConn.getResponseCode();
+                if ( nStatus==301 ) {
+                    httpConn.disconnect(); //TODO: this is sloppy.  The buffer needs to be emptied.
+                    String newUrl= conn.getHeaderField("Location");
+                    if ( newUrl==null ) {
+                        throw new IllegalArgumentException("301 response but no new location");
+                    }
+                    httpConn=  (HttpURLConnection) new URL(newUrl).openConnection();
+                    conn= httpConn;
+                    nStatus= ((HttpURLConnection) httpConn).getResponseCode();
+                    //if ( conn.getHeaderField("Strict-Transport-Security"))
+                }
                     
                 if(nStatus >= 400)   // Just fail on 400's and 500's
                     throw new java.io.IOException("Server returned HTTP response "
