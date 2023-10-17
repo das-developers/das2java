@@ -1180,13 +1180,19 @@ public final class TimeUtil {
     private static TimeStruct next( int step, TimeStruct array ) {
         switch (step) {
             case SECOND: 
-                array.seconds= array.seconds+1;
+                array.seconds= Math.ceil(array.seconds+array.nanos/1e9);
+                array.nanos= 0;
                 break;
             case MINUTE: 
                 array.minute= array.minute+1;
+                array.seconds= 0;
+                array.nanos= 0;
                 break;
             case HOUR:
                 array.hour= array.hour+1;
+                array.minute= 0;
+                array.seconds= 0;
+                array.nanos= 0;
                 break;
             case DAY:
                 array.day= array.day+1;
@@ -1215,6 +1221,7 @@ public final class TimeUtil {
             array.hour=0;
             array.minute=0;
             array.seconds=0.;
+            array.nanos=0;
         }
         
         if (array.month>12) {
@@ -1316,7 +1323,7 @@ public final class TimeUtil {
         
         TimeStruct t= toTimeStruct(datum);
         
-        switch(step) {
+        switch(step) { // note fall-through
             case WEEK:
                 throw new IllegalArgumentException("not supported, use prevWeek");
             default:
@@ -1329,12 +1336,13 @@ public final class TimeUtil {
                 t.month= ((t.month-1)/3*3)+1;
             case MONTH:
                 t.day= 1;
-            case DAY:
+            case DAY: 
                 t.hour= 0;
             case HOUR:
                 t.minute= 0;
             case MINUTE:
                 t.seconds= 0.;
+                t.nanos= 0;
             case SECOND:
                 t.seconds= (int)t.seconds;
         }
