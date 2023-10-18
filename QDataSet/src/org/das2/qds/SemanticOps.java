@@ -988,7 +988,7 @@ public final class SemanticOps {
     }
     
     /**
-     * return a dataset with 1's where the cadence following this measurement is acceptable, and 0's where
+     * return a dataset with 1's where the cadence preceeding this measurement is acceptable, and 0's where
      * there should be a break in the data.  For example, here's some pseudocode:
      *<blockquote><pre>
      *   findex= Ops.interpolate( xds, x )
@@ -999,7 +999,7 @@ public final class SemanticOps {
      * Presently this just uses guessXTagWidth to get the cadence, but this may allow a future version to support
      * mode changes.
      *
-     * The result is a dataset with the same length, and the last element is always 1.
+     * The result is a dataset with the same length, and the zeroth element is always 1.
      *
      * @see Ops#valid which checks for fill and valid_min, valid_max.
      * @param tds rank 1 dataset of length N.
@@ -1019,7 +1019,7 @@ public final class SemanticOps {
         ArrayDataSet one= ArrayDataSet.createRank1( aresult.getComponentType(), 1 );
         one.putValue(0,1.0);
         DataSetUtil.copyDimensionProperties( aresult,one );
-        result= ArrayDataSet.append( aresult, one );
+        result= ArrayDataSet.append( one, aresult );
 
         result= Ops.link( tds, result );
 
