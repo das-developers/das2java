@@ -925,7 +925,9 @@ public class Schemes {
      * @return true if the data is a rank 2 list of M bins
      */
     public static boolean isRank2Bins(QDataSet dep) {
-        return dep.rank()==2 && QDataSet.VALUE_BINS_MIN_MAX.equals( dep.property(QDataSet.BINS_1) );
+        return dep.rank()==2 
+                && ( QDataSet.VALUE_BINS_MIN_MAX.equals( dep.property(QDataSet.BINS_1) )
+                        || QDataSet.VALUE_BINS_MIN_MAX_INCLUSIVE.equals( dep.property(QDataSet.BINS_1) ) );
     }
     
     /**
