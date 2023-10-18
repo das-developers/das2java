@@ -1152,11 +1152,7 @@ public class AsciiParser {
         if ( recordStart>0 ) {
             result= (WritableDataSet)result.trim(recordStart,result.length());
         }
-        
-        if ( acceptRecord==false ) {
-            result= (WritableDataSet)result.trim(0,result.length()-1);
-        }
-        
+                
         return result;
         
     }
