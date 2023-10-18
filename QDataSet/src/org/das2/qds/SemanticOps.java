@@ -953,6 +953,41 @@ public final class SemanticOps {
     }
 
     /**
+     * YXT is a dataset where T &rarr; X &rarr; Y.  This pattern comes up all the time
+     * and we need to identify it.  Ideally the data would be represented as T &rarr (X;Y).
+     * @param ds
+     * @return 
+     */
+    public static boolean isYXT(QDataSet ds) {
+        if ( ds.rank()!=1 ) {
+            return false;
+        }
+        QDataSet x= (QDataSet)ds.property(QDataSet.DEPEND_0);
+        if ( x==null || x.rank()!=1 ) {
+            return false;
+        }
+        QDataSet t= (QDataSet)x.property(QDataSet.DEPEND_0);
+        if ( t==null || t.rank()!=1 ) {
+            return false;
+        }
+        return true;
+    }
+    
+    /**
+     * YXT is a dataset where T &rarr; X &rarr; Y.  This pattern comes up all the time
+     * and we need to identify it.  Ideally the data would be represented as T &rarr (X;Y).
+     * @return a dataset with this form.
+     */
+    public static QDataSet yxt() {
+        QDataSet t0= Ops.dataset( "2023-10-18T00:00" );
+        QDataSet t= Ops.linspace( t0, "2023-10-19T00:00",1441 );
+        QDataSet a= Ops.multiply( Ops.divide( Ops.subtract( t, t0 ), "18hr" ), 2*Math.PI );
+        QDataSet y= Ops.multiply( Ops.sin( a ), Ops.linspace( 1.0, 1.2, 1441 ) );
+        QDataSet x= Ops.multiply( Ops.cos( Ops.multiply(a,1.01) ), Ops.linspace( 1.0, 1.2, 1441 ) );
+        return Ops.link( Ops.link( t, x ), y );
+    }
+    
+    /**
      * return a dataset with 1's where the cadence following this measurement is acceptable, and 0's where
      * there should be a break in the data.  For example, here's some pseudocode:
      *<blockquote><pre>
@@ -992,7 +1027,7 @@ public final class SemanticOps {
         
     }
     
-    private static final Map<String,Class> propertyTypes= new HashMap();
+    private static final Map<String,Class> propertyTypes= new HashMap<>();
     static {
         propertyTypes.put( QDataSet.UNITS, Units.class );
         propertyTypes.put( QDataSet.TYPICAL_MIN, Number.class );
