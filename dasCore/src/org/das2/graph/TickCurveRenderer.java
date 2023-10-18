@@ -22,16 +22,25 @@
 
 package org.das2.graph;
 
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.Shape;
+import java.awt.geom.GeneralPath;
+import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
 import org.das2.datum.Units;
 import org.das2.util.DasMath;
 import org.das2.components.propertyeditor.Enumeration;
-import java.awt.*;
-import java.awt.geom.*;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -565,6 +574,26 @@ public final class TickCurveRenderer extends Renderer {
         
     }
 
+    /**
+     * identify regions of continuous coverage, for example breaking up dataset into separate passes
+     * @param tds
+     * @return 
+     */
+    private QDataSet[] breakDataSet( QDataSet ds ) {
+        QDataSet cadenceBreaks= SemanticOps.cadenceCheck( ds, null );
+        QDataSet r= Ops.where( Ops.eq( cadenceBreaks, 0 ) );
+        if ( r.length()==0 ) {
+            return new QDataSet[] { ds };
+        } else {
+            QDataSet[] result= new QDataSet[r.length()];
+            result[0]= ds.trim( 0, (int)r.value(0) );
+            for ( int i=1; i<r.length(); i++ ) {
+                result[i]= ds.trim( (int)r.value(i-1), (int)r.value(i) );
+            }
+            return result;
+        }
+    }
+    
     private TickVDescriptor resetTickV( QDataSet tds ) {
         QDataSet trange= Ops.extent(tds);
         DatumRange dr= DataSetUtil.asDatumRange( trange, true );
@@ -573,10 +602,25 @@ public final class TickCurveRenderer extends Renderer {
         
         if ( tickValues.length()>0 ) {
             Units u= dr.getUnits();
+            TickVDescriptor ticks=null;
             if ( UnitsUtil.isTimeLocation(u) ) {
                 dr= new DatumRange( dr.min().doubleValue(Units.us2000), dr.max().doubleValue(Units.us2000), Units.us2000 );
+                QDataSet[] qq= breakDataSet(tds);
+                if ( qq.length>1 ) {
+                    List<Datum> major1= new ArrayList<>();
+                    List<Datum> minor1= new ArrayList<>();
+                    for ( QDataSet q1: qq ) {
+                        DatumRange dr1= DataSetUtil.asDatumRange( Ops.extent(q1), true );
+                        TickVDescriptor ticks1= GraphUtil.calculateManualTicks( tickValues, dr1, false );
+                        major1.addAll( ticks1.getMajorTicks().asList() );
+                        minor1.addAll( ticks1.getMinorTicks().asList() );
+                    }
+                    ticks= TickVDescriptor.newTickVDescriptor(major1, minor1);
+                }
             }
-            TickVDescriptor ticks= GraphUtil.calculateManualTicks( tickValues, dr, false );
+            if ( ticks==null ) {
+                ticks= GraphUtil.calculateManualTicks( tickValues, dr, false );
+            }
             tickv = ticks;
             ticksDivider= DomainDividerUtil.getDomainDivider( dr.min(), dr.max(), false );
             Datum ticksSpacingD;
