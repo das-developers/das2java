@@ -387,16 +387,39 @@ public final class TickCurveRenderer extends Renderer {
         int dd=4;
         int nvert= xds.length();
         int index1= (int)Math.floor(findex);
-        int index0= index1-dd;
+        int k=1;
+        int index0= index1-k;
+        while ( k<dd ) {
+            double l= Math.sqrt( Math.pow( ddata[0][index0] - ddata[0][index1],2 ) + 
+                    Math.pow( ddata[1][index0] - ddata[1][index1], 2  ) );
+            k=k+1;
+            if ( l>20 || (index1-k)<0 ) {
+                break;
+            } else {
+                index0= index1-k;
+            }
+        }
+        k=1;
+        int index2= index1+k;
+        while ( k<dd ) {
+            double l= Math.sqrt( Math.pow( ddata[0][index2] - ddata[0][index1],2 ) + 
+                    Math.pow( ddata[1][index2] - ddata[1][index1], 2  ) );
+            k=k+1;
+            if ( l>20 || (index1+k)==ddata.length ) {
+                break;
+            } else {
+                index2= index1+k;
+                
+            }
+        }
         if ( index0<0 ) index0= 0;
-        while (index0 < index1 && ((ddata[0][index0] == -10000) || (ddata[1][index0] == 10000))) {
+        while (index0 < index1 && ((ddata[0][index0] == -10000) || (ddata[1][index0] == 10000))) { // find a valid point
             index0++;
         }
-        int index2 = index1 + dd;
         if (index2 >= nvert) {
             index2 = nvert - 1;
         }
-        while (index2 > index1 && ((ddata[0][index2] == -10000) || (ddata[1][index2] == 10000))) {
+        while (index2 > index1 && ((ddata[0][index2] == -10000) || (ddata[1][index2] == 10000))) {// find a valid point
             index2--;
         }
         if (index2 - index1 > index1 - index0) {
