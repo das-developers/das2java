@@ -615,6 +615,11 @@ public interface QDataSet {
     public static String VALUE_BINS_MIN_MAX="min,max";
 
     /**
+     * typical bin is min,max with min inclusive and max exclusive.
+     */
+    public static String VALUE_BINS_MIN_MAX_INCLUSIVE="min,maxInclusive";
+
+    /**
      * scale type to suggest log axes and bins.
      */
     public static String VALUE_SCALE_TYPE_LOG="log";
