@@ -687,7 +687,10 @@ public class DataSetBuilder {
     }
     
     /**
-     * returns the result dataset, concatenating all the datasets it has built thus far.
+     * returns the result dataset, concatenating all the datasets it has built thus far, including the partial record.
+     * See https://sourceforge.net/p/autoplot/bugs/1469/ which considers if the partial record should be included.  Clients should
+     * always call nextRecord on all completed records in case the logic changes.  See also the AsciiParser, which has special
+     * code for handling the partial record.
      * @return the result dataset
      */
     public DDataSet getDataSet() {
