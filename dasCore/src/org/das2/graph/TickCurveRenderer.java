@@ -387,7 +387,7 @@ public final class TickCurveRenderer extends Renderer {
         int dd=4;
         int nvert= xds.length();
         int index1= (int)Math.floor(findex);
-        int k=1;
+        int k=0;
         int index0= index1-k;
         while ( k<dd ) {
             double l= Math.sqrt( Math.pow( ddata[0][index0] - ddata[0][index1],2 ) + 
@@ -399,7 +399,7 @@ public final class TickCurveRenderer extends Renderer {
                 index0= index1-k;
             }
         }
-        k=1;
+        k=0;
         int index2= index1+k;
         while ( k<dd ) {
             double l= Math.sqrt( Math.pow( ddata[0][index2] - ddata[0][index1],2 ) + 
