@@ -989,6 +989,14 @@ public class DataSetBuilder {
         propertyChangeSupport.firePropertyChange(PROP_VALIDMAX, oldValidMax, validMax);
     }
     
+    /**
+     * return the number of records accepted into this builder, and the length of the dataset
+     * if getDataSet is called.
+     * @return the number of records accepted into this builder
+     */
+    public int getRecCount() {
+        return (this.index+this.offset);
+    }
     
     @Override
     public String toString() {
