@@ -82,6 +82,9 @@ public class GrannyTickLabeller implements TickLabeller {
     public Rectangle labelMajorTick(Graphics g, int tickNumber, java.awt.geom.Line2D tickLine) {
         GrannyTextRenderer gtr= new GrannyTextRenderer();
         String grannyString= getLabel( tickNumber, ticks.tickV.get(tickNumber) );
+        //if ( grannyString.equals("00:50") ) {
+        //    System.err.println( "Here 86" );
+        //}
         gtr.setString(g, grannyString );
         Rectangle bounds= gtr.getBounds();
         
