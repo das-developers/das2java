@@ -405,7 +405,7 @@ public final class TickCurveRenderer extends Renderer {
             double l= Math.sqrt( Math.pow( ddata[0][index2] - ddata[0][index1],2 ) + 
                     Math.pow( ddata[1][index2] - ddata[1][index1], 2  ) );
             k=k+1;
-            if ( l>20 || (index1+k)==ddata.length ) {
+            if ( l>20 || (index1+k)==ddata[0].length ) {
                 break;
             } else {
                 index2= index1+k;
