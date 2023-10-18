@@ -23,6 +23,10 @@
 
 package org.das2.datum;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 /**
  *
  * @author  eew
@@ -222,7 +226,7 @@ public final class DatumVector {
     
     /**
      * check that element-for-element the two are equal
-     * @param a
+     * @param a 
      * @param b
      * @return true if they are equal.
      */
@@ -238,6 +242,18 @@ public final class DatumVector {
         } else {
             return false;
         }
+    }
+
+    /**
+     * return this DatumVector as a list of Datums.
+     * @return this DatumVector as a list of Datums.
+     */
+    public Collection<? extends Datum> asList() {
+        List<Datum> result= new ArrayList<>();
+        for ( int i=0; i<getLength(); i++ ) {
+            result.add( get(i) );
+        }
+        return result;
     }
         
 }
