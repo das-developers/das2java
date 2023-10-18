@@ -232,8 +232,8 @@ public class LSpec {
     }
     
     /**
-     * alternate algorithm following Brian Larson's algorithm that rebin the datasets to rank 2 dataset ( time, LShell ), by interpolating along sweeps.  This
-     * dataset has the property "sweeps", which is a dataset that indexes the input datasets.
+     * alternate algorithm following Brian Larson's algorithm that rebin the datasets to rank 2 dataset ( time, LShell ), by 
+     * interpolating along sweeps.  This dataset has the property "sweeps", which is a dataset that indexes the input datasets.
      * @param lds The L values corresponding to y axis position, which should be a function of time.
      * @param tt The Time values corresponding to x axis position.  If null, then use lds.property(QDataSet.DEPEND_0).
      * @param zds the Z values corresponding to the parameter we wish to organize
