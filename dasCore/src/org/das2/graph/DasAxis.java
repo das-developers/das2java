@@ -3687,10 +3687,6 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 int tcaLabelWidth = (int) Math.floor(idlt.getWidth() + 0.5);
                 QDataSet bds=null;
                 if ( ltcaData!=null ) bds= (QDataSet) ltcaData.property(QDataSet.BUNDLE_1);
-                if ( bds!=null && bds.length()<lines ) {
-                    //TODO: transitional state--I hope...
-                    return bounds;
-                }
                 for (int i = 0; i < lines; i++) {
                     String ss;
                     if ( bds==null ) {
