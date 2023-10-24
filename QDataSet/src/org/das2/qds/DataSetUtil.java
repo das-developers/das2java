@@ -4690,17 +4690,37 @@ public class DataSetUtil {
             if ( UnitsUtil.isTimeLocation(u) ) {
                 if ( form==null ) {
                     QDataSet c= (QDataSet) yds.property( QDataSet.CADENCE );
+                    double ns;
                     if ( c==null ) {
-                        return df.format(d,u);
-                    } else {
-                        double ns= Datum.create( c.value(), SemanticOps.getUnits(c) ).doubleValue( Units.nanoseconds );
-                        if ( ns<50000 ) {
-                            TimeParser tp= TimeParser.create("$Y-$m-$dT$H:$M:$S.$(subsec,places=9)Z");
-                            return tp.format(d);
-                        } else if ( ns<50000000 ) {
-                            TimeParser tp= TimeParser.create("$Y-$m-$dT$H:$M:$S.$(subsec,places=6)Z");
-                            return tp.format(d);
+                        if ( yds.length()>50 && yds.rank()==1 ) {
+                            try { 
+                                c= DataSetUtil.guessCadence(yds.trim(0,50),null);
+                            } catch ( RuntimeException ex ) {
+                                if ( yds.length()>2 ) {
+                                    int n= yds.length();
+                                    c= DataSetUtil.asDataSet(u.getOffsetUnits().createDatum( yds.value(n-1)-yds.value(0) ).divide(n));
+
+                                } else {
+                                    c= null;
+                                }
+                            }
+                            if ( c==null ) {
+                                return df.format(d,u);
+                            } else {
+                                ns = Datum.create( c.value(), SemanticOps.getUnits(c) ).doubleValue( Units.nanoseconds );
+                            }
+                        } else {
+                            return df.format(d,u);
                         }
+                    } else {
+                        ns= Datum.create( c.value(), SemanticOps.getUnits(c) ).doubleValue( Units.nanoseconds );
+                    }
+                    if ( ns<50000 ) {
+                        TimeParser tp= TimeParser.create("$Y-$m-$dT$H:$M:$S.$(subsec,places=9)Z");
+                        return tp.format(d);
+                    } else if ( ns<50000000 ) {
+                        TimeParser tp= TimeParser.create("$Y-$m-$dT$H:$M:$S.$(subsec,places=6)Z");
+                        return tp.format(d);
                     }
                 } else {
                     TimeParser tp= TimeParser.create(form);
