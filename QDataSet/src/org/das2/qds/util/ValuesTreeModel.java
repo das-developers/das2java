@@ -12,6 +12,7 @@ import javax.swing.tree.TreeNode;
 import org.das2.datum.Datum;
 import org.das2.datum.EnumerationUnits;
 import org.das2.datum.TimeParser;
+import org.das2.datum.UnitsUtil;
 import org.das2.qds.DataSetUtil;
 import org.das2.qds.QDataSet;
 import org.das2.qds.RankZeroDataSet;
@@ -185,12 +186,16 @@ public class ValuesTreeModel extends DefaultTreeModel {
                         if ( u.isConvertibleTo(Units.seconds) ) {
                             Datum d= DataSetUtil.asDatum(ds.slice(i));
                             double cadenceUs= DataSetUtil.asDatum(cadence).doubleValue( Units.microseconds );
-                            if ( cadenceUs<1 ) {
-                                return NANOSECONDS.format(d);
-                            } else if ( cadenceUs<1000 ) {
-                                return MICROSECONDS.format(d);
+                            if ( UnitsUtil.isTimeLocation(d.getUnits()) ) {
+                                if ( cadenceUs<1 ) {
+                                    return NANOSECONDS.format(d);
+                                } else if ( cadenceUs<1000 ) {
+                                    return MICROSECONDS.format(d);
+                                } else {
+                                    return MILLISECONDS.format(d);
+                                }
                             } else {
-                                return MILLISECONDS.format(d);
+                                return DataSetUtil.getStringValue( ds, ds.value(i) ) + " "  + u;
                             }
                         }
                         
