@@ -464,6 +464,7 @@ public final class Ops {
      * @param ds2 a rank M dataset with compatible geometry
      * @return the element-wise sum of the two datasets.
      * @see #addGen(org.das2.qds.QDataSet, org.das2.qds.QDataSet, java.util.Map) addGen, which shows how units are resolved.
+     * @see https://sourceforge.net/p/autoplot/bugs/2558/, which shows the issues with CDF_TT2000.
      */
     public static QDataSet add(QDataSet ds1, QDataSet ds2) {
         Map<String,Object> props= new HashMap<>();
