@@ -750,6 +750,47 @@ public class Datum implements Comparable, Serializable {
         result.formatter= formatter;
         return result;
     }
+
+    /**
+     * convenient method for creating a dimensionless Datum with the given value.
+     * @param value the magnitude of the datum.
+     * @return a dimensionless Datum with the given value.
+     */
+    public static Datum create(long value) {
+        return Units.dimensionless.createDatum(value);
+    }
+    
+    /**
+     * creates a datum with the given units and value, for example,
+     * {@code Datum.create( 54, Units.milliseconds )}
+     * @param value the magnitude of the datum.
+     * @param units the units of the datum.
+     * @return a Datum with the given units and value.
+     */
+    public static Datum create( long value, Units units ) {
+        if ( units==null ) {
+            throw new NullPointerException("Units are null");
+        }
+        return units.createDatum( value );
+    }
+    
+    /**
+     * Returns a Datum with a specific DatumFormatter attached to
+     * it.  This was was used to limit resolution before limited resolution
+     * Datums were introduced.
+     *
+     * @param value the magnitude of the datum.
+     * @param units the units of the datum.
+     * @param formatter the DatumFormatter that should be used to format this datum, which will be
+     *   returned by getFormatter().
+     * @return a Datum with the given units and value, that should return the given formatter when asked.  
+     */
+    public static Datum create( long value, Units units, DatumFormatter formatter ) {
+        Datum result= create( value, units);
+        result.formatter= formatter;
+        return result;
+    }
+    
     
     /**
      * creates a dimensionless datum backed by an int.
