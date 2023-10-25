@@ -78,6 +78,7 @@ import org.das2.qds.DataSetAnnotations;
 import static org.das2.qds.DataSetUtil.propertyNames;
 import org.das2.qds.IndexGenDataSet;
 import org.das2.qds.IndexListDataSetIterator;
+import org.das2.qds.LongReadAccess;
 import static org.das2.qds.SemanticOps.isJoin;
 import static org.das2.qds.SemanticOps.isTimeSeries;
 import org.das2.qds.SortDataSet;
@@ -223,6 +224,13 @@ public final class Ops {
     public interface BinaryOp {
         double op(double d1, double d2);
     }
+    
+    /**
+     * Like BinaryOp, but operands and result are long.
+     */
+    public interface LongBinaryOp {
+        long op(long d1, long d2);
+    }
 
     /**
      * these are properties that are propagated through operations.
@@ -232,6 +240,60 @@ public final class Ops {
                     QDataSet.BINS_0, QDataSet.BINS_1, 
     };
          
+    /**
+     * preserve many of the operand properties.
+     * @param ds1
+     * @param ds2
+     * @param result 
+     */
+    private static void applyProperties( QDataSet ds1, QDataSet ds2, MutablePropertyDataSet result ) {
+        Map<String, Object> m1 = DataSetUtil.getProperties( ds1, _dependProperties, null );
+        Map<String, Object> m2 = DataSetUtil.getProperties( ds2, _dependProperties, null );
+
+        boolean resultIsQube= Boolean.TRUE.equals( m1.get(QDataSet.QUBE) ) || Boolean.TRUE.equals( m2.get(QDataSet.QUBE) );
+        if ( m1.size()==1 ) m1.remove( QDataSet.QUBE ); // kludge: CoerceUtil.coerce would copy over a QUBE property, so just remove this.
+        if ( m2.size()==1 ) m2.remove( QDataSet.QUBE );
+        if ( ( m2.isEmpty() && !m1.isEmpty() ) || ds2.rank()==0 ) {
+            m2.put( QDataSet.DEPEND_0, m1.get(QDataSet.DEPEND_0 ) );
+            m2.put( QDataSet.DEPEND_1, m1.get(QDataSet.DEPEND_1 ) );
+            m2.put( QDataSet.DEPEND_2, m1.get(QDataSet.DEPEND_2 ) );
+            m2.put( QDataSet.DEPEND_3, m1.get(QDataSet.DEPEND_3 ) );
+            m2.put( QDataSet.CONTEXT_0, m1.get(QDataSet.CONTEXT_0) );
+            m2.put( QDataSet.BINS_0,   m1.get(QDataSet.BINS_0 ) );
+            m2.put( QDataSet.BINS_1,   m1.get(QDataSet.BINS_1 ) );
+        }
+        if ( ( m1.isEmpty() && !m2.isEmpty() ) || ds1.rank()==0 ) {
+            m1.put( QDataSet.DEPEND_0, m2.get(QDataSet.DEPEND_0 ) );
+            m1.put( QDataSet.DEPEND_1, m2.get(QDataSet.DEPEND_1 ) );
+            m1.put( QDataSet.DEPEND_2, m2.get(QDataSet.DEPEND_2 ) );
+            m1.put( QDataSet.DEPEND_3, m2.get(QDataSet.DEPEND_3 ) );
+            m1.put( QDataSet.CONTEXT_0, m2.get(QDataSet.CONTEXT_0) );
+            m1.put( QDataSet.BINS_0,   m2.get(QDataSet.BINS_0 ) );
+            m1.put( QDataSet.BINS_1,   m2.get(QDataSet.BINS_1 ) );
+        }
+        Map<String, Object> m3 = equalProperties(m1, m2);
+        if ( resultIsQube ) {
+            m3.put( QDataSet.QUBE, Boolean.TRUE );
+        }
+        String[] ss= DataSetUtil.dimensionProperties();
+        for ( String s: ss ) {
+            m3.remove( s );
+        }
+        
+        // https://sourceforge.net/p/autoplot/bugs/2490/
+        String rt= (String)ds1.property(QDataSet.RENDER_TYPE);
+        if ( rt!=null ) {
+            result.putProperty( QDataSet.RENDER_TYPE, rt );
+        }
+        
+        // because this contains FILL_VALUE, etc that are no longer correct.  
+        // My guess is that anything with a BUNDLE_1 property shouldn't have 
+        // been passed into this routine anyway.
+        m3.remove( QDataSet.BUNDLE_1 ); 
+
+        DataSetUtil.putProperties(m3, result);    
+
+    }
     
     /**
      * apply the binary operator element-for-element of the two datasets, minding
@@ -325,51 +387,7 @@ public final class Ops {
                 }   break;
         }
 
-        Map<String, Object> m1 = DataSetUtil.getProperties( operands[0], _dependProperties, null );
-        Map<String, Object> m2 = DataSetUtil.getProperties( operands[1], _dependProperties, null );
-
-        boolean resultIsQube= Boolean.TRUE.equals( m1.get(QDataSet.QUBE) ) || Boolean.TRUE.equals( m2.get(QDataSet.QUBE) );
-        if ( m1.size()==1 ) m1.remove( QDataSet.QUBE ); // kludge: CoerceUtil.coerce would copy over a QUBE property, so just remove this.
-        if ( m2.size()==1 ) m2.remove( QDataSet.QUBE );
-        if ( ( m2.isEmpty() && !m1.isEmpty() ) || ds2.rank()==0 ) {
-            m2.put( QDataSet.DEPEND_0, m1.get(QDataSet.DEPEND_0 ) );
-            m2.put( QDataSet.DEPEND_1, m1.get(QDataSet.DEPEND_1 ) );
-            m2.put( QDataSet.DEPEND_2, m1.get(QDataSet.DEPEND_2 ) );
-            m2.put( QDataSet.DEPEND_3, m1.get(QDataSet.DEPEND_3 ) );
-            m2.put( QDataSet.CONTEXT_0, m1.get(QDataSet.CONTEXT_0) );
-            m2.put( QDataSet.BINS_0,   m1.get(QDataSet.BINS_0 ) );
-            m2.put( QDataSet.BINS_1,   m1.get(QDataSet.BINS_1 ) );
-        }
-        if ( ( m1.isEmpty() && !m2.isEmpty() ) || ds1.rank()==0 ) {
-            m1.put( QDataSet.DEPEND_0, m2.get(QDataSet.DEPEND_0 ) );
-            m1.put( QDataSet.DEPEND_1, m2.get(QDataSet.DEPEND_1 ) );
-            m1.put( QDataSet.DEPEND_2, m2.get(QDataSet.DEPEND_2 ) );
-            m1.put( QDataSet.DEPEND_3, m2.get(QDataSet.DEPEND_3 ) );
-            m1.put( QDataSet.CONTEXT_0, m2.get(QDataSet.CONTEXT_0) );
-            m1.put( QDataSet.BINS_0,   m2.get(QDataSet.BINS_0 ) );
-            m1.put( QDataSet.BINS_1,   m2.get(QDataSet.BINS_1 ) );
-        }
-        Map<String, Object> m3 = equalProperties(m1, m2);
-        if ( resultIsQube ) {
-            m3.put( QDataSet.QUBE, Boolean.TRUE );
-        }
-        String[] ss= DataSetUtil.dimensionProperties();
-        for ( String s: ss ) {
-            m3.remove( s );
-        }
-        
-        // https://sourceforge.net/p/autoplot/bugs/2490/
-        String rt= (String)ds1.property(QDataSet.RENDER_TYPE);
-        if ( rt!=null ) {
-            result.putProperty( QDataSet.RENDER_TYPE, rt );
-        }
-        
-        // because this contains FILL_VALUE, etc that are no longer correct.  
-        // My guess is that anything with a BUNDLE_1 property shouldn't have 
-        // been passed into this routine anyway.
-        m3.remove( QDataSet.BUNDLE_1 ); 
-
-        DataSetUtil.putProperties(m3, result);    
+        applyProperties( ds1, ds2, result );
         result.putProperty( QDataSet.FILL_VALUE, fill );
         
         return result;
@@ -450,6 +468,75 @@ public final class Ops {
         }
         return result;
     }
+    
+    /**
+     * returns the BinaryOp that handles the addition operation for Long arguments.  Properties will have the units inserted.
+     * @param ds1 the first operand
+     * @param ds2 the second operand
+     * @param properties the result properties
+     * @return the BinaryOp that handles the addition operation.
+     */
+    private static LongBinaryOp longAddGen( QDataSet ds1, QDataSet ds2, Map<String,Object> properties ) {
+        Units units1 = SemanticOps.getUnits( ds1 );
+        Units units2 = SemanticOps.getUnits( ds2 );
+        LongBinaryOp result;
+        if ( units2.isConvertibleTo(units1) && UnitsUtil.isRatioMeasurement(units1) ) {
+            final UnitsConverter uc= UnitsConverter.getConverter( units2, units1);
+            result= (long d1, long d2) -> d1 + (long)uc.convert(d2);
+            if ( units1!=Units.dimensionless ) properties.put( QDataSet.UNITS, units1 );
+        } else if ( UnitsUtil.isIntervalMeasurement(units1) ) {
+            if ( UnitsUtil.isIntervalMeasurement(units2) ) {
+                throw new IllegalArgumentException("two location units cannot be added: " + units1 + ", "+ units2  );
+            }
+            if ( units2==Units.dimensionless && !UnitsUtil.isTimeLocation(units1) ) {
+                units2= units1.getOffsetUnits();
+            }
+            final UnitsConverter uc= UnitsConverter.getConverter( units2, units1.getOffsetUnits() );
+            result= (long d1, long d2) -> d1 + (long)uc.convert(d2);
+            properties.put( QDataSet.UNITS, units1 );
+        } else if ( UnitsUtil.isIntervalMeasurement(units2) ) {
+            final UnitsConverter uc= UnitsConverter.getConverter( units1, units2.getOffsetUnits() );
+            result= (long d1, long d2) -> (long)uc.convert(d1) + d2;
+            properties.put( QDataSet.UNITS, units2 );
+        } else if ( UnitsUtil.isRatioMeasurement(units1) && units2.isConvertibleTo(Units.dimensionless)  ) {
+            result= (long d1, long d2) -> d1 + d2;
+            properties.put( QDataSet.UNITS, units1 );
+        } else {
+            throw new IllegalArgumentException("units cannot be added: " + units1 + ", "+ units2 );
+        }
+        return result;
+    }
+    
+    /**
+     * optimize CDFTT2000 addition by having a faster loop and preserving long backing array.
+     * @param ds1 possibly a long-backed array
+     * @param ds2 possibly a long-backed array
+     * @return null or the result
+     */
+    private static MutablePropertyDataSet maybeAddTT2000( QDataSet ds1, QDataSet ds2 ) {
+        if ( ds1.rank()==1 && ds2.rank()==0 ) {
+            LongReadAccess l1= ds1.capability( LongReadAccess.class );
+            if ( l1==null ) return null;
+            if ( ds2.value()!=Math.floor(ds2.value() ) ) return null;
+            long[] ll= new long[ds1.length()];
+            long l2= (long)ds2.value();
+            int n= ds1.length();
+            Map<String,Object> props= new HashMap<>();
+            LongBinaryOp addop= longAddGen( ds1, ds2, props );
+            for ( int i=0; i<ll.length; i++ ) {
+                 ll[i]= addop.op(l1.lvalue(i), l2 );
+            }
+            ArrayDataSet result= LDataSet.wrap(ll);
+            applyProperties( ds1, ds2, result );
+            result.putProperty( QDataSet.UNITS, props.get(QDataSet.UNITS) );
+            result.putProperty(QDataSet.NAME, null );
+            result.putProperty(QDataSet.LABEL, maybeLabelInfixOp( ds1, ds2, "+" ) );            
+            return result;
+        }
+        return null;
+    }
+    
+    
     /**
      * add the two datasets which have the compatible geometry and units.  For example,
      *<blockquote><pre>{@code
@@ -467,9 +554,13 @@ public final class Ops {
      * @see https://sourceforge.net/p/autoplot/bugs/2558/, which shows the issues with CDF_TT2000.
      */
     public static QDataSet add(QDataSet ds1, QDataSet ds2) {
+        MutablePropertyDataSet result= maybeAddTT2000( ds1,ds2 );
+        if ( result!=null ) {
+            return result;
+        }
         Map<String,Object> props= new HashMap<>();
         BinaryOp b= addGen( ds1, ds2, props );
-        MutablePropertyDataSet result= applyBinaryOp( ds1, ds2, b );
+        result= applyBinaryOp( ds1, ds2, b );
         result.putProperty( QDataSet.UNITS, props.get(QDataSet.UNITS) );
         result.putProperty(QDataSet.NAME, null );
         result.putProperty(QDataSet.LABEL, maybeLabelInfixOp( ds1, ds2, "+" ) );

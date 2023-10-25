@@ -3546,10 +3546,19 @@ public class DataSetUtil {
             if ( wds.value()==0 ) {
                 return u.getFillDatum();
             } else {
-                if ( format==null || format.trim().length()==0 ) {
-                    return Datum.create( ds.value(), u );
+                LongReadAccess ll= ds.capability( LongReadAccess.class );
+                if ( ll!=null ) {
+                    if ( format==null || format.trim().length()==0 ) {
+                        return Datum.create( ll.lvalue(), u );
+                    } else {
+                        return Datum.create( ll.lvalue(), u, new FormatStringFormatter(format, true) );
+                    }                    
                 } else {
-                    return Datum.create( ds.value(), u, new FormatStringFormatter(format, true) );
+                    if ( format==null || format.trim().length()==0 ) {
+                        return Datum.create( ds.value(), u );
+                    } else {
+                        return Datum.create( ds.value(), u, new FormatStringFormatter(format, true) );
+                    }
                 }
             }
         }
