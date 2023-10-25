@@ -6247,13 +6247,26 @@ public final class Ops {
         if ( arg0==null ) {  // there was a similar test in the Python code.
             return null;
         } else if ( arg0 instanceof QDataSet ) {
-            return (QDataSet)arg0;
+            QDataSet result= (QDataSet)arg0;
+            if ( UnitsUtil.isTimeLocation(u) ) {
+                result= Ops.putProperty( result, QDataSet.FORMAT, null ); // dataset( indgen(100), units=Units.cdfTT2000 )
+            }
+            Units u0= SemanticOps.getUnits(result);
+            if ( u0.isConvertibleTo(u) ) {
+                return Ops.convertUnitsTo( result, u );
+            } else {
+                if ( u0==Units.dimensionless ) {
+                    return Ops.putProperty( result, QDataSet.UNITS, u );
+                } else {
+                    throw new InconvertibleUnitsException(u0,u);
+                }
+            }
         } else if ( arg0 instanceof Number ) {
             return DataSetUtil.asDataSet( u.createDatum( ((Number)arg0).doubleValue() ) );
         } else if ( arg0 instanceof Datum ) {
-            return DataSetUtil.asDataSet( (Datum)arg0 );
+            return dataset( DataSetUtil.asDataSet( (Datum)arg0 ), u );
         } else if ( arg0 instanceof DatumRange ) {
-            return DataSetUtil.asDataSet( (DatumRange)arg0 );
+            return dataset( DataSetUtil.asDataSet( (DatumRange)arg0 ), u );
         } else if ( arg0 instanceof String ) {
             String sarg= (String)arg0;
             try {
