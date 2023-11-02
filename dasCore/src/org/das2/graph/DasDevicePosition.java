@@ -428,6 +428,10 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         if ( parent!=null ) {
             parent.revalidate();
         }
+        if ( getDasName().contains("marginCol") ) {
+            System.err.println("here stop "+getDasName());
+        }
+                
         int oldmin= dMinimum;
         int oldmax= dMaximum;
         dMinimum= (int)( getParentMin() + minimum*getDeviceSize() + getEmSize() * emMinimum + ptMinimum );
@@ -436,6 +440,7 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         if ( dMinimum!=oldmin ) firePropertyChange(  PROP_DMINIMUM, oldmin ,dMinimum);
         if ( dMaximum!=oldmax ) firePropertyChange(  PROP_DMAXIMUM, oldmax ,dMaximum);
         if ( dMinimum!=oldmin || dMaximum!=oldmax ) fireUpdate();
+        System.err.println("dMaximum: "+dMaximum + " "+getDasName() );
         canvas.repaint();
     }
     
@@ -884,6 +889,42 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         firePropertyChange(PROP_EMMAXIMUM, old[1], em );
         firePropertyChange(PROP_MAXIMUM, old[0], norm );
         revalidate();
+    }
+    
+    public static final String PROP_MAXLAYOUT = "maxLayout";
+
+    public String getMaxLayout() {
+        String layout= formatLayoutStr(this);
+        return layout;
+    }
+
+    public void setMaxLayout(String maxLayout) {
+        String oldMinLayout = getMinLayout();
+        try {
+            double[] dd= parseLayoutStr(maxLayout);
+            setMin( dd[0], dd[1], (int)dd[2] );
+        } catch (ParseException ex) {
+            return;
+        }
+        propertyChangeDelegate.firePropertyChange(PROP_MAXLAYOUT, oldMinLayout, maxLayout);
+    }
+
+    public static final String PROP_MINLAYOUT = "minLayout";
+
+    public String getMinLayout() {
+        String layout= formatLayoutStr(this);
+        return layout;
+    }
+
+    public void setMinLayout(String minLayout) {
+        String oldMinLayout = getMinLayout();
+        try {
+            double[] dd= parseLayoutStr(minLayout);
+            setMin( dd[0], dd[1], (int)dd[2] );
+        } catch (ParseException ex) {
+            return;
+        }
+        propertyChangeDelegate.firePropertyChange(PROP_MINLAYOUT, oldMinLayout, minLayout);
     }
     
     /**
