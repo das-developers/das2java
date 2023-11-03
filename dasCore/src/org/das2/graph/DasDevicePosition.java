@@ -428,10 +428,8 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         if ( parent!=null ) {
             parent.revalidate();
         }
-        if ( getDasName().contains("marginCol") ) {
-            System.err.println("here stop "+getDasName());
-        }
-                
+        minLayout= getMinLayout();
+        maxLayout= getMaxLayout();
         int oldmin= dMinimum;
         int oldmax= dMaximum;
         dMinimum= (int)( getParentMin() + minimum*getDeviceSize() + getEmSize() * emMinimum + ptMinimum );
@@ -440,7 +438,6 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         if ( dMinimum!=oldmin ) firePropertyChange(  PROP_DMINIMUM, oldmin ,dMinimum);
         if ( dMaximum!=oldmax ) firePropertyChange(  PROP_DMAXIMUM, oldmax ,dMaximum);
         if ( dMinimum!=oldmin || dMaximum!=oldmax ) fireUpdate();
-        System.err.println("dMaximum: "+dMaximum + " "+getDasName() );
         canvas.repaint();
     }
     
@@ -785,6 +782,9 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         double oldValue= this.emMinimum;
         this.emMinimum = emMinimum;
         firePropertyChange( PROP_EMMINIMUM, oldValue, emMinimum);
+        if ( oldValue!=emMinimum ) {
+            firePropertyChange( PROP_MINLAYOUT, minLayout, getMinLayout() );
+        }        
         revalidate();
     }
     
@@ -809,6 +809,9 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         double oldValue= this.emMaximum;
         this.emMaximum = emMaximum;
         firePropertyChange( PROP_EMMAXIMUM, oldValue, emMaximum);
+        if ( oldValue!=emMaximum ) {
+            firePropertyChange( PROP_MAXLAYOUT, maxLayout, getMaxLayout() );
+        }
         revalidate();
     }
     
@@ -830,6 +833,9 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         int oldValue= this.ptMinimum;
         this.ptMinimum = ptMinimum;
         firePropertyChange( PROP_PTMINIMUM, oldValue, ptMinimum);
+        if ( oldValue!=ptMinimum ) {
+            firePropertyChange( PROP_MINLAYOUT, minLayout, getMinLayout() );
+        }  
         revalidate();
     }
     
@@ -854,6 +860,9 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         int oldValue= this.ptMaximum;
         this.ptMaximum = ptMaximum;
         firePropertyChange( PROP_PTMAXIMUM, oldValue, ptMaximum);
+        if ( oldValue!=ptMaximum ) {
+            firePropertyChange( PROP_MAXLAYOUT, maxLayout, getMaxLayout() );
+        }  
         revalidate();
     }
 
@@ -871,6 +880,7 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         firePropertyChange(PROP_PTMINIMUM, old[2], pt );
         firePropertyChange(PROP_EMMINIMUM, old[1], em );
         firePropertyChange(PROP_MINIMUM, old[0], norm );
+        firePropertyChange(PROP_MINLAYOUT, minLayout, getMinLayout() );
         revalidate();
     }
 
@@ -888,8 +898,11 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         firePropertyChange(PROP_PTMAXIMUM, old[2], pt );
         firePropertyChange(PROP_EMMAXIMUM, old[1], em );
         firePropertyChange(PROP_MAXIMUM, old[0], norm );
+        firePropertyChange(PROP_MAXLAYOUT, maxLayout, getMaxLayout() );
         revalidate();
     }
+    
+    private String maxLayout="";
     
     public static final String PROP_MAXLAYOUT = "maxLayout";
 
@@ -903,12 +916,15 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         try {
             double[] dd= parseLayoutStr(maxLayout);
             setMax( dd[0], dd[1], (int)dd[2] );
+            this.maxLayout= getMaxLayout();
         } catch (ParseException ex) {
             return;
         }
         propertyChangeDelegate.firePropertyChange(PROP_MAXLAYOUT, oldMinLayout, maxLayout);
     }
 
+    private String minLayout="";
+    
     public static final String PROP_MINLAYOUT = "minLayout";
 
     public String getMinLayout() {
@@ -921,6 +937,7 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         try {
             double[] dd= parseLayoutStr(minLayout);
             setMin( dd[0], dd[1], (int)dd[2] );
+            this.minLayout= getMinLayout();
         } catch (ParseException ex) {
             return;
         }
