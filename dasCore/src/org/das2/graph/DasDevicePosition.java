@@ -894,15 +894,15 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
     public static final String PROP_MAXLAYOUT = "maxLayout";
 
     public String getMaxLayout() {
-        String layout= formatLayoutStr(this);
+        String layout= formatLayoutStr(this,false);
         return layout;
     }
 
     public void setMaxLayout(String maxLayout) {
-        String oldMinLayout = getMinLayout();
+        String oldMinLayout = getMaxLayout();
         try {
             double[] dd= parseLayoutStr(maxLayout);
-            setMin( dd[0], dd[1], (int)dd[2] );
+            setMax( dd[0], dd[1], (int)dd[2] );
         } catch (ParseException ex) {
             return;
         }
@@ -912,7 +912,7 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
     public static final String PROP_MINLAYOUT = "minLayout";
 
     public String getMinLayout() {
-        String layout= formatLayoutStr(this);
+        String layout= formatLayoutStr(this,true);
         return layout;
     }
 
