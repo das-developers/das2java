@@ -435,8 +435,14 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         dMinimum= (int)( getParentMin() + minimum*getDeviceSize() + getEmSize() * emMinimum + ptMinimum );
         dMaximum= (int)( getParentMin() + maximum*getDeviceSize() + getEmSize() * emMaximum + ptMaximum );
         if ( dMaximum<=dMinimum ) dMaximum= dMinimum+1;
-        if ( dMinimum!=oldmin ) firePropertyChange(  PROP_DMINIMUM, oldmin ,dMinimum);
-        if ( dMaximum!=oldmax ) firePropertyChange(  PROP_DMAXIMUM, oldmax ,dMaximum);
+        if ( dMinimum!=oldmin ) {
+            firePropertyChange(  PROP_DMINIMUM, oldmin ,dMinimum);
+            firePropertyChange( PROP_MINLAYOUT, null, minLayout );
+        }
+        if ( dMaximum!=oldmax ) {
+            firePropertyChange(  PROP_DMAXIMUM, oldmax ,dMaximum);
+            firePropertyChange( PROP_MAXLAYOUT, null, maxLayout );
+        }
         if ( dMinimum!=oldmin || dMaximum!=oldmax ) fireUpdate();
         canvas.repaint();
     }
