@@ -44,6 +44,11 @@ public class DefaultDatumFormatter extends DatumFormatter {
      * if non-null, use this.
      */
     private String stringFormat;
+    
+    /**
+     * indicates the value must be cast to an integer
+     */
+    private boolean isInteger=false;
 
     /** Available for use by subclasses */
     protected DefaultDatumFormatter() {
@@ -63,8 +68,12 @@ public class DefaultDatumFormatter extends DatumFormatter {
         } else {
             this.formatString = formatString;
             format = NumberFormatUtil.getDecimalFormat(formatString);
-            if ( formatString.startsWith("%") && ( formatString.endsWith("e") || formatString.endsWith("f") || formatString.endsWith("d") ) ) {
+            if ( formatString.startsWith("%") && ( formatString.endsWith("e") || formatString.endsWith("f")  ) ) {
                 this.stringFormat= formatString;
+            } else if ( formatString.startsWith("%") || formatString.endsWith("d") 
+                    || formatString.endsWith("x") || formatString.endsWith("X") ) {
+                this.stringFormat= formatString;
+                this.isInteger= true;
             } else {
                 this.stringFormat= null;
             }
@@ -89,7 +98,11 @@ public class DefaultDatumFormatter extends DatumFormatter {
         String result;
         if ( stringFormat!=null ) {
             try {
-                result= String.format( stringFormat, d );
+                if ( isInteger ) {
+                    result= String.format( stringFormat, (int)d );
+                } else {
+                    result= String.format( stringFormat, d );
+                }
             } catch ( IllegalFormatException ex ) {
                 return datum.toString();
             }
