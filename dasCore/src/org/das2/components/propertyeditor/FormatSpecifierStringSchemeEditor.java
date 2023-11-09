@@ -38,6 +38,7 @@ public class FormatSpecifierStringSchemeEditor extends javax.swing.JPanel implem
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
+        jLabel6 = new javax.swing.JLabel();
 
         jPanel1.setEnabled(false);
 
@@ -93,7 +94,7 @@ public class FormatSpecifierStringSchemeEditor extends javax.swing.JPanel implem
 
         templTextField.setText("jTextField1");
 
-        jLabel1.setText("<html>A Format Specifier controls how a decimal number or integer is converted to a string.  Edit the string below using buttons to help.");
+        jLabel1.setText("<html>A Format Specifier controls how a decimal number or integer is converted to a string.  Edit the string below using examples provided.");
         jLabel1.setVerticalAlignment(javax.swing.SwingConstants.TOP);
 
         jLabel2.setText("Examples:");
@@ -103,6 +104,8 @@ public class FormatSpecifierStringSchemeEditor extends javax.swing.JPanel implem
         jLabel4.setText("%.2f  -- two decimal places");
 
         jLabel5.setText("%9.3e  -- scientific notation");
+
+        jLabel6.setText("%4X -- hexidecimal numbers");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -121,7 +124,8 @@ public class FormatSpecifierStringSchemeEditor extends javax.swing.JPanel implem
                             .addComponent(jLabel4)
                             .addComponent(jLabel3)
                             .addComponent(jLabel5)
-                            .addComponent(jLabel2))
+                            .addComponent(jLabel2)
+                            .addComponent(jLabel6))
                         .addGap(0, 0, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
@@ -139,7 +143,9 @@ public class FormatSpecifierStringSchemeEditor extends javax.swing.JPanel implem
                 .addComponent(jLabel4)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel5)
-                .addContainerGap(194, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel6)
+                .addContainerGap(173, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -172,6 +178,7 @@ public class FormatSpecifierStringSchemeEditor extends javax.swing.JPanel implem
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JRadioButton jRadioButton1;
     private javax.swing.JRadioButton jRadioButton2;
