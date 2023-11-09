@@ -619,14 +619,14 @@ public class DatumRangeUtil {
         String[] parts= stringIn.split("/",-2);
         if ( parts.length!=2 ) return null;
 
-        boolean d1= parts[0].charAt(0)=='P'; // true if it is a duration
-        boolean d2= parts[1].charAt(0)=='P';
+        boolean isDuration1= parts[0].charAt(0)=='P'; // true if it is a duration
+        boolean isDuration2= parts[1].charAt(0)=='P';
 
         int[] digits0;
         int[] digits1;
         int lsd= -1;
 
-        if ( d1 ) {
+        if ( isDuration1 ) {
             digits0= parseISO8601Duration( parts[0] );
         } else {
             digits0= new int[7];
@@ -634,21 +634,26 @@ public class DatumRangeUtil {
             for ( int j=lsd+1; j<3; j++ ) digits0[j]=1; // month 1 is first month, not 0. day 1 
         }
 
-        if ( d2 ) {
+        if ( isDuration2 ) {
             digits1= parseISO8601Duration(parts[1]);
         } else {
-            if ( d1 ) {
+            if ( isDuration1 ) {
                 digits1= new int[7];
             } else {
                 digits1= Arrays.copyOf( digits0, digits0.length );
             }
-            lsd= parseISO8601Datum( parts[1], digits1, lsd );
+            if ( parts[1].contains("T") ) {
+                lsd= parseISO8601Datum( parts[1], digits1, lsd );
+            } else {
+                String t= parts[0].substring(0,parts[0].length()-parts[1].length())+ parts[1];
+                lsd= parseISO8601Datum( t, digits1, lsd );
+            }
             for ( int j=lsd+1; j<3; j++ ) digits1[j]=1; // month 1 is first month, not 0. day 1 
         }
 
         if ( digits0==null || digits1==null ) return null;
         
-        if ( d1 ) {
+        if ( isDuration1 ) {
             for ( int i=0; i<7; i++ ) digits0[i] = digits1[i] - digits0[i];
             if ( digits0[1]<1 ) {
                 digits0[1]+=12;
@@ -656,7 +661,7 @@ public class DatumRangeUtil {
             }
         }
 
-        if ( d2 ) {
+        if ( isDuration2 ) {
             for ( int i=0; i<7; i++ ) digits1[i] = digits0[i] + digits1[i];
             if ( digits1[1]>12 ) {
                 digits1[1]-=12;
