@@ -3726,6 +3726,13 @@ public final class Ops {
     public static QDataSet toTimeDataSet( QDataSet years, QDataSet mons, QDataSet days, QDataSet hour, QDataSet minute, QDataSet second, QDataSet nano ) {
         
         QDataSet[] operands= new QDataSet[2];
+                
+        boolean isRank0=false;
+        if ( years.rank()==0 ) {
+            isRank0= true;
+            years= Ops.join(years);   
+            if ( mons!=null ) mons= Ops.join(mons);
+        }
         
         for ( int i=0; i<2; i++ ) { // two passes.
             if ( mons!=null ) {
@@ -3737,21 +3744,25 @@ public final class Ops {
             years= operands[0];
             days= operands[1];
             if ( hour!=null ) {
+                if ( i==0 && hour.rank()>0 ) isRank0=false;
                 CoerceUtil.coerce( years, hour, true, operands );
                 years= operands[0];
                 hour= operands[1];
             }
             if ( minute!=null ) {
+                if ( i==0 && minute.rank()>0 ) isRank0=false;
                 CoerceUtil.coerce( years, minute, true, operands );
                 years= operands[0];
                 minute= operands[1];
             }
             if ( second!=null ) {
+                if ( i==0 && second.rank()>0 ) isRank0=false;
                 CoerceUtil.coerce( years, second, true, operands );
                 years= operands[0];
                 second= operands[1];
             }            
             if ( nano!=null ) {
+                if ( i==0 && nano.rank()>0 ) isRank0=false;
                 CoerceUtil.coerce( years, nano, true, operands );
                 years= operands[0];
                 nano= operands[1];
@@ -3770,7 +3781,7 @@ public final class Ops {
 
         if ( mons==null ) {
             mons= Ops.ones( years.length() );
-        }
+        }        
         // handle nulls with one array, and avoid condition tests within the loop
         QDataSet zeros= ConstantDataSet.create( 0., DataSetUtil.qubeDims(years) );
         if ( hour==null ) hour= zeros;
@@ -3808,8 +3819,12 @@ public final class Ops {
             result.putValue( i, us2000 );
 
         }
-
-        return result;
+        
+        if ( isRank0 ) {
+            return result.slice(0);
+        } else {
+            return result;
+        }
     }
 
     public static QDataSet toTimeDataSet( Object years, Object mons, Object days, Object hour, Object minute, Object second, Object nano ) {
