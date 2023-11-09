@@ -44,6 +44,10 @@ public class UriTemplatesStringSchemeEditor extends javax.swing.JPanel implement
         minuteButton = new javax.swing.JButton();
         secondButton = new javax.swing.JButton();
         subsecButton = new javax.swing.JButton();
+        dashButton = new javax.swing.JButton();
+        slashButton = new javax.swing.JButton();
+        colonButton = new javax.swing.JButton();
+        periodButton = new javax.swing.JButton();
 
         subsecDecimalPlacesLabel.setText("Number of Decimal Places (1-9):");
 
@@ -74,7 +78,7 @@ public class UriTemplatesStringSchemeEditor extends javax.swing.JPanel implement
 
         templTextField.setText("jTextField1");
 
-        jLabel1.setText("<html>A URI Template describes how a time range is to be formatted into a string, such as a filename or tick format.  Edit the string below, using buttons to insert time components.  The URI_Templates specification can be found here: https://github.com/hapi-server/uri-templates/wiki/Specification");
+        jLabel1.setText("<html>A URI Template describes how a time range is to be formatted into a string, such as a filename or tick format.  Edit the string below using your keyboard or the buttons to insert time components.  The URI_Templates specification can be found here: https://github.com/hapi-server/uri-templates/wiki/Specification");
         jLabel1.setVerticalAlignment(javax.swing.SwingConstants.TOP);
 
         yearButton.setText("Year");
@@ -140,6 +144,34 @@ public class UriTemplatesStringSchemeEditor extends javax.swing.JPanel implement
             }
         });
 
+        dashButton.setText("-");
+        dashButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                dashButtonActionPerformed(evt);
+            }
+        });
+
+        slashButton.setText("/");
+        slashButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                slashButtonActionPerformed(evt);
+            }
+        });
+
+        colonButton.setText(":");
+        colonButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                colonButtonActionPerformed(evt);
+            }
+        });
+
+        periodButton.setText(".");
+        periodButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                periodButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -147,15 +179,15 @@ public class UriTemplatesStringSchemeEditor extends javax.swing.JPanel implement
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(templTextField)
-                            .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
-                        .addContainerGap())
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(12, 12, 12)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(monthButton)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(monthButton)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(dashButton)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(slashButton))
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(yearButton)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -164,40 +196,53 @@ public class UriTemplatesStringSchemeEditor extends javax.swing.JPanel implement
                                 .addComponent(dayButton)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(doyButton))
-                            .addComponent(hourButton)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(hourButton)
+                                .addGap(18, 18, 18)
+                                .addComponent(colonButton)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(periodButton))
                             .addComponent(minuteButton)
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(secondButton)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(subsecButton)))
-                        .addContainerGap(537, Short.MAX_VALUE))))
+                        .addGap(0, 392, Short.MAX_VALUE))
+                    .addComponent(templTextField))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 48, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(templTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(templTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(yearButton)
                     .addComponent(yrButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(monthButton)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(monthButton)
+                    .addComponent(dashButton)
+                    .addComponent(slashButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(dayButton)
                     .addComponent(doyButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(hourButton)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(hourButton)
+                    .addComponent(colonButton)
+                    .addComponent(periodButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(minuteButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(secondButton)
                     .addComponent(subsecButton))
-                .addContainerGap(31, Short.MAX_VALUE))
+                .addGap(35, 35, 35))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -245,6 +290,22 @@ public class UriTemplatesStringSchemeEditor extends javax.swing.JPanel implement
         
     }//GEN-LAST:event_subsecButtonActionPerformed
 
+    private void dashButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dashButtonActionPerformed
+        insertText("-");
+    }//GEN-LAST:event_dashButtonActionPerformed
+
+    private void slashButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_slashButtonActionPerformed
+        insertText("/");
+    }//GEN-LAST:event_slashButtonActionPerformed
+
+    private void colonButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_colonButtonActionPerformed
+        insertText(":");
+    }//GEN-LAST:event_colonButtonActionPerformed
+
+    private void periodButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_periodButtonActionPerformed
+        insertText(".");
+    }//GEN-LAST:event_periodButtonActionPerformed
+
     @Override
     public void setValue(String v) {
         this.templTextField.setText(v);
@@ -267,13 +328,17 @@ public class UriTemplatesStringSchemeEditor extends javax.swing.JPanel implement
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton colonButton;
+    private javax.swing.JButton dashButton;
     private javax.swing.JButton dayButton;
     private javax.swing.JButton doyButton;
     private javax.swing.JButton hourButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JButton minuteButton;
     private javax.swing.JButton monthButton;
+    private javax.swing.JButton periodButton;
     private javax.swing.JButton secondButton;
+    private javax.swing.JButton slashButton;
     private javax.swing.JButton subsecButton;
     private javax.swing.JLabel subsecDecimalPlacesLabel;
     private javax.swing.JPanel subsecPanel;
