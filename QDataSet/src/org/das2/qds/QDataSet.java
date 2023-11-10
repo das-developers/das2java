@@ -442,7 +442,7 @@ public interface QDataSet {
     public static final String VALUE_AVERAGE_TYPE_MODPI="modpi";
     
     /**
-     * modpi mean where avg( [5*TAU/6,7*TAU/6] ) is 0.
+     * modtau mean where avg( [5*TAU/6,7*TAU/6] ) is 0.
      */
     public static final String VALUE_AVERAGE_TYPE_MODTAU="modtau";
     
