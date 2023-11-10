@@ -642,7 +642,7 @@ public class DatumRangeUtil {
             } else {
                 digits1= Arrays.copyOf( digits0, digits0.length );
             }
-            if ( parts[1].contains("T") ) {
+            if ( parts[1].contains("T") || isDuration1 ) {
                 lsd= parseISO8601Datum( parts[1], digits1, lsd );
             } else {
                 String t= parts[0].substring(0,parts[0].length()-parts[1].length())+ parts[1];
