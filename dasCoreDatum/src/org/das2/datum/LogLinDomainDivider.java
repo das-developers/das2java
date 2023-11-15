@@ -72,9 +72,6 @@ public class LogLinDomainDivider implements DomainDivider {
         
         double decade = Math.pow(10, Math.floor(Math.log10(min.doubleValue())));
         double nextDecade= decade*10;
-        if (nextDecade>max.value() ) {
-            nextDecade= max.value();
-        }
         DatumRange current= linearDivider.rangeContaining(min.divide(decade));
         current= DatumRange.newRange( current.min().multiply(decade), current.max().multiply(decade) );
         Datum m=current.min();
@@ -85,6 +82,7 @@ public class LogLinDomainDivider implements DomainDivider {
                 if ( m.ge(min) && m.le(max) ) {
                     bb.add(m);
                 }
+                if ( m.gt(max) ) break;
                 current=current.next();
                 m= current.min();
             }
