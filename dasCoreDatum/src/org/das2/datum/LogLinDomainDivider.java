@@ -25,6 +25,17 @@ public class LogLinDomainDivider implements DomainDivider {
         return new LogLinDomainDivider();
     }
     
+    /**
+     * create one directly, useful for debugging.
+     * @param significand 1, 2, or 5.
+     * @param exponent 0 or -1 for many per cycle.
+     * @return new LoglinDomainDivider
+     */
+    public static LogLinDomainDivider create( int significand, int exponent ) {
+        LinearDomainDivider lin= new LinearDomainDivider(significand,exponent);
+        return new LogLinDomainDivider(lin);
+    }
+    
     protected LogLinDomainDivider() {
         this(new LinearDomainDivider());
     }
@@ -46,8 +57,9 @@ public class LogLinDomainDivider implements DomainDivider {
 
     @Override
     public DomainDivider finerDivider(boolean superset) {
-        // Make the linear subidivision finer.
-        return new LogLinDomainDivider((LinearDomainDivider)linearDivider.finerDivider(superset));
+        // Make the linear subdivision finer.
+        LinearDomainDivider lin = (LinearDomainDivider)linearDivider.finerDivider(superset);
+        return new LogLinDomainDivider(lin);
     }
 
     @Override
