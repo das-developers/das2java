@@ -68,24 +68,19 @@ public class LogLinDomainDivider implements DomainDivider {
         Datum m=current.min();
         Units u= m.getUnits();
 
-        while ( m.lt(max) ) {
-            while ( m.value()<=nextDecade*1.0001 ) { // kludge for real number fuzz...
-                if ( m.ge(min) ) {
+        while ( m.le(max) ) {
+            while ( m.value()<nextDecade*0.9999 ) { // kludge for real number fuzz...
+                if ( m.ge(min) && m.le(max) ) {
                     bb.add(m);
                 }
                 current=current.next();
                 m= current.min();
             }
-            m= u.createDatum(nextDecade).multiply(linearDivider.getSignificand());
-            current= DatumRange.newRange( m, m.add( current.width().multiply(10) ) );
-            if ( linearDivider.getSignificand()==1 ) {
-                current= current.next();
-                m= current.min();
-            }
+            Datum w= current.width().multiply(10);
+            Datum newMin= u.createDatum(nextDecade);
+            current= DatumRange.newRange( newMin, newMin.add( w ) );
+            m= current.min();
             nextDecade= nextDecade*10;
-            if (nextDecade>max.value() ) {
-               nextDecade= max.value();
-            }
         }
         DatumVector result= DatumVector.newDatumVector( bb.toArray(new Datum[bb.size()]), current.getUnits() );
         return result;
