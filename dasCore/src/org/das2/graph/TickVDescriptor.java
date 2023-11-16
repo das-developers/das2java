@@ -477,7 +477,9 @@ public class TickVDescriptor {
         int ntick0 = (int) (Math.floor(logMax * 0.999) - Math.ceil(logMin * 1.001) + 1);
 
         if ( ntick0 < 2 ) {
-            
+            if ( max/min<3.5 ) { // https://github.com/das-developers/das2java/issues/83
+                return bestTickVLinear( minD, maxD, nTicksMin, nTicksMax, fin );
+            }
             DomainDivider dd = LogLinDomainDivider.create();
             DatumVector dv = dd.boundaries( minD, maxD );
             int ilim=20; // something arbitrarily high but not so much that the computer will perform poorly
