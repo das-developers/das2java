@@ -247,7 +247,7 @@ public class StreamTool {
     private static class ReadStreamStructure {
 
         private ReadableByteChannel stream;
-        private ByteBuffer bigBuffer = ByteBuffer.allocate(4096);
+        private ByteBuffer bigBuffer = ByteBuffer.allocate(1024*1024);
         private byte[] four = new byte[4];
         private StreamHandler handler;
         private Map descriptors = new HashMap();
