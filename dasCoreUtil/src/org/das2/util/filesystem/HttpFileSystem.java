@@ -588,7 +588,11 @@ public class HttpFileSystem extends WebFileSystem {
             userInfo= KeyChain.getDefault().checkUserInfo( urlc.getURL() );
             if ( userInfo!=null ) {
                 String encode = Base64.getEncoder().encodeToString(userInfo.getBytes());
-                urlc.setRequestProperty("Authorization", "Basic " + encode);
+                try {
+                    urlc.setRequestProperty("Authorization", "Basic " + encode);
+                } catch ( IllegalStateException ex ) { // "Already connected"
+                    logger.info("We are already connected, so resetting credentials would cause Already connected error");
+                }
             }
         }
 
