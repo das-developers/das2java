@@ -1147,11 +1147,15 @@ public class FileStorageModel {
      * 
      * <p>Taken from Autoplot's AggregatingDataSourceFactory, where Autoplot just has a URI and needs to get a file list.
      * See also org/autoplot/pngwalk/WalkUtil.java splitIndex, which also allows wildcards like *.</p>
+     * 
+     * Note, ages ago %Y was valid as well as $Y.  This is no longer supported, since it is useful
+     * to have Python templates working alongside URI_Templates.
+     * 
      * @param surl a string like http://autoplot.org/data/C1_CP_EDI_EGD__$Y$m$d_V$v.cef
      * @return an integer indicating the split index, so that surl.substring(0,i) includes the slash.
      */
     public static int splitIndex(String surl) { 
-        String regex= "([\\$\\%][yYxv\\(\\{])";
+        String regex= "([\\$][yYmdjxv\\(\\{])";
         Matcher m= Pattern.compile(regex).matcher(surl);
         if ( m.find() ) {
             int i= m.start();
