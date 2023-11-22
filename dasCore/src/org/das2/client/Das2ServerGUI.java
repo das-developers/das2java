@@ -35,6 +35,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.StringReader;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.JComponent;
@@ -43,14 +45,29 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathExpressionException;
 
-import org.das2.util.FileUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
 /**
- *
+ * Code for editing a Das2Server parameters argument.  This is a somewhat 
+ * arbitary control, but the DSDF may try to describe a GUI, using the 
+ * spec at https://github.com/das-developers/das2docs/wiki/Structured-Sub%E2%80%90values-for-Params
+ * 
+ * <tt>
+ * Das2ServerGUI x = new Das2ServerGUI();
+ * String dsdf = "param_01 = '1.5V_REF | Simulate +1.8 monitor'\n"
+ *               + "param_02 = '1.5V_WvFE'\n"
+ *               + "param_03 = '1.5V_Y180'\n"
+ *               + "param_04 = '1.8U | Power Supply'\n"
+ *               + "param_05 = '1.8V_MEM'";
+ *       x.setSpecification(dsdf);
+ *       x.setParameters("1.5V_REF 1.5V_REF 1.8V_MEM");
+ *       if (JOptionPane.OK_OPTION == JOptionPane.showConfirmDialog(null, x.panel)) {
+ *           System.err.println(x.getParameters());
+ *       }
+ * </tt>
  * @author jbf
  */
 public class Das2ServerGUI {
@@ -288,12 +305,23 @@ public class Das2ServerGUI {
     private JComponent[] cc;
     private JPanel panel;
 
+    /**
+     * set the DSDF specification for the parameters.  This can be an XML document
+     * or a list of IDL name/value pairs.
+     * @param sss 
+     */
     public void setSpecification(String sss) {
-        if (sss.substring(0, 4).equals("[00]")) {
+        if ( sss.length()<4 ) {
+            throw new IllegalArgumentException("control string is too short");
+        }
+        if ( sss.substring(0, 4).equals("[00]") ){
+            sss = sss.substring(10);
+        }
+        if ( sss.subSequence(0,8).equals("<stream>") ) {
             try {
-                ll = readXML(sss.substring(10));
-            } catch (SAXException | ParserConfigurationException | IOException | XPathExpressionException ex) {
-                throw new RuntimeException("error while parsing xml");
+                ll = readXML(sss);
+            } catch (SAXException | IOException | ParserConfigurationException | XPathExpressionException ex) {
+                Logger.getLogger("das2").log(Level.SEVERE, null, ex);
             }
         } else {
             ll = readDsdf(sss);
@@ -466,7 +494,15 @@ public class Das2ServerGUI {
 
         return parametersBuilder.toString();
     }
-
+    
+    /**
+     * return the panel.  See the javadoc for how this is to be called.
+     * @return 
+     */
+    public JPanel getPanel() {
+        return panel;
+    }
+    
     public static void main(String[] args) {
         Das2ServerGUI x = new Das2ServerGUI();
         String dsdf = "param_01 = '1.5V_REF | Simulate +1.8 monitor'\n"
