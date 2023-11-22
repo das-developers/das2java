@@ -184,16 +184,6 @@ public class Das2ServerGUI {
         return -1;
     }
 
-    private static String[] removeArrayElement(String[] oddArray, int index) {
-        //array is empty or index is beyond array bounds
-        if (oddArray == null || index < 0 || index >= oddArray.length) {
-            return oddArray;
-        }
-        String[] result = new String[oddArray.length - 1];
-        System.arraycopy(oddArray, 0, result, 0, index);
-        System.arraycopy(oddArray, index + 1, result, index, result.length - index);
-        return result;
-    }
 
     /**
      * return the value from paramsArr or '' (empty string). template can be a
@@ -211,25 +201,27 @@ public class Das2ServerGUI {
                 if (idx == -1) {
                     return "";
                 } else {
-                    paramsArr = removeArrayElement(paramsArr, idx);
+                    paramsArr[idx]= "";
                     return ss0;
                 }
             } else {
                 if (template.charAt(0) == '^') {
                     String regex = template;
                     Pattern pattern = Pattern.compile(regex);
+                    int idx=0;
                     for (String item : paramsArr) {
                         Matcher match = pattern.matcher(item);
                         if (match != null) {
+                            paramsArr[idx]= "";
                             return item;
                         }
+                        idx++;
                     }
                     return "";
                 } else {
                     String[] templates = template.split("\\s+");
                     int i = 0;
                     int ipa = 0;
-                    System.out.println("" + templates + "" + templates.length);
                     while (i < templates.length) {
                         while ((ipa < paramsArr.length) && (i < templates.length)) {
                             String item = paramsArr[ipa].trim();
@@ -238,8 +230,10 @@ public class Das2ServerGUI {
                                 return "";
                             } else {
                                 if (templates[i].contains("@")) {
+                                    paramsArr[ipa]="";
                                     return match;
                                 } else {
+                                    paramsArr[ipa]="";
                                     ipa = ipa + 1;
                                     i = i + 1;
                                 }
@@ -336,7 +330,11 @@ public class Das2ServerGUI {
 
     public void setParameters(String paramz) {
 
-        String[] paramsArr = paramz.split("\\s+"); //TODO: delim
+        String delim= "\\s+"; //TODO: delim
+        String delimRaw=" ";
+        
+        String[] paramsArr = paramz.split(delim); 
+        
         panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
@@ -444,11 +442,20 @@ public class Das2ServerGUI {
                 }
             }
         }
+        
+        StringBuilder extraArgs= new StringBuilder();
+        for ( int i=0; i<paramsArr.length; i++ ) {
+            if ( paramsArr[i].trim().length()>0 ) {
+                extraArgs.append(paramsArr[i]);
+            }
+            if ( i>0 ) extraArgs.append(delimRaw);
+        }
 
-        if (extra) {
-            panel.add(new JLabel("Text stuff"));
+        if ( extra || extraArgs.length()>0 ) {
+            panel.add(new JLabel("Text not described in DSDF"));
             JTextArea c = new JTextArea();
-            c.setText(""); //TODO: unhandled parameters
+            c.setAlignmentX(Component.LEFT_ALIGNMENT);
+            c.setText(extraArgs.toString());
             c.setRows(4);
             panel.add(c);
             cc[100] = c;
@@ -487,7 +494,7 @@ public class Das2ServerGUI {
         }
         if (cc[100] != null) {
             parametersBuilder.append(delim);
-            String txt = ((JTextField) cc[100]).getText().replace("\n", delim);
+            String txt = ((JTextArea) cc[100]).getText().replace("\n", delim);
             txt = txt.trim();
             parametersBuilder.append(txt);
         }
@@ -511,9 +518,9 @@ public class Das2ServerGUI {
                 + "param_04 = '1.8U | Power Supply'\n"
                 + "param_05 = '1.8V_MEM'";
         x.setSpecification(dsdf);
-        x.setParameters("1.5V_REF 1.5V_REF 1.8V_MEM");
+        x.setParameters("1.5V_REF 1.8V_MEM Extra-Unrecognized");
 
-        if (JOptionPane.OK_OPTION == JOptionPane.showConfirmDialog(null, x.panel)) {
+        if (JOptionPane.OK_OPTION == JOptionPane.showConfirmDialog(null, x.panel, "Edit params", JOptionPane.OK_CANCEL_OPTION )) {
             System.err.println(x.getParameters());
         }
 
