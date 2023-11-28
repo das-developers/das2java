@@ -304,11 +304,12 @@ public class ExpandToFillGapsFilterEditorPanel extends AbstractFilterEditorPanel
                 for ( int i=0; i<r.length(); i++ ) {
                     startIndexes[i+1]= (int)r.value(i);
                     Datum cadence= datum( subtract( ttags.slice(startIndexes[i+1]+1), ttags.slice(startIndexes[i]) ) );
-                    if ( cadenceMax==null || cadence.lt(cadenceMax) ) {
+                    if ( cadenceMax==null || ( cadence.value()>0 && cadence.lt(cadenceMax) ) ) {
                         cadenceMax= cadence;
                         count= startIndexes[i+1]+1 - startIndexes[i];
                     }
                 }
+                assert cadenceMax!=null;
                 double stepFactor= cadenceMax.divide(cadenceMin).divide(count).value(); // step factor would fill the smallest gap.
                 double factor;
                 try {
@@ -317,7 +318,6 @@ public class ExpandToFillGapsFilterEditorPanel extends AbstractFilterEditorPanel
                     factor = 0.8;
                 }
                 double expansionMultiplier= stepFactor * factor ;
-                assert cadenceMax!=null;
                 aboutDataLabel.setText( "fine cadence is "+cadenceMin+" and expand to fill gaps of "+cadenceMax 
                         + " using an expansion multiplier of " + String.format("%.2f", expansionMultiplier ) );
                 logger.log(Level.FINE, "expandToFillGaps: cadenceMin={0} cadenceMax={1}", new Object[]{cadenceMin, cadenceMax});
