@@ -51,9 +51,9 @@ public class AnnotationDemo {
 
         getContentPane().add(canvas, BorderLayout.CENTER );
 
-        DatumRange xrange= DatumRange.newDatumRange(0,10,Units.seconds);
+        DatumRange xrange= DatumRange.newRange(0,10,Units.seconds);
         //DatumRange xrange= DatumRangeUtil.parseTimeRangeValid("2009");
-        DatumRange yrange= DatumRange.newDatumRange(0.1,100, Units.dimensionless);
+        DatumRange yrange= DatumRange.newRange(0.1,100, Units.dimensionless);
 
         plot1= GraphUtil.newDasPlot(canvas, xrange, yrange);
 
