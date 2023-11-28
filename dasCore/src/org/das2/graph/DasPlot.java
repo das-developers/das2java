@@ -1877,9 +1877,15 @@ public class DasPlot extends DasCanvasComponent {
             bounds.width = getColumn().getDMaximum() - bounds.x + 1 + (int)( lineThicknessDouble / 2 );
             
             if ( longTitles ) { // extend over the Y axis.
-                bounds.x = getYAxis().getBounds().x;
-                int yaxiswidth= getColumn().getDMinimum() - getYAxis().getBounds().x;
-                bounds.width = ( getColumn().getDMaximum() - bounds.x )  + yaxiswidth; // allow to extend a semetrical amount
+                if ( getYAxis().getOrientation()==DasAxis.LEFT ) {
+                    bounds.x = getYAxis().getBounds().x;
+                    int yaxiswidth= getColumn().getDMinimum() - getYAxis().getBounds().x;
+                    bounds.width = ( getColumn().getDMaximum() - bounds.x )  + yaxiswidth; // allow to extend a semetrical amount
+                } else {
+                    int yaxiswidth= getYAxis().getBounds().width;
+                    bounds.x= bounds.x - yaxiswidth;
+                    bounds.width= bounds.width + 2*yaxiswidth; // allow to extend a semetrical amount
+                }
             }
             bounds.height = getRow().getDMaximum() - bounds.y + 1 + (int)( lineThicknessDouble / 2 );
             if ( displayTitle && !getTitle().equals("") ) {
