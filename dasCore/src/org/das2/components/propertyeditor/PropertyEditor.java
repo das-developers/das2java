@@ -58,6 +58,7 @@ import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.tree.DefaultTreeModel;
+import org.das2.graph.GraphUtil;
 import org.das2.util.LoggerManager;
 //import org.apache.xml.serialize.OutputFormat;
 //import org.apache.xml.serialize.XMLSerializer;
@@ -99,7 +100,13 @@ public class PropertyEditor extends JComponent {
         set.add(org.das2.graph.DasColorBar.Type.class);
         set.add(org.das2.graph.SpectrogramRenderer.RebinnerEnum.class);
         editableTypes = Collections.unmodifiableSet(set);
-        addStringEditor("org.das2.graph.DasAxis","format", new AxisFormatStringSchemeEditor() );
+        PropertyEditor.addStringEditor("org.das2.graph.DasAxis","format", new AxisFormatStringSchemeEditor() );
+        PropertyEditor.addStringEditor("tickValues", new TickValuesStringSchemeEditor() );
+        PropertyEditor.addStringEditor("specialColors", new SpecialColorsStringSchemeEditor() );
+        PropertyEditor.addStringEditor("label", GraphUtil.newGrannyTextEditor() );
+        PropertyEditor.addStringEditor("title", GraphUtil.newGrannyTextEditor() );
+        PropertyEditor.addStringEditor("legendLabel", GraphUtil.newGrannyTextEditor() );         
+        PropertyEditor.addStringEditor("org.das2.graph.DasAnnotation","text", GraphUtil.newGrannyTextEditor() );
 
     }
     private JTable table;
