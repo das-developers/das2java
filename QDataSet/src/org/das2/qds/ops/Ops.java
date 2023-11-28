@@ -48,8 +48,8 @@ import org.das2.util.monitor.NullProgressMonitor;
 import org.das2.util.monitor.ProgressMonitor;
 import org.das2.util.monitor.SubTaskMonitor;
 import org.das2.util.monitor.UncheckedCancelledOperationException;
-import org.json.JSONException;
-import org.json.JSONObject;
+//import org.json.JSONException;
+//import org.json.JSONObject;
 import org.das2.qds.AbstractDataSet;
 import org.das2.qds.ArrayDataSet;
 import org.das2.qds.BDataSet;
@@ -7273,14 +7273,15 @@ public final class Ops {
                     break;
                 case DataSetUtil.PROPERTY_TYPE_MAP:
                     if ( !( value instanceof Map ) ) {
-                        try {
-                            String json= value.toString(); // Python Dictionary
-                            JSONObject obj= new JSONObject(json);
-                            Map<String,Object> result= JsonUtil.jsonToMap(obj);
-                            mds.putProperty( name, result );
-                        } catch (JSONException ex) {
-                            logger.log(Level.SEVERE, "type is not supported for PROPERTY TYPE MAP: "+value, ex);
-                        }
+                        logger.log(Level.WARNING, "unable to convert to Map, is it a Python Dictionary: {0}", value);
+//                        try {
+  //                          String json= value.toString(); // Python Dictionary
+//                            JSONObject obj= new JSONObject(json);
+  //                          Map<String,Object> result= JsonUtil.jsonToMap(obj);
+    //                        mds.putProperty( name, result );
+    //                    } catch (JSONException ex) {
+      //                      logger.log(Level.SEVERE, "type is not supported for PROPERTY TYPE MAP: "+value, ex);
+        //                }
                     } else {
                         mds.putProperty( name, value);
                     }   break;
@@ -7412,19 +7413,19 @@ public final class Ops {
                     
                 case DataSetUtil.PROPERTY_TYPE_MAP:
                     if ( !( value instanceof Map ) ) {
-                        try {
-                            String json= value.toString();
-                            JSONObject obj= new JSONObject(json);
-                            Map<String,Object> result= new HashMap<>();
-                            Iterator i= obj.keys();
-                            while ( i.hasNext() ) {
-                                String k= String.valueOf( i.next() );
-                                result.put( k, obj.get(k) );
-                            }
-                            return result;
-                        } catch (JSONException ex) {
-                            throw new IllegalArgumentException("cannot convert to value for "+name+": "+value);                            
-                        }
+//                        try {
+//                            String json= value.toString();
+//                            JSONObject obj= new JSONObject(json);
+//                            Map<String,Object> result= new HashMap<>();
+//                            Iterator i= obj.keys();
+//                            while ( i.hasNext() ) {
+//                                String k= String.valueOf( i.next() );
+//                                result.put( k, obj.get(k) );
+//                            }
+//                            return result;
+//                        } catch (JSONException ex) {
+//                            throw new IllegalArgumentException("cannot convert to value for "+name+": "+value);                            
+//                        }
                     } else {
                         return value;
                     }
