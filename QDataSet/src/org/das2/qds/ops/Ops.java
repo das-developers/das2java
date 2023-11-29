@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.lang.reflect.Array;
+import java.nio.charset.Charset;
 import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -3373,6 +3374,28 @@ public final class Ops {
             back[i] = i;
         }
         return DDataSet.wrap( back, new int[] { len0, len1, len2, len3 } );
+    }
+    
+    /**
+     * convert the bytes (or unicode up to 2**16) to a string.
+     * @param bytes a QDataSet containing the data.
+     * @return 
+     */
+    public static String convertToString( QDataSet bytes ) {
+        char[] chs= new char[bytes.length()];
+        for ( int i=0; i<bytes.length(); i++ ) {
+            chs[i]= (char)bytes.value(i);
+        }
+        return new String(chs);
+    }
+            
+    /**
+     * returns rank 1 dataset with values [0.,1.,2.,...]
+     * @param len0
+     * @return a rank 1 dataset
+     */
+    public static QDataSet arange(int len0) {
+        return findgen(len0);
     }
     
     /**
