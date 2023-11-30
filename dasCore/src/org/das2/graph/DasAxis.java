@@ -2468,7 +2468,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             int lineHeight = tickLabelFont.getSize() + getLineSpacing();
 
             int baseLine = position + Math.max( 0,tickLength ) + tick_label_gap + tickLabelFont.getSize();
-            int rightEdge = DMin - tickLabelFontMetrics.stringWidth("0000") -  tickLabelFontMetrics.stringWidth(" ");
+            int tick_label_gap_2023 = getFontMetrics(tickLabelFont).stringWidth(" ");
+            int rightEdge = DMin - tickLabelFontMetrics.stringWidth("0000") - tick_label_gap_2023;
 
             GrannyTextRenderer idlt = GraphUtil.newGrannyTextRenderer();
             /*
@@ -3662,6 +3663,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
 
         if (isHorizontal()) {
+            // note ephemeris/TCA is calculated below
             bounds = getHorizontalAxisBounds();
         } else {
             bounds = getVerticalAxisBounds();
@@ -3674,7 +3676,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             if (drawTca && ( tcaRows>=0 || ltcaLabels.length>1 || ltcaData != null && ltcaData.length() != 0 ) ) {
                 int DMin = getColumn().getDMinimum();
                 Font tickLabelFont = getTickLabelFont();
-                int tick_label_gap = getFontMetrics(tickLabelFont).stringWidth(" ");
+                int tick_label_gap_2023 = getFontMetrics(tickLabelFont).stringWidth(" ");
                 int lines= tcaRows>=0 ? tcaRows : ( getTickLines() - 1 );
                 int tcaHeight = (tickLabelFont.getSize() + getLineSpacing()) * lines;
                 int maxLabelWidth = getMaxLabelWidth();
@@ -3708,12 +3710,12 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                     tcaLabelWidth = Math.max(tcaLabelWidth, width);
                 }
                 FontMetrics tickLabelFontMetrics = getFontMetrics(tickLabelFont);                
-                int rightEdgeGap;// = tickLabelFontMetrics.stringWidth("0000") + tick_label_gap;
-                rightEdgeGap = tickLabelFontMetrics.stringWidth("00");// + tick_label_gap;  
+                int rightEdgeGap = tickLabelFontMetrics.stringWidth("0000") + tick_label_gap_2023; // rightEdgeGap is the extra amount shifted to make room for numbers
+                //rightEdgeGap = tickLabelFontMetrics.stringWidth("00");// + tick_label_gap_2023;  
             
                 if (tcaLabelWidth > 0) {
                     tcaLabelWidth += rightEdgeGap;
-                    int tcaLabelSpace = DMin - tcaLabelWidth - tick_label_gap;
+                    int tcaLabelSpace = DMin - tcaLabelWidth - tick_label_gap_2023;
                     int minX = Math.min(tcaLabelSpace - maxLabelWidth / 2, bounds.x);
                     int maxX = bounds.x + bounds.width;
                     bounds.x = minX;
