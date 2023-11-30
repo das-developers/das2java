@@ -4683,7 +4683,11 @@ public class DataSetUtil {
                     return tp.format(d);
                 } else {
                     try {
-                        s = String.format( Locale.US, form, value );
+                        if ( form.equals("%d") ) {
+                            s= String.format( Locale.US, "%d", (int)value ) ;
+                        } else {
+                            s = String.format( Locale.US, form, value );
+                        }
                     } catch ( IllegalFormatConversionException ex ) { // '%2X'
                         char c= ex.getConversion();
                         if ( c=='X' || c=='x' || c=='d' || c=='o' || c=='c' || c=='C'  ) {
