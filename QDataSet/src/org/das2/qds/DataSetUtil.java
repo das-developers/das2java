@@ -4690,7 +4690,7 @@ public class DataSetUtil {
                         }
                     } catch ( IllegalFormatConversionException ex ) { // '%2X'
                         char c= ex.getConversion();
-                        if ( c=='X' || c=='x' || c=='d' || c=='o' || c=='c' || c=='C'  ) {
+                        if ( c=='X' || c=='x' || c=='o' || c=='c' || c=='C'  ) {
                             s = String.format( Locale.US, form, (long)value );
                         } else {
                             //warning bad format string
