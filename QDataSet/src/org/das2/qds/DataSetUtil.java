@@ -4690,12 +4690,19 @@ public class DataSetUtil {
                         }
                     } catch ( IllegalFormatConversionException ex ) { // '%2X'
                         char c= ex.getConversion();
-                        if ( c=='X' || c=='x' || c=='o' || c=='c' || c=='C'  ) {
+                        if ( c=='d' || c=='X' || c=='x' || c=='o' || c=='c' || c=='C'  ) {
                             s = String.format( Locale.US, form, (long)value );
                         } else {
                             //warning bad format string
+                            logger.log(Level.INFO, "unable to use format: {0}", ex.getMessage());
                             s= df.format(d);
                         }
+                    } catch ( java.util.UnknownFormatConversionException ex ) {
+                        logger.log(Level.INFO, "unable to use format: {0}", ex.getMessage());
+                        s= df.format(d,d.getUnits());
+                    } catch ( java.util.IllegalFormatPrecisionException ex ) {
+                        logger.log(Level.INFO, "unable to use format: {0}", ex.getMessage());
+                        s= df.format(d,d.getUnits());
                     }
                 }
             }
