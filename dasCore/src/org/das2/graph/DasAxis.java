@@ -3237,7 +3237,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 leftEdge = rightEdge - width;
                 g.drawString(item, leftEdge, baseLine);
             } catch ( RuntimeException ex ) {
-                g.drawString("except!c"+ex.getMessage(),leftEdge, baseLine);
+                if ( i==0 ) {
+                    ex.printStackTrace();
+                }
+                g.drawString("exception",leftEdge, baseLine);
             }
         }
     }
