@@ -1050,11 +1050,11 @@ public class DasAnnotation extends DasCanvasComponent {
                 r.y = anchor.y + em + yoffset ;
                 break;
             case OutsideN:
-                r.x = anchor.x + anchor.width/2 - (int)( r.getWidth() / 2 ) + xoffset ;
+                r.x = anchor.x + anchor.width/2 - (int)( r.getWidth() / 2 ) + em/2  + xoffset ;
                 r.y = anchor.y - (int)r.getHeight() - yoffset ;
                 break;
             case OutsideS:
-                r.x = anchor.x + anchor.width/2 - (int)( r.getWidth() / 2 ) + xoffset ;
+                r.x = anchor.x + anchor.width/2 - (int)( r.getWidth() / 2 ) + em/2 + xoffset ;
                 r.y = anchor.y + anchor.height + em + yoffset ;
                 break;
             case OutsideE:
@@ -1110,11 +1110,11 @@ public class DasAnnotation extends DasCanvasComponent {
                 r.y = anchor.y + anchor.height + em + yoffset ;
                 break;
             case Center:
-                r.x = anchor.x + anchor.width/2 - (int)( r.getWidth() / 2 ) + xoffset ;
+                r.x = anchor.x + anchor.width/2 - (int)( r.getWidth() / 2 ) + em/2 + xoffset ;
                 r.y = anchor.y + anchor.height/2 - (int)( r.getHeight() / 2 ) - yoffset;
                 break;
             case N:
-                r.x = anchor.x + anchor.width/2 - (int)( r.getWidth() / 2 ) + xoffset ;
+                r.x = anchor.x + anchor.width/2 - (int)( r.getWidth() / 2 ) + em/2 + xoffset ;
                 r.y = anchor.y + em + yoffset ;
                 break;
             case W:
@@ -1126,7 +1126,7 @@ public class DasAnnotation extends DasCanvasComponent {
                 r.y = anchor.y + anchor.height/2 - (int)( r.getHeight() / 2 ) - yoffset;
                 break;
             case S:
-                r.x = anchor.x + anchor.width/2 - (int)( r.getWidth() / 2 ) + xoffset ;
+                r.x = anchor.x + anchor.width/2 - (int)( r.getWidth() / 2 ) + em/2 + xoffset ;
                 r.y = anchor.y + anchor.height - r.height - yoffset;
                 break;
             default:
