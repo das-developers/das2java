@@ -18,6 +18,7 @@
                 <configuration>
                     <source>1.8</source>
                     <target>1.8</target>
+						  <release>1.8</release>
                 </configuration>
             </plugin>
             <plugin>
@@ -123,5 +124,4 @@
       <version>1.5</version>
     </dependency>
   </dependencies>
-  
 </project>

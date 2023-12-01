@@ -12,14 +12,16 @@
 
 # Generic definitions that have to be formed in a platform specific way:
 
-ifeq ($(JAVAVER),)
-JAVAVER:=$(shell javac platver.java && java -cp . platver 2>/dev/null)
+ifeq ($(JAVA_HOME),)
+$(error set JAVA_HOME first, ex: JAVA_HOME=/usr/lib/jvm/java-11-openjdk)
+endif
+
+
+ifeq ($(H_ARCH),)
+JAVAVER:=$(shell $(JAVA_HOME)/bin/javac platver.java && $(JAVA_HOME)/bin/java -cp . platver 2>/dev/null)
 ifeq ($(JAVAVER),)
 $(error Couldn't determine your java platform version)
 endif
-endif
-
-ifeq ($(H_ARCH),)
 H_ARCH=java$(JAVAVER)
 endif
 
