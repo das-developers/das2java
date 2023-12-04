@@ -345,6 +345,8 @@ public class Entities {
         add("&oplus", 8853);
         add("&otimes", 8855);
         add("&perp", 8869);
+        add("&shortparallel",8741);   // parallel to
+        add("&NotDoubleVerticalBar",8742); // not parallel to 
         add("&sdot", 8901);
         add("&lceil", 8968);
         add("&rceil", 8969);
