@@ -1,7 +1,8 @@
 /**
  * From Lucene Search Engine.
  * code found at http://www.koders.com, decodeEntities() added.
- * 
+ * https://detexify.kirelabs.org/classify.html
+ * https://shapecatcher.com/
  */
 package org.das2.util;
 
