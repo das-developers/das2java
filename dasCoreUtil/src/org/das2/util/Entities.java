@@ -1,8 +1,6 @@
 /**
  * From Lucene Search Engine.
  * code found at http://www.koders.com, decodeEntities() added.
- * https://detexify.kirelabs.org/classify.html
- * https://shapecatcher.com/
  */
 package org.das2.util;
 
@@ -18,7 +16,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 import javax.swing.AbstractAction;
-import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -26,6 +23,14 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 
+/**
+ * Encoder and decoder for HTML entities, like &amp;rho; for &rho;.
+ * See https://shapecatcher.com/ to identify shapes and
+ * also https://detexify.kirelabs.org/classify.html for identifying
+ * LaTeX characters (which are not supported here).
+ * 
+ * @author jbf
+ */
 public class Entities {
 
     /**
@@ -347,7 +352,9 @@ public class Entities {
         add("&otimes", 8855);
         add("&perp", 8869);
         add("&shortparallel",8741);   // parallel to
+        add("&parallel", 8741 );
         add("&NotDoubleVerticalBar",8742); // not parallel to 
+        add("&npar",8742);
         add("&sdot", 8901);
         add("&lceil", 8968);
         add("&rceil", 8969);
