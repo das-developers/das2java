@@ -34,6 +34,21 @@ import javax.swing.ListSelectionModel;
 public class Entities {
 
     /**
+     * return true of the font supports each character of the string.
+     * @param f
+     * @param s
+     * @return 
+     */
+    public static boolean fontSupports( Font f, String s ) {
+        for ( char c: s.toCharArray() ) {
+            if ( !f.canDisplay(c) ) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    /**
      * decoder goes from &amp;rho; to "&rho;"
      */
     static final HashMap<String,String> decoder = new HashMap(300);
