@@ -504,6 +504,7 @@ public class Das2ServerGUI {
     
     /**
      * return the panel.  See the javadoc for how this is to be called.
+     * Note this will typically need to be put into a scrollpane.
      * @return 
      */
     public JPanel getPanel() {
