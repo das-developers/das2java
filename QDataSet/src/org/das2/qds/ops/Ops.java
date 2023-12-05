@@ -15182,6 +15182,7 @@ public final class Ops {
      * @param dss the dataset
      * @param noImplicit when a dataset is the independent parameter, then there are no implicit dimensions.
      * @return the number of dimensions occupied by the data.
+     * @see https://github.com/das-developers/das2java/issues/91
      */
     private static int dimensionCount( QDataSet dss, boolean noImplicit ) {
         int dim=1;
