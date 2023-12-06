@@ -3964,6 +3964,30 @@ public class DataSetUtil {
     }
     
     /**
+     * collect the context for the dataset.  This will be a rank 2 join of
+     * scalars or ranges, so CONTEXT_0 will be in the zeroth index of the 
+     * result.  Rank 0 CONTEXT values are joined to make them rank 1.
+     * 
+     * @param ds
+     * @return 
+     */
+    public static QDataSet getContext( QDataSet ds ) {
+        JoinDataSet jds= new JoinDataSet(2);
+        QDataSet cds= (QDataSet) ds.property( QDataSet.CONTEXT_0 );
+        logger.log(Level.FINE, "contextAsString {0} CONTEXT_0={1}", new Object[]{ds, cds});
+        int idx=0;
+        while ( cds!=null ) {
+            if ( cds.rank()==0 ) {
+                cds= new JoinDataSet(cds);
+            }
+            jds.join(cds);
+            idx++;
+            cds= (QDataSet) ds.property( "CONTEXT_"+idx );
+        }
+        return jds;
+    }
+    
+    /**
      * returns the indeces of the min and max elements of the monotonic dataset.
      * This uses DataSetUtil.isMonotonic() which would be slow if MONOTONIC is
      * not set.
