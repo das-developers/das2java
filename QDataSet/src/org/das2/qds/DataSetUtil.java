@@ -3968,8 +3968,8 @@ public class DataSetUtil {
      * scalars or ranges, so CONTEXT_0 will be in the zeroth index of the 
      * result.  Rank 0 CONTEXT values are joined to make them rank 1.
      * 
-     * @param ds
-     * @return 
+     * @param ds the dataset
+     * @return a rank 2 join of 1- and 2-element datasets.
      */
     public static QDataSet getContext( QDataSet ds ) {
         JoinDataSet jds= new JoinDataSet(2);
