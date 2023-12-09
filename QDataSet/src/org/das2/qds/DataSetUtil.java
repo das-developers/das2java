@@ -2385,27 +2385,25 @@ public class DataSetUtil {
         QDataSet dephhLog;
         int idephhLog;
         int scoreLog;
-        
-        int monotonic;
              
-        QDataSet dxds= Ops.diff( xds );
-
-        // calculate monotonic, which is -1 when monotonic decreasing, 1 when increasing, and 0 when non-monotonic.
-        double sign= dxds.value(0);
-        if ( Ops.reduceMin( Ops.multiply( sign, dxds ), 0 ).value() < 0 ) {
-            monotonic= 0;
-        } else {
-            if ( sign>0 ) {
-                monotonic= 1;
-            } else {
-                monotonic= -1;
-            }
-        }
+        QDataSet dxds= Ops.abs( Ops.diff( xds ) );
         
         if ( dxds.length()>4 ) {
             QDataSet limit= Ops.divide( dxds.slice(0), 10000 );
-            QDataSet gcd1= DataSetUtil.gcd( dxds.trim(0,dxds.length()/2), limit );
-            QDataSet gcd2= DataSetUtil.gcd( dxds.trim(dxds.length()/2,dxds.length()), limit );
+            QDataSet gcd1= null;
+            try {
+                gcd1= DataSetUtil.gcd( dxds.trim(0,dxds.length()/2), limit );
+            } catch ( IllegalArgumentException ex ) {
+            }
+            QDataSet gcd2= null;
+            try {
+                gcd2= DataSetUtil.gcd( dxds.trim(dxds.length()/2,dxds.length()), limit );
+            } catch ( IllegalArgumentException ex ) {
+            }
+            
+            if ( gcd1==null ) return gcd2;
+            if ( gcd2==null ) return gcd1;
+            
             if ( Ops.divide( gcd1, limit ).value()>10 && Ops.divide( gcd2, limit ).value()>10 ) {
                 return Ops.lesserOf( gcd1, gcd2 );
             }
