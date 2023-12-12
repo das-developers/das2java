@@ -170,6 +170,8 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     public void setSpecialColors(String specialColors) {
         String oldSpecialColors = this.specialColors;
         this.specialColors = specialColors;
+        clearPlotImage();
+        updateCacheImage();
         propertyChangeSupport.firePropertyChange(PROP_SPECIALCOLORS, oldSpecialColors, specialColors);
     }    
     
