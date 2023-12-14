@@ -7,6 +7,7 @@ import java.awt.Component;
 import java.awt.Desktop;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GridLayout;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
@@ -17,6 +18,7 @@ import java.net.URISyntaxException;
 import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
 import javax.swing.JButton;
 import javax.swing.JColorChooser;
@@ -26,6 +28,7 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.plaf.basic.BasicTabbedPaneUI;
 import org.das2.util.ColorUtil;
 import org.das2.util.DesktopColorChooserPanel;
 import org.das2.util.Entities;
@@ -142,9 +145,55 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
         } else if ( id.equals("plotElement") ) {
             plotElementButton.setVisible(true);
             plotElementButton.setEnabled(true);
+        } else {
+            System.err.println("not supported: "+id);
         }
         
     }
+        
+    /** 
+     * add one button.  This rev just allows one button to be added.
+     * @param tabName the name of the new tab
+     * @param id 
+     * @param insert text to insert
+     */
+    public void addButton( String tabName, String id, String insert ) {
+        JPanel tabPanel=null;
+        for ( int i=0; i<jTabbedPane1.getTabCount(); i++ ) {
+            if ( jTabbedPane1.getTitleAt(i).equals(tabName) ) {
+                tabPanel= (JPanel)jTabbedPane1.getComponentAt(i);
+            }
+        }
+        if ( tabPanel==null ) {
+            tabPanel= new JPanel();
+            tabPanel.setLayout( new GridLayout( 3, 5 ) );
+            for ( int i=0; i<15; i++ ) {
+                tabPanel.add( new javax.swing.JLabel(" ") );
+            }
+            jTabbedPane1.add( tabName, tabPanel );
+        }
+        int i;
+        for ( i=0; i<15; i++ ) {
+            Component c= tabPanel.getComponent(i);
+            if ( c instanceof javax.swing.JLabel ) {
+                break;
+            }
+        }
+        
+        JButton customButton= new JButton(id);
+        tabPanel.add(customButton,i);
+        
+        customButton.setVisible(true);
+        customButton.setEnabled(true); 
+        customButton.setAction( new AbstractAction(id) {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                doInsert( insert, "" );
+            }
+        } );
+        
+    }
+    
     
     private javax.swing.JButton miscButton( String s ) {
         javax.swing.JButton result= new javax.swing.JButton("<html>"+s);
@@ -948,6 +997,8 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
         edit.setValue( "Happy !(color;Blue)Day!!");
         edit.addPainter( "psym", null );
         edit.addPainter( "img", null );
+        edit.addButton( "Macros", "%{CONTEXT}", "%{CONTEXT,format=%d,id=}");
+        edit.addButton( "Macros", "%{TIMERANGE}", "%{TIMERANGE,format=%d,id=}");
         JOptionPane.showMessageDialog( null, edit );
     }
     
