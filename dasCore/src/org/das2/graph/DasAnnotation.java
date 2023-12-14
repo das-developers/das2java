@@ -418,12 +418,7 @@ public class DasAnnotation extends DasCanvasComponent {
                 this.gtr.setString( thefont, getString() );
             }
             Rectangle r= calcBounds();
-            r.add( r.x+r.width+1, r.y+r.height+1 );
-            if ( anchorType==AnchorType.CANVAS || plot==null ) {
-                r= r.intersection( new Rectangle(0,0,getCanvas().getWidth(),getCanvas().getHeight()) ); // clip at canvas boundaries
-            } else {
-                r= r.intersection( DasDevicePosition.toRectangle( plot.getRow(), plot.getColumn() ) ); // clip at plot boundaries
-            }
+
             setBounds(r);
         }
     }
@@ -518,12 +513,43 @@ public class DasAnnotation extends DasCanvasComponent {
         }
         
         int s= Math.max( getFont().getSize()/5, 3 );
-        Rectangle result= new Rectangle( r.x-s, r.y-s, r.width+s*2+1, r.height+s*2+1 );
+        r= new Rectangle( r.x-s, r.y-s, r.width+s*2+1, r.height+s*2+1 );
+        r.add( r.x+r.width+1, r.y+r.height+1 );
         
+        int vmin, vmax;
+        int hmin, hmax;
+        
+        if ( anchorType==AnchorType.CANVAS || plot==null ) {
+            hmin= getColumn().getDMinimum();
+            hmax= getColumn().getDMaximum();
+        } else {
+            hmin= plot.getColumn().getDMinimum();
+            hmax= plot.getColumn().getDMaximum();
+        }
+        if ( splitAnchorType ) {
+            if ( verticalAnchorType==AnchorType.CANVAS || plot==null ) {
+                vmin= getRow().getDMinimum();
+                vmax= getRow().getDMaximum();
+            } else {
+                vmin= plot.getRow().getDMinimum();
+                vmax= plot.getRow().getDMaximum();
+            }
+        } else {
+            if ( anchorType==AnchorType.CANVAS || plot==null ) {
+                vmin= getRow().getDMinimum();
+                vmax= getRow().getDMaximum();
+            } else {
+                vmin= plot.getRow().getDMinimum();
+                vmax= plot.getRow().getDMaximum();
+            }
+        }
+        Rectangle clip= new Rectangle( hmin, vmin, hmax-hmin, vmax-vmin );
+        r= r.intersection( clip ); 
+            
         boundsCalculated= true;
         
-        logger.exiting( "DasAnnotation","calcBounds", result);
-        return result;
+        logger.exiting( "DasAnnotation","calcBounds", r);
+        return r;
     }
 
     @Override
@@ -549,10 +575,8 @@ public class DasAnnotation extends DasCanvasComponent {
         
         g.translate( -getX(), -getY() );
 
-        if ( anchorType!=AnchorType.CANVAS && plot!=null ) {
-            Rectangle r= DasDevicePosition.toRectangle( plot.getRow(), plot.getColumn() );
-            g.setClip( r );
-        }
+        Rectangle clip= calcBounds();
+        g.setClip( clip );
         
         Color fore = getCanvas().getForeground();
         Color ltextColor= fore;
