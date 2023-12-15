@@ -520,24 +520,24 @@ public class DasAnnotation extends DasCanvasComponent {
         int hmin, hmax;
         
         if ( anchorType==AnchorType.CANVAS || plot==null ) {
-            hmin= getColumn().getDMinimum();
-            hmax= getColumn().getDMaximum();
+            hmin= 0;
+            hmax= getCanvas().getWidth();
         } else {
             hmin= plot.getColumn().getDMinimum();
             hmax= plot.getColumn().getDMaximum();
         }
         if ( splitAnchorType ) {
             if ( verticalAnchorType==AnchorType.CANVAS || plot==null ) {
-                vmin= getRow().getDMinimum();
-                vmax= getRow().getDMaximum();
+                vmin= 0;
+                vmax= getCanvas().getHeight();
             } else {
                 vmin= plot.getRow().getDMinimum();
                 vmax= plot.getRow().getDMaximum();
             }
         } else {
             if ( anchorType==AnchorType.CANVAS || plot==null ) {
-                vmin= getRow().getDMinimum();
-                vmax= getRow().getDMaximum();
+                vmin= 0;
+                vmax= getCanvas().getHeight();
             } else {
                 vmin= plot.getRow().getDMinimum();
                 vmax= plot.getRow().getDMaximum();
