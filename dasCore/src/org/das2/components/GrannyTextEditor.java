@@ -145,6 +145,8 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
         } else if ( id.equals("plotElement") ) {
             plotElementButton.setVisible(true);
             plotElementButton.setEnabled(true);
+        } else if ( id.equals("block") ) {
+            // just ignore for this GUI, psym should be used.
         } else {
             System.err.println("not supported: "+id);
         }
