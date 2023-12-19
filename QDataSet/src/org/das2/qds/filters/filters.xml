@@ -14,6 +14,21 @@
                         <description>Converts time domain signal to spectrogram by performing ffts at regular intervals.</description>
                     </bookmark>
                     <bookmark>
+                        <title>Power Spectral Density</title>
+                        <filter>|fftPowerSpectralDensity(512,2,'Hanning')</filter>
+                        <description>Converts time domain signal to spectrogram by performing ffts at regular intervals and normalizing by frequency.</description>
+                    </bookmark>
+                    <bookmark>
+                        <title>Linear Spectral Density</title>
+                        <filter>|fftLinearSpectralDensity(512,2,'Hanning')</filter>
+                        <description>Converts time domain signal to spectrogram using sqrt of PSD.</description>
+                    </bookmark>
+                    <bookmark>
+                        <title>Linear Spectrum and other DFT outputs.</title>
+                        <filter>|fftLinearSpectrum(512,2,'Hanning')</filter>
+                        <description>Converts time domain signal to spectrogram using sqrt of fftPower.</description>
+                    </bookmark>
+                    <bookmark>
                         <title>Hanning</title>
                         <filter>|hanning(128)</filter>
                         <description>Runs a Hanning window before taking the fft</description>
