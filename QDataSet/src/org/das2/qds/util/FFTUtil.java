@@ -190,7 +190,7 @@ public class FFTUtil {
         }
         
         Units xUnits= (Units)powxTags.property( QDataSet.UNITS );
-        if ( xUnits.isConvertibleTo(Units.hertz) ) {
+        if ( xUnits!=null && xUnits.isConvertibleTo(Units.hertz) ) {
             UnitsConverter uc= xUnits.getConverter(Units.hertz);
             binsize= ( uc.convert( powxTags.value( 1 ) - powxTags.value(0) ) ) ;
         } else {
