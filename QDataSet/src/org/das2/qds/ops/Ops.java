@@ -8388,6 +8388,30 @@ public final class Ops {
     }
 
     /**
+     * return a dataset for the given filter type, added to support use in Jython.  The result will be rank 1 and length len.
+     * @param filt the type of the window, one of Hanning, Hann, TenPercentEdgeCosine, Unity or Boxcar.
+     * @param len the length of the window.
+     * @return rank 1 QDataSet with length len.
+     */
+    public static QDataSet windowFunction( String type, int len ) {
+        assert type!=null;
+        switch (type) {
+            case "Hanning":
+                return FFTUtil.getWindowHanning(len);
+            case "Hann":
+                return FFTUtil.getWindowHanning(len);
+            case "TenPercentEdgeCosine":
+                return FFTUtil.getWindow10PercentEdgeCosine(len);
+            case "Unity":
+                return FFTUtil.getWindowUnity(len);
+            case "Boxcar":
+                return FFTUtil.getWindowUnity(len);
+            default:
+                throw new UnsupportedOperationException("unsupported op: "+type );
+        }
+    }
+    
+    /**
      * perform the fft with the window, using no overlap.
      * @param ds rank 1,2 or 3 waveform dataset.
      * @param window the window
@@ -8443,6 +8467,64 @@ public final class Ops {
             }
         }
     } 
+    
+    
+    /**
+     * Perform the power spectral density function
+     * @param ds waveform data
+     * @param window the window to apply
+     * @param stepFraction advance by this much for each window (2 means 50% overlap, 4 means 75% overlap, etc.)
+     * @param mon a progress monitor
+     * @return the power spectral density
+     * @see https://holometer.fnal.gov/GH_FFT.pdf page 7
+     */
+    public static QDataSet fftPowerSpectralDensity( QDataSet ds, QDataSet window, int stepFraction, ProgressMonitor mon ) {
+        Units u= (Units) ds.property( QDataSet.UNITS );
+        String su= ( u==null || u==Units.dimensionless ) ? "(unitless)" : u.toString();
+        QDataSet r= Ops.fftPower( ds, window, stepFraction, mon );
+        QDataSet ytags= Ops.ytags(r);
+        r= Ops.divide( r, Ops.replicate( ytags, r.length() ) );
+        r= Ops.putProperty( r, QDataSet.UNITS, su + "**2 / Hz");
+        return r;
+    }
+    
+    /**
+     * Perform the linear spectral density function
+     * @param ds waveform data
+     * @param window the window to apply window to apply
+     * @param stepFraction advance by this much for each window (2 means 50% overlap, 4 means 75% overlap, etc.)
+     * @param mon progress monitor
+     * @return the linear spectral density
+     * @see https://holometer.fnal.gov/GH_FFT.pdf page 7
+     */
+    public static QDataSet fftLinearSpectralDensity( QDataSet ds, QDataSet window, int stepFraction, ProgressMonitor mon ) {
+        Units u= (Units) ds.property( QDataSet.UNITS );
+        String su= ( u==null || u==Units.dimensionless ) ? "(unitless)" : u.toString();
+        QDataSet r= Ops.fftPower( ds, window, stepFraction, mon );
+        QDataSet ytags= Ops.ytags(r);
+        r= Ops.divide( Ops.sqrt(r), Ops.replicate( Ops.sqrt(ytags), r.length() ) );
+        r= Ops.putProperty( r, QDataSet.UNITS, su + " * Hz**-1/2");
+        return r;
+    }
+       
+    /**
+     * Perform the linear spectrum function
+     * @param ds waveform data
+     * @param window the window to apply window to apply
+     * @param stepFraction advance by this much for each window (2 means 50% overlap, 4 means 75% overlap, etc.)
+     * @param mon progress monitor
+     * @return the linear spectral density
+     * @see https://holometer.fnal.gov/GH_FFT.pdf page 7
+     */
+    public static QDataSet fftLinearSpectrum( QDataSet ds, QDataSet window, int stepFraction, ProgressMonitor mon ) {
+        Units u= (Units) ds.property( QDataSet.UNITS );
+        String su= ( u==null || u==Units.dimensionless ) ? "(unitless)" : u.toString();
+        QDataSet r= Ops.fftPower( ds, window, stepFraction, mon );
+        r= Ops.sqrt(r);
+        r= Ops.putProperty( r, QDataSet.UNITS, su );
+        return r;
+    }
+        
     
     /**
      * create a power spectrum on the dataset by breaking it up and
