@@ -39,7 +39,7 @@ public class FftPowerFilterEditorPanel extends AbstractFilterEditorPanel {
         sizeTF = new javax.swing.JTextField();
         windowCB = new javax.swing.JComboBox();
 
-        jLabel1.setText("Size: ");
+        jLabel1.setText("Window Size: ");
 
         jLabel2.setText("Slide: ");
 
@@ -52,7 +52,7 @@ public class FftPowerFilterEditorPanel extends AbstractFilterEditorPanel {
         sizeTF.setText("512");
         sizeTF.setPreferredSize(new java.awt.Dimension(90, 27));
 
-        windowCB.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Hanning (Hann)", "TenPercentEdgeCosine", "Unity" }));
+        windowCB.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Hanning (Hann)", "TenPercentEdgeCosine", "Unity (Boxcar)" }));
         windowCB.setPreferredSize(new java.awt.Dimension(125, 27));
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
@@ -65,12 +65,12 @@ public class FftPowerFilterEditorPanel extends AbstractFilterEditorPanel {
                     .add(jLabel2)
                     .add(jLabel1)
                     .add(jLabel3))
-                .add(29, 29, 29)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(sizeTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(slideCB, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(windowCB, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 192, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(26, Short.MAX_VALUE))
+                .addContainerGap(29, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -145,7 +145,7 @@ public class FftPowerFilterEditorPanel extends AbstractFilterEditorPanel {
         }
         String window= (String)windowCB.getSelectedItem();
         if ( window.startsWith("Hanning") ) window= "Hanning"; // This is because of (Hann) in parenthesis.
-        
+        if ( window.startsWith("Unity") ) window= "Unity";
         return "|fftPower(" + sizeTF.getText() + "," + slide + ",'" + window + "')";
     }
 }
