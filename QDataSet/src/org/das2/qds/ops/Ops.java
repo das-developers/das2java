@@ -8480,7 +8480,7 @@ public final class Ops {
      */
     public static QDataSet fftPowerSpectralDensity( QDataSet ds, QDataSet window, int stepFraction, ProgressMonitor mon ) {
         Units u= (Units) ds.property( QDataSet.UNITS );
-        String su= ( u==null || u==Units.dimensionless ) ? "(unitless)" : u.toString();
+        String su= ( u==null || u==Units.dimensionless ) ? "(dimensionless)" : u.toString();
         QDataSet r= Ops.fftPower( ds, window, stepFraction, mon );
         QDataSet ytags= Ops.ytags(r);
         r= Ops.divide( r, Ops.replicate( ytags, r.length() ) );
@@ -8499,7 +8499,7 @@ public final class Ops {
      */
     public static QDataSet fftLinearSpectralDensity( QDataSet ds, QDataSet window, int stepFraction, ProgressMonitor mon ) {
         Units u= (Units) ds.property( QDataSet.UNITS );
-        String su= ( u==null || u==Units.dimensionless ) ? "(unitless)" : u.toString();
+        String su= ( u==null || u==Units.dimensionless ) ? "(dimensionless)" : u.toString();
         QDataSet r= Ops.fftPower( ds, window, stepFraction, mon );
         QDataSet ytags= Ops.ytags(r);
         r= Ops.divide( Ops.sqrt(r), Ops.replicate( Ops.sqrt(ytags), r.length() ) );
@@ -8518,7 +8518,7 @@ public final class Ops {
      */
     public static QDataSet fftLinearSpectrum( QDataSet ds, QDataSet window, int stepFraction, ProgressMonitor mon ) {
         Units u= (Units) ds.property( QDataSet.UNITS );
-        String su= ( u==null || u==Units.dimensionless ) ? "(unitless)" : u.toString();
+        String su= ( u==null || u==Units.dimensionless ) ? "(dimensionless)" : u.toString();
         QDataSet r= Ops.fftPower( ds, window, stepFraction, mon );
         r= Ops.sqrt(r);
         r= Ops.putProperty( r, QDataSet.UNITS, su );
