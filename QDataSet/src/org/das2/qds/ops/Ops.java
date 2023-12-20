@@ -8525,6 +8525,19 @@ public final class Ops {
         return r;
     }
         
+    /**
+     * Perform the linear spectrum function
+     * @param ds waveform data
+     * @param window the window to apply window to apply
+     * @param stepFraction advance by this much for each window (2 means 50% overlap, 4 means 75% overlap, etc.)
+     * @param mon progress monitor
+     * @return the linear spectral density
+     * @see https://holometer.fnal.gov/GH_FFT.pdf page 7
+     */
+    public static QDataSet fftPowerSpectrum( QDataSet ds, QDataSet window, int stepFraction, ProgressMonitor mon ) {
+        QDataSet r= Ops.fftPower( ds, window, stepFraction, mon );
+        return r;
+    }
     
     /**
      * create a power spectrum on the dataset by breaking it up and
