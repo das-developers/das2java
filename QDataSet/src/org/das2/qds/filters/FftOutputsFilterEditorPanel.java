@@ -79,7 +79,7 @@ public class FftOutputsFilterEditorPanel extends AbstractFilterEditorPanel {
         lsRB.setToolTipText("Linear (Amplitude) Spectrum");
         lsRB.addActionListener(formListener);
 
-        descriptionLabel.setText("Power Spectral Density");
+        descriptionLabel.setText("<html>Power Spectral Density  e.g. V&rarr;V**2/Hz");
 
         buttonGroup1.add(psRB);
         psRB.setText("PS");
@@ -111,14 +111,14 @@ public class FftOutputsFilterEditorPanel extends AbstractFilterEditorPanel {
                         .add(lsdRB)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(lsRB))
-                    .add(descriptionLabel))
+                    .add(descriptionLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(29, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .add(descriptionLabel)
+                .add(descriptionLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(psdRB)
@@ -209,12 +209,16 @@ public class FftOutputsFilterEditorPanel extends AbstractFilterEditorPanel {
             String f= m.group(1);
             if ( f.equals("fftPowerSpectralDensity" ) ) {
                 psdRB.setSelected(true);
+                psdRBActionPerformed(null); //TODO: WHY must I do this????
             } else if ( f.equals("fftLinearSpectralDensity") ) {
                 lsdRB.setSelected(true);
+                lsdRBActionPerformed(null); //TODO: WHY must I do this????
             } else if ( f.equals("fftLinearSpectrum") ) {
                 lsRB.setSelected(true);
+                lsRBActionPerformed(null); //TODO: WHY must I do this????
             } else if ( f.equals("fftPowerSpectrum") ) {
                 psRB.setSelected(true);
+                psRBActionPerformed(null); //TODO: WHY must I do this????
             }
             sizeTF.setText( m.group(2) );
             if (m.group(3).equals("1")) {

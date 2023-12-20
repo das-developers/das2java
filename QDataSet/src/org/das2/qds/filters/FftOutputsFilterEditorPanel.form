@@ -179,7 +179,7 @@
     </Component>
     <Component class="javax.swing.JLabel" name="descriptionLabel">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Power Spectral Density"/>
+        <Property name="text" type="java.lang.String" value="&lt;html&gt;Power Spectral Density  e.g. V&amp;rarr;V**2/Hz"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JRadioButton" name="psRB">
