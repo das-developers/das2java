@@ -535,6 +535,38 @@ public class OperationsProcessor {
                     } else {
                         ds= Ops.fftPower(ds);
                     }
+                } else if ( cmd.equals("|fftPowerSpectralDensity") 
+                    || cmd.equals("|fftPowerSpectrum" ) 
+                    || cmd.equals("|fftLinearSpectralDensity")
+                    || cmd.equals("|fftLinearSpectrum" ) ) {
+                    int len,step;
+                    String window;
+                    if ( s.hasNextInt() ) {
+                        len= s.nextInt();
+                    } else {
+                        len= ds.length(0);
+                    }
+                    if ( s.hasNextInt() ) {
+                        step= s.nextInt();
+                    } else {
+                        step= 1;
+                    }
+                    if ( s.hasNext() ) {
+                        window= getStringArg(s.next());
+                    } else {
+                        window= "Unity";
+                    }
+                    Ops.FFTFilterType ff= Ops.FFTFilterType.valueOf(window);
+                    QDataSet wqds= Ops.windowFunction( ff, len );
+                    if ( cmd.startsWith("|fftPowerSpectrum") ) {
+                        ds= Ops.fftPowerSpectrum(ds, wqds, step, mon.getSubtaskMonitor("fftPower"));
+                    } else if ( cmd.startsWith("|fftPowerSpectralDensity") ) {
+                        ds= Ops.fftPowerSpectralDensity(ds, wqds, step, mon.getSubtaskMonitor("fftPower"));
+                    } else if ( cmd.startsWith("|fftLinearSpectrum") ) {
+                        ds= Ops.fftLinearSpectrum( ds, wqds, step, mon);
+                    } else if ( cmd.startsWith("|fftLinearSpectralDensity")) {
+                        ds= Ops.fftLinearSpectralDensity( ds, wqds, step, mon);
+                    }
                 } else if ( cmd.equals("|fftPowerMultiThread" ) ) {
                     if ( ds.length()>0 ) {
                         if ( s.hasNextInt() ) {

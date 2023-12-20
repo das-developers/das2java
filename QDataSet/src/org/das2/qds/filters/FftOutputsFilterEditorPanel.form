@@ -39,6 +39,8 @@
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="psdRB" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
+                      <Component id="psRB" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                       <Component id="lsdRB" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="lsRB" min="-2" max="-2" attributes="0"/>
@@ -59,6 +61,7 @@
                   <Component id="psdRB" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="lsdRB" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="lsRB" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="psRB" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
@@ -178,6 +181,18 @@
       <Properties>
         <Property name="text" type="java.lang.String" value="Power Spectral Density"/>
       </Properties>
+    </Component>
+    <Component class="javax.swing.JRadioButton" name="psRB">
+      <Properties>
+        <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+          <ComponentRef name="buttonGroup1"/>
+        </Property>
+        <Property name="text" type="java.lang.String" value="PS"/>
+        <Property name="toolTipText" type="java.lang.String" value="Power Spectrum"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="psRBActionPerformed"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>

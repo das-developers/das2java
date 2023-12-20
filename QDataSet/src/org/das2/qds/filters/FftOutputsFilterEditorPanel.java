@@ -43,6 +43,7 @@ public class FftOutputsFilterEditorPanel extends AbstractFilterEditorPanel {
         lsdRB = new javax.swing.JRadioButton();
         lsRB = new javax.swing.JRadioButton();
         descriptionLabel = new javax.swing.JLabel();
+        psRB = new javax.swing.JRadioButton();
 
         FormListener formListener = new FormListener();
 
@@ -80,6 +81,11 @@ public class FftOutputsFilterEditorPanel extends AbstractFilterEditorPanel {
 
         descriptionLabel.setText("Power Spectral Density");
 
+        buttonGroup1.add(psRB);
+        psRB.setText("PS");
+        psRB.setToolTipText("Power Spectrum");
+        psRB.addActionListener(formListener);
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -100,6 +106,8 @@ public class FftOutputsFilterEditorPanel extends AbstractFilterEditorPanel {
                     .add(layout.createSequentialGroup()
                         .add(psdRB)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(psRB)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(lsdRB)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(lsRB))
@@ -115,7 +123,8 @@ public class FftOutputsFilterEditorPanel extends AbstractFilterEditorPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(psdRB)
                     .add(lsdRB)
-                    .add(lsRB))
+                    .add(lsRB)
+                    .add(psRB))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel1)
@@ -146,6 +155,9 @@ public class FftOutputsFilterEditorPanel extends AbstractFilterEditorPanel {
             else if (evt.getSource() == lsRB) {
                 FftOutputsFilterEditorPanel.this.lsRBActionPerformed(evt);
             }
+            else if (evt.getSource() == psRB) {
+                FftOutputsFilterEditorPanel.this.psRBActionPerformed(evt);
+            }
         }
     }// </editor-fold>//GEN-END:initComponents
 
@@ -167,6 +179,12 @@ public class FftOutputsFilterEditorPanel extends AbstractFilterEditorPanel {
         }
     }//GEN-LAST:event_lsRBActionPerformed
 
+    private void psRBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_psRBActionPerformed
+        if ( psRB.isSelected() ) {
+            descriptionLabel.setText("<html>Power Spectrum  e.g. V&rarr;V**2");
+        }
+    }//GEN-LAST:event_psRBActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     public javax.swing.ButtonGroup buttonGroup1;
@@ -176,6 +194,7 @@ public class FftOutputsFilterEditorPanel extends AbstractFilterEditorPanel {
     public javax.swing.JLabel jLabel3;
     public javax.swing.JRadioButton lsRB;
     public javax.swing.JRadioButton lsdRB;
+    public javax.swing.JRadioButton psRB;
     public javax.swing.JRadioButton psdRB;
     public javax.swing.JTextField sizeTF;
     public javax.swing.JComboBox slideCB;
@@ -194,6 +213,8 @@ public class FftOutputsFilterEditorPanel extends AbstractFilterEditorPanel {
                 lsdRB.setSelected(true);
             } else if ( f.equals("fftLinearSpectrum") ) {
                 lsRB.setSelected(true);
+            } else if ( f.equals("fftPowerSpectrum") ) {
+                psRB.setSelected(true);
             }
             sizeTF.setText( m.group(2) );
             if (m.group(3).equals("1")) {
@@ -243,6 +264,8 @@ public class FftOutputsFilterEditorPanel extends AbstractFilterEditorPanel {
             f = "fftLinearSpectralDensity";
         } else if ( lsRB.isSelected() ) {
             f = "fftLinearSpectrum";
+        } else if ( psRB.isSelected() ) {
+            f = "fftPowerSpectrum";
         } else {
             throw new IllegalArgumentException("see code underimplemented line 192 FftOutputsFilterEditorPanel");
         }

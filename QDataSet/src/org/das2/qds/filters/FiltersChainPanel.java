@@ -190,6 +190,8 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
             result= new FftPowerFilterEditorPanel();
         } else if ( f.matches("\\|fftPowerSpectralDensity\\((\\d+),(\\d),'?(\\S+)'?\\)") ) {
             result= new FftOutputsFilterEditorPanel();
+        } else if ( f.matches("\\|fftPowerSpectrum\\((\\d+),(\\d),'?(\\S+)'?\\)") ) {
+            result= new FftOutputsFilterEditorPanel();
         } else if ( f.matches("\\|fftLinearSpectralDensity\\((\\d+),(\\d),'?(\\S+)'?\\)") ) {
             result= new FftOutputsFilterEditorPanel();
         } else if ( f.matches("\\|fftLinearSpectrum\\((\\d+),(\\d),'?(\\S+)'?\\)") ) {
