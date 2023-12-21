@@ -3745,6 +3745,7 @@ public final class Ops {
      * @param second null or the seconds of the day
      * @param nano null or the nanoseconds (1e-9) of the day
      * @return rank 1 time data set.
+     * @see #rgbColorDataset(org.das2.qds.QDataSet, org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      */
     public static QDataSet toTimeDataSet( QDataSet years, QDataSet mons, QDataSet days, QDataSet hour, QDataSet minute, QDataSet second, QDataSet nano ) {
         
@@ -13724,6 +13725,7 @@ public final class Ops {
      * @param green the green component, from 0 to 255
      * @param blue the blue component, from 0 to 255
      * @return the rgb encoded colors.
+     * @see #toTimeDataSet(org.das2.qds.QDataSet, org.das2.qds.QDataSet, org.das2.qds.QDataSet, org.das2.qds.QDataSet, org.das2.qds.QDataSet, org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      */
     public static QDataSet rgbColorDataset( QDataSet red, QDataSet green, QDataSet blue ) {
         QDataSet[] operands= new QDataSet[2];
