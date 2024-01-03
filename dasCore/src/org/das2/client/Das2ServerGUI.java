@@ -513,13 +513,27 @@ public class Das2ServerGUI {
     
     public static void main(String[] args) {
         Das2ServerGUI x = new Das2ServerGUI();
-        String dsdf = "param_01 = '1.5V_REF | Simulate +1.8 monitor'\n"
+        int test=2;
+        String dsdf;
+        String params0;
+        switch ( test ) {
+            case 1:
+                dsdf = "param_01 = '1.5V_REF | Simulate +1.8 monitor'\n"
                 + "param_02 = '1.5V_WvFE'\n"
                 + "param_03 = '1.5V_Y180'\n"
                 + "param_04 = '1.8U | Power Supply'\n"
                 + "param_05 = '1.8V_MEM'";
+                params0="1.5V_REF 1.8V_MEM Extra-Unrecognized"; 
+                break;
+            case 2:
+                dsdf = "param_01 = 'packet_ids|Output data from the following packet IDs (defaults to all)|@|set: , x242 x252'\n";
+                params0="";
+                break;
+            default:
+                throw new IllegalArgumentException("bad test number");
+        }
         x.setSpecification(dsdf);
-        x.setParameters("1.5V_REF 1.8V_MEM Extra-Unrecognized");
+        x.setParameters(params0);
 
         if (JOptionPane.OK_OPTION == JOptionPane.showConfirmDialog(null, x.panel, "Edit params", JOptionPane.OK_CANCEL_OPTION )) {
             System.err.println(x.getParameters());
