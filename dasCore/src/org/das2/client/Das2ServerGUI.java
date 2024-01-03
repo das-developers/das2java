@@ -302,7 +302,7 @@ public class Das2ServerGUI {
         if ( sss.substring(0, 4).equals("[00]") ){
             sss = sss.substring(10);
         }
-        if ( sss.subSequence(0,8).equals("<stream>") ) {
+        if ( sss.trim().startsWith("<") ) {
             try {
                 ll = readXML(sss);
             } catch (SAXException | IOException | ParserConfigurationException | XPathExpressionException ex) {
