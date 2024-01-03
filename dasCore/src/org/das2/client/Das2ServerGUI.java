@@ -1,10 +1,6 @@
 package org.das2.client;
 
-import java.lang.StringBuilder;
-
-import java.awt.FlowLayout;
 import java.awt.Dimension;
-import java.awt.GridLayout;
 import java.awt.Component;
 import java.io.IOException;
 
@@ -12,15 +8,10 @@ import javax.swing.JPanel;
 import javax.swing.BoxLayout;
 import javax.swing.JOptionPane;
 import javax.swing.JCheckBox;
-import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-import javax.swing.Box;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
-import javax.swing.JComboBox;
 import javax.swing.JList;
-import javax.swing.ButtonGroup;
-import javax.swing.JButton;
 
 import java.util.LinkedHashMap;
 import java.util.ArrayList;
@@ -343,11 +334,10 @@ public class Das2ServerGUI {
             String itm = ll[i];
             if (itm.length() > 0) {
                 itm = itm.trim();
-                ss = itm.split("\\|", -2);
+                ss = itm.split("\\s*\\|\\s*", -2);
                 int narg = ss.length;
                 JComponent c2 = null;
                 if (narg == 1) {
-                    ss[0] = ss[0].trim();
                     JCheckBox c = new JCheckBox(ss[0]);
                     String vv = findParamValue(paramsArr, ss[0], null);
                     if (vv.length() > 0) {
@@ -357,8 +347,6 @@ public class Das2ServerGUI {
                     panel.add(c);
                     c2 = c;
                 } else if (narg == 2) {
-                    ss[1] = ss[1].trim();
-                    ss[0] = ss[0].trim();
                     JCheckBox c = new JCheckBox(ss[0] + ": " + ss[1]);
                     String vv = findParamValue(paramsArr, ss[0], null);
                     if (vv.length() > 0) {
@@ -368,9 +356,6 @@ public class Das2ServerGUI {
                     panel.add(c);
                     c2 = c;
                 } else if (narg == 3) {
-                    ss[0] = ss[0].trim();
-                    ss[1] = ss[1].trim();
-                    ss[2] = ss[2].trim();
                     panel.add(new JLabel(ss[0] + ": " + ss[1]));
                     JTextField c = new JTextField("");
                     c.setMaximumSize(new Dimension(8000, c.getPreferredSize().height));
@@ -384,13 +369,9 @@ public class Das2ServerGUI {
                     panel.add(c);
                     c2 = c;
                 } else if (narg == 4) {
-                    ss[0] = ss[0].trim();
-                    ss[1] = ss[1].trim();
-                    ss[2] = ss[2].trim();
-                    ss[3] = ss[3].trim();
                     if (ss[3].startsWith("set:")) {
                         panel.add(new JLabel(ss[0] + ": " + ss[1]));
-                        String[] sepAllItems = ss[3].substring(4).split("\\s+");
+                        String[] sepAllItems = ss[3].substring(4).trim().split("\\s+");
                         String[] allItems = Arrays.copyOfRange(sepAllItems, 1, sepAllItems.length);
                         String sep = sepAllItems[0];
                         ss[i] = sep;
