@@ -413,8 +413,8 @@ public class BinAverage {
         double ybase = dep1.value(0) - (yscal / 2);
         int ny = dep1.length();
         if (!isLinearlySpaced(dep1, yscal, ybase)) {
-            yscal = Math.log10(dep1.value(1) / dep1.value(0));
-            ybase = Math.log10(ybase);
+            yscal = Math.log10( dep1.value(1) / dep1.value(0) );
+            ybase = Math.log10( dep1.value(0) ) - (yscal / 2);
             dep1 = Ops.log10(dep1);
             if (!isLinearlySpaced(dep1, yscal, ybase)) {
                 isLinearlySpaced(dep1, yscal, ybase);
