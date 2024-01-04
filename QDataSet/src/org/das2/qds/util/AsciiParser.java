@@ -2067,6 +2067,47 @@ public class AsciiParser {
         ss[0]="";
         return ss;
     }
+    
+    /**
+     * return the length of the format specifier.  %30d -> 30 %30d%5f -> 35.
+     * 
+     * @param format
+     * @return 
+     */
+    public static int guessLengthForFormat( String format ) {
+        if ( !format.startsWith("%") ) {
+            format= "%"+format;
+        }
+        String[] ss= format.split("%");
+        int[] lengths= new int[ss.length];
+        for (int i = 1; i < ss.length; i++) {
+            int pp = 0;
+            while (Character.isDigit(ss[i].charAt(pp)) || ss[i].charAt(pp) == '-') {
+                pp++;
+            }
+            if (pp > 0) {
+                lengths[i] = Integer.parseInt(ss[i].substring(0, pp));
+            } else {
+                if ( ss[i].equals("%f") ) {
+                    lengths[i]=10;
+                } else if ( ss[i].equals("%d") ) {
+                    lengths[i]=10;
+                } else {
+                    lengths[i] = -1; // determine later by field type
+                }
+            }       
+        }
+        int totalLength=0;
+        for ( int i= 1; i<ss.length; i++ ) {
+            if ( lengths[i]==-1 ) { 
+                return -1;
+            } else {
+                totalLength=totalLength+lengths[i];
+            }
+        }
+        return totalLength;
+    }
+    
     /**
      * Convert FORTRAN (F77) style format to C-style format specifiers.
      * @param format for example "%5d%5d%9f%s"
