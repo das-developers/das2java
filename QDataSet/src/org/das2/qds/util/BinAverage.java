@@ -9,6 +9,7 @@
 package org.das2.qds.util;
 
 import java.util.Arrays;
+import org.das2.datum.Units;
 import org.das2.datum.UnitsConverter;
 import org.das2.qds.ArrayDataSet;
 import org.das2.qds.DDataSet;
@@ -407,7 +408,7 @@ public class BinAverage {
                 xlog = true;
             }
         }
-
+            
         boolean ylog = false;
         double yscal = dep1.value(1) - dep1.value(0);
         double ybase = dep1.value(0) - (yscal / 2);
@@ -424,8 +425,12 @@ public class BinAverage {
             }
         }
 
+        // accumulate
         if ( ds.length()>0 ) {
             UnitsConverter xuc= SemanticOps.getLooseUnitsConverter( ds.slice(0).slice(0), dep0 );
+            if ( xuc==UnitsConverter.LOOSE_IDENTITY && SemanticOps.getUnits(ds.slice(0).slice(0))==Units.degrees ) {
+                throw new IllegalArgumentException("no units provided when one dataset's units are degrees, unidentified units could be radians or degrees.");
+            }
             UnitsConverter yuc= SemanticOps.getLooseUnitsConverter( ds.slice(0).slice(1), dep1 );
             for ( int ids=0; ids<ds.length(); ids++ ) {
                 double w= wds.value(ids);
@@ -443,6 +448,7 @@ public class BinAverage {
             }
         }
 
+        // normalize
         double fill= -1e31;
         for ( int i=0; i<nx; i++ ) {
             for ( int j=0; j<ny; j++ ) {
