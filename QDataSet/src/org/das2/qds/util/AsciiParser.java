@@ -2070,7 +2070,7 @@ public class AsciiParser {
     
     /**
      * return the length of the format specifier.  %30d -> 30 %30d%5f -> 35.
-     * 
+     * TODO: consider String.format(format,1) or String.format(format,1.0).
      * @param format
      * @return 
      */
