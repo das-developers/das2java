@@ -1020,4 +1020,35 @@ public class Schemes {
     public static QDataSet irregularJoin() {
         return Ops.ripplesJoinSpectrogramTimeSeries(40);
     }
+    
+    /**
+     * set of 2-d or 3-d points and the triangles connecting them.  Note that 
+     * Ops.triangulate does not return this schema.
+     * @return 
+     */
+    public static QDataSet triangleMesh() {
+        QDataSet xy= xyScatter();
+        QDataSet tri= Ops.triangulate( Ops.slice0(xy,0), Ops.slice0(xy,1) );
+        return Ops.join(xy,tri);
+    }
+    
+    /**
+     * return true if the data can be used as a triangulation.
+     * @param ds
+     * @return 
+     */
+    public static boolean isTriangleMesh( QDataSet ds ) {
+        if ( ds.rank()==3 && ds.length()==2 ) {
+            int ndim= ds.slice(0).length(0);
+            int nspace= ds.slice(0).length(0);
+            if ( ndim==2 || ndim==3 ) {
+                if ( nspace==3 ) { 
+                    return true;
+                } else {
+                    return false;  // note the triangulation code we have supports four-point tetrahedra.
+                }
+            }
+        }
+        return false;
+    }
 }
