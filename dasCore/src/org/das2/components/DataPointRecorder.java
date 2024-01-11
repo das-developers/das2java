@@ -1877,7 +1877,11 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
             // check for defaults
             for ( int i=2; i<namesArray.length; i++ ) {
                 if ( !newPoint.planes.containsKey(namesArray[i]) ) {
-                    newPoint.planes.put(namesArray[i],defaultsArray[i]);
+                    if ( defaultsArray!=null ) {
+                        newPoint.planes.put(namesArray[i],defaultsArray[i]);
+                    } else {
+                        throw new NullPointerException("defaults are not provided but value is missing: "+namesArray[i]);
+                    }
                 }
             }
             
