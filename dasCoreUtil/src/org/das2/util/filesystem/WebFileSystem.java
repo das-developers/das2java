@@ -932,7 +932,7 @@ public abstract class WebFileSystem extends FileSystem {
     
     @Override
     public String toString() {
-        return "wfs " + root;
+        return "wfs " + root + ( isOffline() ? " (offline)" : "" );
     }
 
     public boolean isAppletMode() {

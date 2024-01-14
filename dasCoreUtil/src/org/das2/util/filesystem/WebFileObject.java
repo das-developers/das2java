@@ -27,6 +27,7 @@ import org.das2.util.monitor.ProgressMonitor;
 import org.das2.util.monitor.NullProgressMonitor;
 import java.io.*;
 import java.net.ConnectException;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.util.*;
@@ -335,6 +336,9 @@ public class WebFileObject extends FileObject {
                 return false;
             } catch ( javax.net.ssl.SSLException e ) {
                 throw new RuntimeException(e);
+            } catch ( SocketTimeoutException ex ) {
+                wfs.setOffline(true);
+                return false;
             } catch (IOException e) {
                 logger.log( Level.FINE, e.getMessage(), e );
                 // I'm going to assume that it's because the file was not found. 404's from pw's server end up here

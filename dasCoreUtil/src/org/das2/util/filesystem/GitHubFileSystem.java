@@ -783,7 +783,7 @@ public class GitHubFileSystem extends HttpFileSystem {
     
     @Override
     public String toString() {
-        return "githubfs " + root;
+        return "githubfs " + root+ ( isOffline() ? " (offline)" : "" );
     }
     
 }

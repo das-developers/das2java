@@ -111,7 +111,8 @@ public final class HttpUtil {
                 boolean exists;
                 
                 HttpURLConnection connect = (HttpURLConnection) url.openConnection();
-                
+                connect.setConnectTimeout(5000);
+                    
                 //connect.setDefaultUseCaches(false);
                 //connect.setUseCaches(false);
                 
