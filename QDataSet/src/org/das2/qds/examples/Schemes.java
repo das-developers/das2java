@@ -1039,6 +1039,7 @@ public class Schemes {
      * @param ds
      * @return 
      * @see Ops#triCenters(org.das2.qds.QDataSet) 
+     * @see https://sourceforge.net/p/autoplot/feature-requests/819/
      */
     public static boolean isTriangleMesh( QDataSet ds ) {
         if ( ds.rank()==3 && ds.length()==2 ) {
