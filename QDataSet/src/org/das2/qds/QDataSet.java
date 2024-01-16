@@ -478,6 +478,11 @@ public interface QDataSet {
     public final static String VALUE_RENDER_TYPE_COMPOSITE_IMAGE="image";
 
     /**
+     * triangle mesh type
+     */
+    public final static String VALUE_RENDER_TYPE_TRIANGLE_MESH="triangleMesh";    
+    
+    /**
      * String, a java identifier that should can be used when an identifier is needed. This is
      * originally introduced for debugging purposes, so datasets can have a concise, meaningful name 
      * that is decoupled from the label. When NAMEs are used, properties with the same 

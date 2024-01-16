@@ -3148,7 +3148,13 @@ public class DataSetUtil {
                 return false;
             }
             if (dep.length() != ds.length()) {
-                problems.add(String.format("DEPEND_%d length is %d while data length is %d.", dimOffset, dep.length(), ds.length()));
+                if ( Schemes.isTriangleMesh(dep) ) {
+                    if ( dep.slice(1).length() != ds.length() ) {
+                        problems.add(String.format("DEPEND_%d length is %d while triangles length is %d.", dimOffset, dep.length(), ds.length()));
+                    }
+                } else {
+                    problems.add(String.format("DEPEND_%d length is %d while data length is %d.", dimOffset, dep.length(), ds.length()));
+                }
             }
             //if ( dep.rank() > ds.rank() ) {  // This happens when we have BINS_1 for DEPEND_0.
             //    problems.add(String.format("DEPEND_%d rank is %d but ds.rank() is less (%d)", dimOffset, dep.rank(), ds.rank()) );
@@ -3159,6 +3165,8 @@ public class DataSetUtil {
                 if ( Schemes.isRank2Bins(dep) ) {
                     // okay
                 } else if ( Schemes.isXYScatter(dep) ) {
+                    // okay
+                } else if ( Schemes.isTriangleMesh(dep) ) {
                     // okay
                 } else {
                     problems.add( "DEPEND_0 should have only one index or must be a bins ([n,2]) dataset.");

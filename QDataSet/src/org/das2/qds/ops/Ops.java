@@ -7225,7 +7225,13 @@ public final class Ops {
                     QDataSet arg= Ops.dataset(value);
                     if ( name.equals("DEPEND_0") ) {
                         if ( arg.rank()>0 && mds.rank()>0 && arg.length()!=mds.length() ) {
-                            throw new IllegalArgumentException("DEPEND_0 must be the same length as dataset");
+                            if ( Schemes.isTriangleMesh(arg) ) {
+                                if ( arg.slice(1).length()!=mds.length() ) {
+                                    throw new IllegalArgumentException("DEPEND_0 must have the same number of triangles as dataset");
+                                }
+                            } else {
+                                throw new IllegalArgumentException("DEPEND_0 must be the same length as dataset");
+                            }
                         }
                     }
                     mds.putProperty(name, arg);
@@ -15634,6 +15640,32 @@ public final class Ops {
         return result;
     };
       
+    /**
+     * return an array of the centers of each triangle in the triangle mesh.
+     * @param triMesh
+     * @return rank 2 ds[n,2].
+     * @see Schemes#triangleMesh() 
+     */
+    public static QDataSet triCenters( QDataSet triMesh ) {
+        if ( !Schemes.isTriangleMesh(triMesh) ) {
+            throw new IllegalArgumentException("argument must be triangle mesh");
+        }
+        QDataSet tri= triMesh.slice(1);
+        QDataSet xy= triMesh.slice(0);
+        
+        DDataSet xyresult= DDataSet.createRank2( tri.length(), 2 );
+        for ( int i=0; i<tri.length(); i++ ) {            
+            int i0= (int)tri.value(i,0);
+            int i1= (int)tri.value(i,1);
+            int i2= (int)tri.value(i,2);
+            double x= ( xy.value(i0,0) + xy.value(i1,0) + xy.value(i2,0) ) / 3;
+            double y= ( xy.value(i0,1) + xy.value(i1,1) + xy.value(i2,1) ) / 3;
+            xyresult.putValue( i, 0, x );
+            xyresult.putValue( i, 1, y );
+        }
+        return xyresult;
+    }
+    
     /**
      * return a triangle tesselation of the space identified by 
      * rank 1 xx and yy.
