@@ -1031,7 +1031,9 @@ public class Schemes {
     public static QDataSet triangleMesh() {
         QDataSet xy= xyScatter();
         QDataSet tri= Ops.triangulate( Ops.slice1(xy,0), Ops.slice1(xy,1) );
-        return Ops.join(xy,tri);
+        QDataSet result= Ops.join(xy,tri);
+        result= Ops.putProperty( result, QDataSet.RENDER_TYPE, QDataSet.VALUE_RENDER_TYPE_TRIANGLE_MESH );
+        return result;
     }
     
     /**
