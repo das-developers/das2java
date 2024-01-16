@@ -1023,12 +1023,14 @@ public class Schemes {
     
     /**
      * set of 2-d or 3-d points and the triangles connecting them.  Note that 
-     * Ops.triangulate does not return this schema.
-     * @return 
+     * Ops.triangulate does not return this schema.  This is introduced to 
+     * experiment with an oddly-structured dataset.  For example, this can
+     * be a DEPEND_0 of a rank 1 rgb color dataset.
+     * @return a triangular mesh.
      */
     public static QDataSet triangleMesh() {
         QDataSet xy= xyScatter();
-        QDataSet tri= Ops.triangulate( Ops.slice0(xy,0), Ops.slice0(xy,1) );
+        QDataSet tri= Ops.triangulate( Ops.slice1(xy,0), Ops.slice1(xy,1) );
         return Ops.join(xy,tri);
     }
     
@@ -1036,11 +1038,12 @@ public class Schemes {
      * return true if the data can be used as a triangulation.
      * @param ds
      * @return 
+     * @see Ops#triCenters(org.das2.qds.QDataSet) 
      */
     public static boolean isTriangleMesh( QDataSet ds ) {
         if ( ds.rank()==3 && ds.length()==2 ) {
-            int ndim= ds.slice(0).length(0);
-            int nspace= ds.slice(0).length(0);
+            int ndim= ds.slice(0).length(0); // xy or xyz points
+            int nspace= ds.slice(1).length(0); // are they triangles
             if ( ndim==2 || ndim==3 ) {
                 if ( nspace==3 ) { 
                     return true;
