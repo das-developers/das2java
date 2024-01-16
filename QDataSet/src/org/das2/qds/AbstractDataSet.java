@@ -47,6 +47,7 @@ public abstract class AbstractDataSet implements QDataSet, MutablePropertyDataSe
     public String svalue() {
         Units u= (Units) property(QDataSet.UNITS);
         if ( u==null ) {
+            // https://github.com/autoplot/dev/blob/master/bugs/2024/20240116/svalueBug.jy
             return String.valueOf(value());
         } else {
             return u.createDatum(value()).toString();
