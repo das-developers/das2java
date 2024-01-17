@@ -1028,7 +1028,7 @@ public class Schemes {
      * be a DEPEND_0 of a rank 1 rgb color dataset.
      * @return a triangular mesh.
      */
-    public static QDataSet triangleMesh() {
+    public static QDataSet polyMesh() {
         QDataSet xy= xyScatter();
         QDataSet tri= Ops.triangulate( Ops.slice1(xy,0), Ops.slice1(xy,1) );
         QDataSet result= Ops.join(xy,tri);
@@ -1037,21 +1037,22 @@ public class Schemes {
     }
     
     /**
-     * return true if the data can be used as a triangulation.
+     * return true if the data can be used as a triangulation or tessalation
+     * of 4-point rectangles.
      * @param ds
      * @return 
-     * @see Ops#triCenters(org.das2.qds.QDataSet) 
+     * @see Ops#polyCenters(org.das2.qds.QDataSet) 
      * @see https://sourceforge.net/p/autoplot/feature-requests/819/
      */
-    public static boolean isTriangleMesh( QDataSet ds ) {
+    public static boolean isPolyMesh( QDataSet ds ) {
         if ( ds.rank()==3 && ds.length()==2 ) {
             int ndim= ds.slice(0).length(0); // xy or xyz points
-            int nspace= ds.slice(1).length(0); // are they triangles
+            int ncorners= ds.slice(1).length(0); // are they triangles
             if ( ndim==2 || ndim==3 ) {
-                if ( nspace==3 ) { 
-                    return true;
+                if ( ncorners==3 || ncorners==4 ) { 
+                    return true; // note the triangulation code we have supports four-point tetrahedra.
                 } else {
-                    return false;  // note the triangulation code we have supports four-point tetrahedra.
+                    return false;  
                 }
             }
         }
