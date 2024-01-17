@@ -7225,7 +7225,7 @@ public final class Ops {
                     QDataSet arg= Ops.dataset(value);
                     if ( name.equals("DEPEND_0") ) {
                         if ( arg.rank()>0 && mds.rank()>0 && arg.length()!=mds.length() ) {
-                            if ( Schemes.isTriangleMesh(arg) ) {
+                            if ( Schemes.isPolyMesh(arg) ) {
                                 if ( arg.slice(1).length()!=mds.length() ) {
                                     throw new IllegalArgumentException("DEPEND_0 must have the same number of triangles as dataset");
                                 }
@@ -15642,28 +15642,63 @@ public final class Ops {
       
     /**
      * return an array of the centers of each triangle in the triangle mesh.
-     * @param triMesh
+     * @param polyMesh
      * @return rank 2 ds[n,2].
      * @see Schemes#triangleMesh() 
      */
-    public static QDataSet triCenters( QDataSet triMesh ) {
-        if ( !Schemes.isTriangleMesh(triMesh) ) {
-            throw new IllegalArgumentException("argument must be triangle mesh");
+    public static QDataSet polyCenters( QDataSet polyMesh ) {
+        if ( !Schemes.isPolyMesh(polyMesh) ) {
+            throw new IllegalArgumentException("argument must be poly mesh");
         }
-        QDataSet tri= triMesh.slice(1);
-        QDataSet xy= triMesh.slice(0);
+        QDataSet tri= polyMesh.slice(1);
+        QDataSet xy= polyMesh.slice(0);
+        QDataSet xx= Ops.slice1(xy,0);
+        QDataSet yy= Ops.slice1(xy,1);
         
         DDataSet xyresult= DDataSet.createRank2( tri.length(), 2 );
-        for ( int i=0; i<tri.length(); i++ ) {            
-            int i0= (int)tri.value(i,0);
-            int i1= (int)tri.value(i,1);
-            int i2= (int)tri.value(i,2);
-            double x= ( xy.value(i0,0) + xy.value(i1,0) + xy.value(i2,0) ) / 3;
-            double y= ( xy.value(i0,1) + xy.value(i1,1) + xy.value(i2,1) ) / 3;
+        for ( int i=0; i<tri.length(); i++ ) {
+            QDataSet tri1= tri.slice(i);
+            // calculate the midpoint
+            double x= 0; // TODO: remove large offset
+            double y= 0;
+            for ( int j=0; j<tri1.length(); j++ ) { // tri1.length is typically 3.
+                int k= (int)tri1.value(j);
+                x+= xx.value(k);
+                y+= yy.value(k);
+            }
+            x/= xx.length();
+            y/= yy.length();
             xyresult.putValue( i, 0, x );
             xyresult.putValue( i, 1, y );
         }
         return xyresult;
+    }
+    
+    /**
+     * create or append to a polyMesh, adding the points from rank 2 bundle xy. 
+     * The polyMesh scheme will assume that point xy[0] can be connected to 
+     * point xy[-1].
+     * @param in null or a polyMesh to append the result.
+     * @param xy the rank 2 bundle of x and y values
+     * @return a polyMesh
+     * @see #createEvent(org.das2.qds.QDataSet, org.das2.datum.DatumRange, int, java.lang.String) 
+     */
+    public static QDataSet createPolyMesh( QDataSet append, QDataSet xy ) {
+        JoinDataSet result;
+        if ( append==null ) {
+            result= new JoinDataSet(3);
+            result.join( xy );
+            result.join( Ops.join(null,Ops.findgen(xy.length())) );
+        } else {
+            QDataSet xy0= append.slice(0);
+            QDataSet poly= Ops.add( xy0.length(), Ops.indgen(xy.length()) );
+            QDataSet polys= join( append.slice(1), poly );
+            QDataSet xy1 = append( xy0, xy );
+            result= new JoinDataSet(3);
+            result.join( xy1 );
+            result.join( polys );
+        }
+        return result;
     }
     
     /**
