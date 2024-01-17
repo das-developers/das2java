@@ -133,6 +133,17 @@ public class ValuesTreeModel extends DefaultTreeModel {
                 return DataSetUtil.asDatumRange( ds.slice(i), true ).toString();
             }
         }
+        if ( ds.rank()==3 ) {
+            QDataSet polys= ds.slice(1);
+            StringBuilder b= new StringBuilder();
+            QDataSet ii= polys.slice(i);
+            b.append((int)ii.value(0));
+            for ( int j=1; j<ii.length(); j++ ) {
+                b.append(",");
+                b.append((int)ii.value(j));
+            }
+            return "poly ["+b.toString() + "]";
+        }
         try {
             if ( wds.value(i) > 0. ) {
                 QDataSet bds= (QDataSet)ds.property(QDataSet.BUNDLE_0);
