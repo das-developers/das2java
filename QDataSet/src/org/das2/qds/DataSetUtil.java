@@ -1050,6 +1050,10 @@ public class DataSetUtil {
             }
         }
         
+        if ( Schemes.isPolyMesh(ds) ) {
+            return name + "[polyMesh of " + ds.slice(1).length() + " polygons]";
+        }
+        
         if ( ds.rank()==1 && QDataSet.VALUE_BINS_MIN_MAX.equals(ds.property(QDataSet.BINS_0)) ) {
             if (  ds.value(0) <= ds.value(1) ) {
                 if ( u!=Units.dimensionless ) {
@@ -3148,9 +3152,9 @@ public class DataSetUtil {
                 return false;
             }
             if (dep.length() != ds.length()) {
-                if ( Schemes.isTriangleMesh(dep) ) {
+                if ( Schemes.isPolyMesh(dep) ) {
                     if ( dep.slice(1).length() != ds.length() ) {
-                        problems.add(String.format("DEPEND_%d length is %d while triangles length is %d.", dimOffset, dep.length(), ds.length()));
+                        problems.add(String.format("DEPEND_%d length is %d while poly list length is %d.", dimOffset, dep.length(), ds.length()));
                     }
                 } else {
                     problems.add(String.format("DEPEND_%d length is %d while data length is %d.", dimOffset, dep.length(), ds.length()));
@@ -3166,7 +3170,7 @@ public class DataSetUtil {
                     // okay
                 } else if ( Schemes.isXYScatter(dep) ) {
                     // okay
-                } else if ( Schemes.isTriangleMesh(dep) ) {
+                } else if ( Schemes.isPolyMesh(dep) ) {
                     // okay
                 } else {
                     problems.add( "DEPEND_0 should have only one index or must be a bins ([n,2]) dataset.");
