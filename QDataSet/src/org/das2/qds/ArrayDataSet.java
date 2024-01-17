@@ -930,7 +930,9 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
                 }
                 for ( int j=0; j<thatBundle.length(); j++ ) {
                     Units thatu= (Units)thatBundle.property( QDataSet.UNITS, j );
+                    if ( thatu==null ) thatu= Units.dimensionless;
                     Units thisu= (Units)thisBundle.property( QDataSet.UNITS, j );
+                    if ( thisu==null ) thisu= Units.dimensionless;
                     if ( thisu!=thatu ) {
                         throw new IllegalArgumentException("units in BUNDLE_"+i+" change...");
                     }
