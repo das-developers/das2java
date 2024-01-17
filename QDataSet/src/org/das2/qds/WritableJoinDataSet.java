@@ -34,7 +34,7 @@ public class WritableJoinDataSet extends JoinDataSet implements WritableDataSet 
         WritableJoinDataSet result= new WritableJoinDataSet( src.rank() );
         for ( int i=0; i<src.length(); i++ ) {
             QDataSet ds1= src.slice(i);
-            if ( !DataSetUtil.isQube(ds1) ) {
+            if ( !DataSetUtil.isQube(ds1) ) { // I thought there was a QDataSet rule that a slice was always a QUBE, but maybe not.
                 if ( ds1 instanceof JoinDataSet ) {
                     result.join( copy( ds1 ) );
                 } else {
