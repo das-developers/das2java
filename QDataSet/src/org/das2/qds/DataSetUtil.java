@@ -50,6 +50,8 @@ import org.das2.qds.ops.Ops;
 import org.das2.qds.util.AsciiFormatter;
 import org.das2.qds.util.AutoHistogram;
 import org.das2.qds.util.LinFit;
+import org.das2.util.ColorUtil;
+import java.awt.Color;
 
 /**
  * Utilities for QDataSet, such as conversions from various forms
@@ -4695,7 +4697,9 @@ public class DataSetUtil {
         String s;
         if ( df instanceof DefaultDatumFormatter ) {
             if ( form==null || form.trim().length()==0 ) {
-                if ( "log".equals( yds.property(QDataSet.SCALE_TYPE) ) ) {
+                if ( u==Units.rgbColor ) {
+                    s= ColorUtil.encodeColor( new Color((int)value) );
+                } else if ( "log".equals( yds.property(QDataSet.SCALE_TYPE) ) ) {
                     s = String.format( Locale.US, "%9.3e", value ).trim();
                 } else {
                     QDataSet bounds=null;
