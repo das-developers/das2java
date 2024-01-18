@@ -472,6 +472,10 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
     
     public static final String CONTROL_KEY_COLOR_TABLE= "colorTable";
     public static final String CONTROL_KEY_LINE_THICK= "lineThick";
+    
+    /**
+     * used in ContoursRenderer and EventsRenderer, values like DotDashes and Solid
+     */
     public static final String CONTROL_KEY_LINE_STYLE= "lineStyle";
     public static final String CONTROL_KEY_SYMBOL= "symbol";
     public static final String CONTROL_KEY_SYMBOL_SIZE= "symbolSize";

@@ -108,6 +108,7 @@ public class PolyMeshRenderer extends Renderer {
     private double lineThick= 1.;
     private boolean fill = true;
     private String fillTexture= "";
+    private PsymConnector lineStyle= PsymConnector.SOLID;
         
     @Override
     public void setControl(String s) {
@@ -116,6 +117,7 @@ public class PolyMeshRenderer extends Renderer {
         lineThick= getDoubleControl( CONTROL_KEY_LINE_THICK, lineThick );
         fill= getBooleanControl( "fill", fill );
         fillTexture= getControl( CONTROL_KEY_FILL_TEXTURE, fillTexture );
+        lineStyle= decodePlotSymbolConnectorControl( getControl( CONTROL_KEY_LINE_STYLE, encodePlotSymbolConnectorControl(lineStyle) ), lineStyle );
     }
 
     @Override
@@ -125,6 +127,7 @@ public class PolyMeshRenderer extends Renderer {
         controls.put( CONTROL_KEY_LINE_THICK, String.valueOf(lineThick) );
         controls.put( "fill", encodeBooleanControl(fill) );
         controls.put( CONTROL_KEY_FILL_TEXTURE, fillTexture );
+        controls.put( CONTROL_KEY_LINE_STYLE,  encodePlotSymbolConnectorControl(lineStyle) );
         return formatControl(controls);
     }  
     
@@ -188,7 +191,7 @@ public class PolyMeshRenderer extends Renderer {
             }
         }
         
-        g.setStroke( new BasicStroke( (float)lineThick, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ) );
+        g.setStroke( lineStyle.getStroke( (float) lineThick ) );
         
         for ( int i=0; i<tri.length(); i++ ) {
             QDataSet tri1= tri.slice(i);
@@ -208,7 +211,9 @@ public class PolyMeshRenderer extends Renderer {
                         g.fill(gp);
                     }
                 }
-                g.draw(gp);
+                if ( lineStyle!=PsymConnector.NONE ) {
+                    g.draw(gp);
+                }
             } else if ( ss!=null ) {
                 // calculate the midpoint
                 double x= 0;
