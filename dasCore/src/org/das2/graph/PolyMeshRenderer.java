@@ -1,6 +1,7 @@
 
 package org.das2.graph;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.GeneralPath;
@@ -131,6 +132,7 @@ public class PolyMeshRenderer extends Renderer {
             }
         }
         
+        g.setStroke( new BasicStroke( 1.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ) );
         for ( int i=0; i<tri.length(); i++ ) {
             QDataSet tri1= tri.slice(i);
             if ( cc!=null ) {
