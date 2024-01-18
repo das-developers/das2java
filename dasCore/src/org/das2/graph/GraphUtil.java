@@ -1,8 +1,4 @@
-/*
- * Util.java
- *
- * Created on September 22, 2004, 1:47 PM
- */
+
 package org.das2.graph;
 
 import java.awt.Color;
@@ -60,7 +56,6 @@ import org.das2.util.GrannyTextRenderer;
 import org.das2.util.filesystem.FileSystemUtil;
 import org.das2.util.monitor.AlertNullProgressMonitor;
 import org.jdesktop.beansbinding.Converter;
-//import org.apache.xml.serialize.*;
 
 /**
  * Utilities for drawing graphics and establishing standard behavior.
@@ -84,13 +79,14 @@ public class GraphUtil {
     public static String FILL_TEXTURE_HASH="hash";
     public static String FILL_TEXTURE_BACKHASH="backhash";
     public static String FILL_TEXTURE_SOLID="solid";
+    public static String FILL_TEXTURE_NONE="none";
     
     /**
      * fill the region using the specified fillTexture.
      * @param g the graphics context
      * @param pbox a general path
      * @param fillColor if non-null, set this color to fill and return to the original color
-     * @param fillTexture one of the enumerations: hash, crosshash, backhash, and solid (and "" is an alias for solid)
+     * @param fillTexture one of the enumerations: none, hash, crosshash, backhash, and solid (and "" is an alias for solid)
      * @see Renderer#CONTROL_KEY_FILL_TEXTURE
      */
     public static void fillWithTexture(Graphics2D g, GeneralPath pbox, Color fillColor, String fillTexture) {
