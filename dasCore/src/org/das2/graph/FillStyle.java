@@ -12,7 +12,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 
 /**
- * Controls if the symbols are filled or not.
+ * Controls if the plot symbols are filled or not.
  * @author jbf
  */
 public class FillStyle implements Displayable, Enumeration {

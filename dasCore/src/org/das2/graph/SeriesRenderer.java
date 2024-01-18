@@ -118,7 +118,7 @@ public class SeriesRenderer extends Renderer {
     public static final String CONTROL_KEY_BACKGROUND_THICK= "backgroundThick";
     
     /**
-     * fill style is whether the symbol is filled in or not.
+     * fill style is whether the plot symbols are filled in or not.
      */
     public static final String CONTROL_KEY_FILL_STYLE="fillStyle";
     

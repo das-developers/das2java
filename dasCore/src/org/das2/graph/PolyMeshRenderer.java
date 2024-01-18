@@ -5,7 +5,30 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.GeneralPath;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import org.das2.datum.Units;
+import static org.das2.graph.Renderer.CONTROL_KEY_COLOR;
+import static org.das2.graph.Renderer.CONTROL_KEY_DRAW_ERROR;
+import static org.das2.graph.Renderer.CONTROL_KEY_FILL_COLOR;
+import static org.das2.graph.Renderer.CONTROL_KEY_FILL_DIRECTION;
+import static org.das2.graph.Renderer.CONTROL_KEY_FILL_TEXTURE;
+import static org.das2.graph.Renderer.CONTROL_KEY_LINE_THICK;
+import static org.das2.graph.Renderer.CONTROL_KEY_MODULO_Y;
+import static org.das2.graph.Renderer.CONTROL_KEY_SPECIAL_COLORS;
+import static org.das2.graph.Renderer.CONTROL_KEY_SYMBOL;
+import static org.das2.graph.Renderer.CONTROL_KEY_SYMBOL_SIZE;
+import static org.das2.graph.Renderer.decodeDatum;
+import static org.das2.graph.Renderer.decodeFillStyle;
+import static org.das2.graph.Renderer.decodePlotSymbolControl;
+import static org.das2.graph.Renderer.encodeBooleanControl;
+import static org.das2.graph.Renderer.encodeColorControl;
+import static org.das2.graph.Renderer.encodeDatum;
+import static org.das2.graph.Renderer.encodeFillStyle;
+import static org.das2.graph.Renderer.encodePlotSymbolControl;
+import static org.das2.graph.Renderer.formatControl;
+import static org.das2.graph.SeriesRenderer.CONTROL_KEY_BACKGROUND_THICK;
+import static org.das2.graph.SeriesRenderer.CONTROL_KEY_FILL_STYLE;
 import org.das2.qds.DataSetUtil;
 import org.das2.qds.JoinDataSet;
 import org.das2.qds.QDataSet;
@@ -15,12 +38,21 @@ import org.das2.qds.ops.Ops;
 import org.das2.util.GrannyTextRenderer;
 
 /**
- * render a 2-D poly (typically triangle) mesh.  This was introduced just to identify
- * this schema.  This
+ * render a 2-D poly (typically triangle) mesh.  This was introduced just 
+ * to identify this schema.  This
  * renderer needs rank 3 data with 2 bundled datasets, the
- * points and the triangles which connect them.  When a rank 1
- * dataset with a triangleMesh as DEPEND_0 is passed in, then colors
- * or text will be drawn.
+ * points in X-Y data space and the triangles (or polys) which connect them.  
+ * When a rank 1 dataset with a triangleMesh as DEPEND_0 is passed in, then 
+ * colors or text will be drawn.
+ * 
+ * Note, QDataSet should not support a join of non-qube datasets, so all 
+ * polygons should have the same length (all triangles or all four-sided polys).
+ * Most codes will work fine if this is not the case.
+ * 
+ * Applications for this include marking data and drawing tesselations.
+ * 
+ * 
+ * 
  * @author jbf
  */
 public class PolyMeshRenderer extends Renderer {
@@ -71,7 +103,31 @@ public class PolyMeshRenderer extends Renderer {
         return bds;
 
     }
+    
+    private Color color= Color.LIGHT_GRAY;
+    private double lineThick= 1.;
+    private boolean fill = true;
+    private String fillTexture= "";
         
+    @Override
+    public void setControl(String s) {
+        super.setControl(s);
+        color= getColorControl( CONTROL_KEY_COLOR, color );
+        lineThick= getDoubleControl( CONTROL_KEY_LINE_THICK, lineThick );
+        fill= getBooleanControl( "fill", fill );
+        fillTexture= getControl( CONTROL_KEY_FILL_TEXTURE, fillTexture );
+    }
+
+    @Override
+    public String getControl() {
+        Map<String,String> controls= new LinkedHashMap();
+        controls.put( CONTROL_KEY_COLOR, encodeColorControl(color) );
+        controls.put( CONTROL_KEY_LINE_THICK, String.valueOf(lineThick) );
+        controls.put( "fill", encodeBooleanControl(fill) );
+        controls.put( CONTROL_KEY_FILL_TEXTURE, fillTexture );
+        return formatControl(controls);
+    }  
+    
     @Override
     public void render(Graphics2D g, DasAxis xaxis, DasAxis yaxis) {
         
@@ -96,7 +152,7 @@ public class PolyMeshRenderer extends Renderer {
             xy= ds.slice(0);
         }
         
-        g.setColor(Color.GRAY);
+        g.setColor( color );
                
         double[] xx= new double[xy.length()];
         double[] yy= new double[xy.length()];
@@ -128,11 +184,12 @@ public class PolyMeshRenderer extends Renderer {
         } else {
             cc= new Color[tri.length()];
             for ( int i=0; i<cc.length; i++ ) {
-                cc[i]= Color.LIGHT_GRAY;
+                cc[i]= color;
             }
         }
         
-        g.setStroke( new BasicStroke( 1.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ) );
+        g.setStroke( new BasicStroke( (float)lineThick, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ) );
+        
         for ( int i=0; i<tri.length(); i++ ) {
             QDataSet tri1= tri.slice(i);
             if ( cc!=null ) {
@@ -144,7 +201,13 @@ public class PolyMeshRenderer extends Renderer {
                     k= (int)tri1.value(j);
                     gp.lineTo( xx[k], yy[k] );
                 }
-                g.fill(gp);
+                if ( fill ) {
+                    if ( fillTexture.length()>0 ) {
+                        GraphUtil.fillWithTexture( g, gp, cc[i], fillTexture);
+                    } else {
+                        g.fill(gp);
+                    }
+                }
                 g.draw(gp);
             } else if ( ss!=null ) {
                 // calculate the midpoint
