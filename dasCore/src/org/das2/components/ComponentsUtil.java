@@ -93,11 +93,12 @@ public class ComponentsUtil {
      */
     public static synchronized Rectangle verifyVisible( Rectangle r ) {
         
+        logger.log(Level.FINE, "verifyVisible({0})", r);
         long t0= System.currentTimeMillis();
         
         Dimension dimensions = Toolkit.getDefaultToolkit().getScreenSize();
         Rectangle dims= new Rectangle(0,0,dimensions.width,dimensions.height);
-        logger.log(Level.FINE, "screen dimensions: {0}", dimensions);
+        logger.log(Level.FINER, "screen dimensions: {0}", dimensions);
 
         GraphicsEnvironment env= GraphicsEnvironment.getLocalGraphicsEnvironment();
         GraphicsDevice[] devices = env.getScreenDevices();
@@ -107,9 +108,10 @@ public class ComponentsUtil {
             }
         }
         
-        logger.log(Level.FINE, "calculate screen dimensions in ms: {0}", System.currentTimeMillis()-t0);
+        logger.log(Level.FINER, "calculate screen dimensions in ms: {0}", System.currentTimeMillis()-t0);
         
         Rectangle visibleRect= new Rectangle(0,0,dims.width,dims.height);
+        logger.log(Level.FINE, "visibleRect: {0}", visibleRect);
 
         if ( visibleRect.intersects(r) ) {
             return null;
