@@ -96,21 +96,18 @@ public class ComponentsUtil {
         logger.log(Level.FINE, "verifyVisible({0})", r);
         long t0= System.currentTimeMillis();
         
-        Dimension dimensions = Toolkit.getDefaultToolkit().getScreenSize();
-        Rectangle dims= new Rectangle(0,0,dimensions.width,dimensions.height);
-        logger.log(Level.FINER, "screen dimensions: {0}", dimensions);
+        Rectangle visibleRect= new Rectangle();
 
         GraphicsEnvironment env= GraphicsEnvironment.getLocalGraphicsEnvironment();
         GraphicsDevice[] devices = env.getScreenDevices();
         if ( devices.length>1 ) {
             for ( GraphicsDevice d : devices ) {
-                dims.add( d.getDefaultConfiguration().getBounds() );
+                visibleRect.add( d.getDefaultConfiguration().getBounds() );
             }
         }
         
         logger.log(Level.FINER, "calculate screen dimensions in ms: {0}", System.currentTimeMillis()-t0);
         
-        Rectangle visibleRect= new Rectangle(0,0,dims.width,dims.height);
         logger.log(Level.FINE, "visibleRect: {0}", visibleRect);
 
         if ( visibleRect.intersects(r) ) {
