@@ -100,10 +100,8 @@ public class ComponentsUtil {
 
         GraphicsEnvironment env= GraphicsEnvironment.getLocalGraphicsEnvironment();
         GraphicsDevice[] devices = env.getScreenDevices();
-        if ( devices.length>1 ) {
-            for ( GraphicsDevice d : devices ) {
-                visibleRect.add( d.getDefaultConfiguration().getBounds() );
-            }
+        for ( GraphicsDevice d : devices ) {
+            visibleRect.add( d.getDefaultConfiguration().getBounds() );
         }
         
         logger.log(Level.FINER, "calculate screen dimensions in ms: {0}", System.currentTimeMillis()-t0);
