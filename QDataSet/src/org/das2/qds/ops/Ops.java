@@ -12109,10 +12109,26 @@ public final class Ops {
      *   set.
      * @return a rank N dataset with the same geometry, with zeros where the data
      *   is invalid and &gt;0 where the data is valid.
+     * @see #invalid(org.das2.qds.QDataSet) 
      */
     public static QDataSet valid( QDataSet ds ) {
         // Note because data can always contain NaNs, there is no optimization for this.
         return DataSetUtil.weightsDataSet(ds);
+    }
+
+    /**
+     * returns a dataset with one where the data is invalid, and zero the data is valid.  
+     * (This just returns the weights plane of the dataset.)
+     *<blockquote><pre>
+     *r= where( invalid( ds ) )
+     *</pre></blockquote> 
+     * The purpose of this is to make this commonly used logic easier to find.
+     * @param ds a rank N dataset 
+     * @return a rank N dataset 
+     * @see #valid(org.das2.qds.QDataSet) 
+     */
+    public static QDataSet invalid( QDataSet ds ) {
+        return Ops.eq( valid(ds), 0 );
     }
     
     /**
