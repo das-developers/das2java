@@ -295,11 +295,13 @@ public class SliceFilterEditorPanel extends AbstractFilterEditorPanel implements
         logger.fine( "getFilter" );
         updateFeedback();
         String s;
+        int index= sliceDimensionCB.getSelectedIndex();
+        if ( index==-1 ) index= 0;
         if ( getIndexMode() ) {
-            s= String.format( "|slice%d(%d)", sliceDimensionCB.getSelectedIndex(), (Integer)sliceIndexSpinner.getValue() );
+            s= String.format( "|slice%d(%d)", index, (Integer)sliceIndexSpinner.getValue() );
         } else {
             String pos= sliceAtDatumTF.getText().replaceAll("\\s+","");
-            s= String.format("|slice%d('%s')", sliceDimensionCB.getSelectedIndex(), pos );
+            s= String.format("|slice%d('%s')", index, pos );
         }
         logger.log(Level.FINER, "getFilter() -> {0}", s);
         return s;
@@ -373,7 +375,11 @@ public class SliceFilterEditorPanel extends AbstractFilterEditorPanel implements
         try {
             sliceDimensionCB.setSelectedIndex(idx);
         } catch ( IllegalArgumentException ex ) {
-            sliceDimensionCB.setSelectedIndex(0);
+            if ( sliceDimensionCB.getModel().getSize()>0 ) {
+                sliceDimensionCB.setSelectedIndex(0);
+            } else {
+                // rank 0 input should be ignored.
+            }
         }
         String newFilter= getFilter();
         if ( !oldFilter.equals(newFilter) ) {
