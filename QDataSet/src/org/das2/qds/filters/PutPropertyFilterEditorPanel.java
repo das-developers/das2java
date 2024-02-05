@@ -59,6 +59,14 @@ public class PutPropertyFilterEditorPanel extends AbstractFilterEditorPanel {
                 vv= new String[] { "MyData" };
                 documentationLabel.setText("set the name used for the data");
                 break;
+            case "METADATA.NOMINAL_RANGE":
+                vv= new String[] { "0 to 100" };
+                documentationLabel.setText("set the nominal range for the data");
+                break;
+            case "METADATA.WARN_RANGE":
+                vv= new String[] { "-1 to 150" };
+                documentationLabel.setText("set the warning range for the data");
+                break;
             default:
                 vv= new String[] { "" };
                 documentationLabel.setText(" ");
@@ -83,7 +91,7 @@ public class PutPropertyFilterEditorPanel extends AbstractFilterEditorPanel {
         jLabel1.setText("Put Property");
 
         jComboBox1.setEditable(true);
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "VALID_MIN", "VALID_MAX", "FILL_VALUE", "TITLE", "LABEL", "NAME", "DEPEND_0", "FORMAT", "DELTA_PLUS", "DELTA_MINUS", "UNITS" }));
+        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "VALID_MIN", "VALID_MAX", "FILL_VALUE", "TITLE", "LABEL", "NAME", "DEPEND_0", "FORMAT", "DELTA_PLUS", "DELTA_MINUS", "UNITS", "METADATA.WARN_RANGE", "METADATA.NOMINAL_RANGE", " " }));
         jComboBox1.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 jComboBox1ItemStateChanged(evt);
@@ -109,7 +117,7 @@ public class PutPropertyFilterEditorPanel extends AbstractFilterEditorPanel {
                         .addContainerGap()
                         .addComponent(jLabel1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, 142, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, 186, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jComboBox2, javax.swing.GroupLayout.PREFERRED_SIZE, 185, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
@@ -148,11 +156,24 @@ public class PutPropertyFilterEditorPanel extends AbstractFilterEditorPanel {
             jComboBox1.setSelectedItem(m.group(1));
             update();
             jComboBox2.setSelectedItem(m.group(2));
+            return;
+        }
+        p= Pattern.compile("\\|putProperty\\((\\S+),\\'(.+)\\'\\)");
+        m= p.matcher(filter);
+        if ( m.matches() ) {
+            jComboBox1.setSelectedItem(m.group(1));
+            update();
+            jComboBox2.setSelectedItem(m.group(2));
         }
     }
 
     @Override
     public String getFilter() {
-        return "|putProperty("+jComboBox1.getSelectedItem()+","+jComboBox2.getSelectedItem()+")";
+        String s= String.valueOf(jComboBox2.getSelectedItem());
+        if ( s.contains(" ") ) {
+            return "|putProperty("+jComboBox1.getSelectedItem()+",\'"+s+"\')";
+        } else {
+            return "|putProperty("+jComboBox1.getSelectedItem()+","+s+")";
+        }
     }
 }

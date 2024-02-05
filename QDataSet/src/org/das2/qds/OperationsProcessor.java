@@ -792,9 +792,17 @@ public class OperationsProcessor {
                     if ( arg.startsWith("QDataSet.") ) {
                         arg= arg.substring(9);
                     }
-                    String val= getStringArg( s.next() );
-                    ds= Ops.putProperty( ds, arg, val );
-                    
+                    if ( arg.startsWith("METADATA") ) {
+                        String val= getStringArg( s.next() );
+                        if ( arg.equals("METADATA.NOMINAL_RANGE") ) {
+                            ds= Ops.setNominalRange( ds, val );
+                        } else if ( arg.equals("METADATA.WARN_RANGE") ) {
+                            ds= Ops.setWarnRange( ds, val );
+                        }
+                    } else {
+                        String val= getStringArg( s.next() );
+                        ds= Ops.putProperty( ds, arg, val );
+                    }
                 } else if ( cmd.equals("|setFillValue") ) {
                     String arg= getStringArg( s.next() );
                     double d= Double.parseDouble(arg);

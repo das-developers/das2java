@@ -26,7 +26,7 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="32767" attributes="0"/>
-                      <Component id="jComboBox1" min="-2" pref="142" max="-2" attributes="0"/>
+                      <Component id="jComboBox1" min="-2" pref="186" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="jComboBox2" min="-2" pref="185" max="-2" attributes="0"/>
                   </Group>
@@ -61,7 +61,7 @@
       <Properties>
         <Property name="editable" type="boolean" value="true"/>
         <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-          <StringArray count="11">
+          <StringArray count="14">
             <StringItem index="0" value="VALID_MIN"/>
             <StringItem index="1" value="VALID_MAX"/>
             <StringItem index="2" value="FILL_VALUE"/>
@@ -73,6 +73,9 @@
             <StringItem index="8" value="DELTA_PLUS"/>
             <StringItem index="9" value="DELTA_MINUS"/>
             <StringItem index="10" value="UNITS"/>
+            <StringItem index="11" value="METADATA.WARN_RANGE"/>
+            <StringItem index="12" value="METADATA.NOMINAL_RANGE"/>
+            <StringItem index="13" value=" "/>
           </StringArray>
         </Property>
       </Properties>
