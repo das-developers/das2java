@@ -2307,6 +2307,54 @@ public final class Ops {
     }
     
     /**
+     * set the metadata property LIMITS_NOMINAL_MIN and LIMITS_NOMINAL_MAX, which are displayed in the series renderer
+     * as a yellow line.
+     * @param ds a rank 1 dataset or rank 2 waveform
+     * @param arg the range, parsed as a datum range using the data units.
+     * @return the data with the METADATA tag added 
+     * @throws ParseException 
+     */
+    public static QDataSet setNominalRange( QDataSet ds, String arg ) throws ParseException {
+        Units u= SemanticOps.getUnits(ds);
+        DatumRange d= DatumRangeUtil.parseDatumRange( arg, u );
+        Map<String,Object> meta= (Map<String,Object>) ds.property( QDataSet.METADATA );
+        if ( meta==null ) {
+            meta= new HashMap<>();
+        } else {
+            meta= new HashMap<>(meta);
+        }
+        meta.put( "LIMITS_NOMINAL_MIN", d.min().doubleValue(u) );
+        meta.put( "LIMITS_NOMINAL_MAX", d.max().doubleValue(u) );
+        ds= Ops.putProperty( ds, QDataSet.METADATA, meta );
+        return ds;
+        
+    }
+
+    /**
+     * set the metadata property LIMITS_WARN_MIN and LIMITS_WARN_MAX, which are displayed in the series renderer
+     * as a red line.
+     * @param ds a rank 1 dataset or rank 2 waveform
+     * @param arg the range, parsed as a datum range using the data units.
+     * @return the data with the METADATA tag added 
+     * @throws ParseException 
+     */
+    public static QDataSet setWarnRange( QDataSet ds, String arg ) throws ParseException {
+        Units u= SemanticOps.getUnits(ds);
+        DatumRange d= DatumRangeUtil.parseDatumRange( arg, u );
+        Map<String,Object> meta= (Map<String,Object>) ds.property( QDataSet.METADATA );
+        if ( meta==null ) {
+            meta= new HashMap<>();
+        } else {
+            meta= new HashMap<>(meta);
+        }
+        meta.put( "LIMITS_WARN_MIN", d.min().doubleValue(u) );
+        meta.put( "LIMITS_WARN_MAX", d.max().doubleValue(u) );
+        ds= Ops.putProperty( ds, QDataSet.METADATA, meta );
+        return ds;
+        
+    }
+    
+    /**
      * element-wise sqrt.  See Ops.pow to square a number.
      * @param ds the dataset
      * @return the square root of the dataset, which will contain NaN where the data is negative.
