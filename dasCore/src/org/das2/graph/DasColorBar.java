@@ -639,7 +639,7 @@ public class DasColorBar extends DasAxis {
          */
         public BufferedImage getVerticalScaledImage(int width, int height) {
             maybeInitializeImage();
-            BufferedImage scaled = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+            BufferedImage scaled = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
             AffineTransform at = new AffineTransform();
             at.scale((double)width, -(double)height / (double)getColorCount());
             at.translate(0.0, -(double)getColorCount());
