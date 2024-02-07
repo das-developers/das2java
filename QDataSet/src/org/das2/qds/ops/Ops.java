@@ -8374,7 +8374,7 @@ public final class Ops {
                     result.putProperty(QDataSet.DEPEND_1, dep1.trim(0,len) );
                 }
                 result.putProperty( QDataSet.UNITS, ds.slice(0).property(QDataSet.UNITS ) );
-                System.err.println( "*** Set units to "+ ds.slice(0).property(QDataSet.UNITS ) );
+                logger.log(Level.FINE, "*** Set units to {0}", ds.slice(0).property(QDataSet.UNITS ));
                 return result;
                 
             }
