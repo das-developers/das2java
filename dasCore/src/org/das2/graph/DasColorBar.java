@@ -621,7 +621,7 @@ public class DasColorBar extends DasAxis {
          */
         public BufferedImage getHorizontalScaledImage(int width, int height) {
             maybeInitializeImage();
-            BufferedImage scaled = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+            BufferedImage scaled = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
             AffineTransform at = new AffineTransform();
             at.scale((double)width / (double)getColorCount(), (double)height);
             at.rotate(-Math.PI/2.0);
