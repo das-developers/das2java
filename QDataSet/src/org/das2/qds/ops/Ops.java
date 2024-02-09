@@ -8244,11 +8244,7 @@ public final class Ops {
      * @return data[N,len] with the window applied.
      */
     public static QDataSet fftFilter( QDataSet ds, int len, FFTFilterType filt ) {
-        ProgressMonitor mon=null;
-
-        if ( mon==null ) {
-            mon= new NullProgressMonitor();
-        }
+        ProgressMonitor mon= new NullProgressMonitor();
 
         if ( ds.rank()==1 ) { // wrap to make rank 2
             QDataSet c= (QDataSet) ds.property( QDataSet.CONTEXT_0 );
