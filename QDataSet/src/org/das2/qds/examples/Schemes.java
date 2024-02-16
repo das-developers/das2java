@@ -410,7 +410,7 @@ public class Schemes {
         if ( !UnitsUtil.isRatioMeasurement( SemanticOps.getUnits(ds) ) ) return false;
         double dv= Math.log( ds.value(1)/ds.value(0) );
         double manyDv= Math.log( ds.value(ds.length()-1) / ds.value(0) ) / ( ds.length()-1 );
-        return ( ( manyDv - dv ) / dv ) < 0.001;
+        return Math.abs( ( manyDv - dv ) / dv ) < 0.001;
     }
     
     /**
