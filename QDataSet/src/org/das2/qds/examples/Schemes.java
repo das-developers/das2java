@@ -388,7 +388,7 @@ public class Schemes {
         if ( ds.rank()!=1 ) return false;
         double dv= ds.value(1)-ds.value(0);
         double manyDv= ( ds.value(ds.length()-1)-ds.value(0) ) / ( ds.length()-1)  ;
-        return ( ( manyDv - dv ) / dv ) < 0.001;
+        return Math.abs( ( manyDv - dv ) / dv ) < 0.001;
     }
 
     /**
