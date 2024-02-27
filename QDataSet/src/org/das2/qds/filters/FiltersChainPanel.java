@@ -294,6 +294,8 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
             result= new TrimFilterEditorPanel();
         } else if ( f.matches( ExpandToFillGapsFilterEditorPanel.PROP_REGEX )) {
             result= new ExpandToFillGapsFilterEditorPanel();
+        } else if ( f.matches( RebundleFilterEditorPanel.PROP_REGEX )){
+            result= new RebundleFilterEditorPanel();
         } else {
             result= new AnyFilterEditorPanel();
         }
