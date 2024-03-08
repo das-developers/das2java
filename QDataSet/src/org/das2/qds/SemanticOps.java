@@ -505,9 +505,13 @@ public final class SemanticOps {
             return DataSetOps.unbundle(ds,1);
         } else if ( isJoin(ds)) {
             QDataSet yds= ytagsDataSet( ds.slice(0) );
+            if ( ds.rank()==2 && yds==ds.slice(0) ) {
+                return Ops.indgen(yds.length());
+            }
             JoinDataSet result= new JoinDataSet(yds);
             for ( int i=1; i<ds.length(); i++ ) {
-                result.join( ytagsDataSet(ds.slice(i) ) );
+                QDataSet yds1= ytagsDataSet(ds.slice(i) );
+                result.join( yds1 );
             }
             return result;
         } else if ( ds.length()>0 
