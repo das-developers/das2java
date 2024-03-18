@@ -2050,6 +2050,13 @@ public final class Ops {
             }
         }
         
+        if ( !DataSetUtil.isMonotonic(dep0) ) {
+            logger.fine("Using O(N) branch on non-monotonic times of dataset");
+            DatumRange range= DatumRangeUtil.union( Ops.datum(st), Ops.datum(en) );
+            QDataSet r= Ops.where( Ops.within( dep0, range ) );
+            return Ops.applyIndex( ds, r );
+        }
+        
         QDataSet findex= Ops.findex( dep0, st );
         double f1= Math.ceil( findex.value() );
         findex= Ops.findex( dep0en, en );
