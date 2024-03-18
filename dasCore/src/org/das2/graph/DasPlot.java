@@ -421,10 +421,12 @@ public class DasPlot extends DasCanvasComponent {
         if ( llegendElements==null ) return null;
         if ( graphics==null ) return null;
 
-        String contextStr= this.context==null ? "" : this.context.toString();
+        DatumRange lcontext= this.context;
+        String contextStr= lcontext==null ? "" : lcontext.toString();
         for (LegendElement le : llegendElements) {
-            if ( ( le.renderer!=null && le.renderer.isActive() ) || le.icon!=null || drawInactiveInLegend ) { 
-                Icon icon= le.icon!=null ? le.icon : le.renderer.getListIcon();
+            Renderer r= le.renderer;
+            if ( ( r!=null && r.isActive() ) || le.icon!=null || drawInactiveInLegend ) { 
+                Icon icon= le.icon!=null ? le.icon : r.getListIcon();
                 if ( icon==null ) icon=NULL_ICON;
                 GrannyTextRenderer gtr = GraphUtil.newGrannyTextRenderer();
                 String theLabel= String.valueOf(le.label).trim().replaceAll("%\\{CONTEXT\\}",contextStr);
