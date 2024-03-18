@@ -2050,17 +2050,24 @@ public final class Ops {
             }
         }
         
+        double f1,f2;
+        
         if ( !DataSetUtil.isMonotonic(dep0) ) {
             logger.fine("Using O(N) branch on non-monotonic times of dataset");
             DatumRange range= DatumRangeUtil.union( Ops.datum(st), Ops.datum(en) );
             QDataSet r= Ops.where( Ops.within( dep0, range ) );
-            return Ops.applyIndex( ds, r );
+            if ( Ops.reduceMax( Ops.diff(r), 0 ).value()==1 ) {
+                f1= r.value(0);
+                f2= r.value(r.length()-1)+1;
+            } else {
+                return Ops.applyIndex( ds, r );
+            }
+        } else {        
+            QDataSet findex= Ops.findex( dep0, st );
+            f1= Math.ceil( findex.value() );
+            findex= Ops.findex( dep0en, en );
+            f2= Math.ceil( findex.value() ); // f2 is exclusive.
         }
-        
-        QDataSet findex= Ops.findex( dep0, st );
-        double f1= Math.ceil( findex.value() );
-        findex= Ops.findex( dep0en, en );
-        double f2= Math.ceil( findex.value() ); // f2 is exclusive.
         
         int n= dep0.length();
         f1= 0>f1 ? 0 : f1;
