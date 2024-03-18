@@ -426,7 +426,7 @@ public class DasPlot extends DasCanvasComponent {
         for (LegendElement le : llegendElements) {
             Renderer r= le.renderer;
             if ( ( r!=null && r.isActive() ) || le.icon!=null || drawInactiveInLegend ) { 
-                Icon icon= le.icon!=null ? le.icon : r.getListIcon();
+                Icon icon= le.icon!=null ? le.icon : ( r==null ? null : r.getListIcon() );
                 if ( icon==null ) icon=NULL_ICON;
                 GrannyTextRenderer gtr = GraphUtil.newGrannyTextRenderer();
                 String theLabel= String.valueOf(le.label).trim().replaceAll("%\\{CONTEXT\\}",contextStr);
