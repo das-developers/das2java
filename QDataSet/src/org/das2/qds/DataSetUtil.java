@@ -781,9 +781,16 @@ public class DataSetUtil {
 
         Map<String,Object> result= new LinkedHashMap<>();
         result= getDimensionProperties(ds,result);
+        
+        if ( result.containsKey(QDataSet.TYPICAL_MIN) ) {
+            result.put( QDataSet.TYPICAL_MIN, null );
+            result.put( QDataSet.TYPICAL_MAX, null );
+        }
 
         QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
-        if ( dep0!=null ) result.put( QDataSet.DEPEND_0, dep0.trim(start,stop) );
+        if ( dep0!=null ) {
+            result.put( QDataSet.DEPEND_0, dep0.trim(start,stop) );
+        }
         
         for ( int i=1; i<=QDataSet.MAX_RANK; i++ ) {
             String prop= "DEPEND_"+i;
