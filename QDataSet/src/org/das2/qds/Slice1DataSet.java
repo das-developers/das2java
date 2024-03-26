@@ -40,7 +40,18 @@ public final class Slice1DataSet extends AbstractDataSet {
         if ( ds.rank()<2 ) {
             throw new IllegalArgumentException("cannot create a Slice1DataSet from rank "+ds.rank() + " dataset");
         }
-        if ( index>= ds.length(0) ) throw new IndexOutOfBoundsException("index is out of bounds");
+        if ( ds.length()==0 ) {
+            int[] qube= DataSetUtil.qubeDims(ds);
+            if ( qube!=null ) {
+                if ( index>=qube[1] ) {
+                    throw new IndexOutOfBoundsException("index is out of bounds");
+                }
+            } else {
+                throw new IndexOutOfBoundsException("dataset is empty and index is out of bounds");
+            }
+        } else {        
+            if ( index>= ds.length(0) ) throw new IndexOutOfBoundsException("index is out of bounds");
+        }
 
         this.ds = ds;
         this.index = index;
@@ -108,13 +119,17 @@ public final class Slice1DataSet extends AbstractDataSet {
             DRank0DataSet context= DataSetUtil.asDataSet(index);
             context.putProperty( QDataSet.NAME, "slice1" );
             if ( addContext ) DataSetUtil.addContext( this, context );
-            if ( ds.rank()==2 && ds.length()<3 ) {
+            if ( ds.rank()==2 && ds.length()<3 && ds.length()>0 ) {
                 Units u1= (Units)ds.slice(0).slice(index).property( QDataSet.UNITS );
                 Units u= u1;
                 for ( int i=1; i<ds.length(); i++ ) {
                     Units u2= (Units)ds.slice(i).slice(index).property( QDataSet.UNITS );
                     if ( u1!=u2 ) u=null;
                 }
+                if ( u!=null ) putProperty( QDataSet.UNITS, u );
+            } else if ( ds.length()==0 && bds!=null ) {
+                Units u1= (Units) bds.property( QDataSet.UNITS, index );
+                Units u= u1;
                 if ( u!=null ) putProperty( QDataSet.UNITS, u );
             }
         }

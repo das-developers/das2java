@@ -28,7 +28,18 @@ public final class Slice2DataSet extends AbstractDataSet {
         if ( ds.rank()<3 ) {
             throw new IllegalArgumentException("rank limit < 3");
         }
-        if ( index>= ds.length(0,0) ) throw new IndexOutOfBoundsException("slice2 index is out of bounds");
+        if ( ds.length()==0 ) {
+            int[] qube= DataSetUtil.qubeDims(ds);
+            if ( qube!=null ) {
+                if ( index>=qube[2] ) {
+                    throw new IndexOutOfBoundsException("slice2 index is out of bounds");
+                }
+            } else {
+                throw new IndexOutOfBoundsException("dataset is empty and slice2 index is out of bounds");
+            }
+        } else {        
+            if ( index>= ds.length(0,0) ) throw new IndexOutOfBoundsException("slice2 index is out of bounds");
+        }
 
         this.ds = ds;
         this.index = index;

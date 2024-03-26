@@ -28,6 +28,20 @@ public final class Slice3DataSet extends AbstractDataSet {
         this.ds = ds;
         this.index = index;
 
+        if ( ds.length()==0 ) {
+            int[] qube= DataSetUtil.qubeDims(ds);
+            if ( qube!=null ) {
+                if ( index>=qube[3] ) {
+                    throw new IndexOutOfBoundsException("slice3 index is out of bounds");
+                }
+            } else {
+                // do nothing as this is what the last implementation did.
+                //throw new IndexOutOfBoundsException("dataset is empty and slice3 index is out of bounds");
+            }
+        } else {        
+            if ( index>= ds.length(0,0) ) throw new IndexOutOfBoundsException("slice3 index is out of bounds");
+        }
+ 
         if ( addContext ) {
             QDataSet bundle= (QDataSet) ds.property( QDataSet.BUNDLE_3 );
             QDataSet dep3= (QDataSet) ds.property(QDataSet.DEPEND_3);
