@@ -160,7 +160,21 @@ public class DatumRange implements Comparable, Serializable {
             }
         } else {
             Units u= getUnits();
-            return ""+ this.s1.getFormatter().format(this.s1,u) + " to " + this.s1.getFormatter().format(this.s2,u) + " " + u;
+            boolean isDouble= !( UnitsUtil.isTimeLocation(u) || UnitsUtil.isNominalMeasurement(u) );
+            String ss1= this.s1.getFormatter().format(this.s1,u);
+            String ss2= this.s2.getFormatter().format(this.s2,u);
+            Datum w= this.width();
+            if ( isDouble && Double.parseDouble(ss1)==Double.parseDouble(ss2) && w.value()>0 ) {
+                Datum d1= Datum.create( this.s1.doubleValue(u), u, w.value()/100 );
+                Datum d2= Datum.create( this.s2.doubleValue(u), u, w.value()/100 );
+                ss1= d1.getFormatter().format(d1,u);
+                ss2= d2.getFormatter().format(d2,u);
+            }
+            if ( u==Units.dimensionless ) {
+                return String.format( "%s to %s", ss1, ss2 );
+            } else {
+                return String.format( "%s to %s %s", ss1, ss2, u.toString() );
+            }
         }
     }
 
