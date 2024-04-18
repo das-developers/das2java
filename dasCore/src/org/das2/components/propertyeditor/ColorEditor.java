@@ -197,7 +197,9 @@ public final class ColorEditor extends AbstractCellEditor implements java.beans.
         editorSupport.setValue(obj);
         if ( oldValue!=obj ) {
             choice.setSelectedItem(obj);
-            ((ColorChoiceModel)choice.getModel()).setSelectedItem(obj);
+            ColorChoiceModel model= new ColorChoiceModel();
+            model.setSelectedItem(obj);
+            choice.setModel( model ); // This must be reset so that selectedItemReminder is correct. https://github.com/das-developers/das2java/issues/105
             choice.repaint();
         }
     }
