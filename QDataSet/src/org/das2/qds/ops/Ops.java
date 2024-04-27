@@ -15957,6 +15957,7 @@ public final class Ops {
      * parse the string into a rank 2 matrix
      * @param smat a string like '[[1,0,0],[0,1,0],[0,0,1]]'
      * @return rank 2 matrix.
+     * @see #matrixFormat(org.das2.qds.QDataSet, java.lang.String) 
      */
     public static final QDataSet matrixParse( String smat ) {
         Pattern p= Pattern.compile("\\[\\[(.*)\\,(.*)\\,(.*)\\]\\,\\[(.*)\\,(.*)\\,(.*)\\]\\,\\[(.*)\\,(.*)\\,(.*)\\]\\]");
@@ -15976,8 +15977,8 @@ public final class Ops {
     
     /**
      * return the matrix rotating about one axis.
-     * @param seq
-     * @param angle
+     * @param seq the string "x", "y", or "z"
+     * @param angle the angle in degrees or radians.
      * @return 
      */
     public static final QDataSet matrixFromEuler( String seq, Datum angle ) {
@@ -16081,6 +16082,42 @@ public final class Ops {
         }
     }
     
+    /**
+     * format the matrix values, using %.3f and tabs to 
+     * make it legible.  
+     * @param mm the 3x3 matrix.
+     * @param style "code" or "newlines".  None/null is newlines.  
+     * @return formatted matrix
+     * @see #matrixParse(java.lang.String) will parse when style is "code"
+     */
+    public static String matrixFormat( QDataSet mm, String style ) {
+        if ( mm.rank()!=2 ) throw new IllegalArgumentException("data must be rank 2 3x3.");
+        StringBuilder builder= new StringBuilder();
+        String delim;
+        String rowDelim;
+        boolean brackets;
+        if ( style==null ) style= "newlines";
+        if ( style.equals("code") ) {
+            delim=", ";
+            rowDelim= ", ";
+            brackets= true;
+        } else {
+            delim="\t";
+            rowDelim= "\n";
+            brackets= false;
+        }
+        String format="%.3f";
+        for ( int i=0; i<3; i++ ) {
+            if ( brackets ) builder.append("[");
+            for ( int j=0; j<3; j++ ) {
+                builder.append( String.format( format, mm.value(i,j) ) );
+                if ( j<2 ) builder.append(delim);
+            }
+            if ( brackets ) builder.append("]");
+            builder.append(rowDelim);
+        }
+        return builder.toString();
+    }
     /**
      * return the gamma function for numbers greater than 0.  This will 
      * soon work for any number where gamma has a result (Apache Math v3 is needed for this).
