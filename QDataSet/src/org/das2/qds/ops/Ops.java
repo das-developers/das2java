@@ -16106,16 +16106,20 @@ public final class Ops {
             rowDelim= "\n";
             brackets= false;
         }
+        int nrow=3;
+        int ncol=3;
         String format="%.3f";
-        for ( int i=0; i<3; i++ ) {
+        if ( brackets ) builder.append("[");
+        for ( int i=0; i<nrow; i++ ) {
             if ( brackets ) builder.append("[");
-            for ( int j=0; j<3; j++ ) {
+            for ( int j=0; j<ncol; j++ ) {
                 builder.append( String.format( format, mm.value(i,j) ) );
-                if ( j<2 ) builder.append(delim);
+                if ( j<(ncol-1) ) builder.append(delim);
             }
             if ( brackets ) builder.append("]");
-            builder.append(rowDelim);
+            if ( i<(nrow-1) ) builder.append(rowDelim);
         }
+        if ( brackets ) builder.append("]");
         return builder.toString();
     }
     /**
