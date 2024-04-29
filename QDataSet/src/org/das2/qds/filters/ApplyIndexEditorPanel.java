@@ -144,6 +144,7 @@ public class ApplyIndexEditorPanel extends javax.swing.JPanel implements FilterE
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void setInput(QDataSet ds) {
         String[] depNames1= FilterEditorPanelUtil.getDimensionNames(ds);
         int index= dimensionCB.getSelectedIndex();

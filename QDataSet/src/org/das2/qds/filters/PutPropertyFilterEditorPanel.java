@@ -19,6 +19,7 @@ public class PutPropertyFilterEditorPanel extends AbstractFilterEditorPanel {
         initComponents();
     }
     
+    @SuppressWarnings("unchecked")
     private void update() {
         String name= (String)jComboBox1.getSelectedItem();
         String[] vv=null;

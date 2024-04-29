@@ -114,6 +114,7 @@ public class SetDepend1CadenceFilterEditorPanel extends AbstractFilterEditorPane
     Units currentUnits= null;
     
     @Override
+    @SuppressWarnings("unchecked")
     public void setInput(QDataSet ds) {
         QDataSet dep= (QDataSet) ds.property(QDataSet.DEPEND_1);
         if ( dep==null ) {

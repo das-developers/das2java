@@ -20,6 +20,7 @@ public class ReducexFilterEditorPanel extends AbstractFilterEditorPanel {
     /**
      * Creates new form ReducexFilterEditorPanel
      */
+    @SuppressWarnings("unchecked")
     public ReducexFilterEditorPanel() {
         initComponents();
         Units tu= Units.seconds;
@@ -116,6 +117,7 @@ public class ReducexFilterEditorPanel extends AbstractFilterEditorPanel {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void setInput(QDataSet ds) {
         QDataSet dep0= SemanticOps.xtagsDataSet(ds);
         Units tu= SemanticOps.getUnits(dep0);

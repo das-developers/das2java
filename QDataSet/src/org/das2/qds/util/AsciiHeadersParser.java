@@ -274,6 +274,7 @@ public class AsciiHeadersParser {
                             throw new IllegalArgumentException("USER_PROPERTIES is not a map");
                         }
                     }
+                    @SuppressWarnings("unchecked")
                     Map<String,Object> val= (Map<String,Object>)oval;
                     if ( val==null ) {
                         val= new HashMap<>();

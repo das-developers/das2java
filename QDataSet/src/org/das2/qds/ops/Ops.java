@@ -2331,6 +2331,7 @@ public final class Ops {
     public static QDataSet setNominalRange( QDataSet ds, String arg ) throws ParseException {
         Units u= SemanticOps.getUnits(ds);
         DatumRange d= DatumRangeUtil.parseDatumRange( arg, u );
+        @SuppressWarnings("unchecked")
         Map<String,Object> meta= (Map<String,Object>) ds.property( QDataSet.METADATA );
         if ( meta==null ) {
             meta= new HashMap<>();
@@ -2355,6 +2356,7 @@ public final class Ops {
     public static QDataSet setWarnRange( QDataSet ds, String arg ) throws ParseException {
         Units u= SemanticOps.getUnits(ds);
         DatumRange d= DatumRangeUtil.parseDatumRange( arg, u );
+        @SuppressWarnings("unchecked")
         Map<String,Object> meta= (Map<String,Object>) ds.property( QDataSet.METADATA );
         if ( meta==null ) {
             meta= new HashMap<>();

@@ -74,6 +74,7 @@ public class UnbundleFilterEditorPanel extends AbstractFilterEditorPanel {
     // End of variables declaration//GEN-END:variables
     
     @Override
+    @SuppressWarnings("unchecked")
     public void setInput( QDataSet ds ) {
         if ( ds.rank()>1 ) {
             try {

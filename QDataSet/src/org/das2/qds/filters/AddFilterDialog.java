@@ -127,6 +127,7 @@ public class AddFilterDialog extends javax.swing.JPanel {
     /**
      * simply alphabetize the tree elements to make a list more like the old list.
      */
+    @SuppressWarnings("unchecked")
     private void populateList( ) {
         List<Bookmark> elements= new ArrayList<>(100);
         getElementsFromTree( elements, (DefaultMutableTreeNode)this.jTree1.getModel().getRoot() );

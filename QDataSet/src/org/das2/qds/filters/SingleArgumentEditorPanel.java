@@ -19,6 +19,7 @@ public class SingleArgumentEditorPanel extends AbstractFilterEditorPanel impleme
      * @param doc a documentation string, "The limits of valid data, inclusive"
      * @param examples a set of example inputs, [ "", "-1e30 to 1e30", "0 to 100" ]
      */
+    @SuppressWarnings("unchecked")
     public SingleArgumentEditorPanel( String cmd, String label, String doc, String[] examples ) {
         initComponents();
         this.cmd= cmd;

@@ -83,6 +83,7 @@ public class CollapseFilterEditorPanel extends javax.swing.JPanel implements Fil
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void setInput(QDataSet ds) {
         String[] depNames1= FilterEditorPanelUtil.getDimensionNames(ds);
         int index= dimensionCB.getSelectedIndex();

@@ -300,6 +300,7 @@ public class OpsParl {
      * @param op binary operation for each pair of elements
      * @return the result with the same geometry as the pair.
      */
+    @SuppressWarnings("unchecked")
     public static MutablePropertyDataSet applyBinaryOpParl( QDataSet ds1, QDataSet ds2, final BinaryOp op ) {
         //TODO: handle JOIN from RPWS group, which is not a QUBE...
         if ( ds1.rank()==ds2.rank() && ds1.rank()>0 ) {

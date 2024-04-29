@@ -45,6 +45,7 @@ public class TrimFilterEditorPanel extends AbstractFilterEditorPanel {
     }
     
     @Override
+    @SuppressWarnings("unchecked")
     public void setInput(QDataSet ds){
         if ( automaticSetting ) { 
             endLabel.setText( String.format( "Up to but not including (%d bins):",ds.length() ) );
