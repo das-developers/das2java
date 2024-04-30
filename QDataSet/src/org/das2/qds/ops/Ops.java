@@ -15381,7 +15381,7 @@ public final class Ops {
      * @see https://github.com/das-developers/das2java/issues/91
      */
     private static int dimensionCount( QDataSet dss, boolean noImplicit ) {
-        int dim=1;
+        int dim=1; // Note Y[n] has two dimensions: the implicit one 0,1,2,... and Y.
         QDataSet ds= dss;
         if ( Schemes.isArrayOfBoundingBox(ds) ) {
             return 3;
