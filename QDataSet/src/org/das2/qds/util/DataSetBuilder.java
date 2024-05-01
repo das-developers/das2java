@@ -333,7 +333,11 @@ public class DataSetBuilder {
         double v= d.value();        
         Units lu= SemanticOps.getUnits(d);
         if ( lu!=u ) {
-            v= lu.convertDoubleTo( us[index], v );
+            if ( u instanceof EnumerationUnits ) {
+                v= ((EnumerationUnits)u).createDatum( d.svalue() ).doubleValue(u);
+            } else {
+                v= lu.convertDoubleTo( us[index], v );
+            }
         }
         current.putValue( this.index, v );
     }
