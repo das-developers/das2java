@@ -3,8 +3,6 @@
  *
  * Created on May 25, 2007, 7:01 AM
  *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
  */
 package org.das2.qds.util;
 
@@ -23,7 +21,6 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 import java.util.regex.*;
@@ -136,9 +133,9 @@ public class AsciiParser {
     public final static Pattern NAME_EQUAL_VALUE_PATTERN = Pattern.compile("\\s*([a-zA-Z_].*?)\\s*\\=\\s*(.+)\\s*");
     
     /**
-     * detect identifiers for columns.
+     * detect identifiers for columns.  This is the text leading up to the first [ or (, composed of letters, numbers, spaces, dashes, and underscores.
      */
-    Pattern COLUMN_ID_HEADER_PATTERN = Pattern.compile("\\s*\"?([a-zA-Z][a-zA-Z _0-9]*)([\\(\\[]([a-zA-Z_\\!\\.\\[\\-\\]0-9//\\*\\^]*)[\\)\\]])?\"?\\s*");
+    Pattern COLUMN_ID_HEADER_PATTERN = Pattern.compile("\\s*\"?([a-zA-Z][a-zA-Z \\-_0-9]*)([\\(\\[]([a-zA-Z_\\!\\.\\[\\-\\]\\(\\)0-9//\\*\\^]*)[\\)\\]])?\"?\\s*");
     /**
      * allow columns to be labeled with some datum ranges, such as 10.0-13.1.  We convert these into an identifier, but depend1labels will present as-is.
      * Note this pattern will match "-999.000" so check groups 2 and 4 for non null.
