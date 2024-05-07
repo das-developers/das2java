@@ -721,10 +721,16 @@ public class OperationsProcessor {
                     ds= Ops.smoothFit(x,ds, icomp);
                 } else if ( cmd.equals("|cleanData") ) {
                     if ( s.hasNext() ) {
-                        String comp= s.next();
-                        if ( comp.trim().length()>0 ) {
-                            int icomp= Integer.parseInt(comp);
-                            ds= Ops.cleanData(ds,icomp);
+                        String ssize= s.next();
+                        if ( ssize.trim().length()>0 ) {
+                            if ( s.hasNext() ) {
+                                int size= Integer.parseInt(ssize);
+                                double nsigma= Double.parseDouble(s.next());
+                                ds= Ops.cleanData(ds,nsigma,size);
+                            } else {
+                                int size= Integer.parseInt(ssize);
+                                ds= Ops.cleanData(ds,size);
+                            }
                         } else {
                             ds= Ops.cleanData(ds);
                         }
