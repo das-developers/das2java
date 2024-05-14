@@ -273,7 +273,7 @@ public class BeansUtil {
 
             long dt= System.currentTimeMillis()-t0;
             
-            if ( dt>100 ) {
+            if ( dt>500 ) {
                 logger.log(Level.INFO, "class {0} found in {1} millis", new Object[] { c.getName(), dt } );
                 // weird case where suddenly it's taking forever to resolve these.
             }
