@@ -52,12 +52,12 @@ public class Entities {
      * decoder goes from &amp;rho; to "&rho;"
      */
     static final HashMap<String,String> decoder = new HashMap(300);
-    static final String[] encoder = new String[0x100];
+    static final String[] encoder = new String[0x8000];
 
     /**
      * utility method for decoding entities like &amp;rho; into UNICODE.
      * Malformed entities (like &#03B1; instead of &#x03B1;) are formatted as "???"
-     * @param str string e.g. "&rho; degrees"
+     * @param str string e.g. "&amp;rho; degrees"
      * @return string with Unicode characters for entities.
      */
     public static String decodeEntities(String str) {
@@ -125,7 +125,7 @@ public class Entities {
     }
 
     /**
-     * encode one entity.
+     * encode one or more entities.
      * @param s string with unicode like "&rho;"
      * @return like &amp;rho;
      */
@@ -135,7 +135,7 @@ public class Entities {
         for (int i = 0; i < length; i++) {
             char c = s.charAt(i);
             int j = (int) c;
-            if (j < 0x100 && encoder[j] != null) {
+            if (j < 0x8000 && encoder[j] != null) {
                 buffer.append(encoder[j]);		  // have a named encoding
                 buffer.append(';');
             } else if (j < 0x80) {
@@ -151,7 +151,7 @@ public class Entities {
 
     static void add(String entity, int value) {
         decoder.put(entity, String.valueOf((char) value) );
-        if (value < 0x100) {
+        if (value < 0x8000) {
             encoder[value] = entity;
         }
     }
