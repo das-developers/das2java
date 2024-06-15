@@ -458,7 +458,8 @@ public class GitHubFileSystem extends HttpFileSystem {
                 }
                 if ( su.contains("/blob/"+branch+"/") // These are files
                         && !su.endsWith(".gitkeep") ) {
-                    result.add( su.substring( searchChild1.length() ) );
+                    String k = su.substring( searchChild1.length() ) ;
+                    if ( !result.contains(k) ) result.add(k);
                 } else if ( su.contains("/tree/"+branch+"/") ) {
                     if ( su.length()>parentLen ) {
                         String ss= su.substring( searchChild1.length() );
