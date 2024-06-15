@@ -23,6 +23,8 @@
 
 package org.das2.util.filesystem;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
@@ -48,10 +50,9 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
+import org.das2.util.FileUtil;
 import org.das2.util.LoggerManager;
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -168,6 +169,8 @@ public class HtmlUtil {
         logger.log(Level.FINER, "read listing data in {0} millis", (System.currentTimeMillis() - t0));
         String content= contentBuffer.toString();
 
+        //logger.log(Level.WARNING, "listing length (bytes): {0} {1}", new Object[]{content.length(), url});
+        
         if ( content.startsWith("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<ListBucketResult")) {
             return getDirectoryListingAmazonS3( url, content );
         }
@@ -281,7 +284,28 @@ public class HtmlUtil {
         urlConnection= HttpUtil.checkRedirect( urlConnection );
         InputStream ins= urlConnection.getInputStream();
         
-        return ins;
+        boolean keepResponseForDebugging=false;
+        
+        if ( !keepResponseForDebugging ) {
+            return ins;
+        } else {
+            StringBuilder keep= new StringBuilder();
+            byte[] buf= new byte[4096];
+            int bytesRead=ins.read(buf);
+            int totalBytesRead=0;
+            while ( bytesRead>0 ) {
+                totalBytesRead+=bytesRead;
+                for ( int i=0; i<bytesRead; i++ ) {
+                    keep.append((char)buf[i]);
+                }
+                bytesRead=ins.read(buf);
+            }
+            long t02= (System.currentTimeMillis()-1718399881869L);
+            File file= new File( "/tmp/ap/"+url.getFile().hashCode()+"."+ String.format("%09d",t02) +".html");
+            FileUtil.writeStringToFile( file, keep.toString() );
+            logger.log(Level.INFO, "writing html listing to {0}", file);
+            return new FileInputStream(file);
+        }
         
     }
     
