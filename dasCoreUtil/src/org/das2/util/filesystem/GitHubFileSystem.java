@@ -316,7 +316,8 @@ public class GitHubFileSystem extends HttpFileSystem {
     
     /**
      * At some point, Gitlab started returning the filename listing in a 
-     * separate JSON response.
+     * separate JSON response.  TODO: It's impossible to distinguish
+     * files from folders.  On jfaden.net/git, this API does not work.
      * @param directory
      * @return
      * @throws IOException 
@@ -325,7 +326,7 @@ public class GitHubFileSystem extends HttpFileSystem {
         try {
             String[] path= root.getPath().split("/",-2);
             // wget -O - 'https://abbith.physics.uiowa.edu/jbf/juno/-/refs/master/logs_tree/team/trajPlot?format=json&offset=0' | json_pp
-            
+            // wget -O - 'https://research-git.uiowa.edu/abbith/juno/-/refs/main/logs_tree/team?format=json&offset=0' | json_pp
             StringBuilder sb= new StringBuilder();
             sb.append(root.getScheme())
                     .append("://")
@@ -384,7 +385,8 @@ public class GitHubFileSystem extends HttpFileSystem {
         }
         
         if ( root.toString().startsWith("https://abbith.physics.uiowa.edu/") 
-                || root.toString().startsWith("https://research-git.uiowa.edu/") ) {
+                || root.toString().startsWith("https://research-git.uiowa.edu/") 
+                || root.toString().startsWith("https://jfaden.net/git/") ) {
             return listDirectoryGitlab( directory );
         }
         
