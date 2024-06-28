@@ -2421,6 +2421,15 @@ public class DataSetUtil {
                 return Ops.lesserOf( gcd1, gcd2 );
             }
         }
+        
+        if ( dxds.length()==0 ) {
+            QDataSet cadenceDs= (QDataSet) xds.property(QDataSet.CADENCE);
+            if ( cadenceDs==null ) {
+                return null;
+            } else {
+                return cadenceDs;
+            }
+        }
                 
         // linear spacing
         {
