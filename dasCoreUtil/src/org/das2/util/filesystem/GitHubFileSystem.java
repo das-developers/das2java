@@ -364,7 +364,7 @@ public class GitHubFileSystem extends HttpFileSystem {
             return result;
             
         } catch (JSONException ex) {
-            logger.log(Level.SEVERE, null, "JSON not returned from Gitlab server, try again soon: "+url);
+            logger.log(Level.SEVERE, "JSON not returned from Gitlab server, try again soon: {0}", url);
             return new String[0];
         } catch (CancelledOperationException ex) {
             throw new IOException("cancel pressed");
