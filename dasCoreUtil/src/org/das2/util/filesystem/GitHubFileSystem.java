@@ -323,40 +323,40 @@ public class GitHubFileSystem extends HttpFileSystem {
      * @throws IOException 
      */
     public String[] listDirectoryGitlab( String directory ) throws IOException {
-        try {
-            String[] path= root.getPath().split("/",-2);
-            // wget -O - 'https://abbith.physics.uiowa.edu/jbf/juno/-/refs/master/logs_tree/team/trajPlot?format=json&offset=0' | json_pp
-            // wget -O - 'https://research-git.uiowa.edu/abbith/juno/-/refs/main/logs_tree/team?format=json&offset=0' | json_pp
-            StringBuilder sb= new StringBuilder();
-            sb.append(root.getScheme())
-                    .append("://")
-                    .append(root.getHost())
-                    .append('/')
-                    .append(path[1])
-                    .append('/')
-                    .append(path[2])
-                    .append("/-/refs/")
-                    .append(branch)
-                    .append("/logs_tree");
-            if ( path.length>3 && path[3].equals(branch) ) {
-                for ( int i=4; i<path.length-1; i++ ) {
-                    sb.append( "/" );
-                    sb.append( path[i] );
-                }
-            } else {
-                for ( int i=1; i<path.length-1; i++ ) {
-                    sb.append( "/" );
-                    sb.append( path[i] );
-                }                
+        String[] path= root.getPath().split("/",-2);
+        // wget -O - 'https://abbith.physics.uiowa.edu/jbf/juno/-/refs/master/logs_tree/team/trajPlot?format=json&offset=0' | json_pp
+        // wget -O - 'https://research-git.uiowa.edu/abbith/juno/-/refs/main/logs_tree/team?format=json&offset=0' | json_pp
+        StringBuilder sb= new StringBuilder();
+        sb.append(root.getScheme())
+                .append("://")
+                .append(root.getHost())
+                .append('/')
+                .append(path[1])
+                .append('/')
+                .append(path[2])
+                .append("/-/refs/")
+                .append(branch)
+                .append("/logs_tree");
+        if ( path.length>3 && path[3].equals(branch) ) {
+            for ( int i=4; i<path.length-1; i++ ) {
+                sb.append( "/" );
+                sb.append( path[i] );
             }
-            sb.append("?format=json&offset=0");
-            
-            URL url= new URL(sb.toString());
+        } else {
+            for ( int i=1; i<path.length-1; i++ ) {
+                sb.append( "/" );
+                sb.append( path[i] );
+            }                
+        }
+        sb.append("?format=json&offset=0");
+
+        URL url= new URL(sb.toString());
+        try {
             
             String s= HtmlUtil.readToString( url );
-            
+           
             JSONArray ja= new JSONArray(s);
-            
+           
             String[] result= new String[ja.length()];
             for ( int i=0; i<result.length; i++ ) {
                 result[i]= ja.getJSONObject(i).getString("file_name");
@@ -364,7 +364,7 @@ public class GitHubFileSystem extends HttpFileSystem {
             return result;
             
         } catch (JSONException ex) {
-            logger.log(Level.SEVERE, null, ex);
+            logger.log(Level.SEVERE, null, "JSON not returned from Gitlab server, try again soon: "+url);
             return new String[0];
         } catch (CancelledOperationException ex) {
             throw new IOException("cancel pressed");
