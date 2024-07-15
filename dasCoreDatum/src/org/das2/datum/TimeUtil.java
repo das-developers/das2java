@@ -1311,7 +1311,32 @@ public final class TimeUtil {
         return new DatumRange( midnight, next( DAY, midnight ) );
     }
     
-    
+    /**
+     * return the hour or minute or day
+     * @param count, which must be 1 or a factor of 60.
+     * @param step the ordinal unit, such as TimeUtil.DAY or TimeUtil.HALF_YEAR
+     * @param t the time
+     * @return the range containing the interval.
+     */
+    public static DatumRange rangeContaining( int count, int step, Datum t ) {
+        Datum midnight= prevMidnight(t);
+        double ssm= getSecondsSinceMidnight(t);
+        double fact;
+        if ( step==TimeUtil.HOUR ) {
+            fact= (3600*count);
+        } else if ( step==TimeUtil.MINUTE ) {
+            fact = (60*count);
+        } else if ( step==TimeUtil.SECOND ) {
+            fact = count;
+        } else {
+            throw new IllegalArgumentException("only HOUR, MINUTE or SECOND supported: time digit "+step);
+        }
+        ssm= (int)( ssm / fact ) * fact;
+        Datum prev= midnight.add( ssm, Units.seconds );
+        Datum next= prev.add( fact, Units.seconds );
+        return new DatumRange( prev,next );
+            
+    }
     /**
      * step down the previous ordinal.  If the datum is already at an ordinal
      * boundary, then step down by one ordinal.
