@@ -1312,6 +1312,22 @@ public final class TimeUtil {
     }
     
     /**
+     * return the hours or minutes or days interval containing the time range,
+     * or multiple spans of this when the given range spans boundaries. For example,
+     * rangeContaining(1,TimeUtil.DAY,datumRange('2024-07-17T23:30/2024-07-18T00:30'))
+     * would be '2024-07-17/2024-07-19'.
+     * @param count, which must be 1 or a factor of 60.
+     * @param step the ordinal unit, such as TimeUtil.DAY or TimeUtil.HALF_YEAR
+     * @param tr the timerange
+     * @return the range containing the interval.
+     */
+    public static DatumRange rangeContaining( int count, int step, DatumRange tr ) {
+        DatumRange tr1= rangeContaining( count, step, tr.min() );
+        DatumRange tr2= rangeContaining( count, step, tr.max() );
+        return DatumRange.newRange( tr1.min(), tr2.max() );    
+    }
+    
+    /**
      * return the hour or minute or day
      * @param count, which must be 1 or a factor of 60.
      * @param step the ordinal unit, such as TimeUtil.DAY or TimeUtil.HALF_YEAR
@@ -1337,6 +1353,7 @@ public final class TimeUtil {
         return new DatumRange( prev,next );
             
     }
+    
     /**
      * step down the previous ordinal.  If the datum is already at an ordinal
      * boundary, then step down by one ordinal.
