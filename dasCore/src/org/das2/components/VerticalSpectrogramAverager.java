@@ -384,6 +384,9 @@ public class VerticalSpectrogramAverager implements DataRangeSelectionListener {
                         return;
                 }
                 //QDataSet ds1 = Ops.link( ds.property(QDataSet.DEPEND_0), rebinned );
+                
+                myPlot.getCanvas().setFont( parentPlot.getCanvas().getFont() );
+
                 QDataSet ds1 = rebinned;
                 renderer.setDataSet(ds1);
             }

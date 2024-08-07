@@ -453,6 +453,8 @@ public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
         }
         logger.log(Level.FINER, "slice window position: {0} {1}", new Object[]{popupWindow.getX(), popupWindow.getY()});
         
+        myPlot.getCanvas().setFont( parentPlot.getCanvas().getFont() );
+
         renderer.setDataSet(sliceDataSet);
         DatumFormatter formatter;
         if (xValue.getUnits() instanceof TimeLocationUnits) {

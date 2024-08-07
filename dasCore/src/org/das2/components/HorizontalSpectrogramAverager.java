@@ -373,6 +373,7 @@ public class HorizontalSpectrogramAverager implements DataRangeSelectionListener
                     return;
             }
             QDataSet ds1 = Ops.link( ds.property(QDataSet.DEPEND_0), rebinned );
+            myPlot.getCanvas().setFont( parentPlot.getCanvas().getFont() );
             renderer.setDataSet(ds1);
         }
 

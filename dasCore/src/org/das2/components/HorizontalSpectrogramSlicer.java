@@ -488,7 +488,9 @@ public class HorizontalSpectrogramSlicer implements DataPointSelectionListener {
                 popupWindow.setLocation( r.x, r.y );
             }
         }
-
+        
+        myPlot.getCanvas().setFont( parentPlot.getCanvas().getFont() );
+        
         renderer.setDataSet(sliceDataSet);
         DatumFormatter formatter;
         if (xValue.getUnits() instanceof TimeLocationUnits) {
