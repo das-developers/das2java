@@ -1652,8 +1652,13 @@ public final class TimeUtil {
                         if ( hold!=0 && year<100 && year>50 ) {
                             throw new ParseException("Held digit ("+hold+") before two-digit year ("+year+"): "+s,0);
                         }
+                        if ( number>100 && number<1000 ) {
+                            throw new ParseException("Digit cannot be identified: ("+number+") looking for year: "+s,0);
+                        }
                         year = number;
-                        if (year < 1000) year += 1900;
+                        if (year < 1000) {
+                            year += 1900;
+                        }
                         want[YEAR] = false;
                     } else if (want[MONTH]) {
                         want[MONTH] = false;

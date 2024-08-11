@@ -750,6 +750,14 @@ public class DatumRangeUtil {
         private boolean tryPattern( Pattern regex, String string, int[] groups, DateDescriptor dateDescriptor ) throws ParseException {
             Matcher matcher= regex.matcher( string.toLowerCase() );
             if ( matcher.find() && matcher.start()==0 ) {
+                String remaining= string.substring(matcher.end());
+                try {
+                    Integer.parseInt(remaining.trim());
+                    logger.fine("number following date prevents use of digits as date.");
+                    return false;
+                } catch ( NumberFormatException e ) {
+                    logger.finer("no number following string which appears to be a date.");
+                }
                 dateDescriptor.delim= matcher.group(groups[3]);
                 dateDescriptor.date= string.substring( matcher.start(), matcher.end()-dateDescriptor.delim.length() );
                 dateDescriptor.day= matcher.group(groups[2]);
@@ -762,7 +770,7 @@ public class DatumRangeUtil {
         }
         
         /**
-         * return true if the string can be interpretted as a date.  This takes
+         * return true if the string can be interpreted as a date.  This takes
          * into account some old conventions, such as allowing dots to indicate
          * European-style dates ($d.$m.$Y).
          *
