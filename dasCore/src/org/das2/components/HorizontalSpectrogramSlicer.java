@@ -25,6 +25,7 @@ package org.das2.components;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -45,6 +46,8 @@ import org.das2.event.DataPointSelectionEvent;
 import org.das2.event.DataPointSelectionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -234,6 +237,7 @@ public class HorizontalSpectrogramSlicer implements DataPointSelectionListener {
         int width = parentPlot.getCanvas().getWidth() / 2;
         int height = parentPlot.getCanvas().getHeight() / 2;
         final DasCanvas canvas = new DasCanvas(width, height);
+        canvas.setScaleFonts(false);
         if ( myPlot==null ) {
             initPlot(canvas);
         }
@@ -283,8 +287,19 @@ public class HorizontalSpectrogramSlicer implements DataPointSelectionListener {
                 }
                 SliceSettings settings= new SliceSettings();
                 settings.setSliceRebinnedData( rend.isSliceRebinnedData() );
+                Font ff=  HorizontalSpectrogramSlicer.this.myPlot.getCanvas().getBaseFont();
+                settings.setFont( SliceSettings.encodeFont(ff) );
                 new PropertyEditor(settings).showModalDialog(canvas);
                 rend.setSliceRebinnedData(settings.isSliceRebinnedData());
+                String f= settings.getFont();
+                if ( f.length()>0 ) {
+                    myPlot.getCanvas().setBaseFont( Font.decode(f) );
+                    myPlot.invalidateCacheImage();
+                    myPlot.repaint();
+                    myPlot.getCanvas().setSize( myPlot.getCanvas().getSize() );
+                    myPlot.getCanvas().revalidate();
+                    myPlot.getCanvas().repaint();
+                }
 
                 QDataSet ds= rend.getConsumedDataSet();
                 showSlice( ds, xValue, yValue );
