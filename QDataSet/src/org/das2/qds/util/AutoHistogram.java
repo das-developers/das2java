@@ -968,8 +968,8 @@ public final class AutoHistogram {
      * return a list of all the peaks in the histogram.  A peak is defined as a
      * local maximum, then including the adjacent bins consistent with the peak
      * population, and not belonging to another peak.  
-     * @param hist
-     * @return QDataSet covarient with hist.
+     * @param hist the output of autohistogram, which has "means" and "stddevs" properties.
+     * @return QDataSet which varies with hist.
      */
     public static QDataSet peakIds( QDataSet hist ) {
         IDataSet peakId= IDataSet.createRank1(hist.length());
@@ -1004,6 +1004,24 @@ public final class AutoHistogram {
             }
         }
 
+        // detect if there are no peaks, and if there are none, then look for
+        // maximums amung 3 point groups
+        int peakCount= 0;
+        for ( int i=0; i<n; i++ ) { 
+            if ( peakId.value(i)>0 ) {
+                peakCount++;
+            }
+        }
+        if ( peakCount==0 ) {
+            for ( int i=1; i<n-1; i++ ) { 
+                if ( hist.value(i-1)<=hist.value(i) 
+                   && ( hist.value(i+1)<hist.value(i) ) ) {
+                    peakId.putValue(i,ipeak);
+                    ipeak++;
+                }
+            }
+        }
+        
         // move the peakId down along plateau
         for ( int i=n-1; i>=1; i-- ) {
             if ( hist.value(i-1)==hist.value(i) && peakId.value(i)!=0 ) {
