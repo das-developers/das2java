@@ -735,6 +735,8 @@ public class EventsRenderer extends Renderer {
                         continue;
                     }
 
+                    int ixmin0= ixmin;
+                    
                     ixmin= Math.max( ixmin, imin );
                     ixmax= Math.min( ixmax, imax );
                                             
@@ -753,7 +755,7 @@ public class EventsRenderer extends Renderer {
                         }
                     }
 
-                    if ( column.getDMinimum() < ixmax || column.getDMaximum() > ixmin ) { // if any part is visible
+                    if ( column.getDMinimum() < ixmax && ixmin0 < column.getDMaximum() ) { // if any part is visible
                         if ( iwidth==0 ) iwidth=1;
                         Rectangle r1;
                         if ( this.orbitMode ) {
@@ -807,17 +809,42 @@ public class EventsRenderer extends Renderer {
                             gtr.draw( g1, ixmin+2, row.getDMinimum()+(int)gtr.getAscent() );
                         }
                         if ( this.orbitMode ) {
-                            String text= eu.createDatum( msgs.value(i) ).toString();
-                            gtr.setString(g1,text);
-                            Color c0= g1.getColor();
-                            g1.setColor( getParent().getBackground() );
-                            gtr.draw( g1, ixmin+2 -1, row.getDMaximum()-textHeight+(int)gtr.getAscent() );
-                            gtr.draw( g1, ixmin+2, row.getDMaximum()-textHeight+(int)gtr.getAscent() +1 );
-                            gtr.draw( g1, ixmin+2 +1, row.getDMaximum()-textHeight+(int)gtr.getAscent() );
-                            gtr.draw( g1, ixmin+2, row.getDMaximum()-textHeight+(int)gtr.getAscent() -1 );
-                            g1.setColor( c0 );
-                            gtr.draw( g1, ixmin+2, row.getDMaximum()-textHeight+(int)gtr.getAscent() );
-                            lastMessageTailX= ixmin+2 + (int)gtr.getWidth();
+                            if ( rotateLabel==0 ) {
+                                String text= eu.createDatum( msgs.value(i) ).toString();
+                                gtr.setString(g1,text);
+                                Color c0= g1.getColor();
+                                g1.setColor( getParent().getBackground() );
+                                gtr.draw( g1, ixmin+2 -1, row.getDMaximum()-textHeight+(int)gtr.getAscent() );
+                                gtr.draw( g1, ixmin+2, row.getDMaximum()-textHeight+(int)gtr.getAscent() +1 );
+                                gtr.draw( g1, ixmin+2 +1, row.getDMaximum()-textHeight+(int)gtr.getAscent() );
+                                gtr.draw( g1, ixmin+2, row.getDMaximum()-textHeight+(int)gtr.getAscent() -1 );
+                                g1.setColor( c0 );
+                                gtr.draw( g1, ixmin+2, row.getDMaximum()-textHeight+(int)gtr.getAscent() );
+                                lastMessageTailX= ixmin+2 + (int)gtr.getWidth();
+                            } else if ( rotateLabel==90 ) {
+                                
+                                String text= eu.createDatum( msgs.value(i) ).toString();
+                                gtr.setString(g1,text);
+                                //Graphics2D g2= (Graphics2D)g1.create();
+                                //g2.rotate(Math.PI/2);
+                                Graphics2D g2= (Graphics2D)g1.create();
+                                
+                                g2.translate((int)(ixmin0+2+gtr.getAscent()), row.getDMaximum()-textHeight+(int)gtr.getAscent());
+                                g2.setColor( color );
+                                g2.rotate(-Math.PI/2);
+                                gtr.draw( g2, textHeight, (int)(gtr.getAscent()-gtr.getHeight()) );
+//                                Rectangle b= gtr.getBounds();
+//                                for ( int k=0; k<5; k++ ) {
+//                                    g2.draw(b);
+//                                    b= GraphUtil.shrinkRectangle( b, 110 );
+//                                }
+//                                b= gtr.getBounds();
+//                                for ( int k=0; k<5; k++ ) {
+//                                    g2.draw(b);
+//                                    b= GraphUtil.shrinkRectangle( b, 90 );
+//                                }
+                                lastMessageTailX= ixmin+2 + (int)gtr.getWidth();
+                            }
                         }
                     }
                 }
@@ -839,8 +866,8 @@ public class EventsRenderer extends Renderer {
                         gtr.draw( g1, column.getDMinimum() + textHeight/3, iymin + textHeight );
                     }
                 }
-
-
+                
+                        
                 for ( int k1=1; k1<=2; k1++ ) { /* add fuzziness using Larry's algorithm */
                     for ( int k2=-1; k2<=1; k2+=2 ) {
                         int em0= ( k2==1 ) ? 0 : eventMap.length-1;
@@ -1051,6 +1078,23 @@ public class EventsRenderer extends Renderer {
         boolean oldGanttMode = this.ganttMode;
         this.ganttMode = ganttMode;
         propertyChangeSupport.firePropertyChange(PROP_GANTTMODE, oldGanttMode, ganttMode);
+    }
+
+    private int rotateLabel = 0;
+
+    /**
+     * rotate the label counter clockwise to make more room in orbitMode.
+     */
+    public static final String PROP_ROTATELABEL = "rotateLabel";
+
+    public int getRotateLabel() {
+        return rotateLabel;
+    }
+
+    public void setRotateLabel(int rotateLabel) {
+        int oldRotateLabel = this.rotateLabel;
+        this.rotateLabel = rotateLabel;
+        propertyChangeSupport.firePropertyChange(PROP_ROTATELABEL, oldRotateLabel, rotateLabel);
     }
 
     /**

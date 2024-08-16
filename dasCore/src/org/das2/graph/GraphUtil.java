@@ -1727,10 +1727,10 @@ public class GraphUtil {
      */
     public static Rectangle shrinkRectangle(Rectangle bounds, int percent ) {
         Rectangle result= new Rectangle( 
-            bounds.x + bounds.width*(100-percent)/2/100, 
-            bounds.y + bounds.height*(100-percent)/2/100, 
-            bounds.width * percent / 100, 
-            bounds.height * percent / 100 );
+            bounds.x + (int)(bounds.width*(100.-percent)/2/100), 
+            bounds.y + (int)(bounds.height*(100.-percent)/2/100), 
+            (int)( bounds.width * ( percent / 100. ) ), 
+            (int)( bounds.height * ( percent / 100. ) ) );
         return result;
     }
     
