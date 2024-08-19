@@ -308,6 +308,7 @@ public class DatumRangeUtil {
                         dir= DIR_REVERSE;
                         want= lsd;  // we are going to have to reverse these when we're done.
                         int i= Integer.parseInt( tok );
+                        if ( want<0 ) throw new IllegalArgumentException("str does not appear to be an ISO8601 time: "+str);
                         result[want]= i;
                         want--;
                         break;
@@ -630,8 +631,12 @@ public class DatumRangeUtil {
             digits0= parseISO8601Duration( parts[0] );
         } else {
             digits0= new int[7];
-            lsd= parseISO8601Datum( parts[0], digits0, lsd );
-            for ( int j=lsd+1; j<3; j++ ) digits0[j]=1; // month 1 is first month, not 0. day 1 
+            try {
+                lsd= parseISO8601Datum( parts[0], digits0, lsd );
+                for ( int j=lsd+1; j<3; j++ ) digits0[j]=1; // month 1 is first month, not 0. day 1 
+            } catch ( IllegalArgumentException ex ) {
+                throw new ParseException("string does not appear to be an iso8601 time range",0);
+            }
         }
 
         if ( isDuration2 ) {
