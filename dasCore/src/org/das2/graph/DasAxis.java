@@ -1702,6 +1702,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * <tr><td>*10/2,3,4,5,6,7,8,9</td><td>normal log axis.</td></tr>
      * <tr><td>*1e2/5,10,50</td><td>log major ticks should be every two cycles</td></tr>
      * <tr><td>*5/2,3,4</td><td>log major ticks at 1,5,25/</td></tr>
+     * <tr><td>none</td><td>no ticks</td></tr>
      * </table>
      * @see https://cdn.graphpad.com/faq/1910/file/1487logaxes.pdf about log axes.
      * @see GraphUtil#calculateManualTicks(java.lang.String, org.das2.datum.DatumRange, boolean) 
@@ -2526,6 +2527,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             Rectangle b= getAxisBounds();
             g.setColor( Color.GREEN );
             g.draw( new Rectangle( b.x, b.y, b.width-1, b.height-1 ) );
+            g.setFont( Font.decode("sans-10") );
+            g.drawString( String.format("%dx%d",b.width,b.height), b.x+2, b.y+b.height-3 );
+            
         }
 
         g.dispose();
@@ -2782,7 +2786,6 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                     leftEdge = DMin + (DMax - DMin - titleWidth) / 2;
                     baseline = bottomPosition + titlePositionOffset;
                     g2.drawLine( clip.x, clip.y, (int)leftEdge, (int)baseline );
-                    System.err.println("20130712_1424");
                 }
                 if (topLabel) {
                     leftEdge = DMin + (DMax - DMin - titleWidth) / 2;
@@ -3050,7 +3053,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
         switch (orientation) {
             case BOTTOM:
-                offset = tickLabelFont.getSize() + zeroOrPosTickLen + fm.stringWidth(" ") + labelFont.getSize() + labelFont.getSize() / 2;
+                if ( tickV.minorTickV.getLength()>0 ) {
+                    offset = tickLabelFont.getSize() + zeroOrPosTickLen + fm.stringWidth(" ") + labelFont.getSize() + labelFont.getSize() / 2;
+                } else {
+                    offset = labelFont.getSize() + labelFont.getSize() / 2;
+                }
                 if ( drawTca && tcaData != null ) {
                     offset += Math.min( MAX_TCA_LINES, tcaData.length(0) ) * (tickLabelFont.getSize() + getLineSpacing());
                 } else if ( formatString.length()>0 ) {
@@ -3065,7 +3072,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 break;
             case LEFT:
                 //offset = zeroOrPosTickLen + (int)this.blLabelRect.getWidth() + fm.stringWidth(" ") + labelFont.getSize() / 2 + (int) gtr.getDescent();
-                offset = getColumn().getDMinimum() - blLabelRect.x + labelFont.getSize() / 2 + (int) gtr.getDescent() - getAxisOffsetPixels();
+                if ( tickV.tickV.getLength()>0 ) {
+                    offset = getColumn().getDMinimum() - blLabelRect.x + labelFont.getSize() / 2 + (int) gtr.getDescent() - getAxisOffsetPixels();
+                } else {
+                    offset = getColumn().getDMinimum() - blLabelRect.x - getAxisOffsetPixels();
+                }
                 break;
             default:
                 if ( trLabelRect==null ) {
@@ -3792,6 +3803,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
         double lineThicknessDouble= getLineThicknessDouble(lineThickness);
                 
+        // length of the ticks, negative if pointing into the plot
         int tickLength= tickLen + ( tickLen<0 ? -1 : 1 ) *(int)( lineThicknessDouble / 2 );
         
         //Add room for ticks

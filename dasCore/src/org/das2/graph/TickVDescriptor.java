@@ -243,6 +243,9 @@ public class TickVDescriptor {
      * @see DomainDivider
      */
     public DatumRange enclosingRange(DatumRange dr, boolean minor) {
+        if ( tickV.getLength()==0 ) {
+            return dr;
+        }
         Datum s1 = findTick(dr.min(), 0, minor);
         Datum s2 = findTick(dr.max(), 0, minor);
         if (s1.equals(s2)) {

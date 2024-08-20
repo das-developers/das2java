@@ -1926,13 +1926,14 @@ public class GraphUtil {
     /**
      * calculate a TickVDescriptor for the ticks.  
      * Example specifications:<ul>
-     * <li>+20 every 20 units, whatever the data units are.
-     * <li>+20s  every 20 seconds
-     * <li>0,20,40,60,100  explicit locations.
-     * <li>+20s/4 every 20 seconds, with four minor divisions.
-     * <li>+20s/5,10,15 minor ticks repeat each 20s.
-     * <li>100,200,300/50,150,250,350 explicit list of major and minor ticks.
-     * <li>*10/+1 log ticks with linear minor ticks.
+     * <li>+20 - every 20 units, whatever the data units are.
+     * <li>+20s - every 20 seconds
+     * <li>0,20,40,60,100 - explicit locations.
+     * <li>+20s/4 - every 20 seconds, with four minor divisions.
+     * <li>+20s/5,10,15 - minor ticks repeat each 20s.
+     * <li>100,200,300/50,150,250,350 - explicit list of major and minor ticks.
+     * <li>*10/+1 - log ticks with linear minor ticks.
+     * <li>none - no ticks
      * </ul>
      * 
      * @see https://github.com/autoplot/dev/blob/master/demos/2021/20211130/demoCalculateManualTicks.jy
@@ -2089,8 +2090,12 @@ public class GraphUtil {
             } catch (ParseException ex) {
                 logger.warning(ex.getMessage());
                 result= null;
-            }            
+            } 
+        } else if ( lticks.equals("none") ) {
+            return new TickVDescriptor( new double[0], new double[0], u );
+            
         } else {
+            
             String[] ss= lticks.split(",");
             double[] dticks= new double[ss.length];
             for ( int i=0; i<dticks.length; i++ ) {
