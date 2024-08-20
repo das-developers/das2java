@@ -39,6 +39,7 @@ import org.das2.datum.LoggerManager;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
 
+
 /**
  * This makes a DasCanvasComponent for GrannyTextRenderer, and 
  * optionally adds an arrow to point at things.
@@ -384,6 +385,26 @@ public class DasAnnotation extends DasCanvasComponent {
         firePropertyChange(PROP_URL, oldUrl, url);
     }
     
+    private String padding = "0.5em";
+
+    /**
+     * the amount of space between the text and the border, measured
+     * in ems, pts, pxs, or percents.
+     * @see GraphUtil#parseLayoutLength(java.lang.String, double, double) 
+     */
+    public static final String PROP_PADDING = "padding";
+
+    public String getPadding() {
+        return padding;
+    }
+
+    public void setPadding(String padding) {
+        String oldPadding = this.padding;
+        this.padding = padding;
+        firePropertyChange(PROP_PADDING, oldPadding, padding);
+        resize();
+    }
+
     /**
      * the scale for the image, 0.5 is half-size, 2.0 is double.
      */
@@ -588,17 +609,17 @@ public class DasAnnotation extends DasCanvasComponent {
             back= getBackground();
         }
          
-//        if ( anchorType==AnchorType.CANVAS ) {
-//            back= Color.PINK;
-//        } else if ( anchorType==AnchorType.PLOT ) {
-//            back= org.das2.util.ColorUtil.decodeColor("Lavender");
-//        } else if ( anchorType==AnchorType.DATA ) {
-//            back= org.das2.util.ColorUtil.decodeColor("LemonChiffon");
-//        }
+        if ( anchorType==AnchorType.CANVAS ) {
+            back= Color.PINK;
+        } else if ( anchorType==AnchorType.PLOT ) {
+            back= org.das2.util.ColorUtil.decodeColor("Lavender");
+        } else if ( anchorType==AnchorType.DATA ) {
+            back= org.das2.util.ColorUtil.decodeColor("LemonChiffon");
+        }
         
         if ( fontSize>0 ) g.setFont( getFont().deriveFont(fontSize) );
 
-        int em = (int) getEmSize() / 2;
+        int em = (int) GraphUtil.parseLayoutLength( padding, clip.width, getEmSize() );
 
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
@@ -659,7 +680,7 @@ public class DasAnnotation extends DasCanvasComponent {
                     g.fill(anchorRect);
                 }
             } else if ( anchorBorderType==BorderType.ROUNDED_RECTANGLE ) {
-                g.fillRoundRect(anchorRect.x, anchorRect.y, anchorRect.width, anchorRect.height, em * 2, em * 2);
+                g.fillRoundRect(anchorRect.x, anchorRect.y, anchorRect.width, anchorRect.height, (int)em2, (int)em2);
             }
             g.setColor( c0 );
         }
@@ -668,7 +689,7 @@ public class DasAnnotation extends DasCanvasComponent {
             if (borderType == BorderType.RECTANGLE || borderType == BorderType.NONE) {
                 g.fill(r);
             } else if (borderType == BorderType.ROUNDED_RECTANGLE) {
-                g.fillRoundRect(r.x, r.y, r.width, r.height, em * 2, em * 2);
+                g.fillRoundRect(r.x, r.y, r.width, r.height, (int)em2, (int)em2 );
             }
 
             g.setColor(ltextColor);
@@ -749,10 +770,10 @@ public class DasAnnotation extends DasCanvasComponent {
                 if (borderType == BorderType.RECTANGLE) {
                     g.draw(bb);
                 } else if (borderType == BorderType.ROUNDED_RECTANGLE) {
-                    g.drawRoundRect(bb.x, bb.y, bb.width, bb.height, em * 2, em * 2);
+                    g.drawRoundRect(bb.x, bb.y, bb.width, bb.height, (int)em2, (int)em2);
                 } else if (borderType==BorderType.UNDERSCORE ) {
                     int y= bb.y+bb.height;
-                    g.drawLine( bb.x+em, y, bb.x + bb.width-2*em, y );
+                    g.drawLine( bb.x+em, y, bb.x + bb.width-(int)em2, y );
                 }
             }
             
@@ -1005,7 +1026,6 @@ public class DasAnnotation extends DasCanvasComponent {
     }
 
     private Rectangle getAnnotationBubbleBoundsNoRotation() {
-        int em = (int) getEmSize();
         Rectangle anchor= getAnchorBounds();
         DasCanvas canvas= getCanvas();
         Rectangle r;
@@ -1016,8 +1036,16 @@ public class DasAnnotation extends DasCanvasComponent {
                 r= new Rectangle( 0, 0, (int)(img.getWidth() * scale), (int)(img.getHeight()*scale) );
             }
         } else {
-            r= gtr.getBounds();
+            try {
+                r= gtr.getBounds(); 
+            } catch ( IllegalArgumentException ex ) {
+                int em1 = (int)getEmSize();
+                r= new Rectangle( 0, 0, em1, em1 ); // possibly not initialized yet.
+            }
         }
+        
+        int em = (int)getEmSize(); // (int)GraphUtil.parseLayoutLength( padding, r.width, getEmSize() );
+        
         int xoffset=0;
         int yoffset=0;
         if ( anchorOffset.length()>0 ) {
@@ -1043,105 +1071,98 @@ public class DasAnnotation extends DasCanvasComponent {
                 logger.log(Level.WARNING, "anchorOffset is misformatted: {0}", anchorOffset);
             }
         }
-        if ( null!=anchorPosition ) switch (anchorPosition) {
+        
+        int ipadding= (int)GraphUtil.parseLayoutLength( padding, r.width, getEmSize() );
+
+        r.width+= ipadding*2;
+        r.height+= ipadding*2;
+            
+        switch (anchorPosition) {
             case NW:
-                r.x = anchor.x + em + xoffset ;
-                r.y = anchor.y + em + yoffset ;
+            case SW:
+            case W:                
+                r.x = anchor.x + xoffset ;
                 break;
             case OutsideN:
-                r.x = anchor.x + anchor.width/2 - (int)( r.getWidth() / 2 ) + em/2  + xoffset ;
-                r.y = anchor.y - (int)r.getHeight() - yoffset ;
-                break;
             case OutsideS:
-                r.x = anchor.x + anchor.width/2 - (int)( r.getWidth() / 2 ) + em/2 + xoffset ;
-                r.y = anchor.y + anchor.height + em + yoffset ;
+            case Center:
+            case N:
+            case S:
+                r.x = anchor.x + anchor.width/2 - (int)( r.getWidth() / 2 ) + xoffset ;
                 break;
             case OutsideE:
-                r.x = anchor.x + anchor.width + em + xoffset;
-                r.y = anchor.y + anchor.height/2 - (int)( r.getHeight() / 2 ) - yoffset;
+                r.x = anchor.x + anchor.width + xoffset;
                 break;
             case OutsideW:
                 r.x = anchor.x - r.width - xoffset;
-                r.y = anchor.y + anchor.height/2 - (int)( r.getHeight() / 2 ) - yoffset;
                 break;
             case NE:
+            case SE:
+            case E:
                 r.x = anchor.x + anchor.width - r.width - xoffset;
-                r.y = anchor.y + em + yoffset ;
                 break;
             case OutsideNE:
-                r.x = anchor.x + anchor.width + em + xoffset;
-                r.y = anchor.y + em + yoffset;
-                break;
             case OutsideSE:
-                r.x = anchor.x + anchor.width + em + xoffset;
-                r.y = anchor.y + anchor.height - r.height - yoffset;
+                r.x = anchor.x + anchor.width +  xoffset;
                 break;
             case OutsideNW:
-                r.x = anchor.x - r.width - xoffset;
-                r.y = anchor.y + em + yoffset;
-                break;
             case OutsideSW:
                 r.x = anchor.x - r.width - xoffset;
-                r.y = anchor.y + anchor.height - r.height - yoffset;
-                break;
-            case SW:
-                r.x = anchor.x + em + xoffset;
-                r.y = anchor.y + anchor.height - r.height - yoffset;
-                break;
-            case SE:
-                r.x = anchor.x + anchor.width - r.width - xoffset;
-                r.y = anchor.y + anchor.height - r.height - yoffset;
                 break;
             case OutsideNNW:
-                r.x = anchor.x + em + xoffset ;
-                r.y = anchor.y - (int)r.getHeight() - yoffset ;
+            case OutsideSSW:
+                r.x = anchor.x +  xoffset ;
                 break;
             case OutsideNNE:
-                r.x = anchor.x + anchor.width - r.width - xoffset;
-                r.y = anchor.y - (int)r.getHeight() - yoffset ;
-                break;
-            case OutsideSSW:
-                r.x = anchor.x + em + xoffset ;
-                r.y = anchor.y + anchor.height + em + yoffset ;
-                break;
             case OutsideSSE:
                 r.x = anchor.x + anchor.width - r.width - xoffset;
-                r.y = anchor.y + anchor.height + em + yoffset ;
-                break;
-            case Center:
-                r.x = anchor.x + anchor.width/2 - (int)( r.getWidth() / 2 ) + em/2 + xoffset ;
-                r.y = anchor.y + anchor.height/2 - (int)( r.getHeight() / 2 ) - yoffset;
-                break;
-            case N:
-                r.x = anchor.x + anchor.width/2 - (int)( r.getWidth() / 2 ) + em/2 + xoffset ;
-                r.y = anchor.y + em + yoffset ;
-                break;
-            case W:
-                r.x = anchor.x + em + xoffset;
-                r.y = anchor.y + anchor.height/2 - (int)( r.getHeight() / 2 ) - yoffset;
-                break;
-            case E:
-                r.x = anchor.x + anchor.width  - r.width - xoffset;
-                r.y = anchor.y + anchor.height/2 - (int)( r.getHeight() / 2 ) - yoffset;
-                break;
-            case S:
-                r.x = anchor.x + anchor.width/2 - (int)( r.getWidth() / 2 ) + em/2 + xoffset ;
-                r.y = anchor.y + anchor.height - r.height - yoffset;
                 break;
             default:
                 break;
         }
-        if ( gtr==null ) {
-            r.x-= em/2;
-            r.y-= em/2;
-            r.width+= em;
-            r.height+= em;            
-        } else {
-            r.x-= em;
-            r.y-= em;
-            r.width+= em;
-            r.height+= em;
+        
+        switch (anchorPosition) {
+            case NW:
+            case NE:
+            case N:
+                r.y = anchor.y + yoffset ;
+                break;
+            case OutsideN:
+                r.y = anchor.y - (int)r.getHeight() - yoffset ;
+                break;
+            case OutsideS:
+            case OutsideSSW:
+            case OutsideSSE:
+                r.y = anchor.y + anchor.height + yoffset ;
+                break;
+            case OutsideE:
+            case OutsideW:
+                r.y = anchor.y + anchor.height/2 - (int)( r.getHeight() / 2 ) - yoffset;
+                break;
+            case OutsideNE:
+            case OutsideNW:
+                r.y = anchor.y + yoffset ;
+                break;
+            case OutsideSE:
+            case OutsideSW:
+            case SW:
+            case SE: 
+            case S:
+                r.y = anchor.y + anchor.height - r.height - yoffset;
+                break;
+            case OutsideNNW:
+            case OutsideNNE:
+                r.y = anchor.y - (int)r.getHeight() - yoffset ;
+                break;
+            case Center:
+            case W:
+            case E:
+                r.y = anchor.y + anchor.height/2 - (int)( r.getHeight() / 2 ) - yoffset;
+                break;
+            default:
+                break;
         }
+                
         return r;
     }
 
@@ -1393,7 +1414,7 @@ public class DasAnnotation extends DasCanvasComponent {
         if ( !oldReferenceX.equals(this.referenceX) ) { 
             if ( boundsCalculated==true ) {
                 boundsCalculated= false;
-                SwingUtilities.invokeLater( new Runnable() {
+                SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
                         resize();
@@ -1423,7 +1444,7 @@ public class DasAnnotation extends DasCanvasComponent {
         if ( !oldReferenceY.equals(this.referenceY ) ) { 
             if ( boundsCalculated==true ) {
                 boundsCalculated= false;
-                SwingUtilities.invokeLater( new Runnable() {
+                SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
                         resize();
@@ -1448,7 +1469,7 @@ public class DasAnnotation extends DasCanvasComponent {
         this.rotate = rotate;
         if ( boundsCalculated==true ) {
             boundsCalculated= false;
-            SwingUtilities.invokeLater( new Runnable() {
+            SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
                     resize();
