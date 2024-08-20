@@ -39,7 +39,6 @@ import org.das2.datum.LoggerManager;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
 
-
 /**
  * This makes a DasCanvasComponent for GrannyTextRenderer, and 
  * optionally adds an arrow to point at things.
@@ -609,13 +608,13 @@ public class DasAnnotation extends DasCanvasComponent {
             back= getBackground();
         }
          
-        if ( anchorType==AnchorType.CANVAS ) {
-            back= Color.PINK;
-        } else if ( anchorType==AnchorType.PLOT ) {
-            back= org.das2.util.ColorUtil.decodeColor("Lavender");
-        } else if ( anchorType==AnchorType.DATA ) {
-            back= org.das2.util.ColorUtil.decodeColor("LemonChiffon");
-        }
+//        if ( anchorType==AnchorType.CANVAS ) {
+//            back= Color.PINK;
+//        } else if ( anchorType==AnchorType.PLOT ) {
+//            back= org.das2.util.ColorUtil.decodeColor("Lavender");
+//        } else if ( anchorType==AnchorType.DATA ) {
+//            back= org.das2.util.ColorUtil.decodeColor("LemonChiffon");
+//        }
         
         if ( fontSize>0 ) g.setFont( getFont().deriveFont(fontSize) );
 
