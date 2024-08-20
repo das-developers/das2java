@@ -47,7 +47,7 @@ public class TickValuesStringSchemeEditor extends javax.swing.JPanel implements 
         repeatEveryCB1 = new javax.swing.JComboBox<>();
         jLabel3 = new javax.swing.JLabel();
 
-        jLabel1.setText("<html>Enter a specification of how ticks should be generated.  If empty, the default methods are used,  or this can take one of the following forms: \n<ul>\n<li>10,20,30<i> - major ticks at 10,20, and 30 </i>\n<li>+10/4<i> - major ticks every ten units </i>\n<li>*10<i> - major ticks every cycle (10,100,1000,etc) </i>\n<li>+10min/5<i> - ticks every 10 minutes, with 5 divisions </i>\n<li>10,100,1000/50,500,5000<i> -  major and minor ticks </i><ul> ");
+        jLabel1.setText("<html>Enter a specification of how ticks should be generated.  If empty, the default methods are used,  or this can take one of the following forms: \n<ul>\n<li>10,20,30<i> - major ticks at 10,20, and 30 </i>\n<li>+10/4<i> - major ticks every ten units </i>\n<li>*10<i> - major ticks every cycle (10,100,1000,etc) </i>\n<li>+10min/5<i> - ticks every 10 minutes, with 5 divisions </i>\n<li>10,100,1000/50,500,5000<i> -  major and minor ticks </i>\n<li>none<i> - no ticks</i><ul> ");
         jLabel1.setVerticalAlignment(javax.swing.SwingConstants.TOP);
         jLabel1.setVerticalTextPosition(javax.swing.SwingConstants.TOP);
 
