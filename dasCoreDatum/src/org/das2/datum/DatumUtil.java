@@ -152,6 +152,10 @@ public final class DatumUtil {
         double[] array;
         Units units;
         
+        if ( datums.getLength()==0 ) {
+            return DefaultDatumFormatterFactory.getInstance().defaultFormatter();
+        }
+        
         if ( datums.getUnits() instanceof EnumerationUnits ) {
             return EnumerationDatumFormatterFactory.getInstance().defaultFormatter();
         }
