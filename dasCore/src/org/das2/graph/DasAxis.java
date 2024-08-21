@@ -3053,7 +3053,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
         switch (orientation) {
             case BOTTOM:
-                if ( tickV.minorTickV.getLength()>0 ) {
+                if ( tickV!=null && tickV.minorTickV.getLength()>0 ) {
                     offset = tickLabelFont.getSize() + zeroOrPosTickLen + fm.stringWidth(" ") + labelFont.getSize() + labelFont.getSize() / 2;
                 } else {
                     offset = labelFont.getSize() + labelFont.getSize() / 2;
@@ -3072,7 +3072,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 break;
             case LEFT:
                 //offset = zeroOrPosTickLen + (int)this.blLabelRect.getWidth() + fm.stringWidth(" ") + labelFont.getSize() / 2 + (int) gtr.getDescent();
-                if ( tickV.tickV.getLength()>0 ) {
+                if ( tickV!=null && tickV.minorTickV.getLength()>0 ) {
                     offset = getColumn().getDMinimum() - blLabelRect.x + labelFont.getSize() / 2 + (int) gtr.getDescent() - getAxisOffsetPixels();
                 } else {
                     offset = getColumn().getDMinimum() - blLabelRect.x - getAxisOffsetPixels();
