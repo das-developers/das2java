@@ -587,11 +587,11 @@ public class DasAnnotation extends DasCanvasComponent {
             g_.dispose();
         }
         
-        double em2 = g.getFont().getSize();
+        double em2 = GraphUtil.parseLayoutLength( lineThickness, 0, g1.getFont().getSize() );
         
         Stroke stroke0= g.getStroke();
         
-        g.setStroke(new BasicStroke((float) (em2 / 8), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ) );
+        g.setStroke(new BasicStroke((float)em2, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ) );
         
         g.translate( -getX(), -getY() );
 
@@ -640,7 +640,7 @@ public class DasAnnotation extends DasCanvasComponent {
         }
         
         if ( showArrow ) {
-            paintOneArrow(g, r, em2, stroke0, fore, pointAtX, pointAtY );
+            paintOneArrow(g, r, em2*8, stroke0, fore, pointAtX, pointAtY );
         }
         
         if ( referenceX.length()>0 || referenceY.length()>0 ) {
@@ -656,7 +656,7 @@ public class DasAnnotation extends DasCanvasComponent {
                         Datum xd= xrange.getUnits().parse( xs );
                         String ys= ( yy.length==1 ) ? yy[0] : yy[i];
                         Datum yd= yrange.getUnits().parse( ys );
-                        paintOneArrow(g, r, em2, stroke0, fore, xd, yd );
+                        paintOneArrow(g, r, em2*8, stroke0, fore, xd, yd );
                     } catch (ParseException ex) {
                         logger.log(Level.SEVERE, null, ex);
                     }
@@ -707,10 +707,11 @@ public class DasAnnotation extends DasCanvasComponent {
                             g.translate( 0, bb.height );
                             g.translate( -getX(), -getY() );
                         } else if ( anchorPosition==AnchorPosition.NW ) {
-                            g.translate( getX(), getY() );
+                            g.translate( getX()+4, getY()+1 );
+                            g.drawOval( -0, -0, 40, 40 );
                             g.rotate( -rotate*Math.PI/180. );
                             g.translate( 0, - bb.height ); 
-                            g.translate( -getX(), -getY() );
+                            g.translate( -getX()-4, -getY()-1 );
                         } else if ( anchorPosition==AnchorPosition.Center ) {
                             g.translate( getX(), getY() );
                             g.rotate( -rotate*Math.PI/180. );
@@ -1637,6 +1638,21 @@ public class DasAnnotation extends DasCanvasComponent {
         this.arrowStyle = newarrowStyle;
         repaint();
         firePropertyChange(PROP_ARROWSTYLE, oldarrowStyle, newarrowStyle);
+    }
+
+    
+    private String lineThickness = "3px";
+
+    public static final String PROP_LINETHICKNESS = "lineThickness";
+
+    public String getLineThickness() {
+        return lineThickness;
+    }
+
+    public void setLineThickness(String lineThickness) {
+        String oldLineThickness = this.lineThickness;
+        this.lineThickness = lineThickness;
+        firePropertyChange(PROP_LINETHICKNESS, oldLineThickness, lineThickness);
     }
 
     private boolean overrideColors = false;
