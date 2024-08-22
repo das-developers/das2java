@@ -445,8 +445,8 @@ public class FileUtil {
     /**
      * read all the bytes off the stream, perhaps to empty a URL response.  This
      * does not close the stream!
-     * @param in
-     * @return
+     * @param in the input stream, which will not be closed by this method.
+     * @return the total number of bytes read.
      * @throws IOException 
      */
     public static int consumeStream( InputStream in ) throws IOException {
