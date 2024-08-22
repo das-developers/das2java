@@ -640,7 +640,7 @@ public class DasAnnotation extends DasCanvasComponent {
         }
         
         if ( showArrow ) {
-            paintOneArrow(g, r, em2*8, stroke0, fore, pointAtX, pointAtY );
+            paintOneArrow(g, r, Math.max(12,em2*8), stroke0, fore, pointAtX, pointAtY );
         }
         
         if ( referenceX.length()>0 || referenceY.length()>0 ) {
@@ -656,7 +656,7 @@ public class DasAnnotation extends DasCanvasComponent {
                         Datum xd= xrange.getUnits().parse( xs );
                         String ys= ( yy.length==1 ) ? yy[0] : yy[i];
                         Datum yd= yrange.getUnits().parse( ys );
-                        paintOneArrow(g, r, em2*8, stroke0, fore, xd, yd );
+                        paintOneArrow(g, r, Math.max(12,em2*8), stroke0, fore, xd, yd );
                     } catch (ParseException ex) {
                         logger.log(Level.SEVERE, null, ex);
                     }
