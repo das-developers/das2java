@@ -707,16 +707,14 @@ public class DasAnnotation extends DasCanvasComponent {
                             g.translate( 0, bb.height );
                             g.translate( -getX(), -getY() );
                         } else if ( anchorPosition==AnchorPosition.NW ) {
-                            g.translate( getX()+4, getY()+1 );
-                            g.drawOval( -0, -0, 40, 40 );
-                            g.rotate( -rotate*Math.PI/180. );
-                            g.translate( 0, - bb.height ); 
-                            g.translate( -getX()-4, -getY()-1 );
+                            //System.err.println( String.format( "X: %4d Y: %4d",getX(),getY() ) );
+                            g.rotate( -rot*Math.PI/180., getX(), getY()+bb.getHeight() );
                         } else if ( anchorPosition==AnchorPosition.Center ) {
-                            g.translate( getX(), getY() );
-                            g.rotate( -rotate*Math.PI/180. );
-                            g.translate( 0, - bb.height ); 
-                            g.translate( -getX(), -getY() );
+                            g.rotate( -rot*Math.PI/180., getX(), getY() );
+                            //g.translate( getX(), getY() );
+                            //g.rotate( -rotate*Math.PI/180. );
+                            //g.translate( 0, - bb.height ); 
+                            //g.translate( -getX(), -getY() );
                         }
                         
                         
@@ -728,6 +726,16 @@ public class DasAnnotation extends DasCanvasComponent {
             }
             g.setColor(ltextColor);
 
+            // add sunburst pattern while I try to figure out rotation. TODO: remove
+            if ( rotate!=0 ) {
+                for ( int i=0; i<360; i+=10 ) {
+                    double a= i*Math.PI/180;
+                    double ix= Math.cos(a);
+                    double iy= Math.sin(a);
+                    g.drawLine( 0, 0, (int)(200*ix), (int)(200*iy) );
+                }
+            }
+            
             if ( gtr!=null ) {
                 try {
                     gtr.draw(g, r.x+em, r.y + em + (float) gtr.getAscent() );
