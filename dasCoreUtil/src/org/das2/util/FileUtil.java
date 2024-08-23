@@ -13,6 +13,7 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.nio.ByteBuffer;
@@ -28,6 +29,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import org.das2.util.filesystem.Glob;
 
 /**
@@ -394,7 +396,19 @@ public class FileUtil {
         }
         return new String( four );
     }
-
+    
+    /**
+     * read all the bytes in the UTF-8 encoded inputStream into a string.
+     * @param ins the input stream
+     * @return string containing the contents of the file.
+     * @throws java.io.IOException 
+     */
+    public static String readInputStreamToString( InputStream ins ) throws IOException {
+        String result = new BufferedReader(new InputStreamReader(ins))
+            .lines().collect(Collectors.joining("\n"));
+        return result;
+    }
+    
     /**
      * read all the bytes in the UTF-8 encoded file into a string.
      * @param f the file, which presumed to be UTF-8 (or ASCII) encoded.
