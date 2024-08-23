@@ -587,7 +587,10 @@ public class DasAnnotation extends DasCanvasComponent {
             g_.dispose();
         }
         
+        //System.err.println(">>>"+g1.getFont().getSize());
+        
         double em2 = GraphUtil.parseLayoutLength( lineThickness, 0, g1.getFont().getSize() );
+        int rounds= g1.getFont().getSize();
         
         Stroke stroke0= g.getStroke();
         
@@ -679,7 +682,7 @@ public class DasAnnotation extends DasCanvasComponent {
                     g.fill(anchorRect);
                 }
             } else if ( anchorBorderType==BorderType.ROUNDED_RECTANGLE ) {
-                g.fillRoundRect(anchorRect.x, anchorRect.y, anchorRect.width, anchorRect.height, (int)em2, (int)em2);
+                g.fillRoundRect(anchorRect.x, anchorRect.y, anchorRect.width, anchorRect.height, (int)rounds, (int)rounds);
             }
             g.setColor( c0 );
         }
@@ -688,7 +691,7 @@ public class DasAnnotation extends DasCanvasComponent {
             if (borderType == BorderType.RECTANGLE || borderType == BorderType.NONE) {
                 g.fill(r);
             } else if (borderType == BorderType.ROUNDED_RECTANGLE) {
-                g.fillRoundRect(r.x, r.y, r.width, r.height, (int)em2, (int)em2 );
+                g.fillRoundRect(r.x, r.y, r.width, r.height, (int)em2*8, (int)em2*8 );
             }
 
             g.setColor(ltextColor);
@@ -778,7 +781,7 @@ public class DasAnnotation extends DasCanvasComponent {
                 if (borderType == BorderType.RECTANGLE) {
                     g.draw(bb);
                 } else if (borderType == BorderType.ROUNDED_RECTANGLE) {
-                    g.drawRoundRect(bb.x, bb.y, bb.width, bb.height, (int)em2, (int)em2);
+                    g.drawRoundRect(bb.x, bb.y, bb.width, bb.height, (int)rounds, (int)rounds);
                 } else if (borderType==BorderType.UNDERSCORE ) {
                     int y= bb.y+bb.height;
                     g.drawLine( bb.x+em, y, bb.x + bb.width-(int)em2, y );
@@ -796,7 +799,7 @@ public class DasAnnotation extends DasCanvasComponent {
                         g.draw(anchorRect);
                     }
                 } else if ( anchorBorderType==BorderType.ROUNDED_RECTANGLE ) {
-                    g.drawRoundRect(anchorRect.x, anchorRect.y, anchorRect.width, anchorRect.height, em * 2, em * 2);
+                    g.drawRoundRect(anchorRect.x, anchorRect.y, anchorRect.width, anchorRect.height, rounds, rounds);
                 } else if ( anchorBorderType==BorderType.UNDERSCORE ) {
                     g.draw(anchorRect);
                 }
@@ -1660,6 +1663,7 @@ public class DasAnnotation extends DasCanvasComponent {
     public void setLineThickness(String lineThickness) {
         String oldLineThickness = this.lineThickness;
         this.lineThickness = lineThickness;
+        repaint();
         firePropertyChange(PROP_LINETHICKNESS, oldLineThickness, lineThickness);
     }
 
