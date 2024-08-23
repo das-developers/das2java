@@ -17,7 +17,13 @@ import java.util.regex.Pattern;
 public class StringTools {
 
     /**
-     * splits the string, guarding the space within protect.
+     * splits the string, guarding the space within protect.  For example, if you have a
+     * comma-separable line with quoted fields, then this can be used so that a quoted field
+     * is not split on a comma:
+     * <code>
+     * s= """2009,0,2,"Hot riser,spark",99"""
+     * </code>
+     * could be split into five fields with guardedSplit(s,',','"').
      * @param delim the delimiter we split on.  (similar to s.split(delim,-2))
      * @param protect character that blocks off delimiter, such as quote.
      * @return
