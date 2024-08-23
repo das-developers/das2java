@@ -24,6 +24,7 @@ public class StringTools {
      * s= """2009,0,2,"Hot riser,spark",99"""
      * </code>
      * could be split into five fields with guardedSplit(s,',','"').
+     * @param str the string to split.
      * @param delim the delimiter we split on.  (similar to s.split(delim,-2))
      * @param protect character that blocks off delimiter, such as quote.
      * @return
