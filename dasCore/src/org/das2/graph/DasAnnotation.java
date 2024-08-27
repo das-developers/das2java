@@ -1652,7 +1652,7 @@ public class DasAnnotation extends DasCanvasComponent {
     }
 
     
-    private String lineThickness = "3px";
+    private String lineThickness = "1.5px";
 
     public static final String PROP_LINETHICKNESS = "lineThickness";
 
