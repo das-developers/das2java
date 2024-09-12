@@ -1590,7 +1590,11 @@ public class SeriesRenderer extends Renderer {
         if ( xds1.rank()==2 ) {
             return null;
         }
+        QDataSet explicitCadence= (QDataSet)xds.property(QDataSet.CADENCE);
         cadencec= SemanticOps.guessXTagWidth( xds1, yds1 );
+        if ( explicitCadence!=null ) {
+            cadencec= DataSetUtil.asDatum(explicitCadence);
+        }
         xdsc= xds;
         ydsc= yds;
         firstIndexc= firstIndex;
