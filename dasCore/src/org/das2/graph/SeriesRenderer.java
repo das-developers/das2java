@@ -1593,7 +1593,7 @@ public class SeriesRenderer extends Renderer {
         QDataSet explicitCadence= (QDataSet)xds.property(QDataSet.CADENCE);
         cadencec= SemanticOps.guessXTagWidth( xds1, yds1 );
         if ( explicitCadence!=null ) {
-            cadencec= DataSetUtil.asDatum(explicitCadence);
+            cadencec= DataSetUtil.asDatum(explicitCadence); 
         }
         xdsc= xds;
         ydsc= yds;
