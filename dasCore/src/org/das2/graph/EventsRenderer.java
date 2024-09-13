@@ -627,12 +627,30 @@ public class EventsRenderer extends Renderer {
             return;
         }
 
-        QDataSet xmins= DataSetOps.unbundle( cds,0 );
-        QDataSet xmaxs= DataSetOps.unbundle( cds,1 );
-        QDataSet msgs= DataSetOps.unbundle( cds,3 );
-        Units eu= SemanticOps.getUnits( msgs );
-        QDataSet lcolor= DataSetOps.unbundle( cds,2 );
+        String mode= this.mode.intern();
 
+        QDataSet cds1= cds;
+        
+        if ( mode.equals("gantt2") ) {
+            QDataSet xmins= DataSetOps.unbundle( cds,0 );
+            QDataSet xmaxs= DataSetOps.unbundle( cds,1 );
+
+            QDataSet allBefore= Ops.lt( xmaxs, xAxis.getDatumRange().min() );
+            QDataSet allAfter= Ops.gt( xmins, xAxis.getDatumRange().max() );
+            QDataSet r= Ops.where( Ops.not( Ops.or( allBefore, allAfter ) ) );
+
+            cds1= Ops.applyIndex( cds, r );                
+
+            ganttMode= true;
+
+        }
+            
+        QDataSet xmins= DataSetOps.unbundle( cds1,0 );
+        QDataSet xmaxs= DataSetOps.unbundle( cds1,1 );
+        QDataSet msgs= DataSetOps.unbundle( cds1,3 );
+        Units eu= SemanticOps.getUnits( msgs );
+        QDataSet lcolor= DataSetOps.unbundle( cds1,2 );
+        
         long t0= System.currentTimeMillis();
 
         DasPlot parent= getParent();
@@ -659,9 +677,9 @@ public class EventsRenderer extends Renderer {
                     parent.postMessage( this, "x axis units changed from \""+xunits + "\" to \"" + xAxis.getUnits() + "\"", DasPlot.INFO, null, null );
                     xunits= xAxis.getUnits();
                 }
-            }
+            }        
 
-            if ( cds.length()>0 ) {
+            if ( cds1.length()>0 ) {
                 
                 int ivds0= 0;
                 int ivds1= xmins.length();
@@ -1043,6 +1061,24 @@ public class EventsRenderer extends Renderer {
             parent.repaint();
         }
         propertyChangeSupport.firePropertyChange(PROP_SHOWLABELS, oldShowLabels, showLabels);
+    }
+
+    private String mode = "";
+
+    public static final String PROP_MODE = "mode";
+
+    public String getMode() {
+        return mode;
+    }
+
+    /**
+     * if non-empty, then use this named mode
+     * @param mode 
+     */
+    public void setMode(String mode) {
+        String oldMode = this.mode;
+        this.mode = mode;
+        propertyChangeSupport.firePropertyChange(PROP_MODE, oldMode, mode);
     }
 
     /**
