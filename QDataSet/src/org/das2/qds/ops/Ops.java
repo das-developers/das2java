@@ -7870,49 +7870,8 @@ public final class Ops {
      * @see #subset(org.das2.qds.QDataSet, org.das2.qds.QDataSet) subset, which does the same thing.
      * @see #applyIndex(org.das2.qds.QDataSet, int, org.das2.qds.QDataSet) 
      */
-    public static WritableDataSet applyIndex( QDataSet ds, QDataSet r ) {
-        QubeDataSetIterator iter= new QubeDataSetIterator(r);
-        Number fill= (Number)ds.property( QDataSet.FILL_VALUE );
-        if ( fill==null ) fill= -1e38;
-        
-        WritableDataSet result;
-        
-        if ( ds.rank()==2 ) {
-            DataSetBuilder resultb= new DataSetBuilder(ds.rank(),r.length(),ds.length(0));
-            while ( iter.hasNext() ) {
-                iter.next();
-                int idx= (int)( iter.getValue(r) );
-                resultb.nextRecord( ds.slice(idx) );
-            }
-            result= resultb.getDataSet();
-        } else {
-            result= iter.createEmptyDs();
-            while ( iter.hasNext() ) {
-                iter.next();
-                int idx= (int)( iter.getValue(r) );
-                if ( idx<0 || idx>=ds.length() ) {
-                    iter.putValue( result, fill.doubleValue() );
-                } else {
-                    iter.putValue( result, ds.value(idx) );
-                }
-            }
-        }
-        
-        result.putProperty(QDataSet.UNITS,ds.property(QDataSet.UNITS));
-        result.putProperty(QDataSet.FILL_VALUE,fill);
-        
-        Map<String,Object> pp= DataSetUtil.getProperties( ds );
-        pp.remove( QDataSet.DEPEND_0 );
-        pp.remove( QDataSet.BUNDLE_0 );
-        DataSetUtil.putProperties( pp, result );
-        
-        QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
-        if ( dep0!=null ) result.putProperty(QDataSet.DEPEND_0,applyIndex( dep0, r ));
-
-        QDataSet bundle0= (QDataSet) ds.property(QDataSet.BUNDLE_0);
-        if ( bundle0!=null ) result.putProperty(QDataSet.BUNDLE_0,applyIndex( bundle0, r ));
-        
-        return result;
+    public static WritableDataSet applyIndex( QDataSet ds, QDataSet r ) {        
+        return copy( new SortDataSet( ds, r ) );
     }
     
     /**
@@ -7923,16 +7882,8 @@ public final class Ops {
      * @see #applyIndex(org.das2.qds.QDataSet, int, org.das2.qds.QDataSet) 
      */
     public static WritableDataSet applyIndex( Object dso, QDataSet r ) {
-        QDataSet vv= dataset(dso);
-        QubeDataSetIterator iter= new QubeDataSetIterator(r);
-        DDataSet result= iter.createEmptyDs();
-        while ( iter.hasNext() ) {
-            iter.next();
-            int idx= (int)( iter.getValue(r) );
-            iter.putValue( result, vv.value(idx) );
-        }
-        result.putProperty(QDataSet.UNITS,vv.property(QDataSet.UNITS));
-        return result;
+        QDataSet ds= dataset(dso);
+        return copy( new SortDataSet( ds, r ) );
     }
     
     /**
