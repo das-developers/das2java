@@ -9,6 +9,7 @@
 
 package org.das2.qds;
 
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -27,11 +28,14 @@ public class SortDataSet extends AbstractDataSet {
     
     QDataSet source;
     QDataSet sort;
+    
+    LongReadAccess longReadAccess;
+    
     /**
      * null or the qube dimensions
      */
     private int[] qubeDims;
-            
+    
     /**
      * creates the SortDataSet
      * @param source rank N dataset.  Supports plane_0.  Supports rank 2 Depend_1.
@@ -192,6 +196,53 @@ public class SortDataSet extends AbstractDataSet {
         }
     }
 
+    private class MyLongReadAccess implements LongReadAccess {
+        
+        LongReadAccess lra;
+        
+        private MyLongReadAccess( LongReadAccess lra ) {
+            this.lra= lra;
+        }
+        
+        @Override
+        public long lvalue() {
+            return lra.lvalue();
+        }
+
+        @Override
+        public long lvalue(int i0) {
+            return lra.lvalue((int)sort.value(i0));
+        }
+
+        @Override
+        public long lvalue(int i0, int i1) {
+            return lra.lvalue((int)sort.value(i0),i1);
+        }
+
+        @Override
+        public long lvalue(int i0, int i1, int i2) {
+            return lra.lvalue((int)sort.value(i0),i1,i2);
+        }
+
+        @Override
+        public long lvalue(int i0, int i1, int i2, int i3) {
+            return lra.lvalue((int)sort.value(i0),i1,i2,i3);
+        }
+        
+    }
+
+    
+    @Override
+    public <T> T capability(Class<T> clazz) {
+        if ( clazz.isAssignableFrom(LongReadAccess.class) ) {
+            final LongReadAccess lra= source.capability(LongReadAccess.class);
+            if ( lra==null ) return null;
+            return (T) new MyLongReadAccess(lra);
+        }
+        return super.capability(clazz); 
+    }
+
+    
     @Override
     public int length() {
         return sort.length();
