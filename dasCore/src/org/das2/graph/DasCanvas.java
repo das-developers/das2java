@@ -1128,6 +1128,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
      *   "title" "xaxis" "yaxis"
      *}</pre></blockquote>
      * See http://autoplot.org/richPng.
+     * It is the responsibility of the caller to close the stream.
      * @param out the outputStream. This is left open, so the opener code must close it!
      * @param w width in pixels
      * @param h height in pixels
