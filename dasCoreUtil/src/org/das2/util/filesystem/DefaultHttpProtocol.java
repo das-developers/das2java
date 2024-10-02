@@ -42,11 +42,7 @@ public class DefaultHttpProtocol implements WebProtocol {
     protected static String urlEncodeSansSlash( String realName ) {
         String[] ss= realName.split("/",-2);
         for ( int i=0; i<ss.length; i++ ) {
-            try {
-                ss[i]= URLEncoder.encode(ss[i],"UTF-8");
-            } catch (UnsupportedEncodingException ex) {
-                logger.log(Level.SEVERE, null, ex);
-            }
+            ss[i]= URLEncoder.encode(ss[i]);
         }
         StringBuilder builder= new StringBuilder();
         int i=0;
