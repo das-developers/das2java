@@ -3,12 +3,15 @@ package org.das2.qds.buffer;
 
 import java.nio.ByteBuffer;
 import java.text.ParseException;
+import org.das2.datum.EnumerationUnits;
 import org.das2.datum.Units;
 import org.das2.qds.QDataSet;
 
 /**
  * Sometimes you might just have numbers encoded in ASCII within a binary stream, 
- * or fixed-length fields allow such parsing.
+ * or fixed-length fields allow such parsing.  If the unit has been set to an enumeration (or nominal)
+ * unit, then strings can be extracted as well, but this must be done using the setUnits
+ * method.
  * @author jbf
  */
 public class AsciiDataSet extends BufferDataSet {
@@ -16,7 +19,7 @@ public class AsciiDataSet extends BufferDataSet {
     int lenBytes;
     double fill= -1e38;
     
-    private final Units UNITS= Units.dimensionless;
+    private Units units= Units.dimensionless;
     
     /**
      * Like the other constructors, but the type is needed as well to get the 
@@ -43,15 +46,23 @@ public class AsciiDataSet extends BufferDataSet {
         this.lenBytes= length;
     }
     
+    public void setUnits( Units units ) {
+        this.units= units;
+    }
+    
     private double parseDouble( ByteBuffer back, int offset ) {
         byte[] buff= new byte[lenBytes];
         for ( int i=0; i<lenBytes; i++ ) buff[i]= back.get(i+offset);
         if ( buff[lenBytes-1]==',' ) buff[lenBytes-1]=' '; // allow the field to contain delimiter.
         String s= new String(buff);
-        try {
-            return Units.dimensionless.parse(s).doubleValue( Units.dimensionless );
-        } catch (ParseException ex) {
-            return fill;
+        if ( units instanceof EnumerationUnits ) {
+            return ((EnumerationUnits)units).createDatum(s.trim()).doubleValue(units);
+        } else {
+            try {
+                return units.parse(s).doubleValue( Units.dimensionless );
+            } catch (ParseException ex) {
+                return fill;
+            }
         }
     }
     
@@ -81,7 +92,7 @@ public class AsciiDataSet extends BufferDataSet {
     }
 
     private byte[] getBytes( double d ) {
-        String s= UNITS.createDatum(d).toString(); //TODO: 24 byte limit is here.
+        String s= units.createDatum(d).toString(); //TODO: 24 byte limit is here.
         return s.substring(0,lenBytes).getBytes();
     }
     
