@@ -52,6 +52,7 @@ import org.das2.qds.util.AutoHistogram;
 import org.das2.qds.util.LinFit;
 import org.das2.util.ColorUtil;
 import java.awt.Color;
+import static org.das2.qds.SemanticOps.isRank1Bundle;
 
 /**
  * Utilities for QDataSet, such as conversions from various forms
@@ -2783,6 +2784,52 @@ public class DataSetUtil {
         }
         return qube;
     }
+    
+    /**
+     * Test for bundle scheme.  Returns true if the data contains data with just one unit.
+     * For example ds[time=100,en=30] might have BUNDLE_1 to specify labels for each of the
+     * 30 channels, but each of its measurements have the same units.  However, bundle(time,density)
+     * results in a dataset with BUNDLE_1 with the two datasets having different units.  
+     * When two bundled dataset's units are convertible but not equal this will return false.
+     * This will return true for a zero-length dataset.
+     * 
+     * @param ds the dataset
+     * @return true if the dataset has just one unit.
+     */
+    public static boolean oneUnit(QDataSet ds) {
+        switch (ds.rank()) {
+            case 0:
+                return true;
+            case 1:
+                if ( SemanticOps.isRank1Bundle(ds) ) {
+                    QDataSet bds= (QDataSet)ds.property(QDataSet.BUNDLE_0);
+                    if ( bds.length()==0 ) return true;
+                    Units u= (Units)bds.property(QDataSet.UNITS,0);
+                    for ( int i=1; i<bds.length(); i++ ) {
+                        if ( u!=(Units)bds.property(QDataSet.UNITS,i) ) {
+                            return false;
+                        }
+                    }
+                    return true;
+                } else {
+                    return true;
+                }
+            default:
+                if ( DataSetUtil.isQube(ds) ) {
+                    return ds.length()==0 || oneUnit(ds.slice(0));
+                } else {
+                    if ( ds.length()==0 ) return true;
+                    QDataSet ds1= ds.slice(0);
+                    Units u= (Units)ds1.property(QDataSet.UNITS);
+                    for ( int i=0; i<ds.length(); i++ ) {
+                        if ( u!=ds1.property(QDataSet.UNITS) ) return false;
+                        if ( !oneUnit(ds.slice(i)) ) return false;
+                    }
+                    return true;
+                }
+        }
+    }
+    
 
     /**
      * returns 1 for zero-length qube, the product otherwise.
