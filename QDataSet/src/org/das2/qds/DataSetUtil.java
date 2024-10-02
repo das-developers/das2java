@@ -4377,6 +4377,19 @@ public class DataSetUtil {
             }
         }
         
+        // check to see if "next" is basically the same thing as "scan"
+        DatumRange intersectionTest;
+        try {
+            DatumRange nextInterval= dr0.next();
+            intersectionTest= nextInterval.intersection(dr);
+            double percentOverlap= intersectionTest.width().divide( nextInterval.width() ).value();
+            if ( percentOverlap>0.9  ) {
+                dr= nextInterval;
+            } 
+        } catch ( IllegalArgumentException ex ) {
+            // do nothing, the found range is clearly better.
+        }
+
         return dr;
     }
 
@@ -4567,6 +4580,20 @@ public class DataSetUtil {
                 dr= dr.previous();
             }
         }
+        
+        // check to see if "next" is basically the same thing as "scan"
+        DatumRange intersectionTest;
+        try {
+            DatumRange previousInterval= dr0.previous();
+            intersectionTest= previousInterval.intersection(dr);
+            double percentOverlap= intersectionTest.width().divide( previousInterval.width() ).value();
+            if ( percentOverlap>0.9  ) {
+                dr= previousInterval;
+            } 
+        } catch ( IllegalArgumentException ex ) {
+            // do nothing, the found range is clearly better.
+        }
+        
         return dr;
     }
     

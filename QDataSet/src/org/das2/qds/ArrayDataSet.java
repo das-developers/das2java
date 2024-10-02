@@ -609,6 +609,73 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
 
         return result;
     }
+    
+    public static ArrayDataSet copy( QDataSet ds, LongReadAccess lra ) {
+        int rank= ds.rank();
+        ArrayDataSet result;
+        
+        Class c= long.class;
+        
+        switch (rank) {
+            case 0:
+                result= createRank0( c );
+                LongWriteAccess lwa= (LongWriteAccess)result.capability(LongWriteAccess.class);
+                lwa.putLValue( lra.lvalue() );
+                break;
+            case 1:
+                result= createRank1( c, ds.length() );
+                lwa= (LongWriteAccess)result.capability(LongWriteAccess.class);
+                for ( int i=0; i<ds.length(); i++ ) {
+                    lwa.putLValue( i, lra.lvalue(i) );
+                }
+                break;
+            case 2:
+                result= createRank2( c, ds.length(), ds.length(0) );
+                lwa= (LongWriteAccess)result.capability(LongWriteAccess.class);
+                int i0= ds.length()>0 ? ds.length(0) : -1;
+                for ( int i=0; i<ds.length(); i++ ) {
+                    if ( ds.length(i)!=i0 ) throw new IllegalArgumentException("Attempt to copy non-qube into ArrayDataSet which must be qube: "+ds );
+                    for ( int j=0; j<ds.length(i); j++ ) {
+                        lwa.putLValue( i, j, lra.lvalue(i,j) );
+                    }
+                }
+                break;
+            case 3:
+                result= createRank3( c, ds.length(), ds.length(0), ds.length(0,0) );
+                lwa= (LongWriteAccess)result.capability(LongWriteAccess.class);
+                int i0_= ds.length()>0 ? ds.length(0) : -1;
+                for ( int i=0; i<ds.length(); i++ ) {
+                    if ( ds.length(i)!=i0_ ) throw new IllegalArgumentException("Attempt to copy non-qube into ArrayDataSet which must be qube: "+ds );
+                    for ( int j=0; j<ds.length(i); j++ ) {
+                        for ( int k=0; k<ds.length(i,j); k++ ) {
+                            lwa.putLValue( i, j, k, lra.lvalue(i,j,k) );
+                        }
+                    }
+                }
+                break;
+            case 4:
+                result = createRank4( c, ds.length(), ds.length(0), ds.length(0,0), ds.length(0,0,0));
+                lwa= (LongWriteAccess)result.capability(LongWriteAccess.class);
+                for ( int i=0; i<ds.length(); i++ )
+                    for ( int j=0; j<ds.length(i); j++ )
+                        for ( int k=0; k<ds.length(i,j); k++ )
+                            for ( int l=0; l<ds.length(i,j,k); l++ )
+                                lwa.putLValue( i, j, k, l, lra.lvalue(i,j,k,l));
+                break;
+
+            default: 
+                throw new IllegalArgumentException("bad rank");
+        }
+
+        result.properties.putAll( Ops.copyProperties(ds) );
+        if ( result.properties.containsKey("NAME__0") ) {
+            result.hasIndexedProperties= true;
+        }
+        result.checkFill();
+        
+        return result;
+        
+    }
 
     /**
      * Copy to array of specific type.  For example, copy( double.class, ds ) 
@@ -698,7 +765,12 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
                 return copy( guessBackingStore(ds), ds );
             }
         } else {
-            return copy( guessBackingStore(ds), ds ); // strange type does legacy behavior.
+            LongReadAccess lra= (LongReadAccess)ds.capability(LongReadAccess.class); // special support for TT2000.
+            if ( lra!=null ) {
+                return copy( ds, lra );
+            } else {
+                return copy( guessBackingStore(ds), ds ); // strange type does legacy behavior.
+            }
         }
     }
 
