@@ -760,7 +760,8 @@ public abstract class WebFileSystem extends FileSystem {
     public URL getURL(String filename) {
         filename = FileSystem.toCanonicalFilename(filename);
         try {
-            return new URL( root.toURL(), FileSystemUtil.uriEncode(filename.substring(1)) );
+            URL u= new URL( root.toURL(), URLEncoder.encode(filename.substring(1) ) );
+            return u;
             /*  This might be better code, to test more another day.:
             /String s= filename.substring(1);
             /String[] ss= s.split("/");
