@@ -756,22 +756,12 @@ public abstract class WebFileSystem extends FileSystem {
      * return the URL for the internal filename, encoding the characters if necessary.
      * @param filename internal filename
      * @return 
+     * @see DefaultHttpProtocol#urlEncodeSansSlash(java.lang.String) 
      */
     public URL getURL(String filename) {
         filename = FileSystem.toCanonicalFilename(filename);
         try {
-            URL u= new URL( root.toURL(), URLEncoder.encode(filename.substring(1) ) );
-            return u;
-            /*  This might be better code, to test more another day.:
-            /String s= filename.substring(1);
-            /String[] ss= s.split("/");
-            StringBuilder sb= new StringBuilder();
-            for (String s1 : ss) {
-                sb.append(URLEncoder.encode(s1));
-                sb.append("/");
-            }
-            return new URL( root.toURL(), sb.toString() );
-            */
+            return new URL( root.toURL(), FileSystemUtil.uriEncode(filename.substring(1)) );
         } catch (MalformedURLException ex) {
             throw new RuntimeException(ex);
         }
