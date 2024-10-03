@@ -59,7 +59,7 @@ public class AsciiDataSet extends BufferDataSet {
             return ((EnumerationUnits)units).createDatum(s.trim()).doubleValue(units);
         } else {
             try {
-                return units.parse(s).doubleValue( Units.dimensionless );
+                return units.parse(s).doubleValue( units );
             } catch (ParseException ex) {
                 return fill;
             }
