@@ -13358,6 +13358,10 @@ public final class Ops {
      */
     public static List<QDataSet> synchronize( QDataSet dsTarget, QDataSet ... dsSources ) {
         QDataSet ttTarget= (QDataSet) dsTarget.property( QDataSet.DEPEND_0 );
+        if ( ttTarget==null && Schemes.isEventsList(dsTarget) ) {
+            QDataSet dt= Ops.subtract( Ops.unbundle( dsTarget,1 ), Ops.unbundle(dsTarget,0) );
+            ttTarget= Ops.add( Ops.unbundle(dsTarget,0), Ops.divide( dt, 2 ) );
+        }
         if ( ttTarget==null && DataSetUtil.isMonotonic(dsTarget) ) ttTarget= dsTarget;
         List<QDataSet> result= new ArrayList<>();
         int iarg=0;
@@ -13397,9 +13401,9 @@ public final class Ops {
                 tlimit= Ops.multiply( tlimit, Ops.dataset(1.5) );
                 Number fillValue= (Number) dsSource.property(QDataSet.FILL_VALUE);
                 if ( fillValue==null ) fillValue= Double.NaN;
-                QDataSet iceil= Ops.lesserOf( Ops.ceil(ff), ttSource.length()-1 ); // TODO: rewrite this as stream to save memory.
+                QDataSet iceil= Ops.lesserOf( Ops.greaterOf( Ops.ceil(ff), 0 ), ttSource.length()-1 ); // TODO: rewrite this as stream to save memory.
                 QDataSet tcel= Ops.applyIndex(ttSource,iceil);
-                QDataSet iflr= Ops.greaterOf( Ops.floor(ff), 0 );
+                QDataSet iflr= Ops.lesserOf( Ops.greaterOf( Ops.floor(ff), 0 ),ttSource.length()-1 );
                 QDataSet tflr= Ops.applyIndex(ttSource,iflr);
                 QDataSet tdff= Ops.subtract( tcel,tflr );
                 QDataSet r= Ops.where( Ops.gt( tdff, tlimit ) );
