@@ -13358,7 +13358,7 @@ public final class Ops {
      */
     public static List<QDataSet> synchronize( QDataSet dsTarget, QDataSet ... dsSources ) {
         QDataSet ttTarget= (QDataSet) dsTarget.property( QDataSet.DEPEND_0 );
-        if ( ttTarget==null && Schemes.isEventsList(dsTarget) ) {
+        if ( ttTarget==null && Schemes.isEventsList(dsTarget) && Schemes.isRank2Bins(dsTarget) ) {
             QDataSet dt= Ops.subtract( Ops.unbundle( dsTarget,1 ), Ops.unbundle(dsTarget,0) );
             ttTarget= Ops.add( Ops.unbundle(dsTarget,0), Ops.divide( dt, 2 ) );
         }
