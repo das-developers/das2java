@@ -2392,6 +2392,15 @@ public class DataSetUtil {
             return result;
         }
         
+        if ( xds.rank()==1 && xds.length()<1 ) {
+            QDataSet cadenceDs= (QDataSet) xds.property(QDataSet.CADENCE);
+            if ( cadenceDs==null ) {
+                return null;
+            } else {
+                return cadenceDs;
+            }
+        }
+        
         QDataSet dephhLinear;
         int idephhLinear;
         int scoreLinear;
