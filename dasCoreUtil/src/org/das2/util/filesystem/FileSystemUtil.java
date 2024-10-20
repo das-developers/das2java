@@ -344,7 +344,8 @@ public class FileSystemUtil {
     
     /**
      * convert " " to "%20", etc, by looking for and encoding illegal characters.
-     * We can't just aggressively convert...
+     * We can't just aggressively convert...  Note too that colons still cause problems 
+     * on Windows and should not be used in file names!
      * @param surl 
      * @return
      */
