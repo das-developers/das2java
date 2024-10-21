@@ -60,24 +60,46 @@ public class IndexListDataSetIterator implements DataSetIterator {
 
     @Override
     public QDataSet getRank0Value(QDataSet ds) {
-        QDataSet result;
-        switch ( dsrank ) {
-            case 1:
-                result= ds.slice( index(0) );
-                break;
-            case 2:
-                result= ds.slice( index(0) ).slice( index(1) );
-                break;
-            case 3:
-                result= ds.slice( index(0) ).slice( index(1) ).slice( index(2) );
-                break;
-            case 4:
-                result= ds.slice( index(0) ).slice( index(1) ).slice( index(2) ).slice( index(3) );
-                break;
-            default:
-                throw new IllegalArgumentException("rank limit: "+dsrank + " is not supported");
+       if ( DataSetUtil.isNotBundle(ds) ) {
+            double result;
+            switch ( dsrank ) {
+                case 1:
+                    result= ds.value( index(0) );
+                    break;
+                case 2:
+                    result= ds.value( index(0),index(1) );
+                    break;
+                case 3:
+                    result= ds.value( index(0),index(1), index(2) );
+                    break;
+                case 4:
+                    result= ds.value( index(0),index(1), index(2), index(3) );
+                    break;
+                default:
+                    throw new IllegalArgumentException("rank limit: "+dsrank + " is not supported");
+            }
+            return DataSetUtil.asDataSet( result, SemanticOps.getUnits(ds) );
+
+        } else {
+            QDataSet result;
+            switch ( dsrank ) {
+                case 1:
+                    result= ds.slice( index(0) );
+                    break;
+                case 2:
+                    result= ds.slice( index(0) ).slice( index(1) );
+                    break;
+                case 3:
+                    result= ds.slice( index(0) ).slice( index(1) ).slice( index(2) );
+                    break;
+                case 4:
+                    result= ds.slice( index(0) ).slice( index(1) ).slice( index(2) ).slice( index(3) );
+                    break;
+                default:
+                    throw new IllegalArgumentException("rank limit: "+dsrank + " is not supported");
+            }
+            return result;
         }
-        return result;
     }
     
     /**
