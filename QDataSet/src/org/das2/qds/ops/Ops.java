@@ -590,7 +590,17 @@ public final class Ops {
      * @return the sum
      */
     public static QDataSet add( QDataSet ds1, QDataSet ds2, QDataSet ds3 ) {
-        return add( add( ds1,ds2 ), ds3 );
+        QDataSet result=  add( add( ds1,ds2 ), ds3 );
+        String label1= (String) ds1.property(QDataSet.LABEL);
+        if ( label1==null ) label1= (String)ds1.property(QDataSet.NAME);
+        String label2= (String) ds2.property(QDataSet.LABEL);
+        if ( label2==null ) label2= (String)ds2.property(QDataSet.NAME);
+        String label3= (String) ds3.property(QDataSet.LABEL);
+        if ( label3==null ) label3= (String)ds3.property(QDataSet.NAME);
+        if ( label1!=null && label2!=null && label3!=null ) {
+            result= putProperty( result, QDataSet.LABEL, String.format( "%s + %s + %s", label1, label2, label3 ) );
+        }
+        return result;
     }
     
     /**
@@ -684,7 +694,12 @@ public final class Ops {
         if ( label1==null || label2==null ) return null;
         String l1Str= label1;
         String l2Str= label2;
-        return opStr + "(" + l1Str + "," + l2Str + ")";
+        String result= opStr + "(" + l1Str + "," + l2Str + ")";
+        if ( result.length()>120 ) {
+            return null;
+        } else {
+            return opStr + "(" + l1Str + "," + l2Str + ")";
+        }
     }
     
     /**
@@ -708,10 +723,11 @@ public final class Ops {
         String l2Str= label2;
         if ( ! idpat.matcher(l2Str).matches() ) l2Str= "("+l2Str+")";
         if ( l1Str!=null && l2Str!=null ) {
-            if ( l1Str.length() + l2Str.length() > 120 ) {
+            String result= l1Str + opStr + l2Str;
+            if ( result.length() > 120 ) {
                 return null;
             } else {
-                return l1Str + opStr + l2Str;
+                return result;
             }
         } else {
             return null;
@@ -2397,6 +2413,11 @@ public final class Ops {
     public static QDataSet sqrt(QDataSet ds) {
         //MutablePropertyDataSet result= (MutablePropertyDataSet) pow(ds, 0.5);
         MutablePropertyDataSet result= applyUnaryOp(ds, (UnaryOp) (double d1) -> Math.sqrt(d1) );
+        String ll= (String)ds.property(QDataSet.LABEL);
+        if ( ll==null ) ll= (String)ds.property(QDataSet.NAME);
+        if ( ll!=null ) {
+            result.putProperty( QDataSet.LABEL, String.format( "sqrt(%s)", ll ) );
+        }
         return result;
     }
 
@@ -2644,7 +2665,20 @@ public final class Ops {
         if ( UnitsUtil.isTimeLocation(units2) ) throw new IllegalArgumentException("pow is time location");
         MutablePropertyDataSet result=  
                 applyBinaryOp(ds1, pow, (BinaryOp) (double d1, double d2) -> Math.pow(d1, d2));
-        result.putProperty( QDataSet.LABEL, maybeLabelBinaryOp( ds1, pow, "pow") );
+        if ( pow.rank()==0 ) {
+            double v= pow.value();
+            String l= (String)ds1.property(QDataSet.LABEL);
+            if ( l==null ) l= (String)ds1.property(QDataSet.NAME);
+            if ( l!=null ) {
+                if ( v == (int)v ) {
+                    result.putProperty( QDataSet.LABEL, String.format( "%s**%d", l, (int)v ) );
+                } else {
+                    result.putProperty( QDataSet.LABEL, String.format( "%s**%f", l, v ) );
+                }
+            } 
+        } else {
+            result.putProperty( QDataSet.LABEL, maybeLabelBinaryOp( ds1, pow, "pow") );
+        }
         return result;
     }
     
