@@ -580,6 +580,20 @@ public final class Ops {
     }
     
     /**
+     * three-argument add is provided as a convenience for environments (like Java
+     * and the Mash-up tool in Autoplot) where add is not an in-fix operator.  For example,
+     * when taking the magnitude this allows for sqrt( add( pow( ds1,2), pow( ds2,2), pow( ds3,2) ) )
+     * which is more readable than sqrt( add( add( pow( ds1,2), pow( ds2,2) ), pow( ds3,2) ) ) )
+     * @param ds1 a rank N dataset
+     * @param ds2 a rank N dataset or one with compatible geometry
+     * @param ds3 a rank N dataset or one with compatible geometry
+     * @return the sum
+     */
+    public static QDataSet add( QDataSet ds1, QDataSet ds2, QDataSet ds3 ) {
+        return add( add( ds1,ds2 ), ds3 );
+    }
+    
+    /**
      * subtract one dataset from another.
      * @param ds1 a rank N dataset
      * @param ds2 a rank M dataset with compatible geometry
@@ -694,7 +708,11 @@ public final class Ops {
         String l2Str= label2;
         if ( ! idpat.matcher(l2Str).matches() ) l2Str= "("+l2Str+")";
         if ( l1Str!=null && l2Str!=null ) {
-            return l1Str + opStr + l2Str;
+            if ( l1Str.length() + l2Str.length() > 120 ) {
+                return null;
+            } else {
+                return l1Str + opStr + l2Str;
+            }
         } else {
             return null;
         }
