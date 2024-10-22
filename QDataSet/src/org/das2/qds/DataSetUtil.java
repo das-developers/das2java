@@ -1006,6 +1006,29 @@ public class DataSetUtil {
     }
     
     /**
+     * return true if the data is not a bundle and has uniform units throughout 
+     * the dataset.
+     * @param ds any dataset.
+     * @return true if the data is not a bundle and has uniform units throughout 
+     */
+    public static boolean isNotBundle( QDataSet ds ) {
+        switch ( ds.rank() ) {
+            case 0: return true;
+            case 1: return ds.property(QDataSet.BUNDLE_0)==null;
+            case 2: return ds.property(QDataSet.BUNDLE_1)==null;
+        }
+        if ( ds.length()==0 ) return true;
+        if ( ds.property(QDataSet.JOIN_0)!=null ) {
+            Units u= SemanticOps.getUnits(ds.slice(0));
+            for ( int i=1; i<ds.length(); i++ ) {
+                Units u1= SemanticOps.getUnits(ds.slice(i));
+                if ( u1!=u ) return false; // Das2Streams can join data with differing but converible units.
+            }
+        }
+        return true;
+    }
+    
+    /**
      * cleans up code by doing the cast, and handles default value.  The
      * result of this is for human-consumption!
      *
