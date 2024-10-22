@@ -3949,8 +3949,12 @@ public final class Ops {
      */
     public static QDataSet linspace(double min, double max, int len0) {
         double[] back = new double[len0];
-        if (len0 < 1) {
+        if (len0==0 ) {
+            return DDataSet.wrap(new double[]{0});
+        } else if (len0==1) {
             return DDataSet.wrap(new double[]{max});
+        } else if ( len0<0 ) {
+            throw new IllegalArgumentException("len0 cannot be less than 0");
         } else {
             double delta = (max - min) / (len0 - 1);
             for (int i = 0; i < len0; i++) {

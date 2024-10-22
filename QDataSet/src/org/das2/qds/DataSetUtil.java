@@ -8,7 +8,6 @@
  */
 package org.das2.qds;
 
-import java.io.IOException;
 import java.lang.reflect.Array;
 import java.text.DecimalFormat;
 import java.text.ParseException;
@@ -47,12 +46,10 @@ import org.das2.datum.format.TimeDatumFormatter;
 import org.das2.util.LoggerManager;
 import org.das2.qds.examples.Schemes;
 import org.das2.qds.ops.Ops;
-import org.das2.qds.util.AsciiFormatter;
 import org.das2.qds.util.AutoHistogram;
 import org.das2.qds.util.LinFit;
 import org.das2.util.ColorUtil;
 import java.awt.Color;
-import static org.das2.qds.SemanticOps.isRank1Bundle;
 
 /**
  * Utilities for QDataSet, such as conversions from various forms
