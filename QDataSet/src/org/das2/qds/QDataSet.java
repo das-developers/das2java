@@ -213,6 +213,7 @@ public interface QDataSet {
      * <li>%5.1f floats with one decimal place</li>
      * <li>%.3e exponential notation</li>
      * <li>%x hex of the integer</li>
+     * <li>$Y-$jT$H:$M:$S.$(subsec;places=9) time formats can be used here too.</li>
      * </ul>
      */
     public final static String FORMAT="FORMAT";
