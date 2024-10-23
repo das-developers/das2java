@@ -808,6 +808,9 @@ public interface QDataSet {
      * @param <T> a capability
      * @param clazz the class, such as WriteCapability.class
      * @return the implementing class, or null (Jython None) if the capability is not provided.
+     * @see LongWriteAccess
+     * @see LongReadAccess
+     * @see FloatReadAccess
      */
     <T> T capability( Class<T> clazz );
         
