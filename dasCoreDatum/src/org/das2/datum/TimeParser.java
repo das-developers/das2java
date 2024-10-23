@@ -79,11 +79,22 @@ public class TimeParser {
     private OrbitDatumRange orbitDatumRange;
 
     private int ndigits;
-    private String[] valid_formatCodes = new String[]{"Y", "y", "j", "m", "d", "H", "M", "S", "milli", "micro", "p", "z", "ignore", "b", "X", "x" };
-    private String[] formatName = new String[]{"Year", "2-digit-year", "day-of-year", "month", "day", "Hour", "Minute", "Second", "millisecond", "microsecond",
-        "am/pm", "RFC-822 numeric time zone", "ignore", "3-char-month-name", "ignore", "ignore" };
-    private int[] formatCode_lengths = new int[]{4, 2, 3, 2, 2, 2, 2, 2, 3, 3, 2, 5, -1, 3, -1, -1 };
-    private int[] precision =          new int[]{0, 0, 2, 1, 2, 3, 4, 5, 6, 7,-1,-1, -1, 1, -1, -1 };
+    private String[] valid_formatCodes = new String[]{"Y", "y", "j", "m", "d", 
+        "H", "M", "S", 
+        "milli", "micro",  
+        "p", "z", "ignore", "b", "X", "x", "N" };
+    private String[] formatName = new String[]{"Year", "2-digit-year", "day-of-year", "month", "day", 
+        "Hour", "Minute", "Second", 
+        "millisecond", "microsecond",
+        "am/pm", "RFC-822 numeric time zone", "ignore", "3-char-month-name", "ignore", "ignore", "nanoseconds" };
+    private int[] formatCode_lengths = new int[]{4, 2, 3, 2, 2, 
+        2, 2, 2, 
+        3, 3, 
+        2, 5, -1, 3, -1, -1, 9 };
+    private int[] precision =          new int[]{0, 0, 2, 1, 2, 
+        3, 4, 5, 
+        6, 7,
+        -1,-1, -1, 1, -1, -1, 8 };
     
     /**
      * set of custom handlers to allow for extension
@@ -1018,6 +1029,9 @@ public class TimeParser {
                                 break;
                             case "S":
                                 context.seconds= Integer.parseInt(val);
+                                break;
+                            case "N":
+                                context.nanos= Integer.parseInt(val);
                                 break;
                             case "cadence":
                                 span= Integer.parseInt(val);
@@ -2291,7 +2305,12 @@ public class TimeParser {
                     result.insert(offs, nf[len].format(digit));
                     offs += len;
                 }
-
+                
+            } else if (handlers[idigit] == 16) { // $N nanoseconds
+                int nanos= timel.millis * 1000000 + timel.micros * 1000 + timel.nanos;
+                result.insert(offs, String.format("%09d",nanos ));
+                offs += 9;
+                
             } else if (handlers[idigit] == 13) { // month names
 
                 result.insert(offs, TimeUtil.monthNameAbbrev(timel.month));
