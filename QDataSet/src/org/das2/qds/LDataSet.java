@@ -100,6 +100,8 @@ public final class LDataSet extends ArrayDataSet {
      */
     public static LDataSet wrap( long[] data, int[] qube ) {
         switch (qube.length) {
+            case 0:
+                return new LDataSet( 0, 1, 1, 1, 1, data );
             case 1:
                 return new LDataSet( 1, qube[0], 1, 1, 1, data );
             case 2:
@@ -108,8 +110,6 @@ public final class LDataSet extends ArrayDataSet {
                 return new LDataSet( 3, qube[0], qube[1], qube[2], 1, data );
             case 4:
                 return new LDataSet( 4, qube[0], qube[1], qube[2], qube[3], data);
-            case 0:
-                return new LDataSet( 0, 1, 1, 1, 1, data );
             default:
                 throw new IllegalArgumentException("bad qube");
         }
