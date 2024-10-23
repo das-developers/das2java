@@ -521,7 +521,6 @@ public final class Ops {
             if ( ds2.value()!=Math.floor(ds2.value() ) ) return null;
             long[] ll= new long[ds1.length()];
             long l2= (long)ds2.value();
-            int n= ds1.length();
             Map<String,Object> props= new HashMap<>();
             LongBinaryOp addop= longAddGen( ds1, ds2, props );
             for ( int i=0; i<ll.length; i++ ) {
@@ -533,6 +532,29 @@ public final class Ops {
             result.putProperty(QDataSet.NAME, null );
             result.putProperty(QDataSet.LABEL, maybeLabelInfixOp( ds1, ds2, "+" ) );            
             return result;
+        } else if ( ds1.rank()==0 && ds2.rank()==1 ) {
+            LongReadAccess l1= ds1.capability( LongReadAccess.class );
+            if ( l1==null ) return null;
+            if ( ds2.length()<100 ) {
+                for ( int i=0; i<ds2.length(); i++ ) {
+                    double d= ds2.value(i);
+                    if ( d!=Math.floor(d) ) return null;
+                }
+            }
+            long[] ll= new long[ds2.length()];
+            long lc1= (long)l1.lvalue();
+            int n= ds2.length();
+            Map<String,Object> props= new HashMap<>();
+            LongBinaryOp addop= longAddGen( ds1, ds2, props );
+            for ( int i=0; i<n; i++ ) {
+                 ll[i]= addop.op(lc1, (long)ds2.value(i) );
+            }
+            ArrayDataSet result= LDataSet.wrap(ll);
+            applyProperties( ds1, ds2, result );
+            result.putProperty( QDataSet.UNITS, props.get(QDataSet.UNITS) );
+            result.putProperty(QDataSet.NAME, null );
+            result.putProperty(QDataSet.LABEL, maybeLabelInfixOp( ds1, ds2, "+" ) );            
+            return result;            
         }
         return null;
     }
