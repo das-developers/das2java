@@ -58,7 +58,7 @@ public class ButterworthFilterEditorPanel extends AbstractFilterEditorPanel {
         jLabel1.setText("Order:  ");
 
         orderCB.setEditable(true);
-        orderCB.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "1", "2", "3", "4" }));
+        orderCB.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "1", "2", "3", "4", "5", "6", "7", "8" }));
 
         jLabel2.setText("Type:");
 
