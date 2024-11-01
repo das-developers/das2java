@@ -319,7 +319,7 @@ public class SeriesRenderer extends Renderer {
     
     private QDataSet ytagsDataSet( QDataSet ds ) {
         QDataSet vds;
-        if ( ds.rank()==2 && SemanticOps.isBundle(ds) && ds.property(QDataSet.DEPEND_0)==null ) {
+        if ( ds.rank()==2 && SemanticOps.isBundle(ds) ) {
             vds= SemanticOps.ytagsDataSet(ds);
         } else if ( ds.rank()==2 ) {
             postMessage( "dataset is rank 2 and not a bundle", DasPlot.INFO, null, null);
@@ -1953,7 +1953,7 @@ public class SeriesRenderer extends Renderer {
             vds= ytagsDataSet(ds);
             yunits= SemanticOps.getUnits(vds);
             yaxisUnitsOkay = yunits.isConvertibleTo(yAxis.getUnits()); // Ha!  QDataSet makes the code the same
-
+            
         } else {
             tds = (QDataSet) dataSet;
             yunits= SemanticOps.getUnits(tds);
