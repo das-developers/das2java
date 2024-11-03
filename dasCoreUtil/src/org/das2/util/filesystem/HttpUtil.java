@@ -60,7 +60,7 @@ public final class HttpUtil {
      * @throws IOException
      */
     public static void consumeStream(InputStream err) throws IOException {
-        byte[] buf = new byte[2048];
+        byte[] buf = new byte[8 * 1024];
         try {
             if (err != null) {
                 int ret = 0;

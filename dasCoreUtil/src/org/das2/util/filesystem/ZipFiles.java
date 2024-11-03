@@ -52,7 +52,7 @@ public class ZipFiles {
                     ZipEntry ze = new ZipEntry(filePath.substring(dir.getAbsolutePath().length()+1, filePath.length()));
                     zos.putNextEntry(ze);
                     try ( FileInputStream fis = new FileInputStream(filePath)) {//read the file and write to ZipOutputStream
-                        byte[] buffer = new byte[1024];
+                        byte[] buffer = new byte[8*1024];
                         int len;
                         while ((len = fis.read(buffer)) > 0) {
                             zos.write(buffer, 0, len);
@@ -92,7 +92,7 @@ public class ZipFiles {
                 ZipEntry ze = new ZipEntry(file.getName());
                 zos.putNextEntry(ze);
                 try ( FileInputStream fis = new FileInputStream(file) ) {//read the file and write to ZipOutputStream
-                    byte[] buffer = new byte[1024];
+                    byte[] buffer = new byte[8*1024];
                     int len;
                     while ((len = fis.read(buffer)) > 0) {
                         zos.write(buffer, 0, len);

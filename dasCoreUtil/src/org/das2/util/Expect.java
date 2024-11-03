@@ -86,7 +86,7 @@ public class Expect {
 			@Override
 			public void run() {
 				//LOG
-				byte[] buffer = new byte[1024];
+				byte[] buffer = new byte[8*1024];
 				try {
 					for (int n = 0; n != -1; n = input.read(buffer)) {
 						out.write(buffer, 0, n);
@@ -254,7 +254,7 @@ public class Expect {
 		long endTime = System.currentTimeMillis() + (long)timeout * 1000;
 		
 		try {
-			ByteBuffer bytes = ByteBuffer.allocate(1024);
+			ByteBuffer bytes = ByteBuffer.allocate(8*1024);
 			int n;
 			while (true) {
 				for (int i = 0; i < list.size(); i++) {
