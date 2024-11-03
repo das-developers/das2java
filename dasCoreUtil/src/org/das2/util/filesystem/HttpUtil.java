@@ -1,16 +1,28 @@
 
 package org.das2.util.filesystem;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintWriter;
 import java.net.HttpURLConnection;
 import java.net.ProtocolException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.util.LoggerManager;
@@ -234,6 +246,24 @@ public final class HttpUtil {
                     || responseCode == HttpURLConnection.HTTP_SEE_OTHER) {
                 String newUrl = huc.getHeaderField("Location");
                 if (responseCode == HttpURLConnection.HTTP_MOVED_PERM) {
+                    if ( "true".equals(System.getProperty("log_redirects"))) {
+                        File localCache= FileSystem.settings().getLocalCacheDir();
+                        File redirectLog= new File( localCache, "redirect.log" );
+                        TimeZone tz = TimeZone.getTimeZone("UTC");
+                        DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'"); // Quoted "Z" to indicate UTC, no timezone offset
+                        df.setTimeZone(tz);
+                        String nowAsISO = df.format(new Date());
+                        synchronized(redirectLog) {
+                            try ( BufferedWriter write= new BufferedWriter( new FileWriter(redirectLog,true) ) ) {
+                                write.append(nowAsISO);
+                                write.append(" ");
+                                write.append(urlConnection.getURL().toExternalForm());
+                                write.append(" ");
+                                write.append(newUrl);
+                                write.newLine();
+                            }
+                        }
+                    }
                     logger.log(Level.INFO, "URL {0} permanently moved to {1}", 
                             new Object[]{urlConnection.getURL(), newUrl});
                 } else {
