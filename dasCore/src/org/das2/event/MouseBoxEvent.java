@@ -90,5 +90,12 @@ public class MouseBoxEvent extends MouseDragEvent {
     public int getYMaximum() {
         return ( pressPoint.y > releasePoint.y ) ?  pressPoint.y : releasePoint.y ;
     }
+
+    @Override
+    public String toString() {
+        String boxstr= String.format( " x:%d-%d y:%d-%d", getXMinimum(), getXMaximum(), getYMinimum(), getYMaximum() );
+        return super.toString() + boxstr;
+    }
+    
     
 }
