@@ -2387,27 +2387,29 @@ public class DataSetOps {
         if ( j>-1 ) {
             p= p.substring(0,j);
         }
+        if ( p.startsWith("|") ) {
+            p= p.substring(1);
+        }
         switch (p) {
-            case "|smooth":
-            case "|reducex":
-            case "|nop":
-            case "|trim":
-            case "|magnitude":
-            case "|abs":
-            case "|hanning":
-            case "|butterworth":
-            case "|detrend":
-            case "|medianFilter":
-            case "|copy":
-            case "|setDepend0Cadence":
-            case "|setDepend1Cadence":
-            case "|expandToFillGaps":
-            case "|expandWaveform":
-            case "|cleanData":
-            case "|sortInTime":
-            case "|flatten":
-            case "|flattenWaveform":
-            case "|monotonicSubset":                  
+            case "smooth":
+            case "reducex":
+            case "nop":
+            case "trim":
+            case "abs":
+            case "hanning":
+            case "butterworth":
+            case "detrend":
+            case "medianFilter":
+            case "copy":
+            case "setDepend0Cadence":
+            case "setDepend1Cadence":
+            case "expandToFillGaps":
+            case "expandWaveform":
+            case "cleanData":
+            case "sortInTime":
+            case "flatten":
+            case "flattenWaveform":
+            case "monotonicSubset":                  
                 return false;
             default:
                 return true;
