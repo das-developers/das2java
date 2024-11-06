@@ -85,6 +85,7 @@ public abstract class Units {
             case "Degrees": return Units.degrees;
             case "deg": return Units.degrees;
             case "sec": return Units.seconds;
+            case "seconds": return Units.seconds;
             case "nanoseconds": return Units.ns;
             case "\u00B5s": return Units.microseconds;
             case "\u03BCs": return Units.microseconds;
