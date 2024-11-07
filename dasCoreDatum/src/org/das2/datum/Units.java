@@ -130,7 +130,7 @@ public abstract class Units {
     public static final Units minutes= new NumberUnits("min");
     public static final Units seconds= new NumberUnits("s");
     public static final Units seconds2= new NumberUnits("sec");
-    public static final Units seconds3= new NumberUnits("seconds");  // note s was not convertible to seconds.
+    //public static final Units seconds3= new NumberUnits("seconds");  // note s was not convertible to seconds.
     public static final Units milliseconds= new NumberUnits("ms","milliseconds");
     public static final Units milliseconds2= new NumberUnits("msec");
     public static final Units microseconds= new NumberUnits("microseconds");
@@ -148,7 +148,7 @@ public abstract class Units {
         nanoseconds.registerConverter( ns, UnitsConverter.IDENTITY );
         seconds.registerConverter(picoseconds,UnitsConverter.PICO);
         seconds.registerConverter(seconds2,UnitsConverter.IDENTITY);
-        seconds.registerConverter(seconds3,UnitsConverter.IDENTITY);
+        //seconds.registerConverter(seconds3,UnitsConverter.IDENTITY);
         microseconds.registerConverter(nanoseconds, UnitsConverter.MILLI); // to support time formatting, often from us2000 to microseconds offset.
         microseconds.registerConverter(microseconds2, UnitsConverter.IDENTITY);
         microseconds.registerConverter(microseconds3, UnitsConverter.IDENTITY);
