@@ -138,6 +138,7 @@ public class NamedColorChooserPanel extends AbstractColorChooserPanel {
         this.add(jsp,BorderLayout.CENTER );
         
         JButton findClose= new JButton("Find Close Color");
+        findClose.setToolTipText("Find closest named color to the currently selected color");
         findClose.setAction( getFindCloseAction() );
         this.add(findClose, BorderLayout.SOUTH);
     }
@@ -159,12 +160,13 @@ public class NamedColorChooserPanel extends AbstractColorChooserPanel {
                     Color c= color.getValue();
                     float[] components= new float[3];
                     Color.RGBtoHSB( c.getRed(), c.getGreen(), c.getBlue() , components );
-                    double d= Math.abs( components[0] - hsv[0] );
-                    if ( d>0.5 ) d= 1-d;
-                    d= d*3;
+                    double dh= Math.abs( components[0] - hsv[0] );
+                    if ( dh>0.5 ) dh= 1-dh;
+                    dh= dh*3; // tweak until Autoplot's yellow matches "yellow"
                     double dv= Math.abs( components[2]- hsv[2] );
                     double ds= Math.abs( components[1]- hsv[1] );
-                    d= d + dv + ds;
+                    double d= Math.sqrt( dh*dh + ds*ds + dv*dv );
+                    //  https://github.com/autoplot/dev/blob/master/demos/digitizers/pointDigitizerLabel.jy
                     if ( d<distance ) {
                         distance= d;
                         bestName= color.getKey();
