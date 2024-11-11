@@ -161,6 +161,7 @@ public class NamedColorChooserPanel extends AbstractColorChooserPanel {
                     Color.RGBtoHSB( c.getRed(), c.getGreen(), c.getBlue() , components );
                     double d= Math.abs( components[0] - hsv[0] );
                     if ( d>0.5 ) d= 1-d;
+                    d= d*3;
                     double dv= Math.abs( components[2]- hsv[2] );
                     double ds= Math.abs( components[1]- hsv[1] );
                     d= d + dv + ds;
