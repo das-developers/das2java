@@ -4,14 +4,20 @@ package org.das2.util;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.color.ColorSpace;
+import java.awt.event.ActionEvent;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.DefaultListModel;
 import javax.swing.Icon;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JScrollPane;
@@ -130,8 +136,45 @@ public class NamedColorChooserPanel extends AbstractColorChooserPanel {
         JScrollPane jsp= new JScrollPane(l,JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         
         this.add(jsp,BorderLayout.CENTER );
+        
+        JButton findClose= new JButton("Find Close Color");
+        findClose.setAction( getFindCloseAction() );
+        this.add(findClose, BorderLayout.SOUTH);
     }
 
+    private Action getFindCloseAction() {
+        return new AbstractAction("find close") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                final Map<String,Color> colors= ColorUtil.getNamedColors();
+                
+                Color selected= getColorFromModel();
+                float[] hsv= new float[3];
+                Color.RGBtoHSB( selected.getRed(), selected.getGreen(), selected.getBlue() , hsv );
+                
+                double distance= Double.MAX_VALUE;
+                String bestName= "";
+                
+                for ( Entry<String,Color> color: colors.entrySet() ) {
+                    Color c= color.getValue();
+                    float[] components= new float[3];
+                    Color.RGBtoHSB( c.getRed(), c.getGreen(), c.getBlue() , components );
+                    double d= Math.abs( components[0] - hsv[0] );
+                    if ( d>0.5 ) d= 1-d;
+                    double dv= Math.abs( components[2]- hsv[2] );
+                    double ds= Math.abs( components[1]- hsv[1] );
+                    d= d + dv + ds;
+                    if ( d<distance ) {
+                        distance= d;
+                        bestName= color.getKey();
+                    }
+                }
+                getColorSelectionModel().setSelectedColor( colors.get( bestName ) );
+                
+            }
+        };
+    }
+    
     @Override
     public String getDisplayName() {
         return "Named Colors";
