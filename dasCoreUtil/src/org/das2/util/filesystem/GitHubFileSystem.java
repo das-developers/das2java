@@ -387,7 +387,12 @@ public class GitHubFileSystem extends HttpFileSystem {
         if ( root.toString().startsWith("https://abbith.physics.uiowa.edu/") 
                 || root.toString().startsWith("https://research-git.uiowa.edu/") 
                 || root.toString().startsWith("https://jfaden.net/git/") ) {
-            return listDirectoryGitlab( directory );
+            try {
+                return listDirectoryGitlab( directory );
+            } catch ( IOException ex ) {
+                ex.printStackTrace();
+                return new String[0];
+            }
         }
         
         String[] path= root.getPath().split("/",-2);
