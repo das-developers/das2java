@@ -1464,6 +1464,9 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         }
         BufferDataSet result= makeDataSet( rank, reclen, offset, ien-ist, len1, len2, len3, back, type );
         DataSetUtil.putProperties( DataSetUtil.trimProperties( this, ist, ien ), result );
+        if ( result instanceof AsciiDataSet ) {
+            ((AsciiDataSet)result).setUnits(SemanticOps.getUnits(this)); // nominal units need special handling.  TODO: why?
+        }
         result.fieldStride= this.fieldStride;
         result.recStride= this.recStride;
         return result;
@@ -1475,6 +1478,9 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         Map<String,Object> props= DataSetOps.sliceProperties0(i,DataSetUtil.getProperties(this));
         props= DataSetUtil.sliceProperties( this, i, props );
         DataSetUtil.putProperties( props, result );
+        if ( result instanceof AsciiDataSet ) {
+            ((AsciiDataSet)result).setUnits(SemanticOps.getUnits(this)); // nominal units need special handling.  TODO: why?
+        }
         result.fieldStride= this.fieldStride;
         return result;
     }
