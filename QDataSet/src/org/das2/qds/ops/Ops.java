@@ -9525,16 +9525,28 @@ public final class Ops {
      * are the indices of the first and last (exclusive) continuous segment.
      * @param cadence null or the cadence
      * @param extent null or the interval containing the times.
-     * @param lastBlocks null or the preceeding interval times.
+     * @param lastBlocks null or the preceding interval times.
      * @param times the times for the interval
      * @return an events list containing the start and stop times.
+     * @throws IllegalArgumentException if the cadence cannot be guessed and cadence is not specified.
      */
     public static QDataSet identifyContinuousBlocks( Datum cadence, DatumRange extent, QDataSet lastBlocks, QDataSet times ) {
         if ( extent==null ) {
             // don't clip due to boundary issues
             extent= Ops.datumRange( extent(times) );
         }
-                        
+        if ( cadence==null ) {
+            QDataSet cadenceDs= DataSetUtil.guessCadence(times,null);
+            if ( cadenceDs==null ) {
+                throw new IllegalArgumentException("Cadence is not specified and could not guess cadence of the data.");
+            } else {
+                cadence= DataSetUtil.asDatum((QDataSet)cadenceDs);
+            }
+        }
+        if ( times==null ) {
+            throw new NullPointerException("times dataset is null");
+        }
+        
         Datum lastBreak;
         int lastBreakIndex;
         
@@ -9553,7 +9565,8 @@ public final class Ops {
                     lastBreakIndex= 0;
                 }
             } else {
-                lastBreak= null;
+                lastTime= Ops.datum( times.slice(0) );
+                lastBreak= lastTime;
                 lastBreakIndex= 0;
             }
         } else {
