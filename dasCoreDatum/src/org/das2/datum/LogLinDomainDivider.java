@@ -92,12 +92,16 @@ public class LogLinDomainDivider implements DomainDivider {
             }
             Datum w= current.width().multiply(10);
             Datum newMin;
-            if ( linearDivider.getSignificand()==2 ) {
-                newMin= u.createDatum(nextDecade).multiply(2);
-            } else if ( linearDivider.getSignificand()==1 ) {
-                newMin= u.createDatum(nextDecade).add(w);
-            } else {
-                newMin= u.createDatum(nextDecade).multiply(5);                
+            switch (linearDivider.getSignificand()) {
+                case 2:
+                    newMin= u.createDatum(nextDecade).multiply(2);
+                    break;
+                case 1:
+                    newMin= u.createDatum(nextDecade).add(w);                
+                    break;
+                default:
+                    newMin= u.createDatum(nextDecade).multiply(5);
+                    break;
             }
             current= DatumRange.newRange( newMin, newMin.add( w ) );
             m= current.min();
