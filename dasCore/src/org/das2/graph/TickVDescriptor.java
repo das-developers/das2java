@@ -477,7 +477,7 @@ public class TickVDescriptor {
         }
         double logMin = Math.log10(min);
         double logMax = Math.log10(max);
-        int ntick0 = (int) (Math.floor(logMax * 0.999) - Math.ceil(logMin * 1.001) + 1);
+        int ntick0 = (int) (Math.floor(logMax * 0.9999) - Math.ceil(logMin * 1.0001) + 1);
 
         if ( ntick0 < 2 ) {
             if ( max/min<3.5 ) { // https://github.com/das-developers/das2java/issues/83
