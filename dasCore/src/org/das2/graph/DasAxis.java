@@ -1737,6 +1737,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
 
         nTicksMax = (nTicksMax < 20) ? nTicksMax : 20;
+        if ( nTicksMax<2 ) nTicksMax= 2;
 
         TickVDescriptor tickV1 = TickVDescriptor.bestTickVLogNew( dr.min(), dr.max(), 2, nTicksMax, true);  //https://github.com/das-developers/das2java/issues/51
         
