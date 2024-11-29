@@ -78,7 +78,7 @@ public class LogLinDomainDivider implements DomainDivider {
         Units u= m.getUnits();
 
         while ( m.le(max) ) {
-            while ( m.value()<nextDecade*0.9999 ) { // kludge for real number fuzz...
+            while ( m.value()<nextDecade*1.00001 ) { // kludge for real number fuzz...
                 if ( m.ge(min) && m.le(max) ) {
                     bb.add(m);
                 }
@@ -87,7 +87,14 @@ public class LogLinDomainDivider implements DomainDivider {
                 m= current.min();
             }
             Datum w= current.width().multiply(10);
-            Datum newMin= u.createDatum(nextDecade);
+            Datum newMin;
+            if ( linearDivider.getSignificand()==2 ) {
+                newMin= u.createDatum(nextDecade).multiply(2);
+            } else if ( linearDivider.getSignificand()==1 ) {
+                newMin= u.createDatum(nextDecade).add(w);
+            } else {
+                newMin= u.createDatum(nextDecade).multiply(5);                
+            }
             current= DatumRange.newRange( newMin, newMin.add( w ) );
             m= current.min();
             nextDecade= nextDecade*10;
