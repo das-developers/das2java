@@ -42,6 +42,10 @@ public class LogLinDomainDivider implements DomainDivider {
 
     private LogLinDomainDivider(LinearDomainDivider linearDivider) {
         this.linearDivider = linearDivider;
+        int significand= linearDivider.getSignificand();
+        if ( significand!=1 && significand!=2 && significand!=5 ) {
+            throw new IllegalArgumentException("significand must be 1, 2, or 5.");
+        }
     }
 
     @Override
@@ -123,7 +127,7 @@ public class LogLinDomainDivider implements DomainDivider {
 
     /**
      * return the number of decimal places used.  For example,
-     *  ..., 0.8e0, 0.9e0, 1.1e1, 1.2e1, 1.3e1, ... yeilds 2.
+     *  ..., 0.8e0, 0.9e0, 1.1e1, 1.2e1, 1.3e1, ... yields 2.
      * @return
      */
     protected int sigFigs() {
