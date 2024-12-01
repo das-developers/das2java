@@ -91,19 +91,15 @@ public class LogLinDomainDivider implements DomainDivider {
                 m= current.min();
             }
             Datum w= current.width().multiply(10);
-            Datum newMin;
-            switch (linearDivider.getSignificand()) {
-                case 2:
-                    newMin= u.createDatum(nextDecade).multiply(2);
-                    break;
-                case 1:
-                    newMin= u.createDatum(nextDecade).add(w);                
-                    break;
-                default:
-                    newMin= u.createDatum(nextDecade).multiply(5);
-                    break;
+            decade= decade*10;
+            int nstep= (int) ( Math.floor( (decade*10) - decade ) / w.value() );
+            
+            Datum newMin= u.createDatum( (decade*10)  - nstep * w.value() );
+            Datum newMax= newMin.add(w);
+            current= new DatumRange(newMin,newMax);
+            if ( newMin.value()==decade ) {
+                current= current.next();
             }
-            current= DatumRange.newRange( newMin, newMin.add( w ) );
             m= current.min();
             nextDecade= nextDecade*10;
         }
