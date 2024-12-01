@@ -672,6 +672,12 @@ public class DasColorBar extends DasAxis {
             // index should go from 0-255.
             // truncate when ncolor>COLORTABLE_SIZE
             
+            for ( int i=0; i<red.length; i++ ) {
+                if ( red[i]<0 || red[i]>255 ) throw new IllegalArgumentException("red["+i+"] is outside 0-255: "+red[i]);
+                if ( green[i]<0 || green[i]>255 ) throw new IllegalArgumentException("green["+i+"] is outside 0-255: "+green[i]);
+                if ( blue[i]<0 || blue[i]>255 ) throw new IllegalArgumentException("blue["+i+"] is outside 0-255: "+blue[i]);
+            }
+            
             if ( top>255 )  throw new IllegalArgumentException("top can be no more than 255");
             if ( bottom<0 ) throw new IllegalArgumentException("bottom can be no less than 0");
             if ( bottom>top ) throw new IllegalArgumentException("bottom must be less than top");
