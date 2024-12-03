@@ -2618,23 +2618,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 // check that the ticks are up-to-date.  autoplot_test033 showed this was happening.
                 if ( ticks!=null ) {
                     DatumVector majorTicks = ticks.getMajorTicks();
-                    DatumRange x= DatumRangeUtil.union( majorTicks.get(0), majorTicks.get(majorTicks.getLength()-1));
-                    boolean recalcTicks= false;
-                    DatumRange thisDatumRange= this.getDatumRange();
-                    if ( x.intersects(thisDatumRange) ) {
-                        if ( x.intersection(thisDatumRange).width().divide( thisDatumRange.width() ).value()<0.3 ) {
-                            recalcTicks= true;
-                        }
-                    } else {
-                        recalcTicks= true;
-                    }
-                    
-                    if ( recalcTicks ) {
-                        logger.fine("last ditch effort to get useful ticks that we didn't get before because of thread order");
-                        TickVDescriptor ticks2= TickMaster.getInstance().requestTickV(this);
-                        if ( ticks2!=null ) ticks= ticks2;
-                        majorTicks = ticks.getMajorTicks();
-                        x= DatumRangeUtil.union( majorTicks.get(0), majorTicks.get(majorTicks.getLength()-1));
+                    if ( majorTicks.getLength()>0 ) {
+                        DatumRange x= DatumRangeUtil.union( majorTicks.get(0), majorTicks.get(majorTicks.getLength()-1));
+                        boolean recalcTicks= false;
+                        DatumRange thisDatumRange= this.getDatumRange();
                         if ( x.intersects(thisDatumRange) ) {
                             if ( x.intersection(thisDatumRange).width().divide( thisDatumRange.width() ).value()<0.3 ) {
                                 recalcTicks= true;
@@ -2642,9 +2629,24 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                         } else {
                             recalcTicks= true;
                         }
+                        
                         if ( recalcTicks ) {
-                            System.err.println("still doesn't fit, see https://sourceforge.net/p/autoplot/bugs/1820/");
-                            ticks2= TickMaster.getInstance().requestTickV(this); // fun grins and debugging.
+                            logger.fine("last ditch effort to get useful ticks that we didn't get before because of thread order");
+                            TickVDescriptor ticks2= TickMaster.getInstance().requestTickV(this);
+                            if ( ticks2!=null ) ticks= ticks2;
+                            majorTicks = ticks.getMajorTicks();
+                            x= DatumRangeUtil.union( majorTicks.get(0), majorTicks.get(majorTicks.getLength()-1));
+                            if ( x.intersects(thisDatumRange) ) {
+                                if ( x.intersection(thisDatumRange).width().divide( thisDatumRange.width() ).value()<0.3 ) {
+                                    recalcTicks= true;
+                                }
+                            } else {
+                                recalcTicks= true;
+                            }
+                            if ( recalcTicks ) {
+                                System.err.println("still doesn't fit, see https://sourceforge.net/p/autoplot/bugs/1820/");
+                                ticks2= TickMaster.getInstance().requestTickV(this); // fun grins and debugging.
+                            }
                         }
                     }
                 } else {
