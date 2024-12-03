@@ -160,6 +160,7 @@ public class AsciiParser {
     StringBuffer headerBuffer = new StringBuffer();
 
     private AsciiParser(String[] fieldNames) {
+        this();
         setRegexParser(fieldNames);
     }
 
@@ -2375,14 +2376,6 @@ public class AsciiParser {
                     parser.fieldNames[i]= gg[i];
                 }
             }
-
-            for (Units unit : parser.units) {
-                if (unit != null && Units.dimensionless.isConvertibleTo(unit)) {
-                    doGuessUnits= false;
-                }
-            }
-            logger.log(Level.CONFIG, "doGuessUnits={0}", doGuessUnits);
-
         }
 
         @Override
@@ -2403,7 +2396,7 @@ public class AsciiParser {
                     String[] ss= new String[parser.fieldCount];
                     for ( int i=0; i< parser.fieldCount; i++ ) {
                         ss[i]= m.group(i+1);
-                    }
+                    }                    
                     parser.initializeUnitsByGuessing( ss, 0 );
                     this.doGuessUnits= false;
                 }
