@@ -650,6 +650,20 @@ public class DatumRangeUtil {
             if ( parts[1].contains("T") || isDuration1 ) {
                 lsd= parseISO8601Datum( parts[1], digits1, lsd );
             } else {
+                int i0= parts[0].lastIndexOf(".");
+                if ( i0>-1 ) {
+                    int i1= parts[1].lastIndexOf(".");
+                    String fractionalPart0= parts[0].substring(i0);
+                    if ( i1>-1 ) {
+                        String fractionalPart1= parts[1].substring(i1);
+                        if ( fractionalPart0.length()<fractionalPart1.length() ) {
+                            parts[0]= parts[0] + "000000000".substring(fractionalPart1.length()-fractionalPart0.length());
+                        } else if ( fractionalPart0.length()>fractionalPart1.length() ) {
+                            parts[1]= parts[1] + "000000000".substring(0,fractionalPart0.length()-fractionalPart1.length());
+                        }
+                    }
+                }
+                //TODO: bug here, where it assumes precision of second is the same as the first.
                 String t= parts[0].substring(0,parts[0].length()-parts[1].length())+ parts[1];
                 lsd= parseISO8601Datum( t, digits1, lsd );
             }
