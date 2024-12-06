@@ -201,6 +201,10 @@ public class DatumRangeEditor extends JComponent implements PropertyEditor, Tabl
                     return value;
                 }
             }
+            if ( !allowZeroWidth && dr.width().value()==0 ) {
+                editor.setText(value.toString());
+                return value;
+            }
             if (!dr.equals(value) ) {
                 DatumRange oldValue = value;
                 value = dr;
@@ -260,6 +264,20 @@ public class DatumRangeEditor extends JComponent implements PropertyEditor, Tabl
         return units;
     }
     
+    private boolean allowZeroWidth = true;
+
+    public static final String PROP_ALLOWZEROWIDTH = "allowZeroWidth";
+
+    public boolean isAllowZeroWidth() {
+        return allowZeroWidth;
+    }
+
+    public void setAllowZeroWidth(boolean allowZeroWidth) {
+        boolean oldAllowZeroWidth = this.allowZeroWidth;
+        this.allowZeroWidth = allowZeroWidth;
+        firePropertyChange(PROP_ALLOWZEROWIDTH, oldAllowZeroWidth, allowZeroWidth);
+    }
+
     private void fireActionPerformed() {
         setDatumRange(getDatumRange());
         if (actionListener != null) {
