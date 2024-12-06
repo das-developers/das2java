@@ -907,7 +907,7 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
 
     private void imageButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_imageButtonActionPerformed
         if ( JOptionPane.OK_OPTION==
-                JOptionPane.showConfirmDialog( this, imagePanel, "Psym Options", JOptionPane.OK_CANCEL_OPTION ) ) {
+                JOptionPane.showConfirmDialog( this, imagePanel, "Image Options", JOptionPane.OK_CANCEL_OPTION ) ) {
             StringBuilder textb= new StringBuilder( "!(painter;img" );
             textb.append(";").append(imageUrlTF.getText());
             if ( imageSizeCB.isSelected() ) {
