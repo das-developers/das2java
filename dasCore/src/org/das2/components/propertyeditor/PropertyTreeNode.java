@@ -9,9 +9,13 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.Enumeration;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 import org.das2.DasApplication;
+import org.das2.datum.DatumRange;
+import org.das2.util.LoggerManager;
 
 public class PropertyTreeNode implements PropertyTreeNodeInterface {
     
@@ -30,6 +34,8 @@ public class PropertyTreeNode implements PropertyTreeNodeInterface {
     protected boolean dirty;
     
     protected boolean childDirty;
+    
+    private static final Logger logger = DasLogger.getLogger( DasLogger.DASML_LOG );
     
     PropertyTreeNode( Object value ) {
         this.value = value;
@@ -227,7 +233,7 @@ public class PropertyTreeNode implements PropertyTreeNodeInterface {
     public void flush() {
         try {
             if (dirty) {
-                DasLogger.getLogger( DasLogger.DASML_LOG).fine("flushing property "+absPropertyName()+"="+value );
+                logger.log(Level.FINE, "flushing property {0}={1}", new Object[]{absPropertyName(), value});
                 Method writeMethod = propertyDescriptor.getWriteMethod();
                 writeMethod.invoke(parent.value, new Object[]{value});
                 dirty = false;
