@@ -202,7 +202,7 @@ public class DatumRangeEditor extends JComponent implements PropertyEditor, Tabl
                 }
             }
             if ( !allowZeroWidth && dr.width().value()==0 ) {
-                editor.setText(value.toString());
+                showErrorUsage( text, "zero-width ranges are not allowed." );
                 return value;
             }
             if (!dr.equals(value) ) {
