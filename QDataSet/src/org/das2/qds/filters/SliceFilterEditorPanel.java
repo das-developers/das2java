@@ -264,12 +264,20 @@ public class SliceFilterEditorPanel extends AbstractFilterEditorPanel implements
                             }
                         }
                     }
-                }        
+                }                        
                 if ( na ) {
                     if ( getIndexMode() ) {
                         sliceAtDatumTF.setText("N/A");
                         sliceAtDatumTF.setToolTipText("value is not available");
+                        sliceAtDatumTF.setEnabled(false);
+                        sliceAtDatumButton.setEnabled(false);
+                    } else {
+                        //sliceAtDatumTF.setEnabled(true);
+                        //sliceAtDatumButton.setEnabled(true);                        
                     }
+                } else {
+                    //sliceAtDatumTF.setEnabled(true);
+                    //sliceAtDatumButton.setEnabled(true);
                 }
             }
         };
