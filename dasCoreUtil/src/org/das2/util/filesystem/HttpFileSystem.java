@@ -1026,7 +1026,7 @@ public class HttpFileSystem extends WebFileSystem {
      * (".") has been left in the name, so that "." matches ".", and really 
      * screen.png would match screen_png.  To contain this logic, this routine
      * is introduced.  Presently it just checks for "screen.png" so that a 
-     * pngwalk of each screenshot (http://autoplot.org/jnlp/v$x/screen.png) can
+     * pngwalk of each screenshot (https://autoplot.org/jnlp/v$x/screen.png) can
      * be made, which is useful when looking for old versions.      
      * 
      * @param regex
