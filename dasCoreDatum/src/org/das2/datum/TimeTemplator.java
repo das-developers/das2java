@@ -7,6 +7,7 @@ package org.das2.datum;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -23,7 +24,7 @@ import javax.swing.table.DefaultTableModel;
  * Experiment with a tool for quickly creating time templates.  This has 
  * a fair amount of work to be done, but I think it would be useful:
  * 1. variable length fields need to be supported.
- * 2. there's a bug where the indeces sent to the field picker are not adjusted for template lengths.
+ * 2. there's a bug where the indices sent to the field picker are not adjusted for template lengths.
  * 3. support for recognizing enums.
  * 4. controls/columns added for enums in table.
  * @author jbf
@@ -52,7 +53,7 @@ public class TimeTemplator extends javax.swing.JPanel {
         jTable1 = new javax.swing.JTable();
         templateTextField = new javax.swing.JTextField();
         fieldTypeButton = new javax.swing.JButton();
-        jButton1 = new javax.swing.JButton();
+        sortByButton = new javax.swing.JButton();
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -81,10 +82,10 @@ public class TimeTemplator extends javax.swing.JPanel {
             }
         });
 
-        jButton1.setText("Sort By");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        sortByButton.setText("Sort By");
+        sortByButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                sortByButtonActionPerformed(evt);
             }
         });
 
@@ -98,10 +99,10 @@ public class TimeTemplator extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(fieldTypeButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(sortByButton, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
-        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {fieldTypeButton, jButton1});
+        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {fieldTypeButton, sortByButton});
 
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -109,7 +110,7 @@ public class TimeTemplator extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(templateTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(fieldTypeButton)
-                    .addComponent(jButton1))
+                    .addComponent(sortByButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 275, Short.MAX_VALUE))
         );
@@ -136,14 +137,21 @@ public class TimeTemplator extends javax.swing.JPanel {
         templateTextField.setText(ttfp.getTemplate());
     }//GEN-LAST:event_fieldTypeButtonActionPerformed
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+    private void sortByButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sortByButtonActionPerformed
         final int i0= templateTextField.getSelectionStart();
         final int i1= templateTextField.getSelectionEnd();
+        if ( i0==i1 ) {
+            setFormattedTable( formatted );
+            return;
+        }
         int imax= Integer.MIN_VALUE;
         int imin= Integer.MAX_VALUE;
         if ( this.formatted!=null ) {
             Map<String,Integer> other= new LinkedHashMap();
             for ( String formatted1 : formatted ) {
+                if ( i0>=formatted1.length() ) {
+                    continue;
+                }
                 String s = formatted1.substring(i0, i1); // extract the field
                 try {
                     int i=  Integer.parseInt(s);
@@ -165,19 +173,39 @@ public class TimeTemplator extends javax.swing.JPanel {
                     public int compare(Object o1, Object o2) {
                         String s1= (String)o1;
                         String s2= (String)o2;
-                        return s1.substring(i0,i1).compareTo(s2.substring(i0,i1) );
+                        if ( i0>s1.length() ) {
+                            return 1;
+                        } else if ( i0>s2.length() ) {
+                            return -1;
+                        }
+                        s1= s1.substring(i0,i1);
+                        s2= s2.substring(i0,i1);
+                        return s1.compareTo(s2);
                     }
                 } );
             
             setFormattedTable( sformatted.toArray(new String[sformatted.size()]) );
         }
-    }//GEN-LAST:event_jButton1ActionPerformed
+    }//GEN-LAST:event_sortByButtonActionPerformed
 
     private void setFormattedTable( String[] formatted ) {
+        TimeParser tp;
+        try {
+            tp = TimeParser.create(templateTextField.getText());
+        } catch ( IllegalArgumentException ex ) {
+            tp= null;
+        }
         DefaultTableModel dtm= new DefaultTableModel(formatted.length,2);
         for ( int i=0; i<formatted.length; i++ ) {
             dtm.setValueAt( formatted[i], i, 0 );
-            dtm.setValueAt( "", i, 1 );
+            try {
+                dtm.setValueAt( tp.parse( formatted[i] ).getTimeRange().toString(), i, 1 );
+            } catch ( ParseException ex ) {
+                dtm.setValueAt( "", i, 1 );
+            } catch ( IllegalArgumentException ex ) {
+                dtm.setValueAt( "", i, 1 );
+            }
+            
         }
         this.jTable1.setModel(dtm);
         this.formatted= formatted;
@@ -202,9 +230,9 @@ public class TimeTemplator extends javax.swing.JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton fieldTypeButton;
-    private javax.swing.JButton jButton1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTable jTable1;
+    private javax.swing.JButton sortByButton;
     private javax.swing.JTextField templateTextField;
     // End of variables declaration//GEN-END:variables
 }

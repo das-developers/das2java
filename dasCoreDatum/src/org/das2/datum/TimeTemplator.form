@@ -22,7 +22,7 @@
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="fieldTypeButton" linkSize="1" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="jButton1" linkSize="1" min="-2" pref="59" max="-2" attributes="0"/>
+              <Component id="sortByButton" linkSize="1" min="-2" pref="59" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -32,7 +32,7 @@
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="templateTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="fieldTypeButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="jButton1" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="sortByButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="jScrollPane1" pref="275" max="32767" attributes="0"/>
@@ -76,12 +76,12 @@
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="fieldTypeButtonActionPerformed"/>
       </Events>
     </Component>
-    <Component class="javax.swing.JButton" name="jButton1">
+    <Component class="javax.swing.JButton" name="sortByButton">
       <Properties>
         <Property name="text" type="java.lang.String" value="Sort By"/>
       </Properties>
       <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jButton1ActionPerformed"/>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="sortByButtonActionPerformed"/>
       </Events>
     </Component>
   </SubComponents>
