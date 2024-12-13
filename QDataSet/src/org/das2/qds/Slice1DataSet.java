@@ -5,8 +5,10 @@
 package org.das2.qds;
 
 import java.util.Map;
+import java.util.logging.Logger;
 import org.das2.datum.EnumerationUnits;
 import org.das2.datum.Units;
+import org.das2.util.LoggerManager;
 
 /**
  * return a rank N-1 dataset from a rank N dataset by slicing on the second
@@ -24,6 +26,8 @@ public final class Slice1DataSet extends AbstractDataSet {
 
     QDataSet ds;
     int index;
+    
+    private static final Logger logger = LoggerManager.getLogger("qdataset.ops");
 
     public Slice1DataSet(QDataSet ds, int index) {
         this( ds, index, true, false );
@@ -85,7 +89,11 @@ public final class Slice1DataSet extends AbstractDataSet {
                 //putProperty( QDataSet.NAME, bds.property(QDataSet.NAME,index) ); //TODO: slice2 and slice3 are different.
             } else {
                 if ( addContext ) {
-                    DataSetUtil.addContext( this, context );
+                    if ( context!=null && context.svalue().equals("null") ) {
+                        logger.fine("not adding string null, which happens with HAPI datasets when they don't have labels.");
+                    } else {
+                        DataSetUtil.addContext( this, context );
+                    }
                 }
             }
             if ( ds.rank()==2 ) { // it should
