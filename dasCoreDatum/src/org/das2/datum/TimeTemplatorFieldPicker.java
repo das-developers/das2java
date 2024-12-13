@@ -1,8 +1,4 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package org.das2.datum;
 
 import java.util.LinkedHashMap;
@@ -48,18 +44,22 @@ public class TimeTemplatorFieldPicker extends javax.swing.JPanel {
         if ( this.formatted!=null ) {
             Map<String,Integer> other= new LinkedHashMap();
             for ( String formatted1 : formatted ) {
-                String s = formatted1.substring(i0, i1);
                 try {
-                    int i=  Integer.parseInt(s);
-                    imin= Math.min( imin, i );
-                    imax= Math.max( imax, i );
-                } catch ( NumberFormatException ex ) {
-                    Integer i= other.get(s);
-                    if ( i==null ) {
-                        other.put( s, 1 );
-                    } else {
-                        other.put( s, i+1 );
+                    String s = formatted1.substring(i0, i1);
+                    try {
+                        int i=  Integer.parseInt(s);
+                        imin= Math.min( imin, i );
+                        imax= Math.max( imax, i );
+                    } catch ( NumberFormatException ex ) {
+                        Integer i= other.get(s);
+                        if ( i==null ) {
+                            other.put( s, 1 );
+                        } else {
+                            other.put( s, i+1 );
+                        }
                     }
+                } catch ( IndexOutOfBoundsException ex ) {
+                    System.err.println("Resulted in IndexOutOfBoundsException: "+formatted1);
                 }
             }
             if ( other.isEmpty() && imax>Integer.MIN_VALUE ) {
@@ -73,7 +73,6 @@ public class TimeTemplatorFieldPicker extends javax.swing.JPanel {
                 }
                 statsLabel.setText( "Includes: "+b.toString() );
             }
-            statsLabel.setText("<html><a href=''>more</a>"+statsLabel.getText());
             
         }
         this.templateTextField.setSelectionStart(selectionStart);
