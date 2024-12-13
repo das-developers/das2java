@@ -74,7 +74,7 @@ public abstract class Units {
 
     /**
      * return the preferred unit to use when there are multiple representations
-     * of the same unit (having conversion UnitsConverter.IDENTITY.
+     * of the same unit (having conversion UnitsConverter.IDENTITY).
      * @param units
      * @return the preferred unit
      */
@@ -450,13 +450,13 @@ public abstract class Units {
     
     protected Units( String id ) {
         this( id, "" );
-    };
+    }
     
     protected Units( String id, String description ) {
         this.id= id;
         this.description= description;
         unitsMap.put( id, this );
-    };
+    }
     
     /**
      * get the id uniquely identifying the units.  Note the id may contain
@@ -481,14 +481,6 @@ public abstract class Units {
         }
     }
     
-    /**
-     * return the units to which this unit is convertible.
-     * @return the units to which this unit is convertible.
-     * @deprecated use getConvertibleUnits, which is spelled correctly.
-     */
-    public Units[] getConvertableUnits() {
-        return getConvertibleUnits();
-    }
     
     /**
      * return the units to which this unit is convertible.
@@ -509,19 +501,16 @@ public abstract class Units {
             }
         }
         // sort the list
-        Comparator c= new Comparator() {
-            @Override
-            public int compare(Object o1, Object o2) {
-                Units u1= (Units)o1;
-                Units u2= (Units)o2;
-                if ( UnitsUtil.isTimeLocation( u1 ) ) {
+        Comparator c= (Comparator) (Object o1, Object o2) -> {
+            Units u1= (Units)o1;
+            Units u2= (Units)o2;
+            if ( UnitsUtil.isTimeLocation( u1 ) ) {
+                return u1.toString().compareTo(u2.toString());
+            } else {
+                try {
+                    return u1.convertDoubleTo( u2, 1.0 ) < 1.0 ? -1 : 1;
+                } catch ( RuntimeException ex ) {
                     return u1.toString().compareTo(u2.toString());
-                } else {
-                    try {
-                        return u1.convertDoubleTo( u2, 1.0 ) < 1.0 ? -1 : 1;
-                    } catch ( RuntimeException ex ) {
-                        return u1.toString().compareTo(u2.toString());
-                    }
                 }
             }
         };
@@ -530,16 +519,6 @@ public abstract class Units {
         return resultArray;
     }
     
-    /**
-     * return true if the unit can be converted to toUnits.
-     * @deprecated use isConvertibleTo (which does not contain spelling error)
-     * @param toUnits Units object.
-     * @return true if the unit can be converted to toUnits.
-     */
-    public boolean isConvertableTo( Units toUnits ) {
-        UnitsConverter result= getConverterInternal(this, toUnits);
-        return result!=null;
-    }
 
     /**
      * return true if the unit can be converted to toUnits.
@@ -784,7 +763,8 @@ public abstract class Units {
     /**
      * return canonical das2 unit for colloquial time.
      * @param s string containing time unit like s, sec, millisec, etc.
-     * @return
+     * @return the unit or ParseException if the unit is not recognized.
+     * @throws java.text.ParseException
      */
     public static Units lookupTimeLengthUnit(String s) throws ParseException {
         s= s.toLowerCase().trim();
