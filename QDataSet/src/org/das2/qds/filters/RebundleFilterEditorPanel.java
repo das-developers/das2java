@@ -40,7 +40,7 @@ public class RebundleFilterEditorPanel extends AbstractFilterEditorPanel impleme
 
         rebundleValueTextField.setText(" ");
 
-        jLabel2.setText("Comma-separated list of names or indecies, starting with 0:");
+        jLabel2.setText("Comma-separated list of names or indices, starting with 0:");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -91,7 +91,7 @@ public class RebundleFilterEditorPanel extends AbstractFilterEditorPanel impleme
     @Override
     public void setInput(QDataSet ds) {
         String[] ss= DataSetOps.bundleNames(ds);
-        bundleNamesLabel.setText( String.join(",",ss) );
+        bundleNamesLabel.setText( "Dataset names: " + String.join(",",ss) );
     }
     
 }
