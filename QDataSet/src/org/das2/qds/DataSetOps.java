@@ -1978,7 +1978,7 @@ public class DataSetOps {
      * @param bundle1 rank 2 bundle descriptor of length n with indexed properties.  This was introduced
      * when sloppy slice code was using the NAME and dropping the LABEL.
      * @param index 0&lt;=index&lt;n index of the unbundle
-     * @return rank 0 QDataSet.
+     * @return rank 0 QDataSet
      */
     protected static QDataSet getContextForUnbundle( QDataSet bundle1, int index ) {
         String tname= (String) bundle1.property(QDataSet.NAME);
