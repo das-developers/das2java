@@ -703,9 +703,9 @@ public abstract class Units {
     public abstract DatumFormatterFactory getDatumFormatterFactory();
     
     /**
-     * parse the string in the context of these units.  The unit may
+     * parse the string in the context of these units.  The string may
      * throw a parse exception if it cannot be parsed, or may return
-     * a 
+     * a known unit.
      * @param s
      * @return
      * @throws ParseException 
