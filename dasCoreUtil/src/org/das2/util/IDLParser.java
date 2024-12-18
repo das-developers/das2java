@@ -130,10 +130,10 @@ public class IDLParser {
         for (int iexpr=0; iexpr<exprs.size(); iexpr++) {
             IDLValue expr= (IDLValue) exprs.get(iexpr);
             if (expr.type==IDLValue.SCALAR) {
-                aValue.add(new Double(expr.sValue));  // ==null?
+                aValue.add(expr.sValue);  // ==null?
             } else {
                 for (int i=0; i<expr.aValue.length; i++)
-                    aValue.add(new Double(expr.aValue[i]));
+                    aValue.add(expr.aValue[i]);
             }
         }
         result.aValue= new double[aValue.size()];
