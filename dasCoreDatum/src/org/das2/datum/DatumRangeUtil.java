@@ -447,12 +447,18 @@ public class DatumRangeUtil {
      * "2012-03-27T12:22:36.786Z"
      * "2012-03-27T12:22:36"
      * (and some others) TODO: enumerate and test.
-     * TODO: this should use parseISO8601Datum.
      * @param str iso8601 string.
      * @return null or int[7]: [ Y, m, d, H, M, S, nano ]
      */
     public static int[] parseISO8601 ( String str ) {
 
+        try {
+            int[] result= new int[7];
+            parseISO8601Datum( str, result, -1 );
+            return result;
+        } catch ( RuntimeException ex ) {
+            
+        }
         Matcher m;
 
         m= time1.matcher(str);
