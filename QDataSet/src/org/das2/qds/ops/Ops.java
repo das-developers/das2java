@@ -10486,6 +10486,8 @@ public final class Ops {
         qresult.putProperty( QDataSet.USER_PROPERTIES, Collections.singletonMap( "count", count ) );
         qresult.putProperty( QDataSet.BINS_0, "min,maxInclusive" );
         qresult.putProperty( QDataSet.UNITS, ds.property(QDataSet.UNITS ) );
+        String format= (String) ds.property(QDataSet.FORMAT);
+        if ( format!=null ) qresult.putProperty( QDataSet.FORMAT, format );
         if ( result[0]==fill ) qresult.putProperty( QDataSet.FILL_VALUE, fill);
         
         logger.exiting( CLASSNAME, "extent" );
