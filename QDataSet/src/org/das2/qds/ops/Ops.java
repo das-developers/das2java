@@ -5208,14 +5208,31 @@ public final class Ops {
     /**
      * tool for creating ad-hoc events datasets.
      * @param append null or a dataset to append the result.  This events dataset must have [starttime, endtime, RBG color, string] for each record.
-     * @param timeRange a timerange like "2010-01-01" or "2010-01-01/2010-01-10" or "2010-01-01 through 2010-01-09"
+     * @param timeRange a timerange like "2010-01-01" or "2010-01-01/2010-01-10" or "2010-01-01 through 2010-01-09" or "64-96"
      * @param rgbcolor an RGB color like 0xFF0000 (red), 0x00FF00 (green), or 0x0000FF (blue).  
      * @param annotation label for event, possibly including granny codes.
      * @return a rank 2 QDataSet with [[ startTime, stopTime, rgbColor, annotation  ]]
      */
     public static QDataSet createEvent( QDataSet append, String timeRange, int rgbcolor, String annotation ) {
-        DatumRange dr= DatumRangeUtil.parseTimeRangeValid(timeRange);        
-        return createEvent( append, dr, rgbcolor, annotation );
+        try {
+            DatumRange dr= DatumRangeUtil.parseTimeRangeValid(timeRange);        
+            return createEvent( append, dr, rgbcolor, annotation );
+        } catch ( IllegalArgumentException ex ) {
+            Pattern p= Pattern.compile("(\\d+)-(\\d+)");
+            Matcher m= p.matcher(timeRange);
+            if ( m.matches() ) {
+                int d1= Integer.parseInt(m.group(1));
+                int d2= Integer.parseInt(m.group(2));
+                if ( d1<=d2 ) {
+                    DatumRange dr= DatumRange.newRange( d1, d2 );
+                    return createEvent( append, dr, rgbcolor, annotation );
+                } else {
+                    throw ex;
+                }
+            } else {
+                throw ex;
+            }
+        }
     }
     
     /**
