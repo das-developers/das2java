@@ -5218,11 +5218,17 @@ public final class Ops {
             DatumRange dr= DatumRangeUtil.parseTimeRangeValid(timeRange);        
             return createEvent( append, dr, rgbcolor, annotation );
         } catch ( IllegalArgumentException ex ) {
-            Pattern p= Pattern.compile("(\\d+)-(\\d+)");
+            Pattern p= Pattern.compile("(\\d+)-(\\d+)|(\\d{4}).*through.*(\\d{4})");
             Matcher m= p.matcher(timeRange);
             if ( m.matches() ) {
-                int d1= Integer.parseInt(m.group(1));
-                int d2= Integer.parseInt(m.group(2));
+                int d1,d2;
+                if ( m.group(1)!=null ) {
+                    d1= Integer.parseInt(m.group(1));
+                    d2= Integer.parseInt(m.group(2));
+                } else {
+                    d1= Integer.parseInt(m.group(3));
+                    d2= Integer.parseInt(m.group(4));
+                }
                 if ( d1<=d2 ) {
                     DatumRange dr= DatumRange.newRange( d1, d2 );
                     return createEvent( append, dr, rgbcolor, annotation );
