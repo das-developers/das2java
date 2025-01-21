@@ -29,6 +29,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * present part of a filesystem as a filesystem.
@@ -82,5 +84,25 @@ public class SubFileSystem extends FileSystem {
     public String toString() {
         return "subfs "+parent.toString()+" " +dir;
     }
+    
+    /**
+     * return the parent filesystem.
+     * @return the parent filesystem.
+     */
+    protected FileSystem getParent() {
+        return parent;
+    }
+
+    @Override
+    public FileSystem createFileSystem(String directory) throws URISyntaxException {
+        if ( directory.startsWith("/") ) directory= directory.substring(1);
+        try {
+            return new SubFileSystem(parent, dir + directory);
+        } catch (MalformedURLException ex) {
+            throw new IllegalArgumentException(ex);
+        }
+    }
+    
+    
     
 }

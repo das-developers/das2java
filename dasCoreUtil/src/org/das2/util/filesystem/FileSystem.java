@@ -539,7 +539,8 @@ public abstract class FileSystem  {
         registry.put("http",new HttpFileSystemFactory() );
         registry.put("https",new HttpFileSystemFactory() );
         registry.put("ftp",new FtpFileSystemFactory() );
-		  
+        registry.put("zip", new ZipFileSystemFactory());
+
 		  // The das2 federated catalog navigation is most smoothly handled by creating a
 		  // web file system for it.  Leaving this out until after AGU. -cwp
 		  // registry.put("dfc",new DfcFileSystemFactory() ); 
