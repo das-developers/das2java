@@ -12,6 +12,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.text.ParseException;
 import java.util.*;
@@ -31,7 +32,9 @@ import org.das2.util.filesystem.FileObject;
 import org.das2.util.filesystem.FileSystem;
 import org.das2.util.filesystem.FileSystemUtil;
 import org.das2.util.filesystem.LocalFileSystem;
+import org.das2.util.filesystem.SubFileSystem;
 import org.das2.util.filesystem.WebFileSystem;
+import org.das2.util.filesystem.ZipFileSystem;
 import org.das2.util.monitor.NullProgressMonitor;
 import org.das2.util.monitor.ProgressMonitor;
 import org.das2.util.monitor.SubTaskMonitor;
@@ -145,8 +148,25 @@ public class FileStorageModel {
     public static FileSystem getChildFileSystem( FileSystem root, String child, ProgressMonitor monitor ) throws FileSystem.FileSystemOfflineException, UnknownHostException, FileNotFoundException {
         FileSystem result; 
         if ( root.getRootURI().getScheme().equals("file") ) {
-            File localRoot= ((LocalFileSystem)root).getLocalRoot();
-            result= FileSystem.create( new File( localRoot, child ).toURI(), monitor.getSubtaskMonitor("create") );
+            if ( root instanceof LocalFileSystem ) {
+                File localRoot= ((LocalFileSystem)root).getLocalRoot();
+                result= FileSystem.create( new File( localRoot, child ).toURI(), monitor.getSubtaskMonitor("create") );
+            } else if ( root instanceof SubFileSystem ) {
+                try {
+                    result= root.createFileSystem(child);
+                } catch (URISyntaxException ex) {
+                    throw new IllegalArgumentException(ex);
+                }
+            } else if ( root instanceof ZipFileSystem ) {
+                try {
+                    result= root.createFileSystem(child); // ((ZipFileSystem)root).createFileSystem(child);
+                } catch (URISyntaxException ex) {
+                    throw new IllegalArgumentException(ex);
+                }
+            } else {
+                throw new IllegalArgumentException("not supported, should not happen");
+            }
+            
         } else {
             result= FileSystem.create( root.getRootURI().resolve( child ), monitor.getSubtaskMonitor("create") ); // 3523492: allow the FS type to change; eg to zip.
         }
