@@ -39,7 +39,7 @@ public final class Slice3DataSet extends AbstractDataSet {
                 //throw new IndexOutOfBoundsException("dataset is empty and slice3 index is out of bounds");
             }
         } else {        
-            if ( index>= ds.length(0,0) ) throw new IndexOutOfBoundsException("slice3 index is out of bounds");
+            if ( index>= ds.length(0,0,0) ) throw new IndexOutOfBoundsException("slice3 index is out of bounds");
         }
  
         if ( addContext ) {
