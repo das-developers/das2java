@@ -6865,6 +6865,18 @@ public final class Ops {
     
     /**
      * returns a dataset containing the indices of where the dataset is non-zero.
+     * This is used when the code using this assumes a rank 1 result.
+     * @param ds a rank 1 QDataSet
+     * @return rank 1 array of index where the data is valid and non-zero.
+     * @see #where(org.das2.qds.QDataSet) 
+     */
+    public static QDataSet whereR1( QDataSet ds ) {
+        if ( ds.rank()!=1 ) throw new IllegalArgumentException("data input to whereR1 must be rank 1");
+        return where(ds);
+    }
+    
+    /**
+     * returns a dataset containing the indices of where the dataset is non-zero.
      * For a rank 1 dataset, returns a rank 1 dataset with indices for the values.
      * For a higher rank dataset, returns a rank 2 qube dataset with ds.rank()
      * elements in the first dimension.  Note when the dataset is all zeros (false),
