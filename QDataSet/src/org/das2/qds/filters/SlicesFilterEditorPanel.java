@@ -43,7 +43,7 @@ public class SlicesFilterEditorPanel extends AbstractFilterEditorPanel implement
             if ( checkboxs[i].isSelected() ) {
                 result.append(sep).append(spinners[i].getValue());
             } else {
-                result.append(sep).append("':'");
+                result.append(sep).append(":");
             }
         }
         result.append(")");
