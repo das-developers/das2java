@@ -120,6 +120,7 @@ public class SlicesFilterEditorPanel extends AbstractFilterEditorPanel implement
                         cb1.setSelected(false);
                     } else {
                         sp1.setValue(Integer.parseInt(s));
+                        sp1.setEnabled(true);
                         cb1.setSelected(true);
                     }
                 }
