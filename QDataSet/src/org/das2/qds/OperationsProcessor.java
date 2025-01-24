@@ -892,7 +892,7 @@ public class OperationsProcessor {
             }
             throw ex2;
         } catch ( Exception ex ) {
-            throw new IllegalArgumentException("sprocess throws exception: "+c,ex);
+            throw new IllegalArgumentException("process throws exception: "+c,ex);
         } finally {
             if ( mon.isFinished() ) {
                 System.err.println("monitor was already finished, fix this...");
