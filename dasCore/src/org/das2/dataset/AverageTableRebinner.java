@@ -525,8 +525,8 @@ public class AverageTableRebinner implements DataSetRebinner {
                 } else {
                     QDataSet myds= Ops.multiply( yds, DataSetUtil.asDataSet(-1) );
                     if ( SemanticOps.isMonotonic(myds) ) {
-                        j0 = org.das2.qds.DataSetUtil.getPreviousIndex( myds, yy );
-                        j1 = org.das2.qds.DataSetUtil.getNextIndex( myds, yy);
+                        j0 = org.das2.qds.DataSetUtil.getPreviousIndex( myds, yy.multiply(-1) );
+                        j1 = org.das2.qds.DataSetUtil.getNextIndex( myds, yy.multiply(-1));
                     } else {
                         //fo_k0_ees_1998011_v01.cdf
                         if ( Ops.total( SemanticOps.weightsDataSet(yds) )==0 ) return;
