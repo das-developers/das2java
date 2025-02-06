@@ -2806,7 +2806,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * return the offset of the axis from the plot, as specified by the axisOffset property.
      * @return the offset of the axis from the plot
      */
-    private int getAxisOffsetPixels() {
+    protected int getAxisOffsetPixels() {
         int axisOffsetPx=0;
                     
         try {
@@ -2876,6 +2876,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 g.drawLine(leftPosition, DMin, leftPosition, DMax);
             }
             if (rightLine) {
+                rightPosition= rightPosition + axisOffsetPx;
                 logger.log(Level.FINER, "draw V rightline at {0}", rightPosition);
                 g.drawLine(rightPosition, DMin, rightPosition, DMax);
             }
@@ -3647,9 +3648,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                         rmax.translate(-(int) rmax.getWidth() - space - zeroOrPosTickLen + getColumn().left() - axisOffsetPx,
                                 (int) (dmax + fontDecent + 3 ) ); // 3 is fudge
                     } else {
-                        rmin.translate( space + zeroOrPosTickLen + getColumn().right(), 
+                        rmin.translate( space + zeroOrPosTickLen + getColumn().right() + axisOffsetPx, 
                                 (int) dmin + (int)delta );
-                        rmax.translate( space + zeroOrPosTickLen + getColumn().right(), 
+                        rmax.translate( space + zeroOrPosTickLen + getColumn().right() + axisOffsetPx, 
                                 (int) (dmax + fontDecent + 3 )); // 3 is fudge
                     }
                     if ( bounds==null ) bounds= rmin;
@@ -3921,7 +3922,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         int axisOffsetPx= getAxisOffsetPixels();
 
         int leftPosition = getColumn().getDMinimum() - axisOffsetPx;
-        int rightPosition = getColumn().getDMaximum();
+        int rightPosition = getColumn().getDMaximum() + axisOffsetPx;
         int DMax = getRow().getDMaximum();
         int DMin = getRow().getDMinimum();
         int DWidth = DMax - DMin;

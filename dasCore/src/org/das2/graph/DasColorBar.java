@@ -281,14 +281,20 @@ public class DasColorBar extends DasAxis {
             int y = getRow().getDMinimum();
             int width = getColumn().getDMaximum() - x;
             int height = getRow().getDMaximum() - y;
-            //if (image == null || image.getWidth() != width || image.getHeight() != height) {
             if (isHorizontal()) {
                 image = type.getHorizontalScaledImage(width, height);
             } else {
                 image = type.getVerticalScaledImage(width, height+1);
             }
-            //}
+            
             g.translate(-getX(), -getY());
+            
+            int axisOffsetPx= getAxisOffsetPixels();
+            
+            if ( axisOffsetPx!=0 && !isHorizontal() ) {
+                x=x+axisOffsetPx; //TODO: this assumes right axis, but orientation is private in DasAxis.   I won't open access to this to find out.
+            }
+            
             try {
                 g.drawImage(image, x, y, this);
             } catch ( ClassCastException ex ) {
@@ -306,6 +312,10 @@ public class DasColorBar extends DasAxis {
         int y = getRow().getDMinimum();
         int width = getColumn().getDMaximum() - x;
         int height = getRow().getDMaximum() - y;
+        int axisOffsetPx= getAxisOffsetPixels();
+        if ( axisOffsetPx!=0 && !isHorizontal() ) {
+            x=x+axisOffsetPx; //TODO: this assumes right axis, but orientation is private in DasAxis.   I won't open access to this to find out.
+        }
         Rectangle rc = new Rectangle(x, y, width, height);
         Rectangle bounds = super.getAxisBounds();
         bounds.add(rc);
