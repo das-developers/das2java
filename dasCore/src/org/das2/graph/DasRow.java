@@ -154,4 +154,21 @@ public class DasRow extends DasDevicePosition {
     public int bottom() {
         return getDMaximum();
     }
+
+    /**
+     * reset the parent to be this new DasColumn, or null.
+     * @param r the new parent row, or null.
+     */
+    public void setParentRow( DasRow r ) {
+        setParentDevicePosition(r);
+    }
+    
+    /**
+     * return the name of the column this is attached to, or empty string.
+     * @return  the name of the column this is attached to, or empty string.
+     */
+    public String getParentRowName( ) {
+        return this.getParentDasName();
+    }
+    
 }

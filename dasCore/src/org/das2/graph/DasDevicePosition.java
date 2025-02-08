@@ -62,6 +62,7 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
     public static final String PROP_MINIMUM = "minimum";
     public static final String PROP_PTMAXIMUM = "ptMaximum";
     public static final String PROP_PTMINIMUM = "ptMinimum";
+    public static final String PROP_PARENT_DEVICE_POSITION_DAS_NAME = "parentDevicePositionDasName";
     
     protected transient DasCanvas canvas;
     protected transient DasDevicePosition parent;
@@ -393,7 +394,7 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
      * return the name of the parent which this is attached to.
      * @return 
      */
-    public String getParentDasName() {
+    protected String getParentDasName() {
         if ( parent==null ) {
             return "";
         } else {
@@ -711,11 +712,11 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
     }
     
     protected void firePropertyChange(String propertyName, float oldValue, float newValue) {
-        firePropertyChange(propertyName, new Float(oldValue), new Float(newValue));
+        firePropertyChange(propertyName, Float.valueOf(oldValue), Float.valueOf(newValue));
     }
     
     protected void firePropertyChange(String propertyName, double oldValue, double newValue) {
-        firePropertyChange(propertyName, new Double(oldValue), new Double(newValue));
+        firePropertyChange(propertyName, Double.valueOf(oldValue), Double.valueOf(newValue));
     }
     
     protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
@@ -971,6 +972,24 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         return this.parent;
     }
 
+    /**
+     * return the parent, or null.  If parent is non-null, then position is 
+     * relative to the parent.
+     * @param newParent the new parent, or null for the canvas itself.
+     */
+    protected void setParentDevicePosition(DasDevicePosition newParent) {
+        String oldName= this.parent==null ? "" : this.parent.getDasName();
+        String newName= newParent==null ? "" : newParent.getDasName();
+        this.parent= newParent;
+        firePropertyChange(PROP_PARENT_DEVICE_POSITION_DAS_NAME, oldName, newName );
+        fireUpdate();
+    }
+    
+    
+    public String getParentDevicePositionDasName() {
+        return this.parent.getDasName();
+    }
+    
     /**
      * return true if the value is currently adjusting because a
      * mutator lock is out.

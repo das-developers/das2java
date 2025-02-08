@@ -132,4 +132,20 @@ public class DasColumn extends DasDevicePosition {
     public int right() {
         return getDMaximum();
     }
+    
+    /**
+     * reset the parent to be this new DasColumn, or null.
+     * @param c the new parent column, or null.
+     */
+    public void setParentColumn( DasColumn c ) {
+        setParentDevicePosition(c);
+    }
+    
+    /**
+     * return the name of the column this is attached to, or empty string.
+     * @return  the name of the column this is attached to, or empty string.
+     */
+    public String getParentColumnName( ) {
+        return this.getParentDasName();
+    }
 }

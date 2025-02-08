@@ -33,6 +33,7 @@ public class DasRowBeanInfo extends AccessLevelBeanInfo {
     private static Property[] properties = {
         new Property("name", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getDasName", "setDasName", null),
         new Property("parent",  AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getParent", null, null),
+        new Property("parentRowName",  AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getParentRowName", null, null),        
         new Property("minimum", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getMinimum", "setMinimum", null),
         new Property("maximum", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getMaximum", "setMaximum", null),
         new Property("dminimum", AccessLevel.DASML, "getDMinimum", "setDMinimum", null),
