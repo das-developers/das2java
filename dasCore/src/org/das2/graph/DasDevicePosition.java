@@ -388,6 +388,18 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
     public String getDasName() {
         return dasName;
     }
+        
+    /**
+     * return the name of the parent which this is attached to.
+     * @return 
+     */
+    public String getParentDasName() {
+        if ( parent==null ) {
+            return "";
+        } else {
+            return parent.getDasName();
+        }
+    }
     
     /**
      * returns the em size for the canvas.  We define the em size as the 
