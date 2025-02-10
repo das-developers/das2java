@@ -983,11 +983,7 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         this.parent= newParent;
         firePropertyChange(PROP_PARENT_DEVICE_POSITION_DAS_NAME, oldName, newName );
         fireUpdate();
-    }
-    
-    
-    public String getParentDevicePositionDasName() {
-        return this.parent.getDasName();
+        revalidate();
     }
     
     /**
