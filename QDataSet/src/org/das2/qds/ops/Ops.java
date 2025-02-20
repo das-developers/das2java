@@ -16095,7 +16095,8 @@ public final class Ops {
     
     /**
      * matrix multiply the components of vector <code>v</code> by matrix <code>m</code>.  Argument <code>v</code> can also be a 
-     * rank 2 series of vectors (vv[n,3]), and argument <code>m</code> can be an array of matrices (mm[n,3,3]).
+     * rank 2 series of vectors (vv[n,3]), and argument <code>m</code> can be an array of matrices (mm[n,3,3]).  Note 
+     * that to multiply a vector and a matrix (instead of matrix and a vector), use matrixMultiply( transpose(m), v ).
      * @param m matrix or array of matrices
      * @param v vector or array of vectors
      * @return vectors in the same form as <code>b</code>
@@ -16162,6 +16163,8 @@ public final class Ops {
                 props.remove(QDataSet.TITLE);
                 DataSetUtil.putProperties( props, result );
                 return result;
+        } else if ( m.rank()==1 && v.rank()==2 ) {
+            throw new IllegalArgumentException("Use matrixMultiply(transpose(m),v), not matrixMultiply(v,m)");
         } else {
             throw new IllegalArgumentException("m must be matrix or array of matrices, v must be vector or array of vectors");
         }
