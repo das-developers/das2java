@@ -669,7 +669,14 @@ public class DatumRangeUtil {
                         }
                     }
                 }
-                //TODO: bug here, where it assumes precision of second is the same as the first.
+                
+                int tindex= parts[0].indexOf("T");
+                if ( tindex>-1 ) { // it should be
+                    String hms0= parts[0].substring(tindex+1); // 2016-05-20T07:46/07:46:30
+                    if ( hms0.length()<parts[1].length() ) {
+                        parts[0]= parts[0] + ":00.000000000".substring( 0, parts[1].length()-hms0.length() );
+                    }
+                }
                 String t= parts[0].substring(0,parts[0].length()-parts[1].length())+ parts[1];
                 lsd= parseISO8601Datum( t, digits1, lsd );
             }
