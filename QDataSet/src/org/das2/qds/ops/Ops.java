@@ -14276,7 +14276,7 @@ public final class Ops {
                 if ( dep0!=null ) {
                     QDataSet dep1= (QDataSet)ds2.property(QDataSet.DEPEND_0);
                     if ( dep1!=null && dep1.length()>0 && equivalent( dep0.slice(0), dep1.slice(0) ) ) {
-                        //ds.putProperty( QDataSet.DEPEND_0, dep0 );
+                        ds.putProperty( QDataSet.DEPEND_0, dep0 );
                         logger.fine("consider https://github.com/das-developers/das2java/issues/63");
                     }
                 }
@@ -14339,7 +14339,7 @@ public final class Ops {
     }
 
     /**
-     * bundle three datasets, giving them a common zeroth index, typically time.
+     * bundle three datasets, giving them a common zeroth index, typically time,
      * unlike join.  This bundles on the second dimension,
      * unlike join.  This is just like bundle(ds1,ds2), in fact this just calls 
      * bundle( bundle( ds1,ds2 ), ds3 )
