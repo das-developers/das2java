@@ -62,12 +62,12 @@ public class ExponentialDatumFormatter extends DatumFormatter {
     @Override
     public String format( Datum datum, Units units ) {
         double x= datum.doubleValue(datum.getUnits());
-        if ( x == 0. ) return "0.";
+        if ( x == 0. ) return "0";
         double exp= Math.pow(10,exponent);
         double mant= x/exp;
         double tenToN= Math.pow(10,digits);
         mant= Math.round( mant * tenToN ) / tenToN;
-        if ( mant==0. ) return "0."; // rounding errors
+        if ( mant==0. ) return "0"; // rounding errors
         return mantFormat.format(mant)+"E"+exponent;
     }
     
