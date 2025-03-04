@@ -1936,7 +1936,11 @@ public class SeriesRenderer extends Renderer {
             if ( lparent.getRenderers().length>1 ) foreBackSameColor= false; // weak test but better than nothing.
             if ( foreBackSameColor ) {
                 DasLogger.getLogger(DasLogger.GRAPHICS_LOG).fine("foreground and background colors are the same");
-                lparent.postMessage(this, "foreground and background colors are the same", DasPlot.INFO, null, null);
+                if ( getPsym()!=DefaultPlotSymbol.NONE ) {
+                    lparent.postMessage(this, "symbol color and background color are the same", DasPlot.INFO, null, null);
+                } else {
+                    lparent.postMessage(this, "line color and background color are the same", DasPlot.INFO, null, null);
+                }
             }
         }
         
