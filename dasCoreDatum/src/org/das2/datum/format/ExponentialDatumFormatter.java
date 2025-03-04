@@ -67,6 +67,7 @@ public class ExponentialDatumFormatter extends DatumFormatter {
         double mant= x/exp;
         double tenToN= Math.pow(10,digits);
         mant= Math.round( mant * tenToN ) / tenToN;
+        if ( mant==0. ) return "0."; // rounding errors
         return mantFormat.format(mant)+"E"+exponent;
     }
     
