@@ -8499,6 +8499,7 @@ public final class Ops {
      * @param filt the type of the window.
      * @param len the length of the window.
      * @return rank 1 QDataSet with length len.
+     * @see FFTFilterType
      */
     public static QDataSet windowFunction( FFTFilterType filt, int len ) {
         assert filt!=null;
@@ -8520,7 +8521,7 @@ public final class Ops {
 
     /**
      * return a dataset for the given filter type, added to support use in Jython.  The result will be rank 1 and length len.
-     * @param filt the type of the window, one of Hanning, Hann, TenPercentEdgeCosine, Unity or Boxcar.
+     * @param type the type of the window, one of Hanning, Hann, TenPercentEdgeCosine, Unity or Boxcar.
      * @param len the length of the window.
      * @return rank 1 QDataSet with length len.
      */
