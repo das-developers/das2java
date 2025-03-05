@@ -13411,7 +13411,9 @@ public final class Ops {
         QDataSet ttSource= (QDataSet)dsSource.property( QDataSet.DEPEND_0 );
         
         if ( ttSource==null ) {
-            if ( SemanticOps.getUnits(dsSource).isConvertibleTo( SemanticOps.getUnits(ttTarget) ) ) {
+            if ( ttTarget==null ) {
+                throw new IllegalArgumentException("target dataset sent to synchronizeOne doesn't have timetags: "+dsTarget );
+            } else if (  SemanticOps.getUnits(dsSource).isConvertibleTo( SemanticOps.getUnits(ttTarget) ) ) {
                 ttSource= dsSource;
             } else {
                 throw new IllegalArgumentException("dataset sent to synchronizeOne doesn't have timetags: "+dsSource );
