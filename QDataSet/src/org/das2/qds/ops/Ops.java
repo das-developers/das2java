@@ -8496,7 +8496,7 @@ public final class Ops {
 
     /**
      * return a dataset for the given filter type.  The result will be rank 1 and length len.
-     * @param filt the type of the window.
+     * @param filt the type of the window, such as FFTFilterType.Hann or TenPercentEdgeCosine.TenPercentEdgeCosine
      * @param len the length of the window.
      * @return rank 1 QDataSet with length len.
      * @see FFTFilterType
@@ -8691,6 +8691,7 @@ public final class Ops {
      * @param mon a ProgressMonitor for the process
      * @return rank 2 FFT spectrum, or rank 3 if the rank 3 input has differing cadences.
      * @SuppressWarnings("unchecked") 
+     * @see FFTFilterType
      */
     public static QDataSet fftPower( QDataSet ds, QDataSet window, int stepFraction, ProgressMonitor mon ) {
         if ( mon==null ) {
