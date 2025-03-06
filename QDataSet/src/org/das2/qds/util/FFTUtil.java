@@ -146,7 +146,7 @@ public class FFTUtil {
     }
         
     /**
-     * Produces the power spectrum of the dataset.  This is the length of the fourier
+     * Produces the power spectrum of the dataset.  This is the length of the Fourier
      * components squared, normalized by the bandwidth.  The result dataset has dimensionless yunits.
      * It's assumed that all the data is valid.
      * Note when the input is in mV/m, the result will be in (V/m)^2/Hz.
@@ -160,7 +160,7 @@ public class FFTUtil {
     }
     
     /**
-     * Produces the power spectrum of the dataset.  This is the length of the fourier
+     * Produces the power spectrum of the dataset.  This is the length of the Fourier
      * components squared, normalized by the bandwidth.  The result dataset has dimensionless yunits.
      * It's assumed that all the data is valid.
      * Note when the input is in mV/m, the result will be in (V/m)^2/Hz.
