@@ -9216,6 +9216,9 @@ public final class Ops {
         return result;
 
     }
+    
+    //private static int PEEK=0;
+    
     /**
      * Performs an FFT on the provided rank 1 dataset.  A rank 2 dataset of 
      * complex numbers is returned.  The data must not contain fill and
@@ -9227,8 +9230,18 @@ public final class Ops {
      * @see Ops#ifft(org.das2.qds.QDataSet) 
      */
     public static QDataSet fft(QDataSet ds) {
+//        if ( PEEK!=0 ) {
+//            int n= ds.length()/2;
+//            System.err.println("> ds["+n+"]="+ds.value(n) );
+//        }
         GeneralFFT fft = GeneralFFT.newDoubleFFT(ds.length());
         ComplexArray.Double cc = FFTUtil.fft(fft, ds);
+            
+//        if ( Ops.PEEK!=0 ) {
+//            int n= cc.length()/2;
+//            System.err.println("> fft(vds)["+n+"]="+cc.getReal(n)+"+"+cc.getImag(n)+"j" );            
+//        }
+        
         DDataSet result = DDataSet.createRank2(ds.length(), 2);
         for (int i = 0; i < ds.length(); i++) {
             result.putValue(i, 0, cc.getReal(i));
@@ -13641,7 +13654,12 @@ public final class Ops {
     }  
             
     /**
-     * convert the dataset to the target units
+     * convert the dataset to the target units.
+     * <code>
+     * y= ytags(spectrogramds)
+     * y= convertUnitsTo( y, Units.Hz )
+     * spectrogramDs= link( xtags( spectrogramDs ), y, spectrogramDs )
+     * </code>
      * @param ds the original dataset.
      * @param u units of the new dataset
      * @return a new dataset with all the same properties but with the new units.
@@ -13685,7 +13703,12 @@ public final class Ops {
     }
 
     /**
-     * convert the datumRange to the given units, which must be convertible.
+     * convert the datumRange to the given units, which must be convertible.  For example:
+     * <code>
+     * y= ytags(spectrogramds)
+     * y= convertUnitsTo( y, Units.Hz )
+     * spectrogramDs= link( xtags( spectrogramDs ), y, spectrogramDs )
+     * </code>
      * @param dr the datum range, e.g. '5 to 50 MHz'
      * @param u the new units. e.g. 'Hz'
      * @return DatumRange in the new units, e.g. '5000000 to 50000000 Hz'
