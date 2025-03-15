@@ -176,7 +176,16 @@ public class FFTUtil {
         for ( int i=0; i<fft.size(); i++ ) yreal[i]= vds.value( i ) * weights.value( i );
 
         ComplexArray.Double ca= ComplexArray.newArray(yreal);
+//        if ( Ops.PEEK!=0 ) {
+//            int n= vds.length()/2;
+//            System.out.println("< vds["+n+"]="+vds.value(n) );
+//        }
         fft.transform( ca );  //TODO: get rid of ComplexArray, which can be represented as QDataSet.
+
+//        if ( Ops.PEEK!=0 ) {
+//            int n= vds.length()/2;
+//            System.out.println("< fft(vds)["+n+"]="+ca.getReal(n)+"+"+ca.getImag(n)+"j" );
+//        }
 
         double binsize;
         if ( powxTags==null ) {
@@ -213,6 +222,26 @@ public class FFTUtil {
         }
 
         result.putProperty( QDataSet.DEPEND_0, powxTags );
+
+//        if ( Ops.PEEK!=0 ) {
+//            int n= result.length()/2;
+//            System.out.println("< fftPower(vds)["+n+"]="+result.value(n) );
+//            System.out.print("< ");
+//            for ( int i=0; i<n; i++ ) System.out.print(result.value(i)+ ", ");
+//            System.out.println("");
+//            try {
+//                PrintWriter fos= new PrintWriter("/home/jbf/tmp/20250306/mine.txt");
+//                for ( int i=0; i<n; i++ ) {
+//                    fos.println( result.value(i) );
+//                }
+//                fos.close();
+//            } catch (FileNotFoundException ex) {
+//                Logger.getLogger(FFTUtil.class.getName()).log(Level.SEVERE, null, ex);
+//            }
+//            
+//            Ops.setPeek(0);
+//        }
+    
         return result;
     }
 
