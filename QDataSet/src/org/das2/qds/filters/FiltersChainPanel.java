@@ -316,13 +316,8 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
         
         Runnable run= () -> {
             List<FilterEditorPanel> leditors= new ArrayList<>(editors);
-            int ifilter= 0;
             leditors.forEach((p) -> {
-                if ( ifilter==0 && p instanceof UnbundleFilterEditorPanel && implicitUnbundle ) {
-                    b.append( ((UnbundleFilterEditorPanel)p).getComponent() );
-                } else {
-                    b.append(p.getFilter());
-                }
+                b.append(p.getFilter());
             });
         };
         
