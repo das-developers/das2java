@@ -4635,7 +4635,7 @@ public class DataSetUtil {
                             
                             QDataSet box= SemanticOps.bounds(ds1);
                             
-                            boolean doRecenter= false;
+                            boolean doRecenter= true;
                             DatumRange xdr;
                             if ( SemanticOps.isRank2Waveform(ds1) ) {
                                 xdr = DataSetUtil.asDatumRange(box.slice(0));
