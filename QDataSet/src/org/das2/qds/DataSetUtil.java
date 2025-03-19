@@ -4497,18 +4497,17 @@ public class DataSetUtil {
                                 DatumRange ddr = DataSetUtil.asDatumRange(box.slice(1));
                                 xdr = DatumRangeUtil.union( xdr.min().subtract(ddr.min()), xdr.max().add(ddr.max()) );
                             } else {
-                                xdr= DataSetUtil.asDatumRange(box.slice(0));
                                 dr= DataSetUtil.creepNext( ds, dr );
+                                ds1= SemanticOps.trim( ds, dr, null);
+                                box= SemanticOps.bounds(ds1);
+                                xdr= DataSetUtil.asDatumRange(box.slice(0));
                             }
-                            //if ( xdr.width().lt( dr0.width() ) ) {
-                            //    dr= DatumRangeUtil.createCentered( xdr.middle(), dr.width() );
-                            //}
-//                            
-                            if ( DatumRangeUtil.normalize( dr, xdr.min() ) > 0.2 && DatumRangeUtil.normalize( dr, xdr.max() ) < 0.8 ) {
+
+                            if ( DatumRangeUtil.normalize( dr, xdr.min() ) > 0.1 && DatumRangeUtil.normalize( dr, xdr.max() ) < 0.9 ) {
                                 dr= DatumRangeUtil.createCentered( xdr.middle(), dr.width() );
                                 logger.log(Level.FINE, "recenter the data" );
                             }
-//                            
+                            
                             break;
                         }
                     }
@@ -4698,24 +4697,21 @@ public class DataSetUtil {
                             
                             QDataSet box= SemanticOps.bounds(ds1);
                             
-                            boolean doRecenter= true;
                             DatumRange xdr;
                             if ( SemanticOps.isRank2Waveform(ds1) ) {
                                 xdr = DataSetUtil.asDatumRange(box.slice(0));
                                 DatumRange ddr = DataSetUtil.asDatumRange(box.slice(1));
                                 xdr = DatumRangeUtil.union( xdr.min().subtract(ddr.min()), xdr.max().add(ddr.max()) );
-                                int dataBreaks= countDataBreaks(ds1);
-                                if ( dataBreaks<4 ) doRecenter= true;
+                                //int dataBreaks= countDataBreaks(ds1);
+                                //if ( dataBreaks<4 ) doRecenter= true;
                             } else {
-                                xdr= DataSetUtil.asDatumRange(box.slice(0));
                                 dr= DataSetUtil.creepPrev( ds, dr );
+                                ds1= SemanticOps.trim( ds, dr, null);
+                                box= SemanticOps.bounds(ds1);
+                                xdr= DataSetUtil.asDatumRange(box.slice(0));
                             }
                             
-                            //if ( xdr.width().lt( dr0.width() ) && doRecenter ) {
-                            //    dr= DatumRangeUtil.createCentered( xdr.middle(), dr.width() );
-                            //}
-                            
-                            if ( DatumRangeUtil.normalize( dr, xdr.min() ) > 0.2 && DatumRangeUtil.normalize( dr, xdr.max() ) < 0.8 ) {
+                            if ( DatumRangeUtil.normalize( dr, xdr.min() ) > 0.1 && DatumRangeUtil.normalize( dr, xdr.max() ) < 0.9 ) {
                                 dr= DatumRangeUtil.createCentered( xdr.middle(), dr.width() );
                                 logger.log(Level.FINE, "recenter the data" );
                             }
