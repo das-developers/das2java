@@ -4503,7 +4503,7 @@ public class DataSetUtil {
                                 xdr= DataSetUtil.asDatumRange(box.slice(0));
                             }
 
-                            if ( DatumRangeUtil.normalize( dr, xdr.min() ) > 0.1 && DatumRangeUtil.normalize( dr, xdr.max() ) < 0.9 ) {
+                            if ( DatumRangeUtil.normalize( dr, xdr.min() ) >= 0.1 && DatumRangeUtil.normalize( dr, xdr.max() ) <= 0.9 ) {
                                 dr= DatumRangeUtil.createCentered( xdr.middle(), dr.width() );
                                 logger.log(Level.FINE, "recenter the data" );
                             }
@@ -4711,7 +4711,7 @@ public class DataSetUtil {
                                 xdr= DataSetUtil.asDatumRange(box.slice(0));
                             }
                             
-                            if ( DatumRangeUtil.normalize( dr, xdr.min() ) > 0.1 && DatumRangeUtil.normalize( dr, xdr.max() ) < 0.9 ) {
+                            if ( DatumRangeUtil.normalize( dr, xdr.min() ) >= 0.1 && DatumRangeUtil.normalize( dr, xdr.max() ) <= 0.9 ) {
                                 dr= DatumRangeUtil.createCentered( xdr.middle(), dr.width() );
                                 logger.log(Level.FINE, "recenter the data" );
                             }
