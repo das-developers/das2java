@@ -50,6 +50,7 @@ import org.das2.qds.util.AutoHistogram;
 import org.das2.qds.util.LinFit;
 import org.das2.util.ColorUtil;
 import java.awt.Color;
+import java.util.Collections;
 
 /**
  * Utilities for QDataSet, such as conversions from various forms
@@ -4379,6 +4380,67 @@ public class DataSetUtil {
     }
     
     /**
+     * slide the range to the future so that as much of the data can be covered by the range
+     * @param ds the dataset with rank 1 timetags
+     * @param dr the range
+     * @return modified range
+     */
+    private static DatumRange creepNext( QDataSet ds, DatumRange dr ) {
+        Datum w= dr.width();
+        ds= Ops.trim( ds, dr );
+        DatumRange extent= Ops.datumRange( Ops.extent( Ops.xtags(ds) ) );
+        QDataSet rr= Ops.eventsConjunction(
+                    Ops.dataset(extent), 
+                    Ops.dataset(dr) );
+        if ( rr.length()==0 ) { // no overlap at all!  Someone messed up.
+            return dr;
+        }
+        double percentOverlap= Ops.datumRange(rr.slice(0)).width().divide(dr.width()).value();
+        if ( percentOverlap>0.8 ) {
+            return dr;
+        }
+        QDataSet xtags= Ops.xtags(ds);
+        Datum d= DataSetUtil.asDatum( xtags.slice(0) );
+        dr= DatumRange.newRange( d, d.add(dr.width()) );
+        dr= dr.rescale(-0.1,0.9); // back off 10 %
+        if ( !dr.width().equals(w) ) {
+            throw new AssertionError("dr.width was modified");
+        }
+        return dr;
+    }
+    
+    
+    /**
+     * slide the range to the future so that as much of the data can be covered by the range
+     * @param ds the dataset with rank 1 timetags
+     * @param dr the range
+     * @return modified range
+     */
+    private static DatumRange creepPrev( QDataSet ds, DatumRange dr ) {
+        Datum w= dr.width();
+        ds= Ops.trim( ds, dr );
+        DatumRange extent= Ops.datumRange( Ops.extent( Ops.xtags(ds) ) );
+        QDataSet rr= Ops.eventsConjunction(
+                    Ops.dataset(extent), 
+                    Ops.dataset(dr) );        
+        if ( rr.length()==0 ) { // no overlap at all!  Someone messed up.
+            return dr;
+        }
+        double percentOverlap= Ops.datumRange(rr.slice(0)).width().divide(dr.width()).value();
+        if ( percentOverlap>0.8 ) {
+            return dr;
+        }
+        QDataSet xtags= Ops.xtags(ds);
+        Datum d= DataSetUtil.asDatum( xtags.slice(xtags.length()-1) );
+        dr= DatumRange.newRange( d.subtract(dr.width()), d );
+        dr= dr.rescale(0.1,1.1); // back off 10 %
+        if ( !dr.width().equals(w) ) {
+            throw new AssertionError("dr.width was modified");
+        }
+        return dr;
+    }
+        
+    /**
      * return the next interval (typically time) containing data, centered on data, with the
      * roughly the same width.
      * @param ds the dataset
@@ -4436,15 +4498,16 @@ public class DataSetUtil {
                                 xdr = DatumRangeUtil.union( xdr.min().subtract(ddr.min()), xdr.max().add(ddr.max()) );
                             } else {
                                 xdr= DataSetUtil.asDatumRange(box.slice(0));
+                                dr= DataSetUtil.creepNext( ds, dr );
                             }
-                            if ( xdr.width().lt( dr0.width() ) ) {
-                                dr= DatumRangeUtil.createCentered( xdr.middle(), dr.width() );
-                            }
+                            //if ( xdr.width().lt( dr0.width() ) ) {
+                            //    dr= DatumRangeUtil.createCentered( xdr.middle(), dr.width() );
+                            //}
 //                            
-//                            if ( DatumRangeUtil.normalize( dr, xdr.min() ) > 0.2 && DatumRangeUtil.normalize( dr, xdr.max() ) < 0.8 ) {
-//                                dr= DatumRangeUtil.createCentered( xdr.middle(), dr.width() );
-//                                logger.log(Level.FINE, "recenter the data" );
-//                            }
+                            if ( DatumRangeUtil.normalize( dr, xdr.min() ) > 0.2 && DatumRangeUtil.normalize( dr, xdr.max() ) < 0.8 ) {
+                                dr= DatumRangeUtil.createCentered( xdr.middle(), dr.width() );
+                                logger.log(Level.FINE, "recenter the data" );
+                            }
 //                            
                             break;
                         }
@@ -4645,11 +4708,17 @@ public class DataSetUtil {
                                 if ( dataBreaks<4 ) doRecenter= true;
                             } else {
                                 xdr= DataSetUtil.asDatumRange(box.slice(0));
-                            }
-                            if ( xdr.width().lt( dr0.width() ) && doRecenter ) {
-                                dr= DatumRangeUtil.createCentered( xdr.middle(), dr.width() );
+                                dr= DataSetUtil.creepPrev( ds, dr );
                             }
                             
+                            //if ( xdr.width().lt( dr0.width() ) && doRecenter ) {
+                            //    dr= DatumRangeUtil.createCentered( xdr.middle(), dr.width() );
+                            //}
+                            
+                            if ( DatumRangeUtil.normalize( dr, xdr.min() ) > 0.2 && DatumRangeUtil.normalize( dr, xdr.max() ) < 0.8 ) {
+                                dr= DatumRangeUtil.createCentered( xdr.middle(), dr.width() );
+                                logger.log(Level.FINE, "recenter the data" );
+                            }
                             break;
                         }
                     }
