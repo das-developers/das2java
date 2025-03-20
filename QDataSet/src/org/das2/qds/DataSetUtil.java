@@ -4496,6 +4496,17 @@ public class DataSetUtil {
                                 xdr = DataSetUtil.asDatumRange(box.slice(0));
                                 DatumRange ddr = DataSetUtil.asDatumRange(box.slice(1));
                                 xdr = DatumRangeUtil.union( xdr.min().subtract(ddr.min()), xdr.max().add(ddr.max()) );
+                                if ( xdr.width().gt(dr.width() ) ) {
+                                    if ( dr.min().lt(xdr.min()) ) {
+                                        Datum min= xdr.min().subtract(dr.width().divide(20));
+                                        dr= new DatumRange( min, min.add(dr.width()) );
+                                    } else if ( dr.max().gt(xdr.max()) ) {
+                                        Datum max= xdr.max().add(dr.width().divide(20));
+                                        dr= new DatumRange( max.subtract(dr.width()), max );
+                                    } 
+                                } else {
+                                    dr= DatumRangeUtil.createCentered( xdr.middle(), dr.width() );
+                                }
                             } else {
                                 dr= DataSetUtil.creepNext( ds, dr );
                                 ds1= SemanticOps.trim( ds, dr, null);
@@ -4702,8 +4713,17 @@ public class DataSetUtil {
                                 xdr = DataSetUtil.asDatumRange(box.slice(0));
                                 DatumRange ddr = DataSetUtil.asDatumRange(box.slice(1));
                                 xdr = DatumRangeUtil.union( xdr.min().subtract(ddr.min()), xdr.max().add(ddr.max()) );
-                                //int dataBreaks= countDataBreaks(ds1);
-                                //if ( dataBreaks<4 ) doRecenter= true;
+                                if ( xdr.width().gt(dr.width() ) ) {
+                                    if ( dr.min().lt(xdr.min()) ) {
+                                        Datum min= xdr.min().subtract(dr.width().divide(20));
+                                        dr= new DatumRange( min, min.add(dr.width()) );
+                                    } else if ( dr.max().gt(xdr.max()) ) {
+                                        Datum max= xdr.max().add(dr.width().divide(20));
+                                        dr= new DatumRange( max.subtract(dr.width()), max );
+                                    } 
+                                } else {
+                                    dr= DatumRangeUtil.createCentered( xdr.middle(), dr.width() );
+                                }
                             } else {
                                 dr= DataSetUtil.creepPrev( ds, dr );
                                 ds1= SemanticOps.trim( ds, dr, null);
