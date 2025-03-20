@@ -138,6 +138,7 @@ public class DataRange implements Cloneable {
             this.minimum= Math.log10( this.minimum );
             this.maximum= Math.log10( this.maximum );
         }
+        this.firePropertyChange( PROPERTY_DATUMRANGE, null, range );
         fireUpdate();
     }
     
