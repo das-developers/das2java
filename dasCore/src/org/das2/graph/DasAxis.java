@@ -1066,7 +1066,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
         updateTickV();
         markDirty("range");
-        firePropertyChange(PROPERTY_DATUMRANGE, oldRange, range);
+        firePropertyChange(PROPERTY_DATUMRANGE, null, range);
         update();
     }
 
