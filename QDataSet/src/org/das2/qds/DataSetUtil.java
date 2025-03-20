@@ -4475,7 +4475,7 @@ public class DataSetUtil {
                     limit= DatumRangeUtil.union( limit, dr0 );
                     dr= dr.next();
                     count= 0;
-                    while ( dr.intersects(limit) ) {
+                    while ( dr.intersects(limit) ) { // silly TODO rewrite search instead of scan.
                         count++;
                         if ( count>STEP_LIMIT ) {
                             logger.warning("step limit in nextprev https://sourceforge.net/p/autoplot/bugs/1209/");
