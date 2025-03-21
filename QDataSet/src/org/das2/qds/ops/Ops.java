@@ -5607,7 +5607,9 @@ public final class Ops {
     
     /**
      * return an events list of when events are found in both events lists. 
-     * (This might have been better called "eventsIntersection")
+     * (This might have been better called "eventsIntersection")  This is the
+     * overlap between two sets.
+     * TODO: what if the two lists are not in order?  Handle this.
      * @param tE rank 2 canonical events list
      * @param tB rank 2 canonical events list
      * @return rank 2 canonical events list
