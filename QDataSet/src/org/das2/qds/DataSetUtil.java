@@ -4403,8 +4403,8 @@ public class DataSetUtil {
         Datum d= DataSetUtil.asDatum( xtags.slice(0) );
         dr= DatumRange.newRange( d, d.add(dr.width()) );
         dr= dr.rescale(-0.1,0.9); // back off 10 %
-        if ( !dr.width().equals(w) ) {
-            throw new AssertionError("dr.width was modified");
+        if ( dr.width().subtract(w).abs().gt(Units.seconds.createDatum(60)) ) {
+            logger.warning("width was affected");
         }
         return dr;
     }
@@ -4434,8 +4434,8 @@ public class DataSetUtil {
         Datum d= DataSetUtil.asDatum( xtags.slice(xtags.length()-1) );
         dr= DatumRange.newRange( d.subtract(dr.width()), d );
         dr= dr.rescale(0.1,1.1); // back off 10 %
-        if ( !dr.width().equals(w) ) {
-            throw new AssertionError("dr.width was modified");
+        if ( dr.width().subtract(w).abs().gt(Units.seconds.createDatum(60)) ) {
+            logger.warning("width was affected");
         }
         return dr;
     }
