@@ -75,6 +75,11 @@ public class AsciiParser {
 
     Pattern propertyPattern = null;
     String commentPrefix = "#";
+    
+    /**
+     * 
+     */
+    final int LINE_LENGTH_LIMIT=100000;
 
     /**
      * a java identifier that can be used to identify the column.
@@ -1800,6 +1805,10 @@ public class AsciiParser {
             char rightDoubleQuote= (char)(8221);
             String quoteSplit= "\"|"+rightDoubleQuote;
             while ( line!=null && line.split(quoteSplit,-2).length % 2 == 0 ) {
+                if ( line.length()>LINE_LENGTH_LIMIT ) {
+                    logger.warning("unable to find line delimiter, stopping at 100000 characters, check quotes");
+                    break;
+                }
                 String nextLine= reader.readLine();
                 if ( nextLine!=null ) {
                     line= line + " " + nextLine;
