@@ -9261,6 +9261,14 @@ public final class Ops {
         result.putProperty(QDataSet.DEPEND_1, dep1);
         return result;
     }
+    
+//    public static int getPeek() {
+//        return PEEK;
+//    }
+//    
+//    public static void setPeek(int peek){
+//        PEEK=peek;
+//    }
 
     /**
      * Performs an inverse FFT on the provided rank 2 dataset of complex numbers.  
