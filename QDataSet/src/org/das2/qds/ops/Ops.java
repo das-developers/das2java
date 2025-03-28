@@ -8742,7 +8742,9 @@ public final class Ops {
                 int recCount= 0;
                 for ( int i=0; i<ds.length(); i++ ) {
                     mon.setTaskProgress(i*10);
+                    
                     QDataSet pow1= fftPower( ds.slice(i), window, stepFraction, SubTaskMonitor.create( mon, i*10, (i+1)*10 ) );
+                    
                     recCount+= pow1.length();
                     if ( lastCadence==null ) {
                         lastCadence= DataSetUtil.asDatum( ((QDataSet)pow1.property(QDataSet.DEPEND_1)).slice(0) );
@@ -8822,9 +8824,8 @@ public final class Ops {
                     dep1= (QDataSet)ds.slice(0).property(QDataSet.DEPEND_0);
                 }
                 
-                assert dep1!=null;
                 if ( dep1==null ) {
-                    throw new IllegalArgumentException("fftPower cannot be performed without independent parameter (usually time) tags");
+                    dep1= dindgen(ds.slice(0).length());
                 }
                 
                 UnitsConverter uc= UnitsConverter.IDENTITY;
@@ -8936,8 +8937,12 @@ public final class Ops {
                         
                         if ( wave==null || offs==null ) continue;
                         
-                        Datum t0 = datum( ((QDataSet)wave.property(QDataSet.DEPEND_0)).slice(0) );
-                        logger.log(Level.FINER, "fftPower t0:{0}", t0);
+                        QDataSet waveDep0=(QDataSet)wave.property(QDataSet.DEPEND_0);
+                        if ( waveDep0!=null ) {
+                            Datum t0= datum( waveDep0.slice(0) );
+                            logger.log(Level.FINER, "fftPower t0:{0}", t0);
+                        }
+                        
                         QDataSet wds= DataSetUtil.weightsDataSet(wave);
                         
                         double d0=0;
@@ -8962,24 +8967,6 @@ public final class Ops {
                         
                         double packetEndDeltaTime; // the cadence at the end of the packet.
                         packetEndDeltaTime=  ( offs.value(len-1) - offs.value(len-11) ) / 10.;
-
-                        if ( false ) {
-                            new java.io.File("/tmp/ap/").mkdirs();
-                            try ( PrintWriter write= 
-                                new PrintWriter( 
-                                    new PrintWriter( String.format( "/tmp/ap/%09d.txt", j ) ) ) ) {
-                                write.println( String.format( "# %f %f %f", 
-                                    packetEndDeltaTime, currentDeltaTime, Math.abs( packetEndDeltaTime-currentDeltaTime ) / currentDeltaTime ) );
-                                for ( int iz=0; iz<offs.length(); iz++ ) {
-                                    write.print( Ops.datum( Ops.subtract( offs.slice(iz), offs.slice(0) ) ).doubleValue( Units.microseconds) );
-                                    write.print( " " );
-                                    write.print( Math.abs( packetEndDeltaTime-currentDeltaTime ) / currentDeltaTime );
-                                    write.print( "\n" );
-                                } 
-                            } catch (FileNotFoundException ex) {
-                                Logger.getLogger(Ops.class.getName()).log(Level.SEVERE, null, ex);
-                            }
-                        }
                             
                         // does the cadence change between packets?
                         boolean cadenceChangeDetect= Math.abs( packetEndDeltaTime-currentDeltaTime ) / currentDeltaTime > 0.01;
