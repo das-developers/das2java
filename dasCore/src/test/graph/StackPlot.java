@@ -43,7 +43,7 @@ public class StackPlot {
     }
 
     public JFrame showFrame() {
-        JFrame frame= new JFrame( "Time Axis Demo");
+        JFrame frame= new JFrame( "StackPlot");
         frame.getContentPane().add(getContentPane());
         frame.pack();
         frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
