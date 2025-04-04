@@ -9032,21 +9032,7 @@ public final class Ops {
                         
                         
                         QDataSet vds= FFTUtil.fftPower( fft, wave, window, powxtags );
-                        //QDataSet vds= FFTUtil.fftPower( fft, wave );
-                        
-//                        if ( t0.gt(datum("2022-04-24T14:00:25.246Z")) && t0.lt(datum("2022-04-24T14:00:25.331Z")) ) {
-//                            String s= String.format( "changeDet j:%4d %s change:%s dt:%f fft:%e", j, t0, cadenceChangeDetect, currentDeltaTime, vds.value(0) );
-//                            System.err.println( s );
-//                            s= String.format( "           : %e %e ", wave.slice(0).value(), powxtags.slice(0).value() );
-//                            System.err.println( s );
-//                        }
-//                        
-//                        if ( false && ( cadenceChangeDetect || j==0 ) ) {
-//                            String s= String.format( "changeDet j:%4d %s change:%s dt:%f fft:%e", j, t0, cadenceChangeDetect, currentDeltaTime, vds.value(0) );
-//                            System.err.println( s );
-//                            
-//                        }
-                                
+  
                         if ( windowNonUnity ) {
                             vds= Ops.multiply( vds, DataSetUtil.asDataSet( 1/normalization ) );
                         }
@@ -9219,17 +9205,8 @@ public final class Ops {
      * @see Ops#ifft(org.das2.qds.QDataSet) 
      */
     public static QDataSet fft(QDataSet ds) {
-//        if ( PEEK!=0 ) {
-//            int n= ds.length()/2;
-//            System.err.println("> ds["+n+"]="+ds.value(n) );
-//        }
         GeneralFFT fft = GeneralFFT.newDoubleFFT(ds.length());
         ComplexArray.Double cc = FFTUtil.fft(fft, ds);
-            
-//        if ( Ops.PEEK!=0 ) {
-//            int n= cc.length()/2;
-//            System.err.println("> fft(vds)["+n+"]="+cc.getReal(n)+"+"+cc.getImag(n)+"j" );            
-//        }
         
         DDataSet result = DDataSet.createRank2(ds.length(), 2);
         for (int i = 0; i < ds.length(); i++) {
@@ -9249,14 +9226,6 @@ public final class Ops {
         return result;
     }
     
-//    public static int getPeek() {
-//        return PEEK;
-//    }
-//    
-//    public static void setPeek(int peek){
-//        PEEK=peek;
-//    }
-
     /**
      * Performs an inverse FFT on the provided rank 2 dataset of complex numbers.  
      * A rank 2 dataset of complex numbers is returned.
