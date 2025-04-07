@@ -9306,7 +9306,9 @@ public final class Ops {
         if ( !Schemes.isComplexNumbers(ds2) ) ds2= complexDataset( ds2, null );
         if ( ds1.rank()==1 && ds2.rank()==2 ) ds1= replicate( ds1, ds2.length() );
         if ( ds1.rank()==2 && ds1.rank()==1 ) ds2= replicate( ds2, ds1.length() );
-        if ( ds1.rank()!=ds2.rank() ) throw new IllegalArgumentException("ds1 and ds2 must have the same rank");
+        if ( ds1.rank()!=ds2.rank() ) {
+            throw new IllegalArgumentException("ds1 and ds2 must have the same rank");
+        }
         QDataSet dep1= complexCoordinateSystem();
         ArrayDataSet result= ArrayDataSet.copy(ds1);
         switch (ds1.rank()) {
