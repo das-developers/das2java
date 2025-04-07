@@ -9259,24 +9259,36 @@ public final class Ops {
 
     /**
      * return the complex conjugate of the rank 1 or rank 2 QDataSet.
-     * @param ds ds[2] or ds[n,2]
-     * @return ds[2] or ds[n,2]
+     * @param ds ds[2] or ds[n,2] or ds[n,m,2]
+     * @return ds[2] or ds[n,2] or ds[n,m,2]
      * @see #complexMultiply(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      */
     public static final QDataSet complexConj( QDataSet ds ) {
-        QDataSet dep1= complexCoordinateSystem();
+        QDataSet complexCoords= complexCoordinateSystem();
         if ( ds.rank()==1 ) {
             ArrayDataSet result= ArrayDataSet.copy(ds);
             result.putValue( 1, -1*ds.value(1) );
-            result.putProperty( QDataSet.DEPEND_0, dep1 );
+            result.putProperty( QDataSet.DEPEND_0, complexCoords );
             return result;
-        } else {
+        } else if ( ds.rank()==2 ) {
             ArrayDataSet result= ArrayDataSet.copy(ds);
             for ( int i=0; i<ds.length(); i++ ) {
                 result.putValue( i, 1, -1*ds.value( i, 1 ) );
             }
-            result.putProperty( QDataSet.DEPEND_1, dep1 );
+            result.putProperty( QDataSet.DEPEND_1, complexCoords );
             return result;
+        } else if ( ds.rank()==3 ) {
+            ArrayDataSet result= ArrayDataSet.copy(ds);
+            for ( int i=0; i<ds.length(); i++ ) {
+                int n=ds.length(i);
+                for ( int j=0; j<n; j++ ) {
+                    result.putValue( i, j, 1, -1*ds.value( i, j, 1 ) );
+                }
+            }
+            result.putProperty( QDataSet.DEPEND_2, complexCoords );
+            return result;
+        } else {
+            throw new IllegalArgumentException("unsupported rank in complexConj: "+ds.rank());
         }
     }
     
@@ -9332,8 +9344,8 @@ public final class Ops {
      * apply the cross product of a and b, where a or b may be rank 1, three-element vector,
      * or both can be vector arrays of the same length.  In the case where only X and Y are provided (two-element vectors
      * instead of three), then Z is automatically assumed to be zero.
-     * @param a rank 1 ds[3] or rank 2 ds[n,3]
-     * @param b rank 1 ds[3] or rank 2 ds[n,3]
+     * @param a rank 1 ds[3] or rank 2 ds[n,3] or rank 3 ds[m,n,3]
+     * @param b rank 1 ds[3] or rank 2 ds[n,3] or rank 3 ds[m,n,3]
      * @return ds[3] or rank 2 ds[n,3]
      */
     public static QDataSet crossProduct( QDataSet a, QDataSet b ) {
@@ -9372,8 +9384,17 @@ public final class Ops {
             bx= Ops.unbundle(b,0);
             by= Ops.unbundle(b,1);
             bz= b.length(0)==2 ? Ops.dataset(0) : Ops.unbundle(b,2);
+        
+        } else if ( a.rank()==3 && b.rank()==3 ) {            
+            ax= Ops.slice2(a,0);
+            ay= Ops.slice2(a,1);
+            az= a.length(0,0)==2 ? Ops.dataset(0) : Ops.slice2(a,2);
+            bx= Ops.slice2(b,0);
+            by= Ops.slice2(b,1);
+            bz= b.length(0,0)==2 ? Ops.dataset(0) : Ops.slice2(b,2);    
             
         } else {
+            
             throw new IllegalArgumentException("a and b must be either 3-element rank 1 datasets, or rank 2 n by 3-elements");
         }
         
@@ -9383,7 +9404,11 @@ public final class Ops {
 
         QDataSet tt= (QDataSet)cx.property( QDataSet.DEPEND_0 );
         
-        return Ops.link( tt, Ops.bundle( cx, cy, cz ) );
+        if ( a.rank()<3 && b.rank()<3 ) {
+            return Ops.link( tt, Ops.bundle( cx, cy, cz ) );
+        } else {
+            return Ops.link( tt, Ops.bundle( cx, cy, cz ) );
+        }
     }
     
     private static QDataSet complexCoordinateSystem() {
