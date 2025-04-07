@@ -99,6 +99,13 @@ public class FFTUtil {
         return builder.getDataSet();
     }
     
+    /**
+     * do not use this--it should not be public!
+     * @param fft
+     * @param vds
+     * @param units
+     * @return 
+     */
     public static ComplexArray.Double fft( GeneralFFT fft, QDataSet vds, Units units ) {
         double [] yreal= new double[ vds.length() ];
         for ( int i=0; i<vds.length(); i++ ) yreal[i]= vds.value( i );
