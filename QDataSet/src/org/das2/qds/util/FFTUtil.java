@@ -19,6 +19,7 @@ import org.das2.qds.JoinDataSet;
 import org.das2.qds.MutablePropertyDataSet;
 import org.das2.qds.QDataSet;
 import org.das2.qds.SemanticOps;
+import org.das2.qds.examples.Schemes;
 import org.das2.qds.ops.Ops;
 import org.das2.qds.math.fft.ComplexArray;
 import org.das2.qds.math.fft.GeneralFFT;
@@ -260,6 +261,8 @@ public class FFTUtil {
         }
 
         result.putProperty( QDataSet.DEPEND_0, xtags );
+        result.putProperty( QDataSet.DEPEND_1, Schemes.complexCoordinateSystemDepend() );
+        
         return result;
     }
     

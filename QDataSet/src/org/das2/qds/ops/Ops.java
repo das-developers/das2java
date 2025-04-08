@@ -9413,6 +9413,11 @@ public final class Ops {
         }
     }
     
+    /**
+     * return the marker QDataSet indicating it is a complex coordinates.
+     * @return the marker QDataSet indicating it is a complex coordinates.
+     * @see Schemes.complexCoordinateSystemDepend();
+     */
     private static QDataSet complexCoordinateSystem() {
         return Schemes.complexCoordinateSystemDepend();
     }
@@ -10188,6 +10193,8 @@ public final class Ops {
 
         if ( title!=null ) result.putProperty( QDataSet.TITLE, title );
         result.putProperty( QDataSet.QUBE, Boolean.TRUE );
+        
+        result.putProperty( QDataSet.DEPEND_2, complexCoordinateSystem() );
 
         return result;
             
