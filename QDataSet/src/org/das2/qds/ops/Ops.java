@@ -13403,7 +13403,7 @@ public final class Ops {
     /**
      * The first dataset's timetags are used to 
      * synchronize the single dataset to common timetags. Presently,
-     * data from dsSource will be interpolated to create data at dsTarget timetag
+     * data from dsSource will be linearly interpolated to create data at dsTarget timetag
      * locations, but other methods may be introduced soon.
      * Ordinal units use the nearest neighbor interpolation.    
      * @param dsTarget the dataset providing timetags, or the timetags themselves.
@@ -13463,7 +13463,7 @@ public final class Ops {
     /**
      * The first dataset's timetags are used to 
      * synchronize the second dataset to a set of common timetags. Presently,
-     * only interpolation is used, but other methods may be introduced soon.
+     * only linear interpolation is used, but other methods may be introduced soon.
      * Note that when one of the dataset's DEPEND_0 is not monotonic, a 
      * monotonic subset of its points will be used.
      * Ordinal units use the nearest neighbor interpolation.
@@ -13482,7 +13482,7 @@ public final class Ops {
     /**
      * The first dataset's timetags are used to 
      * synchronize the list of datasets to a set of common timetags. Presently,
-     * only interpolation is used, but other methods may be introduced soon.
+     * only linear interpolation is used, but other methods may be introduced soon.
      * Note that when one of the dataset's DEPEND_0 is not monotonic, a 
      * monotonic subset of its points will be used.
      * Ordinal units use the nearest neighbor interpolation.
