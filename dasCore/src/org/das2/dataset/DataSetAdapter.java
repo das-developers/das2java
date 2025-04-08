@@ -25,6 +25,7 @@ import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.Units;
 import org.das2.system.DasLogger;
 import org.das2.qds.AbstractDataSet;
+import org.das2.qds.BundleDataSet;
 import org.das2.qds.DDataSet;
 import org.das2.qds.DRank0DataSet;
 import org.das2.qds.QDataSet;
@@ -150,6 +151,11 @@ public class DataSetAdapter {
                             if (yRng != null) {
                                 bds.putProperty(QDataSet.TYPICAL_MIN, yRng.min().value());
                                 bds.putProperty(QDataSet.TYPICAL_MAX, yRng.max().value());
+                            }
+                            
+                            if ( ds.getProperty("schema").equals("xyzScatter") ) {
+                                BundleDataSet bbds= (BundleDataSet)bds;
+                                return (BundleDataSet)Ops.bundle( new XTagsDataSet(vds), bbds.unbundle(0), bbds.unbundle(1) );
                             }
 
                             return DDataSet.copy(bds);

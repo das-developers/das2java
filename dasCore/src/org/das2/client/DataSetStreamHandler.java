@@ -50,6 +50,7 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.das2.stream.StreamZDescriptor;
 
 /**
  *
@@ -66,7 +67,8 @@ public class DataSetStreamHandler implements StreamHandler {
     int taskSize= -1;
     int packetCount= 0;
     Datum xTagMax= null;
-	 boolean bReadPkts = true;
+	boolean bReadPkts = true;
+    String schema="";
     
     private static final Logger logger= DasLogger.getLogger(DasLogger.DATA_TRANSFER_LOG);
     private boolean monotonic= true; // generally streams are monotonic, so check for monotonicity.
@@ -155,6 +157,9 @@ public class DataSetStreamHandler implements StreamHandler {
             if (descriptor instanceof StreamScalarDescriptor) {
                 logger.fine("using VectorDS delegate");
                 delegate = new VectorDataSetStreamHandler(pd);
+                if ( pd.getYCount()==2 && pd.getYDescriptor(1) instanceof StreamZDescriptor ) {
+                    schema= "xyz";
+                }
             } else if (descriptor instanceof StreamYScanDescriptor) {
                 logger.fine("using TableDS delegate");
                 delegate = new TableDataSetStreamHandler(pd);
@@ -243,6 +248,8 @@ public class DataSetStreamHandler implements StreamHandler {
             System.err.println("never established delegate, which might mean the stream contains no packets.");
             return null;
         } else {
+            DataSet d= delegate.getDataSet();
+            d.getProperty("schema");
             return delegate.getDataSet();
         }
     }
@@ -334,6 +341,9 @@ public class DataSetStreamHandler implements StreamHandler {
             for (int i = 1; i < pd.getYCount(); i++) {
                 StreamScalarDescriptor y = (StreamScalarDescriptor)pd.getYDescriptor(i);
                 builder.addPlane(y.getName(),y.getUnits());
+                if ( y instanceof StreamZDescriptor ) {
+                    builder.setProperty("schema","xyzScatter");
+                }
             }
         }
         
@@ -356,6 +366,7 @@ public class DataSetStreamHandler implements StreamHandler {
             if ( monotonic&& builder.getProperty(DataSet.PROPERTY_X_MONOTONIC)==null ) {
                 builder.setProperty( DataSet.PROPERTY_X_MONOTONIC, Boolean.TRUE );
             }
+            //TODO: check for Z
             return builder.toVectorDataSet();
         }
         

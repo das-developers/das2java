@@ -12,6 +12,7 @@ import org.das2.datum.CacheTag;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
 import org.das2.datum.DatumVector;
+import org.das2.qds.BundleDataSet;
 import org.das2.qds.DDataSet;
 import org.das2.qds.DataSetUtil;
 import org.das2.qds.JoinDataSet;
@@ -548,6 +549,17 @@ public class QDataSetStreamHandler implements StreamHandler {
         String renderer= (String) streamProperties.get( "renderer" );
         if ( renderer!=null ) {
             ds= Ops.putProperty( ds, QDataSet.RENDER_TYPE, renderer );
+        }
+        
+        if ( schemes.size()==1 ) {
+            String scheme= schemes.get( schemes.keySet().iterator().next() );
+            if ( scheme.equals(SCHEME_XYZSCATTER) && ds instanceof BundleDataSet ) {
+                BundleDataSet bds= ((BundleDataSet)ds);
+                QDataSet z= bds.unbundle(bds.length(0)-1);
+                QDataSet y= bds.unbundle(bds.length(0)-2);
+                QDataSet x= Ops.xtags(bds);
+                ds= Ops.link(x,y,z);
+            }
         }
                 
         ds= Ops.putProperty( ds, QDataSet.USER_PROPERTIES, streamProperties );
