@@ -840,6 +840,7 @@ public class SeriesRenderer extends Renderer {
                     QDataSet p2= xbinMax;
                     QDataSet w1= Ops.valid(p1);
                     QDataSet w2= Ops.valid(p2);
+                    boolean penUp= true;                    
                     for (int i = firstIndex; i < lastIndex; i++) {
                         double iy = yAxis.transform( vds.value(i), yunits );
                         if ( w1.value(i)>0 && w2.value(i)>0 ) {
@@ -851,6 +852,9 @@ public class SeriesRenderer extends Renderer {
                                     lp.lineTo(ixp, iy);
                                     break;
                                 case SERIF_BAR:
+                                    if ( ixm<0 ) {
+                                        System.err.println("here stop");
+                                    }
                                     lp.moveTo(ixm, iy-2);
                                     lp.lineTo(ixm, iy+2);
                                     lp.moveTo(ixm, iy);
@@ -859,13 +863,33 @@ public class SeriesRenderer extends Renderer {
                                     lp.lineTo(ixp, iy+2);
                                     break;
                                 case SHADE:
-                                    logger.log(Level.INFO, "SHADE does not support x error bars" );
-                                    break;
+                                    if ( penUp ) {
+                                        lp.moveTo( ixm,iy );
+                                        returnTo= new Point2D.Double(ixm,iy);
+                                        penUp= false;
+                                    } else {
+                                        lp.lineTo(ixm, iy);
+                                    }
                                 default:
                                     logger.log(Level.INFO, "unsupported ErrorBarType: {0}", errorBarType);
                                     break;
                             }
 
+                        }
+                    }
+                    if ( errorBarType==ErrorBarType.SHADE ) {
+                        for (int i = lastIndex-1; i >= firstIndex; i--) {
+                            double ixp = xAxis.transform( p2.value(i), xunits );
+                            double iy = yAxis.transform( vds.value(i), yunits );
+                            if ( penUp ) {
+                                lp.moveTo( ixp,iy );
+                                penUp= false;
+                            } else {
+                                lp.lineTo(ixp, iy);
+                            }
+                        }
+                        if ( returnTo!=null ) {
+                            lp.lineTo( returnTo.x, returnTo.y );
                         }
                     }
                 } catch ( IllegalArgumentException ex ) {
@@ -1064,6 +1088,7 @@ public class SeriesRenderer extends Renderer {
             QDataSet vds= ytagsDataSet( dataSet );
             
             QDataSet wds= SemanticOps.weightsDataSet( vds );
+            QDataSet xwds= SemanticOps.weightsDataSet( xds );
 
             Units xUnits = SemanticOps.getUnits(xds);
             Units yUnits = SemanticOps.getUnits(vds);
@@ -1145,7 +1170,7 @@ public class SeriesRenderer extends Renderer {
                 x = xuc.convert( xds.value(index) );
                 y = yuc.convert( vds.value(index) );
 
-                isValid = wds.value( index )>0;
+                isValid = wds.value( index )>0 && xwds.value(index)>0;
 
                 if ( isValid || notInvalidInterleave ) {
                     pathBuilder.addDataPoint( isValid, x, y );
