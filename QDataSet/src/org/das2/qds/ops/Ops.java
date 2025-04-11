@@ -2460,11 +2460,24 @@ public final class Ops {
      * @return the dataset in the same form.
      */    
     public static QDataSet butterworth( QDataSet in, int order, Datum f, boolean lowp ) {
-        if ( in.rank()==2 && Schemes.isRank2Waveform(in) ) {
-            JoinDataSet result= new JoinDataSet(2);
-            for ( int i=0; i<in.length(); i++ ) {
-                Butterworth b= new Butterworth( in.slice(i), order, f, lowp );
-                result.join(b.filter());
+        if ( in.rank()==2 ) {
+            MutablePropertyDataSet result;
+            if ( Schemes.isRank2Waveform(in) ) {
+                JoinDataSet jds= new JoinDataSet(2);
+                for ( int i=0; i<in.length(); i++ ) {
+                    Butterworth b= new Butterworth( in.slice(i), order, f, lowp );
+                    jds.join(b.filter());
+                }
+                result= jds;
+            } else if ( Schemes.isBundleDataSet(in) ) {
+                BundleDataSet bds= new BundleDataSet(in.rank());
+                for ( int i=0; i<in.length(0); i++ ) {
+                    Butterworth b= new Butterworth( unbundle(in,i), order, f, lowp );
+                    bds.bundle(b.filter());
+                }
+                result= bds;
+            } else {
+                throw new IllegalArgumentException("unsupported scheme, must be waveform or bundle of waveforms");
             }
             DataSetUtil.putProperties( DataSetUtil.getProperties(in), result);
             return result;
@@ -2485,14 +2498,27 @@ public final class Ops {
      * @return the dataset in the same form.
      */
     public static QDataSet butterworth( QDataSet in, int order, Datum flow, Datum fhigh, boolean pass ) {
-        if ( in.rank()==2 && Schemes.isRank2Waveform(in) ) {
-            JoinDataSet result= new JoinDataSet(2);
-            for ( int i=0; i<in.length(); i++ ) {        
-                Butterworth b= new Butterworth( in.slice(i), order, flow, fhigh, pass );
-                result.join(b.filter());
+        if ( in.rank()==2 ) {
+            MutablePropertyDataSet result;
+            if ( Schemes.isRank2Waveform(in) ) {
+                JoinDataSet jds= new JoinDataSet(2);
+                for ( int i=0; i<in.length(); i++ ) {
+                    Butterworth b= new Butterworth( in.slice(i), order, flow, fhigh, pass );
+                    jds.join(b.filter());
+                }
+                result= jds;
+            } else if ( Schemes.isBundleDataSet(in) ) {
+                BundleDataSet bds= new BundleDataSet(in.rank());
+                for ( int i=0; i<in.length(0); i++ ) {
+                    Butterworth b= new Butterworth( unbundle(in,i), order, flow, fhigh, pass );
+                    bds.bundle(b.filter());
+                }
+                result= bds;
+            } else {
+                throw new IllegalArgumentException("unsupported scheme, must be waveform or bundle of waveforms");
             }
             DataSetUtil.putProperties( DataSetUtil.getProperties(in), result);
-            return result;
+            return result;            
         } else {
             Butterworth b= new Butterworth( in, order, flow, fhigh, pass );
             return b.filter();
