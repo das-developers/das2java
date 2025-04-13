@@ -3,8 +3,6 @@
  *
  * Created on January 25, 2007, 9:12 PM
  *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
  */
 
 package org.das2.qds;
@@ -13,7 +11,7 @@ package org.das2.qds;
  * <p>QDataSets are the data model used within Das2 and Autoplot.  It was preceded 
  * by a more specific data model, used to developed to deliver spectrogram time series data sets
  * where the dataset structure would change over time, and the interface is highly
- * optimized for that environment.  It's difficult to express many datasets in these
+ * optimized for that environment.  It was difficult to express many datasets in these
  * terms, so the simpler "quick" QDataSet was introduced.  </p>
  *
  * <p>The QDataSet can be thought of as a fast Java array that has name-value metadata
@@ -22,14 +20,18 @@ package org.das2.qds;
  * index's length can vary, like Java arrays, and datasets 
  * where the dimensions do not vary in length are colloquially called "Qubes."</p>
  *
- * <p>QDataSets can have other QDataSets as property values, for example the property
- * QDataSet.DEPEND_0 indicates that the values are dependent parameters of the "tags"
- * QDataSet found there.  This how how we get to the same abstraction level of 
- * the legacy Das2 dataset.  </p>
+ * <p>QDataSets have standard metadata like NAME and UNITS, identifying the data
+ * and the units used to interpret the numbers.
  * 
- * <p>This is inspired by the CDF data model and PaPCo's dataset model.</p>
+ * <p>QDataSets can have other QDataSets as property values. For example, the property
+ * QDataSet.DEPEND_0 indicates that the values are dependent parameters of the 
+ * independent "tags" QDataSet found there.  QDataSet.BUNDLE_1 means the index is used to access 
+ * datasets bundled together sharing the same time tags.</p>
+ * 
+ * <p>This is inspired by the CDF data model and PaPCo's dataset model, and has
+ * evolved to support data in many forms.</p>
  *
- * @see <a href="http://autoplot.org/QDataSet">http://autoplot.org/QDataSet</a>
+ * @see <a href="https://github.com/autoplot/documentation/wiki/QDataSet">QDataSet</a>
  * @author jbf
  */
 public interface QDataSet {
