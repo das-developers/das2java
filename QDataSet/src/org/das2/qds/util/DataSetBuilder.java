@@ -7,6 +7,7 @@
 
 package org.das2.qds.util;
 
+import java.awt.Color;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -560,6 +561,7 @@ public class DataSetBuilder {
      *ds= dsb.getDataSet()
      *</pre></blockquote>
      * Also, columns 1..N-1 are declared dependent on column 0, when column 0 is UT times.
+     * Note an events record is also supported, with [ tstart, tstop, Color, msg ]
      * @param values the record values, in an String, Datum, Rank 0 QDataSet, or Number.
      */
     public void nextRecord( Object ... values ) {
@@ -583,8 +585,11 @@ public class DataSetBuilder {
                 putValue( -1, i, (Datum)v1 );
             } else if ( v1 instanceof QDataSet ) {
                 putValue( -1, i, (QDataSet)v1 );
+            } else if ( v1 instanceof Color ) { // support use to build events data sets
+                putValue( -1, i, ((Color)v1).getRGB() );
             } else {
-                throw new IllegalArgumentException("expected String, Datum, or double, got: "+v1.getClass());
+                String cls= v1==null ? "null" : v1.getClass().toString();
+                throw new IllegalArgumentException("expected String, Datum, QDataSet, Color, or Number, got: "+cls);
             }
         } 
         nextRecord();
