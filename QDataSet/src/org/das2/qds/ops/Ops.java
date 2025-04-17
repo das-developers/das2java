@@ -6498,6 +6498,8 @@ public final class Ops {
             return DataSetUtil.asDataSet( ((Boolean)arg0) ? 1.0 : 0.0 );
         } else if ( arg0 instanceof DatumRange ) {
             return DataSetUtil.asDataSet( (DatumRange)arg0 );
+        } else if ( arg0 instanceof Color ) {
+            return DataSetUtil.asDataSet( ((Color)arg0).getRGB(), Units.rgbColor );
         } else if ( arg0 instanceof String ) {
             String sarg= (String)arg0;
             try {
@@ -6552,7 +6554,7 @@ public final class Ops {
      * coerce Java objects like arrays Lists and scalars into a QDataSet.  
      * This is introduced to mirror the useful Jython dataset command.  This is a nasty business that
      * is surely going to cause all sorts of problems, so we should do it all in one place.
-     * See http://jfaden.net/jenkins/job/autoplot-test029/
+     * See https://cottagesystems.com/jenkins/job/autoplot-test029/
      * This supports:<ul>
      *   <li>int, float, double, etc to Rank 0 datasets
      *   <li>List&lt;Number&gt; to Rank 1 datasets.
@@ -6591,6 +6593,12 @@ public final class Ops {
             return dataset( DataSetUtil.asDataSet( (Datum)arg0 ), u );
         } else if ( arg0 instanceof DatumRange ) {
             return dataset( DataSetUtil.asDataSet( (DatumRange)arg0 ), u );
+        } else if ( arg0 instanceof Color ) {
+            if ( u==Units.rgbColor ) {
+                return dataset( arg0 );
+            } else {
+                throw new IllegalArgumentException("Units must be rgbColor");
+            }
         } else if ( arg0 instanceof String ) {
             String sarg= (String)arg0;
             try {
@@ -6677,7 +6685,7 @@ public final class Ops {
      * coerce Java objects like numbers and strings into a Datum.
      * This is introduced to mirror the useful Jython dataset command.  This is a nasty business that
      * is surely going to cause all sorts of problems, so we should do it all in one place.
-     * See http://jfaden.net:8080/hudson/job/autoplot-test029/
+     * See https://cottagesystems.com/jenkins/job/autoplot-test029/
      * This supports:<ul>
      *   <li>int, float, double, etc to Rank 0 datasets
      *   <li>Strings to rank 0 datasets with units ("5 s" or "2014-01-01T00:00")
@@ -6696,6 +6704,8 @@ public final class Ops {
             return Datum.create( ((Number)arg0).doubleValue() );
         } else if ( arg0 instanceof Datum ) {
             return (Datum)arg0;
+        } else if ( arg0 instanceof Color ) {
+            return Units.rgbColor.createDatum(((Color)arg0).getRGB());
         } else if ( arg0 instanceof String ) {
             String sarg= (String)arg0;
             try {
@@ -6716,7 +6726,7 @@ public final class Ops {
      * coerce Java objects like arrays and strings into a DatumRange.
      * This is introduced to mirror the useful Jython dataset command.  This is a nasty business that
      * is surely going to cause all sorts of problems, so we should do it all in one place.
-     * See http://jfaden.net:8080/hudson/job/autoplot-test029/
+     * See https://cottagesystems.com/jenkins/job/autoplot-test029/
      * This supports:<ul>
      *   <li>2-element rank 1 QDataSet
      *   <li>Strings like ("5 to 15 s" or "2014-01-01")
@@ -6816,7 +6826,7 @@ public final class Ops {
         result.putProperty( QDataSet.UNITS, Units.degrees );
         return result;
     }
-    
+       
     public static QDataSet toDegrees( Object ds ) {
         return toDegrees( dataset(ds) );
     }
