@@ -362,6 +362,64 @@ public class DataSetOps {
     }
     
     /**
+     * flatten a rank 4 dataset.  The result is an n,5 dataset
+     * of [x1,x2,x3,x4,f], or if there are no tags just rank 1 f.
+     * @param ds rank 3 table dataset
+     * @return rank 2 dataset that is array of (x1,x2,x3,x4,f) or rank 1 f.
+     */
+    public static QDataSet flattenRank4( final QDataSet ds ) {
+
+        if ( SemanticOps.isJoin(ds) && ds.rank()==4 ) {
+            DataSetBuilder build= null;
+            for ( int i=0; i<ds.length(); i++ ) {
+                QDataSet slice= ds.slice(i);
+                QDataSet r1= flattenRank3(slice);
+                if ( r1.rank()==1 ) {
+                    if ( build==null ) build= new DataSetBuilder(1,100);
+                    for ( int j=0; j<r1.length(); j++ ) {
+                        build.nextRecord(r1.slice(j));
+                    }
+                } else {
+                    if ( build==null ) build= new DataSetBuilder(2,r1.slice(0).length(),100);
+                    for ( int j=0; j<r1.length(); j++ ) {
+                        build.nextRecord(r1.slice(j));
+                    }
+                }
+            }
+            return build.getDataSet();            
+        } else {
+            DataSetBuilder build= null;
+            QDataSet dep0s= (QDataSet) ds.property(QDataSet.DEPEND_0);
+            for ( int i=0; i<ds.length(); i++ ) {
+                QDataSet slice= ds.slice(i);
+                QDataSet r1= flattenRank3(slice);
+                if ( r1.rank()==1 ) {
+                    if ( build==null ) build= new DataSetBuilder(1,100);
+                    for ( int j=0; j<r1.length(); j++ ) {
+                        build.nextRecord(r1.slice(j));
+                    }
+                } else {
+                    if ( build==null ) build= new DataSetBuilder(2,1+r1.slice(0).length(),100);
+                    for ( int j=0; j<r1.length(); j++ ) {
+                        QDataSet r11= r1.slice(j);
+                        switch ( r11.length() ) {
+                            case 3:
+                                build.nextRecord( dep0s.slice(i), r11.slice(0), r11.slice(1), r11.slice(2) );
+                                break;
+                            case 4:
+                                build.nextRecord( dep0s.slice(i), r11.slice(0), r11.slice(1), r11.slice(2), r11.slice(3) );
+                                break;
+                            default:
+                                throw new IllegalArgumentException("rank and geometry not supported...");
+                        }
+                    }
+                }
+            }
+            return build.getDataSet();
+        }
+    }
+
+    /**
      * flatten a rank 2 dataset where the y depend variable is just an offset from the xtag.  This is
      * a nice example of the advantage of using a class to represent the data: this requires no additional
      * storage to handle the huge waveform.  Note the new DEPEND_0 may have different units from ds.property(DEPEND_0).

@@ -13756,14 +13756,14 @@ public final class Ops {
     }
     
     /**
-     * flatten a rank N dataset, though currently rank 4 is not supported.
+     * flatten a rank N dataset.
      * The result for rank 2 is an n,3 dataset of [x,y,z], or if there are no tags, just [z].
      * The last index will be the dependent variable, and the first indices will
      * be the independent variables sorted by dimension.
      * @see org.das2.qds.DataSetOps#flattenRank2(org.das2.qds.QDataSet) 
      * @see #grid(org.das2.qds.QDataSet) 
      * @see #flattenWaveform(org.das2.qds.QDataSet) 
-     * @param ds the rank N dataset (note only Rank 2 is supported for now).
+     * @param ds the rank N dataset 
      * @return rank 2 dataset bundle
      */
     public static QDataSet flatten( QDataSet ds ) {
@@ -13795,6 +13795,8 @@ public final class Ops {
                 }
             case 3:
                 return DataSetOps.flattenRank3(ds);
+            case 4:
+                return DataSetOps.flattenRank4(ds);                
             default:
                 throw new UnsupportedOperationException("only rank 0,1,and 2 supported");
         }
