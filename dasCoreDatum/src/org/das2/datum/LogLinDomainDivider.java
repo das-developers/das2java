@@ -72,6 +72,13 @@ public class LogLinDomainDivider implements DomainDivider {
             System.err.println("min and max must be finite");
            // throw new IllegalArgumentException("min and max must be finite" );
         }
+        
+        double multiplier= Math.pow( 10, -1* Math.floor( Math.log10(min.value()) ) );
+        if ( multiplier<1 ) multiplier=1;
+        
+        min= min.multiply(multiplier);
+        max= max.multiply(multiplier);
+        
         ArrayList<Datum> bb= new ArrayList<>();
         
         double decade = Math.pow(10, Math.floor(Math.log10(min.doubleValue())));
@@ -84,7 +91,7 @@ public class LogLinDomainDivider implements DomainDivider {
         while ( m.le(max) ) {
             while ( m.value()<nextDecade*1.00001 ) { // kludge for real number fuzz...
                 if ( m.ge(min) && m.le(max) ) {
-                    bb.add(m);
+                    bb.add( m.divide(multiplier) );
                 }
                 if ( m.gt(max) ) break;
                 current=current.next();
@@ -103,6 +110,7 @@ public class LogLinDomainDivider implements DomainDivider {
             m= current.min();
             nextDecade= nextDecade*10;
         }
+        
         DatumVector result= DatumVector.newDatumVector( bb.toArray(new Datum[bb.size()]), current.getUnits() );
         return result;
     }
