@@ -9,6 +9,17 @@ package org.das2.datum;
 public class LinearDomainDivider implements DomainDivider {
     private final int incSignificand, incExponent;
 
+    /**
+     * create a new LinearDomainDivider which will step through
+     * intervals divided by significand * 10 ^ exponent.
+     * @param significand the multiplier, 1, 2, or 5.
+     * @param exponent the exponent
+     * @return a LinearDomainDivider
+     */
+    public static LinearDomainDivider create( int significand, int exponent ) {
+        return new LinearDomainDivider( significand,exponent );
+    }
+    
     // protected access for factory method in DomainDividerUtil
     protected LinearDomainDivider() {
         this(1, 0);
@@ -17,29 +28,40 @@ public class LinearDomainDivider implements DomainDivider {
     // private version allows specification of increment, for use by
     // finerDivider and coarserDivider
     protected LinearDomainDivider(int significand, int exponent) {
-        incSignificand = significand;
+        switch ( significand ) {
+            case 1:
+            case 2:
+            case 5:
+                incSignificand = significand;
+                break;
+            default:
+                throw new IllegalArgumentException("significand must be 1,2,or 5.");
+        }
         incExponent = exponent;
     }
 
     @Override
     public DomainDivider coarserDivider(boolean superset) {
         int newSignificand, newExponent;
-        if (incSignificand == 1) {
-            newSignificand = 2;
-            newExponent = incExponent;
-        } else if (incSignificand == 2) {
-            if (superset) {
+        switch (incSignificand) {
+            case 1:
+                newSignificand = 2;
+                newExponent = incExponent;
+                break;
+            case 2:
+                if (superset) {
+                    newSignificand = 1;
+                    newExponent = incExponent + 1;
+                } else {
+                    newSignificand = 5;
+                    newExponent = incExponent;
+                }   break;
+            case 5:
                 newSignificand = 1;
                 newExponent = incExponent + 1;
-            } else {
-                newSignificand = 5;
-                newExponent = incExponent;
-            }
-        } else if (incSignificand == 5) {
-            newSignificand = 1;
-            newExponent = incExponent + 1;
-        } else {
-            throw new IllegalStateException("Illegal state in LinearDomainDivider");
+                break;
+            default:
+                throw new IllegalStateException("Illegal state in LinearDomainDivider");
         }
         return new LinearDomainDivider(newSignificand, newExponent);
     }
@@ -48,22 +70,25 @@ public class LinearDomainDivider implements DomainDivider {
     public DomainDivider finerDivider(boolean superset) {
         int newSignificand, newExponent;
 
-        if (incSignificand == 1) {
-            newSignificand = 5;
-            newExponent = incExponent - 1;
-        } else if (incSignificand == 2) {
-            newSignificand = 1;
-            newExponent = incExponent;
-        } else if (incSignificand == 5) {
-            if (superset) {
+        switch (incSignificand) {
+            case 1:
+                newSignificand = 5;
+                newExponent = incExponent - 1;
+                break;
+            case 2:
                 newSignificand = 1;
                 newExponent = incExponent;
-            } else {
-                newSignificand = 2;
-                newExponent = incExponent;
-            }            
-        } else {
-            throw new IllegalStateException("Illegal state in LinearDomainDivider");
+                break;
+            case 5:
+                if (superset) {
+                    newSignificand = 1;
+                    newExponent = incExponent;
+                } else {
+                    newSignificand = 2;
+                    newExponent = incExponent;
+                }   break;
+            default:
+                throw new IllegalStateException("Illegal state in LinearDomainDivider");
         }
         return new LinearDomainDivider(newSignificand, newExponent);
     }
@@ -94,6 +119,15 @@ public class LinearDomainDivider implements DomainDivider {
                 values[i] = v + i  * intervalSize;
         }
 
+//      This code is possibly simpler, but has a bug (when incExponent is 5) which needs to be resolved:
+//        double multiplier= Math.pow(10, incExponent);
+//        double intervalSize= incSignificand;
+//        
+//        double f= min.doubleValue() / multiplier; // make order 1.
+//        double v = Math.floor( f ) * intervalSize;
+//        for (int i=0 ; i < nb ; ++i) {
+//            values[i] = ( v + i * incSignificand ) * multiplier;
+//        }        
         return DatumVector.newDatumVector(values, min.getUnits());
     }
 
