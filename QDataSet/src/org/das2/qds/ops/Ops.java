@@ -10057,6 +10057,8 @@ public final class Ops {
      * @return result[ntime,nwindow,2]
      */
     public static QDataSet fft( QDataSet ds, QDataSet window, int stepFraction, ProgressMonitor mon ) {
+        
+        if ( mon==null ) mon= new NullProgressMonitor();
 
         String title= (String) ds.property(QDataSet.TITLE);
         if ( title!=null ) {
