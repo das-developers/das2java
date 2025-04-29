@@ -11472,7 +11472,17 @@ public final class Ops {
                 result= Ops.bundle(result,vvj);
             }
             QDataSet dep1= (QDataSet)vv.property(QDataSet.DEPEND_1);
-            if ( dep1!=null ) result= putProperty( result, QDataSet.DEPEND_1, dep1 );
+            if ( dep1!=null ) {
+                if ( dep1.rank()==2 && findex.rank()==1 ) {
+                    if ( Ops.reduceMax( Ops.mod(findex, 1), 0 ).value()==0 ) { // NearestNeighbor
+                        result= putProperty( result, QDataSet.DEPEND_1, interpolate( dep1, findex ) );
+                    } else {
+                        throw new IllegalArgumentException("interpolate used on data which is not a qube");
+                    }
+                } else {
+                    result= putProperty( result, QDataSet.DEPEND_1, dep1 );
+                }
+            }
             QDataSet bds= (QDataSet)vv.property(QDataSet.BUNDLE_1);
             if ( bds!=null ) result= putProperty( result, QDataSet.BUNDLE_1, bds );
             return result;
@@ -13577,8 +13587,16 @@ public final class Ops {
                 ff= findex( ttSource, ttTarget );
             }
             boolean nn= UnitsUtil.isOrdinalMeasurement( SemanticOps.getUnits(dsSource) ); // https://sourceforge.net/p/autoplot/feature-requests/593/
+            
+            QDataSet dep1= (QDataSet) dsSource.property(QDataSet.DEPEND_1);
+            if ( dep1!=null && dep1.rank()==2 ) {
+                logger.info("since dep1 is time-varying, NN interpolation will be used.");
+                nn=true;
+            }
+            
             if ( nn ) ff= Ops.round(ff);
             dsSource= interpolate( dsSource, ff );
+            
             QDataSet tlimit= DataSetUtil.guessCadenceNew( ttSource, null );
             if ( tlimit!=null ) {
                 tlimit= Ops.multiply( tlimit, Ops.dataset(1.5) );
