@@ -13559,6 +13559,10 @@ public final class Ops {
             ttTarget= Ops.add( Ops.unbundle(dsTarget,0), Ops.divide( dt, 2 ) );
         }
         if ( ttTarget==null && DataSetUtil.isMonotonic(dsTarget) ) ttTarget= dsTarget;
+        if ( ttTarget==null ) throw new IllegalArgumentException("unable to find timetags");
+        if ( ttTarget.length()>1 && ttTarget.value(0)==ttTarget.value(1) ) {
+            throw new IllegalArgumentException("Timetags of the target have repeating values");
+        }
         List<QDataSet> result= new ArrayList<>();
         int iarg=0;
         for ( QDataSet dsSource : dsSources ) {
