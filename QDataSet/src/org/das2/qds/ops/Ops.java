@@ -11487,7 +11487,7 @@ public final class Ops {
                 }
             }
             QDataSet bds= (QDataSet)vv.property(QDataSet.BUNDLE_1);
-            if ( bds!=null ) result= putProperty( result, QDataSet.BUNDLE_1, bds );
+            result= putProperty( result, QDataSet.BUNDLE_1, bds );
             return result;
         }
         if ( vv.rank()!=1 ) {
@@ -13582,8 +13582,8 @@ public final class Ops {
             if ( ttSource.length()!=dsSource.length() ) throw new IllegalArgumentException("malformed dataset (number "+(iarg+1) +" of "+dsSources.length + ") DEPEND_0 length not correct: "+ttSource + " " + dsSource );
             QDataSet ff;
             try {
-                Ops.extent(ttSource);
-                Ops.extent(ttTarget);
+                //Ops.extent(ttSource); // commented because I'm sure these were for debugging.
+                //Ops.extent(ttTarget);
                 ff= findex( ttSource, ttTarget ); // TODO: cache ff in case tt1 is the same for each dss.
             } catch ( IllegalArgumentException ex ) {  // data is not monotonic
                 logger.log(Level.WARNING, "when calling synchronize, DEPEND_0 was not monotonic for dss argument #{0}, using monotonic subset of points", iarg);
