@@ -9330,14 +9330,17 @@ public final class Ops {
     
     /**
      * perform complex multiplication, where the two datasets must have the same
-     * rank and must both end with a complex dimension.
+     * rank and must both end with a complex dimension.  A complex dimension has
+     * length 2 and DEPEND_1 (or DEPEND_i where rank=i+1) that indicates the complex dimension.
      * @param ds1 ds[2] or ds[n,2] or ds[n,m,2]
      * @param ds2 ds[2] or ds[n,2] or ds[n,m,2]
      * @return ds[2] or ds[n,2] or ds[n,m,2]
      * @see #complexConj(org.das2.qds.QDataSet) 
+     * @see Schemes#isComplexNumbers(org.das2.qds.QDataSet) 
      */
     public static final QDataSet complexMultiply( QDataSet ds1, QDataSet ds2 ) {
-        if ( ds1.rank()>3 ) throw new IllegalArgumentException("ds1 must be ds1[n,2]");
+        if ( ds1.rank()>3 ) throw new IllegalArgumentException("ds1 rank is too high, must be 1, 2, or 3: "+ds1 );
+        if ( ds2.rank()>3 ) throw new IllegalArgumentException("ds2 rank is too high, must be 1, 2, or 3: "+ds2 );
         if ( !Schemes.isComplexNumbers(ds1) ) ds1= complexDataset( ds1, null );
         if ( !Schemes.isComplexNumbers(ds2) ) ds2= complexDataset( ds2, null );
         if ( ds1.rank()==1 && ds2.rank()==2 ) ds1= replicate( ds1, ds2.length() );
@@ -9373,7 +9376,7 @@ public final class Ops {
                 break;
             }
             default:
-                throw new IllegalArgumentException("rank");
+                throw new IllegalArgumentException("rank not supported: "+ds1.rank());
         }
         return result;        
     }
