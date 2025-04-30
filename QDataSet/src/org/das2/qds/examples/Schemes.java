@@ -768,6 +768,15 @@ public class Schemes {
                 if ( ds1.length(0)!=2 ) return false;
                 dep= (QDataSet) ds1.property(QDataSet.DEPEND_1);
                 break;
+            case 3:
+                if ( ds1.length(0,0)!=2 ) return false;
+                dep= (QDataSet) ds1.property(QDataSet.DEPEND_2);
+                break;
+            case 4:
+                // note complexMultiply, etc don't support rank 4 datasets.
+                if ( ds1.length(0,0,0)!=2 ) return false;
+                dep= (QDataSet) ds1.property(QDataSet.DEPEND_3);
+                break;
             default:
                 return false;
         }
