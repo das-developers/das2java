@@ -50,6 +50,7 @@ public class EnumerationUnits extends Units {
     private Map<Integer, Datum> ordinals;  // maps from ordinal to Datum.Integer
     private int highestOrdinal; // highest ordinal for each Units type
     private Map<Object, Datum> objects;    // maps from object to Datum.Integer
+    private boolean objectsAreStrings= true;
     private Map<Datum, Object> invObjects; // maps from Datum.Integer to object
     private Map<Integer,Integer> colors;   // maps from ordinal to the color for the ordinal.
     private static Map<String, EnumerationUnits> unitsInstances;
@@ -92,6 +93,8 @@ public class EnumerationUnits extends Units {
     public Datum createDatum(int ival, Object sval, int color ) {
         if ( sval instanceof String ) {
             sval= ((String)sval).trim();
+        } else {
+            objectsAreStrings= false;
         }
         if (objects.containsKey(sval)) {
             return objects.get(sval);
@@ -176,6 +179,8 @@ public class EnumerationUnits extends Units {
     public Datum createDatum(Object object) {
         if ( object instanceof String ) {
             object= ((String)object).trim();
+        } else {
+            objectsAreStrings= false;
         }
         if (objects.containsKey(object)) {
             return objects.get(object);
@@ -296,14 +301,18 @@ public class EnumerationUnits extends Units {
     @Override
     public Datum parse(String s) throws java.text.ParseException {
         Datum result = null;
-        for ( Entry<Object,Datum> entry: objects.entrySet() ) {
-            Object key = entry.getKey();
-            //Object value = objects.get(key);
-            if (key.toString().equals(s)) { // if the look the same, they are the same
-                if (result == null) {
-                    result = (Datum) entry.getValue();
-                } else {
-                    throw new IllegalStateException("Multiple Objects' string representations match");
+        if ( objectsAreStrings ) {
+            result= objects.get(s.trim());
+        } else {
+            for ( Entry<Object,Datum> entry: objects.entrySet() ) {
+                Object key = entry.getKey();
+                //Object value = objects.get(key);
+                if (key.toString().equals(s)) { // if the look the same, they are the same
+                    if (result == null) {
+                        result = (Datum) entry.getValue();
+                    } else {
+                        throw new IllegalStateException("Multiple Objects' string representations match");
+                    }
                 }
             }
         }
