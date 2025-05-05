@@ -5777,6 +5777,36 @@ public final class Ops {
     }
     
     /**
+     * reduce the canonical rank 2 events dataset by combining
+     * adjacent records of the same message and color into
+     * one record.
+     * 
+     * @param cds rank 2 events dataset
+     * @return events dataset, likely with fewer records
+     */
+    public static QDataSet eventsCoalesce( QDataSet cds ) {
+        if ( cds.rank()!=2 ) throw new IllegalArgumentException("Expected rank 2 events dataset");
+        DataSetBuilder build= new DataSetBuilder(2,cds.length()/2,cds.length(0));
+        build.putProperty( QDataSet.BUNDLE_1, cds.property(QDataSet.BUNDLE_1) );
+        WritableDataSet prev= Ops.copy(cds.slice(0));
+        for ( int i=1; i<cds.length(); i++ ) {
+            QDataSet current= cds.slice(i);
+            double d= Math.abs( ( prev.value(1)-current.value(0) ) / ( prev.value(1)-prev.value(0) ) );
+            if ( d<0.001 
+                && prev.value(3)==prev.value(3) 
+                && prev.value(2)==prev.value(2) ) {
+                prev.putValue( 1,current.value(1) );
+            } else {
+                build.nextRecord( prev );
+                prev= Ops.copy(current);
+            }
+        }
+        build.nextRecord( prev );
+        return build.getDataSet();
+    }
+    
+    
+    /**
      * return a dataset with X and Y forming a circle, introduced as a convenient way to indicate planet location.
      * @param x the x coordinate of the circle
      * @param y the y coordinate of the circle
@@ -15913,6 +15943,8 @@ public final class Ops {
      * @param polyMesh
      * @return rank 2 ds[n,2].
      * @see Schemes#triangleMesh() 
+     * @see Schemes#polyMesh()
+     * 
      */
     public static QDataSet polyCenters( QDataSet polyMesh ) {
         if ( !Schemes.isPolyMesh(polyMesh) ) {
