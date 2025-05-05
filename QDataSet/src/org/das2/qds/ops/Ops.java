@@ -5781,10 +5781,13 @@ public final class Ops {
      * adjacent records of the same message and color into
      * one record.
      * 
+     * TODO: this is not finished.
+     * 
      * @param cds rank 2 events dataset
      * @return events dataset, likely with fewer records
      */
     public static QDataSet eventsCoalesce( QDataSet cds ) {
+        if (true) throw new IllegalArgumentException("not done");
         if ( cds.rank()!=2 ) throw new IllegalArgumentException("Expected rank 2 events dataset");
         DataSetBuilder build= new DataSetBuilder(2,cds.length()/2,cds.length(0));
         build.putProperty( QDataSet.BUNDLE_1, cds.property(QDataSet.BUNDLE_1) );
