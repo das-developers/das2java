@@ -1083,7 +1083,9 @@ public class EventsRenderer extends Renderer {
     }
 
     /**
-     * if non-empty, then use this named mode
+     * if non-empty, then use this named mode.  Named modes include:<ul>
+     * <li>gantt2 - only show the items which are visible, normally all values are visible
+     * </ul>
      * @param mode 
      */
     public void setMode(String mode) {
