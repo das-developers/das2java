@@ -1051,9 +1051,6 @@ public class DataSetUtil {
      * @see #format(org.das2.qds.QDataSet, boolean) 
      */
     public static String toString(QDataSet ds) {
-        if ( ds.rank()==1 && ds.length()==4 ) {
-            System.err.println("stop here 1055");
-        }
         if ( ds==null ) {
             throw new IllegalArgumentException( "null dataset" );
         }
