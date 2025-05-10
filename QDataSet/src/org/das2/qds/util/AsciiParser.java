@@ -1858,21 +1858,29 @@ public class AsciiParser {
                 tryCount++;
                 if (doParseField[j]) {
                     String parseable = ss[j];
-                    try {
-                        double d= fieldParsers[j].parseField(parseable, j);
-                        if ( builder!=null ) builder.putValue(irec, j, d );
-                        okayCount++;
-                    } catch (ParseException | NumberFormatException | InconvertibleUnitsException e) {
-                        if ( irec==0 ) {
-                            logger.finest("ignore fails on the first line");
-                            failCount++;
+                    if ( parseable.length()==0 ) {
+                        if ( units[j] instanceof EnumerationUnits ) {
+                            if ( builder!=null ) builder.putValue(irec, j, units[j].getFillDouble() );
                         } else {
-                            if ( firstException==null && j<fieldCount-1  ) {
-                                firstException= e;
-                            }
-                            failCount++;
+                            if ( builder!=null ) builder.putValue(irec, j, -1e31 );
                         }
-                        if ( builder!=null ) builder.putValue(irec, j, -1e31 ); 
+                    } else {
+                        try {
+                            double d= fieldParsers[j].parseField(parseable, j);
+                            if ( builder!=null ) builder.putValue(irec, j, d );
+                            okayCount++;
+                        } catch (ParseException | NumberFormatException | InconvertibleUnitsException e) {
+                            if ( irec==0 ) {
+                                logger.finest("ignore fails on the first line");
+                                failCount++;
+                            } else {
+                                if ( firstException==null && j<fieldCount-1  ) {
+                                    firstException= e;
+                                }
+                                failCount++;
+                            }
+                            if ( builder!=null ) builder.putValue(irec, j, -1e31 ); 
+                        }
                     }
                 }
             }
