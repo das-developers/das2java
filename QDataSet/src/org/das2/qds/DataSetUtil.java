@@ -1051,7 +1051,6 @@ public class DataSetUtil {
      * @see #format(org.das2.qds.QDataSet, boolean) 
      */
     public static String toString(QDataSet ds) {
-
         if ( ds==null ) {
             throw new IllegalArgumentException( "null dataset" );
         }
@@ -1139,6 +1138,18 @@ public class DataSetUtil {
             return str.toString();
         }
 
+        if ( Schemes.isCanonicalEvent(ds) ) {
+            String msg= ds.slice(ds.length()-1).svalue();
+            int i= msg.indexOf("\n");
+            if ( i>-1 ) {
+                msg= msg.substring(0,i) + "...";
+            }
+            if ( msg.length()>60 ) {
+                msg= msg.substring(0,60) + "...";
+            }
+            return ds.slice(0).svalue() + "/" + ds.slice(1).svalue() + " \"" + msg + "\"";
+        }
+        
         if ( ds.rank()==2 && ds.length()==2 && ds.length(0)==2 ) {
             QDataSet ex1= ds.slice(0);
             if ( "min,maxInclusive".equals(ex1.property( QDataSet.BINS_0) ) ) {

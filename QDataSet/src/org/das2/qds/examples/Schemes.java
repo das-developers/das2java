@@ -20,6 +20,7 @@ import org.das2.qds.ops.Ops;
 import static org.das2.qds.ops.Ops.PI;
 import static org.das2.qds.ops.Ops.linspace;
 import static org.das2.qds.ops.Ops.ripples;
+import org.das2.util.ColorUtil;
 
 /**
  * For the various QDataSet schemes, show examples and documentation for
@@ -467,6 +468,60 @@ public class Schemes {
         }
     }
     
+    /**
+     * return a canonical event
+     * @return a canonical event
+     */
+    public static QDataSet canonicalEvent() {
+        QDataSet ds= Ops.bundle( Ops.dataset("2025-05-06T14:29"), 
+                Ops.dataset("2025-05-06T14:29"), 
+                Ops.dataset(Units.rgbColor.createDatum(ColorUtil.SKY_BLUE.getRGB())),
+                Ops.dataset(Units.nominal().createDatum("Sunny and Warm")) );
+        
+        DataSetUtil.toString(ds);
+        return ds;
+    }
+    
+    /**
+     * returns true if the dataset is a rank 1 canonical event, having 
+     * three or four elements, the first two are times or the same units and
+     * the last is a nominal datum describing the event.
+     * @param ds dataset
+     * @return true if is a canonical event.
+     */
+    public static boolean isCanonicalEvent( QDataSet ds ) {
+        if ( ds.rank()!=1 ) return false;
+        QDataSet bundle0= (QDataSet) ds.property(QDataSet.BUNDLE_0);
+        if ( bundle0!=null ) {
+            if ( bundle0.length()==3 || bundle0.length()==4 || bundle0.length()==5 ) {
+                Units u0= (Units) bundle0.property(QDataSet.UNITS,0);
+                if ( u0==null ) u0= Units.dimensionless;
+                Units u1= (Units) bundle0.property(QDataSet.UNITS,1);
+                if ( u1==null ) u1= Units.dimensionless;
+                Units u3= (Units) bundle0.property(QDataSet.UNITS,bundle0.length()-1);
+                boolean t1t2= UnitsUtil.isTimeLocation(u0) && UnitsUtil.isTimeLocation(u1);
+                if ( t1t2 || ( u3!=null && UnitsUtil.isOrdinalMeasurement(u3) && u0.getOffsetUnits().isConvertibleTo(u1) ) ) {
+                    if ( u0.isConvertibleTo(u1) ) {
+                        QDataSet isge= Ops.ge( Ops.slice0( ds, 1 ), Ops.slice0( ds, 0 ) );
+                        return Ops.total(isge) == Ops.total( Ops.valid( Ops.slice0(ds,0) ) );
+                    } else {
+                        QDataSet isge= Ops.ge( Ops.abs( Ops.slice0( ds, 1 ) ), 0. );
+                        return Ops.total(isge) == Ops.total( Ops.valid( Ops.slice0(ds,0) ) );
+                    }
+                } else if ( u3!=null  && UnitsUtil.isOrdinalMeasurement(u3) && u0.isConvertibleTo(u1) ) {
+                    QDataSet isge= Ops.ge( Ops.slice0( ds, 1 ), Ops.slice0( ds, 0 ) );
+                    return Ops.total(isge) == Ops.total( Ops.valid( Ops.slice0(ds,0) ) );
+                }
+            } else {
+                Units u3= (Units) bundle0.property(QDataSet.UNITS,bundle0.length()-1);
+                if ( u3!=null && UnitsUtil.isOrdinalMeasurement(u3) ) {
+                    return true;
+                }
+            }
+        } 
+        return false; //TODO: this means a slice of some events lists are not events!
+        
+    }
     /**
      * return true if the data is an events list.
      * @param ds a dataset
