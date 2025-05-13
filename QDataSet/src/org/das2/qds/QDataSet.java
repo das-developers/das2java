@@ -640,7 +640,7 @@ public interface QDataSet {
     /**
      * the minimum length of each of the waveform packets in a rank 2 waveform dataset.
      */
-    public static int MIN_WAVEFORM_LENGTH=32;
+    public static int MIN_WAVEFORM_LENGTH=4;
     
     /**
      * the fill value often used in codes.
