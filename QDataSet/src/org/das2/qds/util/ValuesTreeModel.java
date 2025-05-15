@@ -301,10 +301,11 @@ public class ValuesTreeModel extends DefaultTreeModel {
                         aroot.insert(  new DefaultMutableTreeNode( prefix+""+i+")="+sval), aroot.getChildCount() );
                     }
                 }   
-                if ( ds.length()>=sizeLimit ) {
+                if ( ds.length()>(sizeLimit+4) ) {
                     aroot.insert( new DefaultMutableTreeNode( "..." ), aroot.getChildCount() );
+                    n= Math.max(n,ds.length()-3);
                 }   // insert last N values
-                for ( int i=Math.max( ds.length()-TAIL_COUNT,sizeLimit ); i<ds.length(); i++ ) {
+                for ( int i=n; i<ds.length(); i++ ) {
                     Units u= units;
                     if ( bundle!=null ) {
                         u= (Units)bundle.property( QDataSet.UNITS, i );
