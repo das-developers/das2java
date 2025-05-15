@@ -1,7 +1,6 @@
 
 package org.das2.graph;
 
-import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.GeneralPath;
@@ -9,26 +8,11 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import org.das2.datum.Units;
 import static org.das2.graph.Renderer.CONTROL_KEY_COLOR;
-import static org.das2.graph.Renderer.CONTROL_KEY_DRAW_ERROR;
-import static org.das2.graph.Renderer.CONTROL_KEY_FILL_COLOR;
-import static org.das2.graph.Renderer.CONTROL_KEY_FILL_DIRECTION;
 import static org.das2.graph.Renderer.CONTROL_KEY_FILL_TEXTURE;
 import static org.das2.graph.Renderer.CONTROL_KEY_LINE_THICK;
-import static org.das2.graph.Renderer.CONTROL_KEY_MODULO_Y;
-import static org.das2.graph.Renderer.CONTROL_KEY_SPECIAL_COLORS;
-import static org.das2.graph.Renderer.CONTROL_KEY_SYMBOL;
-import static org.das2.graph.Renderer.CONTROL_KEY_SYMBOL_SIZE;
-import static org.das2.graph.Renderer.decodeDatum;
-import static org.das2.graph.Renderer.decodeFillStyle;
-import static org.das2.graph.Renderer.decodePlotSymbolControl;
 import static org.das2.graph.Renderer.encodeBooleanControl;
 import static org.das2.graph.Renderer.encodeColorControl;
-import static org.das2.graph.Renderer.encodeDatum;
-import static org.das2.graph.Renderer.encodeFillStyle;
-import static org.das2.graph.Renderer.encodePlotSymbolControl;
 import static org.das2.graph.Renderer.formatControl;
-import static org.das2.graph.SeriesRenderer.CONTROL_KEY_BACKGROUND_THICK;
-import static org.das2.graph.SeriesRenderer.CONTROL_KEY_FILL_STYLE;
 import org.das2.qds.DataSetUtil;
 import org.das2.qds.JoinDataSet;
 import org.das2.qds.QDataSet;
