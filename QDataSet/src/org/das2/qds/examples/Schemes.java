@@ -1113,8 +1113,12 @@ public class Schemes {
             int ndim= ds.slice(0).length(0); // xy or xyz points
             int ncorners= ds.slice(1).length(0); // are they triangles
             if ( ndim==2 || ndim==3 ) {
-                if ( ncorners==3 || ncorners==4 ) { 
+                if ( ncorners==3 ) { 
+                    return true; 
+                } else if ( ncorners==4 ) {
                     return true; // note the triangulation code we have supports four-point tetrahedra.
+                } else if ( ncorners>4 ) {
+                    return true; // support general polygons
                 } else {
                     return false;  
                 }
