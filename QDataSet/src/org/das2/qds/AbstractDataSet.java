@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.datum.Units;
+import org.das2.qds.examples.Schemes;
 import org.das2.util.LoggerManager;
 
 /**
@@ -184,7 +185,14 @@ public abstract class AbstractDataSet implements QDataSet, MutablePropertyDataSe
                 if ( value instanceof QDataSet ) { // BUNDLES can have string value here -- TODO: this hasn't been true for 10 years DEPENDNAME property
                     QDataSet dep0= ((QDataSet)value);
                     if ( this.rank()>0 && dep0.length()!=this.length() ) {
-                        logger.log(Level.WARNING, "DEPEND_0 is incorrect length, its length is {0} should be {1}", new Object[]{dep0.length(), this.length()});
+                        if ( Schemes.isPolyMesh(dep0) ) {
+                            int n= dep0.slice(1).length();
+                            if ( n!=this.length() ) {
+                                logger.log(Level.WARNING, "DEPEND_0 PolyMesh has incorrect length, its length is {0} should be {1}", new Object[]{n, this.length()});
+                            }
+                        } else {
+                            logger.log(Level.WARNING, "DEPEND_0 is incorrect length, its length is {0} should be {1}", new Object[]{dep0.length(), this.length()});
+                        }
                     }
                     if ( this==value ) {
                         logger.log(Level.WARNING, "{0} is self-referential, causing infinite loop", name);
