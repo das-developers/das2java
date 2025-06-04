@@ -1261,6 +1261,10 @@ public class FileStorageModel {
         this.root= root;
         this.parent= parent;
         
+        if ( template.startsWith(" ") ) {
+            throw new IllegalArgumentException("template cannot start with space: \""+template+"\"");
+        }
+        
         if ( template.startsWith("/") ) { // clean up double slashes immediately.  (/home/jbf//data/)
             template= template.substring(1);
         }
