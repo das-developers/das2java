@@ -278,6 +278,10 @@ public class OperationsProcessor {
                     ds= Ops.log10(ds);
                 } else if ( cmd.equals("|exp10") ) {
                     ds= Ops.exp10(ds);
+                } else if ( cmd.equals("|log") ) {
+                    ds= Ops.log(ds);
+                } else if ( cmd.equals("|exp") ) {
+                    ds= Ops.exp(ds);
                 } else if ( cmd.equals("|trim") ) {
                     Object arg1= getArgumentIndex( s.next(),0 );
                     Object arg2= getArgumentIndex( s.next(),ds.length() );
