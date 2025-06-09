@@ -119,6 +119,11 @@
                         <description>Perform an "auto" histogram of the data that automatically sets bins</description>
                     </bookmark>
                     <bookmark>
+                        <title>Log Histogram</title>
+                        <filter>|logHistogram()</filter>
+                        <description>Perform the auto histogram in log space</description>
+                    </bookmark>                    
+                    <bookmark>
                         <title>Histogram2d</title>
                         <filter>|histogram2d()</filter>
                         <description>Perform a 2-D histogram of X and Y to create a rank 2 table.</description>
@@ -312,14 +317,14 @@
                                 <description>Takes the power(ds,n)</description>
                             </bookmark>
                             <bookmark>
+                                <title>Natural Log</title>
+                                <filter>|log()</filter>
+                                <description>Takes the natural logarithm of the data</description>
+                            </bookmark>
+                            <bookmark>
                                 <title>Log Base 10</title>
                                 <filter>|log10()</filter>
                                 <description>Takes the base-10 log of the data</description>
-                            </bookmark>
-                            <bookmark>
-                                <title>Log Histogram</title>
-                                <filter>|logHistogram()</filter>
-                                <description>Perform the auto histogram in the log space</description>
                             </bookmark>
                         </bookmark-list>
                     </bookmark-folder>
