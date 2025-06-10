@@ -47,6 +47,7 @@ import org.das2.qds.RankZeroDataSet;
 import org.das2.qds.SemanticOps;
 import org.das2.qds.TagGenDataSet;
 import org.das2.qds.WritableDataSet;
+import org.das2.qds.examples.Schemes;
 import org.das2.qds.ops.Ops;
 import org.das2.qds.util.DataSetBuilder;
 import org.das2.util.LoggerManager;
@@ -78,6 +79,18 @@ public class EventsRenderer extends Renderer {
     private boolean useOnlyEventsMap= false;
     
     private static Logger logger= LoggerManager.getLogger("das2.graphics.renderer.events");
+    
+    /**
+     * return true if the data is in a form accepted
+     * @param ds the data
+     * @return true if the data will be plotted
+     */
+    public static boolean acceptsData(QDataSet ds) {
+        return ds.rank()==2 && Schemes.isEventsList(ds) 
+                || ds.rank()==1
+                || ds.rank()==0;
+    }
+    
     /**
      * return bounding cube 
      * @param ds
