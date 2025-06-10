@@ -9,7 +9,6 @@ import java.awt.Shape;
 import java.awt.geom.Arc2D;
 import java.awt.geom.Area;
 import java.awt.geom.GeneralPath;
-import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
@@ -23,7 +22,6 @@ import static java.lang.Math.cos;
 import static java.lang.Math.sin;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import org.das2.qds.DataSetUtil;
 import org.das2.qds.SemanticOps;
 
 /**
