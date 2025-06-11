@@ -301,15 +301,17 @@ public class BoundsRenderer extends Renderer {
             QDataSet yy= d;
             GeneralPath path= GraphUtil.getPath( xAxis,yAxis,
                 Ops.link( xx, yy ), false,false);
+            path.closePath();
             GraphUtil.fillWithTexture(g, path, fillColor, fillTexture);
             g.setColor( this.getColor() );
             g.draw(path);
             context= path;
-        } else if ( d.rank()==2 && ds.length(0)==3 ) { // TODO: What's the scheme for this data set?  Working on the output of contour
+        } else if ( Schemes.isTrajectory(ds) ) { 
             QDataSet xx= Ops.slice1( ds, 0 );
             QDataSet yy= Ops.slice1( ds, 1 );
             GeneralPath path= GraphUtil.getPath( xAxis,yAxis,
                 xx, yy, false,false);
+            path.closePath();
             GraphUtil.fillWithTexture(g, path, this.fillColor, this.fillTexture);
             g.setColor( this.getColor() );
             g.draw(path);
@@ -327,7 +329,7 @@ public class BoundsRenderer extends Renderer {
             QDataSet s1= mins.trim(0,1);
             GeneralPath path= GraphUtil.getPath(xAxis,yAxis,
                 Ops.append(mins,Ops.append(Ops.reverse(maxs),s1)),false,false);
-            
+            path.closePath();
             GraphUtil.fillWithTexture(g, path, this.fillColor, fillTexture );
             g.setColor( this.getColor() );
             g.draw(path);
