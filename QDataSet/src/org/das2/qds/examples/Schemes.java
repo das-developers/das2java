@@ -1126,4 +1126,40 @@ public class Schemes {
         }
         return false;
     }
+    
+    /**
+     * return a rank 0 atom of data.
+     * @return a rank 0 atom of data.
+     */
+    public static QDataSet datum() {
+        return Ops.dataset("1.23 cm");
+    }
+    
+    /**
+     * true if its a rank 0 dataset
+     * @param ds
+     * @return 
+     */
+    public static boolean isDatum( QDataSet ds ) {
+        return ds.rank()==0;
+    }
+    
+    /**
+     * return a rank 0 atom of data.
+     * @return a rank 0 atom of data.
+     */
+    public static QDataSet datumRange() {
+        return Ops.dataset("2025-06-11");
+    }
+    
+    /**
+     * true if it's a rank 1 datum range
+     * @param ds
+     * @return true if it's a rank 1 datum range
+     */
+    public static boolean isDatumRange( QDataSet ds ) {
+        return ds.rank()==1 && QDataSet.VALUE_BINS_MIN_MAX.equals(ds.property(QDataSet.BINS_0));
+    }
+    
+    
 }
