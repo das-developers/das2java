@@ -108,8 +108,13 @@ public class EventsRenderer extends Renderer {
         QDataSet xmins;
         QDataSet xmaxs;
         if ( ds.rank()==1 && ds.property(QDataSet.DEPEND_0)==null ) {
-            xmins= ds; //vap+inline:2010-002T03:50,2010-002T03:54,2010-002T03:56&RENDER_TYPE=eventsBar
-            xmaxs= ds;
+            if ( Schemes.isDatumRange(ds) ) {
+                xmins= ds.trim(0,1);
+                xmaxs= ds.trim(1,2);
+            } else {
+                xmins= ds; //vap+inline:2010-002T03:50,2010-002T03:54,2010-002T03:56&RENDER_TYPE=eventsBar
+                xmaxs= ds;
+            }
         } else if ( ds.rank()==1 && ds.property(QDataSet.DEPEND_0)!=null ) {
             xmins= (QDataSet)ds.property(QDataSet.DEPEND_0); //vap+inline:2010-002T03:50,2010-002T03:54,2010-002T03:56&RENDER_TYPE=eventsBar
             xmaxs= xmins;
@@ -523,6 +528,11 @@ public class EventsRenderer extends Renderer {
                     xmins= new TagGenDataSet(vds.length(),1.0,0.0);
                     xmaxs= new TagGenDataSet(vds.length(),1.0,1.0);
                     msgs= vds;
+                } else if ( Schemes.isDatumRange(vds) ) {
+                    xmins= vds.trim(0,1);
+                    xmaxs= vds.trim(1,2);
+                    String smsg= vds.toString();
+                    msgs= Ops.reform( Units.nominal().createDatum(smsg), new int[] { 1 } );
                 } else {
                     xmins= vds;
                     xmaxs= vds;
