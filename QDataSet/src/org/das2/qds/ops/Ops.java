@@ -10832,6 +10832,7 @@ public final class Ops {
         result.putValue( 1, dr.value(0) + w*max );
 
         DataSetUtil.copyDimensionProperties( dr, result );
+        result.putProperty( QDataSet.BINS_0, dr.property(QDataSet.BINS_0) );
         return result;
     }
 
@@ -10882,6 +10883,7 @@ public final class Ops {
         }
 
         DataSetUtil.copyDimensionProperties( dr, result );
+        result.putProperty( QDataSet.BINS_0, dr.property(QDataSet.BINS_0) );
         return result;
     }
     
