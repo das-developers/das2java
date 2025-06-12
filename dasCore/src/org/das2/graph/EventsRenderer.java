@@ -451,7 +451,7 @@ public class EventsRenderer extends Renderer {
         logger.entering( "EventsRenderer", "makeCanonical" );
         QDataSet xmins;
         QDataSet xmaxs;
-        QDataSet colors;
+        QDataSet colors=null;
         QDataSet msgs;
 
         if ( vds==null ) {
@@ -538,6 +538,11 @@ public class EventsRenderer extends Renderer {
                     xmaxs= Ops.reform( vds.slice(1), new int[] {1} );
                     int n= vds.length();
                     msgs= Ops.reform( vds.slice(n-1), new int[] {1} );
+                    if ( vds.length()==4 ) {
+                        if ( !useColor ) {
+                            colors= Ops.reform( vds.slice(2), new int[] {1} );
+                        }
+                    }
                 } else {
                     xmins= vds;
                     xmaxs= vds;
@@ -581,14 +586,16 @@ public class EventsRenderer extends Renderer {
                 logger.exiting( "EventsRenderer", "makeCanonical", "null");
                 return null;
             }
-            Color c0= getColor();
-            int alpha= c0.getAlpha()==255 ? 
-                    ( opaque ? 255 : 128 ) :
-                    c0.getAlpha();
-            Color c1= new Color( c0.getRed(), c0.getGreen(), c0.getBlue(), alpha );
-            int irgb= c1.getRGB();
+            if ( colors==null ) {
+                Color c0= getColor();
+                int alpha= c0.getAlpha()==255 ? 
+                        ( opaque ? 255 : 128 ) :
+                        c0.getAlpha();
+                Color c1= new Color( c0.getRed(), c0.getGreen(), c0.getBlue(), alpha );
+                int irgb= c1.getRGB();
             
-            colors= Ops.replicate( irgb, xmins.length() );
+                colors= Ops.replicate( irgb, xmins.length() );
+            }
             
         } else if ( vds.rank()==0 ) {
             xmins= Ops.replicate(vds,1); // increase rank from 0 to 1.
