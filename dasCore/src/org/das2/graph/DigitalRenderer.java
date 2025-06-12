@@ -35,6 +35,7 @@ import org.das2.qds.IndexGenDataSet;
 import org.das2.qds.JoinDataSet;
 import org.das2.qds.QDataSet;
 import org.das2.qds.SemanticOps;
+import org.das2.qds.examples.Schemes;
 import org.das2.qds.ops.Ops;
 
 /**
@@ -73,27 +74,34 @@ public class DigitalRenderer extends Renderer {
 
             JoinDataSet bds= new JoinDataSet(2);
             bds.join(xrange);
-            bds.join(yrange);
+            if ( Ops.valid( yrange.slice(0) ).value()==0 ) {
+                bds.join( DDataSet.wrap( new double[] { 0,1 } ) );
+            } else {
+                bds.join(yrange);
+            }
 
             return bds;
         }
 
     }
 
-    private static QDataSet doRange( QDataSet xds ) {
-        if ( UnitsUtil.isNominalMeasurement( SemanticOps.getUnits(xds) ) ) {
+    private static QDataSet doRange( QDataSet ds ) {
+        if ( UnitsUtil.isNominalMeasurement( SemanticOps.getUnits(ds) ) ) {
             return DataSetUtil.asDataSet( DatumRangeUtil.newDimensionless(0,10) );
         }
-        QDataSet xrange= Ops.extent(xds);
-        if ( xrange.value(1)==xrange.value(0) ) {
-            if ( !"log".equals( xrange.property(QDataSet.SCALE_TYPE)) ) {
-                xrange= DDataSet.wrap( new double[] { xrange.value(0)-1, xrange.value(1)+1 } ).setUnits( SemanticOps.getUnits(xrange) );
+        QDataSet range= Ops.extent(ds);
+        if ( range.value(1)==range.value(0) ) {
+            if ( !"log".equals( range.property(QDataSet.SCALE_TYPE)) ) {
+                range= DDataSet.wrap( new double[] { range.value(0)-1, range.value(1)+1 } ).setUnits( SemanticOps.getUnits(range) );
             } else {
-                xrange= DDataSet.wrap( new double[] { xrange.value(0)/10, xrange.value(1)*10 } ).setUnits( SemanticOps.getUnits(xrange) );
+                range= DDataSet.wrap( new double[] { range.value(0)/10, range.value(1)*10 } ).setUnits( SemanticOps.getUnits(range) );
             }
         }
-        xrange= Ops.rescaleRangeLogLin(xrange, -0.1, 1.1 );
-        return xrange;
+        if ( Ops.valid( range.slice(0) ).value()==1 ) {
+            range= Ops.rescaleRangeLogLin(range, -0.1, 1.1 );
+        }
+        
+        return range;
     }
 
     protected Color color = Color.BLACK;
@@ -313,6 +321,10 @@ public class DigitalRenderer extends Renderer {
             wds= SemanticOps.weightsDataSet(dataSet);
         } else if ( dataSet.rank()==1 ) {
             wds= SemanticOps.weightsDataSet(dataSet);
+        } else if ( Schemes.isBundleDescriptor(dataSet) ) {
+            firstIndex = 0;
+            lastIndex = dataSet.length();
+            return;
         } else if ( SemanticOps.isSimpleTableDataSet(dataSet) ) {
             wds= SemanticOps.weightsDataSet(DataSetOps.slice1(dataSet,0));
         } else {
@@ -416,6 +428,8 @@ public class DigitalRenderer extends Renderer {
                 renderRank1( ds, g, xAxis, yAxis, firstIndex, lastIndex );
             } else if ( ds.rank()==3 ) {
                 renderRank3( ds, g, xAxis, yAxis );
+            } else if ( Schemes.isBundleDescriptor(ds) ) {
+                renderRank0( Ops.dataset( Units.nominal().createDatum( ds.toString() ) ), g, xAxis, yAxis );
             } else if ( ds.rank()==2 ) {
                 renderRank2( ds, g, xAxis, yAxis);
             } else {
