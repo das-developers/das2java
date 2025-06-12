@@ -3,8 +3,6 @@
  *
  * Created on January 29, 2007, 9:39 AM
  *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
  */
 
 package org.das2.qds;
