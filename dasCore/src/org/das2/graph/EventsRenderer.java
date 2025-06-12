@@ -533,6 +533,11 @@ public class EventsRenderer extends Renderer {
                     xmaxs= vds.trim(1,2);
                     String smsg= vds.toString();
                     msgs= Ops.reform( Units.nominal().createDatum(smsg), new int[] { 1 } );
+                } else if ( Schemes.isCanonicalEvent(vds) ) {
+                    xmins= Ops.reform( vds.slice(0), new int[] {1} );
+                    xmaxs= Ops.reform( vds.slice(1), new int[] {1} );
+                    int n= vds.length();
+                    msgs= Ops.reform( vds.slice(n-1), new int[] {1} );
                 } else {
                     xmins= vds;
                     xmaxs= vds;
