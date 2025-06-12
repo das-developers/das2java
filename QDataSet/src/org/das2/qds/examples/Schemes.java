@@ -474,7 +474,7 @@ public class Schemes {
      */
     public static QDataSet canonicalEvent() {
         QDataSet ds= Ops.bundle( Ops.dataset("2025-05-06T14:29"), 
-                Ops.dataset("2025-05-06T14:29"), 
+                Ops.dataset("2025-05-06T14:31"), 
                 Ops.dataset(Units.rgbColor.createDatum(ColorUtil.SKY_BLUE.getRGB())),
                 Ops.dataset(Units.nominal().createDatum("Sunny and Warm")) );
         
