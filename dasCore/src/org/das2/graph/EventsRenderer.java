@@ -108,9 +108,9 @@ public class EventsRenderer extends Renderer {
         QDataSet xmins;
         QDataSet xmaxs;
         if ( ds.rank()==1 && ds.property(QDataSet.DEPEND_0)==null ) {
-            if ( Schemes.isDatumRange(ds) ) {
-                xmins= ds.trim(0,1);
-                xmaxs= ds.trim(1,2);
+            if ( Schemes.isDatumRange(ds) || Schemes.isCanonicalEvent(ds) ) {
+                xmins= Ops.reform( ds.slice(0), new int[] { 1 } );
+                xmaxs= Ops.reform( ds.slice(1), new int[] { 1 } );
             } else {
                 xmins= ds; //vap+inline:2010-002T03:50,2010-002T03:54,2010-002T03:56&RENDER_TYPE=eventsBar
                 xmaxs= ds;
