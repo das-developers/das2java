@@ -806,11 +806,43 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
     }// </editor-fold>//GEN-END:initComponents
 
     private void doInsert( String text, String endt ) {
-        if ( jTextArea1.getSelectionStart()!=jTextArea1.getSelectionEnd() && endt!=null ) {
-            jTextArea1.insert( endt, jTextArea1.getSelectionEnd() );
-            jTextArea1.insert( text, jTextArea1.getSelectionStart() );
+        String theText= jTextArea1.getText();
+        String ext= getExtension();
+        if ( ext!=null ) {
+            int i= theText.indexOf(ext);
+            if ( i==-1 ) i= jTextArea1.getCaretPosition();
+            jTextArea1.replaceRange( text, i, i+ext.length() );
+            if ( endt!=null ) {
+                jTextArea1.insert(text, i+text.length());
+            }
         } else {
-            jTextArea1.insert( text, jTextArea1.getSelectionStart() );
+            if ( jTextArea1.getSelectionStart()!=jTextArea1.getSelectionEnd() && endt!=null ) {
+                jTextArea1.insert( endt, jTextArea1.getSelectionEnd() );
+                jTextArea1.insert( text, jTextArea1.getSelectionStart() );
+            } else {
+                jTextArea1.insert( text, jTextArea1.getSelectionStart() );
+            }
+        }
+    }
+    
+    /**
+     * return the extension, or null if we are not within an extension.
+     * @return 
+     */
+    private String getExtension( ) {
+        String ss= jTextArea1.getText();
+        int i1= ss.lastIndexOf("!(",jTextArea1.getCaretPosition());
+        if ( i1==-1 ) {
+            return null;
+        }
+        int i2= ss.indexOf(")",i1);
+        if ( i2==-1 ) {
+            return null;
+        }
+        if ( i2>jTextArea1.getCaretPosition() ) {
+            return ss.substring(i1,i2+1);
+        } else {
+            return null;
         }
     }
     
@@ -819,6 +851,7 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
     }//GEN-LAST:event_jTextArea1CaretPositionChanged
 
     private void colorButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_colorButtonActionPerformed
+        String extension= getExtension();
         JColorChooser chooser= new JColorChooser();
         chooser.addChooserPanel( new NamedColorChooserPanel() );
         chooser.addChooserPanel( new DesktopColorChooserPanel() );
@@ -873,7 +906,62 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
         }
     }//GEN-LAST:event_jTabbedPane1StateChanged
 
+    private void setPsymPanelSettings( String settings ) {
+        settings= settings.substring(2,settings.length()-1);
+        String[] ss= settings.split(";");        
+        for ( String s : ss ) {
+            int i= s.indexOf("=");
+            String n,v;
+            if ( i>-1 ) {
+                n= s.substring(0,i);
+                v= s.substring(i+1);
+            } else {
+                n= s;
+                v= null;
+            }
+            switch ( n ) {
+                case "painter":
+                case "psym":
+                    break;
+                case "size":
+                    sizeTextField.setText(v);
+                    break;
+                case "fillStyle":
+                    if ( v.equals("outline") ) {
+                        outlineFillStyleRB.setSelected(true);
+                    } else if ( v.equals("none") ) {
+                        noneFillStyleRB.setSelected(true);
+                    } else {
+                        jRadioButton9.setSelected(true);
+                    }
+                    break;
+                case "connect":
+                    if ( v.equals("solid") ) {
+                        solidConnectRB.setSelected(true);
+                    } else if ( v.equals("dots") ) {
+                        jRadioButton11.setSelected(true);
+                    } else {
+                        noneConnectorRB.setSelected(true);
+                    }
+                    break;
+                default:
+                    Enumeration<AbstractButton> bbs= plotSymbolButtonGroup.getElements();
+                    while ( bbs.hasMoreElements() ) {
+                        javax.swing.AbstractButton b= bbs.nextElement();
+                        if ( b.getText().equals(n) ) {
+                            b.setSelected(true);
+                        }
+                    }
+                    break;
+            }
+        }
+    }
+    
     private void psymButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_psymButtonActionPerformed
+        String extension= getExtension();
+        if ( extension!=null && extension.startsWith("!(painter;psym") ) {
+            setPsymPanelSettings(extension);
+        }
         if ( JOptionPane.OK_OPTION==
                 JOptionPane.showConfirmDialog( this, psymPanel, "Psym Options", JOptionPane.OK_CANCEL_OPTION ) ) {
             StringBuilder textb= new StringBuilder( "!(painter;psym;" );
