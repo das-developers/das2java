@@ -232,7 +232,6 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
-        bindingGroup = new org.jdesktop.beansbinding.BindingGroup();
 
         psymPanel = new javax.swing.JPanel();
         jLabel3 = new javax.swing.JLabel();
@@ -361,18 +360,11 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
         });
 
         jButton1.setText("Pick...");
-
-        org.jdesktop.beansbinding.Binding binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, psymColorCB, org.jdesktop.beansbinding.ELProperty.create("${selected}"), jButton1, org.jdesktop.beansbinding.BeanProperty.create("enabled"));
-        bindingGroup.addBinding(binding);
-
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
             }
         });
-
-        binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, psymColorCB, org.jdesktop.beansbinding.ELProperty.create("${selected}"), psymColorTextField, org.jdesktop.beansbinding.BeanProperty.create("enabled"));
-        bindingGroup.addBinding(binding);
 
         fillStyleButtonGroup.add(noneFillStyleRB);
         noneFillStyleRB.setText("none");
@@ -447,12 +439,10 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
                         .addGroup(psymPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jRadioButton11)
                             .addComponent(jLabel5))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(psymPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(psymPanelLayout.createSequentialGroup()
                                 .addGap(23, 23, 23)
-                                .addComponent(outlineFillStyleRB)
-                                .addGap(64, 64, 64))
+                                .addComponent(outlineFillStyleRB))
                             .addGroup(psymPanelLayout.createSequentialGroup()
                                 .addGroup(psymPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                     .addComponent(jRadioButton9)
@@ -487,19 +477,18 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
 
         jLabel7.setText("URL of image:");
 
-        imageUrlTF.setText("https://autoplot.org/Logo96.png");
+        imageUrlTF.setText("http://autoplot.org/wiki/images/Logo96.png");
 
         imageSizeCB.setText("Size:");
+        imageSizeCB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                imageSizeCBActionPerformed(evt);
+            }
+        });
 
         imageSizeTF.setText("50%");
 
-        binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, imageSizeCB, org.jdesktop.beansbinding.ELProperty.create("${selected}"), imageSizeTF, org.jdesktop.beansbinding.BeanProperty.create("enabled"));
-        bindingGroup.addBinding(binding);
-
         jLabel8.setText("<html><i>50% means half of original size; 2em means two em heights; 20 or 20px means 20 pixels");
-
-        binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, imageSizeCB, org.jdesktop.beansbinding.ELProperty.create("${selected}"), jLabel8, org.jdesktop.beansbinding.BeanProperty.create("enabled"));
-        bindingGroup.addBinding(binding);
 
         javax.swing.GroupLayout imagePanelLayout = new javax.swing.GroupLayout(imagePanel);
         imagePanel.setLayout(imagePanelLayout);
@@ -546,6 +535,11 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
         jLabel9.setText("Plot Element Number:");
 
         peNumber.setText(" ");
+        peNumber.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                peNumberActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout plotElementPanelLayout = new javax.swing.GroupLayout(plotElementPanel);
         plotElementPanel.setLayout(plotElementPanelLayout);
@@ -575,10 +569,10 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
         jTextArea1.setColumns(20);
         jTextArea1.setRows(5);
         jTextArea1.addInputMethodListener(new java.awt.event.InputMethodListener() {
-            public void inputMethodTextChanged(java.awt.event.InputMethodEvent evt) {
-            }
             public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
                 jTextArea1CaretPositionChanged(evt);
+            }
+            public void inputMethodTextChanged(java.awt.event.InputMethodEvent evt) {
             }
         });
         jScrollPane1.setViewportView(jTextArea1);
@@ -801,8 +795,6 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 112, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
-
-        bindingGroup.bind();
     }// </editor-fold>//GEN-END:initComponents
 
     private void doInsert( String text, String endt ) {
@@ -812,8 +804,8 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
             int i= theText.indexOf(ext);
             if ( i==-1 ) i= jTextArea1.getCaretPosition();
             jTextArea1.replaceRange( text, i, i+ext.length() );
-            if ( endt!=null ) {
-                jTextArea1.insert(text, i+text.length());
+            if ( jTextArea1.getSelectionStart()!=jTextArea1.getSelectionEnd() && endt!=null ) {
+                jTextArea1.insert(endt, jTextArea1.getSelectionEnd() );
             }
         } else {
             if ( jTextArea1.getSelectionStart()!=jTextArea1.getSelectionEnd() && endt!=null ) {
@@ -853,6 +845,10 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
     private void colorButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_colorButtonActionPerformed
         String extension= getExtension();
         JColorChooser chooser= new JColorChooser();
+        if ( extension!=null ) {
+            String[] ss= extension.substring(2,extension.length()-1).split(";");
+            chooser.setColor( ColorUtil.decodeColor(ss[ss.length-1]) );
+        }
         chooser.addChooserPanel( new NamedColorChooserPanel() );
         chooser.addChooserPanel( new DesktopColorChooserPanel() );
         if ( JOptionPane.showConfirmDialog( this, chooser, "Color Chooser", JOptionPane.OK_CANCEL_OPTION )== JOptionPane.OK_OPTION ) {
@@ -908,7 +904,8 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
 
     private void setPsymPanelSettings( String settings ) {
         settings= settings.substring(2,settings.length()-1);
-        String[] ss= settings.split(";");        
+        String[] ss= settings.split(";");
+        psymColorCB.setSelected(false);
         for ( String s : ss ) {
             int i= s.indexOf("=");
             String n,v;
@@ -944,6 +941,10 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
                         noneConnectorRB.setSelected(true);
                     }
                     break;
+                case "color":
+                    psymColorTextField.setBackground( ColorUtil.decodeColor(v));
+                    psymColorCB.setSelected(true);
+                    break;
                 default:
                     Enumeration<AbstractButton> bbs= plotSymbolButtonGroup.getElements();
                     while ( bbs.hasMoreElements() ) {
@@ -957,6 +958,19 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
         }
     }
     
+
+    private void setImagePanelSettings( String settings ) {
+        settings= settings.substring(2,settings.length()-1);
+        String[] ss= settings.split(";");
+        String surl= ss[2];
+        String scale= ss.length==4 ? ss[3] : "";
+        
+        imageSizeCB.setSelected(scale.length()>0);
+        imageSizeTF.setText(scale);
+        
+        imageUrlTF.setText(surl);
+    }
+
     private void psymButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_psymButtonActionPerformed
         String extension= getExtension();
         if ( extension!=null && extension.startsWith("!(painter;psym") ) {
@@ -994,6 +1008,10 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
     }//GEN-LAST:event_psymButtonActionPerformed
 
     private void imageButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_imageButtonActionPerformed
+        String extension= getExtension();
+        if ( extension!=null && extension.startsWith("!(painter;img") ) {
+            setImagePanelSettings(extension);
+        }
         if ( JOptionPane.OK_OPTION==
                 JOptionPane.showConfirmDialog( this, imagePanel, "Image Options", JOptionPane.OK_CANCEL_OPTION ) ) {
             StringBuilder textb= new StringBuilder( "!(painter;img" );
@@ -1044,6 +1062,14 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
             doInsert( textb, null );
         }
     }//GEN-LAST:event_plotElementButtonActionPerformed
+
+    private void peNumberActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_peNumberActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_peNumberActionPerformed
+
+    private void imageSizeCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_imageSizeCBActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_imageSizeCBActionPerformed
 
     private void updateImage() {
         String oldString= gtr.getString();
@@ -1152,7 +1178,6 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
     private javax.swing.JTextField sizeTextField;
     private javax.swing.JRadioButton solidConnectRB;
     private javax.swing.JButton underlineButton;
-    private org.jdesktop.beansbinding.BindingGroup bindingGroup;
     // End of variables declaration//GEN-END:variables
 
 }
