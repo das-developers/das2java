@@ -25,6 +25,7 @@ import org.das2.event.DasMouseInputAdapter;
 import org.das2.event.MouseModule;
 import org.das2.util.monitor.ProgressMonitor;
 import org.das2.qds.DDataSet;
+import org.das2.qds.DataSetUtil;
 import org.das2.qds.JoinDataSet;
 import org.das2.qds.QDataSet;
 import org.das2.qds.SemanticOps;
@@ -81,11 +82,14 @@ public class RGBImageRenderer extends Renderer {
         if ( dep0==null ) dep0= Ops.dindgen(im.getWidth());
         if ( dep1==null ) dep1= Ops.dindgen(im.getHeight());
         
+        Units xunits= SemanticOps.getUnits(dep0);
+        Units yunits= SemanticOps.getUnits(dep1);
+        
         {
             int n= dep0.length();
             double dx1= ( dep0.value(1)- dep0.value(0) );
             double dx2= ( dep0.value(n-1)- dep0.value(n-2) );
-            boolean xlog= (dx2/dx1)>10.;
+            boolean xlog= (dx2/dx1)>10. && !UnitsUtil.isTimeLocation(xunits) ;
             if ( xAxis.isLog()!=xlog ) {
                 postMessage( "xaxis must be " + ( xlog ? "log" : "linear" ) + ", for this image",  Level.INFO, null, null );
                 return;
@@ -95,16 +99,13 @@ public class RGBImageRenderer extends Renderer {
             int n= dep1.length();
             double dy1= ( dep1.value(1)- dep1.value(0) );
             double dy2= ( dep1.value(n-1)- dep1.value(n-2) );
-            boolean ylog= (dy2/dy1)>10.;
+            boolean ylog= (dy2/dy1)>10. && !UnitsUtil.isTimeLocation(yunits);
             if ( yAxis.isLog()!=ylog ) {
                 postMessage( "yaxis must be " + ( ylog ? "log" : "linear" )+ ", for this image",  Level.INFO, null, null );
                 return;
             }
         }        
 
-        Units xunits= SemanticOps.getUnits(dep0);
-        Units yunits= SemanticOps.getUnits(dep1);
-        
         if ( yunits==Units.dimensionless 
             && yAxis.getUnits()!=Units.dimensionless 
             && UnitsUtil.isRatioMeasurement( yAxis.getUnits() ) ) {
@@ -129,6 +130,11 @@ public class RGBImageRenderer extends Renderer {
             Datum d= xAxis.invTransform( 0. );
             if ( !d.getUnits().isConvertibleTo(xunits) ) {
                 d= xunits.createDatum(d.value());
+            }
+            if ( !DataSetUtil.isMonotonic(dep0) ) {
+                lds= Ops.ensureMonotonic(lds);
+                dep0= (QDataSet)lds.property(QDataSet.DEPEND_0);
+                dep1= (QDataSet)lds.property(QDataSet.DEPEND_1);
             }
             if ( dx>0 ) {
                 ix0= (int)( Math.floor( Ops.findex( dep0, xAxis.invTransform( 0. ) ).value() ) );
