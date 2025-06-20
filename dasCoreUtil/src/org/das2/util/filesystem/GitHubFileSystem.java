@@ -373,6 +373,11 @@ public class GitHubFileSystem extends HttpFileSystem {
     
     @Override
     public String[] listDirectory(String directory) throws IOException {
+        
+        // Note Github's API looks easy to use, try:
+        // curl https://api.github.com/repos/autoplot/dev/contents/bugs/2025
+        // https://github.com/das-developers/das2java/issues/135
+        
         if ( !directory.endsWith("/") ) directory= directory+"/";
         if ( directory.equals("/") && root.getRawPath().equals("/") ) { // list from cache.
             File dir= new File( FileSystem.settings().getLocalCacheDir() + "/" + root.getScheme() + "/" + root.getHost() );
@@ -475,7 +480,10 @@ public class GitHubFileSystem extends HttpFileSystem {
                                 && !ss.contains("#content-body") 
                                 && !su.contains("return_to=") 
                                 && !su.endsWith("/..") ) {
-                            result.add( ss + "/" );
+                            ss= ss+"/";
+                            if ( !result.contains(ss) ) {
+                                result.add( ss );
+                            }
                         }
                     }
                 } else if ( su.startsWith(surl) ) {
@@ -616,6 +624,9 @@ public class GitHubFileSystem extends HttpFileSystem {
         // number of elements after the host to the base.
         int gitPathElements;
         
+        // base is the position of the "blob" in file URLs.  E.g.:
+        // https://github.com/autoplot/dev/blob/master/demos/2017/20170518/readme.md  is the same as
+        // https://github.com/autoplot/dev/demos/2017/20170518/readme.md 
         int base;
         if ( path[3+baseOffset].equals(branch) ) {
             base= 4;
