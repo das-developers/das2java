@@ -21,6 +21,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -370,6 +371,67 @@ public class GitHubFileSystem extends HttpFileSystem {
             throw new IOException("cancel pressed");
         }
     }
+ 
+    public String[] listDirectoryGithub(String directory) throws IOException {
+        if ( !directory.endsWith("/") ) directory= directory+"/";
+        if ( directory.equals("/") && root.getRawPath().equals("/") ) { // list from cache.
+            File dir= new File( FileSystem.settings().getLocalCacheDir() + "/" + root.getScheme() + "/" + root.getHost() );
+            String[] ss= dir.list();
+            if ( ss==null ) throw new IllegalArgumentException("dir was not a directory");
+            for ( int i=0; i<ss.length; i++ ) {
+                ss[i]= ss[i] + '/';
+            }
+            return ss;
+        }
+        if ( !root.toString().startsWith("https://github.com/") ) {
+            throw new IllegalArgumentException("listDirectoryGithub can't be used here");
+        }
+        
+        String[] path= root.getPath().split("/",-2);
+        
+        if ( path.length<5 ) { // just use the old method
+            return null;
+        }
+        
+        // spath is the directory within the server, pointing the the project directory.
+        String spath= path[0] + '/' + path[1] + '/' + path[2] ;
+        String[] pathsub= Arrays.copyOfRange( path, 3, path.length );
+                
+        URL url= new URL("https://api.github.com/repos" + path[0] + "/" + path[1] + "/" +  path[2] + "/contents/" + String.join( "/", pathsub) );
+
+        String[] result;
+        
+        try {
+
+            String jsonListing= HtmlUtil.readToString(url);
+        
+            JSONArray jo= new JSONArray(jsonListing);
+            
+            result= new String[jo.length()];
+            
+            for ( int i=0; i<result.length; i++ ) {
+                JSONObject item= jo.getJSONObject(i);
+                String surl= item.getString("path");
+                int k= surl.lastIndexOf("/");
+                String type= item.getString("type");
+                if ( type.equals("dir") ) {
+                    result[i]= surl.substring(k+1)+"/";
+                } else {
+                    result[i]= surl.substring(k+1);
+                }
+            }
+            
+            return result;
+            
+        } catch (JSONException ex) {
+            logger.log(Level.SEVERE, null, ex);
+        } catch (CancelledOperationException ex) {
+            logger.log(Level.SEVERE, null, ex);
+        }
+        
+        return null;
+        
+    }
     
     @Override
     public String[] listDirectory(String directory) throws IOException {
@@ -401,6 +463,11 @@ public class GitHubFileSystem extends HttpFileSystem {
         }
         
         String[] path= root.getPath().split("/",-2);
+        
+        String[] resultGithubMaybe= listDirectoryGithub(directory);
+        if ( resultGithubMaybe!=null ) {
+            return resultGithubMaybe;
+        }
         
         // spath is the directory within the server, pointing the the project directory.
         String spath= path[0] + '/' + path[1] + '/' + path[2] ;
