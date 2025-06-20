@@ -264,6 +264,8 @@ public class GraphUtil {
             double size = 8;
             double fontSize = g.getFont().getSize2D();
             FillStyle fillStyle = FillStyle.STYLE_SOLID;
+            float thick= 1.5f;
+            
             for (int i = 1; i < args.length; i++) {
                 if (args[i].startsWith("size=")) {
                     String sspec = args[i].substring(5);
@@ -284,9 +286,17 @@ public class GraphUtil {
                     Color c= org.das2.util.ColorUtil.decodeColor(scolor);
                     returnColor= g.getColor();
                     g.setColor(c);
+                } else if ( args[i].startsWith("lineThick=") ) {
+                    String sthick= args[i].substring(10);
+                    try {
+                        Float dthick= Float.parseFloat(sthick);
+                        thick= 1.5f * dthick;
+                    } catch ( NumberFormatException ex ) {
+                        logger.log(Level.WARNING, "unable to parse lineThick: {0}", thick);
+                    }
                 }
             }
-
+            
             p.draw(g, fontSize / 2, -fontSize * 2 / 3.0 / 2, (float) size, fillStyle);
 
             for (int i = 1; i < args.length; i++) {
@@ -302,7 +312,7 @@ public class GraphUtil {
                     }
                     double x = fontSize / 2;
                     double y = -fontSize * 2 / 3.0 / 2;
-                    connect.drawLine(g, x - size, y + size * 4 / 11, x + size, y - size * 4 / 11, 1.5F);
+                    connect.drawLine(g, x - size, y + size * 4 / 11, x + size, y - size * 4 / 11, thick );
                     //connect.drawLine( g, 2, 3, 13, 7, 1.5f);
                 } 
             }            
