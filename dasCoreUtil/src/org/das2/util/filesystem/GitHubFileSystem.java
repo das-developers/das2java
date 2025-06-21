@@ -323,10 +323,18 @@ public class GitHubFileSystem extends HttpFileSystem {
      * @return
      * @throws IOException 
      */
-    public String[] listDirectoryGitlab( String directory ) throws IOException {
+    public String[] listDirectoryGitLabHowever( String directory ) throws IOException {
         String[] path= root.getPath().split("/",-2);
         // wget -O - 'https://abbith.physics.uiowa.edu/jbf/juno/-/refs/master/logs_tree/team/trajPlot?format=json&offset=0' | json_pp
         // wget -O - 'https://research-git.uiowa.edu/abbith/juno/-/refs/main/logs_tree/team?format=json&offset=0' | json_pp
+        
+        if ( root.getHost().startsWith("research-git.uiowa.edu") || root.getHost().startsWith("jfaden.net")) {
+            String[] maybeListing= listDirectoryGitLab(directory);
+            if ( maybeListing!=null ) {
+                return maybeListing;
+            }
+        }
+        
         StringBuilder sb= new StringBuilder();
         sb.append(root.getScheme())
                 .append("://")
@@ -372,6 +380,12 @@ public class GitHubFileSystem extends HttpFileSystem {
         }
     }
  
+    /**
+     * Use GitHub's API to list the directory.
+     * @param directory within the filesystem
+     * @return the list of files, with / suffix for directories.
+     * @throws IOException 
+     */
     public String[] listDirectoryGithub(String directory) throws IOException {
         if ( !directory.endsWith("/") ) directory= directory+"/";
         if ( directory.equals("/") && root.getRawPath().equals("/") ) { // list from cache.
@@ -432,6 +446,74 @@ public class GitHubFileSystem extends HttpFileSystem {
         return null;
         
     }
+
+    /**
+     * Use GitLab's API to list the directory.
+     * @param directory within the filesystem
+     * @return the list of files, with / suffix for directories.
+     * @throws IOException 
+     */
+    public String[] listDirectoryGitLab(String directory) throws IOException {
+        if ( !directory.endsWith("/") ) directory= directory+"/";
+        if ( directory.equals("/") && root.getRawPath().equals("/") ) { // list from cache.
+            File dir= new File( FileSystem.settings().getLocalCacheDir() + "/" + root.getScheme() + "/" + root.getHost() );
+            String[] ss= dir.list();
+            if ( ss==null ) throw new IllegalArgumentException("dir was not a directory");
+            for ( int i=0; i<ss.length; i++ ) {
+                ss[i]= ss[i] + '/';
+            }
+            return ss;
+        }
+        
+        if ( !root.getHost().equals("research-git.uiowa.edu") ) {
+            throw new IllegalArgumentException("only supported for research-git.uiowa.edu");
+        }
+        
+        String[] pathComponents= root.getPath().split("/",-2);
+        
+        if ( pathComponents.length<4 ) { // just use the old method
+            return null;
+        }
+        
+        String project= String.join( "%2F", Arrays.copyOfRange( pathComponents, 1, 3 ) ); // abbith/juno
+                
+        String path= String.join( "/", Arrays.copyOfRange( pathComponents, 3, pathComponents.length ) ); // team/digitizing
+                
+        URL url= new URL( root.getScheme() + "://" + root.getHost() + "/api/v4/projects/" + project+ "/repository/tree?path=" + path + "&ref=" + branch );
+        
+        String[] result;
+        
+        try {
+
+            String jsonListing= HtmlUtil.readToString(url);
+        
+            JSONArray jo= new JSONArray(jsonListing);
+            
+            result= new String[jo.length()];
+            
+            for ( int i=0; i<result.length; i++ ) {
+                JSONObject item= jo.getJSONObject(i);
+                String surl= item.getString("path");
+                int k= surl.lastIndexOf("/");
+                String type= item.getString("type");
+                if ( type.equals("tree") ) {
+                    result[i]= surl.substring(k+1)+"/";
+                } else {
+                    result[i]= surl.substring(k+1);
+                }
+            }
+            
+            return result;
+            
+        } catch (JSONException ex) {
+            logger.log(Level.SEVERE, null, ex);
+        } catch (CancelledOperationException ex) {
+            logger.log(Level.SEVERE, null, ex);
+        }
+        
+        return null;
+        
+    }
     
     @Override
     public String[] listDirectory(String directory) throws IOException {
@@ -451,11 +533,9 @@ public class GitHubFileSystem extends HttpFileSystem {
             return ss;
         }
         
-        if ( root.toString().startsWith("https://abbith.physics.uiowa.edu/") 
-                || root.toString().startsWith("https://research-git.uiowa.edu/") 
-                || root.toString().startsWith("https://jfaden.net/git/") ) {
+        if ( root.toString().startsWith("https://research-git.uiowa.edu/") ) {
             try {
-                return listDirectoryGitlab( directory );
+                return listDirectoryGitLabHowever( directory );
             } catch ( IOException ex ) {
                 ex.printStackTrace();
                 return new String[0];
