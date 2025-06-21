@@ -403,6 +403,13 @@ public class GitHubFileSystem extends HttpFileSystem {
         
         String[] path= root.getPath().split("/",-2);
         
+        if ( path[3].equals(branch) ) {
+            String[] npath= new String[path.length-1];
+            System.arraycopy( path, 0, npath, 0, 3 );
+            System.arraycopy( path, 4, npath, 3, path.length-4 );
+            path= npath;
+        }
+        
         if ( path.length<5 ) { // just use the old method
             return null;
         }
