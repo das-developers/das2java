@@ -309,7 +309,8 @@ public class GitHubFileSystem extends HttpFileSystem {
     private String getGitProjectRoot( ) {
         String[] ss= root.toString().split("/");
         StringBuilder sb= new StringBuilder(ss[0]);
-        for ( int i=1; i<this.baseOffset+5; i++ ) {
+        int ni= Math.min( this.baseOffset+5, ss.length );
+        for ( int i=1; i<ni; i++ ) {
             sb.append("/").append(ss[i]);
         }
         return sb.toString();
@@ -402,6 +403,10 @@ public class GitHubFileSystem extends HttpFileSystem {
         }
         
         String[] path= root.getPath().split("/",-2);
+        
+        if ( path.length<4) {
+            return null;
+        }
         
         if ( path[3].equals(branch) ) {
             String[] npath= new String[path.length-1];
@@ -551,9 +556,11 @@ public class GitHubFileSystem extends HttpFileSystem {
         
         String[] path= root.getPath().split("/",-2);
         
-        String[] resultGithubMaybe= listDirectoryGithub(directory);
-        if ( resultGithubMaybe!=null ) {
-            return resultGithubMaybe;
+        if ( root.toString().startsWith("https://github.com/") ) {
+            String[] resultGithubMaybe= listDirectoryGithub(directory);
+            if ( resultGithubMaybe!=null ) {
+                return resultGithubMaybe;
+            }
         }
         
         // spath is the directory within the server, pointing the the project directory.
@@ -565,18 +572,24 @@ public class GitHubFileSystem extends HttpFileSystem {
         
         InputStream urlStream= null ;
         try {
-            URL url= gitHubMapDir( root, directory );
-            String surl= url.toString();
-            if ( mysteryDash(surl) ) {
-                surl= surl.replace("raw/master", "-/tree/master");
-                url= new URL(surl);
+            URL url;
+            String surl;
+            if ( path.length>3 ) {
+                url= gitHubMapDir( root, directory );
+                surl= url.toString();
+                if ( mysteryDash(surl) ) {
+                    surl= surl.replace("raw/master", "-/tree/master");
+                    url= new URL(surl);
+                } else {
+                    surl= surl.replace("raw/master", "tree/master");
+                    url= new URL(surl);
+                }
+
+                logger.log(Level.FINE, "translated list URL to {0}", url);
             } else {
-                surl= surl.replace("raw/master", "tree/master");
-                url= new URL(surl);
+                url= root.toURL();
+                surl= url.toString();
             }
-            
-            logger.log(Level.FINE, "translated list URL to {0}", url);
-            
             urlStream = getInputStream(url);
             URL[] listing= HtmlUtil.getDirectoryListing( url, urlStream, false );
             
