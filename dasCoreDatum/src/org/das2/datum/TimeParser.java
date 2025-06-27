@@ -1274,6 +1274,7 @@ public class TimeParser {
         if ( spec.contains(";Y=") ) return true;
         if ( spec.contains("$o;")|| spec.contains("$(o;") ) return true;
         if ( spec.contains("$(periodic;")) return true;
+        if ( spec.contains("$x") ) return true; // Note, $x alone will mean all time, something like year 1000-9000.
         return false;
     }
 
