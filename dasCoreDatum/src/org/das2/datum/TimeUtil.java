@@ -1657,7 +1657,7 @@ public final class TimeUtil {
                         }
                         year = number;
                         if (year < 1000) {
-                            year += 1900;
+                            throw new ParseException("Two-digit which can't be a day of month cannot be interpretted as year, two-digit years are not supported: ("+number+") looking for year: "+s,0);
                         }
                         want[YEAR] = false;
                     } else if (want[MONTH]) {
