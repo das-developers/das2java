@@ -13,6 +13,7 @@ import org.das2.qds.DataSetUtil;
 import org.das2.qds.JoinDataSet;
 import org.das2.qds.MutablePropertyDataSet;
 import org.das2.qds.QDataSet;
+import org.das2.qds.QubeDataSetIterator;
 import org.das2.qds.SemanticOps;
 import org.das2.qds.SparseDataSetBuilder;
 import org.das2.qds.WritableDataSet;
@@ -1160,6 +1161,40 @@ public class Schemes {
     public static boolean isDatumRange( QDataSet ds ) {
         return ds.rank()==1 && QDataSet.VALUE_BINS_MIN_MAX.equals(ds.property(QDataSet.BINS_0));
     }
-    
-    
+
+    /**
+     * true if it is a rank 2 nominal values at location
+     * @param fillds
+     * @return true if it is a rank 2 nominal values at location
+     */
+    public static boolean isNominalAtScatter(QDataSet fillds) {
+        if ( fillds.rank()==2 && isBundleDataSet(fillds) ) {
+            QDataSet lastDs= Ops.unbundle( fillds, fillds.length(0)-1 );
+            Units u= SemanticOps.getUnits(lastDs);
+            return UnitsUtil.isNominalMeasurement(u);
+        }
+        return false;
+    }
+
+    /**
+     * return nominal data at X,Y positions
+     * @return 
+     */
+    public static QDataSet nominalAtScatter() {
+        Ops.randomSeed(0);
+        QDataSet xx= Ops.randn(10);
+        QDataSet yy= Ops.randn(10);
+        
+        EnumerationUnits eu= Units.nominal("nominalAtScatter");
+        WritableDataSet zz= Ops.maybeCopy( Ops.replicate( Ops.dataset( eu.createDatum("no") ), 10 ) );
+
+        QDataSet r= Ops.where( Ops.lt( Ops.sqrt( Ops.add( Ops.pow(xx,2), Ops.pow(yy,2) ) ), 0.5 ) );
+        
+        for ( int i=0; i<r.length(); i++ ) {
+            zz.putValue( (int)r.value(i), eu.createDatum("Y").doubleValue(eu) );
+        }
+        
+        return Ops.bundle( xx, yy, zz );
+        
+    }
 }
