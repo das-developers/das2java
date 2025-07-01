@@ -328,7 +328,8 @@ public class GitHubFileSystem extends HttpFileSystem {
         String[] path= root.getPath().split("/",-2);
         // wget -O - 'https://abbith.physics.uiowa.edu/jbf/juno/-/refs/master/logs_tree/team/trajPlot?format=json&offset=0' | json_pp
         // wget -O - 'https://research-git.uiowa.edu/abbith/juno/-/refs/main/logs_tree/team?format=json&offset=0' | json_pp
-        
+        // wget -O - 'https://research-git.uiowa.edu/api/v4/projects/abbith%2Fjuno/repository/tree?path=team/wigglePlot&ref=main'| json_pp
+        // wget -O - 'https://research-git.uiowa.edu/api/v4/projects/abbith%2Fjuno/repository/tree?path=main/team/wigglePlot/&ref=main'
         if ( root.getHost().startsWith("research-git.uiowa.edu") || root.getHost().startsWith("jfaden.net")) {
             String[] maybeListing= listDirectoryGitLab(directory);
             if ( maybeListing!=null ) {
@@ -490,6 +491,10 @@ public class GitHubFileSystem extends HttpFileSystem {
         String project= String.join( "%2F", Arrays.copyOfRange( pathComponents, 1, 3 ) ); // abbith/juno
                 
         String path= String.join( "/", Arrays.copyOfRange( pathComponents, 3, pathComponents.length ) ); // team/digitizing
+        
+        if ( path.startsWith(branch+'/') ) {
+            path= path.substring(branch.length()+1);
+        }
                 
         URL url= new URL( root.getScheme() + "://" + root.getHost() + "/api/v4/projects/" + project+ "/repository/tree?path=" + path + "&ref=" + branch );
         
