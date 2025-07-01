@@ -462,6 +462,10 @@ public class GitHubFileSystem extends HttpFileSystem {
 
     /**
      * Use GitLab's API to list the directory.
+     * For example, https://research-git.uiowa.edu/space-physics/rbsp/ap-script/-/tree/master/u/ivar/20210416/
+     * should list the files in this directory, using calls like 
+     * https://research-git.uiowa.edu/api/v4/projects/space-physics%2Frbsp%2Fap-script/repository/tree?path=u/ivar/20210416/&ref=master
+     * which will return a JSON listing.
      * @param directory within the filesystem
      * @return the list of files, with / suffix for directories.
      * @throws IOException 
@@ -488,9 +492,17 @@ public class GitHubFileSystem extends HttpFileSystem {
             return null;
         }
         
-        String project= String.join( "%2F", Arrays.copyOfRange( pathComponents, 1, 3 ) ); // abbith/juno
-                
-        String path= String.join( "/", Arrays.copyOfRange( pathComponents, 3, pathComponents.length ) ); // team/digitizing
+        String project,path;
+        
+        // Note ChatGPT says the - in https://research-git.uiowa.edu/space-physics/rbsp/ap-script/-/tree/master/u/ivar/20210416/
+        // is a delimiter, so we could probably clean up this logic below.
+        if ( pathComponents[1].equals("space-physics") ) {
+            project= String.join( "%2F", Arrays.copyOfRange( pathComponents, 1, 4 ) ); // space-physics/rbsp/ap-script
+            path= String.join( "/", Arrays.copyOfRange( pathComponents, 4, pathComponents.length ) ); // team/digitizing
+        } else {
+            project= String.join( "%2F", Arrays.copyOfRange( pathComponents, 1, 3 ) ); // abbith/juno
+            path= String.join( "/", Arrays.copyOfRange( pathComponents, 3, pathComponents.length ) ); // team/digitizing
+        }
         
         if ( path.startsWith(branch+'/') ) {
             path= path.substring(branch.length()+1);
