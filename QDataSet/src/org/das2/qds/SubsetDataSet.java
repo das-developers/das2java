@@ -196,6 +196,9 @@ public class SubsetDataSet extends AbstractDataSet {
                     if ( dep.property(QDataSet.BINS_1)!=null ) {
                         dim.applyIndex(0,idx);
                         break;
+                    } else if ( dep.property(QDataSet.BUNDLE_1)!=null ) {
+                        dim.applyIndex(0,idx); // Schemes.rank1AlongTrjactory
+                        break;
                     } else {
                         dim.applyIndex(1,idx);
                         break;
