@@ -6,6 +6,7 @@ package org.das2.util;
 
 import java.awt.BorderLayout;
 import java.awt.Desktop;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
@@ -16,6 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 import javax.swing.AbstractAction;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -450,10 +452,28 @@ public class Entities {
                 } 
             }
         });
+        
+        // also https://www.reilldesign.com/tutorials/character-entity-reference-chart.html
+        JButton l2= new JButton( new AbstractAction("Find by sketch: https://shapecatcher.com/") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String target= "https://shapecatcher.com/";
+                try {
+                    Desktop.getDesktop().browse( new URI(target) );
+                } catch (URISyntaxException | IOException ex) {
+                } 
+            }
+        });
+        
+        JPanel refsPanel= new JPanel();
+        refsPanel.setLayout( new BoxLayout(refsPanel,BoxLayout.Y_AXIS ) );
+        refsPanel.add( l );
+        refsPanel.add( l2 );
+        
         JPanel panel= new JPanel();
         panel.setLayout(new BorderLayout());
         
-        panel.add(l,BorderLayout.NORTH);
+        panel.add(refsPanel,BorderLayout.NORTH);
         panel.add(p);
         
         if ( JOptionPane.showConfirmDialog( null, panel, "HTML Entities", JOptionPane.OK_CANCEL_OPTION )==JOptionPane.OK_OPTION ) {
