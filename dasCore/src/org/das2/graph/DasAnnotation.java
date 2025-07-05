@@ -43,7 +43,7 @@ import org.das2.datum.UnitsUtil;
  * This makes a DasCanvasComponent for GrannyTextRenderer, and 
  * optionally adds an arrow to point at things.
  * 
- * TODO: See http://autoplot.org//developer.annotations
+ * TODO: See https://autoplot.org/developer.annotations
  * 
  * @author Jeremy
  */
@@ -152,6 +152,20 @@ public class DasAnnotation extends DasCanvasComponent {
         };
         mm.setLabel("Move Annotation");
         
+        mm.setDragRenderer( new MoveComponentMouseModule.MoveRenderer(this) {
+            @Override
+            public Rectangle[] renderDrag(Graphics g1, Point p1, Point p2) {
+                int dx = p2.x - p1.x;
+                int dy = p2.y - p1.y;
+                String s= calculateAnchorOffset(dx,dy);
+                Rectangle bounds = getActiveRegion().getBounds();
+                bounds.translate(p2.x - p1.x, p2.y - p1.y);
+                g1.drawString( s, bounds.x, bounds.y );
+                return super.renderDrag(g1, p1, p2); 
+            }
+            
+        });
+        
         this.getDasMouseInputAdapter().setPrimaryModule(mm);
 
 
@@ -210,7 +224,7 @@ public class DasAnnotation extends DasCanvasComponent {
         
     }
     
-    private void adjustAnchorOffset( int dx, int dy ) {
+    private String calculateAnchorOffset( int dx, int dy ) {
         if ( anchorPosition==AnchorPosition.NW ) {
         } else if ( anchorPosition==AnchorPosition.N ) {
         } else if ( anchorPosition==AnchorPosition.OutsideN ) {
@@ -257,24 +271,30 @@ public class DasAnnotation extends DasCanvasComponent {
         double em = getEmSize();
         if ( offset.trim().length()==0 ) {
             offset= String.format( Locale.US, "%.2fem,%.2fem", dx/em, dy/em );
-            this.setAnchorOffset(offset);
+            return offset;
         } else {
             try {
                 String[] ss= offset.split(",",-2);
                 double[] dd;
                 dd= DasDevicePosition.parseLayoutStr(ss[0]);
                 dd[1]= dd[1] + dx/em;
-                ss[0]= DasDevicePosition.formatFormatStr(dd);
+                ss[0]= DasDevicePosition.formatLayoutStr(dd);
                 dd= DasDevicePosition.parseLayoutStr(ss[1]);
                 dd[1]= dd[1] + dy/em;
-                ss[1]= DasDevicePosition.formatFormatStr(dd);
+                ss[1]= DasDevicePosition.formatLayoutStr(dd);
                 offset= ss[0]+","+ss[1];
-                this.setAnchorOffset(offset);
+                return offset;
+                
             } catch (ParseException ex) {
                 logger.log(Level.SEVERE, null, ex);
             }
         }
-
+        return offset; // there's some parse error, don't modify
+    }
+    
+    private void adjustAnchorOffset( int dx, int dy ) {
+        String newOffset= calculateAnchorOffset( dx, dy );
+        this.setAnchorOffset(newOffset);
     }
     
     /**
