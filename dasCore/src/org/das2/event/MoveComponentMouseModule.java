@@ -2,9 +2,6 @@
  * MoveComponentMouseModule.java
  *
  * Created on April 21, 2007, 7:10 AM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
  */
 package org.das2.event;
 
@@ -31,12 +28,12 @@ public class MoveComponentMouseModule extends MouseModule {
 
     Point p0;
 
-    static class MoveRenderer implements DragRenderer {
+    public static class MoveRenderer implements DragRenderer {
 
         DasCanvasComponent c;
         BufferedImage i;
 
-        MoveRenderer(DasCanvasComponent c) {
+        public MoveRenderer(DasCanvasComponent c) {
             this.c = c;
         }
 
