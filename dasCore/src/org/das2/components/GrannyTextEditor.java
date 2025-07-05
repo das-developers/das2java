@@ -568,7 +568,7 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
 
         jLabel7.setText("URL of image:");
 
-        imageUrlTF.setText("http://autoplot.org/wiki/images/Logo96.png");
+        imageUrlTF.setText("https://autoplot.org/Logo32.png");
 
         imageSizeCB.setText("Size:");
 

@@ -483,7 +483,7 @@
         </Component>
         <Component class="javax.swing.JTextField" name="imageUrlTF">
           <Properties>
-            <Property name="text" type="java.lang.String" value="http://autoplot.org/wiki/images/Logo96.png"/>
+            <Property name="text" type="java.lang.String" value="https://autoplot.org/Logo32.png"/>
           </Properties>
         </Component>
         <Component class="javax.swing.JCheckBox" name="imageSizeCB">
