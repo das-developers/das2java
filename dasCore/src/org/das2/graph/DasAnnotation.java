@@ -160,7 +160,16 @@ public class DasAnnotation extends DasCanvasComponent {
                 String s= calculateAnchorOffset(dx,dy);
                 Rectangle bounds = getActiveRegion().getBounds();
                 bounds.translate(p2.x - p1.x, p2.y - p1.y);
-                g1.drawString( s, bounds.x, bounds.y );
+                Graphics2D g2= (Graphics2D)g1.create();
+                g2.setColor( Color.GRAY );
+                g2.drawString( s, bounds.x, bounds.y );
+                if ( getBackground().getRed()>128 ) {
+                    g2.setColor( Color.LIGHT_GRAY );
+                } else {
+                    g2.setColor( Color.DARK_GRAY );
+                }
+                Line2D line = calculateAnchorLine( bounds, dx,dy);
+                g2.draw(line);
                 return super.renderDrag(g1, p1, p2); 
             }
             
@@ -222,6 +231,122 @@ public class DasAnnotation extends DasCanvasComponent {
     
     private void adjustDataRanges( int dx, int dy ) {
         
+    }
+    
+    private Line2D calculateAnchorLine( Rectangle bounds, int dx, int dy ) {
+        
+        int anchorX, anchorY;
+        Rectangle anchor= getAnchorBounds();
+        
+        int rectX, rectY;
+        
+        switch (anchorPosition) {
+            case NW:
+            case SW:
+            case W:                
+                anchorX = anchor.x;
+                rectX= bounds.x;
+                break;
+            case OutsideN:
+            case OutsideS:
+            case Center:
+            case N:
+            case S:
+                anchorX = anchor.x + anchor.width/2;
+                rectX= bounds.x + bounds.width/2;
+                break;
+            case OutsideE:
+                anchorX= anchor.x + anchor.width;
+                rectX= bounds.x + bounds.width;
+                break;
+            case OutsideW:
+                anchorX= anchor.x;
+                rectX= bounds.x;
+                break;
+            case NE:
+            case SE:
+            case E:
+            case OutsideNE:
+            case OutsideSE:
+                anchorX = anchor.x + anchor.width;
+                rectX= bounds.x + bounds.width;
+                break;
+            case OutsideNW:
+            case OutsideSW:
+                anchorX = anchor.x;
+                rectX= bounds.x;
+                break;
+            case OutsideNNW:
+            case OutsideSSW:
+                anchorX = anchor.x;
+                rectX= bounds.x;
+                break;
+            case OutsideNNE:
+            case OutsideSSE:
+                anchorX = anchor.x + anchor.width;
+                rectX= bounds.x + bounds.width;
+                break;
+            default:
+                anchorX = 0;
+                rectX= bounds.x;
+                break;
+        }
+        
+        switch (anchorPosition) {
+            case NW:
+            case NE:
+            case N:
+                anchorY = anchor.y;
+                rectY= bounds.y;
+                break;
+            case OutsideN:
+                anchorY = anchor.y;
+                rectY= bounds.y;
+                break;
+            case OutsideS:
+            case OutsideSSW:
+            case OutsideSSE:
+                anchorY = anchor.y + anchor.height ;
+                rectY= bounds.y + bounds.height;
+                break;
+            case OutsideE:
+            case OutsideW:
+                anchorY = anchor.y + anchor.height/2;
+                rectY= bounds.y + bounds.height/2;
+                break;
+            case OutsideNE:
+            case OutsideNW:
+                anchorY = anchor.y;
+                rectY= bounds.y;
+                break;
+            case OutsideSE:
+            case OutsideSW:
+            case SW:
+            case SE: 
+            case S:
+                anchorY = anchor.y + anchor.height;
+                rectY= bounds.y + bounds.height;
+                break;
+            case OutsideNNW:
+            case OutsideNNE:
+                anchorY = anchor.y;
+                rectY= bounds.y;
+                break;
+            case Center:
+            case W:
+            case E:
+                anchorY = anchor.y + anchor.height/2;
+                rectY= bounds.y + bounds.height/2;
+                break;
+            default:
+                anchorY = 0;
+                rectY= bounds.y;
+                break;
+        }
+        
+        
+        return new Line2D.Double( anchorX, anchorY, rectX, rectY );
+
     }
     
     private String calculateAnchorOffset( int dx, int dy ) {
