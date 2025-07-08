@@ -70,8 +70,12 @@ import org.das2.datum.DatumUtil;
 import org.das2.datum.DomainDivider;
 import org.das2.datum.DomainDividerUtil;
 import org.das2.datum.OrbitDatumRange;
+import org.das2.datum.TimeParser;
 import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
+import org.das2.datum.format.DatumFormatterFactory;
+import org.das2.datum.format.TimeDatumFormatter;
+import org.das2.datum.format.TimeDatumFormatterFactory;
 import org.das2.math.fft.jnt.Factorize;
 import org.das2.system.RequestProcessor;
 import org.das2.util.LoggerManager;
@@ -1794,7 +1798,20 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             if ( tickV==null ) {
                 return DefaultDatumFormatterFactory.getInstance().defaultFormatter();
             } else {
-                return tickV.getFormatter();
+                if ( this.formatString.length()>0 ) {
+                    try {
+                        if ( TimeParser.isSpec(this.formatString) ) {
+                            return TimeDatumFormatterFactory.getInstance().newFormatter(this.formatString);
+                        } else {
+                            return DefaultDatumFormatterFactory.getInstance().newFormatter(this.formatString);
+                        }
+                    } catch ( ParseException ex ) {
+                        logger.log(Level.WARNING, "unable to parse formatString: {0}", this.formatString);
+                        return tickV.getFormatter();
+                    }
+                } else {
+                    return tickV.getFormatter();
+                }
             }
         } else {
             return udf;
