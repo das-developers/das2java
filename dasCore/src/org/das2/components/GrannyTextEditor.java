@@ -892,7 +892,23 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
         if ( ext!=null ) {
             int i= theText.indexOf(ext);
             if ( i==-1 ) i= jTextArea1.getCaretPosition();
-            jTextArea1.replaceRange( text, i, i+ext.length() );
+            int i2= ext.indexOf(";");
+            boolean sameKind= ext.substring(0,i2).equals(text.substring(0,Math.min(i2,text.length())));
+            if ( i==jTextArea1.getCaretPosition() ) {
+                jTextArea1.insert(text, i);
+            } else {
+                if ( sameKind ) {
+                    jTextArea1.replaceRange( text, i, i+ext.length() );
+                } else {
+                    int i3= theText.lastIndexOf( "!(", i );
+                    if ( i3>-1 ) {
+                        jTextArea1.insert(text, i);
+                    } else {
+                        jTextArea1.insert(text, i3);
+                    }
+                }
+                
+            }
             if ( jTextArea1.getSelectionStart()!=jTextArea1.getSelectionEnd() && endt!=null ) {
                 jTextArea1.insert(endt, jTextArea1.getSelectionEnd() );
             }
@@ -907,7 +923,7 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
     }
     
     /**
-     * return the extension, or null if we are not within an extension.
+     * return the extension at the caret position, or null if we are not within an extension.
      * @return 
      */
     private String getExtension( ) {
