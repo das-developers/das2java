@@ -3918,8 +3918,8 @@ public final class Ops {
         boolean isRank0=false;
         if ( years.rank()==0 ) {
             isRank0= true;
-            years= Ops.join(years);   
-            if ( mons!=null ) mons= Ops.join(mons);
+        //    years= Ops.join(years);   
+        //    if ( mons!=null ) mons= Ops.join(mons);
         }
         
         for ( int i=0; i<2; i++ ) { // two passes.
@@ -3957,15 +3957,8 @@ public final class Ops {
             }     
         }
         WritableDataSet result= CoerceUtil.coerce( years, days, true, operands );
-        
+                
         result.putProperty( QDataSet.UNITS, Units.us2000 );
-        if ( years.length()==0 ) {
-            throw new IllegalArgumentException("Empty year array");
-        }
-
-        if ( years.value(0)<100 ) {
-            years= add( years, DataSetUtil.asDataSet(1900) );
-        }
 
         if ( mons==null ) {
             mons= Ops.ones( years.length() );
@@ -3977,6 +3970,23 @@ public final class Ops {
         if ( second==null ) second= zeros;
         if ( nano==null ) nano= zeros;
 
+        if ( isRank0 ) {
+            years= Ops.join(years);
+            mons= Ops.join(mons);
+            days= Ops.join(days);
+            hour= Ops.join(hour);
+            minute= Ops.join(minute);
+            nano= Ops.join(nano);
+        }
+
+        if ( years.length()==0 ) {
+            throw new IllegalArgumentException("Empty year array");
+        }
+
+        if ( years.value(0)<100 ) {
+            years= add( years, DataSetUtil.asDataSet(1900) );
+        }
+        
         if ( years.rank()!=1 ) throw new IllegalArgumentException("years must be rank 1");
         if ( mons.rank()!=1 ) throw new IllegalArgumentException("months must be rank 1 or null");
         if ( days.rank()!=1 ) throw new IllegalArgumentException("days must be rank 1 or null");
