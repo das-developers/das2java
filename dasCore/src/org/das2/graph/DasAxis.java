@@ -73,8 +73,6 @@ import org.das2.datum.OrbitDatumRange;
 import org.das2.datum.TimeParser;
 import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
-import org.das2.datum.format.DatumFormatterFactory;
-import org.das2.datum.format.TimeDatumFormatter;
 import org.das2.datum.format.TimeDatumFormatterFactory;
 import org.das2.math.fft.jnt.Factorize;
 import org.das2.system.RequestProcessor;
@@ -91,6 +89,22 @@ import org.das2.qds.ops.Ops;
 /** 
  * One dimensional axis component that transforms data to device space and back, 
  * and provides controls for navigating the 1-D data space.
+ * 
+ * TODO: Manual for using the DasAxis.
+ * 
+ * The DasAxis will automatically pick tick locations and formatting for the
+ * ticks.  This is done by looking at the units of the range and selecting
+ * an appropriate algorithm for locating and labelling ticks.
+ * 
+ * TCAs are additional lines added to ticks.  In Space Physics, this is often
+ * ephemeris data associated with each time.
+ * 
+ * The controls for the DasAxis have grown over time.  This outlines:
+ * format - manual control of formatting and tick locations including %f and "$Y-$j $H:$M"
+ * tickValues - manual control of tick locations, including +10/5 for repeating
+ * flipped - min will be at top or right, max will be at bottom or left.
+ * lineThickness - 3px will draw a 3-pixel wide line. "" is 1-pixel.
+ * 
  * @author eew
  */
 
@@ -2244,6 +2258,16 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                     TickMaster.getInstance().offerTickV( this, newTicks );
                 } else {
                     TickVDescriptor newTicks;
+                    String fs= formatString.trim();
+                    if ( fs.length()>0 ) {
+                        if ( TimeParser.isSpec(fs) ) { // $Y-$j<br>$H:$M:$S
+                            newTicks= updateTickVTime(dr);
+                        } else if ( fs.toLowerCase().equals("%e") ) {
+                            newTicks= updateTickVLog(dr);
+                        } else {
+                            newTicks= updateTickVLinear(dr);
+                        }
+                    } else {
                     //synchronized ( tickLock ) { // deadlock observed here with JMC.
                         if (getUnits() instanceof TimeLocationUnits) {
                             newTicks= updateTickVTime(dr);
@@ -2252,6 +2276,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                         } else {
                             newTicks= updateTickVLinear(dr);
                         }
+                    }
                     //}
                     //resetTickV(newTicks);
                     if ( this.tickV==null ) resetTickV( newTicks );  // transition cases, pngwalk.
@@ -5147,7 +5172,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      */
     protected String formatString = "";
     
-    public static final String PROP_FORMATSTRING = "formatString";
+    public static final String PROP_FORMAT = "format";
 
     /**
      * return the format string for each tick.
@@ -5293,8 +5318,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     /**
      * set a hint at the format string.  Examples include:<ul>
      *  <li> 0.000
-     *  <li> %H:%M!c%Y-%j
+     *  <li> $H:$M!c$Y-$j
      *  <li> 0
+     *  <li> %f
      * </ul>
      * @param formatString
      */
@@ -5312,7 +5338,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             }
             updateTickV();
             repaint();
-            firePropertyChange(PROP_FORMATSTRING, oldFormatString, formatString);
+            firePropertyChange(PROP_FORMAT, oldFormatString, formatString);
         } catch (ParseException e) {
             setUserDatumFormatter(null);
         }
