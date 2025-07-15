@@ -3910,6 +3910,7 @@ public final class Ops {
      * @param nano null or the nanoseconds (1e-9) of the day
      * @return rank 1 time data set.
      * @see #rgbColorDataset(org.das2.qds.QDataSet, org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
+     * @see https://github.com/autoplot/dev/blob/master/bugs/2025/20250714/demoBugToTimeDataSet.jy
      */
     public static QDataSet toTimeDataSet( QDataSet years, QDataSet mons, QDataSet days, QDataSet hour, QDataSet minute, QDataSet second, QDataSet nano ) {
         
