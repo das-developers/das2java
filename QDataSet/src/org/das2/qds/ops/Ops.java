@@ -3971,12 +3971,13 @@ public final class Ops {
         if ( nano==null ) nano= zeros;
 
         if ( isRank0 ) {
-            years= Ops.join(years);
-            mons= Ops.join(mons);
-            days= Ops.join(days);
-            hour= Ops.join(hour);
-            minute= Ops.join(minute);
-            nano= Ops.join(nano);
+            years= Ops.join(null,years);
+            mons= Ops.join(null,mons);
+            days= Ops.join(null,days);
+            hour= Ops.join(null,hour);
+            minute= Ops.join(null,minute);
+            second= Ops.join(null,second);
+            nano= Ops.join(null,nano);
         }
 
         if ( years.length()==0 ) {
