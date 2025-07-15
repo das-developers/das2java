@@ -3900,7 +3900,7 @@ public final class Ops {
     }
 
     /**
-     * return a rank 1 dataset of times.  All inputs should be rank 1 dataset (for now) or null.
+     * return a rank 1 dataset of times.  All inputs should be rank 1 dataset, rank 0 (number) or null (None).
      * @param years the years. (2010) Less than 100 is interpreted as 19xx.  
      * @param mons the months (1..12), or null.  If null, then days are day of year.  These are interpreted as integers
      * @param days the day of month (1..28) or day of year.  This may be fractional.
@@ -3915,48 +3915,45 @@ public final class Ops {
         
         QDataSet[] operands= new QDataSet[2];
                 
-        boolean isRank0=false;
-        if ( years.rank()==0 ) {
-            isRank0= true;
-        //    years= Ops.join(years);   
-        //    if ( mons!=null ) mons= Ops.join(mons);
-        }
-        
         for ( int i=0; i<2; i++ ) { // two passes.
             if ( mons!=null ) {
                 CoerceUtil.coerce( years, mons, true, operands );
                 years= operands[0];
                 mons= operands[1];
             }
-            CoerceUtil.coerce( years, days, true, operands );
-            years= operands[0];
-            days= operands[1];
+            if ( days!=null ) {
+                CoerceUtil.coerce( years, days, true, operands );
+                years= operands[0];
+                days= operands[1];
+            }
             if ( hour!=null ) {
-                if ( i==0 && hour.rank()>0 ) isRank0=false;
                 CoerceUtil.coerce( years, hour, true, operands );
                 years= operands[0];
                 hour= operands[1];
             }
             if ( minute!=null ) {
-                if ( i==0 && minute.rank()>0 ) isRank0=false;
                 CoerceUtil.coerce( years, minute, true, operands );
                 years= operands[0];
                 minute= operands[1];
             }
             if ( second!=null ) {
-                if ( i==0 && second.rank()>0 ) isRank0=false;
                 CoerceUtil.coerce( years, second, true, operands );
                 years= operands[0];
                 second= operands[1];
             }            
             if ( nano!=null ) {
-                if ( i==0 && nano.rank()>0 ) isRank0=false;
                 CoerceUtil.coerce( years, nano, true, operands );
                 years= operands[0];
                 nano= operands[1];
             }     
         }
-        WritableDataSet result= CoerceUtil.coerce( years, days, true, operands );
+        
+        boolean isRank0= years.rank()==0;
+        if ( years.rank()>1 ) {
+            throw new IllegalArgumentException("toTimeDataSet only supports rank 0 and rank 1 data.");
+        }
+                
+        WritableDataSet result= DDataSet.createRank1( isRank0 ? 1 : years.length() );
                 
         result.putProperty( QDataSet.UNITS, Units.us2000 );
 
