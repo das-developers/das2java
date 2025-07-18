@@ -98,7 +98,7 @@
                               <Component id="subsecButton" min="-2" max="-2" attributes="0"/>
                           </Group>
                       </Group>
-                      <EmptySpace min="0" pref="392" max="32767" attributes="0"/>
+                      <EmptySpace min="0" pref="248" max="32767" attributes="0"/>
                   </Group>
                   <Component id="templTextField" alignment="0" max="32767" attributes="0"/>
               </Group>
@@ -110,7 +110,7 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="jLabel1" max="32767" attributes="0"/>
+              <Component id="jLabel1" min="-2" pref="86" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="templTextField" min="-2" pref="19" max="-2" attributes="0"/>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
@@ -142,7 +142,7 @@
                   <Component id="secondButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="subsecButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" pref="35" max="-2" attributes="0"/>
+              <EmptySpace pref="64" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -155,7 +155,7 @@
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel1">
       <Properties>
-        <Property name="text" type="java.lang.String" value="&lt;html&gt;A URI Template describes how a time range is to be formatted into a string, such as a filename or tick format.  Edit the string below using your keyboard or the buttons to insert time components.  The URI_Templates specification can be found here: https://github.com/hapi-server/uri-templates/wiki/Specification"/>
+        <Property name="text" type="java.lang.String" value="&lt;html&gt;A URI Template describes how a time range is to be formatted into a string, such as a filename or tick format.  Edit the string below using your keyboard or the buttons to insert time components.  The URI_Templates specification can be found here: &lt;a href=&quot;https://github.com/uri-templates-time/uri-templates-time-specification/blob/main/specification-1.1.0.md&quot;&gt;https://github.com/uri-templates-time/&lt;/a&gt;"/>
         <Property name="verticalAlignment" type="int" value="1"/>
       </Properties>
     </Component>

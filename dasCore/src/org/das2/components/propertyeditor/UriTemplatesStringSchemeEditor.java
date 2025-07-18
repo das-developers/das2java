@@ -1,25 +1,41 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package org.das2.components.propertyeditor;
 
 import java.awt.Component;
+import java.awt.Cursor;
+import java.awt.Desktop;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
+import org.das2.util.LoggerManager;
 import org.das2.util.StringSchemeEditor;
 
 /**
- *
+ * Editor for uri template strings like $Y-$m-$d or $(m;Y=2025)-$d
  * @author jbf
  */
 public class UriTemplatesStringSchemeEditor extends javax.swing.JPanel implements StringSchemeEditor {
 
+    URI uri;
+    
+    private static final Logger logger= LoggerManager.getLogger("das2.gui");
+    
     /**
      * Creates new form UriTemplatesStringSchemeEditor
      */
     public UriTemplatesStringSchemeEditor() {
         initComponents();
+        jLabel1.addMouseListener( myMouseListener() );
+        try {
+            uri= new URI("https://github.com/uri-templates-time/uri-templates-time-specification/blob/main/specification-1.1.0.md");
+        } catch (URISyntaxException ex) {
+            logger.log(Level.SEVERE, null, ex);
+        }
     }
 
     /**
@@ -78,7 +94,7 @@ public class UriTemplatesStringSchemeEditor extends javax.swing.JPanel implement
 
         templTextField.setText("jTextField1");
 
-        jLabel1.setText("<html>A URI Template describes how a time range is to be formatted into a string, such as a filename or tick format.  Edit the string below using your keyboard or the buttons to insert time components.  The URI_Templates specification can be found here: https://github.com/hapi-server/uri-templates/wiki/Specification");
+        jLabel1.setText("<html>A URI Template describes how a time range is to be formatted into a string, such as a filename or tick format.  Edit the string below using your keyboard or the buttons to insert time components.  The URI_Templates specification can be found here: <a href=\"https://github.com/uri-templates-time/uri-templates-time-specification/blob/main/specification-1.1.0.md\">https://github.com/uri-templates-time/</a>");
         jLabel1.setVerticalAlignment(javax.swing.SwingConstants.TOP);
 
         yearButton.setText("Year");
@@ -207,7 +223,7 @@ public class UriTemplatesStringSchemeEditor extends javax.swing.JPanel implement
                                 .addComponent(secondButton)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(subsecButton)))
-                        .addGap(0, 392, Short.MAX_VALUE))
+                        .addGap(0, 248, Short.MAX_VALUE))
                     .addComponent(templTextField))
                 .addContainerGap())
         );
@@ -215,7 +231,7 @@ public class UriTemplatesStringSchemeEditor extends javax.swing.JPanel implement
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel1)
+                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 86, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(templTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -242,7 +258,7 @@ public class UriTemplatesStringSchemeEditor extends javax.swing.JPanel implement
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(secondButton)
                     .addComponent(subsecButton))
-                .addGap(35, 35, 35))
+                .addContainerGap(64, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -354,6 +370,50 @@ public class UriTemplatesStringSchemeEditor extends javax.swing.JPanel implement
         t= t.substring(0,i) + s + t.substring(i);
         templTextField.setText(t);
     }
+    
+    private MouseListener myMouseListener() {
+        return new MouseListener() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if ( uri!=null ) {
+                    try {
+                        Desktop.getDesktop().browse( uri );
+                    } catch (IOException ex) {
+                        logger.log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                if ( uri!=null ) {
+                    UriTemplatesStringSchemeEditor.this.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+                    setToolTipText( uri.toString() );
+                }
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                if ( uri!=null ) {
+                    UriTemplatesStringSchemeEditor.this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                    setToolTipText( null );
+                }
+            }
+            
+        };
+    }
+
+    
     public static void main(String[] args) {
         UriTemplatesStringSchemeEditor edit= new UriTemplatesStringSchemeEditor();
         edit.setValue("$Y-$m-$d");
