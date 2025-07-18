@@ -1304,4 +1304,9 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
     private org.jdesktop.beansbinding.BindingGroup bindingGroup;
     // End of variables declaration//GEN-END:variables
 
+    @Override
+    public String getLabel() {
+        return "Granny Text Editor";
+    }
+
 }
