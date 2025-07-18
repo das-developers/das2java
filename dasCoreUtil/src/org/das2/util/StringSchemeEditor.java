@@ -36,4 +36,10 @@ public interface StringSchemeEditor {
      * @param o 
      */
     public void setContext( Object o );
+    
+    /**
+     * return a label identifying the editor type.
+     * @return 
+     */
+    public String getLabel();
 }
