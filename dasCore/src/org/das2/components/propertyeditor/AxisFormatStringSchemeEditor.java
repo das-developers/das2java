@@ -38,6 +38,7 @@ public class AxisFormatStringSchemeEditor extends javax.swing.JPanel implements 
         jTabbedPane2 = new javax.swing.JTabbedPane();
         timeFormatPanel = new javax.swing.JPanel();
         decimalFormatPanel = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
 
         timeFormatPanel.setLayout(new java.awt.BorderLayout());
         jTabbedPane2.addTab("Time Format", timeFormatPanel);
@@ -45,24 +46,33 @@ public class AxisFormatStringSchemeEditor extends javax.swing.JPanel implements 
         decimalFormatPanel.setLayout(new java.awt.BorderLayout());
         jTabbedPane2.addTab("Decimal Format", decimalFormatPanel);
 
+        jLabel1.setText("<html>Axis ticks can be explicitly formatted using a manual specification.  Times are formatted using the time format tab, and decimal numbers formatted with the decimal tab.");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(0, 2, Short.MAX_VALUE)
-                .addComponent(jTabbedPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 395, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 3, Short.MAX_VALUE))
+                .addContainerGap()
+                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 413, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addComponent(jTabbedPane2)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jTabbedPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 295, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jTabbedPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 271, Short.MAX_VALUE)
+                .addGap(0, 0, 0))
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel decimalFormatPanel;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JTabbedPane jTabbedPane2;
     private javax.swing.JPanel timeFormatPanel;
     // End of variables declaration//GEN-END:variables
@@ -71,6 +81,11 @@ public class AxisFormatStringSchemeEditor extends javax.swing.JPanel implements 
     public void setValue(String v) {
         this.timeEdit.setValue(v);
         this.decimalEdit.setValue(v);
+        if ( v.contains("%") ) {
+            this.jTabbedPane2.setSelectedIndex(1);
+        } else {
+            this.jTabbedPane2.setSelectedIndex(0);
+        }
     }
 
     @Override
