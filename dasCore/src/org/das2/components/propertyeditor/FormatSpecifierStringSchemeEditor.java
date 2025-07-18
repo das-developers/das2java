@@ -186,4 +186,9 @@ public class FormatSpecifierStringSchemeEditor extends javax.swing.JPanel implem
     private javax.swing.JTextField templTextField;
     private javax.swing.ButtonGroup typeGroup;
     // End of variables declaration//GEN-END:variables
+
+    @Override
+    public String getLabel() {
+        return "Format Specifier Editor";
+    }
 }

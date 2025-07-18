@@ -419,4 +419,9 @@ public class TickValuesStringSchemeEditor extends javax.swing.JPanel implements 
     @Override
     public void setContext(Object o) {
     }
+
+    @Override
+    public String getLabel() {
+        return "Tick Values Editor";
+    }
 }

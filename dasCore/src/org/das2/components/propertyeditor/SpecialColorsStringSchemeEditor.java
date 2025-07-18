@@ -110,4 +110,9 @@ public class SpecialColorsStringSchemeEditor extends javax.swing.JPanel implemen
     public void setContext(Object o) {
         
     }
+
+    @Override
+    public String getLabel() {
+        return "Special Colors Editor";
+    }
 }

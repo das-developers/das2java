@@ -162,6 +162,7 @@ public class StringWithSchemeEditor extends AbstractCellEditor implements java.b
         } );
         extraButton.setPreferredSize( new Dimension(16,16) );
         extraButton.setMaximumSize( new Dimension(16,16) );
+        extraButton.setToolTipText("Edit with "+ ssEditor.getLabel() );
         p.add( extraButton, BorderLayout.EAST );
         return p;
     }

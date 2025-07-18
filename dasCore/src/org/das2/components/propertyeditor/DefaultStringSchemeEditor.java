@@ -62,5 +62,10 @@ public class DefaultStringSchemeEditor extends javax.swing.JPanel implements Str
     public void setContext(Object o) {
         
     }
+
+    @Override
+    public String getLabel() {
+        return "Default String Editor";
+    }
     
 }

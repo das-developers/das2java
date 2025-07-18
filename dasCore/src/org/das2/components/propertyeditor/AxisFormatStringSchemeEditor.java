@@ -101,4 +101,9 @@ public class AxisFormatStringSchemeEditor extends javax.swing.JPanel implements 
             }
         }
     }
+
+    @Override
+    public String getLabel() {
+        return "Axis Tick Format Editor";
+    }
 }

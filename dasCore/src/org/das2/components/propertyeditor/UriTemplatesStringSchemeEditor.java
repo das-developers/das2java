@@ -422,4 +422,9 @@ public class UriTemplatesStringSchemeEditor extends javax.swing.JPanel implement
         }
     }
 
+    @Override
+    public String getLabel() {
+        return "URI Templates Editor";
+    }
+
 }
