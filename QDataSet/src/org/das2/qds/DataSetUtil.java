@@ -3288,20 +3288,20 @@ public class DataSetUtil {
                     problems.add( "DEPEND_0 should have only one index or must be a bins ([n,2]) dataset.");
                 }
             }
-            if (ds.rank() > 1 && ds.length() > 0) {
-                QDataSet dep1= (QDataSet)ds.property(QDataSet.DEPEND_1);
-                if ( dep1!=null && dep1.rank()>1 ) {
-                    if ( dep1.length()!=ds.length() && !SemanticOps.isBins(dep1) ) {
-                        problems.add(String.format("rank 2 DEPEND_1 length is %d while data length is %d.", dep1.length(), ds.length()));
-                    }
-                }
-                if ( ds.rank()>QDataSet.MAX_RANK ) {
-                    validate( ds.slice(0), problems, dimOffset + 1); // we must use native.
-                } else {
-                    validate(DataSetOps.slice0(ds, 0), problems, dimOffset + 1); // don't use native, because it may copy. Note we only check the first assuming QUBE.
+        }
+        if (ds.rank() > 1 && ds.length() > 0) {
+            QDataSet dep1= (QDataSet)ds.property(QDataSet.DEPEND_1);
+            if ( dep1!=null && dep1.rank()>1 ) {
+                if ( dep1.length()!=ds.length() && !SemanticOps.isBins(dep1) ) {
+                    problems.add(String.format("rank 2 DEPEND_1 length is %d while data length is %d.", dep1.length(), ds.length()));
                 }
             }
-        }
+            if ( ds.rank()>QDataSet.MAX_RANK ) {
+                validate( ds.slice(0), problems, dimOffset + 1); // we must use native.
+            } else {
+                validate(DataSetOps.slice0(ds, 0), problems, dimOffset + 1); // don't use native, because it may copy. Note we only check the first assuming QUBE.
+            }
+        }        
         if ( ds.property(QDataSet.JOIN_0)!=null ) {
             if ( dimOffset>0 ) {
                 problems.add( "JOIN_0 must only be on zeroth dimension: "+dimOffset );
@@ -3357,6 +3357,9 @@ public class DataSetUtil {
         } else {
             if ( obds!=null ) {
                 QDataSet bds= (QDataSet)obds;
+                if ( bds.length()!=ds.length(0) ) {
+                    problems.add( String.format( "BUNDLE_1 length is %d but dimension length is %d.", bds.length(), ds.length(0) ) );
+                }
                 if ( ds.rank()<2 ) { // this happens with CDF slice1, when we don't completely implement slice1.
                     problems.add( "BUNDLE_1 found but dataset is only rank 1");
                 } else {
