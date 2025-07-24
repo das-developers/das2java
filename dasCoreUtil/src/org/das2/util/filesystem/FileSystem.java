@@ -655,8 +655,6 @@ public abstract class FileSystem  {
     /**
      * returns a list of the names of the files in a directory.  Names ending
      * in "/" are themselves directories, and the "/" is not part of the name.
-     * This is optional, and a directory may or may not be tagged with the trailing
-     * slash.  (REALLY?  This needs to be fixed...)
      * 
      * @param directory the directory name within the filesystem.
      * @param monitor a progress monitor for the task.
