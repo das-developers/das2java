@@ -649,6 +649,7 @@ public abstract class FileSystem  {
      * @param directory the directory name within the filesystem.
      * @return list of files and folders within the filesystem.
      * @throws java.io.IOException 
+     * @see #listDirectory(java.lang.String, java.lang.String) for listings constrained by regular expressions.
      */
     abstract public String[] listDirectory( String directory ) throws IOException;
 
