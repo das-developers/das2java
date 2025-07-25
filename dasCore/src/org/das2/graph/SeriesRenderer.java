@@ -1182,6 +1182,7 @@ public class SeriesRenderer extends Renderer {
             
             pathBuilder.finishThought();
             boolean allowSimplify= xSampleWidthExact<1e37;
+
             if (!histogram && simplifyPaths && allowSimplify && colorByDataSetId.length()==0 ) {
                 int pathLengthApprox= Math.max( 5, 110 * (lastIndex - firstIndex) / 100 );
                 this.path1= new GeneralPath(GeneralPath.WIND_NON_ZERO, pathLengthApprox );
