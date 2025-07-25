@@ -58,7 +58,7 @@ public final class DataGeneralPathBuilder {
     private double penPositionY= -Double.MAX_VALUE;
     
     private double cadence=0.0; // this is the cadence used to identify breaks in the data.
-    private double cadenceExact= 1e38; // this is the cadence requested by the client
+    private double cadenceExact= CADENCE_FILL; // this is the cadence requested by the client
     
     private double moduloy=0; // non-zero means a jump in y will also cause a break.
     private double modulox=0;
@@ -91,7 +91,7 @@ public final class DataGeneralPathBuilder {
     public void setCadence(Datum sw) {
         if ( sw==null ) {
             this.cadence= 0.;
-            this.cadenceExact= 1e38;
+            this.cadenceExact= CADENCE_FILL;
             this.logStep= false;
         } else {
             if ( UnitsUtil.isRatiometric( sw.getUnits() ) ) {
@@ -109,6 +109,7 @@ public final class DataGeneralPathBuilder {
             }
         }
     }
+    private static final double CADENCE_FILL = 1e38;
     
     /**
      * set the value for which two values of Y are equivalent.
@@ -266,14 +267,18 @@ public final class DataGeneralPathBuilder {
                 if ( pendingx!=null ) {
                     if ( histogramMode ) {
                         double xtemp= pendingx.doubleValue(xunits);
-                        double iulx;
-                        if ( logStep ) {
-                            iulx= xaxis.transform(xtemp*(1+this.cadenceExact/2),xunits); // upper-left corner of peak
+                        if ( this.cadenceExact!=CADENCE_FILL ) {
+                            double iulx;
+                            if ( logStep ) {
+                                iulx= xaxis.transform(xtemp*(1+this.cadenceExact/2),xunits); // upper-left corner of peak
+                            } else {
+                                iulx= xaxis.transform(xtemp+this.cadenceExact/2,xunits); // upper-left corner of peak
+                            }
+                            double iy= yaxis.transform(pendingy);
+                            lineTo( iulx, iy );
                         } else {
-                            iulx= xaxis.transform(xtemp+this.cadenceExact/2,xunits); // upper-left corner of peak
+                            lineTo( xaxis.transform(pendingx), yaxis.transform(pendingy) );
                         }
-                        double iy= yaxis.transform(pendingy);
-                        lineTo( iulx, iy );
                     } else {
                         lineTo( xaxis.transform(pendingx), yaxis.transform(pendingy) );
                     }
@@ -292,10 +297,14 @@ public final class DataGeneralPathBuilder {
             if ( valid ) {
                 if ( histogramMode ) {
                     double iulx;
-                    if ( logStep ) {
-                        iulx= xaxis.transform(x/(1+this.cadenceExact/2),xunits); // upper-left corner of peak
+                    if ( this.cadenceExact!=CADENCE_FILL ) {
+                        if ( logStep ) {
+                            iulx= xaxis.transform(x/(1+this.cadenceExact/2),xunits); // upper-left corner of peak
+                        } else {
+                            iulx= xaxis.transform(x-this.cadenceExact/2,xunits); // upper-left corner of peak
+                        }
                     } else {
-                        iulx= xaxis.transform(x-this.cadenceExact/2,xunits); // upper-left corner of peak
+                        iulx= xaxis.transform(x,xunits);
                     }
                     double iy= yaxis.transform(y,yunits);
                     moveTo( iulx, iy );
@@ -385,10 +394,14 @@ public final class DataGeneralPathBuilder {
     
     public void finishThought() {
         if ( lastIX>-Double.MAX_VALUE ) {
-            if ( logStep ) {
-                penPositionX= xaxis.transform(lastx*(1+this.cadenceExact/2),xunits);
+            if ( cadenceExact!=CADENCE_FILL ) {
+                if ( logStep ) {
+                    penPositionX= xaxis.transform(lastx*(1+this.cadenceExact/2),xunits);
+                } else {
+                    penPositionX= xaxis.transform(lastx+this.cadenceExact/2,xunits);
+                }
             } else {
-                penPositionX= xaxis.transform(lastx+this.cadenceExact/2,xunits);
+                penPositionX= xaxis.transform(lastx,xunits);
             }
             penPositionY= lastIY;
             lineTo( penPositionX, penPositionY );
