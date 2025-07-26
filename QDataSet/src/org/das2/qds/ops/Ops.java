@@ -2,10 +2,7 @@
 package org.das2.qds.ops;
 
 import java.awt.Color;
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
 import java.lang.reflect.Array;
-import java.nio.charset.Charset;
 import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -49,8 +46,6 @@ import org.das2.util.monitor.NullProgressMonitor;
 import org.das2.util.monitor.ProgressMonitor;
 import org.das2.util.monitor.SubTaskMonitor;
 import org.das2.util.monitor.UncheckedCancelledOperationException;
-//import org.json.JSONException;
-//import org.json.JSONObject;
 import org.das2.qds.AbstractDataSet;
 import org.das2.qds.ArrayDataSet;
 import org.das2.qds.BDataSet;
@@ -81,7 +76,6 @@ import org.das2.qds.IndexGenDataSet;
 import org.das2.qds.IndexListDataSetIterator;
 import org.das2.qds.LongReadAccess;
 import static org.das2.qds.SemanticOps.isJoin;
-import static org.das2.qds.SemanticOps.isTimeSeries;
 import org.das2.qds.SortDataSet;
 import org.das2.qds.SparseDataSet;
 import org.das2.qds.SubsetDataSet;
@@ -100,8 +94,6 @@ import org.das2.qds.util.LSpec;
 import org.das2.qds.util.LinFit;
 import org.das2.qds.math.Contour;
 import org.das2.util.ColorUtil;
-import org.das2.util.JsonUtil;
-import org.das2.util.StringTools;
 
 /**
  * A fairly complete set of operations for QDataSets, including binary operations
@@ -13519,7 +13511,12 @@ public final class Ops {
         
         if ( ttSource==null ) {
             if ( ttTarget==null ) {
-                throw new IllegalArgumentException("target dataset sent to synchronizeOne doesn't have timetags: "+dsTarget );
+                if ( dsTarget.length()==dsSource.length() ) {
+                    logger.fine("assume they were already synchronized, since the mashup tool uses this by default.");
+                    return dsSource;
+                } else {
+                    throw new IllegalArgumentException("target dataset sent to synchronizeOne doesn't have timetags: "+dsTarget );
+                }
             } else if (  SemanticOps.getUnits(dsSource).isConvertibleTo( SemanticOps.getUnits(ttTarget) ) ) {
                 ttSource= dsSource;
             } else {
