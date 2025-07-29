@@ -1090,6 +1090,13 @@ public class DasAnnotation extends DasCanvasComponent {
                     }
                 }
             }
+        } else if ( anchorType==AnchorType.PLOT && plot!=null ) {
+            anchorRect= DasDevicePosition.toRectangle( plot.getRow(), plot.getColumn() );
+            if ( splitAnchorType ) {
+                if ( verticalAnchorType==AnchorType.DATA ) { //TODO: Hmm...
+                    anchorYToData(anchorRect);
+                }
+            }
         } else {
             anchorRect= DasDevicePosition.toRectangle( getRow(), getColumn() );
             if ( splitAnchorType ) {
