@@ -688,8 +688,25 @@ public class DasAnnotation extends DasCanvasComponent {
             hmin= 0;
             hmax= getCanvas().getWidth();
         } else {
-            hmin= plot.getColumn().getDMinimum();
-            hmax= plot.getColumn().getDMaximum();
+            if ( anchorPosition==AnchorPosition.OutsideE 
+                    || anchorPosition==AnchorPosition.OutsideN 
+                    || anchorPosition==AnchorPosition.OutsideS 
+                    || anchorPosition==AnchorPosition.OutsideW 
+                    || anchorPosition==AnchorPosition.OutsideNE 
+                    || anchorPosition==AnchorPosition.OutsideNNE
+                    || anchorPosition==AnchorPosition.OutsideNNW
+                    || anchorPosition==AnchorPosition.OutsideNW
+                    || anchorPosition==AnchorPosition.OutsideSE 
+                    || anchorPosition==AnchorPosition.OutsideSSE
+                    || anchorPosition==AnchorPosition.OutsideSSW
+                    || anchorPosition==AnchorPosition.OutsideSW 
+                    ) {
+                hmin= 0;
+                hmax= getCanvas().getWidth();
+            } else {
+                hmin= plot.getColumn().getDMinimum();
+                hmax= plot.getColumn().getDMaximum();        
+            }
         }
         if ( splitAnchorType ) {
             if ( verticalAnchorType==AnchorType.CANVAS || plot==null ) {
@@ -704,8 +721,25 @@ public class DasAnnotation extends DasCanvasComponent {
                 vmin= 0;
                 vmax= getCanvas().getHeight();
             } else {
-                vmin= plot.getRow().getDMinimum();
-                vmax= plot.getRow().getDMaximum();
+                if ( anchorPosition==AnchorPosition.OutsideE 
+                    || anchorPosition==AnchorPosition.OutsideN 
+                    || anchorPosition==AnchorPosition.OutsideS 
+                    || anchorPosition==AnchorPosition.OutsideW 
+                    || anchorPosition==AnchorPosition.OutsideNE 
+                    || anchorPosition==AnchorPosition.OutsideNNE
+                    || anchorPosition==AnchorPosition.OutsideNNW
+                    || anchorPosition==AnchorPosition.OutsideNW
+                    || anchorPosition==AnchorPosition.OutsideSE 
+                    || anchorPosition==AnchorPosition.OutsideSSE
+                    || anchorPosition==AnchorPosition.OutsideSSW
+                    || anchorPosition==AnchorPosition.OutsideSW 
+                    ) {
+                    vmin= 0;
+                    vmax= getCanvas().getHeight();
+                } else {
+                    vmin= plot.getRow().getDMinimum();
+                    vmax= plot.getRow().getDMaximum();
+                }
             }
         }
         Rectangle clip= new Rectangle( hmin, vmin, hmax-hmin, vmax-vmin );
