@@ -1081,6 +1081,7 @@ public class AverageTableRebinner implements DataSetRebinner {
                     i1[iii] = ii1;
                 }
             }
+            int sign= ( ddX.start>ddX.end ) ? -1 : 1;
             if ( isNN ) {
                 for (int i = 0; i < nx; i++) {
                     boolean doInterp; //TODO? Really, this is the name?  I think doGrow is better
@@ -1099,9 +1100,9 @@ public class AverageTableRebinner implements DataSetRebinner {
                                 doInterp= false;
                             } else {
                                 if ( i1[i]==-1 ) {
-                                    doInterp= ( xTagTemp[i2[i]] - xTagTemp[i] ) < xSampleWidth/2;
+                                    doInterp= sign * ( xTagTemp[i2[i]] - xTagTemp[i] ) < xSampleWidth/2;
                                 } else {
-                                    doInterp= ( xTagTemp[i] - xTagTemp[i1[i]] ) < xSampleWidth/2;
+                                    doInterp= sign * ( xTagTemp[i] - xTagTemp[i1[i]] ) < xSampleWidth/2;
                                 }
                             }
                         }
@@ -1194,6 +1195,8 @@ public class AverageTableRebinner implements DataSetRebinner {
 
         double pixelSize= ddY.binWidth();
         
+        int sign= ( ddY.start>ddY.end ) ? -1 : 1;
+        
         final double[] ySampleWidths= new double[ddY.numberOfBins()];
         for ( int j=0; j<ny; j++ ) {
             if ( ddY.isLog ) {
@@ -1272,8 +1275,8 @@ public class AverageTableRebinner implements DataSetRebinner {
                     int i2j= i2[j];
                     if ( i1j!= -1 && i2j != -1) {
                         boolean doInterpR= yTagWidth==null || ( (yTagTemp[i2j] - yTagTemp[j] ) < ySampleWidths[j] );
-                        doInterp= doInterpR || ( yTagTemp[j] - yTagTemp[i1j] ) < ySampleWidths[j];
-                        doInterp= doInterp || ( yTagTemp[i2j]-yTagTemp[i1j] ) < ySampleWidths[j];
+                        doInterp= doInterpR || ( sign * ( yTagTemp[j] - yTagTemp[i1j] ) < ySampleWidths[j] );
+                        doInterp= doInterp || ( sign * ( yTagTemp[i2j]-yTagTemp[i1j] ) < ySampleWidths[j] );
                     } else {
                         //kludge for bug 000321
                         if ( ddY.isLog() && !UnitsUtil.isRatiometric(yTagUnits) ) {
@@ -1282,9 +1285,9 @@ public class AverageTableRebinner implements DataSetRebinner {
                             if ( i1j==-1 && i2j==-1 ) {
                                 doInterp= false;
                             } else if ( i1j==-1 ) {
-                                doInterp= ( yTagTemp[i2j] - yTagTemp[j] ) < ySampleWidths[j]/2;
+                                doInterp= sign * ( yTagTemp[i2j] - yTagTemp[j] ) < ySampleWidths[j]/2;
                             } else {
-                                doInterp= ( yTagTemp[j] - yTagTemp[i1j] ) < ySampleWidths[j]/2;
+                                doInterp= sign * ( yTagTemp[j] - yTagTemp[i1j] ) < ySampleWidths[j]/2;
                             }
                         }
                     }
