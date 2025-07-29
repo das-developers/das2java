@@ -894,9 +894,7 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
             if ( i==-1 ) i= jTextArea1.getCaretPosition();
             int i2= ext.indexOf(";");
             boolean sameKind= ext.substring(0,i2).equals(text.substring(0,Math.min(i2,text.length())));
-            if ( i==jTextArea1.getCaretPosition() ) {
-                jTextArea1.insert(text, i);
-            } else {
+            if ( true) {
                 if ( sameKind ) {
                     jTextArea1.replaceRange( text, i, i+ext.length() );
                 } else {
@@ -918,6 +916,9 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
                 jTextArea1.insert( text, jTextArea1.getSelectionStart() );
             } else {
                 jTextArea1.insert( text, jTextArea1.getSelectionStart() );
+                if ( endt!=null ) {
+                    jTextArea1.insert( endt, jTextArea1.getSelectionEnd() );
+                }
             }
         }
     }
