@@ -8775,6 +8775,16 @@ public final class Ops {
         
         Map userProperties= getProperty( ds, QDataSet.USER_PROPERTIES, Map.class );
         
+        if ( ds.rank()==2 ) {
+            int dataWindowLength= ds.slice(0).length();
+            if ( dataWindowLength<window.length() ) {
+                logger.fine("flattening rank 2 waveform to support FFT with longer window size.");
+                QDataSet flattenedDataSet= Ops.flattenWaveform(ds);
+                return fftPower( flattenedDataSet, window, stepFraction, mon );
+            }
+        }
+        
+        
         if ( ds.rank()==1 ) { // wrap to make rank 2
             QDataSet c= (QDataSet) ds.property( QDataSet.CONTEXT_0 );
             if ( c!=null && SemanticOps.getUnits(c).equals(Units.dimensionless) ) {
@@ -8918,6 +8928,18 @@ public final class Ops {
                 }
                 double lastDeltaTime= currentDeltaTime;
                 
+                //QDataSet powxtags; // support where window length is greater than data window length.  This is presently handled with flattening.
+                //if ( dep1.length()<len ) {
+                //    QDataSet cadence= DataSetUtil.guessCadence(dep1,null);
+                //    if ( cadence==null ) {
+                //        throw new IllegalArgumentException("unable to determine cadence,  window size is greater than record size");
+                //    } else {
+                //        Units u= SemanticOps.getUnits(dep1);
+                //        powxtags= FFTUtil.getFrequencyDomainTagsForPower( new TagGenDataSet( len, cadence.value(), 0, u ) );
+                //    }
+                //} else {
+                //    powxtags= FFTUtil.getFrequencyDomainTagsForPower(dep1.trim(0,len));
+                //}
                 QDataSet powxtags= FFTUtil.getFrequencyDomainTagsForPower(dep1.trim(0,len));
                 
                 double minD= Double.NEGATIVE_INFINITY, maxD=Double.POSITIVE_INFINITY;
