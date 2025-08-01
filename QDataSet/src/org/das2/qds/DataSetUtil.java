@@ -4539,10 +4539,10 @@ public class DataSetUtil {
                 }
             } catch ( InconvertibleUnitsException ex ) {
                 logger.log(Level.FINE, ex.getMessage() );
-                dr= dr.next();
+                if ( dr.equals(dr0) ) dr= dr.next();
             } catch ( IllegalArgumentException ex ) {
                 logger.log(Level.FINE, ex.getMessage() );
-                dr= dr.next();
+                if ( dr.equals(dr0) ) dr= dr.next();
             }
         }
         
@@ -4755,10 +4755,10 @@ public class DataSetUtil {
                 }
             } catch ( InconvertibleUnitsException ex ) {
                 logger.log(Level.FINE, ex.getMessage() );
-                dr= dr.previous();
+                if ( dr.equals(dr0) ) dr= dr.previous();
             } catch ( IllegalArgumentException ex ) {
                 logger.log(Level.FINE, ex.getMessage() );
-                dr= dr.previous();
+                if ( dr.equals(dr0) ) dr= dr.previous();
             }
         }
         
