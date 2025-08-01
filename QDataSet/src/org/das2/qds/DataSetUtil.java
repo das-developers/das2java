@@ -4522,7 +4522,7 @@ public class DataSetUtil {
                                     dr= DatumRangeUtil.createCentered( xdr.middle(), dr.width() );
                                 }
                             } else {
-                                dr= DataSetUtil.creepNext( ds, dr );
+                                if ( UnitsUtil.isTimeLocation( dr.getUnits() ) ) dr= DataSetUtil.creepNext( ds, dr );
                                 ds1= SemanticOps.trim( ds, dr, null);
                                 box= SemanticOps.bounds(ds1);
                                 xdr= DataSetUtil.asDatumRange(box.slice(0));
@@ -4739,7 +4739,7 @@ public class DataSetUtil {
                                     dr= DatumRangeUtil.createCentered( xdr.middle(), dr.width() );
                                 }
                             } else {
-                                dr= DataSetUtil.creepPrev( ds, dr );
+                                if ( UnitsUtil.isTimeLocation( dr.getUnits() ) ) dr= DataSetUtil.creepPrev( ds, dr );
                                 ds1= SemanticOps.trim( ds, dr, null);
                                 box= SemanticOps.bounds(ds1);
                                 xdr= DataSetUtil.asDatumRange(box.slice(0));
