@@ -2595,7 +2595,14 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     }
 
     private String resolveAxisLabel() {
-        String result= resolveString( axisLabel, "UNITS", getDatumRange().getUnits().toString() );
+        String sunits= getDatumRange().getUnits().toString();
+        if ( sunits.contains("!A") || sunits.contains("!E")  // Make sure the return is present.
+                            || sunits.contains("!B") || sunits.contains("!D") ) {
+            if ( !sunits.contains("!N") ) {
+                sunits= sunits + "!N";
+            }
+        }
+        String result= resolveString( axisLabel, "UNITS", sunits);
         DatumRange dr= getDatumRange();
         String sdr;
         if ( UnitsUtil.isTimeLocation( dr.getUnits() ) ) {
