@@ -512,6 +512,7 @@ public class KeyChain {
         if ( ss.length<2 || ss[1].length()==0 || userInfo.endsWith(":pass") || userInfo.endsWith(":password" ) ) {
             if ( !FileSystemSettings.hasAllPermission() || !"true".equals( System.getProperty("java.awt.headless") ) ) {
                 JPanel panel= new JPanel();
+                panel.setAlignmentX(Component.LEFT_ALIGNMENT);
                 panel.setLayout( new BoxLayout(panel, BoxLayout.Y_AXIS ) );
                 if ( n.length()>0 ) { 
                     panel.add( new JLabel( "<html>Enter Login details to access<br>"+n+" on<br>"+s ));
@@ -521,13 +522,19 @@ public class KeyChain {
                 JSeparator sep= new JSeparator( SwingConstants.HORIZONTAL );
                 sep.setPreferredSize( new Dimension(0,16) );
                 panel.add( sep );
-                panel.add( new JLabel("Username:") );
+                JLabel usernameLabel= new JLabel("Username:");
+                usernameLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+                panel.add( usernameLabel );
                 JTextField userTf= new JTextField();
+                userTf.setAlignmentX(Component.LEFT_ALIGNMENT);
                 if ( !ss[0].equals("user") ) userTf.setText(userName);
                 panel.add( userTf );
-                panel.add( new JLabel("Password:") );
+                userTf.setAlignmentX(Component.LEFT_ALIGNMENT);
+                JLabel passwordLabel= new JLabel("Password:");
+                panel.add( passwordLabel );
                 JPasswordField passTf= new JPasswordField();
                 if ( ss.length>1 && !( ss[1].equals("pass")||ss[1].equals("password")) ) passTf.setText(ss[1]);
+                passTf.setAlignmentX(Component.LEFT_ALIGNMENT);
                 panel.add( passTf );
                 
                 JCheckBox storeKeychain= new JCheckBox("store password in keychain.txt file");
