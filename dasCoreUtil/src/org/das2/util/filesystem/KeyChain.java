@@ -27,6 +27,8 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
@@ -371,7 +373,9 @@ public class KeyChain {
     }
 
     /**
-     * return null or the WWW-Authenticate string.
+     * return null or the WWW-Authenticate string.  Note this is not
+     * correctly implemented, as two URLs with the same realm from the
+     * same host and scheme will use the same password.
      * @param url
      * @return 
      */
@@ -454,6 +458,24 @@ public class KeyChain {
         }        
     }
     
+    private Map<String,Lock> locks= new HashMap<>();
+    
+    private synchronized Lock getLockForURL( URL url ) {
+        String hostUrl= url.getProtocol() + "://" + url.getHost();
+        Lock lock= locks.get( hostUrl );
+        if ( lock==null ) {
+            lock= new ReentrantLock();
+            locks.put( hostUrl, lock);
+        }
+        return lock;
+    }
+    
+    /**
+     * map of path to time, showing when we should automatically assume
+     * cancel would be pressed.
+     */
+    private Map<String,Long> cancelPressTimers= new HashMap<>();
+    
     /**
      * get the user credentials, maybe throwing CancelledOperationException if the
      * user hits cancel.  If the password is "pass" or "password" then don't use
@@ -461,7 +483,7 @@ public class KeyChain {
      * 
      * The userInfo passed in can contain just "user" or the user account to log in with, then
      * maybe a colon and "pass" or the password.  So examples include:<ul>
-     * <li> null, where null is returned and credentials are presumed to 
+     * <li> null, where null is returned and credentials are presumed to not be needed.
      * <li> user, where both the username and password are needed.
      * <li> user:pass where both are needed
      * <li> joe:pass there the user joe is presumed and pass is needed
@@ -500,94 +522,124 @@ public class KeyChain {
         //TODO: shouldn't "http://ectsoc@www.rbsp-ect.lanl.gov" match "http://www.rbsp-ect.lanl.gov    ectsoc:"
         if ( storedUserInfo!=null ) return storedUserInfo;
         
-        String n= "";
-        if ( url.getProtocol().startsWith("http")  ) {
-            n= getWWWAuthenticate(url); // extra call to server to get prompt
-            if ( n==null ) n="";
-        }
-
-        String proto= url.getProtocol();
-        String s= proto + "://" +( userName!=null ? userName+"@" : "" ) + url.getHost() + url.getFile();
+        Lock lock= getLockForURL(url);
         
-        if ( ss.length<2 || ss[1].length()==0 || userInfo.endsWith(":pass") || userInfo.endsWith(":password" ) ) {
-            if ( !FileSystemSettings.hasAllPermission() || !"true".equals( System.getProperty("java.awt.headless") ) ) {
-                JPanel panel= new JPanel();
-                panel.setAlignmentX(Component.LEFT_ALIGNMENT);
-                panel.setLayout( new BoxLayout(panel, BoxLayout.Y_AXIS ) );
-                if ( n.length()>0 ) { 
-                    panel.add( new JLabel( "<html>Enter Login details to access<br>"+n+" on<br>"+s ));
-                } else {
-                    panel.add( new JLabel( url.getHost() ) );
-                }
-                JSeparator sep= new JSeparator( SwingConstants.HORIZONTAL );
-                sep.setPreferredSize( new Dimension(0,16) );
-                panel.add( sep );
-                JLabel usernameLabel= new JLabel("Username:");
-                usernameLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-                panel.add( usernameLabel );
-                JTextField userTf= new JTextField();
-                userTf.setAlignmentX(Component.LEFT_ALIGNMENT);
-                if ( !ss[0].equals("user") ) userTf.setText(userName);
-                panel.add( userTf );
-                userTf.setAlignmentX(Component.LEFT_ALIGNMENT);
-                JLabel passwordLabel= new JLabel("Password:");
-                panel.add( passwordLabel );
-                JPasswordField passTf= new JPasswordField();
-                if ( ss.length>1 && !( ss[1].equals("pass")||ss[1].equals("password")) ) passTf.setText(ss[1]);
-                passTf.setAlignmentX(Component.LEFT_ALIGNMENT);
-                panel.add( passTf );
-                
-                JCheckBox storeKeychain= new JCheckBox("store password in keychain.txt file");
-                storeKeychain.setToolTipText("<html>passwords can be stored in keychain.txt files in your cache, but beware of security implications and confusion this can cause.");
+        try {
+            lock.lock();
 
-                panel.add( storeKeychain );
-                
-                //int r= JOptionPane.showConfirmDialog( null, panel, "Authentication Required", JOptionPane.OK_CANCEL_OPTION );
-                int r= JOptionPane.showConfirmDialog( parent, panel, proto + " Authentication Required", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null);
-                if ( JOptionPane.OK_OPTION==r ) {
-                    char[] pass= passTf.getPassword();
-                    storedUserInfo= userTf.getText() + ":" + new String(pass);
-                    storeUserInfo( path, storedUserInfo );
-                    if ( storeKeychain.isSelected() ) {
-                        try {
-                            appendKeysFile( path, storedUserInfo );
-                        } catch (IOException ex) {
-                            logger.log( Level.WARNING, null, ex );
+            storedUserInfo= lookupStoredUserInfo(path);
+            if ( storedUserInfo!=null ) return storedUserInfo;
+
+            String n= "";
+            if ( url.getProtocol().startsWith("http")  ) {
+                n= getWWWAuthenticate(url); // extra call to server to get prompt
+                if ( n==null ) n="";
+            }
+
+            if ( n.length()>0 ) {
+                path=  url.getProtocol() + "://" + ( userName!=null ? userName+"@" : "" ) + url.getHost() + "/" + n ;
+            }
+
+            storedUserInfo= lookupStoredUserInfo(path);
+            if ( storedUserInfo!=null ) return storedUserInfo;
+
+            String proto= url.getProtocol();
+            String s= proto + "://" +( userName!=null ? userName+"@" : "" ) + url.getHost() + url.getFile();
+
+            if ( ss.length<2 || ss[1].length()==0 || userInfo.endsWith(":pass") || userInfo.endsWith(":password" ) ) {
+                if ( !FileSystemSettings.hasAllPermission() || !"true".equals( System.getProperty("java.awt.headless") ) ) {
+                    JPanel panel= new JPanel();
+                    panel.setAlignmentX(Component.LEFT_ALIGNMENT);
+                    panel.setLayout( new BoxLayout(panel, BoxLayout.Y_AXIS ) );
+                    if ( n.length()>0 ) { 
+                        panel.add( new JLabel( "<html>Enter Login details to access<br>"+n+" on<br>"+s ));
+                    } else {
+                        panel.add( new JLabel( url.getHost() ) );
+                    }
+                    JSeparator sep= new JSeparator( SwingConstants.HORIZONTAL );
+                    sep.setPreferredSize( new Dimension(0,16) );
+                    panel.add( sep );
+                    JLabel usernameLabel= new JLabel("Username:");
+                    usernameLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+                    panel.add( usernameLabel );
+                    JTextField userTf= new JTextField();
+                    userTf.setAlignmentX(Component.LEFT_ALIGNMENT);
+                    if ( !ss[0].equals("user") ) userTf.setText(userName);
+                    panel.add( userTf );
+                    userTf.setAlignmentX(Component.LEFT_ALIGNMENT);
+                    JLabel passwordLabel= new JLabel("Password:");
+                    panel.add( passwordLabel );
+                    JPasswordField passTf= new JPasswordField();
+                    if ( ss.length>1 && !( ss[1].equals("pass")||ss[1].equals("password")) ) passTf.setText(ss[1]);
+                    passTf.setAlignmentX(Component.LEFT_ALIGNMENT);
+                    panel.add( passTf );
+
+                    JCheckBox storeKeychain= new JCheckBox("store password in keychain.txt file");
+                    storeKeychain.setToolTipText("<html>passwords can be stored in keychain.txt files in your cache, but beware of security implications and confusion this can cause.");
+
+                    panel.add( storeKeychain );
+
+                    Long cancelPressed= cancelPressTimers.get(path);
+                    if ( cancelPressed!=null ) {
+                        long millis= System.currentTimeMillis()-cancelPressed;
+                        if ( millis<CANCEL_PRESS_TIMEOUT ) {
+                            throw new CancelledOperationException("Cancel was pressed within the last 10 seconds");
+                        } else {
+                            logger.fine("cancel press expired");
+                            cancelPressTimers.remove(path);
                         }
                     }
-                    return storedUserInfo;
-                } else if ( JOptionPane.CANCEL_OPTION==r ) {
-                    throw new CancelledOperationException();
-                }
-            } else {
-                if ( "true".equals( System.getProperty("java.awt.headless") ) ) { 
-                    Console c= System.console();
-                    if ( c==null ) {
-                        logger.log( Level.WARNING, "** java.awt.headless=true: HEADLESS MODE means needed credentials cannot be queried" );
-                        throw new CancelledOperationException("HEADLESS MODE means needed credentials cannot be queried");
-                    } else {
-                        c.printf( "Enter Login details to access \n%s on\n%s\n", n, s );
-                        String user;
-                        if ( !ss[0].equals("user") ) {
-                            user= c.readLine( "Username (leave empty for %s): ", ss[0] );
-                            if ( user.trim().length()==0 ) {
-                                user= ss[0];
+                    
+                    //int r= JOptionPane.showConfirmDialog( null, panel, "Authentication Required", JOptionPane.OK_CANCEL_OPTION );
+                    int r= JOptionPane.showConfirmDialog( parent, panel, proto + " Authentication Required", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null);
+                    if ( JOptionPane.OK_OPTION==r ) {
+                        char[] pass= passTf.getPassword();
+                        storedUserInfo= userTf.getText() + ":" + new String(pass);
+                        storeUserInfo( path, storedUserInfo );
+                        if ( storeKeychain.isSelected() ) {
+                            try {
+                                appendKeysFile( path, storedUserInfo );
+                            } catch (IOException ex) {
+                                logger.log( Level.WARNING, null, ex );
                             }
-                        } else {
-                            user= c.readLine( "Username: " );
                         }
-                        char[] pass= c.readPassword( "Password: " );
-                        storedUserInfo= user + ":" + new String(pass);
                         return storedUserInfo;
+                    } else if ( JOptionPane.CANCEL_OPTION==r ) {
+                        cancelPressTimers.put(path,System.currentTimeMillis());
+                        throw new CancelledOperationException();
                     }
                 } else {
-                    return userInfo;
+                    if ( "true".equals( System.getProperty("java.awt.headless") ) ) { 
+                        Console c= System.console();
+                        if ( c==null ) {
+                            logger.log( Level.WARNING, "** java.awt.headless=true: HEADLESS MODE means needed credentials cannot be queried" );
+                            throw new CancelledOperationException("HEADLESS MODE means needed credentials cannot be queried");
+                        } else {
+                            c.printf( "Enter Login details to access \n%s on\n%s\n", n, s );
+                            String user;
+                            if ( !ss[0].equals("user") ) {
+                                user= c.readLine( "Username (leave empty for %s): ", ss[0] );
+                                if ( user.trim().length()==0 ) {
+                                    user= ss[0];
+                                }
+                            } else {
+                                user= c.readLine( "Username: " );
+                            }
+                            char[] pass= c.readPassword( "Password: " );
+                            storedUserInfo= user + ":" + new String(pass);
+                            return storedUserInfo;
+                        }
+                    } else {
+                        return userInfo;
+                    }
                 }
             }
+        } finally {
+            lock.unlock();
         }
-
         return userInfo;
     }
+    private static final int CANCEL_PRESS_TIMEOUT = 10000;
 
     /**
      * clear all passwords.
