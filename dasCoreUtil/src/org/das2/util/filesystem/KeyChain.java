@@ -583,7 +583,7 @@ public class KeyChain {
                     if ( cancelPressed!=null ) {
                         long millis= System.currentTimeMillis()-cancelPressed;
                         if ( millis<CANCEL_PRESS_TIMEOUT ) {
-                            throw new CancelledOperationException("Cancel was pressed within the last 10 seconds");
+                            throw new CancelledOperationException("Cancel was pressed within the last two seconds");
                         } else {
                             logger.fine("cancel press expired");
                             cancelPressTimers.remove(path);
@@ -639,7 +639,7 @@ public class KeyChain {
         }
         return userInfo;
     }
-    private static final int CANCEL_PRESS_TIMEOUT = 10000;
+    private static final int CANCEL_PRESS_TIMEOUT = 2000;
 
     /**
      * clear all passwords.
