@@ -252,7 +252,8 @@ public abstract class FileSystem  {
         return ( p.contains(".zip") 
                 || p.contains(".ZIP")
                 || p.contains(".kmz")
-                || p.contains(".3mf"));
+                || p.contains(".3mf")
+                || p.contains(".npz"));
     }
     
     /**
@@ -279,6 +280,7 @@ public abstract class FileSystem  {
         if ( i==-1 ) i= surl.indexOf(".ZIP");
         if ( i==-1 ) i= surl.indexOf(".kmz");
         if ( i==-1 ) i= surl.indexOf(".3mf");
+        if ( i==-1 ) i= surl.indexOf(".npz");
         String subdir = surl.substring(i+4);
         String[] ss= FileSystem.splitUrl( surl.substring(0,i+4) );
         return new String[] { ss[2], ss[3].substring(ss[2].length()), subdir };
