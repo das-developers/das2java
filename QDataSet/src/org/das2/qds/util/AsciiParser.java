@@ -1908,7 +1908,11 @@ public class AsciiParser {
                     return false;
                 }
             } else {
-                return ( failCount < tryCount ) && ( okayCount > 1 || failCount < 3 );
+                if ( tryCount<5 ) {
+                    return okayCount>failCount;
+                } else {
+                    return ( failCount < tryCount ) && ( okayCount > 1 || failCount < 3 );
+                }
             }
         }
 
