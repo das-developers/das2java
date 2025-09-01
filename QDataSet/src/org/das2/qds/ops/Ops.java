@@ -13560,8 +13560,26 @@ public final class Ops {
             ff= findex( ttSource, ttTarget );
         }
         boolean nn= UnitsUtil.isOrdinalMeasurement( SemanticOps.getUnits(dsSource) );
-        if ( nn ) ff= Ops.round(ff);        
-        dsSource= interpolate( dsSource, ff );
+        if ( nn ) ff= Ops.round(ff);
+        
+        // determine if interpolation is really needed, since this is a quick operation.
+        // https://github.com/autoplot/dev/blob/master/bugs/2025/20250901/synchronizeCheckTimetags.jy
+        int nl= ff.length();
+        boolean interpolationNeeded= nl>0 && ff.value(0)!=0 && ff.value(nl-1)!=dsSource.length()-1;
+        if ( !interpolationNeeded ) {
+            for ( int i=0; i<ff.length(); i++ ) {
+                if ( ff.value(i)!=i ) {
+                    interpolationNeeded=true;
+                    break;
+                }
+            }
+        }
+        if ( interpolationNeeded ) {
+            dsSource= interpolate( dsSource, ff );
+        } else {
+            logger.fine("no interpolation needed");
+        }
+        
 //        QDataSet tlimit= DataSetUtil.guessCadenceNew( ttSource, null );
 //        tlimit=null; // See sftp://jbf@nudnik.physics.uiowa.edu/home/jbf/project/rbsp/u/kris/20180808/demoBugFindexSynchronizeInline.jy
 //        if ( tlimit!=null ) {
@@ -13663,7 +13681,24 @@ public final class Ops {
             }
             
             if ( nn ) ff= Ops.round(ff);
-            dsSource= interpolate( dsSource, ff );
+            
+            // determine if interpolation is really needed, since this is a quick operation.
+            // https://github.com/autoplot/dev/blob/master/bugs/2025/20250901/synchronizeCheckTimetags.jy
+            int nl= ff.length();
+            boolean interpolationNeeded= nl>0 && ff.value(0)!=0 && ff.value(nl-1)!=dsSource.length()-1;
+            if ( !interpolationNeeded ) {
+                for ( int i=0; i<ff.length(); i++ ) {
+                    if ( ff.value(i)!=i ) {
+                        interpolationNeeded=true;
+                        break;
+                    }
+                }
+            }
+            if ( interpolationNeeded ) {
+                dsSource= interpolate( dsSource, ff );
+            } else {
+                logger.fine("no interpolation needed");
+            }            
             
             QDataSet tlimit= DataSetUtil.guessCadenceNew( ttSource, null );
             if ( tlimit!=null ) {
