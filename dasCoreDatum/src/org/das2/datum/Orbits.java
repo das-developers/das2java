@@ -112,7 +112,7 @@ public class Orbits {
                         break;
                            
                     default:
-                        urls.add( new URL( "https://raw.githubusercontent.com/das-developers/meta/main/orbits/"+sc+".dat" ) );
+                        urls.add( new URL( "https://raw.githubusercontent.com/das-developers/das2meta/main/orbits/"+sc+".dat" ) );
                         urls.add( new URL( "https://space.physics.uiowa.edu/das2/Orbits/"+sc+".dat" ) );
                         break;
                 }
