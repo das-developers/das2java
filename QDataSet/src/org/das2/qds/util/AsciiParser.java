@@ -854,6 +854,7 @@ public class AsciiParser {
      * @param fp the parser
      */
     public void setFieldParser(int field, FieldParser fp) {
+        logger.log(Level.FINER, "setFieldParser field={0} {1}", new Object[]{field, fp});
         if ( field>=this.fieldParsers.length ) {
             throw new ArrayIndexOutOfBoundsException("parser expects only "+this.fieldParsers.length+" fields");
         }
@@ -2414,11 +2415,20 @@ public class AsciiParser {
             Matcher m;
             if (recordPattern != null && (m = recordPattern.matcher(line)).matches()) {
                 if ( doGuessUnits ) {
+                    
+                    Units[] saveUnits= Arrays.copyOf( parser.units, parser.fieldCount );
+                    FieldParser[] saveFieldParsers= Arrays.copyOf( parser.fieldParsers, parser.fieldCount );
                     String[] ss= new String[parser.fieldCount];
                     for ( int i=0; i< parser.fieldCount; i++ ) {
                         ss[i]= m.group(i+1);
-                    }                    
+                    }
                     parser.initializeUnitsByGuessing( ss, 0 );
+                    for ( int i=0; i<parser.fieldCount; i++ ) { // save any units which have been set 
+                        if ( saveUnits[i]!=Units.dimensionless || saveFieldParsers[i]!=AsciiParser.DOUBLE_PARSER ) {
+                            parser.units[i]= saveUnits[i];
+                            parser.fieldParsers[i]= saveFieldParsers[i];
+                        }
+                    }
                     this.doGuessUnits= false;
                 }
                 try {
