@@ -38,6 +38,7 @@ import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.LoggerManager;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
+import static org.das2.graph.AnchorPosition.NW;
 
 /**
  * This makes a DasCanvasComponent for GrannyTextRenderer, and 
@@ -750,7 +751,7 @@ public class DasAnnotation extends DasCanvasComponent {
         logger.exiting( "DasAnnotation","calcBounds", r);
         return r;
     }
-
+    
     @Override
     public void paintComponent(Graphics g1) {
         
@@ -875,24 +876,37 @@ public class DasAnnotation extends DasCanvasComponent {
 
             g.setColor(ltextColor);
 
-            Rectangle bb= getAnnotationBubbleBoundsNoRotation();
+            Graphics2D gtext= (Graphics2D) g.create();
+                    
+            Rectangle bb= getAnnotationBubbleBounds();
             int rot= rotate % 360;
             
             if ( ( rot ) !=0 ) {    
                 double midx= bb.x + bb.width/2;
                 double midy= bb.y + bb.height/2;
                 if ( rot == -90 || rot==90 || rot==270 ) {
-                    if ( rot==-90 ) {
+                    if ( rot==-90 || rot==270 ) {
                         if ( anchorPosition==AnchorPosition.NE ) {
-                            g.translate( getX(), getY() );
-                            g.rotate( -rotate*Math.PI/180. );
-                            g.translate( 0, bb.height );
-                            g.translate( -getX(), -getY() );
+                            gtext.translate( bb.x + bb.width - gtr.getAscent(), bb.y );
+                            gtext.rotate( -rotate*Math.PI/180. );
+                            //g.translate( 0, bb.height );
+                            //g.translate( -getX(), -getY() );
                         } else if ( anchorPosition==AnchorPosition.NW ) {
                             //System.err.println( String.format( "X: %4d Y: %4d",getX(),getY() ) );
-                            g.rotate( -rot*Math.PI/180., getX(), getY()+bb.getHeight() );
+                            gtext.translate( bb.x + bb.width - gtr.getAscent(), bb.y );
+                            gtext.rotate( -rotate*Math.PI/180. );
+                        } else if ( anchorPosition==AnchorPosition.SW ) {
+                            gtext.translate( bb.x + bb.width - gtr.getAscent(), bb.y );
+                            gtext.rotate( -rotate*Math.PI/180. );
+                            //g.translate( 0, bb.height );
+                            //g.translate( -getX(), -getY() );)
+                        } else if ( anchorPosition==AnchorPosition.SE ) {
+                            gtext.translate( bb.x + bb.width - gtr.getAscent(), bb.y );
+                            gtext.rotate( -rotate*Math.PI/180. );
+                            //g.translate( 0, bb.height );
+                            //g.translate( -getX(), -getY() );)
                         } else if ( anchorPosition==AnchorPosition.Center ) {
-                            g.rotate( -rot*Math.PI/180., getX(), getY() );
+                            gtext.rotate( -rot*Math.PI/180., getX(), getY() );
                             //g.translate( getX(), getY() );
                             //g.rotate( -rotate*Math.PI/180. );
                             //g.translate( 0, - bb.height ); 
@@ -901,29 +915,67 @@ public class DasAnnotation extends DasCanvasComponent {
                         
                         
                         //g.translate( -gtr.getAscent()+2*em, 0 );
+                    } else if ( rot==90  ) {
+                        if ( anchorPosition==AnchorPosition.NE ) {
+                            gtext.translate( bb.x + gtr.getAscent(), bb.y + bb.height );
+                            gtext.rotate( -rotate*Math.PI/180. );
+                            //g.translate( 0, bb.height );
+                            //g.translate( -getX(), -getY() );
+                        } else if ( anchorPosition==AnchorPosition.NW ) {
+                            //System.err.println( String.format( "X: %4d Y: %4d",getX(),getY() ) );
+                            gtext.translate( bb.x + gtr.getAscent(), bb.y + bb.height );
+                            gtext.rotate( -rotate*Math.PI/180. );
+                            
+                        } else if ( anchorPosition==AnchorPosition.SW ) {
+                            gtext.translate( bb.x + gtr.getAscent(), bb.y + bb.height );
+                            gtext.rotate( -rotate*Math.PI/180. );
+                            //g.translate( 0, bb.height );
+                            //g.translate( -getX(), -getY() );)
+                        } else if ( anchorPosition==AnchorPosition.SE ) {
+                            gtext.translate( bb.x + gtr.getAscent(), bb.y + bb.height );
+                            gtext.rotate( -rotate*Math.PI/180. );
+                            //g.translate( 0, bb.height );
+                            //g.translate( -getX(), -getY() );)
+                        } else if ( anchorPosition==AnchorPosition.Center ) {
+                            gtext.rotate( -rot*Math.PI/180., getX(), getY() );
+                            //g.translate( getX(), getY() );
+                            //g.rotate( -rotate*Math.PI/180. );
+                            //g.translate( 0, - bb.height ); 
+                            //g.translate( -getX(), -getY() );
+                        }
                     }
                 } else {
-                    g.rotate( -rotate*Math.PI/180., midx, midy );
+                    
+                    gtext.rotate( -rotate*Math.PI/180., midx, midy );
                 }
             }
-            g.setColor(ltextColor);
 
             // add sunburst pattern while I try to figure out rotation. TODO: remove
-            if ( rotate!=0 ) {
+            if ( false ) { //rotate!=0 ) {
+                gtext.setColor( Color.LIGHT_GRAY );
                 for ( int i=0; i<360; i+=10 ) {
                     double a= i*Math.PI/180;
                     double ix= Math.cos(a);
                     double iy= Math.sin(a);
-                    g.drawLine( 0, 0, (int)(200*ix), (int)(200*iy) );
+                    gtext.drawLine( 0, 0, (int)(200*ix), (int)(200*iy) );
                 }
+                System.err.println("done drawing sunburst");
             }
             
+            gtext.setColor(ltextColor);
+
             if ( gtr!=null ) {
                 try {
-                    gtr.draw(g, r.x+em, r.y + em + (float) gtr.getAscent() );
+                    if ( rotate==-90 || rotate==270 ) {
+                        gtr.draw(gtext, em, 0 );
+                    } else if ( rotate==90 ) {
+                        gtr.draw(gtext, em, 0 );
+                    } else {
+                        gtr.draw(gtext, r.x+em, r.y + em + (float) gtr.getAscent() );
+                    }
                 } catch ( IllegalArgumentException ex ) {
-                    gtr.setString( g.getFont(), getText() );
-                    gtr.draw(g, r.x+em, r.y + em + (float) gtr.getAscent() );
+                    gtr.setString( gtext.getFont(), getText() );
+                    gtr.draw(gtext, r.x+em, r.y + em + (float) gtr.getAscent() );
                 }
             } else {
                 BufferedImage localImage= img;
@@ -941,20 +993,20 @@ public class DasAnnotation extends DasCanvasComponent {
                     
                     boolean printing= getCanvas().isPrintingThread();
                     if ( printing ) {
-                        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-                        g.drawImage( localImage, r.x+em, r.y+em, newWidth, newHeight, this );        
+                        gtext.setRenderingHint(RenderingHints.KEY_INTERPOLATION,RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+                        gtext.drawImage( localImage, r.x+em, r.y+em, newWidth, newHeight, this );        
                     } else {
                         BufferedImage resized = org.das2.util.ImageUtil.getScaledInstance( localImage, (int)Math.sqrt( newWidth*newWidth + newHeight*newHeight ) );
-                        g.drawImage( resized, r.x+em, r.y+em, this );                        
+                        gtext.drawImage( resized, r.x+em, r.y+em, this );                        
                     }
                     
 
                 } else {
-                    g.drawImage( localImage, r.x+em, r.y+em, this );
+                    gtext.drawImage( localImage, r.x+em, r.y+em, this );
                 }
             }
         
-            g.setColor(fore);
+            gtext.setColor(fore);
                 
             if (borderType != BorderType.NONE) {
                 if (borderType == BorderType.RECTANGLE) {
@@ -1211,7 +1263,19 @@ public class DasAnnotation extends DasCanvasComponent {
                         nr.y= r.y;
                         nr.width= r.height;
                         nr.height= r.width;
-                        break;                
+                        break;
+                    case SW:
+                        nr.x= r.x;
+                        nr.y= r.y + r.height - r.width;
+                        nr.width= r.height;
+                        nr.height= r.width;
+                        break;
+                    case SE:
+                        nr.x= r.x + r.width - r.height;
+                        nr.y= r.y + r.height - r.width;
+                        nr.width= r.height;
+                        nr.height= r.width;
+                        break;                             
                     default:
                         logger.info("this rotation is not supported");
                 }
