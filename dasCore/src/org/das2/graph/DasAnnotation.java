@@ -948,6 +948,10 @@ public class DasAnnotation extends DasCanvasComponent {
                     
                     gtext.rotate( -rotate*Math.PI/180., midx, midy );
                 }
+            } else if ( rot==0 ) {
+                gtext.translate( bb.x, bb.y + em + (float) gtr.getAscent() );
+                //gtr.draw(gtext, r.x+em, r.y + em + (float) gtr.getAscent() );
+                
             }
 
             // add sunburst pattern while I try to figure out rotation. TODO: remove
@@ -971,7 +975,7 @@ public class DasAnnotation extends DasCanvasComponent {
                     } else if ( rotate==90 ) {
                         gtr.draw(gtext, em, 0 );
                     } else {
-                        gtr.draw(gtext, r.x+em, r.y + em + (float) gtr.getAscent() );
+                        gtr.draw(gtext, em, 0 );
                     }
                 } catch ( IllegalArgumentException ex ) {
                     gtr.setString( gtext.getFont(), getText() );
