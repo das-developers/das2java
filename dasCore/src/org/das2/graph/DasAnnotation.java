@@ -995,13 +995,9 @@ public class DasAnnotation extends DasCanvasComponent {
 
             if ( gtr!=null ) {
                 try {
-                    if ( rotate==-90 || rotate==270 ) {
-                        gtr.draw(gtext, em, 0 );
-                    } else if ( rotate==90 ) {
-                        gtr.draw(gtext, em, 0 );
-                    } else {
-                        gtr.draw(gtext, em, 0 );
-                    }
+                    
+                    gtr.draw(gtext, em, 0 );
+                    
                 } catch ( IllegalArgumentException ex ) {
                     gtr.setString( gtext.getFont(), getText() );
                     gtr.draw(gtext, r.x+em, r.y + em + (float) gtr.getAscent() );
