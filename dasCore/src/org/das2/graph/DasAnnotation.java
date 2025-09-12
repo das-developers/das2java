@@ -905,8 +905,17 @@ public class DasAnnotation extends DasCanvasComponent {
                             gtext.rotate( -rotate*Math.PI/180. );
                             //g.translate( 0, bb.height );
                             //g.translate( -getX(), -getY() );)
+                        } else if ( anchorPosition==AnchorPosition.E ) {
+                            gtext.translate( bb.x + bb.width - gtr.getAscent(), bb.y );
+                            gtext.rotate( -rotate*Math.PI/180. );
+
+                        } else if ( anchorPosition==AnchorPosition.W ) {
+                            gtext.translate( bb.x + bb.width - gtr.getAscent(), bb.y );
+                            gtext.rotate( -rotate*Math.PI/180. );
+                            
                         } else if ( anchorPosition==AnchorPosition.Center ) {
-                            gtext.rotate( -rot*Math.PI/180., getX(), getY() );
+                            gtext.translate( bb.x + bb.width/2 + gtr.getWidth()/2, bb.y + bb.height/2 - gtr.getHeight()/2 ); // experimentally...
+                            gtext.rotate( -rotate*Math.PI/180.  );
                             //g.translate( getX(), getY() );
                             //g.rotate( -rotate*Math.PI/180. );
                             //g.translate( 0, - bb.height ); 
@@ -937,7 +946,8 @@ public class DasAnnotation extends DasCanvasComponent {
                             //g.translate( 0, bb.height );
                             //g.translate( -getX(), -getY() );)
                         } else if ( anchorPosition==AnchorPosition.Center ) {
-                            gtext.rotate( -rot*Math.PI/180., getX(), getY() );
+                            gtext.translate( bb.x + bb.width - gtr.getHeight()/2, bb.y + gtr.getWidth()/2 );
+                            gtext.rotate( -rotate*Math.PI/180.  );
                             //g.translate( getX(), getY() );
                             //g.rotate( -rotate*Math.PI/180. );
                             //g.translate( 0, - bb.height ); 
@@ -1280,6 +1290,18 @@ public class DasAnnotation extends DasCanvasComponent {
                         nr.width= r.height;
                         nr.height= r.width;
                         break;                             
+                    case E:
+                        nr.x= r.x + r.width - r.height;
+                        nr.y= r.y + r.height/2 - r.width/2;
+                        nr.width= r.height;
+                        nr.height= r.width;
+                        break;
+                    case W:
+                        nr.x= r.x;
+                        nr.y= r.y + r.height/2 - r.width/2;
+                        nr.width= r.height;
+                        nr.height= r.width;
+                        break;                           
                     default:
                         logger.info("this rotation is not supported");
                 }
