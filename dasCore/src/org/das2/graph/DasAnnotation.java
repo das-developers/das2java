@@ -883,28 +883,23 @@ public class DasAnnotation extends DasCanvasComponent {
             Rectangle bb= getAnnotationBubbleBounds();
             int rot= rotate % 360;
             
-            if ( ( rot ) !=0 ) {    
+            if ( rot==-90 || rot==270 ) {
+                gtext.translate( bb.x + bb.width - gtr.getAscent(), bb.y );
+                gtext.rotate( -rotate*Math.PI/180. );
+
+            } else if ( rot==90  ) {
+                gtext.translate( bb.x + gtr.getAscent(), bb.y + bb.height );
+                gtext.rotate( -rotate*Math.PI/180. );
+
+            } else if ( rot==180 ) {
                 double midx= bb.x + bb.width/2;
                 double midy= bb.y + bb.height/2;
-                if ( rot == -90 || rot==90 || rot==270 ) {
-                    if ( rot==-90 || rot==270 ) {
-                        gtext.translate( bb.x + bb.width - gtr.getAscent(), bb.y );
-                        gtext.rotate( -rotate*Math.PI/180. );
-                        
-                    } else if ( rot==90  ) {
-                        gtext.translate( bb.x + gtr.getAscent(), bb.y + bb.height );
-                        gtext.rotate( -rotate*Math.PI/180. );
-                    }
-                } else {
-                    
-                    gtext.rotate( -rotate*Math.PI/180., midx, midy );
-                }
+                gtext.rotate( -rotate*Math.PI/180., midx, midy );
             } else if ( rot==0 ) {
                 gtext.translate( bb.x, bb.y + em + (float) gtr.getAscent() );
-                //gtr.draw(gtext, r.x+em, r.y + em + (float) gtr.getAscent() );
-                
+            //gtr.draw(gtext, r.x+em, r.y + em + (float) gtr.getAscent() );
             }
-
+    
             // add sunburst pattern while I try to figure out rotation. TODO: remove
             if ( false ) { //rotate!=0 ) {
                 gtext.setColor( Color.LIGHT_GRAY );
