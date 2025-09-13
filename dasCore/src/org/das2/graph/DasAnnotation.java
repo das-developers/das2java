@@ -39,6 +39,8 @@ import org.das2.datum.LoggerManager;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
 import static org.das2.graph.AnchorPosition.NW;
+import static org.das2.graph.AnchorPosition.OutsideE;
+import static org.das2.graph.AnchorPosition.OutsideW;
 
 /**
  * This makes a DasCanvasComponent for GrannyTextRenderer, and 
@@ -1225,6 +1227,12 @@ public class DasAnnotation extends DasCanvasComponent {
                         nr.width= r.height;
                         nr.height= r.width;
                         break;                             
+                    case N:
+                        nr.x= r.x + r.width/2 - r.height/2;
+                        nr.y= r.y;
+                        nr.width= r.height;
+                        nr.height= r.width;
+                        break;
                     case E:
                         nr.x= r.x + r.width - r.height;
                         nr.y= r.y + r.height/2 - r.width/2;
@@ -1236,7 +1244,49 @@ public class DasAnnotation extends DasCanvasComponent {
                         nr.y= r.y + r.height/2 - r.width/2;
                         nr.width= r.height;
                         nr.height= r.width;
-                        break;                           
+                        break;
+                    case S:
+                        nr.x= r.x + r.width/2 - r.height/2;
+                        nr.y= r.y + r.height - r.width;
+                        nr.width= r.height;
+                        nr.height= r.width;
+                        break;                        
+                    case OutsideE:
+                        nr.x= r.x;
+                        nr.y= r.y + r.height/2 - r.width/2;
+                        nr.width= r.height;
+                        nr.height= r.width;
+                        break;
+                    case OutsideW:
+                        nr.x= r.x + r.width - r.height;
+                        nr.y= r.y + r.height/2 - r.width/2;
+                        nr.width= r.height;
+                        nr.height= r.width;
+                        break;
+                    case OutsideNE:
+                        nr.x= r.x;
+                        nr.y= r.y;
+                        nr.width= r.height;
+                        nr.height= r.width;
+                        break;
+                    case OutsideNW:
+                        nr.x= r.x + r.width - r.height;
+                        nr.y= r.y;
+                        nr.width= r.height;
+                        nr.height= r.width;
+                        break;
+                    case OutsideSE:
+                        nr.x= r.x;
+                        nr.y= r.y + r.height - r.width;
+                        nr.width= r.height;
+                        nr.height= r.width;
+                        break;
+                    case OutsideSW:
+                        nr.x= r.x + r.width - r.height;
+                        nr.y= r.y + r.height - r.width;
+                        nr.width= r.height;
+                        nr.height= r.width;
+                        break;                        
                     default:
                         logger.info("this rotation is not supported");
                 }
