@@ -1251,6 +1251,18 @@ public class DasAnnotation extends DasCanvasComponent {
                         nr.width= r.height;
                         nr.height= r.width;
                         break;                        
+                    case OutsideN:
+                        nr.x= r.x + r.width/2 - r.height/2;
+                        nr.y= r.y + r.height - r.width;
+                        nr.width= r.height;
+                        nr.height= r.width;
+                        break;
+                    case OutsideS:
+                        nr.x= r.x + r.width/2 - r.height/2;
+                        nr.y= r.y;
+                        nr.width= r.height;
+                        nr.height= r.width;
+                        break;                        
                     case OutsideE:
                         nr.x= r.x;
                         nr.y= r.y + r.height/2 - r.width/2;
@@ -1263,6 +1275,31 @@ public class DasAnnotation extends DasCanvasComponent {
                         nr.width= r.height;
                         nr.height= r.width;
                         break;
+                    case OutsideNNE:
+                        nr.x= r.x + r.width - r.height;
+                        nr.y= r.y + r.height - r.width;
+                        nr.width= r.height;
+                        nr.height= r.width;
+                        break;
+                    case OutsideNNW:
+                        nr.x= r.x;
+                        nr.y= r.y + r.height - r.width;
+                        nr.width= r.height;
+                        nr.height= r.width;
+                        break;
+                    case OutsideSSE:
+                        nr.x= r.x + r.width - r.height;
+                        nr.y= r.y;
+                        nr.width= r.height;
+                        nr.height= r.width;
+                        break;
+                    case OutsideSSW:
+                        nr.x= r.x;
+                        nr.y= r.y;
+                        nr.width= r.height;
+                        nr.height= r.width;
+                        break;
+                        
                     case OutsideNE:
                         nr.x= r.x;
                         nr.y= r.y;
