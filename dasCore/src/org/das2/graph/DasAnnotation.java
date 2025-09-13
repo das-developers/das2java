@@ -886,88 +886,12 @@ public class DasAnnotation extends DasCanvasComponent {
                 double midy= bb.y + bb.height/2;
                 if ( rot == -90 || rot==90 || rot==270 ) {
                     if ( rot==-90 || rot==270 ) {
-                        switch (anchorPosition) {
-                            case NE:
-                                gtext.translate( bb.x + bb.width - gtr.getAscent(), bb.y );
-                                gtext.rotate( -rotate*Math.PI/180. );
-                                //g.translate( 0, bb.height );
-                                //g.translate( -getX(), -getY() );
-                                break;
-                        //g.translate( -gtr.getAscent()+2*em, 0 );
-                            case NW:
-                                //System.err.println( String.format( "X: %4d Y: %4d",getX(),getY() ) );
-                                gtext.translate( bb.x + bb.width - gtr.getAscent(), bb.y );
-                                gtext.rotate( -rotate*Math.PI/180. );
-                                break;
-                            case SW:
-                                gtext.translate( bb.x + bb.width - gtr.getAscent(), bb.y );
-                                gtext.rotate( -rotate*Math.PI/180. );
-                                //g.translate( 0, bb.height );
-                                //g.translate( -getX(), -getY() );)
-                                break;
-                            case SE:
-                                gtext.translate( bb.x + bb.width - gtr.getAscent(), bb.y );
-                                gtext.rotate( -rotate*Math.PI/180. );
-                                //g.translate( 0, bb.height );
-                                //g.translate( -getX(), -getY() );)
-                                break;
-                            case E:
-                                gtext.translate( bb.x + bb.width - gtr.getAscent(), bb.y );
-                                gtext.rotate( -rotate*Math.PI/180. );
-                                break;
-                            case W:
-                                gtext.translate( bb.x + bb.width - gtr.getAscent(), bb.y );
-                                gtext.rotate( -rotate*Math.PI/180. );
-                                break;
-                            case Center:
-                                gtext.translate( bb.x + bb.width/2 + gtr.getWidth()/2, bb.y + bb.height/2 - gtr.getHeight()/2 ); // experimentally...
-                                gtext.rotate( -rotate*Math.PI/180.  );
-                                //g.translate( getX(), getY() );
-                                //g.rotate( -rotate*Math.PI/180. );
-                                //g.translate( 0, - bb.height );
-                                //g.translate( -getX(), -getY() );
-                                break;
-                            default:
-                                break;
-                        }
-                        
+                        gtext.translate( bb.x + bb.width - gtr.getAscent(), bb.y );
+                        gtext.rotate( -rotate*Math.PI/180. );
                         
                     } else if ( rot==90  ) {
-                        switch (anchorPosition) {
-                            case NE:
-                                gtext.translate( bb.x + gtr.getAscent(), bb.y + bb.height );
-                                gtext.rotate( -rotate*Math.PI/180. );
-                                //g.translate( 0, bb.height );
-                                //g.translate( -getX(), -getY() );
-                                break;
-                            case NW:
-                                //System.err.println( String.format( "X: %4d Y: %4d",getX(),getY() ) );
-                                gtext.translate( bb.x + gtr.getAscent(), bb.y + bb.height );
-                                gtext.rotate( -rotate*Math.PI/180. );
-                                break;
-                            case SW:
-                                gtext.translate( bb.x + gtr.getAscent(), bb.y + bb.height );
-                                gtext.rotate( -rotate*Math.PI/180. );
-                                //g.translate( 0, bb.height );
-                                //g.translate( -getX(), -getY() );)
-                                break;
-                            case SE:
-                                gtext.translate( bb.x + gtr.getAscent(), bb.y + bb.height );
-                                gtext.rotate( -rotate*Math.PI/180. );
-                                //g.translate( 0, bb.height );
-                                //g.translate( -getX(), -getY() );)
-                                break;
-                            case Center:
-                                gtext.translate( bb.x + bb.width - gtr.getHeight()/2, bb.y + gtr.getWidth()/2 );
-                                gtext.rotate( -rotate*Math.PI/180.  );
-                                //g.translate( getX(), getY() );
-                                //g.rotate( -rotate*Math.PI/180. );
-                                //g.translate( 0, - bb.height );
-                                //g.translate( -getX(), -getY() );
-                                break;
-                            default:
-                                break;
-                        }
+                        gtext.translate( bb.x + gtr.getAscent(), bb.y + bb.height );
+                        gtext.rotate( -rotate*Math.PI/180. );
                     }
                 } else {
                     
