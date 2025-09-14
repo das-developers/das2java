@@ -955,7 +955,7 @@ public class DasAnnotation extends DasCanvasComponent {
                     
 
                 } else {
-                    gtext.drawImage( localImage, r.x+em, r.y+em, this );
+                    g.drawImage( localImage, r.x+em, r.y+em, this );
                 }
             }
         
