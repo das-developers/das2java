@@ -63,7 +63,7 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
     public static final String PROP_PTMAXIMUM = "ptMaximum";
     public static final String PROP_PTMINIMUM = "ptMinimum";
     public static final String PROP_PARENT_DEVICE_POSITION_DAS_NAME = "parentDevicePositionDasName";
-    
+
     protected transient DasCanvas canvas;
     protected transient DasDevicePosition parent;
     
@@ -351,6 +351,28 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         if ( buf.length()==0 ) return "0%";
         return buf.toString();
     }
+
+    /**
+     * add the offset to the position.  For example "3em,100%-3em" + "1em,1em" = "4em,100%-2em"
+     * @param pos0
+     * @param offset
+     * @return
+     * @throws ParseException 
+     */
+    public static String addOffset( String pos0, String offset ) throws ParseException {
+        String[] soffs= offset.split(",",-2);
+        String[] ss= pos0.split(",",-2);
+        for ( int i=0; i<ss.length; i++ ) {
+            double[] offs= parseLayoutStr(soffs[i]);
+            double[] dd= parseLayoutStr(ss[i]);
+            for ( int j=0; j<offs.length; j++ ) {
+                dd[j]= dd[j] + offs[j];
+            }
+            ss[i]= formatLayoutStr(dd);
+        }
+        return String.join(",", ss);
+    }
+    
 
     
     public DasDevicePosition(DasCanvas parent, double minimum, double maximum, boolean width) {
