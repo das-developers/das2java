@@ -1794,13 +1794,19 @@ public class DasAnnotation extends DasCanvasComponent {
     public static final String PROP_GLOW = "glow";
 
     public boolean isGlow() {
-        return this.gtr.isGlow();
+        if ( this.gtr==null ) {
+            return false;
+        } else {
+            return this.gtr.isGlow();
+        }
     }
 
     public void setGlow(boolean glow) {
         boolean oldGlow = isGlow();
-        this.gtr.setGlow(glow);
-        firePropertyChange(PROP_GLOW, oldGlow, glow);
+        if ( this.gtr!=null ) {
+            this.gtr.setGlow(glow);
+            firePropertyChange(PROP_GLOW, oldGlow, glow);
+        } 
     }
     
     private PlotSymbol symbol = DefaultPlotSymbol.NONE;
