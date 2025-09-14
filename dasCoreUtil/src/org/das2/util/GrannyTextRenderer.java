@@ -402,6 +402,7 @@ public class GrannyTextRenderer {
                 g.draw( new Line2D.Double( current.x, y+2, current.x+w, y+2 ) );
             }
             current.x += w;
+            logger.log(Level.FINER, "draw string \"{0}\" over next {1} pixels", new Object[]{strl, w});
             //bounds.translate((int)ix,(int)iy);
             //g.draw(bounds);  //useful for debugging
             //g.drawLine((int)ix,(int)iy,(int)ix+4,(int)iy);
@@ -424,6 +425,9 @@ public class GrannyTextRenderer {
         public int ei;
         public float x;
         public float y;
+        public String toString() {
+            return "x: " + x + " y: "+y;
+        }
     }
     
     /**
