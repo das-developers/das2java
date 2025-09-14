@@ -885,23 +885,25 @@ public class DasAnnotation extends DasCanvasComponent {
             if ( rot<-90 ) rot= rot+360;
             if ( rot>180 ) rot= rot-360;
             
+            double ascent= gtr==null ? g.getFontMetrics().getAscent() : gtr.getAscent();
+            
             if ( rot==-90 ) {
-                gtext.translate( bb.x + bb.width - gtr.getAscent(), bb.y );
+                gtext.translate( bb.x + bb.width - ascent, bb.y );
                 gtext.rotate( -rotate*Math.PI/180. );
 
             } else if ( rot==90  ) {
-                gtext.translate( bb.x + gtr.getAscent(), bb.y + bb.height );
+                gtext.translate( bb.x + ascent, bb.y + bb.height );
                 gtext.rotate( -rotate*Math.PI/180. );
 
             } else if ( rot==180 ) {
-                gtext.translate( bb.x, bb.y + em + (float) gtr.getAscent() );
+                gtext.translate( bb.x, bb.y + em + (float) ascent );
                 double midx= bb.width/2;
                 double midy= bb.height/2;
                 gtext.rotate( -rotate*Math.PI/180., midx, midy );
                 gtext.translate( 0, bb.height );
                 
             } else if ( rot==0 ) {
-                gtext.translate( bb.x, bb.y + em + (float) gtr.getAscent() );
+                gtext.translate( bb.x, bb.y + em + (float) ascent );
             
             }
     
