@@ -1796,7 +1796,7 @@ public class DasAnnotation extends DasCanvasComponent {
     public boolean isGlow() {
         if ( this.gtr==null ) {
             return false;
-        } else {
+        } else { 
             return this.gtr.isGlow();
         }
     }
