@@ -617,6 +617,18 @@ public class GrannyTextRenderer {
                                     }
                                 }
                             }
+                        } else if ( command.equals("font") ) {
+                            if ( draw ) {
+                                String sfont= i==(strl.length()-1) ? "" : strl.substring(i+1,strl.length()-1);
+                                if ( sfont.length()==0 ) {
+                                    g.setFont(baseFont);
+                                    activeFont= baseFont;
+                                } else {
+                                    Font f= Font.decode(sfont).deriveFont(baseFont.getSize2D());
+                                    activeFont= f;
+                                    g.setFont(f);
+                                }
+                            }
                             
                         } else if ( command.equals("painter") ) {
                             String p= i==(strl.length()-1) ? "" : strl.substring(i+1,strl.length()-1);
