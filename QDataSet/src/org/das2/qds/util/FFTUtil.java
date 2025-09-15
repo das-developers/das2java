@@ -322,7 +322,7 @@ public class FFTUtil {
         result.putProperty( QDataSet.DEPEND_0, xtags );
         return result;
     }
-    
+
     
     private static class TTagBufElement {
         QDataSet data;
@@ -338,6 +338,25 @@ public class FFTUtil {
      */
     private static transient TTagBufElement freqDomainTagsForPowerBuf= null;
 
+    /**
+     * return true if the rank 1 timetags are uniform.
+     * @param x rank 1 monotonically increasing timetags.
+     * @return true if the rank 1 timetags are uniform.
+     */
+    public static boolean uniformCadence(QDataSet x) {
+        int n= x.length();
+        double T,Tcheck;
+        if ( n>120 ) {
+            T= ( x.value(n-1)-x.value(0) ) / (n-1);
+            Tcheck= ( x.value(60)-x.value(0) ) / 60 ;
+        } else {
+            T= ( x.value(n-1)-x.value(0) ) / (n-1);
+            Tcheck= x.value(1)-x.value(0);
+        }
+        return Math.abs( ( T-Tcheck ) / ( T ) ) <= 0.001;
+    }
+    
+        
     /**
      * get the frequency tags, for use when calculating the power in each
      * channel.  This removes the DC channel, and folds over the negative 
