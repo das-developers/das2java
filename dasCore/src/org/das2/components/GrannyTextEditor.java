@@ -916,9 +916,9 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
                 jTextArea1.insert( text, jTextArea1.getSelectionStart() );
             } else {
                 jTextArea1.insert( text, jTextArea1.getSelectionStart() );
-                if ( endt!=null ) {
-                    jTextArea1.insert( endt, jTextArea1.getSelectionEnd() );
-                }
+                //if ( endt!=null ) {
+                //    jTextArea1.insert( endt, jTextArea1.getSelectionEnd() );
+                //}
             }
         }
     }
