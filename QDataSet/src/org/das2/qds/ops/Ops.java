@@ -8940,8 +8940,17 @@ public final class Ops {
                 //} else {
                 //    powxtags= FFTUtil.getFrequencyDomainTagsForPower(dep1.trim(0,len));
                 //}
-                QDataSet powxtags= FFTUtil.getFrequencyDomainTagsForPower(dep1.trim(0,len));
                 
+                int itt=0;
+                QDataSet tt= dep1.trim(0,len);
+                while ( (itt+len)<dep1.length() && !FFTUtil.uniformCadence(tt) ) {
+                    tt= dep1.trim(itt,itt+len);
+                    itt+= len;
+                }
+                
+                QDataSet powxtags;
+                powxtags= FFTUtil.getFrequencyDomainTagsForPower(tt);
+        
                 double minD= Double.NEGATIVE_INFINITY, maxD=Double.POSITIVE_INFINITY;
                 if ( dep1.rank()==1 ) {
                     QDataSet ytags= powxtags;
@@ -9069,10 +9078,10 @@ public final class Ops {
                         if ( Math.abs( packetEndDeltaTime -avgCadence ) / currentDeltaTime > 0.01 ) {
                             if ( translation!=null ) {
                                 logger.finer("gap detected");
-                                continue;
+                                continue; // drop this record
                             } else {
                                 logger.finer("gap detected");
-                                continue;
+                                continue; // drop this record
                             }
                         }
                         currentDeltaTime= ( offs.value(10) - offs.value(0) ) / 10.;
