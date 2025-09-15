@@ -890,7 +890,8 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
         String theText= jTextArea1.getText();
         String ext= getExtension();
         if ( ext!=null ) {
-            int i= theText.indexOf(ext);
+            int i= theText.lastIndexOf(ext,jTextArea1.getCaretPosition());
+            if ( i==-1 ) i= theText.indexOf(ext);            
             if ( i==-1 ) i= jTextArea1.getCaretPosition();
             int i2= ext.indexOf(";");
             boolean sameKind= ext.substring(0,i2).equals(text.substring(0,Math.min(i2,text.length())));
