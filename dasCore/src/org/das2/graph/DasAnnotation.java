@@ -14,6 +14,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Area;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -878,7 +879,15 @@ public class DasAnnotation extends DasCanvasComponent {
         }
             
         if ( gtr==null || !getString().equals("") ) {
+                        
             Rectangle bb= getAnnotationBubbleBoundsNoRotation();
+            
+            if ( rotate % 90 != 0 ) {
+                Area area= new Area(g.getClip());
+                area.add( new Area( getRotatedBoundingBox( bb, rotate*Math.PI/180 ) ) );
+                g.setClip(area);
+            }
+
             Graphics2D gtext= getAnnotationGraphics(g);
             
             if (borderType == BorderType.RECTANGLE || borderType == BorderType.NONE) {
@@ -1323,6 +1332,67 @@ public class DasAnnotation extends DasCanvasComponent {
         return r;
     }
 
+   /**
+     * Returns the axis-aligned bounding box of a Rectangle rotated about its center.
+     * (Thanks, ChetGPT!)
+     * @param rect  The original rectangle (axis-aligned).
+     * @param angle Rotation angle in radians (counter-clockwise).
+     * @return A new Rectangle representing the bounding box of the rotated rectangle.
+     */
+    public static Rectangle getRotatedBoundingBox(Rectangle rect, double angle) {
+        double cx = rect.getCenterX();
+        double cy = rect.getCenterY();
+        double w = rect.getWidth();
+        double h = rect.getHeight();
+
+        // Half-dimensions
+        double hw = w / 2.0;
+        double hh = h / 2.0;
+
+        // Precompute cos/sin
+        double cos = Math.cos(angle);
+        double sin = Math.sin(angle);
+
+        // Original corners relative to center
+        double[][] corners = {
+            { -hw, -hh },
+            {  hw, -hh },
+            {  hw,  hh },
+            { -hw,  hh }
+        };
+
+        double minX = Double.POSITIVE_INFINITY;
+        double maxX = Double.NEGATIVE_INFINITY;
+        double minY = Double.POSITIVE_INFINITY;
+        double maxY = Double.NEGATIVE_INFINITY;
+
+        for (double[] c : corners) {
+            double x = c[0];
+            double y = c[1];
+
+            // Rotate around origin (0,0)
+            double xr = x * cos - y * sin;
+            double yr = x * sin + y * cos;
+
+            // Translate back to center
+            double X = cx + xr;
+            double Y = cy + yr;
+
+            // Track min/max
+            if (X < minX) minX = X;
+            if (X > maxX) maxX = X;
+            if (Y < minY) minY = Y;
+            if (Y > maxY) maxY = Y;
+        }
+
+        int newX = (int) Math.floor(minX);
+        int newY = (int) Math.floor(minY);
+        int newW = (int) Math.ceil(maxX - minX);
+        int newH = (int) Math.ceil(maxY - minY);
+
+        return new Rectangle(newX, newY, newW, newH);
+    }    
+    
     /**
      * return the graphics context where 0,0 is the upper-left corner of the 
      * annotation.  The annotation bubble in this from would be Rectangle(0,0,width,height).
@@ -1414,6 +1484,8 @@ public class DasAnnotation extends DasCanvasComponent {
                 } 
                 r= nr;
             } else if ( rot==180 ) {
+                tr.rotate( rot*Math.PI/180, r.width/2, r.height/2);
+            } else {
                 tr.rotate( rot*Math.PI/180, r.width/2, r.height/2);
             }
         }
