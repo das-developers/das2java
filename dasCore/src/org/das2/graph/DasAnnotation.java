@@ -878,19 +878,19 @@ public class DasAnnotation extends DasCanvasComponent {
         }
             
         if ( gtr==null || !getString().equals("") ) {
+            Rectangle bb= getAnnotationBubbleBoundsNoRotation();
+            Graphics2D gtext= getAnnotationGraphics(g);
+            
             if (borderType == BorderType.RECTANGLE || borderType == BorderType.NONE) {
-                g.fill(r);
+                gtext.fill( new Rectangle( 0, 0, bb.width, bb.height ) );
             } else if (borderType == BorderType.ROUNDED_RECTANGLE) {
-                g.fillRoundRect(r.x, r.y, r.width, r.height, (int)em2*8, (int)em2*8 );
+                gtext.fillRoundRect( 0, 0, bb.width, bb.height, (int)rounds, (int)rounds );
             }
 
             g.setColor(ltextColor);
-
-            Graphics2D gtext= getAnnotationGraphics(g);
                     
-            Rectangle bb= getAnnotationBubbleBounds();
             int rot= rotate % 360;
-            if ( rot<-90 ) rot= rot+360;
+            if ( rot<=-180) rot= rot+360;
             if ( rot>180 ) rot= rot-360;
             
             double ascent= gtr==null ? g.getFontMetrics().getAscent() : gtr.getAscent();
@@ -912,11 +912,11 @@ public class DasAnnotation extends DasCanvasComponent {
             if ( gtr!=null ) {
                 try {
                     
-                    gtr.draw(gtext, em, (int)gtr.getAscent()+em );
+                    gtr.draw(gtext, em, em + (float) gtr.getAscent() );
                     
                 } catch ( IllegalArgumentException ex ) {
                     gtr.setString( gtext.getFont(), getText() );
-                    gtr.draw(gtext, r.x+em, r.y + em + (float) gtr.getAscent() );
+                    gtr.draw(gtext, em, em + (float) gtr.getAscent() );
                 }
             } else {
                 BufferedImage localImage= img;
@@ -951,12 +951,11 @@ public class DasAnnotation extends DasCanvasComponent {
                 
             if (borderType != BorderType.NONE) {
                 if (borderType == BorderType.RECTANGLE) {
-                    g.draw(bb);
+                    gtext.draw( new Rectangle( 0, 0, bb.width, bb.height ) );
                 } else if (borderType == BorderType.ROUNDED_RECTANGLE) {
-                    g.drawRoundRect(bb.x, bb.y, bb.width, bb.height, (int)rounds, (int)rounds);
+                    gtext.drawRoundRect( 0, 0, bb.width, bb.height, (int)rounds, (int)rounds);
                 } else if (borderType==BorderType.UNDERSCORE ) {
-                    int y= bb.y+bb.height;
-                    g.drawLine( bb.x+em, y, bb.x + bb.width-(int)em2, y );
+                    gtext.drawLine( em, bb.height, bb.x + bb.width-(int)em2, bb.height );
                 }
             }
             
@@ -1336,7 +1335,7 @@ public class DasAnnotation extends DasCanvasComponent {
         tr.translate( r.x, r.y );
         if ( rotate!=0 ) {
             int rot= rotate % 360;
-            if ( rot<-180 ) rot=rot + 360;
+            if ( rot<=-180 ) rot=rot + 360;
             if ( rot>180 ) rot=rot - 360;
             if ( rot==90 || rot==-90 ) {
                 Rectangle nr= new Rectangle();
