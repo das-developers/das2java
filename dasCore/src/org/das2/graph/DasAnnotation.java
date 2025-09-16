@@ -811,7 +811,7 @@ public class DasAnnotation extends DasCanvasComponent {
         if ( gtr!=null ) gtr.setString( g, getString() );
         Rectangle r;
         
-        {
+        if ( false ) {
             Graphics2D gtransformed= getAnnotationGraphics(g);
             gtransformed.setClip(null);
             Rectangle rt= getAnnotationBubbleBoundsNoRotation();
