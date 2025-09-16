@@ -13,6 +13,7 @@ import org.das2.event.MoveComponentMouseModule;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -810,6 +811,13 @@ public class DasAnnotation extends DasCanvasComponent {
         if ( gtr!=null ) gtr.setString( g, getString() );
         Rectangle r;
         
+        {
+            Graphics2D gtransformed= getAnnotationGraphics(g);
+            gtransformed.setClip(null);
+            Rectangle rt= getAnnotationBubbleBoundsNoRotation();
+            gtransformed.drawOval( 0, 0, rt.width, rt.height );
+        }
+        
         try {
             r= getAnnotationBubbleBounds();
         } catch ( IllegalArgumentException ex ) {
@@ -878,7 +886,7 @@ public class DasAnnotation extends DasCanvasComponent {
 
             g.setColor(ltextColor);
 
-            Graphics2D gtext= (Graphics2D) g.create();
+            Graphics2D gtext= getAnnotationGraphics(g);
                     
             Rectangle bb= getAnnotationBubbleBounds();
             int rot= rotate % 360;
@@ -887,33 +895,6 @@ public class DasAnnotation extends DasCanvasComponent {
             
             double ascent= gtr==null ? g.getFontMetrics().getAscent() : gtr.getAscent();
             
-            if ( rot==-90 ) {
-                gtext.translate( bb.x + bb.width - ascent, bb.y );
-                gtext.rotate( -rot*Math.PI/180. );
-
-            } else if ( rot==90  ) {
-                gtext.translate( bb.x + ascent, bb.y + bb.height );
-                gtext.rotate( -rot*Math.PI/180. );
-
-            } else if ( rot==180 ) {
-                gtext.translate( bb.x, bb.y + em + (float) ascent );
-                double midx= bb.width/2;
-                double midy= bb.height/2;
-                gtext.rotate( -rot*Math.PI/180., midx, midy );
-                gtext.translate( 0, bb.height );
-                
-            } else if ( rot==0 ) {
-                gtext.translate( bb.x, bb.y + em + (float) ascent );
-            
-            } else { 
-                // allow for center without border
-                gtext.translate( bb.x, bb.y + em + (float) ascent );
-                double midx= bb.width/2;
-                double midy= bb.height/2;
-                gtext.rotate( -rot*Math.PI/180., midx, midy );
-                gtext.setClip(null);
-            }
-    
             // add sunburst pattern while I try to figure out rotation. TODO: remove
             if ( false ) { //rotate!=0 ) {
                 gtext.setColor( Color.LIGHT_GRAY );
@@ -931,7 +912,7 @@ public class DasAnnotation extends DasCanvasComponent {
             if ( gtr!=null ) {
                 try {
                     
-                    gtr.draw(gtext, em, 0 );
+                    gtr.draw(gtext, em, (int)gtr.getAscent()+em );
                     
                 } catch ( IllegalArgumentException ex ) {
                     gtr.setString( gtext.getFont(), getText() );
@@ -1343,6 +1324,104 @@ public class DasAnnotation extends DasCanvasComponent {
         return r;
     }
 
+    /**
+     * return the graphics context where 0,0 is the upper-left corner of the 
+     * annotation.  The annotation bubble in this from would be Rectangle(0,0,width,height).
+     * @return 
+     */
+    private Graphics2D getAnnotationGraphics( Graphics2D g ) {
+        g= (Graphics2D) g.create();
+        AffineTransform tr= g.getTransform();
+        Rectangle r= getAnnotationBubbleBoundsNoRotation();
+        tr.translate( r.x, r.y );
+        if ( rotate!=0 ) {
+            int rot= rotate % 360;
+            if ( rot<-180 ) rot=rot + 360;
+            if ( rot>180 ) rot=rot - 360;
+            if ( rot==90 || rot==-90 ) {
+                Rectangle nr= new Rectangle();
+                switch ( anchorPosition ) {
+                    case Center:
+                        tr.translate( r.width/2 - r.height/2, r.height/2 - r.width/2 );
+                        break;
+                    case NE:
+                        tr.translate( r.width - r.height, 0 );
+                        break;
+                    case NW:
+                        tr.translate( 0, 0 );
+                        break;
+                    case SW:
+                        tr.translate( 0,  r.height - r.width );
+                        break;
+                    case SE:
+                        tr.translate( r.width - r.height, r.height - r.width );
+                        break;                             
+                    case N:
+                        tr.translate( r.width/2 - r.height/2, 0 );
+                        break;
+                    case E:
+                        tr.translate( r.width - r.height, r.height/2 - r.width/2 );
+                        break;
+                    case W:
+                        tr.translate( 0, r.height/2 - r.width/2 );
+                        break;
+                    case S:
+                        tr.translate( r.width/2 - r.height/2, r.height - r.width );
+                        break;
+                    case OutsideN:
+                        tr.translate( r.width/2 - r.height/2, r.height - r.width );
+                        break;
+                    case OutsideS:
+                        tr.translate( r.width/2 - r.height/2, 0 );
+                        break;                        
+                    case OutsideE:
+                        tr.translate( 0, r.height/2 - r.width/2 );
+                        break;
+                    case OutsideW:
+                        tr.translate( r.width - r.height, r.height/2 - r.width/2 );
+                        break;
+                    case OutsideNNE:
+                        tr.translate( r.width - r.height, r.height - r.width );
+                        break;
+                    case OutsideNNW:
+                        tr.translate( 0, r.height - r.width );
+                        break;
+                    case OutsideSSE:
+                        tr.translate( r.width - r.height, 0 );
+                        break;
+                    case OutsideSSW:
+                        tr.translate( 0, 0 );
+                        break;
+                    case OutsideNE:
+                        tr.translate( 0, 0 );
+                        break;
+                    case OutsideNW:
+                        tr.translate( r.width - r.height, 0 );
+                        break;
+                    case OutsideSE:
+                        tr.translate( 0, r.height - r.width );
+                        break;
+                    case OutsideSW:
+                        tr.translate( r.width - r.height, r.height - r.width );
+                        break;                        
+                    default:
+                        logger.info("this rotation is not supported");
+                }
+                if ( rot==90 ) {
+                    tr.rotate( rot*Math.PI/180, r.height/2, r.height/2 );
+                } else if ( rot==-90 ) {
+                    tr.rotate( rot*Math.PI/180, r.height/2, r.width-r.height/2 ); // determined by experiment
+                    tr.translate( 0, r.width-r.height );
+                } 
+                r= nr;
+            } else if ( rot==180 ) {
+                tr.rotate( rot*Math.PI/180, r.width/2, r.height/2);
+            }
+        }
+        g.setTransform(tr);
+        return g;
+    }
+            
     private Rectangle getAnnotationBubbleBoundsNoRotation() {
         Rectangle anchor= getAnchorBounds();
         DasCanvas canvas= getCanvas();
