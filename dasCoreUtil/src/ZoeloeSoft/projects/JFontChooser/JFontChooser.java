@@ -28,6 +28,9 @@ import java.awt.GraphicsEnvironment;
 import java.awt.Font;
 import java.awt.Frame;
 import java.awt.Window;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.JButton;
@@ -41,6 +44,7 @@ import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
 import javax.swing.Timer;
 import org.das2.util.Entities;
+import org.das2.util.awt.PdfGraphicsOutput;
 
 public class JFontChooser extends JDialog {
 
@@ -123,6 +127,15 @@ public class JFontChooser extends JDialog {
             }
         };
         txtSample.setText("The quick brown fox jumped over the fence");
+        txtSample.addKeyListener( new KeyAdapter() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                if (fontCheck != null) {
+                    updateFontCheck(getCurrentFont());
+                }
+            }
+
+        });
 
         // set the default font
 
@@ -281,9 +294,44 @@ public class JFontChooser extends JDialog {
         return this.txtSample.getText();
     }
     
-    private FontCheck fontCheck = null;
+    public JFontChooser.FontCheck defaultFontCheck= new JFontChooser.FontCheck() {
+        @Override
+        public String checkFont(Font f) {
+            Object font= PdfGraphicsOutput.ttfFromNameInteractive(f);
+            StringBuilder msg= new StringBuilder();
+            if ( font==PdfGraphicsOutput.READING_FONTS ) {
+                msg.append("Checking which fonts are embeddable...");
+            } else if ( font!=null ) {
+                msg.append("PDF okay");
+            } else {                    
+                msg.append("Cannot be embedded in PDF");
+            }
+            char missingCharacter=0;
+            Font t= getFont();
+            if ( t!=null ) {
+                String text= JFontChooser.this.getExampleText();
+                for ( int i=0; missingCharacter==0 && i<text.length(); i++ ) {
+                    char c= text.charAt(i);
+                    if ( c!=10 ) {
+                        if ( !t.canDisplay(c) ) {
+                            missingCharacter= c;
+                        }
+                    }
+                }
+            }
+            if ( missingCharacter!=0 ) 
+                msg.append(". Missing ")
+                        .append(missingCharacter)
+                        .append(" 0x")
+                        .append(Integer.toHexString(missingCharacter))
+                        .append(".");
+            return msg.toString();
+        }
+    };
 
-    private void updateFontCheck( final Font font) {
+    private FontCheck fontCheck = defaultFontCheck;
+
+    private void updateFontCheck( final Font font ) {
         String s= fontCheck==null ? null : fontCheck.checkFont(font);
         if ( s==null ) {
             Timer t= new Timer(500,new ActionListener(){
@@ -294,9 +342,9 @@ public class JFontChooser extends JDialog {
             });
             t.setRepeats(false);
             t.start();
-            messageLabel.setText("");
+            if ( messageLabel!=null ) messageLabel.setText("");
         } else {
-            messageLabel.setText(s);
+            if ( messageLabel!=null ) messageLabel.setText(s);
         }
     }
 
