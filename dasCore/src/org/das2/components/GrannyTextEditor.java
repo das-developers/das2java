@@ -6,6 +6,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Desktop;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridLayout;
@@ -1205,8 +1206,13 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         JFontChooser chooser= new JFontChooser(SwingUtilities.getWindowAncestor(this));
-        
+        chooser.setLocationRelativeTo(this);
+        String extension= getExtension();
         chooser.setFont(renderPanel.getFont());
+        if ( extension!=null ) {
+            String[] ss= extension.substring(2,extension.length()-1).split(";");
+            chooser.setFont( Font.decode( ss[ss.length-1]) );
+        }
         if ( jTextArea1.getText().trim().length()>0 ) {
             String s= jTextArea1.getText().trim();
             s= Entities.decodeEntities(s);
