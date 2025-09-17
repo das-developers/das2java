@@ -1,6 +1,7 @@
 
 package org.das2.components;
 
+import ZoeloeSoft.projects.JFontChooser.JFontChooser;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -22,6 +23,7 @@ import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
 import javax.swing.JButton;
 import javax.swing.JColorChooser;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -294,6 +296,7 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
         psymButton = new javax.swing.JButton();
         imageButton = new javax.swing.JButton();
         plotElementButton = new javax.swing.JButton();
+        jButton2 = new javax.swing.JButton();
         greekTab = new javax.swing.JPanel();
         miscTab = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
@@ -801,6 +804,13 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
             }
         });
 
+        jButton2.setText("Font");
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout extensionsTabLayout = new javax.swing.GroupLayout(extensionsTab);
         extensionsTab.setLayout(extensionsTabLayout);
         extensionsTabLayout.setHorizontalGroup(
@@ -814,14 +824,16 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(italicButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(underlineButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(underlineButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jButton2))
                     .addGroup(extensionsTabLayout.createSequentialGroup()
                         .addComponent(psymButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(imageButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(plotElementButton)))
-                .addGap(0, 199, Short.MAX_VALUE))
+                .addGap(0, 121, Short.MAX_VALUE))
         );
         extensionsTabLayout.setVerticalGroup(
             extensionsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -830,7 +842,8 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
                     .addComponent(colorButton)
                     .addComponent(boldButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(italicButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(underlineButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(underlineButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButton2))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(extensionsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(psymButton)
@@ -1190,6 +1203,20 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
         // TODO add your handling code here:
     }//GEN-LAST:event_jRadioButton7ActionPerformed
 
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        JFontChooser chooser= new JFontChooser(SwingUtilities.getWindowAncestor(this));
+        
+        chooser.setFont(renderPanel.getFont());
+        if ( jTextArea1.getText().trim().length()>0 ) {
+            String s= jTextArea1.getText().trim();
+            s= Entities.decodeEntities(s);
+            chooser.setExampleText(s);
+        }
+        if ( chooser.showDialog()==JFontChooser.OK_OPTION ) {
+            doInsert("!(font;"+chooser.getFont().getFontName()+")","!(font)");
+        }
+    }//GEN-LAST:event_jButton2ActionPerformed
+
     private void updateImage() {
         String oldString= gtr.getString();
         try {
@@ -1256,6 +1283,7 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
     private javax.swing.JLabel instructionalLabel;
     private javax.swing.JButton italicButton;
     private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel2;
