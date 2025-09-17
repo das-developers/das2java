@@ -254,11 +254,7 @@ public class JFontChooser extends JDialog {
     }
 
     public Font getFont() {
-        if (OPTION == OK_OPTION) {
-            return getCurrentFont();
-        } else {
-            return null;
-        }
+        return getCurrentFont();
     }
 
     private Font getCurrentFont() {
@@ -280,6 +276,11 @@ public class JFontChooser extends JDialog {
     public void setExampleText(String text) {
         this.txtSample.setText(text);
     }
+    
+    public String getExampleText() {
+        return this.txtSample.getText();
+    }
+    
     private FontCheck fontCheck = null;
 
     private void updateFontCheck( final Font font) {
