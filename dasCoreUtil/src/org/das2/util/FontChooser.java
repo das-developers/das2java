@@ -10,6 +10,8 @@ import java.util.List;
 import javax.swing.DefaultListModel;
 import javax.swing.ListSelectionModel;
 import javax.swing.Timer;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import org.das2.util.awt.PdfGraphicsOutput;
 
 /**
@@ -31,8 +33,26 @@ public class FontChooser extends javax.swing.JPanel {
             model.addElement(item);
         }
         sizesList.setModel( model );
+        sizesList.setSelectedIndex(7);
         resetFonts();
+        fontList.addListSelectionListener( new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent lse) {
+                sampleTextArea.setFont(getCurrentFont());
+                if (fontCheck != null) {
+                    updateFontCheck(getCurrentFont());
+                }
+//                if ( Entities.fontSupports(getCurrentFont(), txtSample.getText() ) ) {
+//                    cbBold.setForeground(Color.green);
+//                } else {
+//                    cbBold.setForeground(Color.red);
+//                }                
+               }
+            
+        });
     }
+    
+    
 
     private void resetFonts() {
         String[] fonts = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
