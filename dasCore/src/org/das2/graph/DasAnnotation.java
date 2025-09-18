@@ -886,8 +886,6 @@ public class DasAnnotation extends DasCanvasComponent {
                 Area area= new Area(g.getClip());
                 area.add( new Area( getRotatedBoundingBox( bb, rotate*Math.PI/180 ) ) );
                 g.setClip(area);
-                g.setColor(Color.PINK);
-                g.draw( area );
             }
 
             Graphics2D gtext= getAnnotationGraphics(g);
