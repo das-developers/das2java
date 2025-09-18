@@ -36,6 +36,7 @@ import javax.swing.plaf.basic.BasicTabbedPaneUI;
 import org.das2.util.ColorUtil;
 import org.das2.util.DesktopColorChooserPanel;
 import org.das2.util.Entities;
+import org.das2.util.FontChooser;
 import org.das2.util.GrannyTextRenderer;
 import org.das2.util.NamedColorChooserPanel;
 import org.das2.util.StringSchemeEditor;
@@ -1207,9 +1208,8 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         Window parentWindow = SwingUtilities.getWindowAncestor(this);
-        JFontChooser chooser= new JFontChooser(parentWindow);
-        chooser.setLocationRelativeTo(parentWindow);
         String extension= getExtension();
+        FontChooser chooser= new FontChooser();
         chooser.setFont(renderPanel.getFont());
         if ( extension!=null ) {
             String[] ss= extension.substring(2,extension.length()-1).split(";");
@@ -1220,9 +1220,11 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
             s= Entities.decodeEntities(s);
             chooser.setExampleText(s);
         }
-        if ( chooser.showDialog()==JFontChooser.OK_OPTION ) {
+        if ( JOptionPane.showConfirmDialog( this, chooser, "Font Chooser", JOptionPane.OK_CANCEL_OPTION )== JOptionPane.OK_OPTION ) {
+            Font font= chooser.getCurrentFont();
             doInsert("!(font;"+chooser.getFont().getFontName()+")","!(font)");
         }
+        
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void updateImage() {
