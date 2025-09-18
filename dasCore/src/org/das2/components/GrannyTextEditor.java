@@ -1210,7 +1210,7 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
         Window parentWindow = SwingUtilities.getWindowAncestor(this);
         String extension= getExtension();
         FontChooser chooser= new FontChooser();
-        chooser.setFont(renderPanel.getFont());
+        chooser.setCurrentFont(renderPanel.getFont());
         if ( extension!=null ) {
             String[] ss= extension.substring(2,extension.length()-1).split(";");
             chooser.setFont( Font.decode( ss[ss.length-1]) );
@@ -1222,7 +1222,7 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
         }
         if ( JOptionPane.showConfirmDialog( this, chooser, "Font Chooser", JOptionPane.OK_CANCEL_OPTION )== JOptionPane.OK_OPTION ) {
             Font font= chooser.getCurrentFont();
-            doInsert("!(font;"+chooser.getFont().getFontName()+")","!(font)");
+            doInsert("!(font;"+font.getFontName()+")","!(font)");
         }
         
     }//GEN-LAST:event_jButton2ActionPerformed
