@@ -886,6 +886,8 @@ public class DasAnnotation extends DasCanvasComponent {
                 Area area= new Area(g.getClip());
                 area.add( new Area( getRotatedBoundingBox( bb, rotate*Math.PI/180 ) ) );
                 g.setClip(area);
+                g.setColor(Color.PINK);
+                g.draw( area );
             }
 
             Graphics2D gtext= getAnnotationGraphics(g);
@@ -1402,6 +1404,7 @@ public class DasAnnotation extends DasCanvasComponent {
         g= (Graphics2D) g.create();
         AffineTransform tr= g.getTransform();
         Rectangle r= getAnnotationBubbleBoundsNoRotation();
+        Rectangle rrot= getRotatedBoundingBox( r, rotate*Math.PI/180 );
         tr.translate( r.x, r.y );
         if ( rotate!=0 ) {
             int rot= rotate % 360;
@@ -1414,49 +1417,49 @@ public class DasAnnotation extends DasCanvasComponent {
                         tr.translate( r.width/2 - r.height/2, r.height/2 - r.width/2 );
                         break;
                     case NE:
-                        tr.translate( r.width - r.height, 0 );
+                        tr.translate( r.width - rrot.width, 0 );
                         break;
                     case NW:
                         tr.translate( 0, 0 );
                         break;
                     case SW:
-                        tr.translate( 0,  r.height - r.width );
+                        tr.translate( 0,  r.height - rrot.height );
                         break;
                     case SE:
-                        tr.translate( r.width - r.height, r.height - r.width );
+                        tr.translate( r.width - rrot.width, r.height - rrot.height );
                         break;                             
                     case N:
-                        tr.translate( r.width/2 - r.height/2, 0 );
+                        tr.translate( r.width/2 - rrot.width/2, 0 );
                         break;
                     case E:
-                        tr.translate( r.width - r.height, r.height/2 - r.width/2 );
+                        tr.translate( r.width - rrot.width, r.height/2 - rrot.height/2 );
                         break;
                     case W:
-                        tr.translate( 0, r.height/2 - r.width/2 );
+                        tr.translate( 0, r.height/2 - rrot.height/2 );
                         break;
                     case S:
-                        tr.translate( r.width/2 - r.height/2, r.height - r.width );
+                        tr.translate( r.width/2 - rrot.width/2, r.height - rrot.height );
                         break;
                     case OutsideN:
-                        tr.translate( r.width/2 - r.height/2, r.height - r.width );
+                        tr.translate( r.width/2 - rrot.width/2, r.height - rrot.height );
                         break;
                     case OutsideS:
-                        tr.translate( r.width/2 - r.height/2, 0 );
+                        tr.translate( r.width/2 - rrot.width/2, 0 );
                         break;                        
                     case OutsideE:
-                        tr.translate( 0, r.height/2 - r.width/2 );
+                        tr.translate( 0, r.height/2 - rrot.height/2 );
                         break;
                     case OutsideW:
-                        tr.translate( r.width - r.height, r.height/2 - r.width/2 );
+                        tr.translate( r.width - rrot.width, r.height/2 - rrot.height/2 );
                         break;
                     case OutsideNNE:
-                        tr.translate( r.width - r.height, r.height - r.width );
+                        tr.translate( r.width - rrot.width, r.height - rrot.height );
                         break;
                     case OutsideNNW:
-                        tr.translate( 0, r.height - r.width );
+                        tr.translate( 0, r.height - rrot.height );
                         break;
                     case OutsideSSE:
-                        tr.translate( r.width - r.height, 0 );
+                        tr.translate( r.width - rrot.width, 0 );
                         break;
                     case OutsideSSW:
                         tr.translate( 0, 0 );
@@ -1465,13 +1468,13 @@ public class DasAnnotation extends DasCanvasComponent {
                         tr.translate( 0, 0 );
                         break;
                     case OutsideNW:
-                        tr.translate( r.width - r.height, 0 );
+                        tr.translate( r.width - rrot.width, 0 );
                         break;
                     case OutsideSE:
-                        tr.translate( 0, r.height - r.width );
+                        tr.translate( 0, r.height - rrot.height );
                         break;
                     case OutsideSW:
-                        tr.translate( r.width - r.height, r.height - r.width );
+                        tr.translate( r.width - rrot.width, r.height - rrot.height );
                         break;                        
                     default:
                         logger.info("this rotation is not supported");
