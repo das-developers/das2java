@@ -1207,7 +1207,6 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
     }//GEN-LAST:event_jRadioButton7ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        Window parentWindow = SwingUtilities.getWindowAncestor(this);
         String extension= getExtension();
         FontChooser chooser= new FontChooser();
         chooser.setCurrentFont(renderPanel.getFont());
