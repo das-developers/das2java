@@ -12,6 +12,7 @@ import java.awt.Graphics2D;
 import java.awt.GridLayout;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.io.IOException;
@@ -1205,8 +1206,9 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
     }//GEN-LAST:event_jRadioButton7ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        JFontChooser chooser= new JFontChooser(SwingUtilities.getWindowAncestor(this));
-        chooser.setLocationRelativeTo(this);
+        Window parentWindow = SwingUtilities.getWindowAncestor(this);
+        JFontChooser chooser= new JFontChooser(parentWindow);
+        chooser.setLocationRelativeTo(parentWindow);
         String extension= getExtension();
         chooser.setFont(renderPanel.getFont());
         if ( extension!=null ) {
