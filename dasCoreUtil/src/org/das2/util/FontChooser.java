@@ -285,7 +285,7 @@ public class FontChooser extends javax.swing.JPanel {
         String raw= sampleTextArea.getText();
         String test= Entities.decodeEntities(raw);
         if ( test.length()!=raw.length() ) {
-            sampleTextArea.setText(test);
+            sampleTextArea.setText(test); 
         }
     }//GEN-LAST:event_sampleTextAreaKeyTyped
 
