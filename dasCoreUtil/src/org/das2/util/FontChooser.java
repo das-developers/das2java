@@ -214,14 +214,34 @@ public class FontChooser extends javax.swing.JPanel {
             public String getElementAt(int i) { return strings[i]; }
         });
         sizesList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        sizesList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
+            public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
+                sizesListValueChanged(evt);
+            }
+        });
         jScrollPane2.setViewportView(sizesList);
 
         boldCheckBox.setText("Bold");
+        boldCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                boldCheckBoxActionPerformed(evt);
+            }
+        });
 
         italicCheckBox.setText("Italic");
+        italicCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                italicCheckBoxActionPerformed(evt);
+            }
+        });
 
         sampleTextArea.setColumns(20);
         sampleTextArea.setRows(5);
+        sampleTextArea.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                sampleTextAreaKeyTyped(evt);
+            }
+        });
         jScrollPane3.setViewportView(sampleTextArea);
 
         messageLabel.setText("jLabel1");
@@ -261,7 +281,31 @@ public class FontChooser extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void sampleTextAreaKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_sampleTextAreaKeyTyped
+        String raw= sampleTextArea.getText();
+        String test= Entities.decodeEntities(raw);
+        if ( test.length()!=raw.length() ) {
+            sampleTextArea.setText(test);
+        }
+    }//GEN-LAST:event_sampleTextAreaKeyTyped
 
+    private void boldCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_boldCheckBoxActionPerformed
+        updateFont();
+    }//GEN-LAST:event_boldCheckBoxActionPerformed
+
+    private void italicCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_italicCheckBoxActionPerformed
+        updateFont();
+    }//GEN-LAST:event_italicCheckBoxActionPerformed
+
+    private void sizesListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_sizesListValueChanged
+        updateFont();
+    }//GEN-LAST:event_sizesListValueChanged
+
+    private void updateFont() {
+        Font f= getCurrentFont();
+        sampleTextArea.setFont(f);
+    }
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox boldCheckBox;
     private javax.swing.JList<String> fontList;
