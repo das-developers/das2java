@@ -25,6 +25,7 @@ import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
 import javax.swing.JButton;
 import javax.swing.JColorChooser;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -1219,7 +1220,12 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
             s= Entities.decodeEntities(s);
             chooser.setExampleText(s);
         }
-        if ( JOptionPane.showConfirmDialog( this, chooser, "Font Chooser", JOptionPane.OK_CANCEL_OPTION )== JOptionPane.OK_OPTION ) {
+        JOptionPane p= new JOptionPane( chooser, JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION );
+        JDialog dialog= p.createDialog("Font Chooser");
+        dialog.setResizable(true);
+        dialog.setVisible(true);
+        
+        if ( ((Integer)p.getValue())== JOptionPane.OK_OPTION ) {
             Font font= chooser.getCurrentFont();
             doInsert("!(font;"+font.getFontName()+")","!(font)");
         }
