@@ -5568,6 +5568,7 @@ public final class Ops {
     /**
      * return the points in the first dataset (tE) which are not found
      * in the second dataset(tB).  This is done in N log N time.
+     * ChatGPT suggests name "dataOnlyInA", which might be a more clear name.
      * 
      * @param tE rank 1 dataset
      * @param tB rank 2 dataset
