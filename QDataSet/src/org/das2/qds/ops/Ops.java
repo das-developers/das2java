@@ -5566,6 +5566,45 @@ public final class Ops {
     }
     
     /**
+     * return the points in the first dataset (tE) which are not found
+     * in the second dataset(tB).  This is done in N log N time.
+     * 
+     * @param tE rank 1 dataset
+     * @param tB rank 2 dataset
+     * @return the set of values found in the first but not the second.
+     */
+    public static QDataSet dataGroupDifference(  QDataSet tE, QDataSet tB ) {
+        QDataSet lE= sort(tE);
+        QDataSet lB= sort(tB);
+        
+        tE= applyIndex( tE, lE );
+        tB= applyIndex( tB, lB );
+        
+        int iE= 0;
+        int iB= 0;
+        
+        DataSetBuilder dsb= new DataSetBuilder(1,100);
+        
+        while ( iE<tE.length() && iB<tB.length() ) {  
+            double e= tE.value(iE);
+            double b= tB.value(iB);
+            if ( e==b ) {
+                iE++;
+                iB++;
+            } else if ( e>b ) {
+                iB++;
+            } else if ( e<b ) {
+                dsb.nextRecord( e );
+                iE++;
+            }
+        }
+        
+        dsb.putProperty( QDataSet.UNITS, tE.property(QDataSet.UNITS) );
+        
+        return dsb.getDataSet();        
+    }
+    
+    /**
      * return an events dataset describing differences between the
      * two events lists.  The list will contain labels starting
      * with insert, delete, and update, and the values.
