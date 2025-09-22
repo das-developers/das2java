@@ -85,7 +85,7 @@ public class FontChooser extends javax.swing.JPanel {
                 msg.append("Cannot be embedded in PDF");
             }
             char missingCharacter=0;
-            Font t= getFont();
+            Font t= getCurrentFont();
             if ( t!=null ) {
                 String text= getExampleText();
                 for ( int i=0; missingCharacter==0 && i<text.length(); i++ ) {
@@ -165,7 +165,8 @@ public class FontChooser extends javax.swing.JPanel {
     public void setCurrentFont( Font f ) {
         boldCheckBox.setSelected( f.isBold() );
         italicCheckBox.setSelected( f.isItalic() );
-        sizesList.setSelectedValue( roundFontSize(f.getSize()), true);
+        sizesList.setSelectedValue( String.valueOf( roundFontSize(f.getSize()) ), true);
+        sizesList.getSelectedValue();
         fontList.setSelectedValue( f.getName(), true);        
     }
     
@@ -287,6 +288,7 @@ public class FontChooser extends javax.swing.JPanel {
         if ( test.length()!=raw.length() ) {
             sampleTextArea.setText(test); 
         }
+        if ( fontCheck!=null ) fontCheck.checkFont(getCurrentFont());
     }//GEN-LAST:event_sampleTextAreaKeyTyped
 
     private void boldCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_boldCheckBoxActionPerformed
