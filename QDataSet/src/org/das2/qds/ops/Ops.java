@@ -5571,7 +5571,7 @@ public final class Ops {
      * ChatGPT suggests name "dataOnlyInA", which might be a more clear name.
      * 
      * @param tE rank 1 dataset
-     * @param tB rank 2 dataset
+     * @param tB rank 1 dataset
      * @return the set of values found in the first but not the second.
      */
     public static QDataSet dataGroupDifference(  QDataSet tE, QDataSet tB ) {
