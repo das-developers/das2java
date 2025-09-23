@@ -1339,7 +1339,7 @@ public class DasAnnotation extends DasCanvasComponent {
 
    /**
      * Returns the axis-aligned bounding box of a Rectangle rotated about its center.
-     * (Thanks, ChetGPT!)
+     * (Thanks, ChatGPT!)
      * @param rect  The original rectangle (axis-aligned).
      * @param angle Rotation angle in radians (counter-clockwise).
      * @return A new Rectangle representing the bounding box of the rotated rectangle.
@@ -1407,7 +1407,7 @@ public class DasAnnotation extends DasCanvasComponent {
         g= (Graphics2D) g.create();
         AffineTransform tr= g.getTransform();
         Rectangle r= getAnnotationBubbleBoundsNoRotation();
-        Rectangle rrot= getRotatedBoundingBox( r, rotate*Math.PI/180 );
+        Rectangle rrot= getRotatedBoundingBox( r, -rotate*Math.PI/180 );
         tr.translate( r.x, r.y );
         if ( rotate!=0 ) {
             int rot= rotate % 360;
@@ -1482,9 +1482,9 @@ public class DasAnnotation extends DasCanvasComponent {
                     default:
                         logger.info("this rotation is not supported");
                 }
-                if ( rot==90 ) {
+                if ( rot==-90 ) {
                     tr.rotate( -rot*Math.PI/180, r.height/2, r.height/2 );
-                } else if ( rot==-90 ) {
+                } else if ( rot==90 ) {
                     tr.rotate( -rot*Math.PI/180, r.height/2, r.width-r.height/2 ); // determined by experiment
                     tr.translate( 0, r.width-r.height );
                 } 
