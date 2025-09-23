@@ -902,7 +902,12 @@ public class DasAnnotation extends DasCanvasComponent {
             if ( rot<=-180) rot= rot+360;
             if ( rot>180 ) rot= rot-360;
             
-            double ascent= gtr==null ? g.getFontMetrics().getAscent() : gtr.getAscent();
+            double ascent;
+            try {
+                ascent= gtr==null ? g.getFontMetrics().getAscent() : gtr.getAscent();
+            } catch ( IllegalArgumentException ex ) {
+                ascent= g.getFontMetrics().getAscent(); // transitional state, will be redrawn.
+            }
             
             // add sunburst pattern while I try to figure out rotation. TODO: remove
             if ( false ) { //rotate!=0 ) {
@@ -1478,16 +1483,16 @@ public class DasAnnotation extends DasCanvasComponent {
                         logger.info("this rotation is not supported");
                 }
                 if ( rot==90 ) {
-                    tr.rotate( rot*Math.PI/180, r.height/2, r.height/2 );
+                    tr.rotate( -rot*Math.PI/180, r.height/2, r.height/2 );
                 } else if ( rot==-90 ) {
-                    tr.rotate( rot*Math.PI/180, r.height/2, r.width-r.height/2 ); // determined by experiment
+                    tr.rotate( -rot*Math.PI/180, r.height/2, r.width-r.height/2 ); // determined by experiment
                     tr.translate( 0, r.width-r.height );
                 } 
                 r= nr;
             } else if ( rot==180 ) {
-                tr.rotate( rot*Math.PI/180, r.width/2, r.height/2);
+                tr.rotate( -rot*Math.PI/180, r.width/2, r.height/2);
             } else {
-                tr.rotate( rot*Math.PI/180, r.width/2, r.height/2);
+                tr.rotate( -rot*Math.PI/180, r.width/2, r.height/2);
             }
         }
         g.setTransform(tr);
