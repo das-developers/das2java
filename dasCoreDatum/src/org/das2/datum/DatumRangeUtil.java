@@ -221,6 +221,8 @@ public class DatumRangeUtil {
      * in the context of 2010-002T00:00/02:00.  This does not support 2-digit years, which
      * were removed in ISO 8601:2004.
      * 
+     * Sub-seconds (.123456789000) are truncated to nanosecond resolution.
+     * 
      * @param str the ISO8601 string
      * @param result the datum, decomposed into [year,month,day,hour,minute,second,nano]
      * @param lsd -1 or the current position ???
@@ -331,11 +333,15 @@ public class DatumRangeUtil {
                     result[want]= Integer.parseInt( tok.substring(2,4) );
                     want++;
                 } else {
-                    int i= Integer.parseInt( tok );
                     if ( delim=='.' && want==6 ) {
+                        if ( tok.length()>9 ) {
+                            tok= tok.substring(0,9); // truncate picoseconds.
+                        }
+                        int i= Integer.parseInt( tok );
                         int n= 9-tok.length();
                         result[want]= i * ((int)Math.pow(10,n));
                     } else {
+                        int i= Integer.parseInt( tok );
                         result[want]= i;
                     }
                     want++;
