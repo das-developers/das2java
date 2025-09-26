@@ -25,6 +25,7 @@ public abstract class AbstractQFunction implements QFunction {
         int rank= v1.rank();
         int len= v1.length();
         JoinDataSet result= new JoinDataSet( v1 );
+        QDataSet bds= null;
         for ( int i=1; i<vs.length(); i++ ) {
             v1= value( vs.slice(i) );
 //            //vap+das2server:http://planet.physics.uiowa.edu/das/das2Server?dataset=Voyager/1/Ephemeris/Heliographic_Inertial&start_time=1998-09-16T17:53:30.402Z&end_time=2001-01-31T14:08:19.855Z&interval=60
@@ -40,7 +41,13 @@ public abstract class AbstractQFunction implements QFunction {
             if ( v1.length()!=len ) {
                 throw new IllegalArgumentException("incompatible datasets: two value calls result in datasets of differing lengths");
             }
+            if ( bds==null ) {
+                bds= (QDataSet)v1.property(QDataSet.BUNDLE_0);
+            }
             result.join( v1 );
+        }
+        if ( bds!=null ) {
+            result.putProperty(QDataSet.BUNDLE_1,bds);
         }
         return result;
     }
