@@ -3763,9 +3763,13 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                             ss= i<ltcaLabels.length ? ltcaLabels[i] :  "???";
                         }
                     } else {
-                        ss= (String) bds.property( QDataSet.LABEL, i );
-                        if ( ss==null ) {
-                            ss= (String) bds.property( QDataSet.NAME, i );
+                        if ( ltcaLabels.length==1 && ltcaLabels[0].trim().equals("") ) {
+                            ss= (String) bds.property( QDataSet.LABEL, i );
+                            if ( ss==null ) {
+                                ss= (String) bds.property( QDataSet.NAME, i );
+                            }
+                        } else {
+                            ss= i<ltcaLabels.length ? ltcaLabels[i] :  "???";
                         }
                     }
                     if ( ss==null ) ss= "   ";
