@@ -2500,69 +2500,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
 
         if (drawTca && getOrientation() == BOTTOM && tcaData != null && blLabelRect != null && blLabelRect.intersects(clip)) {
-
-            int position = getRow().getDMaximum();
-            int DMin = getColumn().getDMinimum();
-            Font tickLabelFont = getTickLabelFont();
-            FontMetrics tickLabelFontMetrics = getFontMetrics(tickLabelFont);
-            int tickLength = this.tickLen;
-            int tick_label_gap = this.tickLen/ 2;
-            if ( tick_label_gap<TICK_LABEL_GAP_MIN ) tick_label_gap= TICK_LABEL_GAP_MIN;
-
-            int lineHeight = tickLabelFont.getSize() + getLineSpacing();
-
-            int baseLine = position + Math.max( 0,tickLength ) + tick_label_gap + tickLabelFont.getSize();
-            int tick_label_gap_2023 = getFontMetrics(tickLabelFont).stringWidth(" ");
-            int rightEdge = DMin - tickLabelFontMetrics.stringWidth("0000") - tick_label_gap_2023;
-
-            GrannyTextRenderer idlt = GraphUtil.newGrannyTextRenderer();
-            /*
-            idlt.setString(this.getGraphics(), "SCET");
-            int width = (int)Math.ceil(idlt.getWidth());
-            int leftEdge = rightEdge - width;
-            idlt.draw(g, (float)leftEdge, (float)baseLine);
-             */
-
-            
-            int width, leftEdge;
-                        
-            if ( tcaData==null ) {
-                baseLine += lineHeight;
-                idlt.setString( g, "tcaData not available" );
-                idlt.draw( graphics, (float)(rightEdge-idlt.getWidth()), (float)baseLine );
-            } else {
-                QDataSet dds= (QDataSet) tcaData.property(QDataSet.DEPEND_1);
-                QDataSet bds= (QDataSet) tcaData.property(QDataSet.BUNDLE_1);
-                if ( bds==null ) {
-                    logger.fine("expected TCA data to have BUNDLE dataset");
-                }
-                int lines= Math.min( MAX_TCA_LINES, tcaData.length(0) );
-                for (int i = 0; i < lines; i++) {
-                    baseLine += lineHeight;
-                    if ( dds!=null ) {
-                        if ( dds.length()>i ) {
-                            idlt.setString( g, dds.slice(i).svalue() );
-                        } else {
-                            idlt.setString( g, "???" );
-                        }
-                    } else {
-                        if ( bds==null ) {
-                            idlt.setString( g, "???" );
-                        } else {
-                            String label=  (String) bds.property( QDataSet.LABEL, i ) ;
-                            if ( label==null ) label= (String) bds.property( QDataSet.NAME, i );
-                            if ( label==null ) {
-                                idlt.setString( g, "????" ); // This shouldn't happen, but does...  We need to check earlier
-                            } else {
-                                idlt.setString( g, label );
-                            }
-                        }
-                    }
-                    width = (int) Math.floor(idlt.getWidth() + 0.5);
-                    leftEdge = rightEdge - width;
-                    idlt.draw(g, (float) leftEdge, (float) baseLine);
-                }
-            }
+            drawTCALabels(g);
         }
 
         boolean drawBounds= false;
@@ -2583,6 +2521,84 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     g.setClip(saveClip);
     }
      */
+    }
+
+    
+    private void drawTCALabels(Graphics2D g) {
+        // draw the Ephemeris (TCA) labels.  This should be its own routine
+        int position = getRow().getDMaximum();
+        int DMin = getColumn().getDMinimum();
+        Font tickLabelFont = getTickLabelFont();
+        FontMetrics tickLabelFontMetrics = getFontMetrics(tickLabelFont);
+        int tickLength = this.tickLen;
+        int tick_label_gap = this.tickLen/ 2;
+        if ( tick_label_gap<TICK_LABEL_GAP_MIN ) tick_label_gap= TICK_LABEL_GAP_MIN;
+        int lineHeight = tickLabelFont.getSize() + getLineSpacing();
+        int baseLine = position + Math.max( 0,tickLength ) + tick_label_gap + tickLabelFont.getSize();
+        int tick_label_gap_2023 = getFontMetrics(tickLabelFont).stringWidth(" ");
+        int rightEdge = DMin - tickLabelFontMetrics.stringWidth("0000") - tick_label_gap_2023;
+        GrannyTextRenderer idlt = GraphUtil.newGrannyTextRenderer();
+        /*
+        idlt.setString(this.getGraphics(), "SCET");
+        int width = (int)Math.ceil(idlt.getWidth());
+        int leftEdge = rightEdge - width;
+        idlt.draw(g, (float)leftEdge, (float)baseLine);
+        */
+        int width, leftEdge;
+        
+        QDataSet ltcaData= tcaData; // local reference for thread safety
+        String[] ltcaLabels= this.tcaLabels.split(";");
+        if ( ltcaLabels.length==1 && ltcaLabels[0].trim().equals("") ) ltcaLabels=null;
+        
+        if ( ltcaData==null ) {
+            baseLine += lineHeight;
+            idlt.setString( g, "tcaData not available" );
+            idlt.draw( g, (float)(rightEdge-idlt.getWidth()), (float)baseLine );
+        } else {
+            QDataSet bds= (QDataSet) ltcaData.property(QDataSet.BUNDLE_1);
+            
+            int lines;
+            if ( bds==null ) {
+                logger.fine("expected TCA data to have BUNDLE dataset");
+                if ( ltcaLabels==null ) {
+                    return;
+                } else {
+                    lines= ltcaLabels.length;
+                }
+            } else {
+                lines= Math.min( MAX_TCA_LINES, bds.length() );
+            }
+            
+            for (int i = 0; i < lines; i++) {
+                baseLine += lineHeight;
+                String ss;
+                if ( bds==null ) {
+                    if ( ltcaLabels==null ) {
+                        ss= "???";
+                    } else {
+                        ss= i<ltcaLabels.length ? ltcaLabels[i] :  "???";
+                    }
+                } else {
+                    if ( ltcaLabels==null ) {
+                        ss= (String) bds.property( QDataSet.LABEL, i );
+                        if ( ss==null ) {
+                            ss= (String) bds.property( QDataSet.NAME, i );
+                        }
+                    } else {
+                        ss= i<ltcaLabels.length ? ltcaLabels[i] :  "???";
+                    }
+                    if ( ss.contains("%{") ) {
+                        Units u= (Units)bds.property( QDataSet.UNITS, i );
+                        ss= resolveString( ss, "UNITS", u.toString() );
+                    }
+                }
+                idlt.setString( g, ss );
+
+                width = (int) Math.floor(idlt.getWidth() + 0.5);
+                leftEdge = rightEdge - width;
+                idlt.draw(g, (float) leftEdge, (float) baseLine);
+            }
+        }
     }
 
     private String resolveString( String text, String name, String value ) {
@@ -3151,7 +3167,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     }
 
     /** 
-     * Draw each label of the axis.
+     * Draw each tick label of the axis.
      * @param g graphics context
      * @param value value to look up.
      * @param label the label
@@ -3214,7 +3230,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     }
 
     /**
-     * draw the TCA (Ephemeris) labels on the event queue.
+     * draw the TCA (Ephemeris) data below the tick. This is done on the event queue.
      * @param g graphics context.
      * @param value value to look up.
      * @param x tick position relative to the canvas
@@ -3754,6 +3770,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 int tcaLabelWidth = (int) Math.floor(idlt.getWidth() + 0.5);
                 QDataSet bds=null;
                 if ( ltcaData!=null ) bds= (QDataSet) ltcaData.property(QDataSet.BUNDLE_1);
+                if ( bds!=null && lines>bds.length() ) {
+                    lines= bds.length();
+                }
                 for (int i = 0; i < lines; i++) {
                     String ss;
                     if ( bds==null ) {
@@ -3770,6 +3789,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                             }
                         } else {
                             ss= i<ltcaLabels.length ? ltcaLabels[i] :  "???";
+                        }
+                        if ( ss.contains("%{") ) {
+                            Units u= (Units)bds.property( QDataSet.UNITS, i );
+                            ss= resolveString( ss, "UNITS", u.toString() );
                         }
                     }
                     if ( ss==null ) ss= "   ";
