@@ -104,6 +104,10 @@ public final class SemanticOps {
         int n = ds.length(0);
         QDataSet bdesc;
         switch (ds.rank()) {
+            case 3:
+                bdesc= (QDataSet) ds.property(QDataSet.BUNDLE_2);
+                n = ds.length(0,0);
+                break;
             case 2:
                 bdesc= (QDataSet) ds.property(QDataSet.BUNDLE_1);
                 break;
@@ -161,8 +165,15 @@ public final class SemanticOps {
      * @return labels for each bundled dataset.
      */
     public static String[] getComponentLabels(QDataSet ds) {
-        int n = ds.length(0);
-        QDataSet bdesc= (QDataSet) ds.property(QDataSet.BUNDLE_1);
+        int n;
+        QDataSet bdesc;
+        if ( ds.rank()==3 ) {
+            bdesc= (QDataSet) ds.property(QDataSet.BUNDLE_2);
+            n= ds.length(0,0);
+        } else { // typical case
+            n = ds.length(0);
+            bdesc= (QDataSet) ds.property(QDataSet.BUNDLE_1);
+        }
         String[] bundleLabels= new String[n];
         String[] bundleNames= new String[n];
         if ( bdesc!=null && bdesc.rank()==2 ) {
