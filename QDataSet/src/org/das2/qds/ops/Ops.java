@@ -14831,7 +14831,7 @@ public final class Ops {
     }
 
     /**
-     * return true if the dataset is a bundle.  It is rank 2 or rank 1, and
+     * return true if the dataset is a bundle.  It is rank 2 or rank 1 or rank 3, and
      * has the last dimension a bundle dimension.
      * @param zds the dataset
      * @return true if the dataset is a bundle.
@@ -14840,8 +14840,10 @@ public final class Ops {
     public static boolean isBundle( QDataSet zds ) {
         if ( zds.rank()==1 ) {
             return zds.property(QDataSet.BUNDLE_0)!=null;
-        } else if ( zds.rank()>=2 ) {
+        } else if ( zds.rank()==2 ) {
             return zds.property(QDataSet.BUNDLE_1)!=null;
+        } else if ( zds.rank()==3 ) {
+            return zds.property(QDataSet.BUNDLE_2)!=null;
         } else {
             return false;
         }
