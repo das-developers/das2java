@@ -1201,7 +1201,7 @@ public class Schemes {
     public static QDataSet rank3WaveformXYZ() {
         QDataSet xx= rank2Waveform();
         QDataSet yy= Ops.multiply( -1,rank2Waveform() );
-        QDataSet zz= Ops.pow( rank2Waveform(), 1.3 );
+        QDataSet zz= Ops.add( rank2Waveform(), 1300 );
         QDataSet result= Ops.bundle( xx, yy, zz );
         WritableDataSet bds= Ops.copy( Ops.zeros(3,0) );
         bds.putProperty( QDataSet.NAME, 0, "X" );
