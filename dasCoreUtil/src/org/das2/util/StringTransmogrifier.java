@@ -6,7 +6,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Apply an operation to a String to make it a String with similar meaning.
+ * Apply an operation to a String to make it a String with similar meaning.  This is needed for
+ * new code which indicates the orbit number, but the orbit number context is provided elsewhere 
+ * on the plot.
+ * 
+ * <ul>
+ * <li>https://calvinandhobbes.fandom.com/wiki/Transmogrifier_Gun?file=CalvinTransmogrifierGunWeb.jpg
+ * </ul>
+ * 
  * @author jbf
  */
 public class StringTransmogrifier {
