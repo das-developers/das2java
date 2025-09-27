@@ -1197,4 +1197,38 @@ public class Schemes {
         return Ops.bundle( xx, yy, zz );
         
     }
+    
+    public static QDataSet rank3WaveformXYZ() {
+        QDataSet xx= rank2Waveform();
+        QDataSet yy= Ops.multiply( -1,rank2Waveform() );
+        QDataSet zz= Ops.pow( rank2Waveform(), 1.3 );
+        QDataSet result= Ops.bundle( xx, yy, zz );
+        WritableDataSet bds= Ops.copy( Ops.zeros(3,0) );
+        bds.putProperty( QDataSet.NAME, 0, "X" );
+        bds.putProperty( QDataSet.NAME, 1, "Y" );
+        bds.putProperty( QDataSet.NAME, 2, "Z" );
+        result= Ops.putProperty( result, QDataSet.BUNDLE_2, bds );
+        result= Ops.putProperty( result, QDataSet.DEPEND_0, xx.property(QDataSet.DEPEND_0) );
+        Ops.slice0(result,0).property(QDataSet.BUNDLE_1);
+        
+        return result;
+    }
+
+    public static boolean isRank3WaveformXYZ( QDataSet ds ) {
+        if ( ds.rank()!=3 ) return false;
+        int[] qube= DataSetUtil.qubeDims(ds);
+        if ( qube==null ) return false; // we may have to revisit this....
+        QDataSet rec= ds.slice(0);
+        QDataSet xoffset= (QDataSet) rec.property(QDataSet.DEPEND_0);
+        if ( xoffset==null ) return false;
+        if ( SemanticOps.getUnits(xoffset).isConvertibleTo(Units.seconds) ) {
+            if ( qube[2]<5 ) {
+                QDataSet slice= Ops.slice2( ds, 0 );
+                if ( isRank2Waveform(slice) ) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 }
