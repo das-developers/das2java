@@ -1753,29 +1753,34 @@ public class DataSetOps {
     public static QDataSet unbundle(QDataSet bundleDs, int ib, boolean highRank ) {
         
         QDataSet bundle=null;
-
+        boolean isRank3WaveformXYZ= Schemes.isRank3WaveformXYZ(bundleDs);
         if ( bundleDs.rank()>=2 ) { // unbundle now allows rank >2 ...
             QDataSet bundle1= (QDataSet) bundleDs.property(QDataSet.BUNDLE_1);
             if ( bundle1==null ) {
-                bundle1= (QDataSet) bundleDs.property(QDataSet.DEPEND_1); //simple legacy bundle was once DEPEND_1.
-                if ( bundle1==null ) {
-                    if ( bundleDs.rank()==2 ) {
-                        return new Slice1DataSet( bundleDs, ib ); //TODO: this was   throw new IllegalArgumentException( "Neither BUNDLE_1 nor DEPEND_1 found on dataset passed to unbundle command.");
-                    } else if ( bundleDs.rank()==3 ) {
-                        return new Slice2DataSet( bundleDs, ib ); //TODO: this was   throw new IllegalArgumentException( "Neither BUNDLE_1 nor DEPEND_1 found on dataset passed to unbundle command.");
-                    } else {
-                        throw new IllegalArgumentException("rank must be 2 or 3");
-                    }
-                }
-                if ( bundle1.rank()==2 ) {                    
-                    return new Slice1DataSet( bundleDs, ib );  // warning message removed, because rank 1 context is used.
-                } else if ( bundle1.rank()>1 ) {
-                    throw new IllegalArgumentException("high rank DEPEND_1 found where rank 1 was expected");
+                if ( isRank3WaveformXYZ ) {
+                    QDataSet bundle2= (QDataSet) bundleDs.property(QDataSet.BUNDLE_2);
+                    bundle1= bundle2;
                 } else {
-//                    Units u= SemanticOps.getUnits( bundle1 );
-//                    if ( !( u instanceof EnumerationUnits ) ) {
-//                        throw new IllegalArgumentException("dataset is not a bundle, and units of DEPEND_1 are not enumeration");
-//                    }
+                    bundle1= (QDataSet) bundleDs.property(QDataSet.DEPEND_1); //simple legacy bundle was once DEPEND_1.
+                    if ( bundle1==null ) {
+                        if ( bundleDs.rank()==2 ) {
+                            return new Slice1DataSet( bundleDs, ib ); //TODO: this was   throw new IllegalArgumentException( "Neither BUNDLE_1 nor DEPEND_1 found on dataset passed to unbundle command.");
+                        } else if ( bundleDs.rank()==3 ) {
+                            return new Slice2DataSet( bundleDs, ib ); //TODO: this was   throw new IllegalArgumentException( "Neither BUNDLE_1 nor DEPEND_1 found on dataset passed to unbundle command.");
+                        } else {
+                            throw new IllegalArgumentException("rank must be 2 or 3");
+                        }
+                    }
+                    if ( bundle1.rank()==2 ) {                    
+                        return new Slice1DataSet( bundleDs, ib );  // warning message removed, because rank 1 context is used.
+                    } else if ( bundle1.rank()>1 ) {
+                        throw new IllegalArgumentException("high rank DEPEND_1 found where rank 1 was expected");
+                    } else {
+    //                    Units u= SemanticOps.getUnits( bundle1 );
+    //                    if ( !( u instanceof EnumerationUnits ) ) {
+    //                        throw new IllegalArgumentException("dataset is not a bundle, and units of DEPEND_1 are not enumeration");
+    //                    }
+                    }
                 }
             }
             bundle= bundle1;
@@ -1882,8 +1887,12 @@ public class DataSetOps {
                 // DataSetOps.slice1(bundleDs,offsets[j]); // this results in error message saying "we're not going to do this correctly, use unbundle instead", oops...
                 if ( bundleDs.rank()==1 ) {
                     result= DataSetOps.makePropertiesMutable( bundleDs.slice(j) );
-                } else if ( bundleDs.rank()>=2 ) {
+                } else if ( bundleDs.rank()==2 ) {
                     result= new Slice1DataSet( bundleDs, j, true );
+                } else if ( isRank3WaveformXYZ ) {
+                    result= new Slice2DataSet( bundleDs, j, true );
+                } else if ( bundleDs.rank()>2 ) {
+                    result= new Slice1DataSet( bundleDs, j, true ); // what we did before
                 } else {
                     throw new IllegalArgumentException("BundleDs must be rank 1 or rank 2"); // this is handled above and findbugs doesn't see that we can't get here.
                 }
