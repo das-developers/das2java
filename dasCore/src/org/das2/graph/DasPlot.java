@@ -73,11 +73,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import org.das2.DasException;
 import org.das2.dataset.DataSetAdapter;
 import org.das2.datum.DatumRangeUtil;
 import org.das2.datum.LoggerManager;
+import org.das2.datum.OrbitDatumRange;
+import org.das2.datum.Orbits;
+import org.das2.datum.TimeParser;
+import org.das2.datum.UnitsUtil;
 import org.das2.event.DasMouseInputAdapter;
 import org.das2.event.LengthMouseModule;
 import org.das2.graph.DasAxis.Memento;
@@ -1284,6 +1290,100 @@ public class DasPlot extends DasCanvasComponent {
         return DasDevicePosition.toRectangle( getRow(),getColumn() );
     }
     
+    /**
+     * implement ${TIMERANGE} macro. NOTE THIS IS a COPY of CODE from AUTOPLOT!!!
+     * This was introduced in a rush for TRACERS.
+     * TODO: implement correctly in Autoplot, which wasn't updating.
+     * @param title
+     * @return 
+     */
+    private String implementMacros( String title ) {
+        
+        if ( title.contains("%{CONTEXT}") ) {
+            String contextStr= this.context==null ? "" : this.context.toString();
+            title= title.replace("%{CONTEXT}",contextStr);
+        }
+        
+        DatumRange tr=null;
+        if ( this.xAxis!=null && UnitsUtil.isTimeLocation( this.xAxis.getRange().getUnits() ) ) {
+            tr= this.xAxis.getDatumRange();
+        } else if ( UnitsUtil.isTimeLocation( this.getContext().getUnits() ) ) {
+            tr= this.getContext();
+        }
+
+        if ( tr==null ) {
+            return title;
+        }
+
+        Pattern pop= Pattern.compile("(.*)\\%\\{TIMERANGE(.*?)\\}(.*)");
+        String insert= ( tr==null ? "(no timerange)" : tr.toString() );
+        Matcher m= pop.matcher(title);
+        if ( m.matches() ) {
+            String control= m.group(2).trim();
+            Map<String,String> controls= new HashMap<>();
+            if ( control.length()>0 ) {
+                char delim= control.charAt(0); // can be , or ;
+                String[] ss;
+                ss= control.substring(1).split( "\\"+delim );
+                for ( String s: ss ) {
+                    int i= s.indexOf("=");
+                    if ( i==-1 ) {
+                        controls.put(s,"");
+                    } else {
+                        controls.put(s.substring(0,i),s.substring(i+1));
+                    }
+                }
+            }
+            if ( !controls.isEmpty() ) {
+                if ( controls.containsKey("CONTEXT") ) {
+                    String context= controls.get("CONTEXT");
+                    if ( context!=null ) { // the context can be an orbit file or orbit identifier.
+                        Orbits o= Orbits.getOrbitsFor(context);
+                        String s= o.getOrbit(tr.middle());
+                        if ( s!=null ) {
+                            try {
+                                // convert to orbit datum range for the same time.
+                                DatumRange drtest= o.getDatumRange(s);
+                                if ( Math.abs( DatumRangeUtil.normalize( tr, drtest.min() ) ) < 0.05 &&
+                                     Math.abs( DatumRangeUtil.normalize( tr, drtest.max() ) - 1.0 ) < 0.05 ) {
+                                    tr= DatumRangeUtil.parseTimeRange("orbit:"+context+":"+s);
+                                }
+                            } catch (ParseException ex) {
+                                logger.log(Level.SEVERE, null, ex);
+                            }
+
+                        }
+                    }                            
+                }
+                if ( controls.containsKey("NOORBIT") ) {
+                    if ( tr!=null ) {
+                        if ( tr instanceof OrbitDatumRange ) {
+                            insert= DatumRangeUtil.formatTimeRange(tr,false) + " (Orbit "+((OrbitDatumRange)tr).getOrbit()+")";
+                        } else {
+                            insert= DatumRangeUtil.formatTimeRange(tr,false);
+                        }
+                    }                            
+                } else if ( controls.containsKey("FORMAT") ) {
+                    String format= controls.get("FORMAT");
+                    if ( format.equals("$o") || format.equals("%o") ) {
+                        if ( tr instanceof OrbitDatumRange ) {
+                            insert= ((OrbitDatumRange)tr).getOrbit();
+                        } else {
+                            insert= "???";
+                        }
+                    } else {
+                        TimeParser tp= TimeParser.create(format);
+                        if ( tr!=null ) {
+                            insert= tp.format(tr);
+                        }                        
+                    }
+                }
+            }
+            title= m.replaceFirst(insert);
+        }
+        return title;
+    }
+
     @Override
     protected synchronized void paintComponent(Graphics graphics0) {
         logger.log(Level.FINER, "dasPlot.paintComponent {0}", getDasName());
@@ -1509,10 +1609,8 @@ public class DasPlot extends DasCanvasComponent {
         
         if ( displayTitle && localPlotTitle != null && localPlotTitle.length() != 0) {
             String t= localPlotTitle;
-            if ( localPlotTitle.contains("%{CONTEXT}") ) {
-                String contextStr= this.context==null ? "" : this.context.toString();
-                t= t.replace("%{CONTEXT}",contextStr);
-            }
+            
+            t= implementMacros(t);
             
             if ( fontSize.length()>0 && !fontSize.equals("1em") ) {
                 try {
