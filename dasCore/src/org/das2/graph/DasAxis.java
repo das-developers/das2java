@@ -2610,6 +2610,12 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         return text;
     }
 
+    /**
+     * resolve %{RANGE} into the formatted time range (for example)
+     * %{RANGE_NOORBIT} was a kludge where the orbit number is not identified, 
+     * presumably because it is somewhere else on the plot.
+     * @return 
+     */
     private String resolveAxisLabel() {
         String sunits= getDatumRange().getUnits().toString();
         if ( sunits.contains("!A") || sunits.contains("!E")  // Make sure the return is present.
@@ -2632,7 +2638,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             if ( abbrevName.split(":").length>3 ) {
                 abbrevName= ss[0]+":"+ss[ss.length-1];
             }
+            result= resolveString( result, "RANGE_NOORBIT", sdr );
             sdr= sdr+" ("+abbrevName +")";
+        } else {
+            result= resolveString( result, "RANGE_NOORBIT", sdr );
         }
         result= resolveString( result, "RANGE", sdr );
         result= resolveString( result, "SCAN_RANGE", String.valueOf(getScanRange()) );
