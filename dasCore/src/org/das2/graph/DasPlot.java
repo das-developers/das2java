@@ -82,6 +82,7 @@ import org.das2.event.DasMouseInputAdapter;
 import org.das2.event.LengthMouseModule;
 import org.das2.graph.DasAxis.Memento;
 import org.das2.qds.DataSetUtil;
+import org.das2.qds.QDataSet;
 import org.das2.qds.SemanticOps;
 import org.das2.util.ColorUtil;
 
@@ -431,8 +432,11 @@ public class DasPlot extends DasCanvasComponent {
                 if ( icon==null ) icon=NULL_ICON;
                 GrannyTextRenderer gtr = GraphUtil.newGrannyTextRenderer();
                 String theLabel= String.valueOf(le.label).trim().replaceAll("%\\{CONTEXT\\}",contextStr);
-                String unitsString= SemanticOps.getUnits( r.getDataSet() ).toString();
-                theLabel= theLabel.replaceAll("%\\{UNITS\\}",unitsString);
+                QDataSet ds= r.getDataSet();
+                if ( ds!=null ) {
+                    String unitsString= SemanticOps.getUnits( r.getDataSet() ).toString();
+                    theLabel= theLabel.replaceAll("%\\{UNITS\\}",unitsString);
+                }
                 gtr.setString(graphics, theLabel); // protect from nulls, which seems to happen
                 mrect = gtr.getBounds();
                 maxIconWidth = Math.max(maxIconWidth, icon.getIconWidth());
@@ -574,6 +578,11 @@ public class DasPlot extends DasCanvasComponent {
                 GrannyTextRenderer gtr = GraphUtil.newGrannyTextRenderer();
                 gtr.setAlignment( GrannyTextRenderer.LEFT_ALIGNMENT );
                 String theLabel= String.valueOf(le.label).trim().replaceAll("%\\{CONTEXT\\}",contextStr);
+                QDataSet ds= le.renderer.getDataSet();
+                if ( ds!=null ) {
+                    String unitsString= SemanticOps.getUnits( le.renderer.getDataSet() ).toString();
+                    theLabel= theLabel.replaceAll("%\\{UNITS\\}",unitsString);
+                }                
                 gtr.setString(graphics, theLabel); // protect from nulls, which seems to happen
                 mrect = gtr.getBounds();
                 mrect.translate(msgx, msgy + (int) gtr.getAscent());
