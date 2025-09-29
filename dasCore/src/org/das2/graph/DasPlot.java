@@ -1379,7 +1379,8 @@ public class DasPlot extends DasCanvasComponent {
                     }
                 }
             }
-            title= m.replaceFirst(insert);
+            
+            title= m.group(1) + insert + m.group(3);
         }
         return title;
     }
