@@ -465,9 +465,6 @@ public class Orbits {
      * @throws IllegalArgumentException when the orbits file cannot be read
      */
     public static synchronized Orbits getOrbitsFor( String sc ) {
-        if ( SwingUtilities.isEventDispatchThread() ) {
-            LOGGER.log(Level.WARNING, "getOrbitsFor called from event thread! {0}", sc);
-        }
         Orbits orbits= missions.get(sc);
         if ( orbits==null ) {
             String error= nonmissions.get(sc);
