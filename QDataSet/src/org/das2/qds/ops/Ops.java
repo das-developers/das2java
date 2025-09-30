@@ -9432,6 +9432,56 @@ public final class Ops {
     }
     
     /**
+     * return 1/C where C is a rank 1,2,3 complex dataset
+     * @param ds1 a complex number
+     * @return 1/C
+     */
+    public static final QDataSet complexInvert( QDataSet ds1 ) {
+        if ( !Schemes.isComplexNumbers(ds1) ) ds1= complexDataset( ds1, null );
+        QDataSet real;
+        QDataSet imag;
+        QDataSet denom= complexMultiply( ds1, complexConj(ds1) );  // denom is all real
+        switch ( ds1.rank() ) {
+            case 1: 
+                real= Ops.slice0( ds1, 0 );
+                imag= Ops.slice0( ds1, 1 );
+                denom= Ops.slice0( denom, 0 ); //imaginary part is 0.
+                break;
+            case 2:
+                real= Ops.slice1( ds1, 0 );
+                imag= Ops.slice1( ds1, 1 );
+                denom= Ops.slice1( denom, 0 ); //imaginary part is 0.
+                break;
+            case 3:
+                real= Ops.slice2( ds1, 0 );
+                imag= Ops.slice2( ds1, 1 );
+                denom= Ops.slice2( denom, 0 ); //imaginary part is 0.
+                break;
+            default:
+                throw new IllegalArgumentException("ds1 rank is too high, must be 1, 2, or 3: "+ds1 );
+
+        }
+
+        QDataSet result= complexDataset( Ops.divide( real, denom ), Ops.multiply( -1, Ops.divide( imag, denom ) ) );
+
+        return result;
+    }
+    
+    /**
+     * 
+     * @param ds1 rank 1, 2, or 3 complex dataset
+     * @param ds2 rank 1, 2, or 3 complex dataset
+     * @return return ds1/ds2.
+     */
+    public static final QDataSet complexDivide( QDataSet ds1, QDataSet ds2 ) {
+        if ( ds1.rank()>3 ) throw new IllegalArgumentException("ds1 rank is too high, must be 1, 2, or 3: "+ds1 );
+        if ( ds2.rank()>3 ) throw new IllegalArgumentException("ds2 rank is too high, must be 1, 2, or 3: "+ds2 );
+        if ( !Schemes.isComplexNumbers(ds1) ) ds1= complexDataset( ds1, null );
+        if ( !Schemes.isComplexNumbers(ds2) ) ds2= complexDataset( ds2, null );
+        return complexMultiply( ds1, complexInvert(ds2) );   
+    }
+    
+    /**
      * perform complex multiplication, where the two datasets must have the same
      * rank and must both end with a complex dimension.  A complex dimension has
      * length 2 and DEPEND_1 (or DEPEND_i where rank=i+1) that indicates the complex dimension.
