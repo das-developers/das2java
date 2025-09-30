@@ -837,7 +837,11 @@ public class Schemes {
                 return false;
         }
         if ( dep==null ) return false;
-        return isComplexCoordinateSystemDepend(dep);
+        if ( QDataSet.VALUE_COORDINATE_FRAME_COMPLEX_NUMBER.equals( ds1.property(QDataSet.COORDINATE_FRAME) ) ) {
+            return true;
+        } else {    
+            return isComplexCoordinateSystemDepend(dep);
+        }
     }
     
     /**
