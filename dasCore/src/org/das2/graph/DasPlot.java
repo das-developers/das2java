@@ -1305,10 +1305,11 @@ public class DasPlot extends DasCanvasComponent {
         }
         
         DatumRange tr=null;
+        DatumRange context1= this.getContext();
         if ( this.xAxis!=null && UnitsUtil.isTimeLocation( this.xAxis.getRange().getUnits() ) ) {
             tr= this.xAxis.getDatumRange();
-        } else if ( UnitsUtil.isTimeLocation( this.getContext().getUnits() ) ) {
-            tr= this.getContext();
+        } else if ( context1!=null && UnitsUtil.isTimeLocation( context1.getUnits() ) ) {
+            tr= context1;
         }
 
         if ( tr==null ) {
