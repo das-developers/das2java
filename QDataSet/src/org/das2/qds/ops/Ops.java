@@ -9432,7 +9432,7 @@ public final class Ops {
     }
     
     /**
-     * return 1/C where C is a rank 1,2,3 complex dataset
+     * return 1/C where C is a rank 1,2, or 3 complex dataset
      * @param ds1 a complex number
      * @return 1/C
      */
