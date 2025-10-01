@@ -2154,16 +2154,14 @@ public class DasPlot extends DasCanvasComponent {
     /**
      * convenient place to put the plot context.  The context is used to
      * store the timerange when there is no axis for it, for example, to
-     * show the state of data during a range.  This may change to a QDataSet
-     * to provide several context dimensions.
+     * show the state of data during a range.  
      */
     private DatumRange context= null;
 
     /**
      * convenient place to put the plot context.  The context is used to
      * store the timerange when there is no axis for it, for example, to
-     * show the state of data during a range.  This may change to a QDataSet
-     * to provide several context dimensions.
+     * show the state of data during a range. 
      * @return the context
      * @see #setContext(org.das2.datum.DatumRange) 
      */
@@ -2174,8 +2172,7 @@ public class DasPlot extends DasCanvasComponent {
     /**
      * convenient place to put the plot context.  The context is used to
      * store the timerange when there is no axis for it, for example, to
-     * show the state of data during a range.  This may change to a QDataSet
-     * to provide several context dimensions.  Note this may be null to support
+     * show the state of data during a range.  Note this may be null to support
      * no context.
      * @param context the context
      * @see #getContext() 
