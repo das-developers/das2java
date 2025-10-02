@@ -1047,8 +1047,6 @@ public class DasPlot extends DasCanvasComponent {
      * axis is set, but this might change in the future.  null appears to be
      * a valid input as well.
      *
-     * TODO: plot does not seem to be responding to changes in the axis.
-     * (goes grey because updatePlotImage is never done.
      * 
      * @param yAxis a vertical axis.
      */
