@@ -427,6 +427,7 @@ public class SeriesRenderer extends Renderer {
             long t0= System.currentTimeMillis();
             
             float fsymSize = symSize;
+            DasColorBar lcolorBar= colorBar;
 
             QDataSet colorByDataSet=null;
             if ( colorByDataSetId != null && !colorByDataSetId.equals("")) {
@@ -445,8 +446,9 @@ public class SeriesRenderer extends Renderer {
             boolean rgbColor= false;
             Color[] ccolors = null;
             if ( colorByDataSet != null ) {
+                if ( lcolorBar==null ) return 0;
                 rgbColor= Units.rgbColor.equals( colorByDataSet.property(QDataSet.UNITS) );
-                IndexColorModel icm = colorBar.getIndexColorModel();
+                IndexColorModel icm = lcolorBar.getIndexColorModel();
                 ccolors = new Color[icm.getMapSize()];
                 for (int j = 0; j < icm.getMapSize(); j++) {               
                     ccolors[j] = new Color(icm.getRGB(j));
@@ -2948,12 +2950,14 @@ public class SeriesRenderer extends Renderer {
         
         float llistIconSymSize= Math.min( 12, symSize );
         
-        if ( colorByDataSetId != null && !colorByDataSetId.equals("") ) {
-            Units cu= colorBar.getUnits();
-            double d1= colorBar.getDatumRange().min().doubleValue( cu );
-            double d2= colorBar.getDatumRange().max().doubleValue( cu );
+        DasColorBar lcolorBar= colorBar;
+        
+        if ( colorByDataSetId != null && !colorByDataSetId.equals("") && lcolorBar!=null ) {
+            Units cu= lcolorBar.getUnits();
+            double d1= lcolorBar.getDatumRange().min().doubleValue( cu );
+            double d2= lcolorBar.getDatumRange().max().doubleValue( cu );
             double d3,d4;
-            if ( colorBar.isLog() ) {
+            if ( lcolorBar.isLog() ) {
                 d1= Math.log10(d1);
                 d2= Math.log10(d2);
             }
@@ -2962,23 +2966,23 @@ public class SeriesRenderer extends Renderer {
             d4= ( d1 + 2 * d2 ) / 3;
             d1= d1 + t*0.1;
             d2= d2 - t*0.1;
-            if ( colorBar.isLog() ) {
+            if ( lcolorBar.isLog() ) {
                 d1= Math.pow( 10, d1 );
                 d2= Math.pow( 10, d2 );
                 d3= Math.pow( 10, d3 );
                 d4= Math.pow( 10, d4 );
             }
             Color c;
-            c= new Color( colorBar.rgbTransform( d1, cu ) );
+            c= new Color( lcolorBar.rgbTransform( d1, cu ) );
             g.setColor(c);
             psym.draw(g, 3, 8, llistIconSymSize, fillStyle);
-            c= new Color( colorBar.rgbTransform( d3, cu ) );
+            c= new Color( lcolorBar.rgbTransform( d3, cu ) );
             g.setColor(c);
             psym.draw(g, 5, 4, llistIconSymSize, fillStyle);
-            c= new Color( colorBar.rgbTransform( d2, cu ) );
+            c= new Color( lcolorBar.rgbTransform( d2, cu ) );
             g.setColor(c);
             psym.draw(g, 9, 6, llistIconSymSize, fillStyle);
-            c= new Color( colorBar.rgbTransform( d4, cu ) );
+            c= new Color( lcolorBar.rgbTransform( d4, cu ) );
             g.setColor(c);
             psym.draw(g, 11, 2, llistIconSymSize, fillStyle);
         } else {        
