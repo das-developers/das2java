@@ -465,6 +465,9 @@ public class Orbits {
      * @throws IllegalArgumentException when the orbits file cannot be read
      */
     public static synchronized Orbits getOrbitsFor( String sc ) {
+        if ( sc.startsWith("/") ) {
+            throw new IllegalArgumentException("orbit identifier cannot start with /, did you mean file:/?");
+        }
         Orbits orbits= missions.get(sc);
         if ( orbits==null ) {
             String error= nonmissions.get(sc);
