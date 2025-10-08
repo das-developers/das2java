@@ -22,6 +22,7 @@ import static org.das2.qds.DataSetOps.grid;
 import static org.das2.qds.DataSetOps.slice1;
 import static org.das2.qds.DataSetOps.slice2;
 import static org.das2.qds.DataSetOps.slice3;
+import org.das2.qds.examples.Schemes;
 import org.das2.qds.filters.ApplyIndexEditorPanel;
 import org.das2.qds.ops.Ops;
 import org.das2.qds.util.BinAverage;
@@ -310,6 +311,12 @@ public class OperationsProcessor {
                         } else {
                             QDataSet d0= (QDataSet)arg1;
                             QDataSet d1= (QDataSet)arg2;
+                            if (d0.rank()==1 && Schemes.isDatumRange(d0) ) {
+                                d0= d0.slice(0);
+                            }
+                            if (d1.rank()==1 && Schemes.isDatumRange(d1) ) {
+                                d1= d1.slice(0);
+                            }
                             ds= Ops.trim( ds, d0, d1 ); 
                         }
                     }
@@ -325,6 +332,12 @@ public class OperationsProcessor {
                     } else {
                         QDataSet d0= (QDataSet)arg1;
                         QDataSet d1= (QDataSet)arg2;
+                        if (d0.rank()==1 && Schemes.isDatumRange(d0) ) {
+                            d0= d0.slice(0);
+                        }
+                        if (d1.rank()==1 && Schemes.isDatumRange(d1) ) {
+                            d1= d1.slice(0);
+                        }
                         ds= Ops.trim1( ds, d0, d1 ); 
                     }					
                 } else if ( cmd.equals("|trim") && cmd.length()==5) {
@@ -340,6 +353,12 @@ public class OperationsProcessor {
                     } else {
                         QDataSet d0= (QDataSet)arg1;
                         QDataSet d1= (QDataSet)arg2;
+                        if (d0.rank()==1 && Schemes.isDatumRange(d0) ) {
+                            d0= d0.slice(0);
+                        }
+                        if (d1.rank()==1 && Schemes.isDatumRange(d1) ) {
+                            d1= d1.slice(0);
+                        }                        
                         ds= Ops.trim( dim, ds, d0, d1 ); 
                     }
                 } else if ( cmd.startsWith("|applyIndex") && cmd.length()>11 ) {
