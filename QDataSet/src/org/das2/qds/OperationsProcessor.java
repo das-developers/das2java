@@ -405,6 +405,12 @@ public class OperationsProcessor {
                         }
                     }
                     ds= Ops.total(ds,dim, mon.getSubtaskMonitor("performing total") );
+                } else if ( cmd.equals("|mean")  ) {
+                    ds= Ops.mean(ds);
+                } else if ( cmd.equals("|median")  ) {
+                    ds= Ops.median(ds);
+                } else if ( cmd.equals("|mode")  ) {
+                    ds= Ops.mode(ds);
                     
                 } else if ( cmd.equals("|autoHistogram") ) {
                     ds= Ops.autoHistogram(ds);

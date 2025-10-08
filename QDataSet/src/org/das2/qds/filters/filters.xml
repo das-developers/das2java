@@ -49,6 +49,21 @@
                 <title>Data Set Operations</title>
                 <bookmark-list>
                     <bookmark>
+                        <title>Mean</title>
+                        <filter>|mean()</filter>
+                        <description>Average the entire dataset</description>
+                    </bookmark>                    
+                    <bookmark>
+                        <title>Median</title>
+                        <filter>|median()</filter>
+                        <description>Average returning the middle value over the dataset</description>
+                    </bookmark>                     
+                    <bookmark>
+                        <title>Mode</title>
+                        <filter>|mode()</filter>
+                        <description>Average returning the most frequently occuring value in the dataset</description>
+                    </bookmark>                     
+                    <bookmark>
                         <title>Collapse Zeroth Dimension</title>
                         <filter>|collapse0()</filter>
                         <description>Average over the zeroth dimension to reduce the dimensionality</description>
@@ -134,7 +149,7 @@
                         <description>Perform a 2-D bin average X, Y, Z scatter to create a rank 2 table.</description>
                     </bookmark>
                     <bookmark>
-                        <title>Reduce In Zeroth Dimension</title>
+                        <title>Reduce resolution In Zeroth Dimension</title>
                         <filter>|reducex('1 hr')</filter>
                         <description>Reduces data to selected time/data intervals</description>
                     </bookmark> 
