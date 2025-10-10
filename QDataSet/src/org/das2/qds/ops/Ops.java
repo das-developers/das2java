@@ -16457,6 +16457,7 @@ public final class Ops {
         } else if ( m.rank()==1 && v.rank()==2 ) {
             throw new IllegalArgumentException("Use matrixMultiply(transpose(m),v), not matrixMultiply(v,m)");
         } else {
+            //TODO: distinguish between errors of m or v.
             throw new IllegalArgumentException("m must be matrix or array of matrices, v must be vector or array of vectors");
         }
     }
