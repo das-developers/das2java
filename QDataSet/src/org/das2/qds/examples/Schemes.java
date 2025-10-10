@@ -836,10 +836,10 @@ public class Schemes {
             default:
                 return false;
         }
-        if ( dep==null ) return false;
         if ( QDataSet.VALUE_COORDINATE_FRAME_COMPLEX_NUMBER.equals( ds1.property(QDataSet.COORDINATE_FRAME) ) ) {
             return true;
         } else {    
+            if ( dep==null ) return false;
             return isComplexCoordinateSystemDepend(dep);
         }
     }
