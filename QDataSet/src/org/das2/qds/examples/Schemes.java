@@ -845,6 +845,19 @@ public class Schemes {
     }
     
     /**
+     * return an array of complex numbers
+     * @return  an array of complex numbers
+     */
+    public static QDataSet complexNumbers() {
+        QDataSet a= Ops.linspace( 0, Ops.TAU, 1441 );
+        QDataSet r= Ops.randomn( 0, 1441 );
+        QDataSet s= Ops.sin( Ops.multiply( a, 20 ) );
+        QDataSet os= Ops.cos( Ops.multiply( a, 70 ) );
+        QDataSet signal= Ops.add( Ops.add( s, os ), r );
+        return Ops.fft(signal);
+    }
+    
+    /**
      * return bundle with Time, Density, Speed, and Flux, to demonstrate
      * a bundle of datasets with differing rank.
      * @return bundle with Time, Density, Speed, and Flux
