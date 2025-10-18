@@ -80,8 +80,8 @@ public class LSpec {
                         builder.putValue( -1, 0, start );
                         builder.putValue( -1, 1, end-1 );
                         builder.nextRecord();
-                        dep0builder.putValue( -1, 0, tds.value(start) );
-                        dep0builder.putValue( -1, 1, tds.value(end-1) );
+                        dep0builder.putValue( -1, 0, tds.slice(start) );
+                        dep0builder.putValue( -1, 1, tds.slice(end-1) );
                         dep0builder.nextRecord();
                     } else {
                         // all fill.
