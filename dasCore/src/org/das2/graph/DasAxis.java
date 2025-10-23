@@ -2587,6 +2587,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                     } else {
                         ss= i<ltcaLabels.length ? ltcaLabels[i] :  "???";
                     }
+                    if ( ss==null ) {
+                        logger.info("TCA data has no labels");
+                        ss="ch"+i;
+                    }
                     if ( ss.contains("%{") ) {
                         Units u= (Units)bds.property( QDataSet.UNITS, i );
                         ss= resolveString( ss, "UNITS", u.toString() );
