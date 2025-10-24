@@ -153,7 +153,7 @@ public class DataSetAdapter {
                                 bds.putProperty(QDataSet.TYPICAL_MAX, yRng.max().value());
                             }
                             
-                            if ( ds.getProperty("schema").equals("xyzScatter") ) {
+                            if ( "xyzScatter".equals(ds.getProperty("schema")) ) {
                                 BundleDataSet bbds= (BundleDataSet)bds;
                                 return (BundleDataSet)Ops.bundle( new XTagsDataSet(vds), bbds.unbundle(0), bbds.unbundle(1) );
                             }
