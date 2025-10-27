@@ -1013,11 +1013,12 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         String unitsstr= UnitsUtil.isTimeLocation( axis.getDataMinimum().getUnits() ) ? "UTC" : axis.getDataMinimum().getUnits().toString();
         String dpos;
         dpos= String.format( "\"left\":%d, \"right\":%d",   (int)plot.getColumn().getDMinimum(), (int)plot.getColumn().getDMaximum() );
-        json.append( String.format( "%s\"xaxis\": { \"label\":\"%s\", \"min\":%s, \"max\":%s, %s, \"type\":\"%s\", \"units\":\"%s\" },\n",
+        json.append( String.format( "%s\"xaxis\": { \"label\":\"%s\", \"min\":%s, \"max\":%s, %s, \"type\":\"%s\", \"flipped\":%s, \"units\":\"%s\" },\n",
                 indent,
                 axis.getLabel().replaceAll("\"", "\\\"") ,
                 minstr, maxstr, dpos,
                 axis.isLog() ? "log" : "lin",
+                axis.isFlipped() ? "true": "false",
                 unitsstr ) );
         axis= plot.getYAxis();
         minstr= UnitsUtil.isTimeLocation( axis.getDataMinimum().getUnits() ) ?
@@ -1030,18 +1031,20 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         dpos= String.format( "\"top\":%d, \"bottom\":%d",   (int)plot.getRow().getDMinimum(), (int)plot.getRow().getDMaximum() );
         
         if ( inclColorbar ) {
-            json.append( String.format( "%s\"yaxis\": { \"label\":\"%s\", \"min\":%s, \"max\":%s, %s, \"type\":\"%s\", \"units\":\"%s\" },\n",
+            json.append( String.format( "%s\"yaxis\": { \"label\":\"%s\", \"min\":%s, \"max\":%s, %s, \"type\":\"%s\", \"flipped\":%s, \"units\":\"%s\" },\n",
                 indent,
                 axis.getLabel().replaceAll("\"", "\\\"") ,
                 minstr, maxstr, dpos,
                 axis.isLog() ? "log" : "lin",
+                axis.isFlipped() ? "true": "false",
                 unitsstr ) );
         } else {
-            json.append( String.format( "%s\"yaxis\": { \"label\":\"%s\", \"min\":%s, \"max\":%s, %s, \"type\":\"%s\", \"units\":\"%s\" }%s\n",
+            json.append( String.format( "%s\"yaxis\": { \"label\":\"%s\", \"min\":%s, \"max\":%s, %s, \"type\":\"%s\", \"flipped\":%s, \"units\":\"%s\" }%s\n",
                 indent,
                 axis.getLabel().replaceAll("\"", "\\\"") ,
                 minstr, maxstr, dpos,
                 axis.isLog() ? "log" : "lin",
+                axis.isFlipped() ? "true": "false",
                 unitsstr, isInList ? "," : "" ) );
         }
         // if we can identify a colorbar for the plot, include it as well, with coordinates for the min and max colors.
