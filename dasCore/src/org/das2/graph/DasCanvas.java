@@ -110,10 +110,15 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import org.das2.components.propertyeditor.Editable;
 import org.das2.components.propertyeditor.PropertyEditor;
 import org.das2.datum.Datum;
+import org.das2.datum.DatumRange;
+import org.das2.datum.DatumUtil;
+import org.das2.datum.DatumVector;
 import org.das2.datum.TimeParser;
 import org.das2.datum.TimeUtil;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
+import org.das2.datum.format.DatumFormatter;
+import org.das2.datum.format.TimeDatumFormatter;
 import org.das2.event.DasUpdateEvent;
 import org.das2.system.ChangesSupport;
 import org.das2.system.DefaultMonitorFactory;
@@ -1004,12 +1009,19 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         StringBuilder json= new StringBuilder();
         json.append( String.format( "%s\"title\":\"%s\", \n", indent, plot.getTitle().replaceAll("\"", "\\\"") ) );
         DasAxis axis= plot.getXAxis();
-        String minstr= UnitsUtil.isTimeLocation( axis.getDataMinimum().getUnits() ) ?
-            String.format( "\"%s\"", axis.getDataMinimum().toString() ) :
-            String.valueOf( axis.getDataMinimum( axis.getUnits() ) );
-        String maxstr= UnitsUtil.isTimeLocation( axis.getDataMaximum().getUnits() ) ?
-            String.format( "\"%s\"", axis.getDataMaximum().toString() ) :
-            String.valueOf( axis.getDataMaximum( axis.getUnits() ) );
+        DatumVector vv;
+        String minstr, maxstr;
+        if ( UnitsUtil.isTimeLocation( axis.getDataMinimum().getUnits() ) ) {
+            minstr= String.format( "\"%s\"", axis.getDataMinimum().toString() );
+            maxstr= String.format( "\"%s\"", axis.getDataMaximum().toString() );
+        } else {
+            vv= DatumVector.newDatumVector( new Datum[] { axis.getDataMinimum(), axis.getDataMaximum() }, axis.getUnits() );
+            DatumFormatter df;
+            df= DatumUtil.bestFormatter(vv);
+            minstr= df.format( axis.getDataMinimum(), axis.getDataMinimum().getUnits() );
+            maxstr= df.format( axis.getDataMaximum(), axis.getDataMinimum().getUnits() );
+        }
+        
         String unitsstr= UnitsUtil.isTimeLocation( axis.getDataMinimum().getUnits() ) ? "UTC" : axis.getDataMinimum().getUnits().toString();
         String dpos;
         dpos= String.format( "\"left\":%d, \"right\":%d",   (int)plot.getColumn().getDMinimum(), (int)plot.getColumn().getDMaximum() );
@@ -1021,12 +1033,16 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
                 axis.isFlipped() ? "true": "false",
                 unitsstr ) );
         axis= plot.getYAxis();
-        minstr= UnitsUtil.isTimeLocation( axis.getDataMinimum().getUnits() ) ?
-            String.format( "'%s'", axis.getDataMinimum().toString() ) :
-            String.valueOf( axis.getDataMinimum( axis.getUnits() ) );
-        maxstr= UnitsUtil.isTimeLocation( axis.getDataMaximum().getUnits() ) ?
-            String.format( "'%s'", axis.getDataMaximum().toString() ) :
-            String.valueOf( axis.getDataMaximum( axis.getUnits() ) );
+        if ( UnitsUtil.isTimeLocation( axis.getDataMinimum().getUnits() ) ) {
+            minstr= String.format( "\"%s\"", axis.getDataMinimum().toString() );
+            maxstr= String.format( "\"%s\"", axis.getDataMaximum().toString() );
+        } else {
+            vv= DatumVector.newDatumVector( new Datum[] { axis.getDataMinimum(), axis.getDataMaximum() }, axis.getUnits() );
+            DatumFormatter df;
+            df= DatumUtil.bestFormatter(vv);
+            minstr= df.format( axis.getDataMinimum(), axis.getDataMinimum().getUnits() );
+            maxstr= df.format( axis.getDataMaximum(), axis.getDataMinimum().getUnits() );
+        }
         unitsstr= UnitsUtil.isTimeLocation( axis.getDataMinimum().getUnits() ) ? "UTC" : axis.getDataMinimum().getUnits().toString();
         dpos= String.format( "\"top\":%d, \"bottom\":%d",   (int)plot.getRow().getDMinimum(), (int)plot.getRow().getDMaximum() );
         
