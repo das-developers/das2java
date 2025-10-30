@@ -229,17 +229,17 @@ public class SliceFilterEditorPanel extends AbstractFilterEditorPanel implements
         Runnable run= new Runnable() {
             public void run() {
                 int dim= sliceDimensionCB.getSelectedIndex();
-                boolean na= true;
+                boolean dependNotAvailable= true;
                 if ( inputDs!=null ) {
                     QDataSet ds= inputDs.get();
                     if ( ds!=null ) {
                         QDataSet dep= (QDataSet)ds.property("DEPEND_"+dim);
                         if ( dep!=null && dep.rank()==1 ) {
+                            dependNotAvailable= false;
                             if ( getIndexMode() ) {
                                 int index= (Integer)sliceIndexSpinner.getValue();
                                 String s= DataSetUtil.asDatum( dep.slice(index) ).toString();
                                 sliceAtDatumTF.setText(s);
-                                na= false;
                             } else {
                                 String t= sliceAtDatumTF.getText();
                                 Units depu= SemanticOps.getUnits(dep);
@@ -265,23 +265,26 @@ public class SliceFilterEditorPanel extends AbstractFilterEditorPanel implements
                         }
                     }
                 }                        
-                if ( na ) {
+                if ( dependNotAvailable ) {
                     if ( getIndexMode() ) {
                         sliceAtDatumTF.setText("N/A");
                         sliceAtDatumTF.setToolTipText("value is not available");
                         sliceAtDatumTF.setEnabled(false);
                         sliceAtDatumButton.setEnabled(false);
                     } else {
-                        //sliceAtDatumTF.setEnabled(true);
-                        //sliceAtDatumButton.setEnabled(true);                        
+                        sliceAtDatumTF.setEnabled(false);
+                        sliceAtDatumButton.setEnabled(false);                        
                     }
                 } else {
-                    //sliceAtDatumTF.setEnabled(true);
-                    //sliceAtDatumButton.setEnabled(true);
+                    sliceAtDatumButton.setEnabled(true);
                 }
             }
         };
-        SwingUtilities.invokeLater(run);
+        if ( SwingUtilities.isEventDispatchThread() ) {
+            run.run();
+        } else {
+            SwingUtilities.invokeLater(run);
+        }
     }
     
     private boolean getIndexMode() {
