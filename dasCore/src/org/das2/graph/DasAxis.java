@@ -81,6 +81,7 @@ import org.das2.util.TickleTimer;
 import org.das2.qds.ArrayDataSet;
 import org.das2.qds.DDataSet;
 import org.das2.qds.JoinDataSet;
+import org.das2.qds.MutablePropertyDataSet;
 import org.das2.qds.QDataSet;
 import org.das2.qds.QFunction;
 import org.das2.qds.SemanticOps;
@@ -1482,6 +1483,16 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             timeDs.putProperty( QDataSet.BUNDLE_1, timeDs.slice(0).property(QDataSet.BUNDLE_0) );
 
             QDataSet tickss= ltcaFunction.values(timeDs);
+            if ( tickss instanceof JoinDataSet && tickss.length()>0 ) {
+                JoinDataSet jds= (JoinDataSet)tickss;
+                QDataSet bundle1= (QDataSet) jds.property(QDataSet.BUNDLE_1);
+                jds.putProperty( QDataSet.BUNDLE_1, null );
+                if ( jds.slice(0).property(QDataSet.BUNDLE_0)==null ) {
+                    // whoops, each dataset doesn't have BUNDLE_0, put BUNDLE_1 back.
+                    jds.putProperty( QDataSet.BUNDLE_1, bundle1 );
+                }
+            }
+
             if ( tickss.rank()!=2 ) {
                 throw new IllegalArgumentException("result of tcaFunction value() should be rank 1");
             }
@@ -3326,7 +3337,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 QDataSet test1= ltcaData.slice(index);
                 QDataSet v1= ArrayDataSet.copy( test1.slice(i) );
                 String item;
-                item= org.das2.qds.DataSetUtil.getStringValue( v1, v1.value() );
+                try {
+                    item= org.das2.qds.DataSetUtil.getStringValue( v1, v1.value() );
+                } catch ( IllegalArgumentException ex ) {
+                    item= String.valueOf(v1.value());
+                }
                 width = fm.stringWidth(item);
                 leftEdge = rightEdge - width;
                 g.drawString(item, leftEdge, baseLine);
