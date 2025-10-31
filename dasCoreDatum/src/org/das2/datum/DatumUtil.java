@@ -178,9 +178,8 @@ public final class DatumUtil {
         
         
         if ( datums.getUnits() instanceof LocationUnits ) {
-           Datum offs=null;
             array= new double[ datums.getLength() ];
-            offs= datums.get(0);
+            Datum offs= datums.get(0);
             origUnits= offs.getUnits();
             units= ((LocationUnits)offs.getUnits()).getOffsetUnits();
             array[0]= 0.;
