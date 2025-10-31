@@ -151,6 +151,7 @@ public final class DatumUtil {
     public static DatumFormatter bestFormatter( DatumVector datums, DatumRange context ) {
         double[] array;
         Units units;
+        Units origUnits;
         
         if ( datums.getLength()==0 ) {
             return DefaultDatumFormatterFactory.getInstance().defaultFormatter();
@@ -175,15 +176,20 @@ public final class DatumUtil {
             }
         }
         
+        
         if ( datums.getUnits() instanceof LocationUnits ) {
+           Datum offs=null;
             array= new double[ datums.getLength() ];
-            units= ((LocationUnits)datums.get(0).getUnits()).getOffsetUnits();
+            offs= datums.get(0);
+            origUnits= offs.getUnits();
+            units= ((LocationUnits)offs.getUnits()).getOffsetUnits();
             array[0]= 0.;
             for ( int i=1; i<datums.getLength(); i++ ) {
-                array[i]= datums.get(i).subtract(datums.get(0)).doubleValue(units);
+                array[i]= datums.get(i).subtract(offs).doubleValue(units);
             }
         } else {
             units= datums.getUnits();
+            origUnits= units; 
             array= datums.toDoubleArray(units);
         }
         
@@ -201,8 +207,8 @@ public final class DatumUtil {
         int biggestExp=-9999;
         int ismallestExp=-1;
         double largest= Double.NEGATIVE_INFINITY;
-        for ( int j=0; j<datums.getLength(); j++ ) {
-            double d= datums.get(j).doubleValue(units);
+        for ( int j=0; j<array.length; j++ ) {
+            double d= array[j];
             if ( Math.abs(d)>(gcd*0.1) ) { // don't look at fuzzy zero
                 int ee= (int)Math.floor(0.05+Math.abs(logArray[j]));
                 if ( ee<smallestExp ) {
@@ -226,7 +232,7 @@ public final class DatumUtil {
         
         Datum resolution= units.createDatum(gcd);
         Datum base= datums.get(ismallestExp);
-        if ( base.lt(units.createDatum(0.) ) ) {
+        if ( base.lt(origUnits.createDatum(0.) ) ) {
             base= base.multiply(-1);
         }
         return bestFormatter( base, base.add( resolution ), 1 );
