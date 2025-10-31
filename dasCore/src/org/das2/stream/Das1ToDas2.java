@@ -121,19 +121,19 @@ public class Das1ToDas2 {
                 double x_sample_width = parser.parseIDLScalar(value);
                 if (x_sample_width == Double.NaN)
                     throw new IOException("Could not parse \"" + value + "\" at line " + lineNumber);
-                properties.put(key, new Double(x_sample_width));
+                properties.put(key, x_sample_width);
             }
             else if (key.equals("y_fill")) {
                 double y_fill = parser.parseIDLScalar(value);
                 if (y_fill == Double.NaN)
                     throw new IOException("Could not parse \"" + value + "\" at line " + lineNumber);
-                properties.put(key, new Double(y_fill));
+                properties.put(key, y_fill);
             }
             else if (key.equals("z_fill")) {
                 double z_fill = (float)parser.parseIDLScalar(value);
                 if (z_fill == Float.NaN)
                     throw new IOException("Could not parse \"" + value + "\" at line " + lineNumber);
-                properties.put(key, new Float(z_fill));
+                properties.put(key, z_fill);
             }
             else if (key.equals("y_coordinate")) {
                 array = parser.parseIDLArray(value);
@@ -150,7 +150,7 @@ public class Das1ToDas2 {
                 catch (NumberFormatException nfe) {
                     throw new IOException("Could not parse \"" + value + "\" at line " + lineNumber);
                 }
-                properties.put(key, new Integer(ny));
+                properties.put(key, ny);
             }
             else if (key.equals("items")) {
                 int items;
@@ -160,7 +160,7 @@ public class Das1ToDas2 {
                 catch (NumberFormatException nfe) {
                     throw new IOException("Could not parse \"" + value + "\" at line " + lineNumber);
                 }
-                properties.put(key, new Integer(items));
+                properties.put(key, items);
             }
             else if (value.charAt(0)=='\'' && value.charAt(value.length()-1)=='\'') {
                 properties.put(key, value.substring(1, value.length()-1));
