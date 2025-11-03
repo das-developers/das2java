@@ -2631,7 +2631,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * presumably because it is somewhere else on the plot.
      * @return 
      */
-    private String resolveAxisLabel() {
+    protected String resolveAxisLabel() {
         String sunits= getDatumRange().getUnits().toString();
         if ( sunits.contains("!A") || sunits.contains("!E")  // Make sure the return is present.
                             || sunits.contains("!B") || sunits.contains("!D") ) {
