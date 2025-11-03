@@ -1025,9 +1025,10 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         String unitsstr= UnitsUtil.isTimeLocation( axis.getDataMinimum().getUnits() ) ? "UTC" : axis.getDataMinimum().getUnits().toString();
         String dpos;
         dpos= String.format( "\"left\":%d, \"right\":%d",   (int)plot.getColumn().getDMinimum(), (int)plot.getColumn().getDMaximum() );
+        String xlabel= axis.resolveAxisLabel().replaceAll("\"", "\\\"");
         json.append( String.format( "%s\"xaxis\": { \"label\":\"%s\", \"min\":%s, \"max\":%s, %s, \"type\":\"%s\", \"flipped\":%s, \"units\":\"%s\" },\n",
                 indent,
-                axis.getLabel().replaceAll("\"", "\\\"") ,
+                xlabel,
                 minstr, maxstr, dpos,
                 axis.isLog() ? "log" : "lin",
                 axis.isFlipped() ? "true": "false",
@@ -1046,10 +1047,11 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         unitsstr= UnitsUtil.isTimeLocation( axis.getDataMinimum().getUnits() ) ? "UTC" : axis.getDataMinimum().getUnits().toString();
         dpos= String.format( "\"top\":%d, \"bottom\":%d",   (int)plot.getRow().getDMinimum(), (int)plot.getRow().getDMaximum() );
         
+        String ylabel= axis.resolveAxisLabel().replaceAll("\"", "\\\"");
         if ( inclColorbar ) {
             json.append( String.format( "%s\"yaxis\": { \"label\":\"%s\", \"min\":%s, \"max\":%s, %s, \"type\":\"%s\", \"flipped\":%s, \"units\":\"%s\" },\n",
                 indent,
-                axis.getLabel().replaceAll("\"", "\\\"") ,
+                ylabel,
                 minstr, maxstr, dpos,
                 axis.isLog() ? "log" : "lin",
                 axis.isFlipped() ? "true": "false",
@@ -1057,7 +1059,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         } else {
             json.append( String.format( "%s\"yaxis\": { \"label\":\"%s\", \"min\":%s, \"max\":%s, %s, \"type\":\"%s\", \"flipped\":%s, \"units\":\"%s\" }%s\n",
                 indent,
-                axis.getLabel().replaceAll("\"", "\\\"") ,
+                ylabel,
                 minstr, maxstr, dpos,
                 axis.isLog() ? "log" : "lin",
                 axis.isFlipped() ? "true": "false",
@@ -1084,9 +1086,10 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
                 pos[1]= cb.getRow().getDMaximum()-2;  // flip over because 0,0 is upper-left.
                 pos[3]= cb.getRow().getDMinimum()+1;  // tweak to get inside the axis.  This is all just to get ballpark Z values anyway...       
             }
+            String zlabel= cb.resolveAxisLabel().replaceAll("\"", "\\\"");
             json.append( String.format( "%s\"zaxis\": { \"label\":\"%s\", \"min\":%s, \"max\":%s, \"minpixel\":[%d,%d], \"maxpixel\":[%d,%d], \"type\":\"%s\", \"units\":\"%s\" }%s\n",
                 indent,
-                cb.getLabel().replaceAll("\"", "\\\"") ,
+                zlabel,
                 minstr, maxstr, pos[0], pos[1], pos[2], pos[3],
                 cb.isLog() ? "log" : "lin",
                 unitsstr, isInList ? "," : "" ) );
@@ -1115,7 +1118,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         json.append( String.format("{ \"size\":[%d,%d],\n", this.getWidth(),this.getHeight() ) );
         json.append( String.format("  \"numberOfPlots\":%d,\n",plots.size() ) );
 
-        if ( plots.size()>0 ) {
+        if ( !plots.isEmpty() ) {
             json.append("  \"plots\": [\n");
             DasPlot lastPlot= plots.get( plots.size()-1 );
             for ( DasPlot p: plots ) {
@@ -1142,11 +1145,11 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
      * tag will contain:
      *<blockquote><pre>{@code
      *   "size:[640,480]"
-     *   "numberOfPlots:0"   
+     *   "numberOfPlots:1"   
      *   "plots: { ... }"  where each plot contains:
      *   "title" "xaxis" "yaxis"
      *}</pre></blockquote>
-     * See http://autoplot.org/richPng.
+     * See https://autoplot.org/richPng.
      * It is the responsibility of the caller to close the stream.
      * @param out the outputStream. This is left open, so the opener code must close it!
      * @param w width in pixels
