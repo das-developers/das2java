@@ -2580,6 +2580,23 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 lines= Math.min( MAX_TCA_LINES, bds.length() );
             }
             
+            Units u= getUnits();
+            
+            if ( UnitsUtil.isRatioMeasurement(u) ) {
+                String ss= getLabel();
+                ss= ss.replace("%{RANGE}","").trim();
+                if ( ss.trim().length()==0 ) {
+                    QDataSet dep0= (QDataSet)ltcaData.property(QDataSet.DEPEND_0);
+                    String ll= (String)dep0.property(QDataSet.LABEL);
+                    if ( ll==null ) ll= (String)dep0.property(QDataSet.NAME);
+                    if ( ll==null ) ll= "";
+                    ss= ll;
+                }
+                idlt.setString( g, ss );
+                width = (int) Math.floor(idlt.getWidth() + 0.5);
+                leftEdge = rightEdge - width;
+                idlt.draw(g, (float) leftEdge, (float) baseLine);
+            }
             for (int i = 0; i < lines; i++) {
                 baseLine += lineHeight;
                 String ss;
@@ -2603,7 +2620,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                         ss="   ";
                     }
                     if ( ss.contains("%{") ) {
-                        Units u= (Units)bds.property( QDataSet.UNITS, i );
+                        u= (Units)bds.property( QDataSet.UNITS, i );
                         ss= resolveString( ss, "UNITS", u.toString() );
                     }
                 }
@@ -2611,6 +2628,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
                 width = (int) Math.floor(idlt.getWidth() + 0.5);
                 leftEdge = rightEdge - width;
+                //Rectangle2D bounds= idlt.getBounds2D();
+                //g.fill(bounds);
                 idlt.draw(g, (float) leftEdge, (float) baseLine);
             }
         }
