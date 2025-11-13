@@ -2569,17 +2569,13 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         int tick_label_gap_2023 = getFontMetrics(tickLabelFont).stringWidth(" ");
         int rightEdge = DMin - tickLabelFontMetrics.stringWidth("0000") - tick_label_gap_2023;
         GrannyTextRenderer idlt = GraphUtil.newGrannyTextRenderer();
-        /*
-        idlt.setString(this.getGraphics(), "SCET");
-        int width = (int)Math.ceil(idlt.getWidth());
-        int leftEdge = rightEdge - width;
-        idlt.draw(g, (float)leftEdge, (float)baseLine);
-        */
         int width, leftEdge;
         
         QDataSet ltcaData= tcaData; // local reference for thread safety
         String[] ltcaLabels= this.tcaLabels.split(";");
-        if ( ltcaLabels.length==1 && ltcaLabels[0].trim().equals("") ) ltcaLabels=null;
+        if ( ltcaLabels.length==1 && ltcaLabels[0].trim().equals("") ) {
+            ltcaLabels=null;
+        }
                  
         if ( ltcaData==null ) {
             baseLine += lineHeight;
@@ -2587,7 +2583,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             idlt.draw( g, (float)(rightEdge-idlt.getWidth()), (float)baseLine );
         } else {
             String xlabel=""; // first (topmost) tick
-            if ( ltcaLabels.length==ltcaData.length(0)+1 ) {
+            if ( ltcaLabels!=null && ltcaLabels.length==ltcaData.length(0)+1 ) {
                 xlabel= ltcaLabels[0];
                 ltcaLabels= Arrays.copyOfRange(ltcaLabels,1,ltcaLabels.length);
             }
@@ -2603,7 +2599,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                     lines= ltcaLabels.length;
                 }
             } else {
-                lines= Math.min( MAX_TCA_LINES, ltcaLabels.length );
+                if ( ltcaLabels!=null ) {
+                    lines= Math.min( MAX_TCA_LINES, ltcaLabels.length );
+                } else {
+                    lines= Math.min( MAX_TCA_LINES, bds.length() );
+                }
             }
             
             Units u= getUnits();
