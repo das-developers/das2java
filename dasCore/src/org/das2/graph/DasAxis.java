@@ -1270,7 +1270,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         } else {
             try {
                 tcaFunction= tcaFunction( dataset );
-                maybeStartTcaTimer();
+                maybeStartTCATimer();
                 this.tcaData= null;
                 if ( tcaFunction==null ) {
                     throw new IllegalArgumentException("unable to implement tca QFunction: "+dataset );
@@ -1300,7 +1300,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         return super.isDirty() || ( drawTca && tcaIsLoading );
     }
         
-    private void maybeStartTcaTimer() {
+    /**
+     * Start the timer for reloading TCAs if is hasn't been started already.
+     * @see #loadTCASoon() 
+     */
+    private void maybeStartTCATimer() {
         logger.fine("enter maybeStartTcaTimer");
         final DasCanvas lcanvas= getCanvas();
         
@@ -1323,11 +1327,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                         if ( lcanvas!=null ) {
                             lcanvas.performingChange( DasAxis.this, tcaLock );
                         } else {
-                            maybeStartTcaTimer();
+                            maybeStartTCATimer();
                             return;
                         }
                         try {
-                            updateTCASoon();
+                            loadTCASoon();
                         } finally {
                             lcanvas.changePerformed( DasAxis.this, tcaLock );
                             tcaNeedsPainting= true;
@@ -1352,7 +1356,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     public synchronized void setTcaFunction( QFunction f ) {
         QFunction oldF= this.tcaFunction;
         this.tcaFunction= f;
-        maybeStartTcaTimer();
+        maybeStartTCATimer();
         markDirty("tcaFunction");
         update();
                 
@@ -1743,7 +1747,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         if ( oldTicks!=null && !oldTicks.equals(ticks) ) {
             firePropertyChange(PROP_TICKVALUES, oldTicks, ticks);
             updateTickV();
-            maybeStartTcaTimer();
+            maybeStartTCATimer();
             if ( dasPlot!=null ) dasPlot.invalidateCacheImage();
         }
     }
@@ -2099,8 +2103,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     /**
      * update the TCA (ephemeris) axis on the current thread.
      * The lock will have pendingChange and changePerformed with it.
+     * @see #loadTCASoon() 
      */
-    private void updateTCAImmediately( ) {
+    private void loadTCAImmediately( ) {
         logger.fine("enter updateTCAImmediately...");
         synchronized (this) {
             logger.fine("...got lock.");
@@ -2124,8 +2129,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     
     /**
      * update the TCA dataset.  This will load the TCAs on a RequestProcessor thread sometime soon.
+     * @see #loadTCAImmediately() 
+     * @see #maybeStartTCATimer() 
      */
-    private void updateTCASoon() {
+    private void loadTCASoon() {
         final DasCanvas lcanvas= getCanvas();
         logger.log(Level.FINE, "updateTCASoon {0}", lcanvas);
         if ( lcanvas!=null ) {
@@ -2136,7 +2143,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 public void run() {
                    lcanvas.performingChange( DasAxis.this, tcaLock );
                    try {
-                       updateTCAImmediately( );
+                       loadTCAImmediately( );
                    } finally {
                        lcanvas.changePerformed( DasAxis.this, tcaLock );
                        tcaIsLoading= false;
@@ -4569,7 +4576,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         super.installComponent();
         QFunction ltcaFunction= this.tcaFunction; 
         if ( ltcaFunction!=null ) {
-            maybeStartTcaTimer();
+            maybeStartTCATimer();
         }
     }
   
