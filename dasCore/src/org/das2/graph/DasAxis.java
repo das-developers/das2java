@@ -4011,12 +4011,12 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 trLabelRect.y= (bottomPosition) - (int)DasDevicePosition.parseLayoutStr( labelOffset, getEmSize(), 0, 0 );
             }
         }
-
+        
         //Add room for the axis label
         Font labelFont = getLabelFont();
 
         GrannyTextRenderer gtr = GraphUtil.newGrannyTextRenderer();
-        gtr.setString(labelFont, getLabel());
+        gtr.setString(labelFont, resolveAxisLabel());
         int labelSpacing = (int) gtr.getHeight() + labelFont.getSize() / 2;
 
         boolean v= isVisible();
@@ -4134,13 +4134,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         //int maxLabelWidth = getMaxLabelWidth();
         //int tick_label_gap = getFontMetrics(tickLabelFont).stringWidth(" ");
 
-        //Add room for tick labels
+        //Add room for tick labels, does not include the axis label
         if (leftTickLabels) {
-            //int x = blTickRect.x - (maxLabelWidth + tick_label_gap);
-            //int y = DMin - tickLabelFont.getSize();
-            //int width = maxLabelWidth + tick_label_gap;
-            //int height = DMax - DMin + tickLabelFont.getSize() * 2;
-            //blLabelRect = setRectangleBounds(blLabelRect, x, y, width, height);
             blLabelRect = getLabelBounds(new Rectangle(blTickRect.x - 10, DMin, 10, DWidth));
             if ( labelOffset.length()>0 && axisLabel.length()>0 ) {
                 blLabelRect.x = (leftPosition+1) - (int)DasDevicePosition.parseLayoutStr( labelOffset, getEmSize(), DWidth, 0 );
@@ -4169,7 +4164,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         Font labelFont = getLabelFont();
 
         GrannyTextRenderer gtr = GraphUtil.newGrannyTextRenderer();
-        gtr.setString(labelFont, getLabel());
+        gtr.setString(labelFont, resolveAxisLabel());
+
         int labelSpacing = (int) gtr.getHeight() + labelFont.getSize() / 2;
         if (leftLabel) {
             int x = blLabelRect.x - labelSpacing;
