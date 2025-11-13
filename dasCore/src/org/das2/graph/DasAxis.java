@@ -2580,12 +2580,18 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         QDataSet ltcaData= tcaData; // local reference for thread safety
         String[] ltcaLabels= this.tcaLabels.split(";");
         if ( ltcaLabels.length==1 && ltcaLabels[0].trim().equals("") ) ltcaLabels=null;
-        
+                 
         if ( ltcaData==null ) {
             baseLine += lineHeight;
             idlt.setString( g, "tcaData not available" );
             idlt.draw( g, (float)(rightEdge-idlt.getWidth()), (float)baseLine );
         } else {
+            String xlabel=""; // first (topmost) tick
+            if ( ltcaLabels.length==ltcaData.length(0)+1 ) {
+                xlabel= ltcaLabels[0];
+                ltcaLabels= Arrays.copyOfRange(ltcaLabels,1,ltcaLabels.length);
+            }
+
             QDataSet bds= (QDataSet) ltcaData.property(QDataSet.BUNDLE_1);
             
             int lines;
@@ -2597,13 +2603,16 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                     lines= ltcaLabels.length;
                 }
             } else {
-                lines= Math.min( MAX_TCA_LINES, bds.length() );
+                lines= Math.min( MAX_TCA_LINES, ltcaLabels.length );
             }
             
             Units u= getUnits();
             
             if ( UnitsUtil.isRatioMeasurement(u) ) {
                 String ss= getLabel();
+                if ( xlabel.length()>0 ) {
+                    ss= xlabel;
+                }
                 ss= ss.replace("%{RANGE}","").trim();
                 if ( ss.trim().length()==0 ) {
                     QDataSet dep0= (QDataSet)ltcaData.property(QDataSet.DEPEND_0);
@@ -3839,6 +3848,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 if ( ltcaData!=null ) bds= (QDataSet) ltcaData.property(QDataSet.BUNDLE_1);
                 if ( bds!=null && lines>bds.length() ) {
                     lines= bds.length();
+                }
+                String xlabel=""; // first (topmost) tick
+                if ( ltcaLabels.length==ltcaData.length(0)+1 ) {
+                    xlabel= ltcaLabels[0];
+                    ltcaLabels= Arrays.copyOfRange(ltcaLabels,1,ltcaLabels.length);
                 }
                 for (int i = 0; i < lines; i++) {
                     String ss;
