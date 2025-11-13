@@ -1418,8 +1418,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * input from the function, then call it for each tick.  We add the property
      * "CONTEXT_0" to be a BINS dataset indicating the overall range for the
      * read.
+     * @see #loadTCAImmediately() 
      */
-    private void updateTCADataSet() {
+    private void loadTCADataSet() {
         QFunction ltcaFunction= this.tcaFunction; 
         if ( ltcaFunction==null ) {
             this.tcaData= null;
@@ -2104,6 +2105,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * update the TCA (ephemeris) axis on the current thread.
      * The lock will have pendingChange and changePerformed with it.
      * @see #loadTCASoon() 
+     * @see #loadTCADataSet() 
      */
     private void loadTCAImmediately( ) {
         logger.fine("enter updateTCAImmediately...");
@@ -2117,7 +2119,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             SwingUtilities.invokeLater(run);
             
             try {
-                updateTCADataSet();
+                loadTCADataSet();
             } finally {
                 tcaProgress.finished();
                 repaint();
