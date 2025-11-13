@@ -1487,7 +1487,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             }
             timeDs.putProperty( QDataSet.BUNDLE_1, timeDs.slice(0).property(QDataSet.BUNDLE_0) );
 
+            // We now call the function to get the values at each tick.
             QDataSet tickss= ltcaFunction.values(timeDs);
+            
             if ( tickss instanceof JoinDataSet && tickss.length()>0 ) {
                 JoinDataSet jds= (JoinDataSet)tickss;
                 QDataSet bundle1= (QDataSet) jds.property(QDataSet.BUNDLE_1);
@@ -1501,6 +1503,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             if ( tickss.rank()!=2 ) {
                 throw new IllegalArgumentException("result of tcaFunction value() should be rank 1");
             }
+            
+            // see if there is one output description for each of the ticks.
             for ( int i=0; i<ltickV.length; i++ ) {
                 QDataSet ticks= tickss.slice(i);
                 if ( outDescriptor==null ) {
@@ -1531,6 +1535,13 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             if ( outDescriptor==null ) {
                 outDescriptor= (QDataSet)tickss.property(QDataSet.BUNDLE_1);
             }
+            
+            QDataSet dx1= (QDataSet)tickss.property(QDataSet.DEPEND_0);
+            if ( dx1!=null ) {
+                String label= Ops.guessLabel(dx1);
+                dep0.putProperty( QDataSet.LABEL, label );
+            }
+            
             ltcaData.putProperty( QDataSet.BUNDLE_1, outDescriptor ); //labels will come from here, units may be null.
             ltcaData.putProperty( QDataSet.DEPEND_0, dep0 );
 
