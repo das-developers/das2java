@@ -1,6 +1,8 @@
 
 package org.das2.qds;
 
+import org.das2.qds.ops.Ops;
+
 /**
  * Abstract class implements values and exampleOutput based on
  * value and exampleInput.
@@ -20,14 +22,37 @@ public abstract class AbstractQFunction implements QFunction {
      * @return rank M+1 set of values, where {@code value} returns rank M.
      */
     @Override
-    public QDataSet values(QDataSet vs ) {
+    public QDataSet values(QDataSet vs) {
         QDataSet v1= value( vs.slice(0) );
         int rank= v1.rank();
         int len= v1.length();
         JoinDataSet result= new JoinDataSet( v1 );
+        
+        WritableDataSet dep0ds=null;
+        boolean haveDep0= false;
+        
+        if ( vs.rank()==2 && vs.length(0)==1 ) { // each value has one input
+            dep0ds= ArrayDataSet.copy(Ops.slice1(vs,0));
+            QDataSet d1= (QDataSet)v1.property(QDataSet.CONTEXT_0);
+            if ( d1!=null ) {
+                dep0ds.putValue(0,d1.value());
+                dep0ds.putProperty(QDataSet.UNITS,d1.property(QDataSet.UNITS));
+                dep0ds.putProperty(QDataSet.LABEL,d1.property(QDataSet.LABEL));
+                dep0ds.putProperty(QDataSet.NAME,d1.property(QDataSet.NAME));
+                haveDep0= true;
+            }
+        }
+        
         QDataSet bds= null;
         for ( int i=1; i<vs.length(); i++ ) {
             v1= value( vs.slice(i) );
+            QDataSet d1= (QDataSet)v1.property(QDataSet.CONTEXT_0);
+            if ( haveDep0 && d1!=null ) {
+                assert dep0ds!=null;
+                dep0ds.putValue(i,d1.value());
+            } else {
+                // put fill value in
+            }
 //            //vap+das2server:http://planet.physics.uiowa.edu/das/das2Server?dataset=Voyager/1/Ephemeris/Heliographic_Inertial&start_time=1998-09-16T17:53:30.402Z&end_time=2001-01-31T14:08:19.855Z&interval=60
 //            if ( Ops.subtract( vs.slice(i).slice(0), Ops.dataset("2000-01-01T00:00:00Z" ) ).value()==0.0 ) {
 //                System.err.println( String.format( "%s: %s", vs.slice(i).slice(0).svalue(), v1.slice(0).svalue() ) );
@@ -48,6 +73,9 @@ public abstract class AbstractQFunction implements QFunction {
         }
         if ( bds!=null ) {
             result.putProperty(QDataSet.BUNDLE_1,bds);
+        }
+        if ( dep0ds!=null ) {
+            result.putProperty(QDataSet.DEPEND_0,dep0ds);
         }
         return result;
     }
