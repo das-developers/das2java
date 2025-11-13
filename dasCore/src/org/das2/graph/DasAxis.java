@@ -3850,7 +3850,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                     lines= bds.length();
                 }
                 String xlabel=""; // first (topmost) tick
-                if ( ltcaLabels.length==ltcaData.length(0)+1 ) {
+                if ( ltcaData!=null && ltcaLabels.length==ltcaData.length(0)+1 ) {
                     xlabel= ltcaLabels[0];
                     ltcaLabels= Arrays.copyOfRange(ltcaLabels,1,ltcaLabels.length);
                 }
