@@ -45,6 +45,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.lang.reflect.InvocationTargetException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -97,6 +98,7 @@ import org.das2.datum.UnitsUtil;
 import org.das2.datum.format.DatumFormatterFactory;
 import org.das2.graph.DasPlot;
 import org.das2.graph.Painter;
+import org.das2.qds.BundleDataSet;
 import org.das2.qds.DataSetOps;
 import org.das2.qds.DataSetUtil;
 import org.das2.qds.QDataSet;
@@ -218,10 +220,10 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
             Datum xt= that.data[0].convertTo( myt.getUnits() );
             Datum diff= myt.subtract(xt);
             if ( myt.getUnits() instanceof TimeLocationUnits ) {
-                double micros= diff.doubleValue(Units.microseconds);
-                if ( micros<-100 ) {
+                double nanos= diff.doubleValue(Units.nanoseconds);
+                if ( nanos<-100 ) {
                     return -1;
-                } else if ( micros>100 ) {
+                } else if ( nanos>100 ) {
                     return 1;
                 } else {
                     return 0;
@@ -2267,7 +2269,11 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
      * @see #addDataPoint(org.das2.qds.QDataSet) 
      */
     public void addDataPoints( QDataSet ds ) {
-        
+        try {
+            SwingUtilities.invokeAndWait( () -> { updateButton.setText("xxxxx");} );
+        } catch (InterruptedException | InvocationTargetException ex) {
+            logger.log(Level.SEVERE, null, ex);
+        }
         boolean active0= this.active;
         
         Map planesMap = new LinkedHashMap();
@@ -2281,7 +2287,11 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
             return;
         }
         
-        dep0= Ops.slice1( ds,0  );
+        if ( ds instanceof BundleDataSet ) {
+            dep0= ((BundleDataSet) ds).unbundle(0); // preserve microsecond resolution
+        } else {
+            dep0= Ops.slice1( ds,0  );
+        }
         if ( dep0.property(QDataSet.CADENCE) != null) {
             DataPointRecorder.this.xTagWidth = DataSetUtil.asDatum( (QDataSet)dep0.property(QDataSet.CADENCE) );
         } else {
@@ -2296,13 +2306,19 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
                     planesMap.put( planes[j], DataSetUtil.asDatum( DataSetOps.unbundle( ds, planes[j] ).slice(i) ) );
                 }
             }
-            addDataPoint( DataSetUtil.asDatum( ds.slice(i).slice(0) ), DataSetUtil.asDatum( ds.slice(i).slice(1) ), planesMap );
+            addDataPoint( DataSetUtil.asDatum( dep0.slice(i) ), DataSetUtil.asDatum( ds.slice(i).slice(1) ), planesMap );
         }
 
         active= active0;
         
         updateClients();
-                
+        try {
+            SwingUtilities.invokeAndWait( () -> { updateButton.setText("Update");} );
+        } catch (InterruptedException | InvocationTargetException ex) {
+            logger.log(Level.SEVERE, null, ex);
+        }
+         
+        update();
     }
     
     /**
