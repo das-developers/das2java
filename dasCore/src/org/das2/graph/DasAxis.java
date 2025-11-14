@@ -2650,7 +2650,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                     }
                     if ( ss.contains("%{") ) {
                         u= (Units)bds.property( QDataSet.UNITS, i );
-                        ss= resolveString( ss, "UNITS", u.toString() );
+                        if ( u==null ) u= Units.dimensionless;
+                        ss= resolveString( ss, QDataSet.UNITS, u.toString() );
                     }
                 }
                 idlt.setString( g, ss );
@@ -2687,7 +2688,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 sunits= sunits + "!N";
             }
         }
-        String result= resolveString( axisLabel, "UNITS", sunits);
+        String result= resolveString( axisLabel, QDataSet.UNITS, sunits);
         DatumRange dr= getDatumRange();
         String sdr;
         if ( UnitsUtil.isTimeLocation( dr.getUnits() ) ) {
@@ -3876,7 +3877,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                         }
                         if ( ss.contains("%{") ) {
                             Units u= (Units)bds.property( QDataSet.UNITS, i );
-                            ss= resolveString( ss, "UNITS", u.toString() );
+                            if ( u==null ) u= Units.dimensionless;
+                            ss= resolveString( ss, QDataSet.UNITS, u.toString() );
                         }
                     }
                     if ( ss==null ) ss= "   ";
