@@ -11,7 +11,10 @@ import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
 import org.das2.util.monitor.ProgressMonitor;
 import java.io.*;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -339,6 +342,29 @@ public class AsciiParser {
     }
 
     /**
+     * return the reader for the stream, which can be encoded in 
+     * UTF16 or UTF8
+     * @param file
+     * @return a Reader
+     */
+    public static Reader getReader( File file ) throws IOException {
+        Charset charset= StandardCharsets.UTF_8;
+        
+        // see that the encoding is ASCII
+        if ( file.length()>2 ) {
+            ByteBuffer buff= new FileInputStream( file ).getChannel().map( FileChannel.MapMode.READ_ONLY, 0, 2 );
+            byte c0= buff.get(0);
+            byte c1= buff.get(1);
+            if ( c0==-1 && c1==-2 ) {
+                charset= StandardCharsets.UTF_16LE;
+            } else if ( c0==-2 && c1==-1 ) {
+                charset= StandardCharsets.UTF_16BE;
+            }
+        }
+        return new FileReader(file,charset);
+    }
+    
+    /**
      * read in records, allowing for a header of non-records before
      * guessing the delim parser.  This will return a reference to the
      * DelimParser and set skipLines.  DelimParser header field is set as well.
@@ -353,9 +379,9 @@ public class AsciiParser {
         
         BufferedReader reader = null;
         DelimParser result= null;
-
+                
         try {
-            reader = new BufferedReader( new FileReader(filename) );
+            reader = new BufferedReader( getReader( new File(filename) ) );
 
             String line;
             String lastLine = null;
