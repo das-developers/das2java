@@ -1318,6 +1318,14 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
     }
 
     /**
+     * Set the name of the file for the File->Save action/
+     * @param file 
+     */
+    public void setCurrentFile( File file ) {
+        this.saveFile= file;
+    }
+    
+    /**
      * shows the current name for the file.
      * @return the current name for the file.
      */
