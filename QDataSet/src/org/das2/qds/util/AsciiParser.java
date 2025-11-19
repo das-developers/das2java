@@ -361,7 +361,7 @@ public class AsciiParser {
                 charset= StandardCharsets.UTF_16BE;
             }
         }
-        return new FileReader(file,charset);
+        return new InputStreamReader( new FileInputStream(file),charset);
     }
     
     /**
@@ -1353,10 +1353,10 @@ public class AsciiParser {
     Datum dwhereValue= null;
     DatumRange dwhereWithin= null;
     
-    private Comparator<String> whereComp= new Comparator() {
+    private Comparator<String> whereComp= new Comparator<String>() {
         @Override
         @SuppressWarnings("unchecked")
-        public int compare(Object o1, Object o2) {
+        public int compare(String o1, String o2) {
             if ( o1.equals(o2) ) {
                 return 0;
             } else {
@@ -1451,17 +1451,14 @@ public class AsciiParser {
                 this.whereEq= true;
                 this.whereNe= false;
                 final Pattern p= Pattern.compile(sval);
-                this.whereComp= new Comparator() {
-                    @Override
-                    public int compare(Object o1, Object o2) {
-                        String s1= o1.toString();
-                        if ( p.matcher(s1).matches() ) {
-                            return 0;
-                        } else {
-                            return 1;
-                        }
+                this.whereComp= (String o1, String o2) -> {
+                    String s1= o1;
+                    if ( p.matcher(s1).matches() ) {
+                        return 0;
+                    } else {
+                        return 1;
                     }
-                };
+        };
                 break;
             default:
                 throw new IllegalArgumentException("where constraint not supported: "+op);
