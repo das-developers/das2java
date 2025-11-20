@@ -2986,6 +2986,18 @@ public final class Ops {
         MutablePropertyDataSet result= 
                 applyBinaryOp(ds1, ds2, (BinaryOp) (double d1, double d2) -> uc.convert(d1-base ) % d2);        
         result.putProperty( QDataSet.UNITS, u );
+        if ( ds2.rank()==0 ) {
+            double d= ds2.value();
+            if ( d==24 ) {
+                result.putProperty(QDataSet.AVERAGE_TYPE,QDataSet.VALUE_AVERAGE_TYPE_MOD24);
+            } else if ( d==360 ) {
+                result.putProperty(QDataSet.AVERAGE_TYPE,QDataSet.VALUE_AVERAGE_TYPE_MOD360);
+            } else if ( d==Math.PI ) {
+                result.putProperty(QDataSet.AVERAGE_TYPE,QDataSet.VALUE_AVERAGE_TYPE_MODPI);
+            } else if ( d==TAU ) {
+                result.putProperty(QDataSet.AVERAGE_TYPE,QDataSet.VALUE_AVERAGE_TYPE_MODTAU);
+            }
+        }
         return result;
     }
 
@@ -3013,6 +3025,18 @@ public final class Ops {
             return ( t<0 ) ? t+d2 : t;
         });
         result.putProperty( QDataSet.UNITS, u );
+        if ( ds2.rank()==0 ) {
+            double d= ds2.value();
+            if ( d==24 ) {
+                result.putProperty(QDataSet.AVERAGE_TYPE,QDataSet.VALUE_AVERAGE_TYPE_MOD24);
+            } else if ( d==360 ) {
+                result.putProperty(QDataSet.AVERAGE_TYPE,QDataSet.VALUE_AVERAGE_TYPE_MOD360);
+            } else if ( d==Math.PI ) {
+                result.putProperty(QDataSet.AVERAGE_TYPE,QDataSet.VALUE_AVERAGE_TYPE_MODPI);
+            } else if ( d==TAU ) {
+                result.putProperty(QDataSet.AVERAGE_TYPE,QDataSet.VALUE_AVERAGE_TYPE_MODTAU);
+            }
+        }
         return result;
     }
 
