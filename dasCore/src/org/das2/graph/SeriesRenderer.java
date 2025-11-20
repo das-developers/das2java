@@ -969,6 +969,7 @@ public class SeriesRenderer extends Renderer {
     private DataGeneralPathBuilder getPathBuilderForData( DasAxis xAxis, DasAxis yAxis, QDataSet xds, QDataSet vds ) {
         DataGeneralPathBuilder pathBuilder= new DataGeneralPathBuilder(xAxis,yAxis);
 
+        Datum modulo = null;
         Datum sw = null;
         try {// TODO: this really shouldn't be here, since we calculate it once.  We keep a cache of cadence, so this is okay
             sw= getCadence( xds, vds, firstIndex, lastIndex );
@@ -1122,12 +1123,28 @@ public class SeriesRenderer extends Renderer {
             
             DataGeneralPathBuilder pathBuilder= getPathBuilderForData( xAxis, yAxis, xds, vds );
             pathBuilder.setHistogramMode(histogram);
-            if ( moduloY.value()>0 ) {
+            
+            Datum lmoduloY= moduloY;
+            
+            String avgTypeMody= (String)vds.property(QDataSet.AVERAGE_TYPE);
+            if ( avgTypeMody!=null && lmoduloY.value()==0 ) {
+                if ( avgTypeMody.equals(QDataSet.VALUE_AVERAGE_TYPE_MOD24) ) {
+                    lmoduloY= yUnits.createDatum(24/2);
+                } else if ( avgTypeMody.equals(QDataSet.VALUE_AVERAGE_TYPE_MOD360) ) {
+                    lmoduloY= yUnits.createDatum(360/2);
+                } else if ( avgTypeMody.equals(QDataSet.VALUE_AVERAGE_TYPE_MODPI) ) {
+                    lmoduloY= yUnits.createDatum(Math.PI/2);
+                } else if ( avgTypeMody.equals(QDataSet.VALUE_AVERAGE_TYPE_MODTAU) ) {
+                    lmoduloY= yUnits.createDatum(Math.PI);
+                }
+            }
+            
+            if ( lmoduloY.value()>0 ) {
                 try {
                     if ( yAxis.getUnits()==Units.dimensionless ) {
-                        pathBuilder.setModuloY(Units.dimensionless.createDatum(moduloY.doubleValue(moduloY.getUnits())));
+                        pathBuilder.setModuloY(Units.dimensionless.createDatum(lmoduloY.doubleValue(lmoduloY.getUnits())));
                     } else {
-                        pathBuilder.setModuloY(moduloY);
+                        pathBuilder.setModuloY(lmoduloY);
                     }
                 } catch ( InconvertibleUnitsException ex ) {
                     logger.log( Level.SEVERE, ex.getMessage(), ex );
