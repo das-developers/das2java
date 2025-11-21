@@ -4758,7 +4758,9 @@ public final class Ops {
     }
     
     /**
-     * reset the random sequence used by randu and randn to the given seed.
+     * reset the random sequence used by randu and randn to the given seed.  Note if there
+     * if there are multiple threads using random functions, this becomes 
+     * unpredictable.
      * @param seed the new seed for the sequence.
      * @return the seed (which will be the same as the input).
      */
