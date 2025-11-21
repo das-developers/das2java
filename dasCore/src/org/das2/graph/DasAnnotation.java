@@ -463,7 +463,7 @@ public class DasAnnotation extends DasCanvasComponent {
      *
      * @param string the text
      * @see GrannyTextRenderer
-     * @see https://github.com/autoplot/documentation/blob/main/md/GrannyText.md
+     * @see https://github.com/das-developers/das2java/wiki/Granny-Text-Strings
      */
     public void setText(String string) {
         String oldValue= this.templateString;
