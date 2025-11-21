@@ -471,21 +471,12 @@ public class DasAnnotation extends DasCanvasComponent {
         this.templateString = string;
         if ( this.getGraphics()!=null ) {
             if ( url.length()==0 ) {
-                if ( string.startsWith("http:") || string.startsWith("https:" ) || string.startsWith("file:" ) ) {
-                    try {
-                        img= ImageIO.read(new URL(string));
-                        gtr= null;
-                    } catch ( IOException ex ) {
-                        gtr= GraphUtil.newGrannyTextRenderer();
-                        gtr.setString( this.getGraphics(), getString() );
-                    }
-                } else {
-                    gtr= GraphUtil.newGrannyTextRenderer();
-                    gtr.setString( this.getGraphics(), getString() );
-                    for ( Entry<String,GrannyTextRenderer.Painter> ee: painters.entrySet() ) {
-                        gtr.addPainter( ee.getKey(), ee.getValue() );
-                    }
+                gtr= GraphUtil.newGrannyTextRenderer();
+                gtr.setString( this.getGraphics(), getString() );
+                for ( Entry<String,GrannyTextRenderer.Painter> ee: painters.entrySet() ) {
+                    gtr.addPainter( ee.getKey(), ee.getValue() );
                 }
+                gtr.setGlow(this.isGlow());
             }
             resize();
         }
@@ -514,6 +505,7 @@ public class DasAnnotation extends DasCanvasComponent {
     /**
      * set the URL to the location of a png or jpg file.  If this is set,
      * then the text property is ignored.  
+     * @deprecated -- use text of "<img src=''>"
      * @param url 
      */
     public void setUrl(String url) {
@@ -1956,21 +1948,20 @@ public class DasAnnotation extends DasCanvasComponent {
 
     public static final String PROP_GLOW = "glow";
 
+    private boolean glow= false;
+    
     public boolean isGlow() {
-        if ( this.gtr==null ) {
-            return false;
-        } else { 
-            return this.gtr.isGlow();
-        }
+        return glow;
     }
 
     public void setGlow(boolean glow) {
-        boolean oldGlow = isGlow();
+        boolean oldGlow = glow;
+        this.glow= glow;
         if ( this.gtr!=null ) {
             this.gtr.setGlow(glow);
             if ( oldGlow!=glow ) repaint();
-            firePropertyChange(PROP_GLOW, oldGlow, glow);
         } 
+        firePropertyChange(PROP_GLOW, oldGlow, glow);
     }
     
     private PlotSymbol symbol = DefaultPlotSymbol.NONE;
