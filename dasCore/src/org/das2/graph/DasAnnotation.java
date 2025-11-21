@@ -1968,6 +1968,7 @@ public class DasAnnotation extends DasCanvasComponent {
         boolean oldGlow = isGlow();
         if ( this.gtr!=null ) {
             this.gtr.setGlow(glow);
+            repaint();
             firePropertyChange(PROP_GLOW, oldGlow, glow);
         } 
     }
