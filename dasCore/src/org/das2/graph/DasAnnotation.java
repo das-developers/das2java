@@ -458,13 +458,12 @@ public class DasAnnotation extends DasCanvasComponent {
     public static final String PROP_TEXT = "text";
     
     /**
-     * Set the text, which can be Granny Text, or image URL. (Image URL is 
-     * deprecated, use url property instead.)  If the url property has length>0,
+     * Set the text, which can be Granny Text. If the url property has length>0,
      * then this is ignored.
-     * URLs must start with http:, https:, or file:.
      *
      * @param string the text
      * @see GrannyTextRenderer
+     * @see https://github.com/autoplot/documentation/blob/main/md/GrannyText.md
      */
     public void setText(String string) {
         String oldValue= this.templateString;
