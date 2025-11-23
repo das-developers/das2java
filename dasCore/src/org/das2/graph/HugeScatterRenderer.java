@@ -353,12 +353,28 @@ public class HugeScatterRenderer extends Renderer {
             if ( !xunits.isConvertibleTo(xAxis.getUnits() ) ) {
                 xunits= xAxis.getUnits();
             }
+            
+            int ylimit=10000;
+            if ( !yAxis.isLog() ) {
+                Units yunits= SemanticOps.getUnits(vds);
+                String avgType= (String)vds.property(QDataSet.AVERAGE_TYPE);
+                if ( QDataSet.VALUE_AVERAGE_TYPE_MOD24.equals(avgType) ) {
+                    ylimit= (int)Math.ceil( yAxis.transform( yAxis.getDataMinimum() ) 
+                            - yAxis.transform( yAxis.getDataMinimum().add(24,yunits) ) );
+                } else if ( QDataSet.VALUE_AVERAGE_TYPE_MOD360.equals(avgType) ) {
+                    ylimit= (int)Math.ceil( yAxis.transform( yAxis.getDataMinimum() ) 
+                            - yAxis.transform( yAxis.getDataMinimum().add(360,yunits) ) );
+                }
+                ylimit= ylimit/2;
+            }   
+            
             for (int i = firstIndex; i < lastIndex; i++) {
                 boolean isValid = wds.value(i)>0;
                 if (!isValid) {
                     state = STATE_MOVETO;
                 } else {
                     int iy = (int) yAxis.transform( vds.value(i), dsunits );
+                    int dy= Math.abs( iy-iy0 );
                     int ix = (int) xAxis.transform( xds.value(i), xunits );
                     if ( (ix-ix0)*(ix-ix0) > ixstepLimitSq ) state=STATE_MOVETO;
                     switch (state) {
@@ -368,11 +384,13 @@ public class HugeScatterRenderer extends Renderer {
                             iy0 = iy;
                             break;
                         case STATE_LINETO:
-                            g.draw(new Line2D.Float(ix0, iy0, ix, iy));
+                            if ( dy < ylimit ) {
+                                g.draw(new Line2D.Float(ix0, iy0, ix, iy));
+                            }
                             g.fillRect(ix, iy, 1, 1);
                             ix0 = ix;
                             iy0 = iy;
-                            break;
+                            
                         default:
                             logger.log(Level.INFO, "state: {0}", state);                            
                     }
