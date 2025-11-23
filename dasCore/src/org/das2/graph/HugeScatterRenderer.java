@@ -231,9 +231,9 @@ public class HugeScatterRenderer extends Renderer {
                 return;
             }
         }
-        BufferedImage localPlotImage;
+        BufferedImage lplotImage; // local copy for multi-thread safety
         synchronized (this) {
-            localPlotImage= this.plotImage;
+            lplotImage= this.plotImage;
         }
         
         logger.entering( "org.das2.graph.HugeScatterRenderer", "render");
@@ -258,7 +258,7 @@ public class HugeScatterRenderer extends Renderer {
         }
 
         Graphics2D g2 = (Graphics2D) g1;
-        if (localPlotImage == null) {
+        if (lplotImage == null) {
             if (lastException != null) {
                 if (lastException instanceof NoDataInIntervalException) {
                     parent.postMessage(this, "no data in interval:!c" + lastException.getMessage(), DasPlot.WARNING, null, null);
@@ -279,7 +279,7 @@ public class HugeScatterRenderer extends Renderer {
             int y = (int) (p.getY());
             if (parent.getCanvas().isPrintingThread() && print300dpi) {
                 AffineTransformOp atop = new AffineTransformOp(AffineTransform.getScaleInstance(4, 4), AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
-                BufferedImage image300 = atop.filter((BufferedImage) localPlotImage, null);
+                BufferedImage image300 = atop.filter((BufferedImage) lplotImage, null);
                 AffineTransform atinv;
                 try {
                     atinv = atop.getTransform().createInverse();
@@ -289,7 +289,7 @@ public class HugeScatterRenderer extends Renderer {
                 atinv.translate(x * 4, y * 4);
                 g2.drawImage(image300, atinv, getParent());
             } else {
-                g2.drawImage(localPlotImage, x, y, getParent());
+                g2.drawImage(lplotImage, x, y, getParent());
             }
         }
 
