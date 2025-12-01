@@ -143,7 +143,7 @@ public class AsciiParser {
     /**
      * detect identifiers for columns.  This is the text leading up to the first [ or (, composed of letters, numbers, spaces, dashes, and underscores.
      */
-    private final static Pattern COLUMN_ID_HEADER_PATTERN = Pattern.compile("\\s*\"?([a-zA-Z][a-zA-Z \\-_0-9]*)([\\(\\[]([a-zA-Z_\\!\\.\\[\\-\\]\\(\\)0-9//\\*\\^\\%]*)[\\)\\]])?\"?\\s*");
+    private final static Pattern COLUMN_ID_HEADER_PATTERN = Pattern.compile("\\s*\"?([a-zA-Z][a-zA-Z \\-_0-9\\#]*)([\\(\\[]([a-zA-Z_\\!\\.\\[\\-\\]\\(\\)0-9//\\*\\^\\%\\\u00B0\\#]*)[\\)\\]])?\"?\\s*");
     /**
      * allow columns to be labeled with some datum ranges, such as 10.0-13.1.  We convert these into an identifier, but depend1labels will present as-is.
      * Note this pattern will match "-999.000" so check groups 2 and 4 for non null.

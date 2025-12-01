@@ -34,6 +34,14 @@ public class ImageUtil {
      * @throws IOException 
      */
     public static String getJSONMetadata( File file ) throws IOException {
+
+        String plotInfoName= file.getName();
+        int i= plotInfoName.lastIndexOf(".");
+        if ( i>-1 ) plotInfoName= plotInfoName.substring(0,i) + ".plotInfo";
+        File plotInfoFile= new File( file.getParentFile(), plotInfoName );
+        if ( plotInfoFile.exists() ) {
+            return FileUtil.readFileToString(plotInfoFile);
+        }
                 
         try (ImageInputStream iis = ImageIO.createImageInputStream(file)) {
             Iterator<ImageReader> readers = ImageIO.getImageReaders(iis);
@@ -51,7 +59,7 @@ public class ImageUtil {
                 try {
                     IIOMetadataNode n= (IIOMetadataNode)metadata.getAsTree("javax_imageio_png_1.0");
                     NodeList nl= n.getElementsByTagName("tEXtEntry");
-                    for ( int i=0; i<nl.getLength(); i++ ) {
+                    for ( i=0; i<nl.getLength(); i++ ) {
                         Element e= (Element)nl.item(i);
                         String n3= e.getAttribute("keyword");
                         if ( n3.equals("plotInfo") ) {
@@ -67,7 +75,6 @@ public class ImageUtil {
             // return null below
             
         } 
-        
         return null;
     }    
     

@@ -231,9 +231,9 @@ public class HugeScatterRenderer extends Renderer {
                 return;
             }
         }
-        BufferedImage localPlotImage;
+        BufferedImage lplotImage; // local copy for multi-thread safety
         synchronized (this) {
-            localPlotImage= this.plotImage;
+            lplotImage= this.plotImage;
         }
         
         logger.entering( "org.das2.graph.HugeScatterRenderer", "render");
@@ -258,7 +258,7 @@ public class HugeScatterRenderer extends Renderer {
         }
 
         Graphics2D g2 = (Graphics2D) g1;
-        if (localPlotImage == null) {
+        if (lplotImage == null) {
             if (lastException != null) {
                 if (lastException instanceof NoDataInIntervalException) {
                     parent.postMessage(this, "no data in interval:!c" + lastException.getMessage(), DasPlot.WARNING, null, null);
@@ -279,7 +279,7 @@ public class HugeScatterRenderer extends Renderer {
             int y = (int) (p.getY());
             if (parent.getCanvas().isPrintingThread() && print300dpi) {
                 AffineTransformOp atop = new AffineTransformOp(AffineTransform.getScaleInstance(4, 4), AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
-                BufferedImage image300 = atop.filter((BufferedImage) localPlotImage, null);
+                BufferedImage image300 = atop.filter((BufferedImage) lplotImage, null);
                 AffineTransform atinv;
                 try {
                     atinv = atop.getTransform().createInverse();
@@ -289,7 +289,7 @@ public class HugeScatterRenderer extends Renderer {
                 atinv.translate(x * 4, y * 4);
                 g2.drawImage(image300, atinv, getParent());
             } else {
-                g2.drawImage(localPlotImage, x, y, getParent());
+                g2.drawImage(lplotImage, x, y, getParent());
             }
         }
 
@@ -353,12 +353,28 @@ public class HugeScatterRenderer extends Renderer {
             if ( !xunits.isConvertibleTo(xAxis.getUnits() ) ) {
                 xunits= xAxis.getUnits();
             }
+            
+            int ylimit=10000;
+            if ( !yAxis.isLog() ) {
+                Units yunits= SemanticOps.getUnits(vds);
+                String avgType= (String)vds.property(QDataSet.AVERAGE_TYPE);
+                if ( QDataSet.VALUE_AVERAGE_TYPE_MOD24.equals(avgType) ) {
+                    ylimit= (int)Math.ceil( yAxis.transform( yAxis.getDataMinimum() ) 
+                            - yAxis.transform( yAxis.getDataMinimum().add(24,yunits) ) );
+                } else if ( QDataSet.VALUE_AVERAGE_TYPE_MOD360.equals(avgType) ) {
+                    ylimit= (int)Math.ceil( yAxis.transform( yAxis.getDataMinimum() ) 
+                            - yAxis.transform( yAxis.getDataMinimum().add(360,yunits) ) );
+                }
+                ylimit= ylimit/2;
+            }   
+            
             for (int i = firstIndex; i < lastIndex; i++) {
                 boolean isValid = wds.value(i)>0;
                 if (!isValid) {
                     state = STATE_MOVETO;
                 } else {
                     int iy = (int) yAxis.transform( vds.value(i), dsunits );
+                    int dy= Math.abs( iy-iy0 );
                     int ix = (int) xAxis.transform( xds.value(i), xunits );
                     if ( (ix-ix0)*(ix-ix0) > ixstepLimitSq ) state=STATE_MOVETO;
                     switch (state) {
@@ -368,11 +384,13 @@ public class HugeScatterRenderer extends Renderer {
                             iy0 = iy;
                             break;
                         case STATE_LINETO:
-                            g.draw(new Line2D.Float(ix0, iy0, ix, iy));
+                            if ( dy < ylimit ) {
+                                g.draw(new Line2D.Float(ix0, iy0, ix, iy));
+                            }
                             g.fillRect(ix, iy, 1, 1);
                             ix0 = ix;
                             iy0 = iy;
-                            break;
+                            
                         default:
                             logger.log(Level.INFO, "state: {0}", state);                            
                     }
