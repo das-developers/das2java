@@ -15488,7 +15488,7 @@ public final class Ops {
      */
     public static String guessLabel( QDataSet ds ) {
         String s= (String) ds.property( QDataSet.LABEL );
-        if ( s==null ) s= guessName(ds);
+        if ( s==null || s.equals("") ) s= guessName(ds);
         return s;
     }
 
