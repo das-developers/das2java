@@ -403,6 +403,11 @@
                         <filter>|cleanData(11,3.0)</filter>
                         <description>Remove outliers from the data, more than N sigma from the mean.</description>
                     </bookmark>                    
+                    <bookmark>
+                        <title>Largest Triangle Three Buckets</title>
+                        <filter>|lffb(100)</filter>
+                        <description>Run LTTB algorithm to extract representative subset.</description>
+                    </bookmark>                    
                 </bookmark-list>
             </bookmark-folder>
             <bookmark-folder>
