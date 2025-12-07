@@ -120,7 +120,8 @@ public class KeyChain {
                     if ( line.length()>0 ) {
                         String[] ss= line.split("\\s+");
                         if ( ss.length!=2 ) {
-                            logger.log( Level.WARNING, "skipping line because wrong number of fields: {0}", line);
+                            // I had a TRACERS entry with a space and it revealed my password on stderr, now only show first field.
+                            logger.log( Level.WARNING, "skipping line because wrong number of fields, line starts with: {0}", ss[0]);
                         } else {
                             String hash= ss[0].trim();
                             String storedUserInfo= ss[1].trim();
