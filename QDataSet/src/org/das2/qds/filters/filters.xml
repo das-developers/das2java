@@ -405,8 +405,8 @@
                     </bookmark>                    
                     <bookmark>
                         <title>Largest Triangle Three Buckets</title>
-                        <filter>|lffb(100)</filter>
-                        <description>Run LTTB algorithm to extract representative subset.</description>
+                        <filter>|lttb(100)</filter>
+                        <description>Run Largest Triangle Three Buckets (LTTB) algorithm to extract representative subset.</description>
                     </bookmark>                    
                 </bookmark-list>
             </bookmark-folder>
