@@ -854,6 +854,30 @@ public class DataSetOps {
 
         int[] qubeDims= DataSetUtil.qubeDims(rods);
         
+        if ( lists[0].rank()==0 ) {
+            switch ( lists.length ) {
+                case 1:
+                    return ArrayDataSet.copy(rods.slice((int)lists[0].value()));
+                case 2:
+                    return ArrayDataSet.copy(
+                            rods.slice((int)lists[0].value())
+                            .slice((int)lists[1].value()));
+                case 3:
+                    return ArrayDataSet.copy(
+                            rods.slice((int)lists[0].value())
+                            .slice((int)lists[1].value())
+                            .slice((int)lists[2].value()));
+                case 4:
+                    return ArrayDataSet.copy(
+                            rods.slice((int)lists[0].value())
+                            .slice((int)lists[1].value())
+                            .slice((int)lists[2].value())
+                            .slice((int)lists[3].value()));
+                default:
+                    throw new IllegalArgumentException("rank not supported:"+lists.length);
+            }
+        }
+        
         for ( int i=0; i<lists.length; i++ ) {
             int len= i==0 ? rods.length() : qubeDims[i];
             lists[i]= Ops.applyUnaryOp( lists[i], (Ops.UnaryOp) (double d1) -> d1<0 ? len+d1 : d1 );
