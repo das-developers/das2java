@@ -552,7 +552,9 @@ public class QDataSetStreamHandler implements StreamHandler {
                     yesDoIt= false;
                 }
             }
-            if ( yesDoIt ) {
+            if ( yesDoIt &&
+                    ( v0.property(QDataSet.BIN_MAX)!=null && v0.property(QDataSet.BIN_MIN)!=null ) 
+                    || ( v0.property(QDataSet.DELTA_MINUS)!=null ) ) {
                 ds= v0;
             }
         }
