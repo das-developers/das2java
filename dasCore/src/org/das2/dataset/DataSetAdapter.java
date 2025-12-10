@@ -40,10 +40,10 @@ import org.das2.qds.ops.Ops;
 public class DataSetAdapter {
 
     private static final Logger logger = DasLogger.getLogger(DasLogger.DATA_TRANSFER_LOG);
-    
+
     public static final String PROPERTY_SOURCE = "adapterSource";
 
-	 ///////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////
     // Helper for conversion such as %{xCacheRange} -> %{USER_PROPERTIES.xCacheRange}
     protected static Map<String, Object> adaptSubstitutions(Map<String, Object> das2props) {
         // Defines a pattern with three subgroups
@@ -69,283 +69,307 @@ public class DataSetAdapter {
         }
         return das2props;
     }
-	 
+
     /**
      * Created a new QDataSet given a Das2 DataSet
      *
-     * This function and createLegacyDataSet() are inverses, though a round trip conversion 
-	  * is not guaranteed to preserve all properties
+     * This function and createLegacyDataSet() are inverses, though a round trip conversion is not guaranteed to preserve all
+     * properties
      *
      * @param ds A Das2 Dataset
      * @return A new QDataSet
      */
-	public static AbstractDataSet create(DataSet ds) {
-		if (ds == null) 
-			throw new NullPointerException("dataset is null");
-        
-		// X-Y Datasets
-		if (ds instanceof VectorDataSet) {
-                    boolean newCodeWhichSupportsBinMinPlanes= false;
-                    if (newCodeWhichSupportsBinMinPlanes) {
-                        VectorDataSet vds = (VectorDataSet) ds;
-                        return createVectorQds(vds);
-                    } else {
-                        if (ds.getPlaneIds().length <= 1) {
-                            //Handle x single y as a simple vector
-                            Vector v = new Vector((VectorDataSet) ds);
-                            String sname = (String) ds.getProperty("name");
-                            if (sname == null) {
-                                sname = "y";
-                            }
-                            v.putProperty(QDataSet.NAME, sname);
-                            return v;
+    public static AbstractDataSet create(DataSet ds) {
+        if (ds == null) {
+            throw new NullPointerException("dataset is null");
+        }
 
+        // X-Y Datasets
+        if (ds instanceof VectorDataSet) {
+            boolean newCodeWhichSupportsBinMinPlanes = false;
+            if (newCodeWhichSupportsBinMinPlanes) {
+                VectorDataSet vds = (VectorDataSet) ds;
+                return createVectorQds(vds);
+            } else {
+                if (ds.getPlaneIds().length <= 1) {
+                    //Handle x single y as a simple vector
+                    Vector v = new Vector((VectorDataSet) ds);
+                    String sname = (String) ds.getProperty("name");
+                    if (sname == null) {
+                        sname = "y";
+                    }
+                    v.putProperty(QDataSet.NAME, sname);
+                    return v;
+
+                } else {
+                    //Handle x multi y as a bundle
+                    VectorDataSet vds = (VectorDataSet) ds;
+                    Vector v = new Vector(vds);
+                    String sname = (String) ds.getProperty("name");
+                    if (sname == null) {
+                        sname = "y";
+                    }
+                    v.putProperty(QDataSet.NAME, sname);
+                    Vector v0 = v;
+                    AbstractDataSet bds = (AbstractDataSet) Ops.bundle(null, v);
+                    String[] planes = ds.getPlaneIds();
+                    Units unitsY = null;
+                    boolean bCommonYUnits = false;
+                    for (int i = 1; i < planes.length; i++) {
+                        // Arg, everything we want to get at is hidden behind 7 levels of
+                        // interfaces.  As a bonus, class names repeat in different packages from
+                        // the same dev group.
+                        org.das2.dataset.AbstractDataSet.ViewDataSet view
+                                = (org.das2.dataset.AbstractDataSet.ViewDataSet) vds.getPlanarView(planes[i]);
+                        if (unitsY == null) {
+                            unitsY = view.getYUnits();
                         } else {
-                            //Handle x multi y as a bundle
-                            VectorDataSet vds = (VectorDataSet) ds;
-                            Vector v = new Vector(vds);
-                            String sname = (String) ds.getProperty("name");
-                            if (sname == null) {
-                                sname = "y";
-                            }
-                            v.putProperty(QDataSet.NAME, sname);
-                            Vector v0= v;
-                            AbstractDataSet bds = (AbstractDataSet) Ops.bundle(null, v);
-                            String[] planes = ds.getPlaneIds();
-                            Units unitsY = null;
-                            boolean bCommonYUnits = false;
-                            for (int i = 1; i < planes.length; i++) {
-                                // Arg, everything we want to get at is hidden behind 7 levels of
-                                // interfaces.  As a bonus, class names repeat in different packages from
-                                // the same dev group.
-                                org.das2.dataset.AbstractDataSet.ViewDataSet view
-                                        = (org.das2.dataset.AbstractDataSet.ViewDataSet) vds.getPlanarView(planes[i]);
-                                if (unitsY == null) {
-                                    unitsY = view.getYUnits();
-                                } else {
-                                    bCommonYUnits = (unitsY == view.getYUnits());
-                                }
-                                
-                                v = new Vector((VectorDataSet) vds.getPlanarView(planes[i]), planes[i]);
-                                v.putProperty(QDataSet.NAME, planes[i]);
-                                if ( planes[i].equals(sname + ".min" ) ) {
-                                    v0.putProperty( QDataSet.BIN_MIN, v);
-                                } else if ( planes[i].equals(sname + ".max" ) ) {
-                                    v0.putProperty( QDataSet.BIN_MAX, v);
-                                } else if ( planes[i].equals(sname + ".stddev" ) ) {
-                                    v0.putProperty( QDataSet.DELTA_MINUS, v);
-                                    v0.putProperty( QDataSet.DELTA_PLUS, v);
-                                } else {
-                                    Ops.bundle(bds, v);
-                                }
-                            }
+                            bCommonYUnits = (unitsY == view.getYUnits());
+                        }
 
-                            // Convert Das2 property substitutions to USER_PROPERTIES substitutions
-                            Map<String, Object> dasProps = adaptSubstitutions(vds.getProperties());
-                            bds.putProperty(QDataSet.USER_PROPERTIES, dasProps);
-
-                            bds.putProperty(QDataSet.DEPEND_0, new XTagsDataSet(vds));
-                            bds.putProperty(QDataSet.TITLE, dasProps.get(DataSet.PROPERTY_TITLE));
-
-                            // If all Y elements of the bundle have the same units, put those units
-                            // on the Y axis, that way something identifies Y.
-                            if (bCommonYUnits) {
-                                bds.putProperty(QDataSet.UNITS, unitsY);
-                                bds.putProperty(QDataSet.LABEL, unitsY.toString());
-                            }
-
-                            // Copy more properties into the overall bundle dataset, wow this really
-                            // needs to be refactored.
-                            bds.putProperty(QDataSet.SCALE_TYPE, vds.getProperty(DataSet.PROPERTY_Y_SCALETYPE));
-                            DatumRange yRng = (DatumRange) vds.getProperty(DataSet.PROPERTY_Y_RANGE);
-                            if (yRng != null) {
-                                bds.putProperty(QDataSet.TYPICAL_MIN, yRng.min().value());
-                                bds.putProperty(QDataSet.TYPICAL_MAX, yRng.max().value());
-                            }
-                            
-                            if ( "xyzScatter".equals(ds.getProperty("schema")) ) {
-                                BundleDataSet bbds= (BundleDataSet)bds;
-                                return (BundleDataSet)Ops.bundle( new XTagsDataSet(vds), bbds.unbundle(0), bbds.unbundle(1) );
-                            }
-                            
-                            if ( bds.length(0)==1 ) {
-                                return DDataSet.copy(Ops.unbundle(bds,0));
-                            } else {
-                                return DDataSet.copy(bds);
-                            }
+                        v = new Vector((VectorDataSet) vds.getPlanarView(planes[i]), planes[i]);
+                        v.putProperty(QDataSet.NAME, planes[i]);
+                        if (planes[i].equals(sname + ".min")) {
+                            v0.putProperty(QDataSet.BIN_MIN, v);
+                        } else if (planes[i].equals(sname + ".max")) {
+                            v0.putProperty(QDataSet.BIN_MAX, v);
+                        } else if (planes[i].equals(sname + ".stddev")) {
+                            v0.putProperty(QDataSet.DELTA_MINUS, v);
+                            v0.putProperty(QDataSet.DELTA_PLUS, v);
+                        } else {
+                            Ops.bundle(bds, v);
                         }
                     }
-		}
 
-		// X-YScan Datasets
-		if (ds instanceof TableDataSet) {
-			TableDataSet tds = (TableDataSet) ds;
-			if (tds.tableCount() <= 1) {
-				// Handling table datasets that may come with statistics planes.  These are
-				// denoted by having a "source" and "operations" string properties.
-				return createSimpleTableDS(tds);
-			} 
-			else {
-				if (tds instanceof DefaultTableDataSet && tds.tableCount() > tds.getXLength() / 2) {
-					return ((DefaultTableDataSet) tds).toQDataSet();
-				}
-				else {
-					return new MultipleTable(tds);
-				}
-			}
-		}
+                    // Convert Das2 property substitutions to USER_PROPERTIES substitutions
+                    Map<String, Object> dasProps = adaptSubstitutions(vds.getProperties());
+                    bds.putProperty(QDataSet.USER_PROPERTIES, dasProps);
 
-		throw new IllegalArgumentException("unsupported dataset type: " + ds.getClass().getName());
-	}
-	
-	///////////////////////////////////////////////////////////////////////////////////
+                    bds.putProperty(QDataSet.DEPEND_0, new XTagsDataSet(vds));
+                    bds.putProperty(QDataSet.TITLE, dasProps.get(DataSet.PROPERTY_TITLE));
+
+                    // If all Y elements of the bundle have the same units, put those units
+                    // on the Y axis, that way something identifies Y.
+                    if (bCommonYUnits) {
+                        bds.putProperty(QDataSet.UNITS, unitsY);
+                        bds.putProperty(QDataSet.LABEL, unitsY.toString());
+                    }
+
+                    // Copy more properties into the overall bundle dataset, wow this really
+                    // needs to be refactored.
+                    bds.putProperty(QDataSet.SCALE_TYPE, vds.getProperty(DataSet.PROPERTY_Y_SCALETYPE));
+                    DatumRange yRng = (DatumRange) vds.getProperty(DataSet.PROPERTY_Y_RANGE);
+                    if (yRng != null) {
+                        bds.putProperty(QDataSet.TYPICAL_MIN, yRng.min().value());
+                        bds.putProperty(QDataSet.TYPICAL_MAX, yRng.max().value());
+                    }
+
+                    if ("xyzScatter".equals(ds.getProperty("schema"))) {
+                        BundleDataSet bbds = (BundleDataSet) bds;
+                        return (BundleDataSet) Ops.bundle(new XTagsDataSet(vds), bbds.unbundle(0), bbds.unbundle(1));
+                    }
+
+                    if (bds.length(0) == 1) {
+                        return DDataSet.copy(Ops.unbundle(bds, 0));
+                    } else {
+                        return DDataSet.copy(bds);
+                    }
+                }
+            }
+        }
+
+        // X-YScan Datasets
+        if (ds instanceof TableDataSet) {
+            TableDataSet tds = (TableDataSet) ds;
+            if (tds.tableCount() <= 1) {
+                // Handling table datasets that may come with statistics planes.  These are
+                // denoted by having a "source" and "operations" string properties.
+                return createSimpleTableDS(tds);
+            } else {
+                if (tds instanceof DefaultTableDataSet && tds.tableCount() > tds.getXLength() / 2) {
+                    return ((DefaultTableDataSet) tds).toQDataSet();
+                } else {
+                    return new MultipleTable(tds);
+                }
+            }
+        }
+
+        throw new IllegalArgumentException("unsupported dataset type: " + ds.getClass().getName());
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////
 	// Helper for setting up Vector QDataSet's that have statistics
 	
-	private static class AdapterPDim{
-		String sId;
-		Map<String, String> vars = new HashMap<>();
-		
-		AdapterPDim(String _sId){sId = _sId;}
-	}
-	
-	private static AbstractDataSet createVectorQds(VectorDataSet vds){
-		// The thing we care about are the number of datasets (or phys-dims in das2 speak) 
-		// in this X-Y set, not really the number of variables.  If the number of physdims 
-		// is greater than one, we need a to make a bundle.  Count phys-dims here.
-		// The das2.2 stream format did not group variables into related sets with a natural
-		// enclosing tag, instead property values were used to do this, which is... messy.
-		// das2.3 streams are much better in this regard.
-			
-		String[] lPlanes = vds.getPlaneIds();
-		
-		Map<String, AdapterPDim> lPDims = new HashMap<>();
-		
-		// 1st pass, find top level planes, side effect, see if have common Y units
-		int nStashed = 0;
-		Units commonY = null;
-		boolean bCommonYUnits = false;
-		for(String sId: lPlanes){
-			DataSet ds = vds.getPlanarView(sId);
-			// If this has an operation property other than avg, it's not top level
-			String sOp = (String)ds.getProperty(DataSet.PROPERTY_OPERATION);
-			if((sOp != null)&&(!sOp.equals("BIN_AVG")))
-				continue;
-			
-			if(lPDims.containsKey(sId))
-				throw new IllegalArgumentException("Non-unique plane IDs in das2 X-multi-Y packet");
-			
-			String sSource = (String)ds.getProperty(DataSet.PROPERTY_SOURCE);
-			lPDims.put(sSource, new AdapterPDim(sId));
-			
-			if(commonY == null)
-				commonY = ds.getYUnits();
-			else
-				bCommonYUnits = (commonY == ds.getYUnits());
-			
-			nStashed += 1;
-		}
-		
-		// 2nd pass, find statistics planes.
-		for(String sId: lPlanes){
-			if(sId == null) continue;
-			
-			DataSet ds = vds.getPlanarView(sId);
-			String sOp = (String)ds.getProperty(DataSet.PROPERTY_OPERATION);
-			if( (sOp == null) || sOp.equals("BIN_AVG")) continue;
-		
-			String sSource = (String)ds.getProperty(DataSet.PROPERTY_SOURCE);
-			
-			AdapterPDim pdim = lPDims.get(sSource);
-			if(pdim == null)
-				throw new IllegalArgumentException("Statistics plane has no parent in x-multi-y packet");
-			pdim.vars.put(sOp, sId);
-			nStashed += 1;
-		}
-		
-		if(nStashed != lPlanes.length)
-			throw new IllegalArgumentException("Not all plane purposes understood in x-multi-y packet");
-			
-		// Now build a QDataSet, if multiple physicsal dimensions present, will need a bundle ds.
-		AbstractDataSet bds = null;
-		Vector v = null;
-		for( Entry<String,AdapterPDim> e : lPDims.entrySet() ) {
-			AdapterPDim pdim = e.getValue();
-			
-			org.das2.dataset.AbstractDataSet.ViewDataSet view
-					= (org.das2.dataset.AbstractDataSet.ViewDataSet) vds.getPlanarView(pdim.sId);
-			
-			v = new Vector((VectorDataSet)view, pdim.sId);
-			String sName= (String)view.getProperty("name");
-			if(sName == null) sName= "y";
-			v.putProperty(QDataSet.NAME, sName );
-			
-			// Attach stats planes if present.
-			for(String sOp: pdim.vars.keySet()){
-				if(sOp == null) continue; // TODO: Complain to logger here
-				String sId = pdim.vars.get(sOp);
-				
-				QDataSet qdsStats = new Vector((VectorDataSet) vds.getPlanarView(sId), sId);
-				
-				if(sOp.equals("BIN_MAX")) v.putProperty(QDataSet.BIN_MAX, qdsStats);
-				if(sOp.equals("BIN_MIN")) v.putProperty(QDataSet.BIN_MIN, qdsStats);
-				
-				if(sOp.equals("DELTA_PLUS")) v.putProperty(QDataSet.DELTA_PLUS, qdsStats);
-				if(sOp.equals("DELTA_MINUS")) v.putProperty(QDataSet.DELTA_MINUS, qdsStats);
-			}
-			
-			// The bundle decision.  If this physical dimension is part of a bundle, the  X-tags, and 
-			// properties have to be copied over.
-			if(lPDims.size() > 1){
-				if(bds == null){
-					bds =  (AbstractDataSet) Ops.bundle(null, v);
-					
-					// If all top-level elements have the same units, put those units on the Y axis, 
-					// that way something identifies Y.
-					if((bCommonYUnits)&&(commonY != null)) {
-						bds.putProperty(QDataSet.UNITS, commonY);
-						bds.putProperty(QDataSet.LABEL, commonY.toString());
-					}
-					// Convert Das2 property substitutions to USER_PROPERTIES substitutions
-					Map<String, Object> dasProps = adaptSubstitutions(vds.getProperties());
-					bds.putProperty(QDataSet.USER_PROPERTIES, dasProps);
+	private static class AdapterPDim {
 
-					bds.putProperty(QDataSet.DEPEND_0, new XTagsDataSet(vds));
-					bds.putProperty(QDataSet.TITLE, dasProps.get(DataSet.PROPERTY_TITLE));
+        String sId;
+        Map<String, String> vars = new HashMap<>();
 
-					// Copy more properties into the overall bundle dataset, wow this really
-					// needs to be refactored.
-					bds.putProperty(QDataSet.SCALE_TYPE, vds.getProperty(DataSet.PROPERTY_Y_SCALETYPE));
-					DatumRange yRng = (DatumRange) vds.getProperty(DataSet.PROPERTY_Y_RANGE);
-					if (yRng != null) {
-						bds.putProperty(QDataSet.TYPICAL_MIN, yRng.min().value());
-						bds.putProperty(QDataSet.TYPICAL_MAX, yRng.max().value());
-					}
-				}
-				else{
-					Ops.bundle(bds, v);
-				}
-			}
-		}
-		
-		// Output either the bundle or the single dataset
-		if(bds != null)
-			return DDataSet.copy(bds);
-		else
-			return v;
-	}
+        AdapterPDim(String _sId) {
+            sId = _sId;
+        }
+    }
 
-    /** Created a new Das2 DataSet given a QDataSet
+    private static AbstractDataSet createVectorQds(VectorDataSet vds) {
+        // The thing we care about are the number of datasets (or phys-dims in das2 speak) 
+        // in this X-Y set, not really the number of variables.  If the number of physdims 
+        // is greater than one, we need a to make a bundle.  Count phys-dims here.
+        // The das2.2 stream format did not group variables into related sets with a natural
+        // enclosing tag, instead property values were used to do this, which is... messy.
+        // das2.3 streams are much better in this regard.
+
+        String[] lPlanes = vds.getPlaneIds();
+
+        Map<String, AdapterPDim> lPDims = new HashMap<>();
+
+        // 1st pass, find top level planes, side effect, see if have common Y units
+        int nStashed = 0;
+        Units commonY = null;
+        boolean bCommonYUnits = false;
+        for (String sId : lPlanes) {
+            DataSet ds = vds.getPlanarView(sId);
+            // If this has an operation property other than avg, it's not top level
+            String sOp = (String) ds.getProperty(DataSet.PROPERTY_OPERATION);
+            if ((sOp != null) && (!sOp.equals("BIN_AVG"))) {
+                continue;
+            }
+
+            if (lPDims.containsKey(sId)) {
+                throw new IllegalArgumentException("Non-unique plane IDs in das2 X-multi-Y packet");
+            }
+
+            String sSource = (String) ds.getProperty(DataSet.PROPERTY_SOURCE);
+            lPDims.put(sSource, new AdapterPDim(sId));
+
+            if (commonY == null) {
+                commonY = ds.getYUnits();
+            } else {
+                bCommonYUnits = (commonY == ds.getYUnits());
+            }
+
+            nStashed += 1;
+        }
+
+        // 2nd pass, find statistics planes.
+        for (String sId : lPlanes) {
+            if (sId == null) {
+                continue;
+            }
+
+            DataSet ds = vds.getPlanarView(sId);
+            String sOp = (String) ds.getProperty(DataSet.PROPERTY_OPERATION);
+            if ((sOp == null) || sOp.equals("BIN_AVG")) {
+                continue;
+            }
+
+            String sSource = (String) ds.getProperty(DataSet.PROPERTY_SOURCE);
+
+            AdapterPDim pdim = lPDims.get(sSource);
+            if (pdim == null) {
+                throw new IllegalArgumentException("Statistics plane has no parent in x-multi-y packet");
+            }
+            pdim.vars.put(sOp, sId);
+            nStashed += 1;
+        }
+
+        if (nStashed != lPlanes.length) {
+            throw new IllegalArgumentException("Not all plane purposes understood in x-multi-y packet");
+        }
+
+        // Now build a QDataSet, if multiple physicsal dimensions present, will need a bundle ds.
+        AbstractDataSet bds = null;
+        Vector v = null;
+        for (Entry<String, AdapterPDim> e : lPDims.entrySet()) {
+            AdapterPDim pdim = e.getValue();
+
+            org.das2.dataset.AbstractDataSet.ViewDataSet view
+                    = (org.das2.dataset.AbstractDataSet.ViewDataSet) vds.getPlanarView(pdim.sId);
+
+            v = new Vector((VectorDataSet) view, pdim.sId);
+            String sName = (String) view.getProperty("name");
+            if (sName == null) {
+                sName = "y";
+            }
+            v.putProperty(QDataSet.NAME, sName);
+
+            // Attach stats planes if present.
+            for (String sOp : pdim.vars.keySet()) {
+                if (sOp == null) {
+                    continue; // TODO: Complain to logger here
+                }
+                String sId = pdim.vars.get(sOp);
+
+                QDataSet qdsStats = new Vector((VectorDataSet) vds.getPlanarView(sId), sId);
+
+                if (sOp.equals("BIN_MAX")) {
+                    v.putProperty(QDataSet.BIN_MAX, qdsStats);
+                }
+                if (sOp.equals("BIN_MIN")) {
+                    v.putProperty(QDataSet.BIN_MIN, qdsStats);
+                }
+
+                if (sOp.equals("DELTA_PLUS")) {
+                    v.putProperty(QDataSet.DELTA_PLUS, qdsStats);
+                }
+                if (sOp.equals("DELTA_MINUS")) {
+                    v.putProperty(QDataSet.DELTA_MINUS, qdsStats);
+                }
+            }
+
+            // The bundle decision.  If this physical dimension is part of a bundle, the  X-tags, and 
+            // properties have to be copied over.
+            if (lPDims.size() > 1) {
+                if (bds == null) {
+                    bds = (AbstractDataSet) Ops.bundle(null, v);
+
+                    // If all top-level elements have the same units, put those units on the Y axis, 
+                    // that way something identifies Y.
+                    if ((bCommonYUnits) && (commonY != null)) {
+                        bds.putProperty(QDataSet.UNITS, commonY);
+                        bds.putProperty(QDataSet.LABEL, commonY.toString());
+                    }
+                    // Convert Das2 property substitutions to USER_PROPERTIES substitutions
+                    Map<String, Object> dasProps = adaptSubstitutions(vds.getProperties());
+                    bds.putProperty(QDataSet.USER_PROPERTIES, dasProps);
+
+                    bds.putProperty(QDataSet.DEPEND_0, new XTagsDataSet(vds));
+                    bds.putProperty(QDataSet.TITLE, dasProps.get(DataSet.PROPERTY_TITLE));
+
+                    // Copy more properties into the overall bundle dataset, wow this really
+                    // needs to be refactored.
+                    bds.putProperty(QDataSet.SCALE_TYPE, vds.getProperty(DataSet.PROPERTY_Y_SCALETYPE));
+                    DatumRange yRng = (DatumRange) vds.getProperty(DataSet.PROPERTY_Y_RANGE);
+                    if (yRng != null) {
+                        bds.putProperty(QDataSet.TYPICAL_MIN, yRng.min().value());
+                        bds.putProperty(QDataSet.TYPICAL_MAX, yRng.max().value());
+                    }
+                } else {
+                    Ops.bundle(bds, v);
+                }
+            }
+        }
+
+        // Output either the bundle or the single dataset
+        if (bds != null) {
+            return DDataSet.copy(bds);
+        } else {
+            return v;
+        }
+    }
+
+    /**
+     * Created a new Das2 DataSet given a QDataSet
      *
-     * This function and create() are inverses, though a round trip conversion is not guaranteed to
-	  * preserve all properties. Note that not all QDataSets can be represented as Das2 DataSets. If
-	  * the given QDataSet has no Das2 analog, an IllegalArgumentException is thrown.
+     * This function and create() are inverses, though a round trip conversion is not guaranteed to preserve all properties. Note
+     * that not all QDataSets can be represented as Das2 DataSets. If the given QDataSet has no Das2 analog, an
+     * IllegalArgumentException is thrown.
      *
      * @param ds A QDataSet
      * @return A new Das2 DataSet
-	  * 
-	  *   DON'T USE THIS CODE!  Use org.das2.qstream.QdsToD2sStream IN THE QStream project!
+     *
+     * DON'T USE THIS CODE! Use org.das2.qstream.QdsToD2sStream IN THE QStream project!
      */
-	@Deprecated
+    @Deprecated
     public static DataSet createLegacyDataSet(org.das2.qds.QDataSet ds) {
         if (ds.rank() == 1) {
             return VectorDataSetAdapter.create(ds);
@@ -360,7 +384,7 @@ public class DataSetAdapter {
         }
     }
 
-	 ///////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////
     // Helper dataset holds DEPEND_0 for MultipleTable QDataSets
     static class MultiTableXTagsDataSet extends AbstractDataSet {
 
@@ -400,7 +424,7 @@ public class DataSetAdapter {
         }
     }
 
-	 ///////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////
     // Helper dataset, holds DEPEND_0 for Vector & SimpleTable QDataSets
     static class XTagsDataSet extends AbstractDataSet {
 
@@ -440,26 +464,27 @@ public class DataSetAdapter {
 
     }
 
-	///////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////
 	// Top Level QDataSet for X vs Y data
 	static class Vector extends AbstractDataSet {
 
-		VectorDataSet source;
+        VectorDataSet source;
 
-		// Time for more ugly hacks:  TODO: Convert straight to QDataSet and get
-		//                                  rid of stupid crap like this.
-		Vector(VectorDataSet source) {
-			this(source, null);
-		}
+        // Time for more ugly hacks:  TODO: Convert straight to QDataSet and get
+        //                                  rid of stupid crap like this.
+        Vector(VectorDataSet source) {
+            this(source, null);
+        }
 
-		private static Object hack(Map<String, Object> m, String k, String id) {
-			if((id == null)||(id.isEmpty()))
-				return m.get(k);
-			else
-				return m.get(id + "." + k);
-		}
+        private static Object hack(Map<String, Object> m, String k, String id) {
+            if ((id == null) || (id.isEmpty())) {
+                return m.get(k);
+            } else {
+                return m.get(id + "." + k);
+            }
+        }
 
-		  // This constructor takes a plane ID so that property values can be gathered.
+        // This constructor takes a plane ID so that property values can be gathered.
         // It's a dumb hack to get around:
         //   1. Das2 DataSet objects are immutable
         //   2. We are not converting straght to QDataSet
@@ -477,46 +502,46 @@ public class DataSetAdapter {
             //Object ofill= hack(dasProps, DataSet.PROPERTY_Y_FILL, sPlaneID);
             //if ( ofill!=null && ( ofill instanceof Number ) ) properties.put(QDataSet.FILL_VALUE, ofill );
             properties.put(QDataSet.LABEL, hack(dasProps, DataSet.PROPERTY_Y_LABEL, sPlaneID));
-				properties.put(QDataSet.FORMAT, hack(dasProps, DataSet.PROPERTY_Y_FORMAT, sPlaneID));
-            AbstractDataSet xds= new XTagsDataSet(source);
-            xds.putProperty( QDataSet.CACHE_TAG, hack( dasProps, DataSet.PROPERTY_CACHE_TAG, sPlaneID ) );
+            properties.put(QDataSet.FORMAT, hack(dasProps, DataSet.PROPERTY_Y_FORMAT, sPlaneID));
+            AbstractDataSet xds = new XTagsDataSet(source);
+            xds.putProperty(QDataSet.CACHE_TAG, hack(dasProps, DataSet.PROPERTY_CACHE_TAG, sPlaneID));
             properties.put(QDataSet.DEPEND_0, xds);
             properties.put(PROPERTY_SOURCE, source);
 
             // http://www.sarahandjeremy.net/~jbf/1wire/data/2007/0B000800408DD710.20071201.d2s uses property "valid_range"
-            String syValid= (String)dasProps.get("valid_range");
-            if ( syValid!=null ) {
+            String syValid = (String) dasProps.get("valid_range");
+            if (syValid != null) {
                 try {
-                    DatumRange yValid= DatumRangeUtil.parseDatumRange( syValid, source.getYUnits() );
+                    DatumRange yValid = DatumRangeUtil.parseDatumRange(syValid, source.getYUnits());
                     double val = yValid.min().doubleValue(source.getYUnits());
-                    properties.put( QDataSet.VALID_MIN, val );
+                    properties.put(QDataSet.VALID_MIN, val);
                     val = yValid.max().doubleValue(source.getYUnits());
-                    properties.put( QDataSet.VALID_MAX, val );
+                    properties.put(QDataSet.VALID_MAX, val);
                 } catch (ParseException ex) {
                     logger.log(Level.SEVERE, null, ex);
                 }
             }
-            
+
             //New properties after 2014-05-28 Das2 Dev meeting
             Object obj = hack(dasProps, DataSet.PROPERTY_Y_VALID_MIN, sPlaneID);
-            if ( obj != null ) {
-                if ( obj instanceof Double ) {
-                    properties.put(QDataSet.VALID_MIN, (Double)obj);
-                } else if ( obj instanceof Datum ) {
-                    properties.put(QDataSet.VALID_MIN, ((Datum)obj).doubleValue(source.getYUnits()) );
+            if (obj != null) {
+                if (obj instanceof Double) {
+                    properties.put(QDataSet.VALID_MIN, (Double) obj);
+                } else if (obj instanceof Datum) {
+                    properties.put(QDataSet.VALID_MIN, ((Datum) obj).doubleValue(source.getYUnits()));
                 } else {
-                    logger.warning("property "+DataSet.PROPERTY_Y_VALID_MIN+" should be type Double");
+                    logger.warning("property " + DataSet.PROPERTY_Y_VALID_MIN + " should be type Double");
                 }
             }
 
             obj = hack(dasProps, DataSet.PROPERTY_Y_VALID_MAX, sPlaneID);
-            if ( obj != null ) {
-                if ( obj instanceof Double ) {
-                    properties.put(QDataSet.VALID_MAX, (Double)obj);
-                } else if ( obj instanceof Datum ) {
-                    properties.put(QDataSet.VALID_MAX, ((Datum)obj).doubleValue(source.getYUnits()) );                    
+            if (obj != null) {
+                if (obj instanceof Double) {
+                    properties.put(QDataSet.VALID_MAX, (Double) obj);
+                } else if (obj instanceof Datum) {
+                    properties.put(QDataSet.VALID_MAX, ((Datum) obj).doubleValue(source.getYUnits()));
                 } else {
-                    logger.warning("property "+DataSet.PROPERTY_Y_VALID_MAX+" should be type Double");
+                    logger.warning("property " + DataSet.PROPERTY_Y_VALID_MAX + " should be type Double");
                 }
             }
 
@@ -531,9 +556,9 @@ public class DataSetAdapter {
             DatumRange yRng = (DatumRange) hack(dasProps, DataSet.PROPERTY_Y_RANGE, sPlaneID);
             if (yRng != null) {
                 try {
-                    properties.put(QDataSet.TYPICAL_MIN, yRng.min().doubleValue(source.getYUnits()) ); 
-                    properties.put(QDataSet.TYPICAL_MAX, yRng.max().doubleValue(source.getYUnits()) );
-                } catch ( InconvertibleUnitsException ex ) {
+                    properties.put(QDataSet.TYPICAL_MIN, yRng.min().doubleValue(source.getYUnits()));
+                    properties.put(QDataSet.TYPICAL_MAX, yRng.max().doubleValue(source.getYUnits()));
+                } catch (InconvertibleUnitsException ex) {
                     logger.info("yRange has inconvertible units");
                 }
             }
@@ -561,7 +586,7 @@ public class DataSetAdapter {
 
     }
 
-	 ///////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////
     // Helper Dataset, holds DEPEND_1 for SimpleTable QDataSets
     static class YTagsDataSet extends AbstractDataSet {
 
@@ -603,79 +628,90 @@ public class DataSetAdapter {
             return source.tableCount() > 0 ? source.getYLength(table) : 99;
         }
     }
-	 
-	///////////////////////////////////////////////////////////////////////////////////
+
+    ///////////////////////////////////////////////////////////////////////////////////
 	// Helper for setting up Table QDataSet's that have statistics
 	 
-	private static AbstractDataSet createSimpleTableDS(TableDataSet tds){
-		
-		// Find the top level plane, expect there to be only one since this isn't a bundle
-		// dataset handler.
-		String sTopDs = null;
-		String sTopSrc = null;
-		String[] lPlanes = tds.getPlaneIds();
-		if(lPlanes.length == 1){ 
-			sTopDs = lPlanes[0];
-		}
-		else{
-			// Take the first plane that meets the criteria as the top-level dataset, the
-			// criteria is, (1) Don't have a source property or (2) be the average
-			for(String sPlane: lPlanes){
-				DataSet ds = tds.getPlanarView(sPlane);
-				sTopSrc = (String)ds.getProperty(DataSet.PROPERTY_SOURCE);
-				if(sTopSrc == null){ 
-					sTopDs = sPlane;
-					break;
-				}
-				else{
-					String sOp = (String)ds.getProperty(DataSet.PROPERTY_OPERATION);
-					if((sOp != null)&&(sOp.equals("BIN_AVG"))){
-						sTopDs = sPlane;
-						break;
-					}
-				}
-			}
-		}
-		
-		// TODO: Use some sort of conversion exception instead of this
-		if(sTopDs == null) throw new IllegalArgumentException(
-			"Couldn't locate the top-level <yscan> in the set of <yscans>.  "+
-			"HINT: If this is simple bundle then you've hit a missing feature in Autoplot."+
-			" If this is a peak and averages dataset, use the 'source' and 'operation'"+
-			" properties to clairify the <yscan> relationships. "
-		);
-		
-		AbstractDataSet qds = new SimpleTable((TableDataSet)tds.getPlanarView(sTopDs));
-		
-		// Create every other dataset and bind it to the top level one based on it's 
-		// operation property.  If that's not specified OR it's source disagrees ignore it
-		for(String sPlane: lPlanes){
-			if(sPlane.equals(sTopDs)) continue;
-			TableDataSet dsPlane = (TableDataSet) tds.getPlanarView(sPlane);
-			String sPlaneSrc = (String)dsPlane.getProperty(DataSet.PROPERTY_SOURCE);
-			if( ((sPlaneSrc == null)&&(sTopSrc == null)) || sTopSrc.equals(sPlaneSrc)){
-				
-				// Okay, they have the same source see if we understand the operation
-				String sOp = (String)dsPlane.getProperty(DataSet.PROPERTY_OPERATION);
-				
-				if(sOp == null) continue; // TODO: Complain to logger here
-				
-				QDataSet qdsAncillary = new SimpleTable(dsPlane);
-				
-				if(sOp.equals("BIN_MAX")) qds.putProperty(QDataSet.BIN_MAX, qdsAncillary);
-				if(sOp.equals("BIN_MIN")) qds.putProperty(QDataSet.BIN_MIN, qdsAncillary);
-				
-				if(sOp.equals(QDataSet.DELTA_PLUS)) qds.putProperty(sOp, qdsAncillary);
-				if(sOp.equals(QDataSet.DELTA_MINUS)) qds.putProperty(sOp, qdsAncillary);
-				
-				// TODO: Complain to logger here
-			}
-			
-		}
-		return qds;
-	}
-	 
-	 ///////////////////////////////////////////////////////////////////////////////////
+	private static AbstractDataSet createSimpleTableDS(TableDataSet tds) {
+
+        // Find the top level plane, expect there to be only one since this isn't a bundle
+        // dataset handler.
+        String sTopDs = null;
+        String sTopSrc = null;
+        String[] lPlanes = tds.getPlaneIds();
+        if (lPlanes.length == 1) {
+            sTopDs = lPlanes[0];
+        } else {
+            // Take the first plane that meets the criteria as the top-level dataset, the
+            // criteria is, (1) Don't have a source property or (2) be the average
+            for (String sPlane : lPlanes) {
+                DataSet ds = tds.getPlanarView(sPlane);
+                sTopSrc = (String) ds.getProperty(DataSet.PROPERTY_SOURCE);
+                if (sTopSrc == null) {
+                    sTopDs = sPlane;
+                    break;
+                } else {
+                    String sOp = (String) ds.getProperty(DataSet.PROPERTY_OPERATION);
+                    if ((sOp != null) && (sOp.equals("BIN_AVG"))) {
+                        sTopDs = sPlane;
+                        break;
+                    }
+                }
+            }
+        }
+
+        // TODO: Use some sort of conversion exception instead of this
+        if (sTopDs == null) {
+            throw new IllegalArgumentException(
+                    "Couldn't locate the top-level <yscan> in the set of <yscans>.  "
+                    + "HINT: If this is simple bundle then you've hit a missing feature in Autoplot."
+                    + " If this is a peak and averages dataset, use the 'source' and 'operation'"
+                    + " properties to clairify the <yscan> relationships. "
+            );
+        }
+
+        AbstractDataSet qds = new SimpleTable((TableDataSet) tds.getPlanarView(sTopDs));
+
+        // Create every other dataset and bind it to the top level one based on it's 
+        // operation property.  If that's not specified OR it's source disagrees ignore it
+        for (String sPlane : lPlanes) {
+            if (sPlane.equals(sTopDs)) {
+                continue;
+            }
+            TableDataSet dsPlane = (TableDataSet) tds.getPlanarView(sPlane);
+            String sPlaneSrc = (String) dsPlane.getProperty(DataSet.PROPERTY_SOURCE);
+            if (((sPlaneSrc == null) && (sTopSrc == null)) || sTopSrc.equals(sPlaneSrc)) {
+
+                // Okay, they have the same source see if we understand the operation
+                String sOp = (String) dsPlane.getProperty(DataSet.PROPERTY_OPERATION);
+
+                if (sOp == null) {
+                    continue; // TODO: Complain to logger here
+                }
+                QDataSet qdsAncillary = new SimpleTable(dsPlane);
+
+                if (sOp.equals("BIN_MAX")) {
+                    qds.putProperty(QDataSet.BIN_MAX, qdsAncillary);
+                }
+                if (sOp.equals("BIN_MIN")) {
+                    qds.putProperty(QDataSet.BIN_MIN, qdsAncillary);
+                }
+
+                if (sOp.equals(QDataSet.DELTA_PLUS)) {
+                    qds.putProperty(sOp, qdsAncillary);
+                }
+                if (sOp.equals(QDataSet.DELTA_MINUS)) {
+                    qds.putProperty(sOp, qdsAncillary);
+                }
+
+                // TODO: Complain to logger here
+            }
+
+        }
+        return qds;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////
     // Toplevel QDataSet for X,Y,Z "grid" data
     static class SimpleTable extends AbstractDataSet {
 
@@ -716,8 +752,8 @@ public class DataSetAdapter {
 
             properties.put(QDataSet.VALID_MIN, dasProps.get(DataSet.PROPERTY_Z_VALID_MIN));
             properties.put(QDataSet.VALID_MAX, dasProps.get(DataSet.PROPERTY_Z_VALID_MAX));
-				properties.put(QDataSet.SCALE_TYPE, dasProps.get(DataSet.PROPERTY_Z_SCALETYPE));
-				properties.put(QDataSet.LABEL, dasProps.get(DataSet.PROPERTY_Z_LABEL));
+            properties.put(QDataSet.SCALE_TYPE, dasProps.get(DataSet.PROPERTY_Z_SCALETYPE));
+            properties.put(QDataSet.LABEL, dasProps.get(DataSet.PROPERTY_Z_LABEL));
         }
 
         @Override
@@ -742,7 +778,7 @@ public class DataSetAdapter {
 
     }
 
-	 ///////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////
     // Toplevel QDataSet for multiple sets of Z data on an X,Y "grid"
     static class MultipleTable extends AbstractDataSet {
 
@@ -762,8 +798,8 @@ public class DataSetAdapter {
             properties.put(QDataSet.UNITS, source.getZUnits());
             properties.put(PROPERTY_SOURCE, source);
             properties.put(QDataSet.TITLE, dasProps.get(DataSet.PROPERTY_TITLE));
-				
-				//Let Das2 Streams set Z-Axis properties
+
+            //Let Das2 Streams set Z-Axis properties
             DatumRange zRng = (DatumRange) dasProps.get(DataSet.PROPERTY_Z_RANGE);
             if (zRng != null) {
                 properties.put(QDataSet.TYPICAL_MIN, zRng.min().value());
@@ -775,8 +811,8 @@ public class DataSetAdapter {
 
             properties.put(QDataSet.VALID_MIN, dasProps.get(DataSet.PROPERTY_Z_VALID_MIN));
             properties.put(QDataSet.VALID_MAX, dasProps.get(DataSet.PROPERTY_Z_VALID_MAX));
-				properties.put(QDataSet.SCALE_TYPE, dasProps.get(DataSet.PROPERTY_Z_SCALETYPE));
-				properties.put(QDataSet.LABEL, dasProps.get(DataSet.PROPERTY_Z_LABEL));
+            properties.put(QDataSet.SCALE_TYPE, dasProps.get(DataSet.PROPERTY_Z_SCALETYPE));
+            properties.put(QDataSet.LABEL, dasProps.get(DataSet.PROPERTY_Z_LABEL));
         }
 
         @Override
