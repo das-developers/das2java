@@ -109,6 +109,7 @@ public class DataSetAdapter {
                                 sname = "y";
                             }
                             v.putProperty(QDataSet.NAME, sname);
+                            Vector v0= v;
                             AbstractDataSet bds = (AbstractDataSet) Ops.bundle(null, v);
                             String[] planes = ds.getPlaneIds();
                             Units unitsY = null;
@@ -124,10 +125,19 @@ public class DataSetAdapter {
                                 } else {
                                     bCommonYUnits = (unitsY == view.getYUnits());
                                 }
-
+                                
                                 v = new Vector((VectorDataSet) vds.getPlanarView(planes[i]), planes[i]);
                                 v.putProperty(QDataSet.NAME, planes[i]);
-                                Ops.bundle(bds, v);
+                                if ( planes[i].equals(sname + ".min" ) ) {
+                                    v0.putProperty( QDataSet.BIN_MIN, v);
+                                } else if ( planes[i].equals(sname + ".max" ) ) {
+                                    v0.putProperty( QDataSet.BIN_MAX, v);
+                                } else if ( planes[i].equals(sname + ".stddev" ) ) {
+                                    v0.putProperty( QDataSet.DELTA_MINUS, v);
+                                    v0.putProperty( QDataSet.DELTA_PLUS, v);
+                                } else {
+                                    Ops.bundle(bds, v);
+                                }
                             }
 
                             // Convert Das2 property substitutions to USER_PROPERTIES substitutions
@@ -157,10 +167,14 @@ public class DataSetAdapter {
                                 BundleDataSet bbds= (BundleDataSet)bds;
                                 return (BundleDataSet)Ops.bundle( new XTagsDataSet(vds), bbds.unbundle(0), bbds.unbundle(1) );
                             }
-
-                            return DDataSet.copy(bds);
+                            
+                            if ( bds.length(0)==1 ) {
+                                return DDataSet.copy(Ops.unbundle(bds,0));
+                            } else {
+                                return DDataSet.copy(bds);
+                            }
                         }
-                        }
+                    }
 		}
 
 		// X-YScan Datasets
