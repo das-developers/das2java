@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Scanner;
 import java.util.regex.Pattern;
+import javax.script.ScriptContext;
 import org.das2.qds.buffer.BufferDataSet;
 import org.das2.datum.DatumRange;
 import org.das2.datum.EnumerationUnits;
@@ -842,7 +843,7 @@ public class DataSetOps {
      * @see applyIndex which is similar
      */
     public static ArrayDataSet applyIndexAllLists( QDataSet rods, QDataSet[] lists ) {
-                
+        
         QDataSet[] ll= new QDataSet[2];
         ll[0]= lists[0];
         for ( int i=1; i<lists.length; i++) {
@@ -855,27 +856,15 @@ public class DataSetOps {
         int[] qubeDims= DataSetUtil.qubeDims(rods);
         
         if ( lists[0].rank()==0 ) {
-            switch ( lists.length ) {
-                case 1:
-                    return ArrayDataSet.copy(rods.slice((int)lists[0].value()));
-                case 2:
-                    return ArrayDataSet.copy(
-                            rods.slice((int)lists[0].value())
-                            .slice((int)lists[1].value()));
-                case 3:
-                    return ArrayDataSet.copy(
-                            rods.slice((int)lists[0].value())
-                            .slice((int)lists[1].value())
-                            .slice((int)lists[2].value()));
-                case 4:
-                    return ArrayDataSet.copy(
-                            rods.slice((int)lists[0].value())
-                            .slice((int)lists[1].value())
-                            .slice((int)lists[2].value())
-                            .slice((int)lists[3].value()));
-                default:
-                    throw new IllegalArgumentException("rank not supported:"+lists.length);
+            if ( lists.length>rods.length() ) {
+                throw new IllegalArgumentException("Too many indices: "+Arrays.toString(lists));
             }
+            for (QDataSet list : lists) {
+                int index = (int) list.value();
+                if ( index<0 ) index= rods.length()+index;
+                rods= rods.slice(index);
+            }
+            return ArrayDataSet.copy(rods);
         }
         
         for ( int i=0; i<lists.length; i++ ) {
