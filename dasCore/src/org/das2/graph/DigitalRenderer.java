@@ -540,7 +540,25 @@ public class DigitalRenderer extends Renderer {
         sb.append( ds.toString() );
         for ( int i=0; i<ds.length(); i++ ) {
             sb.append("<br>  ");
-            sb.append(ds.slice(i));
+            sb.append(ds.property(QDataSet.NAME,i));
+            sb.append("[:");
+            for ( int i2=0; i2<ds.length(i); i2++ ) {
+                sb.append(",").append(ds.value(i,i2));
+            }
+            sb.append("]");
+            sb.append(" ").append("units=").append(ds.property(QDataSet.UNITS,i));
+            if ( ds.property(QDataSet.BIN_MIN_NAME,i)!=null ) {
+                sb.append(" BIN_MIN_NAME=").append(ds.property(QDataSet.BIN_MIN_NAME,i));
+            }
+            if ( ds.property(QDataSet.BIN_MAX_NAME,i)!=null ) {
+                sb.append(" BIN_MAX_NAME=").append(ds.property(QDataSet.BIN_MAX_NAME,i));
+            }
+            if ( ds.property(QDataSet.DELTA_MINUS_NAME,i)!=null ) {
+                sb.append(" DELTA_MINUS_NAME=").append(ds.property(QDataSet.DELTA_MINUS_NAME,i));
+            }            
+            if ( ds.property(QDataSet.DELTA_PLUS_NAME,i)!=null ) {
+                sb.append(" DELTA_PLUS_NAME=").append(ds.property(QDataSet.DELTA_PLUS_NAME,i));
+            }            
         }
         drawString(g, sb.toString());
     }
