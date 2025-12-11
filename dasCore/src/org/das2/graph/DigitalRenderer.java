@@ -429,7 +429,7 @@ public class DigitalRenderer extends Renderer {
             } else if ( ds.rank()==3 ) {
                 renderRank3( ds, g, xAxis, yAxis );
             } else if ( Schemes.isBundleDescriptor(ds) ) {
-                renderRank0( Ops.dataset( Units.nominal().createDatum( ds.toString() ) ), g, xAxis, yAxis );
+                renderBundleDescriptor(g, ds);
             } else if ( ds.rank()==2 ) {
                 renderRank2( ds, g, xAxis, yAxis);
             } else {
@@ -527,9 +527,25 @@ public class DigitalRenderer extends Renderer {
         return s;
         
     }
+    
+    private void renderBundleDescriptor( Graphics2D g, QDataSet ds ) {
+        Font f0= g.getFont();
+        if ( size>0 ) { // legacy support
+            Font f= f0.deriveFont((float)size);
+            g.setFont(f);
+        } else {
+            setUpFont( g, fontSize );
+        }     
+        StringBuilder sb= new StringBuilder();
+        sb.append( ds.toString() );
+        for ( int i=0; i<ds.length(); i++ ) {
+            sb.append("<br>  ");
+            sb.append(ds.slice(i));
+        }
+        drawString(g, sb.toString());
+    }
         
     private void renderRank0( QDataSet ds, Graphics2D g, DasAxis xAxis, DasAxis yAxis ) {
-        DasPlot parent= getParent();
         
         Font f0= g.getFont();
         if ( size>0 ) { // legacy support
@@ -588,15 +604,18 @@ public class DigitalRenderer extends Renderer {
             s= sb.toString();
         }
         
+        drawString(g, s);
+    }
+
+    private void drawString(Graphics2D g, String s) {
+
+        DasPlot parent= getParent();
+
         FontMetrics fm= g.getFontMetrics();
-        
         int offs= 5;
-        
         GrannyTextRenderer gtr= new GrannyTextRenderer();
         gtr.setString(g, s);
-        
         int x,y;
-        
         switch (align) {
             case NE:
             case NW:
@@ -609,7 +628,6 @@ public class DigitalRenderer extends Renderer {
                 y= parent.getRow().getDMaximum() - (int)gtr.getDescent() - offs;
                 break;
         }
-        
         switch (align) {
             case NW:
             case SW:
@@ -622,7 +640,6 @@ public class DigitalRenderer extends Renderer {
                 x = parent.getColumn().getDMaximum() - offs - (int)gtr.getWidth();
                 break;
         }
-        
         gtr.draw(g, x, y );
             
         //parent.postMessage(this, sb.toString(), DasPlot.INFO, null, null);
