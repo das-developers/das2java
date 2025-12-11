@@ -11,6 +11,7 @@ package org.das2.dataset;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -28,6 +29,7 @@ import org.das2.qds.AbstractDataSet;
 import org.das2.qds.BundleDataSet;
 import org.das2.qds.DDataSet;
 import org.das2.qds.DRank0DataSet;
+import org.das2.qds.MutablePropertyDataSet;
 import org.das2.qds.QDataSet;
 import org.das2.qds.SemanticOps;
 import org.das2.qds.ops.Ops;
@@ -110,11 +112,18 @@ public class DataSetAdapter {
                         sname = "y";
                     }
                     v.putProperty(QDataSet.NAME, sname);
-                    Vector v0 = v;
+                    
                     AbstractDataSet bds = (AbstractDataSet) Ops.bundle(null, v);
                     String[] planes = ds.getPlaneIds();
                     Units unitsY = null;
                     boolean bCommonYUnits = false;
+                    
+                    HashMap<String,Integer> names= new HashMap<>();
+                    names.put("x",0);
+                    for (int i = 1; i < planes.length; i++) {
+                        names.put(planes[i],i);
+                    }
+                    
                     for (int i = 1; i < planes.length; i++) {
                         // Arg, everything we want to get at is hidden behind 7 levels of
                         // interfaces.  As a bonus, class names repeat in different packages from
@@ -126,19 +135,44 @@ public class DataSetAdapter {
                         } else {
                             bCommonYUnits = (unitsY == view.getYUnits());
                         }
+                        
+                        AbstractDataSet v0;
+                        int i0; // location of the data
 
                         v = new Vector((VectorDataSet) vds.getPlanarView(planes[i]), planes[i]);
+                        
+                        int iext= planes[i].lastIndexOf(".");
+                        String ext= planes[i].substring(iext+1);
+                        String bas;
+                        if ( ext.length()==planes[i].length() ) {
+                            bas= ext;
+                            ext= "";
+                            v0= null;
+                            i0= -1;
+                        } else {
+                            bas= planes[i].substring(0,planes[i].length()-ext.length()-1);
+                            v0= (AbstractDataSet)Ops.unbundle( bds, bas );
+                            i0= names.get(bas);
+                        }
+                        
+                        MutablePropertyDataSet bundleDescriptor= (MutablePropertyDataSet)bds.property(QDataSet.BUNDLE_1);
+                                
                         v.putProperty(QDataSet.NAME, planes[i]);
-                        if (planes[i].equals(sname + ".min")) {
+                        if ( ext.equals("min") && v0!=null ) {
                             v0.putProperty(QDataSet.BIN_MIN, v);
-                        } else if (planes[i].equals(sname + ".max")) {
+                            bundleDescriptor.putProperty( QDataSet.BIN_MIN_NAME, i0, planes[i]);
+                        } else if ( ext.equals("max") && v0!=null ) {
                             v0.putProperty(QDataSet.BIN_MAX, v);
-                        } else if (planes[i].equals(sname + ".stddev")) {
+                            bundleDescriptor.putProperty( QDataSet.BIN_MAX_NAME, i0, planes[i]);
+                        } else if ( ext.equals("stddev") && v0!=null ) {
                             v0.putProperty(QDataSet.DELTA_MINUS, v);
                             v0.putProperty(QDataSet.DELTA_PLUS, v);
-                        } else {
-                            Ops.bundle(bds, v);
+                            bundleDescriptor.putProperty( QDataSet.DELTA_MINUS_NAME, i0, planes[i]);
+                            bundleDescriptor.putProperty( QDataSet.DELTA_PLUS_NAME, i0, planes[i]);
                         }
+
+                        Ops.bundle(bds, v);
+                        
                     }
 
                     // Convert Das2 property substitutions to USER_PROPERTIES substitutions
@@ -168,7 +202,7 @@ public class DataSetAdapter {
                         BundleDataSet bbds = (BundleDataSet) bds;
                         return (BundleDataSet) Ops.bundle(new XTagsDataSet(vds), bbds.unbundle(0), bbds.unbundle(1));
                     }
-
+                            
                     if (bds.length(0) == 1) {
                         return DDataSet.copy(Ops.unbundle(bds, 0));
                     } else {
