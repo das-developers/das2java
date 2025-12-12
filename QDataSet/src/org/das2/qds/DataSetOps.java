@@ -856,7 +856,7 @@ public class DataSetOps {
         int[] qubeDims= DataSetUtil.qubeDims(rods);
         
         if ( lists[0].rank()==0 ) {
-            if ( lists.length>rods.length() ) {
+            if ( lists.length>rods.rank() ) {
                 throw new IllegalArgumentException("Too many indices: "+Arrays.toString(lists));
             }
             for (QDataSet list : lists) {
