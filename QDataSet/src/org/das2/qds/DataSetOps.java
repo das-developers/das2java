@@ -860,7 +860,7 @@ public class DataSetOps {
                 throw new IllegalArgumentException("Too many indices: "+Arrays.toString(lists));
             }
             for (QDataSet list : lists) {
-                int index = (int) list.value();
+                int index = (int) list.value(); // TODO: Check for nominal and location units.
                 if ( index<0 ) index= rods.length()+index;
                 rods= rods.slice(index);
             }
