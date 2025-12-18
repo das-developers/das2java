@@ -22,6 +22,7 @@
  */
 package org.das2.stream;
 
+import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
 import org.das2.datum.Datum;
@@ -104,7 +105,7 @@ public enum PropertyType {
             case DATUM: {
                 String[] split = s.split("\\s+");
                 if (split.length == 1) {
-                    return Units.dimensionless.parse(split[0]);
+                    return DatumUtil.parse(split[0]);
                 }
                 if (split.length == 2) {
                     Units units = Units.lookupUnits(split[1]);
@@ -124,6 +125,11 @@ public enum PropertyType {
                 return units.parse(split[0]);
             }
             case DATUM_RANGE: {
+                try {
+                    DatumRange dr= DatumRangeUtil.parseDatumRange(s);
+                    return dr;
+                } catch ( ParseException ex ) {
+                }
                 String[] split = s.split("\\s+");
                 if (split.length < 3) {
                     throw new IllegalArgumentException("Too few tokens in range: '" + s + "'");
