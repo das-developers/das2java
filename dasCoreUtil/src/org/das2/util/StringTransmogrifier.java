@@ -100,7 +100,7 @@ public class StringTransmogrifier {
         Matcher m= p.matcher(string);
         if ( m.matches() ) {
             String[] args= getFields(m);
-            return String.format( result, args );
+            return String.format( result, (Object[])args );
         } else {
             return result;
         }
