@@ -242,6 +242,8 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
             result= new SmoothFilterEditorPanel();
         } else if ( f.matches(CleanDataFilterEditorPanel.PROP_REGEX) ) { 
             result= new CleanDataFilterEditorPanel();
+        } else if ( f.matches(LttbFilterEditorPanel.PROP_REGEX) ) { 
+            result= new LttbFilterEditorPanel();
         } else if ( f.matches("\\|histogram\\(\\)") ) { 
             result= new HistogramFilterEditorPanel();
         } else if ( f.matches(HistogramFilterEditorPanel.PROP_REGEX) ) { 

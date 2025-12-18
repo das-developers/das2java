@@ -26,6 +26,7 @@ import org.das2.qds.examples.Schemes;
 import org.das2.qds.filters.ApplyIndexEditorPanel;
 import org.das2.qds.ops.Ops;
 import org.das2.qds.util.BinAverage;
+import org.das2.qds.util.LttbDownsampler;
 import org.das2.qds.util.Reduction;
 
 /**
@@ -766,6 +767,10 @@ public class OperationsProcessor {
                     } else {
                         ds= Ops.cleanData(ds);
                     }
+                } else if ( cmd.equals("|lttb") ) {
+                    String ssize= s.next();
+                    int size= Integer.parseInt(ssize);
+                    ds= LttbDownsampler.lttb(ds,size);
                 } else if ( cmd.equals("|medianFilter") ) {
                     String comp= s.next();
                     int icomp= Integer.parseInt(comp);

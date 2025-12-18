@@ -14463,6 +14463,70 @@ public final class Ops {
     }
 
     /**
+     * reproduce NumPy array_split function, which divides rank 1 data into a rank 2 dataset with <code>sections</code> 
+     * sections.  When the data is not evenly divisible into so many sections, having remainder R, the extra elements will be 
+     * found in the first R segments.
+     * 
+     * @param ds the rank 1 data.
+     * @param sections number of sections
+     * @return rank 2 non-qube array
+     */
+    public static QDataSet arraySplit( QDataSet ds, int sections ) {
+        JoinDataSet result= new JoinDataSet(2);
+        int size= ds.length()/sections;
+        int remainder= ds.length() - size * sections ;
+        int r= remainder*(size+1);
+        for ( int i=0; i<sections; i++ ) {
+            if ( i<remainder ) {
+                result.join( ds.trim( i*(size+1), (i+1)*(size+1) ) );
+            } else {
+                result.join( ds.trim( r + (i-remainder)*size, r + (i-remainder+1)*size ) );
+            }
+        }
+        return result;
+    }
+    
+    /**
+     * reproduce NumPy array_split function, which divides rank 1 data into a rank 2 dataset with divisions at the
+     * given divisions.
+     * 
+     * @param ds the rank 1 data.
+     * @param divisions index of each new section, first 0 is implicit.
+     * @return rank 2 non-qube array
+     */
+    public static QDataSet arraySplit( QDataSet ds, QDataSet divisions ) {
+        JoinDataSet result= new JoinDataSet(2);
+        int last=0;
+        for ( int i=0; i<divisions.length(); i++ ) {
+            int i1= (int)divisions.value(i);
+            result.join( ds.trim(last,i1) );
+            last=i1;
+        }
+        result.join(ds.trim(last,ds.length()));
+        return result;
+    }
+    
+    /**
+     * reproduce NumPy array_split function, which divides rank 1 data into a rank 2 dataset with divisions at the
+     * given divisions.
+     * 
+     * @param ds the rank 1 data.
+     * @param divisions index of each new section, first 0 is implicit.
+     * @return rank 2 non-qube array
+     */
+    public static QDataSet arraySplit( QDataSet ds, int[] divisions ) {
+        JoinDataSet result= new JoinDataSet(2);
+        int last=0;
+        for ( int i=0; i<divisions.length; i++ ) {
+            int i1= divisions[i];
+            result.join( ds.trim(last,i1) );
+            last=i1;
+        }
+        result.join(ds.trim(last,ds.length()));
+        return result;
+    }    
+    
+    /**
      * return the xtags of the dataset. 
      * @param ds the dataset
      * @return the dataset for the xtags.

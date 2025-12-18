@@ -530,6 +530,35 @@ public class QDataSetStreamHandler implements StreamHandler {
             }
         }
         
+        if ( SemanticOps.isBundle(ds) ) {
+            QDataSet bds= (QDataSet)ds.property(QDataSet.BUNDLE_1);
+            String[] planes= new String[bds.length()];
+            for ( int i=0; i<bds.length(); i++ ) {
+                planes[i]= (String) bds.property(QDataSet.NAME,i);
+            }
+            boolean yesDoIt= true;
+            String sname= planes[0];
+            MutablePropertyDataSet v0= (MutablePropertyDataSet)Ops.unbundle(ds,0);
+            for ( int i=1; i<bds.length(); i++ ) {
+                QDataSet v= Ops.unbundle(ds,i);
+                if (planes[i].equals(sname + ".min")) {
+                    v0.putProperty(QDataSet.BIN_MIN, v);
+                } else if (planes[i].equals(sname + ".max")) {
+                    v0.putProperty(QDataSet.BIN_MAX, v);
+                } else if (planes[i].equals(sname + ".stddev")) {
+                    v0.putProperty(QDataSet.DELTA_MINUS, v);
+                    v0.putProperty(QDataSet.DELTA_PLUS, v);
+                } else {
+                    yesDoIt= false;
+                }
+            }
+            if ( yesDoIt &&
+                    ( v0.property(QDataSet.BIN_MAX)!=null && v0.property(QDataSet.BIN_MIN)!=null ) 
+                    || ( v0.property(QDataSet.DELTA_MINUS)!=null ) ) {
+                ds= v0;
+            }
+        }
+        
         ds= Ops.putProperty( ds, QDataSet.TITLE, streamTitle );
         Object oxCacheRange= streamProperties.get( "xCacheRange" );
         if ( oxCacheRange!=null ) {

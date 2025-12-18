@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Scanner;
 import java.util.regex.Pattern;
+import javax.script.ScriptContext;
 import org.das2.qds.buffer.BufferDataSet;
 import org.das2.datum.DatumRange;
 import org.das2.datum.EnumerationUnits;
@@ -842,7 +843,7 @@ public class DataSetOps {
      * @see applyIndex which is similar
      */
     public static ArrayDataSet applyIndexAllLists( QDataSet rods, QDataSet[] lists ) {
-                
+        
         QDataSet[] ll= new QDataSet[2];
         ll[0]= lists[0];
         for ( int i=1; i<lists.length; i++) {
@@ -853,6 +854,18 @@ public class DataSetOps {
         }
 
         int[] qubeDims= DataSetUtil.qubeDims(rods);
+        
+        if ( lists[0].rank()==0 ) {
+            if ( lists.length>rods.rank() ) {
+                throw new IllegalArgumentException("Too many indices: "+Arrays.toString(lists));
+            }
+            for (QDataSet list : lists) {
+                int index = (int) list.value(); // TODO: Check for nominal and location units.
+                if ( index<0 ) index= rods.length()+index;
+                rods= rods.slice(index);
+            }
+            return ArrayDataSet.copy(rods);
+        }
         
         for ( int i=0; i<lists.length; i++ ) {
             int len= i==0 ? rods.length() : qubeDims[i];
