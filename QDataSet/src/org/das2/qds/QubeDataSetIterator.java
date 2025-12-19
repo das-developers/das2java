@@ -760,7 +760,6 @@ public final class QubeDataSetIterator implements DataSetIterator {
         } else {
             this.toString();
             if ( debugMe ) {
-                //System.err.println("here stop Jeremy");
                 boolean wow=true;
             }
             boolean proceed= false;
