@@ -437,8 +437,10 @@ public class DataSetUtil {
                     QDataSet.CACHE_TAG,
                     QDataSet.COORDINATE_FRAME,
                     QDataSet.DELTA_MINUS, QDataSet.DELTA_PLUS,
+                    QDataSet.DELTA_MINUS_NAME, QDataSet.DELTA_PLUS_NAME,
                     QDataSet.BIN_MINUS, QDataSet.BIN_PLUS,
                     QDataSet.BIN_MIN, QDataSet.BIN_MAX,
+                    QDataSet.BIN_MINUS_NAME, QDataSet.BIN_PLUS_NAME,
                     QDataSet.WEIGHTS,
                     QDataSet.USER_PROPERTIES,
                     QDataSet.NOTES,
@@ -894,6 +896,13 @@ public class DataSetUtil {
             }
         }
 
+        for (int i = 0; i <= ds.rank(); i++) {
+            Object dep = ds.property("DEPENDNAME_" + i);
+            if (dep != null) {
+                result.put("DEPENDNAME_" + i, dep);
+            }
+        }
+        
         for (int i = 0; i <= ds.rank(); i++) {
             Object dep = ds.property("BUNDLE_" + i);
             if (dep != null) {
