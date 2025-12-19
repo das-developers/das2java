@@ -854,9 +854,6 @@ public class SeriesRenderer extends Renderer {
                                     lp.lineTo(ixp, iy);
                                     break;
                                 case SERIF_BAR:
-                                    if ( ixm<0 ) {
-                                        System.err.println("here stop");
-                                    }
                                     lp.moveTo(ixm, iy-2);
                                     lp.lineTo(ixm, iy+2);
                                     lp.moveTo(ixm, iy);
