@@ -540,13 +540,19 @@ public class DigitalRenderer extends Renderer {
         sb.append( ds.toString() );
         for ( int i=0; i<ds.length(); i++ ) {
             sb.append("<br>  ");
-            sb.append(ds.property(QDataSet.NAME,i));
+            String s= (String)ds.property(QDataSet.NAME,i);
+            if ( s!=null ) {
+                sb.append(s);
+            }
             sb.append("[:");
             for ( int i2=0; i2<ds.length(i); i2++ ) {
                 sb.append(",").append(ds.value(i,i2));
             }
             sb.append("]");
-            sb.append(" ").append("units=").append(ds.property(QDataSet.UNITS,i));
+            Units u= (Units)ds.property(QDataSet.UNITS,i);
+            if ( u!=null && u!=Units.dimensionless ) {
+                sb.append(" ").append("units=").append(ds.property(QDataSet.UNITS,i));
+            }
             if ( ds.property(QDataSet.BIN_MIN_NAME,i)!=null ) {
                 sb.append(" BIN_MIN_NAME=").append(ds.property(QDataSet.BIN_MIN_NAME,i));
             }
