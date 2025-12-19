@@ -125,6 +125,9 @@ public class DataSetAdapter {
                     }
                     
                     for (int i = 1; i < planes.length; i++) {
+                        if ( i==1 ) {
+                            System.err.println("here stop");
+                        }
                         // Arg, everything we want to get at is hidden behind 7 levels of
                         // interfaces.  As a bonus, class names repeat in different packages from
                         // the same dev group.
@@ -152,7 +155,14 @@ public class DataSetAdapter {
                         } else {
                             bas= planes[i].substring(0,planes[i].length()-ext.length()-1);
                             v0= (AbstractDataSet)Ops.unbundle( bds, bas );
-                            i0= names.get(bas);
+                            Integer ii0= names.get(bas);
+                            if (ii0==null) {
+                                logger.fine("assume we can't find the name because it is the X or Y value");
+                                System.err.println("here stop");
+                                i0= 0;
+                            } else {
+                                i0= ii0;
+                            }
                         }
                         
                         MutablePropertyDataSet bundleDescriptor= (MutablePropertyDataSet)bds.property(QDataSet.BUNDLE_1);
