@@ -232,6 +232,8 @@ public class GitHubFileSystem extends HttpFileSystem {
             return "";
         } else if ( h.equals("jfaden.net") && path.startsWith("/git") ) {
             return "/git";
+        } else if ( h.equals("git.jfaden.net") ) {
+            return "";
         } else if ( h.equals("gitlab.com") ) {
             return "";
         } else {
