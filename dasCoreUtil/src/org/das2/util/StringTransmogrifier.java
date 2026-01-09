@@ -10,10 +10,8 @@ import java.util.regex.Pattern;
  * new code which indicates the orbit number, but the orbit number context is provided elsewhere 
  * on the plot.
  * 
- * <ul>
- * <li>https://calvinandhobbes.fandom.com/wiki/Transmogrifier_Gun?file=CalvinTransmogrifierGunWeb.jpg
- * </ul>
- * 
+ * https://calvinandhobbes.fandom.com/wiki/Transmogrifier_Gun?file=CalvinTransmogrifierGunWeb.jpg
+ *
  * @author jbf
  */
 public class StringTransmogrifier {
