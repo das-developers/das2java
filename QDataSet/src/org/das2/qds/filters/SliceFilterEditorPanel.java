@@ -238,6 +238,16 @@ public class SliceFilterEditorPanel extends AbstractFilterEditorPanel implements
                             dependNotAvailable= false;
                             if ( getIndexMode() ) {
                                 int index= (Integer)sliceIndexSpinner.getValue();
+                                if ( index>=dep.length() ) {
+                                    index= dep.length()-1;
+                                    final int findex= index;
+                                    SwingUtilities.invokeLater( new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            sliceIndexSpinner.setValue(findex);
+                                        }
+                                    } );
+                                }
                                 String s= DataSetUtil.asDatum( dep.slice(index) ).toString();
                                 sliceAtDatumTF.setText(s);
                             } else {
