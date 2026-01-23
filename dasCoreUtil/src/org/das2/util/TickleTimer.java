@@ -81,8 +81,10 @@ public class TickleTimer {
                     tickle("retickle");
                 }
                 messages= new ArrayList<>();
+                
                 List<PropertyChangeListener> callbacks= new ArrayList<>(TickleTimer.this.callbacks);
                 TickleTimer.this.callbacks.removeAll(callbacks);
+                
                 PropertyChangeEvent pce= new PropertyChangeEvent( this, "running", true, false );
                 callbacks.forEach((pcl) -> {
                     try {

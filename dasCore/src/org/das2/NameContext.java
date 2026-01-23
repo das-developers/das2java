@@ -26,6 +26,7 @@ package org.das2;
 import org.das2.beans.BeansUtil;
 
 import java.beans.*;
+import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -53,13 +54,32 @@ public class NameContext {
     public static final Pattern INDEXED_NAME = Pattern.compile(INDEXED_NAME_STRING);
     public static final Pattern QUALIFIED_NAME = Pattern.compile(QUALIFIED_NAME_STRING);
     
-    private Map nameMap;
+    private Map<String,NamedWeakReference<String>> nameMap;
+    private ReferenceQueue<String> queue;
     private Map propertyMap;
+    
+
+    private class NamedWeakReference<V> extends WeakReference<V> {
+        final String name;
+
+        NamedWeakReference(String name, V referent, ReferenceQueue<V> queue) {
+            super(referent, queue);
+            this.name = name;
+        }
+    }
     
     /** Creates a new instance of NameContext */
     NameContext() {
         nameMap = new HashMap();
+        queue= new ReferenceQueue<>();
         propertyMap = new HashMap();
+    }
+    
+    private void expungeStaleEntries() {
+        NamedWeakReference<String> ref;
+        while ((ref = (NamedWeakReference<String>) queue.poll()) != null) {
+            nameMap.remove(ref.name, ref);
+        }
     }
     
     /** Associates a value with a name in this context.  The <code>name</code>
@@ -70,9 +90,10 @@ public class NameContext {
      * @throws org.das2.DasNameException when the name is not a valid name ("[A-Za-z][A-Za-z0-9_]*")
      */
     public void put(String name, Object value) throws DasNameException {
+        expungeStaleEntries();
         Matcher m = SIMPLE_NAME.matcher(name);
         if (m.matches()) {
-            nameMap.put(name, new WeakReference( value ) );
+            nameMap.put(name, new NamedWeakReference( name, value, queue ) );
         }
         else {
             throw new DasNameException(name + " must match " + SIMPLE_NAME_STRING);
