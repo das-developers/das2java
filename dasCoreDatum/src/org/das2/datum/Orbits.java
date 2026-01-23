@@ -161,12 +161,42 @@ public class Orbits {
 
         LinkedHashMap<String,DatumRange> result= new LinkedHashMap();
 
+        String delim=null;
+        
         try (BufferedReader rin = new BufferedReader( new InputStreamReader( in ) )) {
             String s= rin.readLine();
             int col= -1; // the first time column, 0 is the first column.
             int labelColumn= -1;  // column of the identifiers.
             while ( s!=null ) {
-                String[] ss= s.trim().split("\\s+");
+                
+                s= s.trim();
+                int i= s.indexOf("#");
+                if ( i>-1 ) {
+                    s= s.substring(0,i).trim();
+                }
+                
+                if ( s.length()==0 ) { // skip empty lines
+                    s= rin.readLine();
+                    continue;
+                }
+                
+                String[] ss;
+                
+                if ( delim==null ) { // set the delimiter automatically to whitespace, semicolon, or comma.
+                    ss= s.split(";");
+                    int nsemi=ss.length;
+                    ss= s.split(",");
+                    int ncomma= ss.length;
+                    if ( ncomma>2 && nsemi==1 ) {
+                        delim= ",";
+                    } else if ( nsemi>2 ) {
+                        delim= ";";
+                    } else {
+                        delim= "\\s+";
+                    }
+                }
+                
+                ss= s.trim().split(delim);
                 if ( ss.length>0 && ss[0].startsWith("#") ) {
                     s= rin.readLine();
                     continue;
