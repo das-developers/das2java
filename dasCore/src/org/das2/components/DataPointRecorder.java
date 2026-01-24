@@ -2277,10 +2277,14 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
      * @see #addDataPoint(org.das2.qds.QDataSet) 
      */
     public void addDataPoints( QDataSet ds ) {
-        try {
-            SwingUtilities.invokeAndWait( () -> { updateButton.setText("xxxxx");} );
-        } catch (InterruptedException | InvocationTargetException ex) {
-            logger.log(Level.SEVERE, null, ex);
+        if ( SwingUtilities.isEventDispatchThread() ) {
+            updateButton.setText("xxxxx");
+        } else {
+            try {
+                SwingUtilities.invokeAndWait( () -> { updateButton.setText("xxxxx"); } );
+            } catch (InterruptedException | InvocationTargetException ex) {
+                logger.log(Level.SEVERE, null, ex);
+            }
         }
         boolean active0= this.active;
         
@@ -2320,10 +2324,15 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
         active= active0;
         
         updateClients();
-        try {
-            SwingUtilities.invokeAndWait( () -> { updateButton.setText("Update");} );
-        } catch (InterruptedException | InvocationTargetException ex) {
-            logger.log(Level.SEVERE, null, ex);
+        
+        if ( SwingUtilities.isEventDispatchThread() ) {
+            updateButton.setText("Update");
+        } else {
+            try {
+                SwingUtilities.invokeAndWait( () -> { updateButton.setText("Update");} );
+            } catch (InterruptedException | InvocationTargetException ex) {
+                logger.log(Level.SEVERE, null, ex);
+            }
         }
          
         update();
