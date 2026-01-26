@@ -82,12 +82,12 @@ public abstract class FileSystem  {
         }
     }
     
-    private static final Map<URI,FileSystem> instances= Collections.synchronizedMap( new HashMap<URI,FileSystem>() );
+    private static final Map<String,FileSystem> instances= Collections.synchronizedMap( new HashMap<>() );
 
     /**
      * non-null means filesystem is bring created and we should wait.
      */
-    private static final Map<URI,Object> blocks= Collections.synchronizedMap( new HashMap() );
+    private static final Map<String,Object> blocks= Collections.synchronizedMap( new HashMap<>() );
 
     /**
      *
@@ -321,15 +321,17 @@ public abstract class FileSystem  {
         logger.log(Level.FINER, "request for filesystem {0}", root);
 
         FileSystem result;
+        
+        final String sroot= toCanonicalFolderNameString(root);
 
-        if ( !root.toString().endsWith("/") ) {
+        if ( !sroot.endsWith("/") ) {
             try {
-                root= new URI( root.toString()+"/" );
+                root= new URI( sroot+"/" );
             } catch ( URISyntaxException ex ) {
             }
         }
 
-        result= instances.get(root);
+        result= instances.get(sroot);
         if ( result!=null ) {
             return result;
         }
@@ -337,7 +339,8 @@ public abstract class FileSystem  {
         if ( "user".equals(root.getUserInfo()) ) { // HTTP filesystem will add this automatically, so check this as well.
             try {
                 URI test= new URI( root.getScheme(), null, root.getHost(), root.getPort(), root.getPath(), root.getQuery(), root.getFragment() );
-                result= instances.get(test);
+                
+                result= instances.get( toCanonicalFolderNameString(test) );
                 if ( result!=null ) {
                     return result;
                 }
@@ -349,13 +352,13 @@ public abstract class FileSystem  {
         Object waitObject;
         boolean ishouldwait= false;
         synchronized (blocks) {
-            if ( blocks.containsKey(root) ) {
-                waitObject= blocks.get(root);
+            if ( blocks.containsKey(sroot) ) {
+                waitObject= blocks.get(sroot);
                 ishouldwait= true;
                 logger.log(Level.FINE, "this thread should wait for waitObject {0} {1}", new Object[]{waitObject, root});
             } else {
                 waitObject= new Object(); 
-                blocks.put( root, waitObject );
+                blocks.put( sroot, waitObject );
                 logger.log(Level.FINE, "created waitObject {0} {1}", new Object[]{waitObject, root});
             }
         }
@@ -363,7 +366,7 @@ public abstract class FileSystem  {
         if ( ishouldwait ) { // wait until the other thread is done.  If the other thread doesn't put the result in instances, then there's a problem...
             try {
                 synchronized ( waitObject ) {
-                    while ( blocks.get(root)!=null ) {                        
+                    while ( blocks.get(sroot)!=null ) {                        
                         logger.log(Level.FINE, "waiting for {0} {1}", new Object[]{waitObject, root});
                         waitObject.wait(WAIT_TIMEOUT_MS);  
                     }
@@ -373,7 +376,7 @@ public abstract class FileSystem  {
                 logger.log(Level.SEVERE, ex.getMessage(), ex);
             }
 
-            result= instances.get(root);
+            result= instances.get(sroot);
 
             if ( result!=null ) {
                 logger.log( Level.FINE,"using existing filesystem {0}", root );
@@ -416,8 +419,8 @@ public abstract class FileSystem  {
                     throw new FileSystemOfflineException(ex);
                 } finally {
                     logger.log( Level.FINE,"created zip new filesystem {0}", root );
-                    if ( result!=null ) instances.put( root, result);
-                    blocks.remove(root);
+                    if ( result!=null ) instances.put( sroot, result);
+                    blocks.remove(sroot);
                 }
             } else if ( pathIncludesTarFileSystem(root) && registry.containsKey("tar") ) {
                 try {
@@ -465,8 +468,8 @@ public abstract class FileSystem  {
                     throw new FileSystemOfflineException(ex);
                 } finally {
                     logger.log( Level.FINE,"created tar new filesystem {0}", root );
-                    if ( result!=null ) instances.put( root, result);
-                    blocks.remove(root);
+                    if ( result!=null ) instances.put( sroot, result);
+                    blocks.remove(sroot);
                 }
             }      
         }
@@ -478,12 +481,12 @@ public abstract class FileSystem  {
         if ( factory==null ) {
             synchronized( waitObject ) {
                 logger.log(Level.FINE, "releasing waitObject after factory=null {0}", waitObject);
-                blocks.remove(root);
+                blocks.remove(sroot);
                 logger.log(Level.FINE, "releasing waitObject after factory=null {0} (repeat)", waitObject); // need to do this in the finally block in case there was an Exception.
                 waitObject.notifyAll(); //TODO: the other threads are going to think it's offline.
             }                
-            logger.log(Level.SEVERE, "unsupported protocol: {0}", root);
-            throw new IllegalArgumentException( "unsupported protocol: "+root );
+            logger.log(Level.SEVERE, "unsupported protocol: {0}", sroot);
+            throw new IllegalArgumentException( "unsupported protocol: "+sroot );
             
         } else {
             try {
@@ -496,13 +499,21 @@ public abstract class FileSystem  {
             } finally {
                 logger.log( Level.FINE,"created new filesystem {0}", root );
                 if ( result!=null ) {
-                    instances.put(root, result);
-                    if ( !result.getRootURI().equals(root) ) {
-                        instances.put( result.getRootURI(), result);
+                    instances.put(sroot, result);
+                    URI test= result.getRootURI();
+                    if ( "user".equals(test.getUserInfo()) ) {
+                        try {
+                            test= new URI( test.toASCIIString().replace("user@", "") );
+                        } catch (URISyntaxException ex) {
+                            loggerUrl.log(Level.SEVERE, null, ex);
+                        }
+                    }
+                    if ( !test.equals(root) ) {
+                        instances.put( toCanonicalFolderNameString(result.getRootURI()), result);
                     }
                 }
                 synchronized( waitObject ) {
-                    blocks.remove(root);
+                    blocks.remove(sroot);
                     logger.log(Level.FINE, "releasing waitObject {0}", waitObject); // need to do this in the finally block in case there was an Exception.
                     waitObject.notifyAll();
                 }
@@ -600,6 +611,16 @@ public abstract class FileSystem  {
             filename= "/"+filename;
         }
         filename= filename.replaceAll( "//", "/" );
+        return filename;
+    }
+    
+    /**
+     * return the canonical name for the folder located with URI 
+     * @param name
+     * @return 
+     */
+    public static String toCanonicalFolderNameString( URI name ) {
+        String filename= name.toASCIIString();
         return filename;
     }
     
