@@ -710,7 +710,7 @@ public class SeriesRenderer extends Renderer {
     private class ErrorBarRenderElement implements RenderElement {
 
         GeneralPath p;
-        GeneralPath p100;
+        GeneralPath p68;
 
         @Override
         public void renderBackground(Graphics2D g) {
@@ -731,10 +731,10 @@ public class SeriesRenderer extends Renderer {
                 logger.log(Level.FINE, "all data is off-page" );
                 return 0;
             }
-            GeneralPath lp100= p100;
-            if ( p100!=null ) {
-                GraphUtil.fillWithTexture( g, lp100, fillColor, fillTexture);
-            }
+            GeneralPath lp68= p68;
+            if ( p68!=null ) {
+                GraphUtil.fillWithTexture( g, lp68, fillColor, fillTexture);
+            }            
             g.setStroke(new BasicStroke((float) lineWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ));
             if ( errorBarType==ErrorBarType.SHADE ) {
                 GraphUtil.fillWithTexture( g, lp, fillColor, fillTexture);
@@ -763,7 +763,7 @@ public class SeriesRenderer extends Renderer {
             QDataSet binMax=binMinMax[1];
             QDataSet binMin=binMinMax[0];
             
-            GeneralPath lp,lp100;
+            GeneralPath lp,lp68;
 
             Units xunits = SemanticOps.getUnits(xds);
             Units yunits = SemanticOps.getUnits(vds);
@@ -772,13 +772,13 @@ public class SeriesRenderer extends Renderer {
             if ( xunitsWarning ) xunits= xAxis.getUnits();
 
             lp = null;
-            lp100= null;
+            lp68= null;
             
             Point2D.Double returnTo= null;
             
             if ( binMinMax.length==4 ) { // always draw 100% confidence as shade
                 try {
-                    lp100 = new GeneralPath();
+                    lp68 = new GeneralPath();
                     QDataSet p1= binMinMax[2];
                     QDataSet p2= binMinMax[3];
                     QDataSet w1= Ops.valid(p2);
@@ -790,11 +790,11 @@ public class SeriesRenderer extends Renderer {
                         if ( w1.value(i)>0 && w2.value(i)>0 ) {
                             double iym = yAxis.transform( p1.value(i), yunits );
                             if ( penUp ) {
-                                lp100.moveTo( ix,iym );
+                                lp68.moveTo( ix,iym );
                                 returnTo= new Point2D.Double(ix,iym);
                                 penUp= false;
                             } else {
-                                lp100.lineTo(ix, iym);
+                                lp68.lineTo(ix, iym);
                             }
                         }
                     }
@@ -802,19 +802,19 @@ public class SeriesRenderer extends Renderer {
                         double ix = xAxis.transform( xds.value(i), xunits );
                         double iyp = yAxis.transform( p2.value(i), yunits );
                         if ( penUp ) {
-                            lp100.moveTo( ix,iyp );
+                            lp68.moveTo( ix,iyp );
                             penUp= false;
                         } else {
-                            lp100.lineTo(ix, iyp);
+                            lp68.lineTo(ix, iyp);
                         }
                     }
                     if ( returnTo!=null ) {
-                        lp100.lineTo( returnTo.x, returnTo.y );
+                        lp68.lineTo( returnTo.x, returnTo.y );
                     }
                 } catch ( IllegalArgumentException ex ) {
                     if ( getParent()!=null ) getParent().postException(SeriesRenderer.this,ex);
                 }
-                p100= lp100;
+                p68= lp68;
             }
             if ( binMax!=null && binMin!=null ) {
                 try {
@@ -956,7 +956,7 @@ public class SeriesRenderer extends Renderer {
         /**
          * return the min and the max extent of each data point, or null.
          * If both DELTA_PLUS and BIN_PLUS are found, then a four-element
-         * array is returned, with [ c68min, c68max, c100min, c100max ]
+         * array is returned, with [ c100min, c100max, c68min, c68max ]
          * returned.
          * 
          * @param vds
@@ -988,7 +988,7 @@ public class SeriesRenderer extends Renderer {
                 return new QDataSet[] { binMin, binMax } ;                
             } else {
                 if ( binMax!=null ) {
-                    return new QDataSet[] { Ops.subtract( vds, deltaMinusY ), Ops.add( vds, deltaPlusY ), binMin, binMax } ;
+                    return new QDataSet[] { binMin, binMax, Ops.subtract( vds, deltaMinusY ), Ops.add( vds, deltaPlusY ) } ;
                 } else {
                     return new QDataSet[] { Ops.subtract( vds, deltaMinusY ), Ops.add( vds, deltaPlusY ) };
                 }
