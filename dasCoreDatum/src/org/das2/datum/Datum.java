@@ -663,7 +663,13 @@ public class Datum implements Comparable, Serializable {
         if (formatter==null) {
             return units.getDatumFormatterFactory().defaultFormatter().format(d);
         } else {
-            return formatter.format(d);
+            try {
+                return formatter.format(d);
+            } catch ( Exception ex ) {
+                //TODO: We should probably communicate that there's a problem...
+                System.err.println("datum contains bad formatter...");
+                return this.getUnits().format(d);
+            }
         }
     }
     
