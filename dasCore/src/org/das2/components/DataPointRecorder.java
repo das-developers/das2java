@@ -137,17 +137,17 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
     /**
      * units[index]==null if HashMap contains non-datum object.
      */
-    protected Units[] unitsArray;
+    private Units[] unitsArray;
     
     /**
      * the datumFormatter to use for each column.
      */
-    protected DatumFormatter[] formatterArray;
+    private DatumFormatter[] formatterArray;
     
     /**
      * array of plane names that are also the column headers. namesArray[0]="x", namesArray[1]="y"
      */
-    protected String[] namesArray;
+    private String[] namesArray;
     
     /**
      * the default name for the first column
@@ -189,6 +189,10 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
 
         public DataPoint(Datum[] data, Map planes) {
             this.data = Arrays.copyOf(data,data.length);
+            Datum d= (Datum)planes.get("digi_type");
+            if ( d!=null ) {
+                System.err.println(d.toString());
+            }
             this.planes = planes;
         }
 
@@ -552,7 +556,9 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
                 if ( unitsArray[i] instanceof EnumerationUnits ) {
                     EnumerationUnits eu= (EnumerationUnits)unitsArray[i];
                     if ( eu==unitsArray[i] ) {
-                        builder.putValue(-1, i, eu.createDatum(((Datum)dp.getPlane(namesArray[i])).toString()) );
+                        Datum d= (Datum)dp.getPlane(namesArray[i]);
+                        String s= d.toString();
+                        builder.putValue(-1, i, eu.createDatum(s) );
                     } else {
                         builder.putValue(-1, i, (Datum)dp.getPlane(namesArray[i]) );
                     }
@@ -2025,6 +2031,28 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
         return this.yname;
     }
     
+    private void setName( int column, String name ) {
+        this.namesArray[column]= name;
+    }
+    
+    private void setUnits( int column, Units units ) {
+        this.unitsArray[column]= units;
+    }
+    
+    private void setFormatter( int column, DatumFormatter format ) {
+        this.formatterArray[column]= format;
+    }
+    
+    /**
+     * special formatter used to format any time column
+     */
+    private class TimeFormatter extends DatumFormatter {
+        @Override
+        public String format(Datum datum) {
+            return DataPointRecorder.this.timeFormatter.format(datum);
+        }
+    }
+    
     /**
      * add a record, which should be a rank 1 bundle.
      * @param ds 
@@ -2117,36 +2145,31 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
                 for ( Iterator i = planes.entrySet().iterator(); i.hasNext();) {
                     Entry entry= (Entry)i.next();
                     Object key = entry.getKey();
-                    namesArray[index] = String.valueOf(key).trim();
+                    setName( index, String.valueOf(key).trim() );
                     Object value = entry.getValue();
                     if (value instanceof String) {
-                        unitsArray[index] = EnumerationUnits.create("default");
-                        formatterArray[index] = EnumerationUnits.create("default").getDatumFormatterFactory().defaultFormatter();
+                        setUnits( index, EnumerationUnits.create("default") );
+                        setFormatter( index, EnumerationUnits.create("default").getDatumFormatterFactory().defaultFormatter() );
                     } else {
                         if ( value instanceof Datum ) {
                             Datum d= ((Datum) value);
-                            unitsArray[index] = d.getUnits();
+                            setUnits( index, d.getUnits() );
                             if ( UnitsUtil.isTimeLocation(d.getUnits()) && this.timeFormatter!=null ) {
-                                formatterArray[index] = new DatumFormatter() {
-                                    @Override
-                                    public String format(Datum datum) {
-                                        return DataPointRecorder.this.timeFormatter.format(datum);
-                                    }
-                                };
+                                setFormatter( index, new TimeFormatter() );
                             } else {
-                                formatterArray[index] = ((Datum)value).getFormatter();
+                                setFormatter( index, ((Datum)value).getFormatter() );
                             }
                         } else if ( value instanceof QDataSet ) {
                             QDataSet qds= (QDataSet)value;
                             if ( qds.rank()>0 ) {
                                 throw new IllegalArgumentException("qdatasets in planes must be rank 0");
                             } else {
-                                unitsArray[index] = SemanticOps.getUnits((QDataSet)value);
-                                formatterArray[index] = SemanticOps.getDatum( (QDataSet)value, ((QDataSet) value).value() ).getFormatter();
+                                setUnits( index, SemanticOps.getUnits((QDataSet)value) );
+                                setFormatter( index, SemanticOps.getDatum( (QDataSet)value, ((QDataSet) value).value() ).getFormatter() );
                             }
                         } else if ( value instanceof Number ) {
-                            unitsArray[index]= Units.dimensionless;
-                            formatterArray[index]= Units.dimensionless.getDatumFormatterFactory().defaultFormatter();
+                            setUnits( index, Units.dimensionless );
+                            setFormatter( index, Units.dimensionless.getDatumFormatterFactory().defaultFormatter() );
                         } else {
                             throw new IllegalArgumentException("values must be rank 0 Datum or QDataSet, not " + value);
                         }
@@ -2180,41 +2203,36 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
                 namesArray    = new String[2 + planes.size()];
                 namesArray[0] = xname;
                 namesArray[1] = yname;
-                int index = 2;
+                int columnIndex = 2;
                 for ( Iterator i = planes.entrySet().iterator(); i.hasNext();) {
                     Entry entry= (Entry)i.next();
                     Object key = entry.getKey();
-                    namesArray[index] = String.valueOf(key).trim();
+                    setName( columnIndex, String.valueOf(key).trim() );
                     Object value = entry.getValue();
                     if (value instanceof String) {
-                        formatterArray[index] = EnumerationUnits.create("default").getDatumFormatterFactory().defaultFormatter();
+                        setFormatter( columnIndex, EnumerationUnits.create("default").getDatumFormatterFactory().defaultFormatter() );
                     } else {
                         if ( value instanceof Datum ) {
                             Datum d= ((Datum) value);
                             if ( UnitsUtil.isTimeLocation(d.getUnits()) && this.timeFormatter!=null ) {
-                                formatterArray[index] = new DatumFormatter() {
-                                    @Override
-                                    public String format(Datum datum) {
-                                        return DataPointRecorder.this.timeFormatter.format(datum);
-                                    }
-                                };
+                                setFormatter( columnIndex, new TimeFormatter() );
                             } else {
-                                formatterArray[index] = ((Datum)value).getFormatter();
+                                setFormatter( columnIndex, ((Datum)value).getFormatter() );
                             }
                         } else if ( value instanceof QDataSet ) {
                             QDataSet qds= (QDataSet)value;
                             if ( qds.rank()>0 ) {
                                 throw new IllegalArgumentException("qdatasets in planes must be rank 0");
                             } else {
-                                formatterArray[index] = SemanticOps.getDatum( (QDataSet)value, ((QDataSet) value).value() ).getFormatter();
+                                setFormatter( columnIndex, SemanticOps.getDatum( (QDataSet)value, ((QDataSet) value).value() ).getFormatter() );
                             }
                         } else if ( value instanceof Number ) {
-                            formatterArray[index]= Units.dimensionless.getDatumFormatterFactory().defaultFormatter();
+                            setFormatter( columnIndex, Units.dimensionless.getDatumFormatterFactory().defaultFormatter() );
                         } else {
                             throw new IllegalArgumentException("values must be rank 0 Datum or QDataSet, not " + value);
                         }
                     }
-                    index++;
+                    columnIndex++;
                 }
             }
             
@@ -2251,6 +2269,7 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
                 } else { 
                     planesCopy.put( key, value );
                 }
+                columnIndex++; 
             }
             insertInternal(new DataPoint(x, y, planesCopy));
         }
@@ -2589,7 +2608,6 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
      * @return Value of property snapToGrid.
      */
     public boolean isSnapToGrid() {
-
         return this.snapToGrid;
     }
 
@@ -2604,7 +2622,7 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
     }
     
     private String timeFormat = "$Y-$m-$dT$H:$M:$S.$(subsec,places=3)Z";
-    protected TimeParser timeFormatter= TimeParser.create(timeFormat);
+    private TimeParser timeFormatter= TimeParser.create(timeFormat);
 
     /**
      * Get the value of timeFormat
@@ -2630,12 +2648,7 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
             if ( this.formatterArray!=null ) {
                 for ( int i=0; i<this.unitsArray.length; i++ ) {
                     if ( UnitsUtil.isTimeLocation( this.unitsArray[i] ) ) {
-                        formatterArray[i] = new DatumFormatter() {
-                            @Override
-                            public String format(Datum datum) {
-                                return DataPointRecorder.this.timeFormatter.format(datum);
-                            }
-                        }; 
+                        setFormatter( i, new TimeFormatter() ); 
                     }
                 }
             }
