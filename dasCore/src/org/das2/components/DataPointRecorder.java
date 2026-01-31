@@ -189,10 +189,6 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
 
         public DataPoint(Datum[] data, Map planes) {
             this.data = Arrays.copyOf(data,data.length);
-            Datum d= (Datum)planes.get("digi_type");
-            if ( d!=null ) {
-                System.err.println(d.toString());
-            }
             this.planes = planes;
         }
 
