@@ -398,6 +398,19 @@ public class FileUtil {
     }
     
     /**
+     * make the relative reference absolute, using the path 
+     * as the inferred directory (PWD).
+     * @param ref
+     * @param path
+     * @param isDirectory if true, then make sure the path ends with a slash.
+     * @return 
+     */
+    public static String maybeMakeAbsolute( String ref, URI path, boolean isDirectory ) {
+        return path.resolve(ref).toASCIIString();
+    }
+    
+    
+    /**
      * read all the bytes in the UTF-8 encoded inputStream into a string.
      * @param ins the input stream
      * @return string containing the contents of the file.
