@@ -1476,6 +1476,16 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
                 if ( count%5==0 && childIsDirty(this) ) {
                     for ( DasCanvasComponent cc: getCanvasComponents() ) {
                         if ( cc.isDirty() ) { // there's a weird bug where sometimes the dirty flags aren't cleared.
+                            cc.isDirty();
+                            try {
+                                Thread.sleep(300);
+                            } catch ( InterruptedException ex ) {
+                                
+                            }
+                            if ( !cc.isDirty() ) {
+                                logger.info("strange bug where update event didn't clear dirty flags did clear after 100ms.");
+                                break;
+                            }
                             logger.info("strange bug where update event didn't clear dirty flags, reposting.");
                             cc.isDirty();
                             cc.update();
