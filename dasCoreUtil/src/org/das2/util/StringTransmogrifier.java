@@ -23,7 +23,7 @@ public class StringTransmogrifier {
     int[] byIndex;
     
     /**
-     * Create a regex-based transmografier. The result is the template which is
+     * Create a regex-based transmogrifier. The result is the template which is
      * populated from groups of the regular expression.  The groups can be referenced
      * by index or by name, with 
      * <ul>
