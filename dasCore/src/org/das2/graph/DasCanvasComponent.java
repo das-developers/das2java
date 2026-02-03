@@ -441,7 +441,12 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
      * @return true if the component has been marked as dirty.
      */
     boolean isDirty() {
-        return !dirty.isEmpty();
+        if ( !dirty.isEmpty() ) {
+            //System.err.println(dirty);
+            return true;
+        } else {
+            return false;
+        }
     }
     
     /**
