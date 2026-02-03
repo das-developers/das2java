@@ -30,6 +30,7 @@ public class StringTransmogrifier {
      * <li>$&lt;num&gt; by index, where 1 is the first group number
      * <li>$&lt;letter&gt; by 1-letter named group
      * <li>$&lt;{name}&gt; by named group
+     * </ul>
      * @param regex the regular expression, like "foo([a-z]+).cdf"
      * @param result the result, like "$1"
      */
