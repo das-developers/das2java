@@ -25,9 +25,17 @@ import org.das2.datum.Orbits.OrbitFieldHandler;
 
 /**
  * TimeParser designed to quickly parse strings with a known format.  This parser has been
- * shown to perform around 20 times faster than the discovery parser.
+ * shown to perform around 20 times faster than the discovery parser.  It should be
+ * given a time template (URI Time Template), which is then used to parse each string
+ * into a DatumRange or Datum.  For example, in Jython:
  * 
- * This class is not thread-safe, so clients must make sure that only one thread accesses the class at a time.
+ * <pre>{@code
+ * tp= TimeParser.create('$-1d $b $Y at $-1H:$M:$S$p')
+ * d= tp.parse('3 Feb 2026 at 12:24:52am').getTimeDatum()
+ * print d
+ * }</pre>
+ * 
+ * This class is not thread-safe, so clients must make sure that only one thread accesses an instance of the class at a time.
  *
  * @author Jeremy
  */
@@ -1315,6 +1323,7 @@ public class TimeParser {
      *  $x   skip this field
      *  $(enum)  skip this field.  If id is specified, then id can be retrieved.
      *  $v   skip this field
+     *  $p   am/pm field
      *  $(hrinterval;values=0,1,2,3)  enumeration of part of day
      *  $(subsec;places=6)  fractional seconds (6->microseconds)
      *  $(periodic;offset=0;start=2000-001;period=P1D)
