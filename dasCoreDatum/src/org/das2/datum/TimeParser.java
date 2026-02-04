@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -90,19 +91,19 @@ public class TimeParser {
     private String[] valid_formatCodes = new String[]{"Y", "y", "j", "m", "d", 
         "H", "M", "S", 
         "milli", "micro",  
-        "p", "z", "ignore", "b", "X", "x", "N" };
+        "p", "z", "ignore", "b", "X", "x", "N", "Z" };
     private String[] formatName = new String[]{"Year", "2-digit-year", "day-of-year", "month", "day", 
         "Hour", "Minute", "Second", 
         "millisecond", "microsecond",
-        "am/pm", "RFC-822 numeric time zone", "ignore", "3-char-month-name", "ignore", "ignore", "nanoseconds" };
+        "am/pm", "RFC-822 numeric time zone", "ignore", "3-char-month-name", "ignore", "ignore", "nanoseconds", "alphabetic time zone abbreviation" };
     private int[] formatCode_lengths = new int[]{4, 2, 3, 2, 2, 
         2, 2, 2, 
         3, 3, 
-        2, 5, -1, 3, -1, -1, 9 };
+        2, 5, -1, 3, -1, -1, 9, 3 };
     private int[] precision =          new int[]{0, 0, 2, 1, 2, 
         3, 4, 5, 
         6, 7,
-        -1,-1, -1, 1, -1, -1, 8 };
+        -1,-1, -1, 1, -1, -1, 8, -1 };
     
     /**
      * set of custom handlers to allow for extension
@@ -1324,6 +1325,7 @@ public class TimeParser {
      *  $(enum)  skip this field.  If id is specified, then id can be retrieved.
      *  $v   skip this field
      *  $p   am/pm field
+     *  $z   RFC-822 numeric time zone
      *  $(hrinterval;values=0,1,2,3)  enumeration of part of day
      *  $(subsec;places=6)  fractional seconds (6->microseconds)
      *  $(periodic;offset=0;start=2000-001;period=P1D)
@@ -1481,6 +1483,10 @@ public class TimeParser {
         copyTime( context, startTime );
 
         for (int idigit = 1; idigit < ndigits; idigit++) {
+            
+            if ( idigit==ndigits-1 ) {
+                System.err.println("here jer");
+            }
             if ( idigit==stopTimeDigit ) {
                 copyTime( startTime, stopTime );
                 time= stopTime;
@@ -1604,6 +1610,15 @@ public class TimeParser {
                     if ( len>=0 ) {
                         extra.put( "x", timeString.substring(offs, offs + len) );
                     }
+                } else if ( handlers[idigit] == 17 ) { // "Z" 
+                    TimeZone tz = TimeZone.getTimeZone( timeString.substring(offs, offs + len) );
+                    
+                    int minutes;
+                    minutes= tz.getRawOffset() / (1000 * 60);
+                    
+                    time.hour -= minutes / 60; 
+
+                    time.minute -= minutes % 60;
                 }
             } catch ( NumberFormatException ex ) {
                 throw new ParseException( String.format( "fail to parse digit number %d: %s", idigit, field ), offs );
@@ -2368,6 +2383,9 @@ public class TimeParser {
                 throw new RuntimeException("AM/PM not supported");
 
             } else if (handlers[idigit] == 11) {
+                throw new RuntimeException("Time Zones not supported");
+
+            } else if (handlers[idigit] == 17) { // PST time zone code.
                 throw new RuntimeException("Time Zones not supported");
             } //TODO: $x?
         }
