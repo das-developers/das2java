@@ -1,9 +1,12 @@
 
 package org.das2.client;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -14,6 +17,7 @@ import org.das2.datum.DatumRange;
 import org.das2.datum.DatumVector;
 import org.das2.qds.BundleDataSet;
 import org.das2.qds.DDataSet;
+import org.das2.qds.DataSetOps;
 import org.das2.qds.DataSetUtil;
 import org.das2.qds.JoinDataSet;
 import org.das2.qds.MutablePropertyDataSet;
@@ -531,32 +535,61 @@ public class QDataSetStreamHandler implements StreamHandler {
         }
         
         if ( SemanticOps.isBundle(ds) ) {
+            // we're going to look for .min and .max and .stddev planes and attach them to their base.
+            ArrayList<String> newNames= new ArrayList<>();
+            Set<String> bases= new HashSet<>();
+            
             QDataSet bds= (QDataSet)ds.property(QDataSet.BUNDLE_1);
             String[] planes= new String[bds.length()];
             for ( int i=0; i<bds.length(); i++ ) {
-                planes[i]= (String) bds.property(QDataSet.NAME,i);
-            }
-            boolean yesDoIt= true;
-            String sname= planes[0];
-            MutablePropertyDataSet v0= (MutablePropertyDataSet)Ops.unbundle(ds,0);
-            for ( int i=1; i<bds.length(); i++ ) {
-                QDataSet v= Ops.unbundle(ds,i);
-                if (planes[i].equals(sname + ".min")) {
-                    v0.putProperty(QDataSet.BIN_MIN, v);
-                } else if (planes[i].equals(sname + ".max")) {
-                    v0.putProperty(QDataSet.BIN_MAX, v);
-                } else if (planes[i].equals(sname + ".stddev")) {
-                    v0.putProperty(QDataSet.DELTA_MINUS, v);
-                    v0.putProperty(QDataSet.DELTA_PLUS, v);
+                String n= (String) bds.property(QDataSet.NAME,i);
+                planes[i]= n;
+                int idot= n.indexOf(".");
+                if ( idot==-1 ) {
+                    bases.add(n);
+                    newNames.add(n);
                 } else {
-                    yesDoIt= false;
+                    String baseName= n.substring(0,idot);
+                    if ( !bases.contains(baseName) ) {
+                        logger.warning("Is this dataset orphaned: "+n);
+                        newNames.add(n);
+                    }
                 }
             }
-            if ( yesDoIt &&
-                    ( v0.property(QDataSet.BIN_MAX)!=null && v0.property(QDataSet.BIN_MIN)!=null ) 
-                    || ( v0.property(QDataSet.DELTA_MINUS)!=null ) ) {
-                ds= v0;
+            
+            if ( newNames.size()<planes.length ) {
+                Map<String,MutablePropertyDataSet> newDss= new LinkedHashMap<>();
+                for ( int i=0; i<bds.length(); i++ ) {
+                    String n= (String) bds.property(QDataSet.NAME,i);
+                    int idot= n.indexOf(".");
+                    if ( idot==-1 ) {
+                        newDss.put( n, DataSetOps.makePropertiesMutable(Ops.unbundle(ds,i)) );
+                    } else {
+                        String baseName= n.substring(0,idot);
+                        if ( bases.contains(baseName) ) { // It better!
+                            MutablePropertyDataSet mpds= newDss.get(baseName);
+                            QDataSet pds= Ops.unbundle(ds,i);
+                            if ( n.equals(baseName+".min") ) {
+                                mpds.putProperty(QDataSet.BIN_MIN, pds );
+                            } else if ( n.equals(baseName + ".max") ) {
+                                mpds.putProperty(QDataSet.BIN_MAX, pds);
+                            } else if ( n.equals(baseName + ".stddev")) {
+                                mpds.putProperty(QDataSet.DELTA_MINUS, pds);
+                                mpds.putProperty(QDataSet.DELTA_PLUS, pds);
+                            }
+                        } else {
+                            newDss.put( n, DataSetOps.makePropertiesMutable(Ops.unbundle(ds,i)) );
+                        }
+                    }
+                }
+                QDataSet newDs=null;
+                for ( Entry<String,MutablePropertyDataSet> e : newDss.entrySet() ) {
+                    newDs= Ops.bundle( newDs, e.getValue() );
+                }
+                
+                ds= newDs;
             }
+            
         }
         
         ds= Ops.putProperty( ds, QDataSet.TITLE, streamTitle );
