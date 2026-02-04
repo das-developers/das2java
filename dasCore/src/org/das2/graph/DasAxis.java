@@ -1315,17 +1315,17 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         
         tcaIsLoading= true;
         
-        if ( lcanvas.isPendingChanges( tcaLock ) ) {
+        if ( lcanvas.isPendingChanges( tcaLockTimer ) ) {
             logger.fine("tcatimer is already pending");
         } else {
-            lcanvas.registerPendingChange( DasAxis.this, tcaLock );
+            lcanvas.registerPendingChange( DasAxis.this, tcaLockTimer );
             if ( tcaTimer==null ) {
                 tcaTimer= new TickleTimer( 200, new PropertyChangeListener() {
                     @Override
                     public void propertyChange(PropertyChangeEvent evt) {
                                 logger.log( Level.FINER, "mstca, lcanvas={0}", lcanvas);
                         if ( lcanvas!=null ) {
-                            lcanvas.performingChange( DasAxis.this, tcaLock );
+                            lcanvas.performingChange( DasAxis.this, tcaLockTimer );
                         } else {
                             maybeStartTCATimer();
                             return;
@@ -1333,7 +1333,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                         try {
                             loadTCASoon();
                         } finally {
-                            lcanvas.changePerformed( DasAxis.this, tcaLock );
+                            lcanvas.changePerformed( DasAxis.this, tcaLockTimer );
                             tcaNeedsPainting= true;
                             tcaIsLoading= false;
                         }
@@ -2138,8 +2138,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
     }
 
-    final Object tcaLock= "tcaload_"+this.getDasName();
-    
+    final Object tcaLockTickle= "tcaload_tickle_"+this.getDasName();
+    final Object tcaLockImmediately= "tcaload_immediately_"+this.getDasName();
+    final Object tcaLockTimer= "tcaload_timer_"+this.getDasName();
+   
     /**
      * update the TCA dataset.  This will load the TCAs on a RequestProcessor thread sometime soon.
      * @see #loadTCAImmediately() 
@@ -2150,15 +2152,15 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         logger.log(Level.FINE, "updateTCASoon {0}", lcanvas);
         if ( lcanvas!=null ) {
             tcaIsLoading= true;
-            lcanvas.registerPendingChange( this, tcaLock );
+            lcanvas.registerPendingChange( this, tcaLockImmediately );
             RequestProcessor.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                   lcanvas.performingChange( DasAxis.this, tcaLock );
+                   lcanvas.performingChange( DasAxis.this, tcaLockImmediately );
                    try {
                        loadTCAImmediately( );
                    } finally {
-                       lcanvas.changePerformed( DasAxis.this, tcaLock );
+                       lcanvas.changePerformed( DasAxis.this, tcaLockImmediately );
                        tcaIsLoading= false;
                    }
                 }
@@ -2192,10 +2194,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 final DasCanvas lcanvas= getCanvas();
                 if ( lcanvas!=null ) {
                     tcaIsLoading= true;
-                    lcanvas.registerPendingChange( DasAxis.this, tcaLock );
-                    lcanvas.performingChange( DasAxis.this, tcaLock );
+                    lcanvas.registerPendingChange( DasAxis.this, tcaLockTickle );
+                    lcanvas.performingChange( DasAxis.this, tcaLockTickle );
                     tcaTimer.tickle("resetTickV", (PropertyChangeEvent evt) -> {
-                        lcanvas.changePerformed( DasAxis.this, tcaLock );
+                        lcanvas.changePerformed( DasAxis.this, tcaLockTickle );
                         tcaIsLoading= false;
                     });
                 }
