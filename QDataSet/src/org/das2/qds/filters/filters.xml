@@ -209,6 +209,11 @@
                         <description>Rank 2 bundle of [ radius, angle, Z ] is converted to cartesian coordinates.</description>
                     </bookmark>
                     <bookmark>
+                        <title>Cartesian to Polar</title>
+                        <filter>|cartesianToPolar()</filter>
+                        <description>Rank 2 bundle of [ X, Y ] is converted to polar coordinates in bundle of radius and angle.</description>
+                    </bookmark>
+                    <bookmark>
                         <title>Unbundle</title>
                         <filter>|unbundle('Bx')</filter>
                         <description>Unbundles a component</description>

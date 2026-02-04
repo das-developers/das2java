@@ -10007,7 +10007,7 @@ public final class Ops {
     /**
      * converts a rank 2 bundle of polar data, where ds[:,0] are the radii and ds[:,1] 
      * are the angles.  Any additional bundled datasets are left alone.
-     * @param ds
+     * @param ds where ds[:,0] are the radii, and ds[:,1] are the angles
      * @return bundle of X, Y, and remaining data.
      */
     public static QDataSet polarToCartesian( QDataSet ds ) {
@@ -10047,6 +10047,46 @@ public final class Ops {
         }
         
         return result;
+    }
+    
+    /**
+     * converts a rank 2 bundle of cartesian data, where ds[:,0] are the X 
+     * values and ds[:,1] are the Y values.  Any additional bundled 
+     * datasets are left alone.
+     * @param ds bundle where ds[:,0] are the Xs and ds[:,1] are the Ys.
+     * @return bundle ds[:,0] are the radii, and ds[:,1] are the angles in radians
+     */
+    public static QDataSet cartesianToPolar( QDataSet ds ) {
+        QDataSet xx= unbundle(ds,0);
+        QDataSet yy= unbundle(ds,1);
+        
+        WritableDataSet result= copy(ds);
+        for ( int i=0; i<result.length(); i++ ) {
+            double x= xx.value(i);
+            double y= yy.value(i);
+            double r= Math.sqrt( x*x + y*y );
+            double a= Math.atan2( y, x );
+            result.putValue( i, 0, r );
+            result.putValue( i, 1, a );
+        }
+        
+        QDataSet b1= (QDataSet)ds.property(QDataSet.BUNDLE_1);
+        if ( b1!=null ) {
+            
+            WritableDataSet wb1= copy(b1);
+            copyIndexedProperties( b1, wb1 );
+            
+            wb1.putProperty( QDataSet.LABEL, 0, "R" );
+            wb1.putProperty( QDataSet.LABEL, 1, "angle" );
+            wb1.putProperty( QDataSet.TITLE, 0, "R" );
+            wb1.putProperty( QDataSet.TITLE, 1, "angle" );
+            wb1.putProperty( QDataSet.UNITS, 0, Units.radians );
+            wb1.putProperty( QDataSet.UNITS, 1, xx.property(QDataSet.UNITS) );
+            result.putProperty( QDataSet.BUNDLE_1, wb1 );
+        }
+        
+        return result;
+        
     }
     
     /**

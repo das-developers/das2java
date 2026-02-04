@@ -906,6 +906,9 @@ public class OperationsProcessor {
                 } else if ( cmd.equals("|polarToCartesian") ) {
                     ds= Ops.polarToCartesian(ds);
 
+                } else if ( cmd.equals("|cartesianToPolar") ) {
+                    ds= Ops.cartesianToPolar(ds);
+
                 } else {
                     if ( !cmd.equals("") ) throw new ParseException( c + " (command not recognized: \""+cmd +"\")", i );
                 }
