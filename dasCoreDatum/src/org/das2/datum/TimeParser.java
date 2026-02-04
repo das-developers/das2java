@@ -1484,9 +1484,6 @@ public class TimeParser {
 
         for (int idigit = 1; idigit < ndigits; idigit++) {
             
-            if ( idigit==ndigits-1 ) {
-                System.err.println("here jer");
-            }
             if ( idigit==stopTimeDigit ) {
                 copyTime( startTime, stopTime );
                 time= stopTime;
