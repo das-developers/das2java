@@ -10090,6 +10090,61 @@ public final class Ops {
     }
     
     /**
+     * converts a rank 2 bundle of cartesian data, where ds[:,0] are the X 
+     * values, ds[:,1] are the Y values, and ds[:,2] are the Z values.  Any additional bundled 
+     * datasets are left alone.  The result will have a bundle of R, theta, phi where
+     * <ul>
+     * <li> R is the radius in the same units as X.
+     * <li> theta is the polar angle from +Z.
+     * <li> phi is the azimuth in X-Y plane.
+     * </ul>
+     * 
+     * @param ds bundle where ds[:,0] are the Xs, ds[:,1] are the Ys, and ds[:,2] are the Zs.
+     * @return bundle ds[:,0] are the radii, and ds[:,1] is theta, and ds[:,2] is phi.
+     */
+    public static QDataSet cartesianToSpherical( QDataSet ds ) {
+        QDataSet xx= unbundle(ds,0);
+        QDataSet yy= unbundle(ds,1);
+        QDataSet zz= unbundle(ds,2);
+        
+        WritableDataSet result= copy(ds);
+        for ( int i=0; i<result.length(); i++ ) {
+
+            double xi = xx.value(i);
+            double yi = yy.value(i);
+            double zi = zz.value(i);
+
+            double rr = Math.sqrt(xi * xi + yi * yi + zi * zi);
+            double rho = Math.sqrt(xi * xi + yi * yi);
+
+            double th = Math.atan2(rho, zi);   // polar angle from +Z
+            double ph = Math.atan2(yi, xi);    // azimuth in X-Y plane
+
+            result.putValue(i, 0, rr);
+            result.putValue(i, 1, th);
+            result.putValue(i, 2, ph);
+        }            
+        
+        QDataSet b1= (QDataSet)ds.property(QDataSet.BUNDLE_1);
+        if ( b1!=null ) {
+            
+            WritableDataSet wb1= copy(b1);
+            copyIndexedProperties( b1, wb1 );
+            
+            wb1.putProperty( QDataSet.LABEL, 0, "R" );
+            wb1.putProperty( QDataSet.LABEL, 1, "theta" );
+            wb1.putProperty( QDataSet.LABEL, 2, "phi" );
+            wb1.putProperty( QDataSet.UNITS, 0, SemanticOps.getUnits(xx) );
+            wb1.putProperty( QDataSet.UNITS, 1, Units.radians );
+            wb1.putProperty( QDataSet.UNITS, 2, Units.radians );
+            result.putProperty( QDataSet.BUNDLE_1, wb1 );
+        }
+        
+        return result;
+        
+    }
+
+    /**
      * create the inverse fft of the real and imaginary spec
      * @param ds rank 3 dataset of N,FFTLength,2
      * @param window
