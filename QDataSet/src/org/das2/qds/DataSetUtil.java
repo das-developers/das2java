@@ -4492,6 +4492,10 @@ public class DataSetUtil {
                     dr= dr.next();
                 } else {
                     DatumRange limit= DataSetUtil.asDatumRange(bounds);
+                    if ( Math.abs( DatumRangeUtil.normalize( limit, dr0.max() ) ) > 1001 ) {
+                        // don't even bother.
+                        return dr.next();
+                    }
                     if ( !DatumRangeUtil.isAcceptable(limit,false) ) {
                         throw new IllegalArgumentException("limit is not acceptable"); // see 10 lines down
                     }
@@ -4709,9 +4713,14 @@ public class DataSetUtil {
                     dr= dr.previous();
                 } else {
                     DatumRange limit= DataSetUtil.asDatumRange(bounds);
+                    if ( Math.abs(DatumRangeUtil.normalize( limit, dr0.min() )) > 1000 ) {
+                        // don't even bother.
+                        return dr.previous();
+                    }
                     if ( !DatumRangeUtil.isAcceptable(limit,false) ) {
                         throw new IllegalArgumentException("limit is not acceptable"); // see 10 lines down
                     }
+                    
                     limit= DatumRangeUtil.union( limit, dr0 );
                     dr= dr.previous();
                     count= 0;
