@@ -426,6 +426,8 @@ public final class ForgeUrlDetector {
     // ----------------------- tiny demo -----------------------
     public static void main(String[] args) {
         String[] tests = {
+                "https://git.jfaden.net/jbfaden/public/-/blob/main/2023/20230215/afile.csv",
+                "https://research-git.uiowa.edu/space-physics/rbsp/ap-script/-/blob/master/team/digitizer/addPointDigitizer.jy",
                 "https://github.com/autoplot/dev/blob/main/README.md",
                 "https://raw.githubusercontent.com/autoplot/dev/main/README.md",
                 "https://gitlab.com/group/subgroup/proj/-/blob/main/a/b.txt#L10",
