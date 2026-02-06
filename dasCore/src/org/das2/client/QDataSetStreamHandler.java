@@ -312,7 +312,11 @@ public class QDataSetStreamHandler implements StreamHandler {
                 if ( yRange!=null ) {
                     putProperty( builder, QDataSet.TYPICAL_MIN, yRange.min().doubleValue( yRange.getUnits() ) );
                     putProperty( builder, QDataSet.TYPICAL_MAX, yRange.max().doubleValue( yRange.getUnits() ) );
-                }                
+                } else {
+                    putProperty( builder, QDataSet.TYPICAL_MIN, findProperty( multiy, "yScaleMin" ) );
+                    putProperty( builder, QDataSet.TYPICAL_MAX, findProperty( multiy, "yScaleMax" ) );
+                }
+                
                 putProperty( builder, QDataSet.SCALE_TYPE, findProperty( multiy, "yScaleType" ) );
                 putProperty( builder, QDataSet.FILL_VALUE, findProperty( multiy, "yFill" ) );
                 
