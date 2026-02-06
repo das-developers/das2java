@@ -46,6 +46,7 @@ import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.LoggerManager;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
+import org.das2.qds.DDataSet;
 import org.das2.qds.DataSetOps;
 import org.das2.qds.IndexGenDataSet;
 import org.das2.qds.QDataSet;
@@ -132,7 +133,7 @@ public class GraphUtil {
         }
     }
     
-    /**
+ /**
      * implements "!(painter;img;http://autoplot.org/wiki/images/Logo96.png;50%)<br>Autoplot"
      * which is intended to replace the URL property of annotations.
      * 
@@ -1145,10 +1146,10 @@ public class GraphUtil {
      * a new GeneralPath which will be rendered identically to the input path,
      * but contains a minimal number of points.
      *
-     * @return the number of "points" (LINE_TOs) in the result.
      * @param it A path iterator with minute details that will be lost when rendering.
      * @param result A GeneralPath to put the result into.
      * @param res limit the resolution in pixels 
+     * @return the number of "points" (LINE_TOs) in the result.
      */
     public static int reducePath(PathIterator it, GeneralPath result, int res ) {
 
@@ -1378,7 +1379,7 @@ public class GraphUtil {
 
         return remaining;
     }
-    
+
     /**
      * parse strings like "14em+2pt" into a length in pixels.
      * <ul>
