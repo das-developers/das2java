@@ -46,7 +46,6 @@ import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.LoggerManager;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
-import org.das2.qds.DDataSet;
 import org.das2.qds.DataSetOps;
 import org.das2.qds.IndexGenDataSet;
 import org.das2.qds.QDataSet;
