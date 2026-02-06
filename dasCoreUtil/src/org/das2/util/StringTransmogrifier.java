@@ -12,6 +12,15 @@ import java.util.regex.Pattern;
  * 
  * https://calvinandhobbes.fandom.com/wiki/Transmogrifier_Gun?file=CalvinTransmogrifierGunWeb.jpg
  *
+ * A regular expression specifies the text to look for in strings, and the result is reformatted
+ * using a result template string.  The transmogrify method will convert the input string to 
+ * the template, so for example:
+ *
+ * <pre>%{@code
+ * st= StringTransmogrifier('([a-z]+)=([0-9]+)','$1:$2')
+ * st.transmogrify('cat=1')   # results in 'cat:1'
+ * }</pre>
+ * 
  * @author jbf
  */
 public class StringTransmogrifier {
@@ -95,13 +104,54 @@ public class StringTransmogrifier {
         return result;
     }
     
+    /**
+     * Transmogrify the string, and if it does not match the regex, then an IllegalArgumentException is thrown.
+     * @param string the string to transmogrify
+     * @return the formatted result 
+     * @throws IllegalArgumentException if the regex doesn't match the string
+     */
     public String transmogrify( String string ) {
         Matcher m= p.matcher(string);
         if ( m.matches() ) {
             String[] args= getFields(m);
             return String.format( result, (Object[])args );
         } else {
-            return result;
+            throw new IllegalArgumentException("string does not match");
         }
+    }
+    
+    /**
+     * Transmogrify the string, and if it does not match the regex, then return err.
+     * @param string the string to transmogrify
+     * @param err alternate string (or null) to return
+     * @return the formatted result or the <code>err</code> string
+     */
+    public String transmogrify( String string, String err ) {
+        Matcher m= p.matcher(string);
+        if ( m.matches() ) {
+            String[] args= getFields(m);
+            return String.format( result, (Object[])args );
+        } else {
+            return err;
+        }
+    }
+    
+    /**
+     * replace all matches of the <code>regex</code> in <code>string</code> with <code>result</code>.
+     * @param string the string containing any text to transmogrify
+     * @return the string with each match reformatted within the string
+     */
+    public String find( String string ) {
+        Matcher m= p.matcher(string);
+        StringBuilder build= new StringBuilder();
+        int i0=0;
+        while ( m.find() ) {
+            build.append( string.substring(i0,m.start()) );
+            String[] args= getFields(m);
+            build.append( String.format( result, (Object[])args ) );
+            i0= m.end();
+        }
+        build.append(string.substring(i0));
+        return build.toString();
     }
 }
