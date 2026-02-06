@@ -2,6 +2,7 @@
 package org.das2.client;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -314,7 +315,20 @@ public class QDataSetStreamHandler implements StreamHandler {
                 }                
                 putProperty( builder, QDataSet.SCALE_TYPE, findProperty( multiy, "yScaleType" ) );
                 putProperty( builder, QDataSet.FILL_VALUE, findProperty( multiy, "yFill" ) );
+                
+                Object yWarnMin= findProperty( multiy, "yWarnMin" );
+                Object yWarnMax= findProperty( multiy, "yWarnMax" );
+                Object yNominalMin= findProperty( multiy, "yNominalMin" );
+                Object yNominalMax= findProperty( multiy, "yNominalMax" );
 
+                if ( yNominalMax!=null || yWarnMax!=null ) {
+                    Map<String,Object> meta= new HashMap<>();
+                    meta.put( "LIMITS_WARN_MIN", yWarnMin );
+                    meta.put( "LIMITS_WARN_MAX", yWarnMax );
+                    meta.put( "LIMITS_NOMINAL_MIN", yNominalMin );
+                    meta.put( "LIMITS_NOMINAL_MAX", yNominalMax );
+                    putProperty( builder, QDataSet.METADATA, meta );
+                }
             } else if ( sd instanceof StreamZDescriptor ) {
                 StreamScalarDescriptor multiy= (StreamScalarDescriptor)sd;
                 builder= new DataSetBuilder(1,1000);
