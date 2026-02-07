@@ -302,7 +302,9 @@ public class QDataSetStreamHandler implements StreamHandler {
                 StreamScalarDescriptor multiy= (StreamScalarDescriptor)sd;
                 builder= new DataSetBuilder(1,1000);
                 putProperty( builder, QDataSet.UNITS, multiy.getUnits() );
-                putProperty( builder, QDataSet.NAME, multiy.getName() );
+                String n= multiy.getName();
+                if ( n.equals("") ) n= "y"; // this is what the old library
+                putProperty( builder, QDataSet.NAME, n );
                 putProperty( builder, QDataSet.LABEL, findProperty( multiy, "yLabel" ) ); // any of the following may return null.
                 putProperty( builder, QDataSet.FORMAT, findProperty( multiy, "yFormat" ) );
                 putProperty( builder, QDataSet.TITLE, findProperty( multiy, "ySummary" ) );
@@ -569,7 +571,7 @@ public class QDataSetStreamHandler implements StreamHandler {
                 } else {
                     String baseName= n.substring(0,idot);
                     if ( !bases.contains(baseName) ) {
-                        logger.warning("Is this dataset orphaned: "+n);
+                        logger.log(Level.WARNING, "Is this dataset orphaned: {0}", n);
                         newNames.add(n);
                     }
                 }
