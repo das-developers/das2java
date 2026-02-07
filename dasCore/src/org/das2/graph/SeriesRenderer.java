@@ -2268,8 +2268,10 @@ public class SeriesRenderer extends Renderer {
             }
         }
         
-        // Peek in the METADATA to see if there is LIMITS_WARN_MIN and other flags.
-        drawLimits(graphics, yAxis, yunits);
+        if ( showLimits ) {
+            // Peek in the METADATA to see if there is LIMITS_WARN_MIN and other flags.
+            drawLimits(this, graphics, yAxis, yunits);
+        }
         
         monitor.finished();
         
@@ -2323,17 +2325,18 @@ public class SeriesRenderer extends Renderer {
 
     /**
      * Look in metadata for LIMITS_WARN_MIN and other annotations.
-     * @param graphics
+     * @param r the renderer containing the column and the graphics context.
+     * @param graphics the graphics context.
      * @param yAxis
      * @param yunits 
      */
-    private void drawLimits(Graphics2D graphics, DasAxis yAxis, Units yunits) {
+    protected static void drawLimits( Renderer r, Graphics2D graphics, DasAxis yAxis, Units yunits) {
         Map<String,Object> meta;
-        meta= (Map<String,Object>) this.ds.property(QDataSet.METADATA);
+        meta= (Map<String,Object>) r.ds.property(QDataSet.METADATA);
         
-        if ( meta!=null && showLimits ) {
+        if ( meta!=null ) {
             Number d;
-            DasColumn col= getParent().getColumn();
+            DasColumn col= r.getParent().getColumn();
             Graphics2D graphics1= (Graphics2D)graphics.create();
             d= getKey( meta, "LIMITS_NOMINAL_MIN", Number.class );
             if ( d!=null ) {
