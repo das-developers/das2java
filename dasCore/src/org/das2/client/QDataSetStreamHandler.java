@@ -289,12 +289,18 @@ public class QDataSetStreamHandler implements StreamHandler {
                 String checkOperation= (String)yscan.getProperty( "operation" );
                 String checkSource= (String)yscan.getProperty( "source" ); 
                 if ( checkSource!=null && !yscan.getName().equals(checkSource) ) {  // support the new format using the old format.
-                    if ( checkOperation.equals("BIN_MAX") ) {
-                        putProperty( builder, QDataSet.NAME, checkSource + ".max" );
-                    } else if ( checkOperation.equals("BIN_AVG") ) {
-                        putProperty( builder, QDataSet.NAME, checkSource + ".avg" );
-                    }else if ( checkOperation.equals("BIN_MIN") ) {
-                        putProperty( builder, QDataSet.NAME, checkSource + ".min" );
+                    switch (checkOperation) {
+                        case "BIN_MAX":
+                            putProperty( builder, QDataSet.NAME, checkSource + ".max" );
+                            break;
+                        case "BIN_AVG":
+                            putProperty( builder, QDataSet.NAME, checkSource + ".avg" );
+                            break;
+                        case "BIN_MIN":
+                            putProperty( builder, QDataSet.NAME, checkSource + ".min" );
+                            break;
+                        default:
+                            break;
                     }
                 }
                 
@@ -569,7 +575,7 @@ public class QDataSetStreamHandler implements StreamHandler {
                 } else {
                     String baseName= n.substring(0,idot);
                     if ( !bases.contains(baseName) ) {
-                        logger.warning("Is this dataset orphaned: "+n);
+                        logger.log(Level.WARNING, "Is this dataset orphaned: {0}", n);
                         newNames.add(n);
                     }
                 }
