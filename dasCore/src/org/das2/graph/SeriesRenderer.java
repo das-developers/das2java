@@ -3085,7 +3085,6 @@ public class SeriesRenderer extends Renderer {
         DasPlot lparent= getParent();
         if ( lparent!=null ) {
             lparent.invalidateCacheImage();
-            lparent.repaint();
         }
     }
     
