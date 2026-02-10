@@ -1104,7 +1104,6 @@ public class EventsRenderer extends Renderer {
         DasPlot parent= getParent();
         if ( parent!=null ) {
             parent.invalidateCacheImage();
-            parent.repaint();
         }
         propertyChangeSupport.firePropertyChange(PROP_SHOWLABELS, oldShowLabels, showLabels);
     }
