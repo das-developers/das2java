@@ -292,6 +292,11 @@ public class HugeScatterRenderer extends Renderer {
                 g2.drawImage(lplotImage, x, y, getParent());
             }
         }
+        
+        boolean showLimits=true;
+        if ( showLimits ) {
+            SeriesRenderer.drawLimits( this, g2, yAxis, yunits );
+        }
 
         logger.exiting( "org.das2.graph.HugeScatterRenderer", "render");
 
@@ -1076,7 +1081,7 @@ public class HugeScatterRenderer extends Renderer {
     public Color getColor() {
         return color;
     }
-
+    
     protected int envelope = 0;
     public static final String PROP_ENVELOPE = "envelope";
 

@@ -2118,7 +2118,6 @@ public class DasPlot extends DasCanvasComponent {
         this.bottomDecorator = bottomDecorator;
         firePropertyChange(PROP_BOTTOMDECORATOR, oldBottomDecorator, bottomDecorator);
         invalidateCacheImage();
-        repaint();
     }    
     
     
@@ -2140,7 +2139,6 @@ public class DasPlot extends DasCanvasComponent {
         this.topDecorator = topDecorator;
         firePropertyChange(PROP_TOPDECORATOR, oldTopDecorator, topDecorator);
         invalidateCacheImage();
-        repaint();
     }    
     
     /**
@@ -2643,6 +2641,7 @@ public class DasPlot extends DasCanvasComponent {
         }
         markDirty("invalidateCacheImage");
         update();
+        repaint();
     }
 
     /**
@@ -2826,7 +2825,6 @@ public class DasPlot extends DasCanvasComponent {
         Color oldDrawBackground = this.drawBackground;
         this.drawBackground = drawBackground;
         invalidateCacheImage();
-        repaint();
         firePropertyChange(PROP_DRAWBACKGROUND, oldDrawBackground, drawBackground);
     }
 
@@ -2856,7 +2854,6 @@ public class DasPlot extends DasCanvasComponent {
         Color oldDrawGridColor = this.drawGridColor;
         this.drawGridColor = drawGridColor;
         invalidateCacheImage();
-        repaint();
         firePropertyChange(PROP_DRAWGRIDCOLOR, oldDrawGridColor, drawGridColor);
     }
 
@@ -2890,8 +2887,7 @@ public class DasPlot extends DasCanvasComponent {
     public void setDrawGrid(boolean drawGrid) {
         boolean bOld = this.drawGrid;
         this.drawGrid = drawGrid;
-        this.invalidateCacheImage();
-        this.repaint();
+        invalidateCacheImage();
 
         if (bOld != drawGrid) {
             firePropertyChange(PROP_DRAWGRID, bOld, drawGrid);
@@ -2924,8 +2920,7 @@ public class DasPlot extends DasCanvasComponent {
     public void setDrawMinorGrid(boolean newdrawMinorGrid) {
         boolean olddrawMinorGrid = drawMinorGrid;
         this.drawMinorGrid = newdrawMinorGrid;
-        this.invalidateCacheImage();
-        this.repaint();
+        invalidateCacheImage();
         firePropertyChange(PROP_DRAWMINORGRID, olddrawMinorGrid, newdrawMinorGrid);
     }
     
@@ -2951,8 +2946,7 @@ public class DasPlot extends DasCanvasComponent {
     public void setDrawGridOver(boolean gridOver) {
         boolean oldGridOver = this.drawGridOver;
         this.drawGridOver = gridOver;
-        this.invalidateCacheImage();
-        this.repaint();
+        invalidateCacheImage();
         firePropertyChange(PROP_DRAWGRIDOVER, oldGridOver, gridOver);
     }
 

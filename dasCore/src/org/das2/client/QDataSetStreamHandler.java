@@ -16,6 +16,7 @@ import org.das2.datum.CacheTag;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
 import org.das2.datum.DatumVector;
+import org.das2.datum.Units;
 import org.das2.qds.BundleDataSet;
 import org.das2.qds.DDataSet;
 import org.das2.qds.DataSetOps;
@@ -308,7 +309,9 @@ public class QDataSetStreamHandler implements StreamHandler {
                 StreamScalarDescriptor multiy= (StreamScalarDescriptor)sd;
                 builder= new DataSetBuilder(1,1000);
                 putProperty( builder, QDataSet.UNITS, multiy.getUnits() );
-                putProperty( builder, QDataSet.NAME, multiy.getName() );
+                String n= multiy.getName();
+                if ( n.equals("") ) n= "y"; // this is what the old library
+                putProperty( builder, QDataSet.NAME, n );
                 putProperty( builder, QDataSet.LABEL, findProperty( multiy, "yLabel" ) ); // any of the following may return null.
                 putProperty( builder, QDataSet.FORMAT, findProperty( multiy, "yFormat" ) );
                 putProperty( builder, QDataSet.TITLE, findProperty( multiy, "ySummary" ) );
@@ -331,12 +334,30 @@ public class QDataSetStreamHandler implements StreamHandler {
                 Object yNominalMin= findProperty( multiy, "yNominalMin" );
                 Object yNominalMax= findProperty( multiy, "yNominalMax" );
 
-                if ( yNominalMax!=null || yWarnMax!=null ) {
+                if ( yNominalMax!=null || yWarnMax!=null || yNominalMin!=null || yWarnMin!=null) {
+                    Units u= multiy.getUnits();
+                    if ( u==null ) u= Units.dimensionless;
                     Map<String,Object> meta= new HashMap<>();
-                    meta.put( "LIMITS_WARN_MIN", yWarnMin );
-                    meta.put( "LIMITS_WARN_MAX", yWarnMax );
-                    meta.put( "LIMITS_NOMINAL_MIN", yNominalMin );
-                    meta.put( "LIMITS_NOMINAL_MAX", yNominalMax );
+                    if ( yWarnMin instanceof Datum ) {
+                        meta.put( "LIMITS_WARN_MIN", ((Datum)yWarnMin).doubleValue(u) );
+                    } else if ( yWarnMin instanceof Number ) {
+                        meta.put( "LIMITS_WARN_MIN", yWarnMin );
+                    }
+                    if ( yWarnMax instanceof Datum ) {
+                        meta.put( "LIMITS_WARN_MAX", ((Datum)yWarnMax).doubleValue(u) );
+                    } else if ( yWarnMax instanceof Number ) {
+                        meta.put( "LIMITS_WARN_MAX", yWarnMax );
+                    }
+                    if ( yNominalMin instanceof Datum ) {
+                        meta.put( "LIMITS_NOMINAL_MIN", ((Datum)yNominalMin).doubleValue(u) );
+                    } else if ( yNominalMin instanceof Number ) {
+                        meta.put( "LIMITS_NOMINAL_MIN", yNominalMin );
+                    }
+                    if ( yNominalMax instanceof Datum ) {
+                        meta.put( "LIMITS_NOMINAL_MAX", ((Datum)yNominalMax).doubleValue(u) );
+                    } else if ( yNominalMax instanceof Number ) {
+                        meta.put( "LIMITS_NOMINAL_MAX", yNominalMax );
+                    }
                     putProperty( builder, QDataSet.METADATA, meta );
                 }
             } else if ( sd instanceof StreamZDescriptor ) {
