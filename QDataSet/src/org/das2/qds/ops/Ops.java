@@ -10023,14 +10023,24 @@ public final class Ops {
                 rad= unbundle(ds,1);
             }
         }
+        
+        QDataSet wds= DataSetUtil.weightsDataSet(ds);
+        wds= Ops.reduceMin( wds, 1 );
+        
         WritableDataSet result= copy(ds);
         for ( int i=0; i<result.length(); i++ ) {
-            double r= rad.value(i);
-            double x= r * cos(angle.value(i)*mult);
-            double y= r * sin(angle.value(i)*mult);
-            result.putValue( i, 0, x );
-            result.putValue( i, 1, y );
+            if ( wds.value(i)==0 ) {
+                result.putValue(i, 0, Double.NaN);
+                result.putValue(i, 1, Double.NaN);
+            } else {
+                double r= rad.value(i);
+                double x= r * cos(angle.value(i)*mult);
+                double y= r * sin(angle.value(i)*mult);
+                result.putValue( i, 0, x );
+                result.putValue( i, 1, y );
+            }
         }
+        
         QDataSet b1= (QDataSet)ds.property(QDataSet.BUNDLE_1);
         if ( b1!=null ) {
             
@@ -10043,6 +10053,11 @@ public final class Ops {
             wb1.putProperty( QDataSet.TITLE, 1, "Y" );
             wb1.putProperty( QDataSet.UNITS, 0, runits );
             wb1.putProperty( QDataSet.UNITS, 1, runits );
+            wb1.putProperty( QDataSet.VALID_MIN, 0, null );
+            wb1.putProperty( QDataSet.VALID_MIN, 1, null );
+            wb1.putProperty( QDataSet.VALID_MAX, 0, null );
+            wb1.putProperty( QDataSet.VALID_MAX, 1, null );
+            
             result.putProperty( QDataSet.BUNDLE_1, wb1 );
         }
         
@@ -10060,14 +10075,22 @@ public final class Ops {
         QDataSet xx= unbundle(ds,0);
         QDataSet yy= unbundle(ds,1);
         
+        QDataSet wds= DataSetUtil.weightsDataSet(ds);
+        wds= Ops.reduceMin( wds, 1 );
+        
         WritableDataSet result= copy(ds);
         for ( int i=0; i<result.length(); i++ ) {
-            double x= xx.value(i);
-            double y= yy.value(i);
-            double r= Math.sqrt( x*x + y*y );
-            double a= Math.atan2( y, x ) * 360 / TAU;
-            result.putValue( i, 0, r );
-            result.putValue( i, 1, a );
+            if ( wds.value(i)==0 ) {
+                result.putValue(i, 0, Double.NaN);
+                result.putValue(i, 1, Double.NaN);
+            } else {
+                double x= xx.value(i);
+                double y= yy.value(i);
+                double r= Math.sqrt( x*x + y*y );
+                double a= Math.atan2( y, x ) * 360 / TAU;
+                result.putValue( i, 0, r );
+                result.putValue( i, 1, a );
+            }
         }
         
         QDataSet b1= (QDataSet)ds.property(QDataSet.BUNDLE_1);
@@ -10082,6 +10105,8 @@ public final class Ops {
             wb1.putProperty( QDataSet.TITLE, 1, "angle" );
             wb1.putProperty( QDataSet.UNITS, 0, xx.property(QDataSet.UNITS) );
             wb1.putProperty( QDataSet.UNITS, 1, Units.degrees );
+            wb1.putProperty( QDataSet.VALID_MAX, 1, 180 );
+            wb1.putProperty( QDataSet.VALID_MIN, 1, -180 );
             result.putProperty( QDataSet.BUNDLE_1, wb1 );
         }
         
@@ -10107,22 +10132,31 @@ public final class Ops {
         QDataSet yy= unbundle(ds,1);
         QDataSet zz= unbundle(ds,2);
         
+        QDataSet wds= DataSetUtil.weightsDataSet(ds);
+        
+        wds= Ops.reduceMin( wds, 1 );
+        
         WritableDataSet result= copy(ds);
         for ( int i=0; i<result.length(); i++ ) {
+            if ( wds.value(i)==0 ) {
+                result.putValue(i, 0, Double.NaN);
+                result.putValue(i, 1, Double.NaN);
+                result.putValue(i, 2, Double.NaN);
+            } else {
+                double xi = xx.value(i);
+                double yi = yy.value(i);
+                double zi = zz.value(i);
 
-            double xi = xx.value(i);
-            double yi = yy.value(i);
-            double zi = zz.value(i);
+                double rr = Math.sqrt(xi * xi + yi * yi + zi * zi);
+                double rho = Math.sqrt(xi * xi + yi * yi);
 
-            double rr = Math.sqrt(xi * xi + yi * yi + zi * zi);
-            double rho = Math.sqrt(xi * xi + yi * yi);
+                double th = Math.atan2(rho, zi) * 360 / TAU;   // polar angle from +Z
+                double ph = Math.atan2(yi, xi) * 360 / TAU;    // azimuth in X-Y plane
 
-            double th = Math.atan2(rho, zi) * 360 / TAU;   // polar angle from +Z
-            double ph = Math.atan2(yi, xi) * 360 / TAU;    // azimuth in X-Y plane
-
-            result.putValue(i, 0, rr);
-            result.putValue(i, 1, th);
-            result.putValue(i, 2, ph);
+                result.putValue(i, 0, rr);
+                result.putValue(i, 1, th);
+                result.putValue(i, 2, ph);
+            }
         }            
         
         QDataSet b1= (QDataSet)ds.property(QDataSet.BUNDLE_1);
@@ -10137,6 +10171,10 @@ public final class Ops {
             wb1.putProperty( QDataSet.UNITS, 0, SemanticOps.getUnits(xx) );
             wb1.putProperty( QDataSet.UNITS, 1, Units.degrees );
             wb1.putProperty( QDataSet.UNITS, 2, Units.degrees );
+            wb1.putProperty( QDataSet.VALID_MAX, 1, 360 );
+            wb1.putProperty( QDataSet.VALID_MIN, 1, -360 );
+            wb1.putProperty( QDataSet.VALID_MAX, 2, 360 );
+            wb1.putProperty( QDataSet.VALID_MIN, 2, -360 );
             result.putProperty( QDataSet.BUNDLE_1, wb1 );
         }
         
