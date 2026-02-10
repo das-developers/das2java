@@ -10095,8 +10095,8 @@ public final class Ops {
      * datasets are left alone.  The result will have a bundle of R, theta, phi where
      * <ul>
      * <li> R is the radius in the same units as X.
-     * <li> theta is the polar angle from +Z.
-     * <li> phi is the azimuth in X-Y plane.
+     * <li> theta is the polar angle from +Z in degrees.
+     * <li> phi is the azimuth in X-Y plane in degrees.
      * </ul>
      * 
      * @param ds bundle where ds[:,0] are the Xs, ds[:,1] are the Ys, and ds[:,2] are the Zs.
