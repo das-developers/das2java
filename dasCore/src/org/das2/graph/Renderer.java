@@ -1035,8 +1035,9 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
             logger.fine("update but parent was null");
             return;
         }
-        lparent.invalidateCacheImageNoUpdate();
-        update();
+        lparent.invalidateCacheImage();  
+        //lparent.invalidateCacheImageNoUpdate();  
+        //update();
     }
     
     /**
