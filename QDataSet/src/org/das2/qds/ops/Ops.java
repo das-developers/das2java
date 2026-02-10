@@ -10054,7 +10054,7 @@ public final class Ops {
      * values and ds[:,1] are the Y values.  Any additional bundled 
      * datasets are left alone.
      * @param ds bundle where ds[:,0] are the Xs and ds[:,1] are the Ys.
-     * @return bundle ds[:,0] are the radii, and ds[:,1] are the angles in radians
+     * @return bundle ds[:,0] are the radii, and ds[:,1] are the angles in degrees
      */
     public static QDataSet cartesianToPolar( QDataSet ds ) {
         QDataSet xx= unbundle(ds,0);
@@ -10065,7 +10065,7 @@ public final class Ops {
             double x= xx.value(i);
             double y= yy.value(i);
             double r= Math.sqrt( x*x + y*y );
-            double a= Math.atan2( y, x );
+            double a= Math.atan2( y, x ) * 360 / TAU;
             result.putValue( i, 0, r );
             result.putValue( i, 1, a );
         }
@@ -10080,8 +10080,8 @@ public final class Ops {
             wb1.putProperty( QDataSet.LABEL, 1, "angle" );
             wb1.putProperty( QDataSet.TITLE, 0, "R" );
             wb1.putProperty( QDataSet.TITLE, 1, "angle" );
-            wb1.putProperty( QDataSet.UNITS, 0, Units.radians );
-            wb1.putProperty( QDataSet.UNITS, 1, xx.property(QDataSet.UNITS) );
+            wb1.putProperty( QDataSet.UNITS, 0, xx.property(QDataSet.UNITS) );
+            wb1.putProperty( QDataSet.UNITS, 1, Units.degrees );
             result.putProperty( QDataSet.BUNDLE_1, wb1 );
         }
         
@@ -10117,8 +10117,8 @@ public final class Ops {
             double rr = Math.sqrt(xi * xi + yi * yi + zi * zi);
             double rho = Math.sqrt(xi * xi + yi * yi);
 
-            double th = Math.atan2(rho, zi);   // polar angle from +Z
-            double ph = Math.atan2(yi, xi);    // azimuth in X-Y plane
+            double th = Math.atan2(rho, zi) * 360 / TAU;   // polar angle from +Z
+            double ph = Math.atan2(yi, xi) * 360 / TAU;    // azimuth in X-Y plane
 
             result.putValue(i, 0, rr);
             result.putValue(i, 1, th);
@@ -10135,8 +10135,8 @@ public final class Ops {
             wb1.putProperty( QDataSet.LABEL, 1, "theta" );
             wb1.putProperty( QDataSet.LABEL, 2, "phi" );
             wb1.putProperty( QDataSet.UNITS, 0, SemanticOps.getUnits(xx) );
-            wb1.putProperty( QDataSet.UNITS, 1, Units.radians );
-            wb1.putProperty( QDataSet.UNITS, 2, Units.radians );
+            wb1.putProperty( QDataSet.UNITS, 1, Units.degrees );
+            wb1.putProperty( QDataSet.UNITS, 2, Units.degrees );
             result.putProperty( QDataSet.BUNDLE_1, wb1 );
         }
         
