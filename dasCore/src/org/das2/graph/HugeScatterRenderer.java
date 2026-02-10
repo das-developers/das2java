@@ -810,14 +810,7 @@ public class HugeScatterRenderer extends Renderer {
                     logger.fine("dropping record because it is off screen");
                 }
             }
-            //System.err.println("total: "+ Ops.total(tds) );
-            //
-            //try {
-            //    new AsciiFormatter().formatToFile( "/tmp/ap.txt", tds );
-            //} catch (IOException ex) {
-            //    Logger.getLogger(HugeScatterRenderer.class.getName()).log(Level.SEVERE, null, ex);
-            //}
-            
+
         } else {
             QDataSet xds= SemanticOps.xtagsDataSet(ds);
             boolean xmono= SemanticOps.isMonotonic(xds);
