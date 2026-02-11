@@ -10076,7 +10076,7 @@ public final class Ops {
         QDataSet yy= unbundle(ds,1);
         
         QDataSet wds= DataSetUtil.weightsDataSet(ds);
-        wds= Ops.reduceMin( wds, 1 );
+        wds= Ops.reduceMin( Ops.trim1(ds, 0, 2), 1 );
         
         WritableDataSet result= copy(ds);
         for ( int i=0; i<result.length(); i++ ) {
@@ -10096,9 +10096,10 @@ public final class Ops {
         QDataSet b1= (QDataSet)ds.property(QDataSet.BUNDLE_1);
         if ( b1!=null ) {
             
-            WritableDataSet wb1= copy(b1);
-            copyIndexedProperties( b1, wb1 );
+            AbstractDataSet wb1=IDataSet.createRank2( b1.length(), 0 );
             
+            wb1.putProperty( QDataSet.NAME, 0, "R" );
+            wb1.putProperty( QDataSet.NAME, 1, "angle" );
             wb1.putProperty( QDataSet.LABEL, 0, "R" );
             wb1.putProperty( QDataSet.LABEL, 1, "angle" );
             wb1.putProperty( QDataSet.TITLE, 0, "R" );
@@ -10107,6 +10108,14 @@ public final class Ops {
             wb1.putProperty( QDataSet.UNITS, 1, Units.degrees );
             wb1.putProperty( QDataSet.VALID_MAX, 1, 180 );
             wb1.putProperty( QDataSet.VALID_MIN, 1, -180 );
+            
+            for ( int i=2; i<b1.length(); i++ ) { // to support cylindrical coordinates, where indices 2 and up are copied.
+                Map<String,Object> props= Ops.copyProperties( b1.slice(i) );
+                for ( Entry<String,Object> p: props.entrySet() ) {
+                    wb1.putProperty( p.getKey(), i, p.getValue() );
+                }
+            }
+            
             result.putProperty( QDataSet.BUNDLE_1, wb1 );
         }
         
@@ -10158,25 +10167,34 @@ public final class Ops {
                 result.putValue(i, 2, ph);
             }
         }            
-        
+            
+        AbstractDataSet wb1=IDataSet.createRank2( ds.length(0), 0 );
+
+        wb1.putProperty( QDataSet.NAME, 0, "R" );
+        wb1.putProperty( QDataSet.NAME, 1, "theta" );
+        wb1.putProperty( QDataSet.NAME, 2, "phi" );
+        wb1.putProperty( QDataSet.LABEL, 0, "R" );
+        wb1.putProperty( QDataSet.LABEL, 1, "theta" );
+        wb1.putProperty( QDataSet.LABEL, 2, "phi" );
+        wb1.putProperty( QDataSet.UNITS, 0, SemanticOps.getUnits(xx) );
+        wb1.putProperty( QDataSet.UNITS, 1, Units.degrees );
+        wb1.putProperty( QDataSet.UNITS, 2, Units.degrees );
+        wb1.putProperty( QDataSet.VALID_MAX, 1, 360 );
+        wb1.putProperty( QDataSet.VALID_MIN, 1, -360 );
+        wb1.putProperty( QDataSet.VALID_MAX, 2, 360 );
+        wb1.putProperty( QDataSet.VALID_MIN, 2, -360 );
+
         QDataSet b1= (QDataSet)ds.property(QDataSet.BUNDLE_1);
         if ( b1!=null ) {
-            
-            WritableDataSet wb1= copy(b1);
-            copyIndexedProperties( b1, wb1 );
-            
-            wb1.putProperty( QDataSet.LABEL, 0, "R" );
-            wb1.putProperty( QDataSet.LABEL, 1, "theta" );
-            wb1.putProperty( QDataSet.LABEL, 2, "phi" );
-            wb1.putProperty( QDataSet.UNITS, 0, SemanticOps.getUnits(xx) );
-            wb1.putProperty( QDataSet.UNITS, 1, Units.degrees );
-            wb1.putProperty( QDataSet.UNITS, 2, Units.degrees );
-            wb1.putProperty( QDataSet.VALID_MAX, 1, 360 );
-            wb1.putProperty( QDataSet.VALID_MIN, 1, -360 );
-            wb1.putProperty( QDataSet.VALID_MAX, 2, 360 );
-            wb1.putProperty( QDataSet.VALID_MIN, 2, -360 );
-            result.putProperty( QDataSet.BUNDLE_1, wb1 );
+            for ( int i=3; i<b1.length(); i++ ) { // to support cylindrical coordinates, where indices 2 and up are copied.
+                Map<String,Object> props= Ops.copyProperties( b1.slice(i) );
+                for ( Entry<String,Object> p: props.entrySet() ) {
+                    wb1.putProperty( p.getKey(), i, p.getValue() );
+                }
+            }
         }
+        
+        result.putProperty( QDataSet.BUNDLE_1, wb1 );
         
         return result;
         
