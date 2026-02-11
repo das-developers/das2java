@@ -469,7 +469,7 @@ public class QDataSetStreamHandler implements StreamHandler {
     }
     
     /**
-     * TODO: mission statement
+     * Create a dataset from the current state and builders.
      */
     public void collectDataSet( ) {
         QDataSet xds1= currentXBuilder.getDataSet();
@@ -579,8 +579,12 @@ public class QDataSetStreamHandler implements StreamHandler {
             }
         }
         
+        String renderer= (String) streamProperties.get( "renderer" );
+        
         if ( SemanticOps.isBundle(ds) ) {
             // we're going to look for .min and .max and .stddev planes and attach them to their base.
+            // However, when the data has just a max and is a bundle of two rank 1 datasets (slice of peaks-and-average),
+            // return both channels to do what the old parser did.
             ArrayList<String> newNames= new ArrayList<>();
             Set<String> bases= new HashSet<>();
             
@@ -602,7 +606,13 @@ public class QDataSetStreamHandler implements StreamHandler {
                 }
             }
             
-            if ( newNames.size()<planes.length ) {
+            boolean peaksAndAverageSlice= planes.length==2 && planes[1].equals(planes[0]+".max");
+            
+            if ( peaksAndAverageSlice ) {
+                renderer= null; // match behavior of the old das2stream parser
+            }
+            
+            if ( newNames.size()<planes.length && !peaksAndAverageSlice ) {
                 Map<String,MutablePropertyDataSet> newDss= new LinkedHashMap<>();
                 for ( int i=0; i<bds.length(); i++ ) {
                     String n= (String) bds.property(QDataSet.NAME,i);
@@ -653,7 +663,7 @@ public class QDataSetStreamHandler implements StreamHandler {
                 logger.log(Level.SEVERE, "unable to use properties for cacheTag", ex);
             }
         }
-        String renderer= (String) streamProperties.get( "renderer" );
+        
         if ( renderer!=null ) {
             ds= Ops.putProperty( ds, QDataSet.RENDER_TYPE, renderer );
         }
