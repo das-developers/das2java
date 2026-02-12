@@ -274,6 +274,9 @@ public class OperationsProcessor {
                     ds= Ops.normalize(ds);
                 } else if ( cmd.equals("|diff") ) {
                     ds= Ops.diff(ds);
+                } else if ( cmd.startsWith("|diffMod") ) {
+                    Object arg1= getArgumentIndex( s.next(),0 );
+                    ds= Ops.diffMod( ds, Ops.datum(arg1) );
                 } else if ( cmd.equals("|accum") ) {
                     ds= Ops.accum(ds);
                 } else if ( cmd.equals("|log10") ) {
