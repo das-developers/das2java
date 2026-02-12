@@ -434,7 +434,12 @@ public class OperationsProcessor {
                     ds= Ops.median(ds);
                 } else if ( cmd.equals("|mode")  ) {
                     ds= Ops.mode(ds);
-                    
+                } else if ( cmd.equals("|mod")  ) {
+                    Object arg1= getArgumentIndex( s.next(),0 );
+                    ds= Ops.mod( ds, Ops.datum(arg1) );
+                } else if ( cmd.equals("|modp")  ) {
+                    Object arg1= getArgumentIndex( s.next(),0 );
+                    ds= Ops.modp( ds, Ops.datum(arg1) );        
                 } else if ( cmd.equals("|autoHistogram") ) {
                     ds= Ops.autoHistogram(ds);
                 } else if ( cmd.equals("|histogram") ) { // 0=auto, 1=binsize                    

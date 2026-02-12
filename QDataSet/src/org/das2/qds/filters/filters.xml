@@ -319,13 +319,24 @@
                             <bookmark>
                                 <title>Diff</title>
                                 <filter>|diff()</filter>
-                                <description> Returns the finite differences between adjacent elements in a rank 1 dataSet</description>
+                                <description>Returns the finite differences between adjacent elements in a rank 1 dataSet</description>
                             </bookmark>
                             <bookmark>
-                                <title>Circular Difference</title>
+                                <title>Diff Mod (Circular Difference)</title>
                                 <filter>|diffMod(360)</filter>
-                                <description> Returns the differences between adjacent elements in a rank 1 dataSet in a modulo (or circular) space.</description>
+                                <description>Returns the differences between adjacent elements in a rank 1 dataSet in a modulo (or circular) space.</description>
                             </bookmark>
+                            <bookmark>
+                                <title>Modulo</title>
+                                <filter>|mod(360)</filter>
+                                <description>Performs mod function on each point.</description>
+                            </bookmark>
+                            <bookmark>
+                                <title>Modulo, where results are always positive.</title>
+                                <filter>|modp(360)</filter>
+                                <description>Performs mod function on each point where result is always positive.</description>
+                            </bookmark>
+                            
                         </bookmark-list>
                     </bookmark-folder>
                     <bookmark-folder>
