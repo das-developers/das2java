@@ -13557,6 +13557,48 @@ public final class Ops {
         return diff( dataset(ds) );
     }
     
+    /**
+     * returns the difference between successive elements, but takes into account
+     * that the dataset exists within a modulo space.  This is like diff(x) 
+     * but computed in a wraparound (modular) domain, returning the smallest 
+     * difference across the wrap point.
+     * <blockquote><pre>
+     * signal= link( linspace('2026-02-12T10:50','2026-02-12T10:55',10000),accum(randn(10000)) )
+     * m=10
+     * ds= modp(signal,m)
+     * dds= diffMod(ds,m)
+     * reset()
+     * plot(0,ds)
+     * plot(1,dds)
+     * plot(2,accum(dds))
+     * </pre></blockquote>
+     * @param ds
+     * @param mod
+     * @return a rank 1 dataset with N-1 elements.
+     * @see #accum(org.das2.qds.QDataSet)  
+     */
+    public static QDataSet diffMod( QDataSet ds, Datum mod ) {
+        QDataSet dds= diff( ds );
+        reduceMin(dds,0);
+        WritableDataSet wdds= Ops.copy(dds);
+        Units u= SemanticOps.getUnits(dds);
+        double dmod= mod.doubleValue(u);
+        QDataSet r= where( gt(dds,mod.divide(2)) );
+        for ( int i=0; i<r.length(); i++ ) {
+            int idx= (int)r.value(i);
+            wdds.putValue( idx, wdds.value(idx)-dmod );
+        }
+        r= where( lt(dds,mod.divide(-2)) );
+        for ( int i=0; i<r.length(); i++ ) {
+            int idx= (int)r.value(i);
+            wdds.putValue( idx, wdds.value(idx)+dmod );
+        }
+        return wdds;
+    }
+    
+    public static QDataSet diffMod( Object ds, Object mod ) {
+        return diffMod( dataset(ds), datum(mod) );
+    }
     
     /**
      * return an array that is the running sum of each element in the array,
