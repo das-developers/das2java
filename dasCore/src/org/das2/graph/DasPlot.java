@@ -1388,6 +1388,7 @@ public class DasPlot extends DasCanvasComponent {
     protected synchronized void paintComponent(Graphics graphics0) {
         logger.log(Level.FINER, "dasPlot.paintComponent {0}", getDasName());
         if ( getCanvas().isValueAdjusting() ) {
+            logger.log(Level.FINE, "canvas is still adjusting, come back soon.  {0}", getDasName());
             repaint(); // come back soon
             return;
         }
