@@ -23,7 +23,7 @@
                       <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
                       <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                      <Component id="modTextField" min="-2" max="-2" attributes="0"/>
+                      <Component id="modTextField" min="-2" pref="124" max="-2" attributes="0"/>
                   </Group>
                   <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
               </Group>
