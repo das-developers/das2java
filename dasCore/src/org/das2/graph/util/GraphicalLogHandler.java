@@ -321,6 +321,19 @@ public class GraphicalLogHandler extends Handler {
     public void close() {
     }
     
+    private String formatMessage(LogRecord r) {
+        try {
+            Formatter f = getFormatter();
+            // If you later swap in a formatter that applies parameters, this will honor it.
+            String s = (f != null) ? f.formatMessage(r) : r.getMessage();
+            return s == null ? "" : s;
+        } catch (Exception e) {
+            // Fall back to raw message
+            String s = r.getMessage();
+            return s == null ? "" : s;
+        }
+    }
+    
     ObjectLocator objectLocator;
     private synchronized void setObjectLocator( ObjectLocator o ) {
         this.objectLocator= o;
@@ -472,12 +485,16 @@ public class GraphicalLogHandler extends Handler {
             Rectangle[] myDirtyBounds;
             
             List yAxisValues;
-            if ( yaxisDimension==YAXIS_CLASS ) {
-                yAxisValues= yAxisValuesClass;
-            } else if ( yaxisDimension==YAXIS_THREAD ) {
-                yAxisValues= yAxisValuesThread;
-            } else {
-                yAxisValues= yAxisValuesLogger;
+            switch (yaxisDimension) {
+                case YAXIS_CLASS:
+                    yAxisValues= yAxisValuesClass;
+                    break;
+                case YAXIS_THREAD:
+                    yAxisValues= yAxisValuesThread;
+                    break;
+                default:
+                    yAxisValues= yAxisValuesLogger;
+                    break;
             }
             
             if ( select==null ) {
@@ -485,7 +502,9 @@ public class GraphicalLogHandler extends Handler {
                 myDirtyBounds= new Rectangle[] { new Rectangle( 0,0,0,0 ), new Rectangle( 0,0,0,0 ) };
                 
             } else {
-                label= select.getLoggerName()+":"+select.getLevel()+":!c"+select.getMessage();
+                String message= formatMessage(select);
+                
+                label= select.getLoggerName()+":"+select.getLevel()+":!c"+message;
                 
                 int ix= (int)xaxis.transform( Units.milliseconds.createDatum( ((Long)times.get(iclosest)).longValue() ) );
                 int iy= (int)yaxis.transform( Units.dimensionless.createDatum( ((Integer)yAxisValues.get(iclosest)).intValue() ) );
