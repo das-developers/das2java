@@ -7,7 +7,6 @@
  */
 
 package org.das2.graph.util;
-import org.das2.util.monitor.ProgressMonitor;
 import org.das2.DasApplication;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
@@ -179,6 +178,7 @@ public class GraphicalLogHandler extends Handler {
     
     private Action getUpdatingAction() {
         return new AbstractAction( "Updating" ) {
+            @Override
             public void actionPerformed( ActionEvent e ) {
                 JCheckBox source= (JCheckBox)e.getSource();
                 updating= source.isSelected();
@@ -189,6 +189,7 @@ public class GraphicalLogHandler extends Handler {
     
     private Action getUpdateAction() {
         return new AbstractAction( "Update" ) {
+            @Override
             public void actionPerformed( ActionEvent e ) {
                 update();
             }
@@ -213,12 +214,10 @@ public class GraphicalLogHandler extends Handler {
     
     private void startUpdateThread() {
         if ( updateThread==null ) {
-            updateThread= new Thread( new Runnable() {
-                public void run() {
-                    while ( true ) {
-                        try { Thread.sleep(500); } catch ( InterruptedException e ) { }
-                        if ( updating ) update();
-                    }
+            updateThread= new Thread( () -> {
+                while ( true ) {
+                    try { Thread.sleep(500); } catch ( InterruptedException e ) { }
+                    if ( updating ) update();
                 }
             }, "graphicalHandlerUpdateThread" );
             updateThread.start();
@@ -242,6 +241,7 @@ public class GraphicalLogHandler extends Handler {
         return result;
     }
     
+    @Override
     public void publish( LogRecord rec ) {
         StackTraceElement[] st= new Throwable().getStackTrace();
         
@@ -257,14 +257,18 @@ public class GraphicalLogHandler extends Handler {
                 ( System.currentTimeMillis() - this.time0 ) > sleepInitiallyTime ) getRenderer();
         
         String yAxisName;
-        if ( yaxisDimension==YAXIS_THREAD ) {
-            yAxisName= Thread.currentThread().getName() ;
-        } else if ( yaxisDimension==YAXIS_CLASS ) {
-            yAxisName= rec.getSourceClassName();
-        } else if ( yaxisDimension==YAXIS_LOGNAME ) {
-            yAxisName= rec.getLoggerName();
-        } else {
-            throw new IllegalArgumentException("bad yAxisName");
+        switch (yaxisDimension) {
+            case YAXIS_THREAD:
+                yAxisName= Thread.currentThread().getName() ;
+                break;
+            case YAXIS_CLASS:
+                yAxisName= rec.getSourceClassName();
+                break;
+            case YAXIS_LOGNAME:
+                yAxisName= rec.getLoggerName();
+                break;
+            default:
+                throw new IllegalArgumentException("bad yAxisName");
         }
         
         Integer yValue;
@@ -313,11 +317,13 @@ public class GraphicalLogHandler extends Handler {
         // consider how to not record it's own messages
     }
     
+    @Override
     public void flush() {
         if ( renderer==null ) getRenderer();
         renderer.update();
     }
     
+    @Override
     public void close() {
     }
     
@@ -354,6 +360,7 @@ public class GraphicalLogHandler extends Handler {
             super.update();
         }
         
+        @Override
         public void render(Graphics2D g1, DasAxis xAxis, DasAxis yAxis ) {
             
             Graphics2D g= (Graphics2D)g1;
@@ -364,15 +371,19 @@ public class GraphicalLogHandler extends Handler {
             
             HashMap<String,Integer> yaxisMap;
             List<Integer> yAxisValues;
-            if ( yaxisDimension==YAXIS_CLASS ) {
-                yaxisMap= yaxisMapClass;
-                yAxisValues= yAxisValuesClass;
-            } else if ( yaxisDimension==YAXIS_THREAD ) {
-                yaxisMap= yaxisMapThread;
-                yAxisValues= yAxisValuesThread;
-            } else {
-                yaxisMap= yaxisMapLogger;
-                yAxisValues= yAxisValuesLogger;
+            switch (yaxisDimension) {
+                case YAXIS_CLASS:
+                    yaxisMap= yaxisMapClass;
+                    yAxisValues= yAxisValuesClass;
+                    break;
+                case YAXIS_THREAD:
+                    yaxisMap= yaxisMapThread;
+                    yAxisValues= yAxisValuesThread;
+                    break;
+                default:
+                    yaxisMap= yaxisMapLogger;
+                    yAxisValues= yAxisValuesLogger;
+                    break;
             }
             
             for ( Entry<String,Integer> e: yaxisMap.entrySet() ) {
@@ -387,9 +398,9 @@ public class GraphicalLogHandler extends Handler {
             long minMilli= (long)xAxis.getDataMinimum().doubleValue( Units.milliseconds );
             long maxMilli= (long)xAxis.getDataMaximum().doubleValue( Units.milliseconds );
 
-            int firstIndex= Collections.binarySearch( times, Long.valueOf( minMilli ) );
+            int firstIndex= Collections.binarySearch(times, minMilli);
             if ( firstIndex<0 ) firstIndex= -1 - firstIndex;
-            int lastIndex= Collections.binarySearch( times, Long.valueOf( maxMilli ) );
+            int lastIndex= Collections.binarySearch(times, maxMilli);
             if ( lastIndex<0 ) {
                 lastIndex= -1 - lastIndex;
             } else {
@@ -543,49 +554,51 @@ public class GraphicalLogHandler extends Handler {
                 plot2.getRenderer(0), new BoxRenderer( plot2 ), "View Messages" );
         result.setDragEvents( false );
         result.setReleaseEvents( true );
-        result.addBoxSelectionListener( new BoxSelectionListener() {
-            public void boxSelected( BoxSelectionEvent e ) {
-                StringBuilder buf= new StringBuilder(1000);
-                
-                //Handler h= new ConsoleHandler();
-                //Formatter f= h.getFormatter();
-                Formatter f= new DenseConsoleFormatter();
-                
-                DatumRange threadsRange= e.getYRange();
-                DatumRange timeRange= e.getXRange();
-
-                List yAxisValues;
-                if ( yaxisDimension==YAXIS_CLASS ) {
-                    yAxisValues= yAxisValuesClass;
-                } else if ( yaxisDimension==YAXIS_THREAD ) {
-                    yAxisValues= yAxisValuesThread;
-                } else {
-                    yAxisValues= yAxisValuesLogger;
-                }
+        result.addBoxSelectionListener((BoxSelectionEvent e) -> {
+            StringBuilder buf= new StringBuilder(1000);
             
-                int messageCount=0;
-                for ( int i=0; i<records.size(); i++ ) {
-                    double time= ((Long)times.get( i )).doubleValue();
-                    if ( timeRange.contains( Units.milliseconds.createDatum( time ) ) ) {
-                        if ( threadsRange.contains( Units.dimensionless.createDatum( (Number)yAxisValues.get(i) ) ) ) {
-                            buf.append( f.format( (LogRecord)records.get(i) ) );
-                            messageCount++;
-                        }
+            //Handler h= new ConsoleHandler();
+            //Formatter f= h.getFormatter();
+            Formatter f= new DenseConsoleFormatter();
+            
+            DatumRange threadsRange= e.getYRange();
+            DatumRange timeRange= e.getXRange();
+            
+            List yAxisValues;
+            switch (yaxisDimension) {
+                case YAXIS_CLASS:
+                    yAxisValues= yAxisValuesClass;
+                    break;
+                case YAXIS_THREAD:
+                    yAxisValues= yAxisValuesThread;
+                    break;
+                default:
+                    yAxisValues= yAxisValuesLogger;
+                    break;
+            }
+            
+            int messageCount=0;
+            for ( int i=0; i<records.size(); i++ ) {
+                double time= ((Long)times.get( i )).doubleValue();
+                if ( timeRange.contains( Units.milliseconds.createDatum( time ) ) ) {
+                    if ( threadsRange.contains( Units.dimensionless.createDatum( (Number)yAxisValues.get(i) ) ) ) {
+                        buf.append( f.format( (LogRecord)records.get(i) ) );
+                        messageCount++;
                     }
                 }
-                
-                JDialog dialog= new JDialog( frame, "Log messages" );
-                JTextArea pane= new JTextArea( );
-                pane.insert( buf.toString(), 0 );
-                pane.insert( ""+messageCount+" messages: \n\n", 0 );
-                
-                JScrollPane spane= new JScrollPane( pane );
-                spane.setPreferredSize( new Dimension( 800, 600 ) );
-                dialog.getContentPane().add( spane );
-                dialog.pack();
-                dialog.setVisible(true);
             }
-        } );
+            
+            JDialog dialog= new JDialog( frame, "Log messages" );
+            JTextArea pane= new JTextArea( );
+            pane.insert( buf.toString(), 0 );
+            pane.insert( ""+messageCount+" messages: \n\n", 0 );
+            
+            JScrollPane spane= new JScrollPane( pane );
+            spane.setPreferredSize( new Dimension( 800, 600 ) );
+            dialog.getContentPane().add( spane );
+            dialog.pack();
+            dialog.setVisible(true);
+        });
         return result;
     }
     
@@ -599,6 +612,7 @@ public class GraphicalLogHandler extends Handler {
         DasLogger.getLogger( DasLogger.DATA_TRANSFER_LOG ).info("info");
         
         JButton b= new JButton( new AbstractAction("pushme") {
+            @Override
             public void actionPerformed( ActionEvent e ) {
                  DasLogger.getLogger( DasLogger.GRAPHICS_LOG ).warning("*giggle*");
             }
