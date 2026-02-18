@@ -450,6 +450,9 @@ public class DataSetBuilder {
      */
     public void putValue( int index0, int index1, String s ) throws ParseException {
         checkStreamIndex(index0);
+        if ( s==null ) {
+            throw new NullPointerException("null string passed into DataSetBuilder.");
+        }
         if ( us==null || us[index1]==null ) {
             QDataSet ds1= Ops.dataset(s);
             Units units= SemanticOps.getUnits(ds1);
