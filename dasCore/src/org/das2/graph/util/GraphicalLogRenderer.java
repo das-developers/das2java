@@ -1,10 +1,6 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
+
 package org.das2.graph.util;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -12,39 +8,26 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
-import java.awt.event.ActionEvent;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.text.MessageFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Formatter;
-import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-import org.das2.DasApplication;
-import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
 import org.das2.datum.EnumerationUnits;
 import org.das2.datum.Units;
@@ -54,14 +37,10 @@ import org.das2.event.BoxSelectorMouseModule;
 import org.das2.event.LabelDragRenderer;
 import org.das2.event.MouseModule;
 import org.das2.graph.DasAxis;
-import org.das2.graph.DasCanvas;
-import org.das2.graph.DasColumn;
 import org.das2.graph.DasPlot;
-import org.das2.graph.DasRow;
 import org.das2.graph.Legend;
 import org.das2.graph.Renderer;
 import org.das2.qds.QDataSet;
-import org.das2.qds.examples.Schemes;
 import org.das2.qds.ops.Ops;
 import org.das2.qds.util.DataSetBuilder;
 import org.das2.system.DasLogger;
@@ -75,7 +54,7 @@ import org.das2.util.ObjectLocator;
  */
 public class GraphicalLogRenderer {
     
-    List records= new ArrayList();
+    QDataSet records= null;
     List yAxisValuesThread= new ArrayList();
     List yAxisValuesClass= new ArrayList();
     List yAxisValuesLogger= new ArrayList();
@@ -242,7 +221,7 @@ public class GraphicalLogRenderer {
         return fields;
     }
     
-    public static QDataSet readRecords( File f ) throws FileNotFoundException, ParseException {
+    public QDataSet readRecords( File f ) throws FileNotFoundException, ParseException {
         DataSetBuilder dsb= new DataSetBuilder(2,1000,9);
         dsb.setNameLabelUnits( 0, "timestamp_iso", "ISO Time", Units.us2000 );
         dsb.setNameLabelUnits( 1, "elapsed_seconds", "Elapsed Seconds", Units.seconds );
@@ -278,6 +257,33 @@ public class GraphicalLogRenderer {
         QDataSet tt= Ops.unbundle(ds,"elapsed_seconds");
         QDataSet s= Ops.sort(tt);
         ds= Ops.applyIndex(ds, s);
+        
+        this.records= ds;
+        
+        QDataSet sort;
+        QDataSet vv;
+            
+        QDataSet classNames= Ops.unbundle(ds,"source_class");
+        sort= Ops.sort(classNames);
+        vv= Ops.uniqValues(classNames,sort);
+        
+        for ( int i=0; i<vv.length(); i++ ) {
+            yaxisMapClass.put(vv.slice(i).svalue(),i);
+        }
+
+        QDataSet threads= Ops.unbundle(ds,"thread");
+        sort= Ops.sort(threads);
+        vv= Ops.uniqValues(threads,sort);
+        for ( int i=0; i<vv.length(); i++ ) {
+            yaxisMapThread.put(vv.slice(i).svalue(),i);
+        }
+
+        QDataSet loggers= Ops.unbundle(ds,"logger");
+        sort= Ops.sort(loggers);
+        vv= Ops.uniqValues(loggers,sort);
+        for ( int i=0; i<vv.length(); i++ ) {
+            yaxisMapLogger.put(vv.slice(i).svalue(),i);
+        }
         return ds;
     }
     
@@ -507,23 +513,37 @@ public class GraphicalLogRenderer {
         @Override
         public Rectangle[] renderDrag( Graphics g, Point p1, Point p2 ) {
             
-            LogRecord select= (LogRecord)GraphicalLogRenderer.this.renderer.getObjectLocator().closestObject( p2 );
-            int iclosest= records.indexOf( select );
+            Integer select= (Integer)GraphicalLogRenderer.this.renderer.getObjectLocator().closestObject( p2 );
+            
+            if ( select==null ) {
+                return null;
+            }
+            
+            int iclosest= select;
+            
+            QDataSet record= records.slice(iclosest);
             
             String label;
             Rectangle[] myDirtyBounds;
             
-            List yAxisValues;
+            QDataSet yAxisValues;
+            Map<String,Integer> map;
+            
             switch (yaxisDimension) {
                 case YAXIS_CLASS:
-                    yAxisValues= yAxisValuesClass;
+                    yAxisValues= Ops.unbundle( record, "source_class" );
+                    map= yaxisMapClass;
                     break;
                 case YAXIS_THREAD:
-                    yAxisValues= yAxisValuesThread;
+                    yAxisValues= Ops.unbundle( record, "thread" );
+                    map= yaxisMapThread;
+                    break;
+                case YAXIS_LOGNAME:
+                    yAxisValues= Ops.unbundle( record, "logger" );
+                    map= yaxisMapLogger;
                     break;
                 default:
-                    yAxisValues= yAxisValuesLogger;
-                    break;
+                    throw new IllegalArgumentException("bad state");
             }
             
             if ( select==null ) {
@@ -531,12 +551,19 @@ public class GraphicalLogRenderer {
                 myDirtyBounds= new Rectangle[] { new Rectangle( 0,0,0,0 ), new Rectangle( 0,0,0,0 ) };
                 
             } else {
-                String message= formatMessage(select);
+                QDataSet messages= Ops.unbundle( GraphicalLogRenderer.this.records, "message" );
+                QDataSet times= Ops.unbundle( GraphicalLogRenderer.this.records, "elapsed_seconds" );
+                String message= messages.slice(select).svalue();
                 
-                label= select.getLoggerName()+":"+select.getLevel()+":!c"+message;
+                QDataSet loggerNames= Ops.unbundle( GraphicalLogRenderer.this.records, "logger" );
+                QDataSet levels= Ops.unbundle( GraphicalLogRenderer.this.records, "level" );
                 
-                int ix= (int)xaxis.transform( Units.milliseconds.createDatum( ((Long)times.get(iclosest)).longValue() ) );
-                int iy= (int)yaxis.transform( Units.dimensionless.createDatum( ((Integer)yAxisValues.get(iclosest)).intValue() ) );
+                label= loggerNames.slice(select).svalue()+":"+levels.slice(select).svalue()+":!c"+message;
+                
+                QDataSet t= times.slice(select);
+                
+                int ix= (int)xaxis.transform( t );
+                int iy= (int)yaxis.transform( map.get(yAxisValues.svalue()), yaxis.getUnits() );
                 g.drawOval( ix-5,  iy-5, 10, 10 );
                 GrannyTextRenderer gtr= new GrannyTextRenderer();
                 gtr.setString(g, label);
@@ -596,11 +623,12 @@ public class GraphicalLogRenderer {
             }
             
             int messageCount=0;
-            for ( int i=0; i<records.size(); i++ ) {
+            QDataSet messages= Ops.unbundle( records, "message" );
+            for ( int i=0; i<records.length(); i++ ) {
                 double time= ((Long)times.get( i )).doubleValue();
                 if ( timeRange.contains( Units.milliseconds.createDatum( time ) ) ) {
                     if ( threadsRange.contains( Units.dimensionless.createDatum( (Number)yAxisValues.get(i) ) ) ) {
-                        buf.append( f.format( (LogRecord)records.get(i) ) );
+                        buf.append( messages.slice(i).svalue() );
                         messageCount++;
                     }
                 }
