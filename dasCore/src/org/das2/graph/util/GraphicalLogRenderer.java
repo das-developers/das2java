@@ -226,13 +226,15 @@ public class GraphicalLogRenderer {
         dsb.setNameLabelUnits( 0, "timestamp_iso", "ISO Time", Units.us2000 );
         dsb.setNameLabelUnits( 1, "elapsed_seconds", "Elapsed Seconds", Units.seconds );
         dsb.setNameLabelUnits( 2, "level", "Log Level", Units.dimensionless );
-        dsb.setNameLabelUnits( 3, "thread", "Thread", Units.dimensionless );
+        dsb.setNameLabelUnits( 3, "thread", "Thread", EnumerationUnits.create("thread") );
         dsb.setNameLabelUnits( 4, "logger", "Logger Name", EnumerationUnits.create("loggerName") );
         dsb.setNameLabelUnits( 5, "source_class", "Source Class", EnumerationUnits.create("sourceClass") );
         dsb.setNameLabelUnits( 6, "source_method", "Source Method", EnumerationUnits.create("sourceMethod") );
         dsb.setNameLabelUnits( 7, "message", "message", EnumerationUnits.create("message") );
         dsb.setNameLabelUnits( 8, "thrown", "Thrown", EnumerationUnits.create("thrown") );
         
+        Map<String,String> threadNameMap= new HashMap<>();
+                
         BufferedReader reader= new BufferedReader( new FileReader(f) );
         String line;
         int iline=0;
@@ -242,7 +244,15 @@ public class GraphicalLogRenderer {
             iline++;
             while ( line!=null ) {
                 fields= guardedSplit( line, fields );
-                if ( fields.length>2 && fields[0]!=null && fields[0].startsWith("20")) {
+                if ( fields.length==2 ) {
+                    String[] ss= line.split("=");
+                    if ( ss[0].startsWith("thread.") ) {
+                        threadNameMap.put( ss[0].substring(7).trim(), ss[1].trim() );
+                    }
+                    fields= null;
+                } else if ( fields.length>2 && fields[0]!=null && fields[0].startsWith("20")) {
+                    String threadName= threadNameMap.get(fields[3]);
+                    if ( threadName!=null ) fields[3]=threadName;
                     dsb.nextRecord( (Object[])fields );
                 } else {
                     fields= null;
@@ -257,6 +267,8 @@ public class GraphicalLogRenderer {
         QDataSet tt= Ops.unbundle(ds,"elapsed_seconds");
         QDataSet s= Ops.sort(tt);
         ds= Ops.applyIndex(ds, s);
+        
+        if ( ds.length()==0 ) throw new IllegalArgumentException("must have some records");
         
         this.records= ds;
         
@@ -448,7 +460,7 @@ public class GraphicalLogRenderer {
             QDataSet levels= Ops.copy(Ops.unbundle(ds, "level"));  // copy makes debugging easier
 
             for ( int i=firstIndex; i<lastIndex; i++ ) {
-
+                if ( i%100==0 ) System.err.println(i);
                 String sthread= yAxisValues.slice(i).svalue();  // note might be thread, or classname, or loggername.
                 int ithread= yaxisMap.get(sthread);
 
