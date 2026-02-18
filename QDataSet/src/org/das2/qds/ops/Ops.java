@@ -6624,7 +6624,11 @@ public final class Ops {
                 Object n= p.get(i);
                 if ( n instanceof Number ) {
                     j[i]= ((Number)n).doubleValue();
-                } else if ( n instanceof String ) {
+                } else if ( n instanceof String || n instanceof QDataSet || n instanceof Datum ) {
+                    QDataSet ds1= dataset(n);
+                    if ( u==null ) u= SemanticOps.getUnits(ds1);
+                    j[i]= ds1.value();
+                } else if ( n instanceof QDataSet ) {
                     QDataSet ds1= dataset(n);
                     if ( u==null ) u= SemanticOps.getUnits(ds1);
                     j[i]= ds1.value();
@@ -11077,19 +11081,37 @@ public final class Ops {
      */
     public static QDataSet rescale( QDataSet data, QDataSet min, QDataSet max ) {
         QDataSet extent= extent(data);
+        return rescale( data, Ops.datum(extent.slice(0)), Ops.datum(extent.slice(1)), Ops.datum(min), Ops.datum(max) );
+    }
+    
+    /**
+     * calculate the range of data, then rescale it so that dataMin would
+     * become min and dataMax would become max.  Note this does not consider
+     * AVERAGE_TYPE metadata.  When dataMin is equal to dataMax, min us always
+     * returned.
+     * @param data rank N dataset
+     * @param dataMin reference minimum
+     * @param dataMax reference maximum
+     * @param min output at dataMin
+     * @param max output at dataMax
+     * @return rescaled data.
+     */
+    public static QDataSet rescale( QDataSet data, Datum dataMin, Datum dataMax, Datum min, Datum max ) {
+        QDataSet extent= Ops.dataset( Ops.datumRange( new Datum[] { dataMin, dataMax } ) );
         QDataSet w= Ops.subtract( extent.slice(1), extent.slice(0) );
         if ( w.value()==0 ) {
+            QDataSet minDs= Ops.dataset(min);
             switch (data.rank()) {
                 case 0:
-                    return min;
+                    return minDs;
                 case 1:
-                    return replicate( min, data.length() );
+                    return replicate( minDs, data.length() );
                 case 2:
-                    return replicate( min, data.length(), data.length(0) );
+                    return replicate( minDs, data.length(), data.length(0) );
                 case 3:
-                    return Ops.multiply( min, Ops.ones( data.length(), data.length(0), data.length(0,0) ) );
+                    return Ops.multiply( minDs, Ops.ones( data.length(), data.length(0), data.length(0,0) ) );
                 case 4:
-                    return Ops.multiply( min, Ops.ones( data.length(), data.length(0), data.length(0,0), data.length(0,0,0) ) );
+                    return Ops.multiply( minDs, Ops.ones( data.length(), data.length(0), data.length(0,0), data.length(0,0,0) ) );
                 default:
                     break;
             }
@@ -11098,11 +11120,11 @@ public final class Ops {
         xxx= Ops.multiply( xxx, Ops.subtract( max, min ) );
         data= Ops.add( min, xxx );
         return data;
-    }
+    }    
     
     /**
      * returns rank 1 QDataSet range relative to range "dr", where 0. is the minimum, and 1. is the maximum.
-     * For example rescaleRange(ds,1,2) is scanNext, rescaleRange(ds,0.5,1.5) is zoomOut.  This is similar
+     * For example, rescaleRange(ds,1,2) is scanNext, rescaleRange(ds,0.5,1.5) is zoomOut.  This is similar
      * to the DatumRange rescale functions.
      * @param dr a QDataSet with bins and with nonzero width.
      * @param min the new min normalized with respect to this range.  0. is this range's min, 1 is this range's max, -1 is
