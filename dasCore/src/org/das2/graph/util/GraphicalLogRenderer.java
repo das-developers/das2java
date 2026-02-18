@@ -19,6 +19,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -45,6 +46,7 @@ import javax.swing.JTextArea;
 import org.das2.DasApplication;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
+import org.das2.datum.EnumerationUnits;
 import org.das2.datum.Units;
 import org.das2.event.BoxRenderer;
 import org.das2.event.BoxSelectionEvent;
@@ -58,6 +60,10 @@ import org.das2.graph.DasPlot;
 import org.das2.graph.DasRow;
 import org.das2.graph.Legend;
 import org.das2.graph.Renderer;
+import org.das2.qds.QDataSet;
+import org.das2.qds.examples.Schemes;
+import org.das2.qds.ops.Ops;
+import org.das2.qds.util.DataSetBuilder;
 import org.das2.system.DasLogger;
 import org.das2.util.DenseConsoleFormatter;
 import org.das2.util.GrannyTextRenderer;
@@ -75,7 +81,7 @@ public class GraphicalLogRenderer {
     List yAxisValuesLogger= new ArrayList();
     List times= new ArrayList();
     
-    Renderer renderer;
+    LogRenderer renderer;
     boolean updating= false;
     Thread updateThread;
     
@@ -113,92 +119,92 @@ public class GraphicalLogRenderer {
         return instance;
     }
     
-    private void createCanvas() {
-        if  ( loggerMap.isEmpty() ) {
-            loggerMap.put( DasLogger.getLogger(DasLogger.APPLICATION_LOG).getName(), Color.black );
-            loggerMap.put( DasLogger.getLogger(DasLogger.DATA_OPERATIONS_LOG).getName(), Color.blue );
-            loggerMap.put( DasLogger.getLogger(DasLogger.DATA_TRANSFER_LOG).getName(), Color.YELLOW );
-            loggerMap.put( DasLogger.getLogger(DasLogger.GRAPHICS_LOG ).getName(), Color.PINK );
-            loggerMap.put( DasLogger.getLogger(DasLogger.SYSTEM_LOG ).getName(), Color.gray );
-            loggerMap.put( DasLogger.getLogger(DasLogger.GUI_LOG ).getName(), Color.green );
-            loggerMap.put( DasLogger.getLogger(DasLogger.DASML_LOG).getName(), Color.LIGHT_GRAY );
-        }
-        
-        DasCanvas canvas= new DasCanvas(800,400);
-        DasPlot plot= DasPlot.createPlot( new DatumRange( 0, 10, Units.seconds ) ,
-                new DatumRange( 0, 10, Units.dimensionless ) );
-        xaxis= plot.getXAxis();
-        xaxis.setAnimated(false);
-        
-        renderer.setDataSetLoader(null);
-        plot.addRenderer( renderer );
-        
-        canvas.add( plot, new DasRow( canvas, 0.1, 0.9 ), DasColumn.create(canvas) );
-        
-        MouseModule mm=  getMouseModule();
-        plot.getDasMouseInputAdapter().addMouseModule( mm );
-        plot.getDasMouseInputAdapter().setPrimaryModule( mm );
-        
-        mm= getShowLogMouseModule( plot );
-        plot.getDasMouseInputAdapter().addMouseModule( mm );
-        plot.getDasMouseInputAdapter().setSecondaryModule( mm );
-        
-        legend= new Legend();
-        canvas.add( legend, new DasRow( canvas, 0.1, 0.5 ), new DasColumn( canvas, 0.65, 0.98 ) );
-        
-        for ( Iterator i= loggerMap.keySet().iterator(); i.hasNext(); ) {
-            Object key= i.next();
-            String name= String.valueOf(key);
-            if ( name.equals("") ) name="<default>";
-            legend.add( Legend.getIcon( (Color)loggerMap.get(key) ), name );
-        }
-        
-        frame= DasApplication.getDefaultApplication().createMainFrame( "GraphicalLogHandler" );
-        JPanel appPanel= new JPanel( new BorderLayout() );
-        appPanel.add( canvas, BorderLayout.CENTER );
-        
-        JPanel controlPanel= new JPanel();
-        controlPanel.setLayout( new BoxLayout( controlPanel, BoxLayout.X_AXIS ) );
-        
-        JCheckBox jcb= new JCheckBox( getUpdatingAction() );
-        jcb.setSelected(updating);
-        
-        startUpdateThread();
-        
-        controlPanel.add( jcb );
-        
-        JButton x= new JButton( getUpdateAction() );
-        controlPanel.add( x );
-        
-        appPanel.add( controlPanel, BorderLayout.SOUTH );
-        
-        
-        
-        frame.getContentPane().add( appPanel );
-        frame.setVisible( true );
-        frame.pack();
-        frame.setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
-    }
+//    private void createCanvas() {
+//        if  ( loggerMap.isEmpty() ) {
+//            loggerMap.put( DasLogger.getLogger(DasLogger.APPLICATION_LOG).getName(), Color.black );
+//            loggerMap.put( DasLogger.getLogger(DasLogger.DATA_OPERATIONS_LOG).getName(), Color.blue );
+//            loggerMap.put( DasLogger.getLogger(DasLogger.DATA_TRANSFER_LOG).getName(), Color.YELLOW );
+//            loggerMap.put( DasLogger.getLogger(DasLogger.GRAPHICS_LOG ).getName(), Color.PINK );
+//            loggerMap.put( DasLogger.getLogger(DasLogger.SYSTEM_LOG ).getName(), Color.gray );
+//            loggerMap.put( DasLogger.getLogger(DasLogger.GUI_LOG ).getName(), Color.green );
+//            loggerMap.put( DasLogger.getLogger(DasLogger.DASML_LOG).getName(), Color.LIGHT_GRAY );
+//        }
+//        
+//        DasCanvas canvas= new DasCanvas(800,400);
+//        DasPlot plot= DasPlot.createPlot( new DatumRange( 0, 10, Units.seconds ) ,
+//                new DatumRange( 0, 10, Units.dimensionless ) );
+//        xaxis= plot.getXAxis();
+//        xaxis.setAnimated(false);
+//        
+//        renderer.setDataSetLoader(null);
+//        plot.addRenderer( renderer );
+//        
+//        canvas.add( plot, new DasRow( canvas, 0.1, 0.9 ), DasColumn.create(canvas) );
+//        
+//        MouseModule mm=  getMouseModule();
+//        plot.getDasMouseInputAdapter().addMouseModule( mm );
+//        plot.getDasMouseInputAdapter().setPrimaryModule( mm );
+//        
+//        mm= getShowLogMouseModule( plot );
+//        plot.getDasMouseInputAdapter().addMouseModule( mm );
+//        plot.getDasMouseInputAdapter().setSecondaryModule( mm );
+//        
+//        legend= new Legend();
+//        canvas.add( legend, new DasRow( canvas, 0.1, 0.5 ), new DasColumn( canvas, 0.65, 0.98 ) );
+//        
+//        for ( Iterator i= loggerMap.keySet().iterator(); i.hasNext(); ) {
+//            Object key= i.next();
+//            String name= String.valueOf(key);
+//            if ( name.equals("") ) name="<default>";
+//            legend.add( Legend.getIcon( (Color)loggerMap.get(key) ), name );
+//        }
+//        
+//        frame= DasApplication.getDefaultApplication().createMainFrame( "GraphicalLogHandler" );
+//        JPanel appPanel= new JPanel( new BorderLayout() );
+//        appPanel.add( canvas, BorderLayout.CENTER );
+//        
+//        JPanel controlPanel= new JPanel();
+//        controlPanel.setLayout( new BoxLayout( controlPanel, BoxLayout.X_AXIS ) );
+//        
+//        JCheckBox jcb= new JCheckBox( getUpdatingAction() );
+//        jcb.setSelected(updating);
+//        
+//        startUpdateThread();
+//        
+//        controlPanel.add( jcb );
+//        
+//        JButton x= new JButton( getUpdateAction() );
+//        controlPanel.add( x );
+//        
+//        appPanel.add( controlPanel, BorderLayout.SOUTH );
+//        
+//        
+//        
+//        frame.getContentPane().add( appPanel );
+//        frame.setVisible( true );
+//        frame.pack();
+//        frame.setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
+//    }
     
-    private Action getUpdatingAction() {
-        return new AbstractAction( "Updating" ) {
-            @Override
-            public void actionPerformed( ActionEvent e ) {
-                JCheckBox source= (JCheckBox)e.getSource();
-                updating= source.isSelected();
-                if ( updating ) startUpdateThread();
-            }
-        };
-    }
-    
-    private Action getUpdateAction() {
-        return new AbstractAction( "Update" ) {
-            @Override
-            public void actionPerformed( ActionEvent e ) {
-                update();
-            }
-        };
-    }
+//    private Action getUpdatingAction() {
+//        return new AbstractAction( "Updating" ) {
+//            @Override
+//            public void actionPerformed( ActionEvent e ) {
+//                JCheckBox source= (JCheckBox)e.getSource();
+//                updating= source.isSelected();
+//                if ( updating ) startUpdateThread();
+//            }
+//        };
+//    }
+//    
+//    private Action getUpdateAction() {
+//        return new AbstractAction( "Update" ) {
+//            @Override
+//            public void actionPerformed( ActionEvent e ) {
+//                update();
+//            }
+//        };
+//    }
     
     public void setYAxisType( int type ) {
         this.yaxisDimension= type;
@@ -207,84 +213,114 @@ public class GraphicalLogRenderer {
     public int getYAxisType() {
         return this.yaxisDimension;
     }
-    
-    private void update() {
-        long endMillis= System.currentTimeMillis() - time0 + 2000;
-        if ( endMillis < 10000 ) endMillis= 10000;
-        Datum end= Units.seconds.createDatum( endMillis/1000. );
-        DatumRange range= new DatumRange( end.subtract( xaxis.getDatumRange().width() ), end );
-        xaxis.setDatumRange( range );
-    }
-    
-    private void startUpdateThread() {
-        if ( updateThread==null ) {
-            updateThread= new Thread( () -> {
-                while ( true ) {
-                    try { Thread.sleep(500); } catch ( InterruptedException e ) { }
-                    if ( updating ) update();
-                }
-            }, "graphicalHandlerUpdateThread" );
-            updateThread.start();
-        }
-    }
                     
     private String formatMessage(LogRecord r) {
         String s = r.getMessage();
         return s == null ? "" : s;
     }
     
-    private String[] guardedSplit( String line, String[] fields ) {
+    private static String[] guardedSplit( String line, String[] fields ) {
         Pattern p= Pattern.compile("\\s*(?:\"((?:[^\"]|\"\")*)\"|([^,]*))\\s*(?:,|$)");
         if ( fields==null ) {
             List<String> fieldz= new ArrayList<>();
             Matcher m= p.matcher(line);
-            int i=0;
             while ( m.find() ) {
-                fieldz.add(m.group(1));
+                String field= m.group(2);
+                if (field==null) field=""; // sometimes logger message is null not "".
+                fieldz.add(field);
             }
             fields= fieldz.toArray(new String[0]);
         } else {
             Matcher m= p.matcher(line);
             int i=0;
             while ( m.find() && i<fields.length ) {
-                fields[i]= m.group(1);
+                fields[i]= m.group(2);
+                if (fields[i]==null) fields[i]=""; // sometimes logger message is null not "".
                 i=i+1;
             }
         }
         return fields;
     }
     
-    public void readRecords( File f ) throws FileNotFoundException {
+    public static QDataSet readRecords( File f ) throws FileNotFoundException, ParseException {
+        DataSetBuilder dsb= new DataSetBuilder(2,1000,9);
+        dsb.setNameLabelUnits( 0, "timestamp_iso", "ISO Time", Units.us2000 );
+        dsb.setNameLabelUnits( 1, "elapsed_seconds", "Elapsed Seconds", Units.seconds );
+        dsb.setNameLabelUnits( 2, "level", "Log Level", Units.dimensionless );
+        dsb.setNameLabelUnits( 3, "thread", "Thread", Units.dimensionless );
+        dsb.setNameLabelUnits( 4, "logger", "Logger Name", EnumerationUnits.create("loggerName") );
+        dsb.setNameLabelUnits( 5, "source_class", "Source Class", EnumerationUnits.create("sourceClass") );
+        dsb.setNameLabelUnits( 6, "source_method", "Source Method", EnumerationUnits.create("sourceMethod") );
+        dsb.setNameLabelUnits( 7, "message", "message", EnumerationUnits.create("message") );
+        dsb.setNameLabelUnits( 8, "thrown", "Thrown", EnumerationUnits.create("thrown") );
+        
         BufferedReader reader= new BufferedReader( new FileReader(f) );
         String line;
+        int iline=0;
         try {
             String[] fields=null;
-            while ( (line=reader.readLine())!=null ) {
+            line= reader.readLine();
+            iline++;
+            while ( line!=null ) {
                 fields= guardedSplit( line, fields );
-                if ( fields.length>2 && fields[0]!=null ) {
-                    Level l= Level.parse(fields[2]);
-                    LogRecord logRecord= new LogRecord( l, fields[7] );
-                    logRecord.setThreadID(Integer.parseInt(fields[3]));
+                if ( fields.length>2 && fields[0]!=null && fields[0].startsWith("20")) {
+                    dsb.nextRecord( (Object[])fields );
                 } else {
                     fields= null;
                 }
+                line= reader.readLine();
+                iline++;
             }
         } catch (IOException ex) {
             Logger.getLogger(GraphicalLogRenderer.class.getName()).log(Level.SEVERE, null, ex);
         }
+        QDataSet ds= dsb.getDataSet();
+        QDataSet tt= Ops.unbundle(ds,"elapsed_seconds");
+        QDataSet s= Ops.sort(tt);
+        ds= Ops.applyIndex(ds, s);
+        return ds;
     }
     
-    ObjectLocator objectLocator;
-    private synchronized void setObjectLocator( ObjectLocator o ) {
-        this.objectLocator= o;
-    }
-
-    private synchronized ObjectLocator getObjectLocator() {
-        return this.objectLocator;
-    }
     
-    public class LogRenderer extends Renderer {
+    /**
+     * Renderer expects a QDataSet bundle with datasets:<ul>
+     * <li>time
+     * <li>threadId
+     * <li>loggername
+     * <li>class
+     * <li>message
+     * </ul>
+     */
+    public static class LogRenderer extends Renderer {
         String searchRegex="";
+        
+        int yaxisDimension;
+        Map<String,Integer> yaxisMapClass= new HashMap<>();
+        Map<String,Integer> yaxisMapThread= new HashMap<>();
+        Map<String,Integer> yaxisMapLogger= new HashMap<>();
+        Map<String,Color> loggerNameColorMap= new HashMap<>();
+            
+        public LogRenderer( int yaxisDimension ) {
+            this.yaxisDimension= yaxisDimension;
+            loggerNameColorMap.put( DasLogger.getLogger(DasLogger.APPLICATION_LOG).getName(), Color.black );
+            loggerNameColorMap.put( DasLogger.getLogger(DasLogger.DATA_OPERATIONS_LOG).getName(), Color.blue );
+            loggerNameColorMap.put( DasLogger.getLogger(DasLogger.DATA_TRANSFER_LOG).getName(), Color.YELLOW );
+            loggerNameColorMap.put( DasLogger.getLogger(DasLogger.GRAPHICS_LOG ).getName(), Color.PINK );
+            loggerNameColorMap.put( DasLogger.getLogger(DasLogger.SYSTEM_LOG ).getName(), Color.gray );
+            loggerNameColorMap.put( DasLogger.getLogger(DasLogger.GUI_LOG ).getName(), Color.green );
+            loggerNameColorMap.put( DasLogger.getLogger(DasLogger.DASML_LOG).getName(), Color.LIGHT_GRAY );            
+        }
+        
+        ObjectLocator objectLocator;
+        
+        protected void setObjectLocator( ObjectLocator o ) {
+            this.objectLocator= o;
+        }
+
+        protected ObjectLocator getObjectLocator() {
+            return this.objectLocator;
+        }
+            
         
         public String getSearchRegex() {
             return searchRegex;
@@ -292,6 +328,50 @@ public class GraphicalLogRenderer {
         public void setSearchRegex( String regex ) {
             this.searchRegex= regex;
             super.update();
+        }
+
+        @Override
+        public void setDataSet(QDataSet ds) {
+            super.setDataSet(ds);
+            
+            QDataSet s,vv;
+            
+            QDataSet classNames= Ops.unbundle(ds,"source_class");
+            s= Ops.sort(classNames);
+            vv= Ops.uniqValues(classNames,s);
+            for ( int i=0; i<vv.length(); i++ ) {
+                yaxisMapClass.put(vv.slice(i).svalue(),i);
+            }
+            
+            QDataSet threads= Ops.unbundle(ds,"thread");
+            s= Ops.sort(threads);
+            vv= Ops.uniqValues(threads,s);
+            for ( int i=0; i<vv.length(); i++ ) {
+                yaxisMapThread.put(vv.slice(i).svalue(),i);
+            }
+            
+            QDataSet loggers= Ops.unbundle(ds,"logger");
+            s= Ops.sort(loggers);
+            vv= Ops.uniqValues(loggers,s);
+            for ( int i=0; i<vv.length(); i++ ) {
+                yaxisMapLogger.put(vv.slice(i).svalue(),i);
+            }
+                        
+        }
+        
+        
+        
+        public QDataSet doAutorange( QDataSet ds ) {
+            if ( ds.length()==0 ) {
+                return null;
+            }
+            if ( ds.rank()!=2 ) {
+                return null;
+            }
+            QDataSet times= Ops.unbundle(ds, "elapsed_seconds");
+
+            return Ops.join( Ops.extent(times), Ops.dataset(Ops.datumRange("0 to 100")) );
+
         }
         
         @Override
@@ -303,20 +383,20 @@ public class GraphicalLogRenderer {
             int ix0= (int) xAxis.transform( xAxis.getDataMinimum() );
             g.setColor( Color.lightGray );
             
-            HashMap<String,Integer> yaxisMap;
-            List<Integer> yAxisValues;
+            Map<String,Integer> yaxisMap;
+            QDataSet yAxisValues;
             switch (yaxisDimension) {
                 case YAXIS_CLASS:
                     yaxisMap= yaxisMapClass;
-                    yAxisValues= yAxisValuesClass;
+                    yAxisValues= Ops.unbundle(ds, "source_class");
                     break;
                 case YAXIS_THREAD:
                     yaxisMap= yaxisMapThread;
-                    yAxisValues= yAxisValuesThread;
+                    yAxisValues= Ops.unbundle(ds, "thread");
                     break;
                 default:
                     yaxisMap= yaxisMapLogger;
-                    yAxisValues= yAxisValuesLogger;
+                    yAxisValues= Ops.unbundle(ds, "logger");
                     break;
             }
             
@@ -329,12 +409,10 @@ public class GraphicalLogRenderer {
             
             ObjectLocator objectLocator= new ObjectLocator();
 
-            long minMilli= (long)xAxis.getDataMinimum().doubleValue( Units.milliseconds );
-            long maxMilli= (long)xAxis.getDataMaximum().doubleValue( Units.milliseconds );
-
-            int firstIndex= Collections.binarySearch(times, minMilli);
+            QDataSet times= Ops.unbundle(ds, "elapsed_seconds");
+            int firstIndex= (int)( Ops.floor( Ops.findex( times, xAxis.getDataMinimum() ) ).value() );
             if ( firstIndex<0 ) firstIndex= -1 - firstIndex;
-            int lastIndex= Collections.binarySearch(times, maxMilli);
+            int lastIndex= (int)( Ops.floor( Ops.findex( times, xAxis.getDataMaximum() ) ).value() );
             if ( lastIndex<0 ) {
                 lastIndex= -1 - lastIndex;
             } else {
@@ -345,28 +423,31 @@ public class GraphicalLogRenderer {
             int lastY=-999;
             int collisionCount=0;
 
+            QDataSet messages= Ops.unbundle(ds, "message");
+                    
             DasPlot parent= getParent();
             if ( !searchRegex.equals("") ) {
                 for ( int i=firstIndex; i<lastIndex; i++ ) {
-                    LogRecord record= (LogRecord) records.get(i);
-                    if ( record.getMessage().matches( searchRegex ) ) {
-                        int ix= (int)xAxis.transform( Units.milliseconds.createDatum( ((Long)times.get(i)).longValue() ) );
+                    String recordMessage= messages.slice(i).svalue();
+                    if ( recordMessage.matches( searchRegex ) ) {
+                        int ix= (int)xAxis.transform( times.slice(i) );
                         g.setColor( Color.lightGray );
                         g.fillRect( ix-2, parent.getY(), 5, parent.getHeight() );
-                        objectLocator.addObject( new Rectangle( ix-2, parent.getY(), 5, parent.getHeight() ),
-                                record );
+                        objectLocator.addObject( new Rectangle( ix-2, parent.getY(), 5, parent.getHeight() ), i );
                     }
                 }
             }
+            
+            QDataSet loggerNames= Ops.copy(Ops.unbundle(ds, "logger"));
+            QDataSet levels= Ops.copy(Ops.unbundle(ds, "level"));  // copy makes debugging easier
 
             for ( int i=firstIndex; i<lastIndex; i++ ) {
 
-                LogRecord record= (LogRecord) records.get(i);
-
-                int ithread= yAxisValues.get(i);
+                String sthread= yAxisValues.slice(i).svalue();  // note might be thread, or classname, or loggername.
+                int ithread= yaxisMap.get(sthread);
 
                 int iy= (int)yAxis.transform( Units.dimensionless.createDatum(ithread) );
-                int ix= (int)xAxis.transform( Units.milliseconds.createDatum( ((Long)times.get(i)).longValue() ) );
+                int ix= (int)xAxis.transform( times.slice(i) );
 
                 if ( ix==lastX && iy==lastY ) {
                     collisionCount++;
@@ -377,35 +458,38 @@ public class GraphicalLogRenderer {
                 }
 
                 if ( !searchRegex.isEmpty() ) {
-                    if ( record.getMessage().matches( searchRegex ) ) {
+                    if ( messages.slice(i).svalue().matches( searchRegex ) ) {
                         g.setColor( Color.lightGray );
                         g.fillRect( ix-2, 0, 5, 100 );
                     }
                 }
+                
+                String loggerName= loggerNames.slice(i).svalue();
 
-                Color color= (Color)loggerMap.get( record.getLoggerName() );
+                Color color= (Color)loggerNameColorMap.get( loggerName );
                 if ( color==null ) {
-                    Object key= record.getLoggerName();
-                    loggerMap.put( key, Color.ORANGE );
-                    legend.add( Legend.getIcon( (Color)loggerMap.get(key) ), String.valueOf( key ) );
-                    legend.repaint();
+                    String key= loggerName;
+                    loggerNameColorMap.put( key, Color.ORANGE );
+                    //legend.add( Legend.getIcon( (Color)loggerMap.get(key) ), String.valueOf( key ) );
+                    //legend.repaint();
                 }
                 g.setColor( color );
 
-                int height= record.getLevel().intValue() / 100;
-                g.fillRect( ix-2, iy-height-2*collisionCount, 5, height );
-                objectLocator.addObject( new Rectangle( ix-2, iy-height-2*collisionCount, 5, height ), record );
+                int height= (int)( levels.value(i) / 100 );
+                g.fillRect( ix-2, iy-height-2, 5, height );
+                objectLocator.addObject( new Rectangle( ix-2, iy-height-2, 5, height ), i );
             }
             
-            setObjectLocator( objectLocator );
+            this.objectLocator= objectLocator;
+            
         }
         
     }
     
-    Renderer getRenderer() {
+    public Renderer getRenderer() {
         if ( renderer==null ) {
-            renderer= new LogRenderer();
-            createCanvas();
+            renderer= new LogRenderer(YAXIS_THREAD);
+            //createCanvas();
         }
         return renderer;
     }
@@ -423,7 +507,7 @@ public class GraphicalLogRenderer {
         @Override
         public Rectangle[] renderDrag( Graphics g, Point p1, Point p2 ) {
             
-            LogRecord select= (LogRecord)getObjectLocator().closestObject( p2 );
+            LogRecord select= (LogRecord)GraphicalLogRenderer.this.renderer.getObjectLocator().closestObject( p2 );
             int iclosest= records.indexOf( select );
             
             String label;
