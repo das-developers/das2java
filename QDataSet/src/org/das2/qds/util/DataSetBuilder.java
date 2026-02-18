@@ -910,6 +910,19 @@ public class DataSetBuilder {
     }
     
     /**
+     * convenient one-liner to set all at once.
+     * @param i the column number for rank 2 bundle
+     * @param name the name of the column
+     * @param label the label for the column
+     * @param u the units for the column
+     */
+    public void setNameLabelUnits( int i, String name, String label, Units u ) {
+        setName(i, name);
+        setLabel(i, label);
+        setUnits(i, u);
+    }
+    
+    /**
      * get a map of all the properties set thus far.
      * @return
      */
