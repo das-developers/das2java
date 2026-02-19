@@ -250,7 +250,11 @@ public class GraphicalLogRenderer {
                 } else if ( fields.length>2 && fields[0]!=null && fields[0].startsWith("20")) {
                     String threadName= threadNameMap.get(fields[3]);
                     if ( threadName!=null ) fields[3]=threadName;
-                    dsb.nextRecord( (Object[])fields );
+                    if ( fields.length!=9 ) {
+                        System.err.println("fields.length="+fields.length);
+                    } else {
+                        dsb.nextRecord( (Object[])fields );
+                    }  
                 } else {
                     fields= null;
                 }
