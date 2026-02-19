@@ -477,7 +477,7 @@ public class GraphicalLogRenderer {
             QDataSet levels= Ops.copy(Ops.unbundle(ds, "level"));  // copy makes debugging easier
 
             for ( int i=firstIndex; i<lastIndex; i++ ) {
-                if ( i%100==0 ) System.err.println(i);
+                
                 String sthread= yAxisValues.slice(i).svalue();  // note might be thread, or classname, or loggername.
                 if ( !yaxisMap.containsKey(sthread) ) {
                     continue;
@@ -514,8 +514,8 @@ public class GraphicalLogRenderer {
                 g.setColor( color );
 
                 int height= (int)( levels.value(i) / 100 );
-                g.fillRect( ix-2, iy-height-2, 5, height );
-                objectLocator.addObject( new Rectangle( ix-2, iy-height-2, 5, height ), i );
+                g.fillRect( ix-2, iy-height/2, 5, height );
+                objectLocator.addObject( new Rectangle( ix-2, iy-height/2, 5, height ), i );
             }
             
             this.objectLocator= objectLocator;
