@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Formatter;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -39,13 +38,11 @@ import org.das2.event.LabelDragRenderer;
 import org.das2.event.MouseModule;
 import org.das2.graph.DasAxis;
 import org.das2.graph.DasPlot;
-import org.das2.graph.Legend;
 import org.das2.graph.Renderer;
 import org.das2.qds.QDataSet;
 import org.das2.qds.ops.Ops;
 import org.das2.qds.util.DataSetBuilder;
 import org.das2.system.DasLogger;
-import org.das2.util.DenseConsoleFormatter;
 import org.das2.util.GrannyTextRenderer;
 import org.das2.util.ObjectLocator;
 
@@ -56,18 +53,9 @@ import org.das2.util.ObjectLocator;
 public class GraphicalLogRenderer {
     
     QDataSet records= null;
-    List yAxisValuesThread= new ArrayList();
-    List yAxisValuesClass= new ArrayList();
-    List yAxisValuesLogger= new ArrayList();
-    List times= new ArrayList();
     
     LogRenderer renderer;
-    boolean updating= false;
-    Thread updateThread;
-    
-    long time0;
-    
-    HashMap loggerMap= new HashMap();
+        
     //HashMap yaxisMap= new HashMap();
     
     /**
@@ -88,16 +76,13 @@ public class GraphicalLogRenderer {
     public static enum YAxisType { YAXIS_THREAD, YAXIS_CLASS, YAXIS_LOGNAME };
     private YAxisType yaxisDimension = YAxisType.YAXIS_THREAD;
     
-    DasAxis xaxis;
-    Legend legend;
-    
     JFrame frame;
     
     // this is to avoid initialization failures
     long sleepInitiallyTime= 2000; // milliseconds
     
     private GraphicalLogRenderer() {
-        time0= System.currentTimeMillis();
+
     }
     
     private static GraphicalLogRenderer instance= null;
