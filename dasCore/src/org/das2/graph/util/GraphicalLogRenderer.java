@@ -49,7 +49,7 @@ import org.das2.util.GrannyTextRenderer;
 import org.das2.util.ObjectLocator;
 
 /**
- *
+ * Refactor GraphicalLogHandler to read a file with log records, so they can be analyzed later.
  * @author jbf
  */
 public class GraphicalLogRenderer {
@@ -68,14 +68,24 @@ public class GraphicalLogRenderer {
     
     HashMap loggerMap= new HashMap();
     //HashMap yaxisMap= new HashMap();
+    
+    /**
+     * maps from thread name to yaxis position
+     */
     HashMap<String,Integer> yaxisMapThread=  new HashMap();
+    
+    /**
+     * maps from class name to yaxis position
+     */
     HashMap<String,Integer> yaxisMapClass=  new HashMap();
+    
+    /**
+     * maps from logger name to yaxis position
+     */
     HashMap<String,Integer> yaxisMapLogger=  new HashMap();
     
-    private static final int YAXIS_THREAD = -199;
-    private static final int YAXIS_CLASS = -198;
-    private static final int YAXIS_LOGNAME = -197;
-    private int yaxisDimension = YAXIS_LOGNAME;
+    public static enum YAxisType { YAXIS_THREAD, YAXIS_CLASS, YAXIS_LOGNAME };
+    private YAxisType yaxisDimension = YAxisType.YAXIS_THREAD;
     
     DasAxis xaxis;
     Legend legend;
@@ -185,11 +195,12 @@ public class GraphicalLogRenderer {
 //        };
 //    }
     
-    public void setYAxisType( int type ) {
+    public void setYAxisType( YAxisType type ) {
         this.yaxisDimension= type;
+        renderer.getParent().repaint();
     }
     
-    public int getYAxisType() {
+    public YAxisType getYAxisType() {
         return this.yaxisDimension;
     }
                     
@@ -309,17 +320,13 @@ public class GraphicalLogRenderer {
      * <li>message
      * </ul>
      */
-    public static class LogRenderer extends Renderer {
+    public class LogRenderer extends Renderer {
         String searchRegex="";
         
-        int yaxisDimension;
-        Map<String,Integer> yaxisMapClass= new HashMap<>();
-        Map<String,Integer> yaxisMapThread= new HashMap<>();
-        Map<String,Integer> yaxisMapLogger= new HashMap<>();
         Map<String,Color> loggerNameColorMap= new HashMap<>();
-            
-        public LogRenderer( int yaxisDimension ) {
-            this.yaxisDimension= yaxisDimension;
+        Map<String,Color> threadColorMap= new HashMap<>();
+        
+        public LogRenderer(  ) {
             loggerNameColorMap.put( DasLogger.getLogger(DasLogger.APPLICATION_LOG).getName(), Color.black );
             loggerNameColorMap.put( DasLogger.getLogger(DasLogger.DATA_OPERATIONS_LOG).getName(), Color.blue );
             loggerNameColorMap.put( DasLogger.getLogger(DasLogger.DATA_TRANSFER_LOG).getName(), Color.YELLOW );
@@ -327,6 +334,17 @@ public class GraphicalLogRenderer {
             loggerNameColorMap.put( DasLogger.getLogger(DasLogger.SYSTEM_LOG ).getName(), Color.gray );
             loggerNameColorMap.put( DasLogger.getLogger(DasLogger.GUI_LOG ).getName(), Color.green );
             loggerNameColorMap.put( DasLogger.getLogger(DasLogger.DASML_LOG).getName(), Color.LIGHT_GRAY );            
+            
+            threadColorMap.put("AWT-EventQueue-0", Color.blue);
+            threadColorMap.put("AWT-EventQueue-1", Color.blue.darker());
+            threadColorMap.put("RequestProcessor[0]", Color.red);
+            threadColorMap.put("RequestProcessor[1]", Color.red);
+            threadColorMap.put("RequestProcessor[2]", Color.red);
+            threadColorMap.put("RequestProcessor[3]", Color.red);
+            threadColorMap.put("RequestProcessor[4]", Color.red);
+            threadColorMap.put("RequestProcessor[5]", Color.red);
+            threadColorMap.put("RequestProcessor[6]", Color.red);
+            threadColorMap.put("RequestProcessor[7]", Color.red);
         }
         
         ObjectLocator objectLocator;
@@ -348,33 +366,19 @@ public class GraphicalLogRenderer {
             super.update();
         }
 
+        public YAxisType getYAxisType() {
+            return yaxisDimension;
+        }
+        
+        public void setYAxisType( YAxisType yaxisDimension ) {
+            GraphicalLogRenderer.this.yaxisDimension= yaxisDimension;
+            getParent().invalidateCacheImage();
+            getParent().repaint();
+        }
+        
         @Override
         public void setDataSet(QDataSet ds) {
-            super.setDataSet(ds);
-            
-            QDataSet s,vv;
-            
-            QDataSet classNames= Ops.unbundle(ds,"source_class");
-            s= Ops.sort(classNames);
-            vv= Ops.uniqValues(classNames,s);
-            for ( int i=0; i<vv.length(); i++ ) {
-                yaxisMapClass.put(vv.slice(i).svalue(),i);
-            }
-            
-            QDataSet threads= Ops.unbundle(ds,"thread");
-            s= Ops.sort(threads);
-            vv= Ops.uniqValues(threads,s);
-            for ( int i=0; i<vv.length(); i++ ) {
-                yaxisMapThread.put(vv.slice(i).svalue(),i);
-            }
-            
-            QDataSet loggers= Ops.unbundle(ds,"logger");
-            s= Ops.sort(loggers);
-            vv= Ops.uniqValues(loggers,s);
-            for ( int i=0; i<vv.length(); i++ ) {
-                yaxisMapLogger.put(vv.slice(i).svalue(),i);
-            }
-                        
+            super.setDataSet(ds);  
         }
         
         
@@ -402,20 +406,32 @@ public class GraphicalLogRenderer {
             g.setColor( Color.lightGray );
             
             Map<String,Integer> yaxisMap;
+            Map<String,Color> colorMap;
+            
             QDataSet yAxisValues;
+            QDataSet colorByValues;
+            
             switch (yaxisDimension) {
                 case YAXIS_CLASS:
                     yaxisMap= yaxisMapClass;
                     yAxisValues= Ops.unbundle(ds, "source_class");
+                    colorMap= threadColorMap;
+                    colorByValues= Ops.unbundle(ds, "thread");
                     break;
                 case YAXIS_THREAD:
                     yaxisMap= yaxisMapThread;
                     yAxisValues= Ops.unbundle(ds, "thread");
+                    colorMap= loggerNameColorMap;
+                    colorByValues= Ops.unbundle(ds, "logger");
                     break;
-                default:
+                case YAXIS_LOGNAME:
                     yaxisMap= yaxisMapLogger;
                     yAxisValues= Ops.unbundle(ds, "logger");
+                    colorMap= threadColorMap;
+                    colorByValues= Ops.unbundle(ds, "thread");
                     break;
+                default:
+                    throw new RuntimeException("bad yaxisDimension");
             }
             
             for ( Map.Entry<String,Integer> e: yaxisMap.entrySet() ) {
@@ -462,6 +478,9 @@ public class GraphicalLogRenderer {
             for ( int i=firstIndex; i<lastIndex; i++ ) {
                 if ( i%100==0 ) System.err.println(i);
                 String sthread= yAxisValues.slice(i).svalue();  // note might be thread, or classname, or loggername.
+                if ( !yaxisMap.containsKey(sthread) ) {
+                    continue;
+                }
                 int ithread= yaxisMap.get(sthread);
 
                 int iy= (int)yAxis.transform( Units.dimensionless.createDatum(ithread) );
@@ -484,10 +503,10 @@ public class GraphicalLogRenderer {
                 
                 String loggerName= loggerNames.slice(i).svalue();
 
-                Color color= (Color)loggerNameColorMap.get( loggerName );
+                Color color= (Color)colorMap.get( colorByValues.slice(i).svalue() );
                 if ( color==null ) {
                     String key= loggerName;
-                    loggerNameColorMap.put( key, Color.ORANGE );
+                    colorMap.put( key, Color.ORANGE );
                     //legend.add( Legend.getIcon( (Color)loggerMap.get(key) ), String.valueOf( key ) );
                     //legend.repaint();
                 }
@@ -506,7 +525,7 @@ public class GraphicalLogRenderer {
     
     public Renderer getRenderer() {
         if ( renderer==null ) {
-            renderer= new LogRenderer(YAXIS_THREAD);
+            renderer= new LogRenderer();
             //createCanvas();
         }
         return renderer;
