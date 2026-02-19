@@ -255,7 +255,7 @@ public class GraphicalLogRenderer {
             line= reader.readLine();
             iline++;
             while ( line!=null ) {
-                fields= guardedSplit( line, fields );
+                fields= guardedSplit( line, null );
                 if ( fields.length==2 ) {
                     String[] ss= line.split("=");
                     if ( ss[0].startsWith("thread.") ) {
