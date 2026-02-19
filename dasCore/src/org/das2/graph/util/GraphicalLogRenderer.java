@@ -28,6 +28,7 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
 import org.das2.datum.EnumerationUnits;
 import org.das2.datum.Units;
@@ -632,34 +633,39 @@ public class GraphicalLogRenderer {
         result.setReleaseEvents( true );
         result.addBoxSelectionListener((BoxSelectionEvent e) -> {
             StringBuilder buf= new StringBuilder(1000);
-            
-            //Handler h= new ConsoleHandler();
-            //Formatter f= h.getFormatter();
-            Formatter f= new DenseConsoleFormatter();
-            
-            DatumRange threadsRange= e.getYRange();
+                        
+            DatumRange yaxisRange= e.getYRange();
             DatumRange timeRange= e.getXRange();
             
-            List yAxisValues;
+            Map<String,Integer> map;
+            QDataSet yAxisValues;
             switch (yaxisDimension) {
                 case YAXIS_CLASS:
-                    yAxisValues= yAxisValuesClass;
+                    yAxisValues= Ops.unbundle( records, "source_class" );
+                    map= yaxisMapClass;
                     break;
                 case YAXIS_THREAD:
-                    yAxisValues= yAxisValuesThread;
+                    yAxisValues= Ops.unbundle( records, "thread" );
+                    map= yaxisMapThread;
+                    break;
+                case YAXIS_LOGNAME:
+                    yAxisValues= Ops.unbundle( records, "logger" );
+                    map= yaxisMapLogger;
                     break;
                 default:
-                    yAxisValues= yAxisValuesLogger;
-                    break;
+                    throw new IllegalArgumentException("bad state");
             }
             
             int messageCount=0;
             QDataSet messages= Ops.unbundle( records, "message" );
+            QDataSet times= Ops.unbundle(records, "elapsed_seconds" );
             for ( int i=0; i<records.length(); i++ ) {
-                double time= ((Long)times.get( i )).doubleValue();
-                if ( timeRange.contains( Units.milliseconds.createDatum( time ) ) ) {
-                    if ( threadsRange.contains( Units.dimensionless.createDatum( (Number)yAxisValues.get(i) ) ) ) {
+                Datum t= Ops.datum( times.slice(i) );
+                if ( timeRange.contains( t ) ) {
+                    Integer y= map.get(yAxisValues.slice(i).svalue());
+                    if ( y==null || yaxisRange.contains( Units.dimensionless.createDatum(y) ) ) {
                         buf.append( messages.slice(i).svalue() );
+                        buf.append( "\n" );
                         messageCount++;
                     }
                 }
