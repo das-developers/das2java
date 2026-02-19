@@ -16,7 +16,9 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.logging.ErrorManager;
 import java.util.logging.Formatter;
@@ -45,6 +47,8 @@ public final class CsvFileLogHandler extends Handler implements Closeable, Flush
     private long startTime;
     private final boolean writeHeader;
     private boolean headerWritten = false;
+    
+    Map<String,Long> threads= new HashMap<>();
 
     private static final DateTimeFormatter ISO =
             DateTimeFormatter.ISO_OFFSET_DATE_TIME.withZone(ZoneId.systemDefault());
@@ -95,6 +99,7 @@ public final class CsvFileLogHandler extends Handler implements Closeable, Flush
                     // output useful headers
                     for (Thread t : threads) {
                         out.write("thread."+t.getId()+"="+t.getName()+"\n" );
+                        this.threads.put(t.getName(), t.getId());
                     }
                     out.write("level."+Level.WARNING.intValue()+"="+Level.WARNING.getName()+"\n");
                     out.write("level."+Level.INFO.intValue()+"="+Level.INFO.getName()+"\n");
@@ -118,6 +123,14 @@ public final class CsvFileLogHandler extends Handler implements Closeable, Flush
                 String message = formatMessage(r);
                 String thrown = throwableToString(r.getThrown());
 
+                Thread t= Thread.currentThread();
+                if ( r.getThreadID()==t.getId() ) {
+                    if ( !this.threads.containsKey(t.getName()) ) {
+                        out.write("thread."+t.getId()+"="+t.getName()+"\n" );
+                        this.threads.put( t.getName(), t.getId() );
+                    }
+                }
+                
                 writeRow(new String[] {
                         timestampIso, elapsedSeconds, level, thread, logger, 
                         sourceClass, sourceMethod, message, thrown
