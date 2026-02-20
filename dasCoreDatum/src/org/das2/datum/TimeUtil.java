@@ -578,7 +578,7 @@ public final class TimeUtil {
         double sinceMidnight= d-midnight;
         
         int jd= 2436205 + mjd1958;
-        logger.log(Level.FINER, "julian day: {0}", jd );
+        //logger.log(Level.FINER, "julian day: {0}", jd );
 
         if ( u==Units.cdfTT2000 && sinceMidnight<0.0 ) { //TODO: huh?  this needs review  TODO: document when this happens.
             TimeStruct result= julianToGregorian( jd );
@@ -591,7 +591,7 @@ public final class TimeUtil {
         }
 
         double nanoseconds= u.getOffsetUnits().convertDoubleTo( Units.nanoseconds, sinceMidnight );
-        logger.log(Level.FINER, "nanoseconds since midnight: {0}", nanoseconds);
+        //logger.log(Level.FINER, "nanoseconds since midnight: {0}", nanoseconds);
 
         if ( jd<0 ) {
             throw new IllegalArgumentException("julian day is negative.");
