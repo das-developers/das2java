@@ -154,6 +154,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     // the width of the canvas when we last updated
     private int parentWidth;
 
+    // the width of the widest tick value
+    private int maxLabelWidth=30;
+    
     /**
      * get the userDatumFormatter, which converts Datums into Strings.  This
      * can be null if none should be used.
@@ -1720,6 +1723,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 autoTickV = false;
                 this.datumFormatter= resolveFormatter(tickV);
             }
+            maxLabelWidth= calcMaxLabelWidth();
         }
         if ( dasPlot!=null ) dasPlot.invalidateCacheImage();
         update();
@@ -1985,7 +1989,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         dividerDatumFormatter= DomainDividerUtil.getDatumFormatter(majorTicksDomainDivider, dr);
 
         datumFormatter = resolveFormatter(tickV);
-
+        maxLabelWidth= calcMaxLabelWidth();
+        
     }
 
     /**
@@ -2190,6 +2195,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         
             this.tickV= ticks;
             datumFormatter = resolveFormatter(tickV);
+            maxLabelWidth= calcMaxLabelWidth();
             if ( drawTca && tcaFunction != null ) {  
                 final DasCanvas lcanvas= getCanvas();
                 if ( lcanvas!=null ) {
@@ -2249,12 +2255,14 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         TickVDescriptor ticks= GraphUtil.calculateManualTicks( lticks, this.getDatumRange(), this.isLog() );
         TickMaster.getInstance().offerTickV( this, ticks );
         this.tickV= ticks; // note ticks might be null.
+        maxLabelWidth= calcMaxLabelWidth();
     }
     
     /**
      * recalculate the tick positions.
      */
     protected void updateTickV() {
+        logger.entering("DasAxis","updateTickV");
         boolean lautoTickV= autoTickV;
         String lticks= tickValues;
         
@@ -2344,7 +2352,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 }
             }
         }
-
+        maxLabelWidth= calcMaxLabelWidth();
+        
+        logger.exiting("DasAxis","updateTickV");
     }
 //    private String errorMessage;
 //
@@ -3643,7 +3653,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * calculate the biggest label width
      * @return the width in pixels of the widest label.
      */
-    private int getMaxLabelWidth() {
+    private int calcMaxLabelWidth() {
         try {
             Font f = getTickLabelFont();
             TickVDescriptor ticks = getTickV();
@@ -3666,33 +3676,6 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
     }
 
-    /** 
-     * calculate the biggest label width
-     * @param fm the font metrics.
-     * @deprecated use getMaxLabelWidth()
-     * @see #getMaxLabelWidth() 
-     * @return the width in pixels of the widest label.
-     */
-    protected int getMaxLabelWidth(FontMetrics fm) {
-        try {
-            TickVDescriptor ticks = getTickV();
-            DatumVector tickv = ticks.tickV;
-            int size = Integer.MIN_VALUE;
-            Graphics g = this.getGraphics();
-            for (int i = 0; i < tickv.getLength(); i++) {
-                String label = tickFormatter(tickv.get(i));
-                GrannyTextRenderer idlt = GraphUtil.newGrannyTextRenderer();
-                idlt.setString(g, label);
-                int labelSize = (int) Math.round(idlt.getWidth());
-                if (labelSize > size) {
-                    size = labelSize;
-                }
-            }
-            return size;
-        } catch (InconvertibleUnitsException ex) {
-            return 10;
-        }
-    }
 
     /** 
      * reset bounds (and unused transform), invalidate the tickV, etc.
@@ -3838,7 +3821,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 int tick_label_gap_2023 = getFontMetrics(tickLabelFont).stringWidth(" ");
                 int lines= tcaRows>=0 ? tcaRows : ( getTickLines() - 1 );
                 int tcaHeight = (tickLabelFont.getSize() + getLineSpacing()) * lines;
-                int maxLabelWidth = getMaxLabelWidth();
+                
                 bounds.height += tcaHeight;
                 blLabelRect.height += tcaHeight;
                 if (blTitleRect != null) {
@@ -5010,7 +4993,6 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             rightBounds = new Rectangle(rightPosition, DMin, 1, DMax - DMin + 1);
             rightBounds.width += tickSize; //Add room for ticks 
                         
-            int maxLabelWidth = getMaxLabelWidth();
             int tick_label_gap = getFontMetrics(tickLabelFont).stringWidth(" ");
             //Add room for tick labels
             if (leftTickLabels) {
