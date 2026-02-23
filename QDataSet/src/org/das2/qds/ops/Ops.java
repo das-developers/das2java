@@ -8000,6 +8000,11 @@ public final class Ops {
             } else {
                 dvalue= value.value();
             }
+        } else {
+            Number dsfill= (Number) ds.property(QDataSet.FILL_VALUE);
+            if ( dsfill!=null ) {
+                dvalue= dsfill.doubleValue();
+            }
         }
             
         if ( indices.rank()==1 ) indices= new BundleDataSet(indices);
@@ -11258,19 +11263,29 @@ public final class Ops {
         if ( yrange.rank()!=1 || yrange.length()!=2 ) {
             throw new IllegalArgumentException("yrange should be rank 1, two-element dataset");
         }
-        double minx= xrange.value(0);
-        double miny= yrange.value(0);
         
-        double binsizex= ( xrange.value(1)-xrange.value(0) ) / nx;
-        double binsizey= ( yrange.value(1)-yrange.value(0) ) / ny;
-        MutablePropertyDataSet xtags = DataSetUtil.tagGenDataSet( nx, minx+binsizex/2, binsizex, SemanticOps.getUnits(xrange) );        
+        Units xunits= SemanticOps.getUnits(x);
+        Units yunits= SemanticOps.getUnits(y);
+        
+        DatumRange xdr= datumRange(xrange);
+        DatumRange ydr= datumRange(yrange);
+        
+        double minx= xdr.min().doubleValue(xunits);
+        double miny= ydr.min().doubleValue(yunits);
+        double maxx= xdr.max().doubleValue(xunits);
+        double maxy= ydr.max().doubleValue(yunits);
+        
+        double binsizex= ( maxx-minx ) / nx;
+        double binsizey= ( maxy-miny ) / ny;
+        
+        MutablePropertyDataSet xtags = DataSetUtil.tagGenDataSet( nx, minx+binsizex/2, binsizex, xunits );        
         xtags.putProperty( QDataSet.NAME, x.property(QDataSet.NAME) );
         xtags.putProperty( QDataSet.LABEL, x.property(QDataSet.LABEL) );
         xtags.putProperty( QDataSet.TITLE, x.property(QDataSet.TITLE) );
         xtags.putProperty( QDataSet.TYPICAL_MAX, x.property(QDataSet.TYPICAL_MAX) );
         xtags.putProperty( QDataSet.TYPICAL_MIN, x.property(QDataSet.TYPICAL_MIN) );
         
-        MutablePropertyDataSet ytags = DataSetUtil.tagGenDataSet( ny, miny+binsizey/2, binsizey, SemanticOps.getUnits(yrange) );
+        MutablePropertyDataSet ytags = DataSetUtil.tagGenDataSet( ny, miny+binsizey/2, binsizey, yunits );
         ytags.putProperty( QDataSet.NAME, y.property(QDataSet.NAME) );
         ytags.putProperty( QDataSet.LABEL, y.property(QDataSet.LABEL) );
         ytags.putProperty( QDataSet.TITLE, y.property(QDataSet.TITLE) );
