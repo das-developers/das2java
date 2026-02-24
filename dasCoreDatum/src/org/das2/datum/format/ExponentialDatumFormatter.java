@@ -55,6 +55,7 @@ public class ExponentialDatumFormatter extends DatumFormatter {
         this.mantFormat= NumberFormatUtil.getDecimalFormat( buff.toString() );
     }
     
+    @Override
     public String format(Datum datum) {
         return format( datum, datum.getUnits() ) + " " + datum.getUnits();
     }
@@ -66,7 +67,11 @@ public class ExponentialDatumFormatter extends DatumFormatter {
         double exp= Math.pow(10,exponent);
         double mant= x/exp;
         double tenToN= Math.pow(10,digits);
-        mant= Math.round( mant * tenToN ) / tenToN;
+        long l=Math.round( mant * tenToN ); 
+        if (l==Long.MAX_VALUE ) {
+            return mantFormat.format(mant) + "E" + exponent;
+        }
+        mant= l / tenToN;
         if ( mant==0. ) return "0"; // rounding errors
         return mantFormat.format(mant)+"E"+exponent;
     }
@@ -74,9 +79,9 @@ public class ExponentialDatumFormatter extends DatumFormatter {
     @Override
     public String grannyFormat( Datum datum, Units units ) {
         String format= format(datum,units);
-        if ( format.indexOf("E")!=-1 ) {
+        if ( format.contains("E") ) {
             int iE= format.indexOf("E");
-            StringBuffer granny = new StringBuffer(format.length() + 4);
+            StringBuilder granny = new StringBuilder(format.length() + 4);
             String mant= format.substring(0,iE);
             granny.append(mant).append("\u00d7");
             granny.append("10").append("!A").append(format.substring(iE+1)).append("!N");
@@ -88,9 +93,9 @@ public class ExponentialDatumFormatter extends DatumFormatter {
     @Override
     public String grannyFormat( Datum datum ) {
         String format= format(datum,datum.getUnits());
-        if ( format.indexOf("E")!=-1 ) {
+        if ( format.contains("E") ) {
             int iE= format.indexOf("E");
-            StringBuffer granny = new StringBuffer(format.length() + 4);
+            StringBuilder granny = new StringBuilder(format.length() + 4);
             String mant= format.substring(0,iE);
             granny.append(mant).append("\u00d7");
             granny.append("10").append("!A").append(format.substring(iE+1)).append("!N");
@@ -99,6 +104,7 @@ public class ExponentialDatumFormatter extends DatumFormatter {
         return format + " " +datum.getUnits();
     }
     
+    @Override
     public String toString() {
         return mantFormatString + "E"+exponent;
     }
