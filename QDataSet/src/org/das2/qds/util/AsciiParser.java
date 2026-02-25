@@ -1669,9 +1669,24 @@ public class AsciiParser {
         for ( int i=0; i<ss.length; i++ ) {
             Matcher m= p.matcher(ss[i]);
             if ( m.matches() ) {
+                logger.log(Level.FINER, "unit string repeats: {0}", m.group(2));
                 ss[i]= m.group(1) + " (" + m.group(2) + ")";
             }
         }
+        
+        // labels like RADON_SHORT_TERM_AVG pCi/L should have pCi/L be in the 
+        // units.  Check for one last item contains / or *.
+        p= Pattern.compile("^(.+?)\\s*([a-zA-Z\\/\\*\\%\\\u00B0]+)$");
+        for ( int i=0; i<ss.length; i++ ) {
+            Matcher m= p.matcher(ss[i]);
+            if ( m.matches() && m.group(2).length()>0 ) {
+                if ( m.group(2).contains("/") || m.group(2).contains("*") || m.group(2).contains("%") || m.group(2).contains("\u00B0") ) {
+                    logger.log(Level.FINER, "second item looks like a unit: {0}", m.group(2));
+                    ss[i]= m.group(1) + " (" + m.group(2) + ")";
+                }
+            }
+        }
+        
         
         initializeByFieldCount(ss.length);
         initializeUnitsByGuessing(ss,lineNum);
