@@ -139,16 +139,16 @@ public class AsciiParser {
      * pattern for name=value.  
      */
     public final static Pattern NAME_EQUAL_VALUE_PATTERN = Pattern.compile("\\s*([a-zA-Z_].*?)\\s*\\=\\s*(.+)\\s*");
-    
+
     /**
      * detect identifiers for columns.  This is the text leading up to the first [ or (, composed of letters, numbers, spaces, dashes, and underscores.
      */
-    private final static Pattern COLUMN_ID_HEADER_PATTERN = Pattern.compile("\\s*\"?([a-zA-Z][a-zA-Z \\-_0-9\\#]*)([\\(\\[]([a-zA-Z_\\!\\.\\[\\-\\]\\(\\)0-9//\\*\\^\\%\\\u00B0\\#]*)[\\)\\]])?\"?\\s*");
+    public static final Pattern COLUMN_ID_HEADER_PATTERN = Pattern.compile("\\s*\"?([a-zA-Z0-9][a-zA-Z \\-_\\/\\*0-9\\#]*)([\\(\\[]([a-zA-Z_\\!\\.\\[\\-\\]\\(\\)0-9//\\*\\^\\%\\\u00B0\\#]*)[\\)\\]])?\"?\\s*");
     /**
      * allow columns to be labeled with some datum ranges, such as 10.0-13.1.  We convert these into an identifier, but depend1labels will present as-is.
      * Note this pattern will match "-999.000" so check groups 2 and 4 for non null.
      */
-    private final static Pattern COLUMN_CHANNEL_HEADER_PATTERN = Pattern.compile("\\s*\"?(([a-zA-Z_]*)(\\d*\\.?\\d*([eE]\\d+)?)\\-(\\d*\\.?\\d*([eE]\\d+)?))\"?\\s*");
+    public static final Pattern COLUMN_CHANNEL_HEADER_PATTERN = Pattern.compile("\\s*\"?(([a-zA-Z_]*)(\\d*\\.?\\d*([eE]\\d+)?)\\-(\\d*\\.?\\d*([eE]\\d+)?))\"?\\s*");
 
     public final static String PROPERTY_FIELD_NAMES = "fieldNames";
     public static final String PROPERTY_FILE_HEADER = "fileHeader";
@@ -1662,7 +1662,17 @@ public class AsciiParser {
     private DelimParser createDelimParser(String line, String fieldSep, int lineNum) {
         logger.entering( "AsciiParser", "createDelimParser" );
         String[] ss = split(line.trim(), fieldSep);
-
+        
+        // there's a bug somewhere where units are added twice to a column ('1-m AE (nT) (nT)')
+        // check for this.
+        Pattern p= Pattern.compile("^(.+?)\\s*\\(([^)]+)\\)\\s*\\(\\2\\)$");
+        for ( int i=0; i<ss.length; i++ ) {
+            Matcher m= p.matcher(ss[i]);
+            if ( m.matches() ) {
+                ss[i]= m.group(1) + " (" + m.group(2) + ")";
+            }
+        }
+        
         initializeByFieldCount(ss.length);
         initializeUnitsByGuessing(ss,lineNum);
         
