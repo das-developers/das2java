@@ -1700,7 +1700,7 @@ public class AsciiParser {
             m = COLUMN_ID_HEADER_PATTERN.matcher(ss[i]);
             if (m.matches()) {
                 String n= m.group(1).trim();
-                if ( n.length()!=3 || !n.equalsIgnoreCase("nan") ) {
+                if ( !n.matches("\\d+") && ( n.length()!=3 || !n.equalsIgnoreCase("nan") ) ) {
                     fieldLabels[i] = n;
                     fieldNames[i] = Ops.safeName( fieldLabels[i] );
                     fieldUnits[i]= m.group(3);
