@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 
 package org.das2.util;
 
@@ -11,7 +7,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- *
+ * Utilities commonly used with strings.
  * @author jbf
  */
 public class StringTools {
@@ -71,6 +67,29 @@ public class StringTools {
 
         return result.toArray( new String[result.size()] );
 
+    }
+    
+    /**
+     * Java 11 uses " ".repeat(n), so get Java 8 code
+     * ready for this.  Also, this is efficient when there are 100 or fewer spaces, returning a subset of a constant string.
+     * @param count
+     * @return a string of length count spaces.
+     */
+    public static String spaces( int count ) {
+        String spaces100= "                                                                                                    ";
+        if ( count<100 ) {
+            return spaces100.substring(0,count);
+        } else {
+            StringBuilder b= new StringBuilder(count);
+            while (count>100) {
+                b.append(spaces100);
+                count-=100;
+            }
+            for ( int i=0; i<count; i++ ) {
+                b.append(' ');
+            }
+            return b.toString();
+        }
     }
 
     public static void main( String[] args ) {
