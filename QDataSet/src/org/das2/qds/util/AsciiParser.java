@@ -484,7 +484,8 @@ public class AsciiParser {
             for (String line1 : lines) {
                 int nf1= p.fieldCount(line1);
                 int nf= p.fieldCount();
-                if ( nf1>10 && ( nf1 == nf-1 ) ) { // Ecobee has an extra comma column or missing header column, go ahead and support this by using "field19"
+                if ( nf1>10 && ( nf1 == nf-1 ) ) { 
+                    //Ecobee has an extra comma column or missing header column, go ahead and support this by using "field19"
                     if ( p.delimRegex.equals(AsciiParser.DELIM_COMMA) ) {
                         line1= line1+",";
                         nf1= p.fieldCount(line1);
