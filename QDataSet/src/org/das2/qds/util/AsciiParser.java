@@ -482,7 +482,15 @@ public class AsciiParser {
 
             // Now go back and find the first line that has this field count, to get labels.
             for (String line1 : lines) {
-                if (p.fieldCount(line1) == p.fieldCount()) {
+                int nf1= p.fieldCount(line1);
+                int nf= p.fieldCount();
+                if ( nf1>10 && ( nf1 == nf-1 ) ) { // Ecobee has an extra comma column or missing header column, go ahead and support this by using "field19"
+                    if ( p.delimRegex.equals(AsciiParser.DELIM_COMMA) ) {
+                        line1= line1+",";
+                        nf1= p.fieldCount(line1);
+                    }
+                }
+                if ( nf1 == nf ) {
                     line = line1;
                     int n= this.units.length;
                     Units[] u= new Units[n];
@@ -563,7 +571,7 @@ public class AsciiParser {
     }
 
     /**
-     * read in the first record, then guess the delimiter and possibly the column headers.
+     * read in the record, then guess the delimiter and possibly the column headers.
      * @param line a single record to attempt parsing.
      * @param lineNumber, useful for debugging.
      * @return RecordParser object that can be queried. 
