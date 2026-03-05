@@ -72,6 +72,7 @@ public class SubTaskMonitor implements ProgressMonitor {
      * @param cancelChecked true if we should check the parent's cancel status
      */
     private SubTaskMonitor( ProgressMonitor parent, long min, long max, boolean cancelChecked ) {
+        if ( min!=-1 ) parent.setTaskProgress(min);
         this.parent= parent;
         this.min= min;
         this.max= max;
