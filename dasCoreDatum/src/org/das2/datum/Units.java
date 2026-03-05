@@ -283,9 +283,17 @@ public abstract class Units {
             Units.seconds, Basis.since2000 );
 
     /**
-     * seconds since midnight Jan 1, 1970, excluding leap seconds.
+     * seconds since midnight Jan 1, 1970, excluding leap seconds.  
+     * @see unixTime
      */
     public static final TimeLocationUnits t1970= new TimeLocationUnits("t1970","Seconds since midnight Jan 1, 1970",
+            Units.seconds, Basis.since1970 );
+
+    /**
+     * seconds since midnight Jan 1, 1970, excluding leap seconds.
+     * @see t1970
+     */
+    public static final TimeLocationUnits unixTime= new TimeLocationUnits("unixTime","Seconds since midnight Jan 1, 1970",
             Units.seconds, Basis.since1970 );
     
     /**
@@ -349,6 +357,7 @@ public abstract class Units {
         ((Units)t2000).registerConverter(t1970, new UnitsConverter.ScaleOffset(1.0, 9.466848e8));
         ((Units)t1970).registerConverter(ms1970, UnitsConverter.MILLI );
         ((Units)t1970).registerConverter(us1970, UnitsConverter.MICRO );
+        ((Units)t1970).registerConverter(unixTime, UnitsConverter.IDENTITY);        
         ((Units)t2000).registerConverter(t2010, new UnitsConverter.ScaleOffset(1.0, -3.1561920e+8 ));
         ((Units)t2000).registerConverter(mj1958, new UnitsConverter.ScaleOffset(1.0/8.64e4, 15340 ));
         ((Units)t2000).registerConverter(mjd, new UnitsConverter.ScaleOffset(1.0/8.64e4, 51544 ));
