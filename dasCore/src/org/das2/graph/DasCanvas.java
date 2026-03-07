@@ -1486,8 +1486,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
                                 logger.fine("strange bug where update event didn't clear dirty flags did clear after 300ms.");
                                 break;
                             }
-                            
-                            logger.log(Level.INFO, "strange bug where update event didn''t clear dirty flags, reposting.{0} {1}", new Object[]{Thread.currentThread().getName(), getName()});
+                            logger.log(Level.FINE, "strange bug where update event didn''t clear dirty flags, reposting.{0} {1}", new Object[]{Thread.currentThread().getName(), getName()});
                             cc.isDirty();
                             cc.update();
                         }
