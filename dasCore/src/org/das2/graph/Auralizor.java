@@ -128,8 +128,11 @@ public final class Auralizor {
      * @see SourceDataLine#getLongFramePosition();
      */
     public Datum getFramePosition() {
+        if ( this.line==null ) {
+            return baseTime;
+        }
         long pos= this.line.getMicrosecondPosition();
-        return baseTime.add( Units.microseconds.createDatum((double)pos) ); //TODO: timeScale
+        return baseTime.add( Units.microseconds.createDatum( pos*timeScale ) );
     }
     
     private boolean scale = true;
