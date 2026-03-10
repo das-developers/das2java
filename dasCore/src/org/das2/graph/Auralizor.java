@@ -44,6 +44,13 @@ public final class Auralizor {
     QDataSet ds;
     QDataSet dep0;
     
+    /**
+     * the time of the first sample.
+     */
+    Datum baseTime;
+    
+    Datum sampleRate;
+    
     int currentRecord= 0;
     boolean playing= false;
     
@@ -115,6 +122,16 @@ public final class Auralizor {
         }
     }
     
+    /**
+     * return the actual instant being played, getting the position from the line.
+     * @return the position as a Datum, in the same frame as DEPEND_0.
+     * @see SourceDataLine#getLongFramePosition();
+     */
+    public Datum getFramePosition() {
+        long pos= this.line.getMicrosecondPosition();
+        return baseTime.add( Units.microseconds.createDatum((double)pos) ); //TODO: timeScale
+    }
+    
     private boolean scale = true;
 
     public static final String PROP_SCALE = "scale";
@@ -165,6 +182,13 @@ public final class Auralizor {
         pcs.firePropertyChange(PROP_REPORT_PERIOD, oldReportPeriod, reportPeriod);
     }
 
+    public boolean isPlaying() {
+        return playing;
+    }
+    
+    public void setPlaying(boolean playing) {
+        this.playing= playing;
+    }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         hasListeners= true;
@@ -202,12 +226,15 @@ public final class Auralizor {
      * @see #start()
      */
     public void playSound() {
-        playing= true;
+        setPlaying(true);
         
         UnitsConverter uc= UnitsConverter.getConverter( SemanticOps.getUnits(dep0).getOffsetUnits(), Units.seconds );
-        float sampleRate=   (float) ( 1. / uc.convert( dep0.value(1)-dep0.value(0) ) * timeScale );
-        logger.log(Level.FINE, "sampleRate= {0}", sampleRate);
-        AudioFormat audioFormat= new AudioFormat( sampleRate, 16, 1, true, true );
+        float samplRate=   (float) ( 1. / uc.convert( dep0.value(1)-dep0.value(0) ) * timeScale );
+        this.sampleRate= Units.hertz.createDatum(samplRate);
+        this.baseTime= Ops.datum(dep0.slice(0));
+        
+        logger.log(Level.FINE, "sampleRate= {0}", samplRate);
+        AudioFormat audioFormat= new AudioFormat( samplRate, 16, 1, true, true );
 
         buf= new byte[EXTERNAL_BUFFER_SIZE];
         buffer= ByteBuffer.wrap(buf);
@@ -218,7 +245,6 @@ public final class Auralizor {
         try {
             line = (SourceDataLine) AudioSystem.getLine(info);
             line.open(audioFormat);
-            line.addLineListener(getLineListener());
         }
         catch (LineUnavailableException e) {
             throw new RuntimeException(e);            
@@ -266,18 +292,10 @@ public final class Auralizor {
         line.drain();
         line.close();
         
+        setPlaying(false);
+        
     }
-    
-    private LineListener getLineListener( ) {
-        return new LineListener() {
-            @Override
-            public void update( LineEvent e ) {
-                if ( e.getType().equals( LineEvent.Type.CLOSE ) ) {
-                    
-                }
-            }
-        };
-    }
+
     
     /**
      * create an Auralizor for rendering the dataset to the sound system.
