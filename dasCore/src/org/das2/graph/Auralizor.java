@@ -27,14 +27,12 @@ import org.das2.util.DebugPropertyChangeSupport;
 
 /**
  * Stream QDataSet to the sound system, using DEPEND_0 to control
- * sampling rate.  Note this does not support the new waveform packet 
- * scheme introduced a few years ago, and can easily be made to support 
- * it.
+ * sampling rate.  
  * @author  Owner
  */
 public final class Auralizor {
     
-    private static final Logger logger= LoggerManager.getLogger("das2.graph");
+    private static final Logger logger= LoggerManager.getLogger("das2.graph.auralizor");
     
     private static final int	EXTERNAL_BUFFER_SIZE = 100000;
     ByteBuffer buffer;
@@ -98,7 +96,6 @@ public final class Auralizor {
     
     private Datum position = Units.seconds.createDatum(0);
     private Datum lastAnnouncedPosition= null;
-    private Datum limit= Units.milliseconds.createDatum(100);
     
     public static final String PROP_POSITION = "position";
 
@@ -108,7 +105,8 @@ public final class Auralizor {
 
     public void setPosition(Datum position) {
         if ( position!=this.position ) {
-            if ( lastAnnouncedPosition==null || lastAnnouncedPosition.subtract(position).abs().gt(limit) ) {
+            this.position= position;
+            if ( lastAnnouncedPosition==null || lastAnnouncedPosition.subtract(position).abs().gt(reportPeriod) ) {
                 this.currentRecord= DataSetUtil.closestIndex( dep0, position );
                 Datum newPosition= getPosition();
                 pcs.firePropertyChange( PROP_POSITION, lastAnnouncedPosition, newPosition );
@@ -131,6 +129,43 @@ public final class Auralizor {
         pcs.firePropertyChange(PROP_SCALE, oldScale, scale);
     }
 
+    private double timeScale = 1.0;
+
+    public static final String PROP_TIMESCALE = "timeScale";
+
+    public double getTimeScale() {
+        return timeScale;
+    }
+
+    /**
+     * Speed or slow the sound by this much, greater than one speeds up, less than one slows down.
+     * @param timeScale 
+     */
+    public void setTimeScale(double timeScale) {
+        double oldTimeScale = this.timeScale;
+        this.timeScale = timeScale;
+        pcs.firePropertyChange(PROP_TIMESCALE, oldTimeScale, timeScale);
+    }
+
+    private Datum reportPeriod = Datum.create(100, Units.milliseconds);
+
+    public static final String PROP_REPORT_PERIOD = "reportPeriod";
+
+    public Datum getReportPeriod() {
+        return reportPeriod;
+    }
+
+    /**
+     * frequency reports are issued.  Note this may be ignored.
+     * @param reportPeriod 
+     */
+    public void setReportPeriod(Datum reportPeriod) {
+        Datum oldReportPeriod = this.reportPeriod;
+        this.reportPeriod = reportPeriod;
+        pcs.firePropertyChange(PROP_REPORT_PERIOD, oldReportPeriod, reportPeriod);
+    }
+
+
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         hasListeners= true;
         pcs.addPropertyChangeListener(listener);
@@ -150,14 +185,27 @@ public final class Auralizor {
     }    
     
     /**
+     * begin streaming the sound.  This will start the process on a separate thread and
+     * not block the current thread.
+     * @see #playSound() 
+     */
+    public void start() {
+        Runnable playSoundRunnable= () -> {
+            playSound();
+        };
+        new Thread( playSoundRunnable ).start();
+    }
+    
+    /**
      * begin streaming the sound.  This will block the current
      * thread until complete.
+     * @see #start()
      */
     public void playSound() {
         playing= true;
         
         UnitsConverter uc= UnitsConverter.getConverter( SemanticOps.getUnits(dep0).getOffsetUnits(), Units.seconds );
-        float sampleRate=   (float) ( 1. / uc.convert( dep0.value(1)-dep0.value(0) )  ) ;
+        float sampleRate=   (float) ( 1. / uc.convert( dep0.value(1)-dep0.value(0) ) * timeScale );
         logger.log(Level.FINE, "sampleRate= {0}", sampleRate);
         AudioFormat audioFormat= new AudioFormat( sampleRate, 16, 1, true, true );
 
@@ -179,11 +227,14 @@ public final class Auralizor {
         line.start();
         
         int ibuf=0;
-
+        logger.fine("feeding audiosystem...");
+        
         while ( currentRecord<dep0.length() ) {
             if ( playing==false ) {
                 break;
             }
+            
+            logger.finest("   feeding audiosystem...");
             
             double d= ds.value(currentRecord);
             int b= scale ? ( (int) ( 65536 * ( d - min ) / ( max-min ) ) - 32768 ) : (int)d ;
@@ -208,6 +259,8 @@ public final class Auralizor {
             }
             
         }
+        logger.fine("done feeding audiosystem");
+        
         line.write(buf, 0, ibuf );
         
         line.drain();
