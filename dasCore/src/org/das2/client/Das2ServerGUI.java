@@ -30,6 +30,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.ParserConfigurationException;
@@ -149,7 +150,7 @@ public class Das2ServerGUI {
     private String checkMatch(String template, String sval) {
         template = template.trim();
         sval = sval.trim();
-        if (template.indexOf("@") > -1) {
+        if (template.contains("@")) {
             int idx = template.indexOf("@");
             int i = sval.length() - template.length() - idx - 1;
             if (template.substring(0, idx).equals(sval.substring(0, idx)) && template.substring(idx + 1).equals(sval.substring(i))) {
@@ -183,7 +184,7 @@ public class Das2ServerGUI {
      * @param paramsArr
      * @param ss0
      * @param template
-     * @return
+     * @return the value from paramsArr or '' 
      */
     private String findParamValue(String[] paramsArr, String ss0, String template) {
         try {
@@ -196,13 +197,19 @@ public class Das2ServerGUI {
                     return ss0;
                 }
             } else {
+                
+                //TODO: regex stuff...
+                
+                if ( template.contains("@") && !template.startsWith("^") ) {
+                    template= "^" + template.replace("@","(\\.+)");
+                }
                 if (template.charAt(0) == '^') {
                     String regex = template;
                     Pattern pattern = Pattern.compile(regex);
                     int idx=0;
                     for (String item : paramsArr) {
                         Matcher match = pattern.matcher(item);
-                        if (match != null) {
+                        if (match.matches() ) {
                             paramsArr[idx]= "";
                             return item;
                         }
@@ -213,24 +220,21 @@ public class Das2ServerGUI {
                     String[] templates = template.split("\\s+");
                     int i = 0;
                     int ipa = 0;
-                    while (i < templates.length) {
-                        while ((ipa < paramsArr.length) && (i < templates.length)) {
-                            String item = paramsArr[ipa].trim();
-                            String match = checkMatch(templates[i], item);
-                            if (match.length() == 0) {
-                                return "";
+                    while ((ipa < paramsArr.length) && (i < templates.length)) {
+                        String item = paramsArr[ipa].trim();
+                        String match = checkMatch(templates[i], item);
+                        if (match.length() == 0) {
+                            return "";
+                        } else {
+                            if (templates[i].contains("@")) {
+                                paramsArr[ipa]="";
+                                return match;
                             } else {
-                                if (templates[i].contains("@")) {
-                                    paramsArr[ipa]="";
-                                    return match;
-                                } else {
-                                    paramsArr[ipa]="";
-                                    ipa = ipa + 1;
-                                    i = i + 1;
-                                }
+                                paramsArr[ipa]="";
+                                ipa = ipa + 1;
+                                i = i + 1;
                             }
                         }
-
                     }
 
                     return "";
@@ -396,6 +400,23 @@ public class Das2ServerGUI {
                         }
                         tt[i] = "JList";
 
+                    } else if ( ss[3].startsWith("option:") ) {
+                        panel.add(new JLabel(ss[0] + ": " + ss[1] + " (" + ss[3] + ")"));
+                        String[] options= ss[3].substring(8).trim().split("\\s+");
+                        String[] options1= new String[options.length+1];
+                        options1[0]= "";
+                        System.arraycopy( options, 0, options1, 1, options.length);
+                        options= options1;
+                        JComboBox c = new JComboBox(options);
+                        c2 = c;
+                        c.setMaximumSize(new Dimension(8000, c.getPreferredSize().height));
+                        String vv = findParamValue(paramsArr, ss[0], null);
+                        ff[i] = ss[2];
+                        vv = findParamValue(paramsArr, ss[0], ss[2]);
+                        if (vv.length() > 0) {
+                            c.setSelectedItem(vv);
+                        }
+                        tt[i] = "JComboBox";             
                     } else {
                         panel.add(new JLabel(ss[0] + ": " + ss[1] + " (" + ss[3] + ")"));
                         JTextField c = new JTextField("");
@@ -470,6 +491,9 @@ public class Das2ServerGUI {
                 List<String> selectedItems = getSelectedListItems(cc[i]);
                 String sep = ss[i];
                 parametersBuilder.append(String.join(sep, selectedItems));
+                parametersBuilder.append(delim);
+            } else if (tt[i].equals("JComboBox")) {
+                parametersBuilder.append(String.valueOf(((JComboBox)cc[i]).getSelectedItem()));
                 parametersBuilder.append(delim);
             }
         }
