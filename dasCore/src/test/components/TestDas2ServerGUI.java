@@ -1,7 +1,4 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
+
 package test.components;
 
 import java.awt.Dimension;
@@ -31,6 +28,7 @@ public class TestDas2ServerGUI {
                     JPanel p= x.getPanel();
                     renderComponentToPng( p, pngFile );
                     System.err.println("render to "+pngFile);
+                    System.err.println(x.getParameters());
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
@@ -75,7 +73,7 @@ public class TestDas2ServerGUI {
     }
     
     
-    public static void testCase( int test ) throws Exception {
+    public static void testCase( File outdir, int test ) throws Exception {
         String dsdf;
         String params0;
         switch (test) {
@@ -102,8 +100,9 @@ public class TestDas2ServerGUI {
                 throw new IllegalArgumentException("bad test number");
         }
         
-        File f= new File( String.format( "/tmp/ap/%03d.png", test ) );
-        if ( true ) {
+        File f= new File( outdir, String.format( "%03d.png", test ) );
+        
+        if ( System.getProperty("java.awt.headless","false").equals("true") ) {
             renderGUI( f, dsdf, params0 );
         } else {
             Das2ServerGUI x = new Das2ServerGUI();
@@ -118,9 +117,11 @@ public class TestDas2ServerGUI {
     }
     
     public static void main(String[] args) throws Exception {
-        testCase(1);
-        testCase(2);
-        testCase(3);
+        if ( args.length==0 ) args= new String[] { "/tmp/ap/" };
+        File outdir= new File(args[0]);
+        testCase(outdir,1);
+        testCase(outdir,2);
+        testCase(outdir,3);
         
     }
 }
