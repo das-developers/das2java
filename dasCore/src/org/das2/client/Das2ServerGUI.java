@@ -198,12 +198,13 @@ public class Das2ServerGUI {
                 }
             } else {
                 
-                //TODO: regex stuff...
-                
+                boolean isRegex=false;
                 if ( template.contains("@") && !template.startsWith("^") ) {
-                    template= "^" + template.replace("@","(\\.+)");
+                    //template= "^" + template.replace("@","(\\.+)") + "$";
+                    template= template.replace("@","(.+)");
+                    isRegex= true;
                 }
-                if (template.charAt(0) == '^') {
+                if (isRegex) {
                     String regex = template;
                     Pattern pattern = Pattern.compile(regex);
                     int idx=0;
@@ -211,7 +212,7 @@ public class Das2ServerGUI {
                         Matcher match = pattern.matcher(item);
                         if (match.matches() ) {
                             paramsArr[idx]= "";
-                            return item;
+                            return match.group(1);
                         }
                         idx++;
                     }
@@ -482,7 +483,7 @@ public class Das2ServerGUI {
                 }
             } else if (tt[i].equals("JTextField")) {
                 String s = ((JTextField) cc[i]).getText();
-                if (s.length() > 0) {
+                if (s.trim().length() > 0) {
                     s = ff[i].replace("@", s);
                     parametersBuilder.append(s);
                     parametersBuilder.append(delim);
@@ -493,8 +494,12 @@ public class Das2ServerGUI {
                 parametersBuilder.append(String.join(sep, selectedItems));
                 parametersBuilder.append(delim);
             } else if (tt[i].equals("JComboBox")) {
-                parametersBuilder.append(String.valueOf(((JComboBox)cc[i]).getSelectedItem()));
-                parametersBuilder.append(delim);
+                String s= String.valueOf(((JComboBox)cc[i]).getSelectedItem());
+                if ( s.trim().length()>0 ) {
+                    s = ff[i].replace("@", s);
+                    parametersBuilder.append(s);
+                    parametersBuilder.append(delim);
+                }
             }
         }
         if (cc[100] != null) {
@@ -516,33 +521,4 @@ public class Das2ServerGUI {
         return panel;
     }
     
-    public static void main(String[] args) {
-        Das2ServerGUI x = new Das2ServerGUI();
-        int test=2;
-        String dsdf;
-        String params0;
-        switch ( test ) {
-            case 1:
-                dsdf = "param_01 = '1.5V_REF | Simulate +1.8 monitor'\n"
-                + "param_02 = '1.5V_WvFE'\n"
-                + "param_03 = '1.5V_Y180'\n"
-                + "param_04 = '1.8U | Power Supply'\n"
-                + "param_05 = '1.8V_MEM'";
-                params0="1.5V_REF 1.8V_MEM Extra-Unrecognized"; 
-                break;
-            case 2:
-                dsdf = "param_01 = 'packet_ids|Output data from the following packet IDs (defaults to all)|@|set: , x242 x252'\n";
-                params0="";
-                break;
-            default:
-                throw new IllegalArgumentException("bad test number");
-        }
-        x.setSpecification(dsdf);
-        x.setParameters(params0);
-
-        if (JOptionPane.OK_OPTION == JOptionPane.showConfirmDialog(null, x.panel, "Edit params", JOptionPane.OK_CANCEL_OPTION )) {
-            System.err.println(x.getParameters());
-        }
-
-    }
 }
