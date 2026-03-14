@@ -1,0 +1,43 @@
+
+from org.das2.graph import DasColorBar
+
+which= 'turbo.csv'
+
+uri= URI(DasColorBar.getResource('colorbars/'+which).toString())
+
+##print rr
+from org.autoplot.csv import CsvDataSource
+from org.autoplot.datasource.capability import Streaming
+
+cds= CsvDataSource(uri)
+strn= cds.getCapability( Streaming )
+
+ss= strn.streamDataSet( monitor )
+
+b= DataSetBuilder(2,100,4)
+while ( ss.hasNext() ):
+    b.nextRecord( ss.next() )
+    
+colors= b.getDataSet()
+
+IN= colors[:,0]
+RR= colors[:,1]
+GG= colors[:,2]
+BB= colors[:,3]
+
+print 'int[] index= {',
+for i in xrange(0,IN.length(),17):
+    print '%d,' % int(IN[i]/17),
+print '};'
+print 'int[] red= {',
+for i in xrange(0,RR.length(),17):
+    print '%d,' % int(RR[i]),
+print '};'
+print 'int[] green= {',
+for i in xrange(0,GG.length(),17):
+    print '%d,' % int(GG[i]),
+print '};'
+print 'int[] blue= {',
+for i in xrange(0,BB.length(),17):
+    print '%d,' % int(BB[i]),
+print '};'    
