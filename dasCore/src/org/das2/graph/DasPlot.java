@@ -801,8 +801,9 @@ public class DasPlot extends DasCanvasComponent {
      * @param plotGraphics
      * @param lxaxis
      * @param lyaxis 
+     * @return true if any of the renders are active (and presumably something was drawn)
      */
-    private void drawCacheImage(Graphics2D plotGraphics,DasAxis lxaxis, DasAxis lyaxis ) {
+    private boolean drawCacheImage(Graphics2D plotGraphics,DasAxis lxaxis, DasAxis lyaxis ) {
 
         /* clear all the messages */
         messages = new ArrayList();
@@ -818,7 +819,7 @@ public class DasPlot extends DasCanvasComponent {
 
         List<Renderer> renderers1= Arrays.asList(getRenderers());
 
-        boolean noneActive = true;
+        boolean active = false;
         for (int i = 0; i < renderers1.size(); i++) {
             Renderer rend = (Renderer) renderers1.get(i);
             if (rend.isActive()) {
@@ -840,7 +841,7 @@ public class DasPlot extends DasCanvasComponent {
                     //rend.render(plotGraphics, lxaxis, lyaxis, new NullProgressMonitor());
                     postException(rend,ex);
                 }
-                noneActive = false;
+                active = true;
                 if (rend.isDrawLegendLabel()) {
                     addToLegend(rend, null, 0, rend.getLegendLabel());
                 }
@@ -850,23 +851,7 @@ public class DasPlot extends DasCanvasComponent {
                 }
             }
         }
-
-        if (drawGridOver) {
-            maybeDrawGrid( (Graphics2D)plotGraphics.create() );
-        }
-        
-        if ( this.topDecorator!=null ) {
-            drawDecorator( plotGraphics, this.topDecorator );
-        }
-
-        if ( this.isPlotVisible() ) {
-            if (renderers1.isEmpty()) {
-                postMessage(null, "(no renderers)", DasPlot.INFO, null, null);
-                logger.fine("dasPlot has no renderers");
-            } else if (noneActive) {
-                postMessage(null, "(no active renderers)", DasPlot.INFO, null, null);
-            }
-        }
+        return active;
     }
 
     /**
@@ -1599,6 +1584,29 @@ public class DasPlot extends DasCanvasComponent {
                 
                 cacheImage= lcacheImage;
                 cacheImageBounds= lcacheImageBounds;
+            }
+        }
+        
+        if (drawGridOver) {
+            maybeDrawGrid( (Graphics2D)graphics.create() );
+        }
+        
+        if ( this.topDecorator!=null ) {
+            drawDecorator( graphics, this.topDecorator );
+        }
+
+        if ( this.isPlotVisible() ) {
+            if (renderers.isEmpty()) {
+                postMessage(null, "(no renderers)", DasPlot.INFO, null, null);
+                logger.fine("dasPlot has no renderers");
+            } else {
+                boolean active=false;
+                for ( Renderer r: renderers ) {
+                    if ( r.isActive() ) active=true;
+                }
+                if ( !active ) {
+                    postMessage(null, "(no active renderers)", DasPlot.INFO, null, null);
+                }
             }
         }
 
