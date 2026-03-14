@@ -2,6 +2,7 @@ package org.das2.client;
 
 import java.awt.Dimension;
 import java.awt.Component;
+import java.awt.FlowLayout;
 import java.io.IOException;
 
 import javax.swing.JPanel;
@@ -30,6 +31,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.swing.Box;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.xml.parsers.DocumentBuilder;
@@ -273,9 +275,11 @@ public class Das2ServerGUI {
             ArrayList resultList = new ArrayList();
             JPanel jList = (JPanel) jcomponent;
             for (Component c : jList.getComponents()) {
-                JCheckBox b = (JCheckBox) c;
-                if (b.isSelected()) {
-                    resultList.add(b.getText());
+                if ( c instanceof JCheckBox ) {
+                    JCheckBox b = (JCheckBox) c;
+                    if (b.isSelected()) {
+                        resultList.add(b.getText());
+                    }
                 }
             }
 
@@ -333,15 +337,25 @@ public class Das2ServerGUI {
         
         panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setAlignmentX(0.0f);
 
+        boolean addedFirst= false;
         boolean extra = false;
         for (int i = 0; i < 100; i++) {
             String itm = ll[i];
             if (itm.length() > 0) {
+                if ( addedFirst ) {
+                    panel.add( Box.createVerticalStrut( panel.getFont().getSize() ) );
+                }
                 itm = itm.trim();
                 ss = itm.split("\\s*\\|\\s*", -2);
                 int narg = ss.length;
                 JComponent c2 = null;
+                JComponent row= null;
+                String title= narg>1 ? ss[1] : "";
+                if ( title.contains("\\n") ) {
+                    title= "<html>"+title.replaceAll("\\\\n","<br>");
+                }
                 if (narg == 1) {
                     JCheckBox c = new JCheckBox(ss[0]);
                     String vv = findParamValue(paramsArr, ss[0], null);
@@ -352,7 +366,7 @@ public class Das2ServerGUI {
                     panel.add(c);
                     c2 = c;
                 } else if (narg == 2) {
-                    JCheckBox c = new JCheckBox(ss[0] + ": " + ss[1]);
+                    JCheckBox c = new JCheckBox(ss[0] + ": " + title);
                     String vv = findParamValue(paramsArr, ss[0], null);
                     if (vv.length() > 0) {
                         c.setSelected(true);
@@ -361,7 +375,7 @@ public class Das2ServerGUI {
                     panel.add(c);
                     c2 = c;
                 } else if (narg == 3) {
-                    panel.add(new JLabel(ss[0] + ": " + ss[1]));
+                    panel.add( new JLabel(title) );
                     JTextField c = new JTextField("");
                     c.setMaximumSize(new Dimension(8000, c.getPreferredSize().height));
                     String vv = findParamValue(paramsArr, ss[0], null);
@@ -372,10 +386,11 @@ public class Das2ServerGUI {
                     }
                     tt[i] = "JTextField";
                     panel.add(c);
-                    c2 = c;
+                    row = getRow( new JLabel(ss[0]+": "), c );
+                    c2= c;
                 } else if (narg == 4) {
                     if (ss[3].startsWith("set:")) {
-                        panel.add(new JLabel(ss[0] + ": " + ss[1]));
+                        panel.add(new JLabel(title));
                         String[] sepAllItems = ss[3].substring(4).trim().split("\\s+");
                         String[] allItems = Arrays.copyOfRange(sepAllItems, 1, sepAllItems.length);
                         String sep = sepAllItems[0];
@@ -383,6 +398,7 @@ public class Das2ServerGUI {
 
                         JPanel panel1 = new JPanel();
                         panel1.setLayout(new BoxLayout(panel1, BoxLayout.X_AXIS));
+                        panel1.add( new JLabel(ss[0]+ ":" ));
                         for (String item : allItems) {
                             JCheckBox b1 = new JCheckBox(item);
                             b1.setSelected(false);
@@ -402,14 +418,15 @@ public class Das2ServerGUI {
                         tt[i] = "JList";
 
                     } else if ( ss[3].startsWith("option:") ) {
-                        panel.add(new JLabel(ss[0] + ": " + ss[1] + " (" + ss[3] + ")"));
+                        panel.add(new JLabel( title ));
                         String[] options= ss[3].substring(8).trim().split("\\s+");
                         String[] options1= new String[options.length+1];
                         options1[0]= "";
                         System.arraycopy( options, 0, options1, 1, options.length);
                         options= options1;
                         JComboBox c = new JComboBox(options);
-                        c2 = c;
+                        row = getRow( new JLabel(ss[0]+": "), c );
+                        c2= c;
                         c.setMaximumSize(new Dimension(8000, c.getPreferredSize().height));
                         String vv = findParamValue(paramsArr, ss[0], null);
                         ff[i] = ss[2];
@@ -419,9 +436,10 @@ public class Das2ServerGUI {
                         }
                         tt[i] = "JComboBox";             
                     } else {
-                        panel.add(new JLabel(ss[0] + ": " + ss[1] + " (" + ss[3] + ")"));
+                        panel.add( new JLabel(title) );
                         JTextField c = new JTextField("");
-                        c2 = c;
+                        row = getRow( new JLabel(ss[0]+": "), c );
+                        c2= c;
                         c.setMaximumSize(new Dimension(8000, c.getPreferredSize().height));
                         String vv = findParamValue(paramsArr, ss[0], null);
                         ff[i] = ss[2];
@@ -431,18 +449,26 @@ public class Das2ServerGUI {
                         }
                         tt[i] = "JTextField";
                     }
-
-                    panel.add(c2);
+                    if ( row==null ) {
+                        panel.add(c2);
+                    } else {
+                        panel.add(row);
+                    }
 
                 } else {
                     extra = true;
                 }
 
                 if (c2 != null) {
-                    panel.add(c2);
+                    if ( row==null ) {
+                        panel.add(c2);
+                    } else {
+                        panel.add(row);
+                    }
                     cc[i] = c2;
                     c2.setAlignmentX(Component.LEFT_ALIGNMENT);
                 }
+                addedFirst= true;
             }
         }
         
@@ -519,6 +545,15 @@ public class Das2ServerGUI {
      */
     public JPanel getPanel() {
         return panel;
+    }
+
+    private JComponent getRow(JComponent jLabel, JComponent c) {
+        JPanel result= new JPanel();
+        result.setLayout( new BoxLayout(result,BoxLayout.X_AXIS) );
+        result.add(jLabel);
+        result.add(c);
+        result.setAlignmentX(0.0f);
+        return result;
     }
     
 }
