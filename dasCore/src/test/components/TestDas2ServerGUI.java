@@ -81,7 +81,7 @@ public class TestDas2ServerGUI {
                         + "param_03 = '1.5V_Y180'\n"
                         + "param_04 = '1.8U | Power Supply'\n"
                         + "param_05 = '1.8V_MEM'";
-                params0 = "1.5V_REF 1.8V_MEM Extra-Unrecognized";
+                params0 = "1.5V_REF 1.5V_WvFE 1.8V_MEM Extra-Unrecognized";
                 break;
             case 2:
                 dsdf = "param_01 = 'packet_ids|Output data from the following packet IDs (defaults to all)|@|set: , x242 x252'\n";
@@ -103,7 +103,7 @@ public class TestDas2ServerGUI {
                         + "param_08  =  Channel | Output only a single channel, by default all are sent | --chan=@ |option: 10.0Hz 17.8Hz 31.1Hz 56.2Hz 100Hz 178Hz 311Hz 562Hz 1.00kHz 1.78kHz 3.11kHz 5.62kHz 10.0kHz 17.8kHz 31.1kHz 56.2kHz\n"
                         + "param_09  =  SCLK | Output spacecraft clock values in addition to SCET times | -s\n"
                         + "param_10  =  output|Set the output units to \\nDN: Raw data numbers; \\nEF: Electric Field in V/m; \\nSD: Electric spectral density in V^2/m^2 Hz; \\nPF: Electric power spectral density in W/m^2 Hz\\n|--units=@|option: DN EF SD PF";
-                params0= "";
+                params0= " --negative=off";
                 break;
             default:
                 throw new IllegalArgumentException("bad test number");

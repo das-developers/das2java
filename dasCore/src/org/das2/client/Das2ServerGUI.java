@@ -397,6 +397,7 @@ public class Das2ServerGUI {
                         c.setSelected(true);
                     }
                     contrl.tt = "JCheckBox";
+                    contrl.ss = ss[0];
                     panel.add(c);
                     c2 = c;
                 } else if (narg == 2) {
@@ -406,6 +407,7 @@ public class Das2ServerGUI {
                         c.setSelected(true);
                     }
                     contrl.tt = "JCheckBox";
+                    contrl.ss = ss[0];
                     panel.add(c);
                     c2 = c;
                 } else if (narg == 3) {
@@ -415,6 +417,7 @@ public class Das2ServerGUI {
                         String vv = findParamValue(paramsArr, ss[2], null);
                         cb.setSelected(vv.length()>0);
                         contrl.tt = "JCheckBox";
+                        contrl.ss = ss[2];
                         c2= cb;
                     } else {
                         panel.add( new JLabel(title) );
@@ -524,6 +527,9 @@ public class Das2ServerGUI {
         }
 
         if ( extra || extraArgs.length()>0 ) {
+            if ( addedFirst ) {
+                panel.add( Box.createVerticalStrut( panel.getFont().getSize() ) );
+            }
             panel.add(new JLabel("Text not described in DSDF"));
             JTextArea c = new JTextArea();
             c.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -542,11 +548,7 @@ public class Das2ServerGUI {
             if (controls[i].cc == null) {
             } else if (controls[i].tt.equals("JCheckBox")) {
                 if (((JCheckBox) controls[i].cc).isSelected()) {
-                    String txt = ((JCheckBox) controls[i].cc).getText();
-                    int i2 = txt.indexOf(": ");
-                    if (i2 > -1) {
-                        txt = txt.substring(0, i2);
-                    }
+                    String txt = controls[i].ss;
                     parametersBuilder.append(txt);
                     parametersBuilder.append(delim);
                 }
