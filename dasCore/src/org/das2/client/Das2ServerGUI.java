@@ -84,8 +84,8 @@ public class Das2ServerGUI {
         Document doc = builder.parse(inputsrc);
         XPath xp = XPathFactory.newInstance().newXPath();
         Node nn = (Node) xp.evaluate("//properties", doc, XPathConstants.NODE);
-        ArrayList<String> ll = new ArrayList(100);
-        for (int i = 0; i < 100; i++) {
+        ArrayList<String> ll = new ArrayList(MAX_CONTROLS);
+        for (int i = 0; i < MAX_CONTROLS; i++) {
             ll.add(i, "");
         }
 
@@ -124,8 +124,8 @@ public class Das2ServerGUI {
      * Read the DSDF source file
      */
     private static Control[] readDsdf(String dsdfsrc) {
-        ArrayList<String> ll = new ArrayList<>(100);
-        for (int i = 0; i < 100; i++) {
+        ArrayList<String> ll = new ArrayList<>(MAX_CONTROLS-1);
+        for (int i = 0; i < MAX_CONTROLS-1; i++) {
             ll.add(i, "");
         }
 
@@ -141,7 +141,7 @@ public class Das2ServerGUI {
             }
         }
         Control[] controls= new Control[MAX_CONTROLS];
-        for ( int i=0; i<ll.size(); i++ ) {
+        for ( int i=0; i<MAX_CONTROLS; i++ ) {
             controls[i]= new Control(ll.get(i));
         }
         return controls;
@@ -357,7 +357,7 @@ public class Das2ServerGUI {
         } else {
             controls = readDsdf(sss);
         }
-        controls[100]= new Control(""); // controls[100] is used to capture everything not recognized.
+        controls[MAX_CONTROLS-1]= new Control(""); // last control is used to capture everything not recognized.
 
     }
 
