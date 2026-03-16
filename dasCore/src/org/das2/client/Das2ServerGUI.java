@@ -76,7 +76,7 @@ public class Das2ServerGUI {
      * @throws ParserConfigurationException
      * @throws XPathExpressionException
      */
-    private String[] readXML(String xmlsrc) throws SAXException, IOException, ParserConfigurationException, XPathExpressionException {
+    private static Control[] readXML(String xmlsrc) throws SAXException, IOException, ParserConfigurationException, XPathExpressionException {
         DocumentBuilderFactory domFactory = DocumentBuilderFactory.newInstance();
         domFactory.setNamespaceAware(true);
         DocumentBuilder builder = domFactory.newDocumentBuilder();
@@ -84,8 +84,7 @@ public class Das2ServerGUI {
         Document doc = builder.parse(inputsrc);
         XPath xp = XPathFactory.newInstance().newXPath();
         Node nn = (Node) xp.evaluate("//properties", doc, XPathConstants.NODE);
-        LinkedHashMap mm = new LinkedHashMap();
-        ArrayList ll = new ArrayList(100);
+        ArrayList<String> ll = new ArrayList(100);
         for (int i = 0; i < 100; i++) {
             ll.add(i, "");
         }
@@ -99,7 +98,11 @@ public class Das2ServerGUI {
             }
         }
 
-        return (String[]) ll.toArray(new String[ll.size()]);
+        Control[] controls= new Control[MAX_CONTROLS];
+        for ( int i=0; i<MAX_CONTROLS; i++ ) {
+            controls[i]= new Control(ll.get(i));
+        }
+        return controls;
     }
 
     /**
@@ -120,8 +123,8 @@ public class Das2ServerGUI {
     /**
      * Read the DSDF source file
      */
-    private String[] readDsdf(String dsdfsrc) {
-        ArrayList ll = new ArrayList(100);
+    private static Control[] readDsdf(String dsdfsrc) {
+        ArrayList<String> ll = new ArrayList<>(100);
         for (int i = 0; i < 100; i++) {
             ll.add(i, "");
         }
@@ -137,8 +140,12 @@ public class Das2ServerGUI {
                 ll.set(idx, vv);
             }
         }
+        Control[] controls= new Control[MAX_CONTROLS];
+        for ( int i=0; i<ll.size(); i++ ) {
+            controls[i]= new Control(ll.get(i));
+        }
+        return controls;
 
-        return (String[]) ll.toArray(new String[ll.size()]);
     }
 
     /**
@@ -292,11 +299,41 @@ public class Das2ServerGUI {
         return t.replaceAll("@", "(\\S+)");
     }
 
-    private String[] ll;
-    private String[] tt;  // types
-    private String[] ff;  // formats (--dftlen @)
-    private String[] ss;  // special arguments for the GUI type, like sep
-    private JComponent[] cc;
+    private static class Control {
+        private Control(String line) {
+            this.ll= line;
+        }
+        
+        /**
+         * the line
+         */
+        String ll;
+        
+        /**
+         * the type
+         */
+        String tt;
+        
+        /**
+         * formats (e.g. --dftlen @)
+         */
+        String ff;
+        
+        /**
+         * special arguments for the GUI type, like sep
+         */
+        String ss;
+        
+        /**
+         * the component implementing the control
+         */
+        JComponent cc;
+    }
+    
+    private static final int MAX_CONTROLS=101;
+
+    private Control[] controls;
+
     private JPanel panel;
 
     /**
@@ -313,18 +350,14 @@ public class Das2ServerGUI {
         }
         if ( sss.trim().startsWith("<") ) {
             try {
-                ll = readXML(sss);
+                controls = readXML(sss);
             } catch (SAXException | IOException | ParserConfigurationException | XPathExpressionException ex) {
                 Logger.getLogger("das2").log(Level.SEVERE, null, ex);
             }
         } else {
-            ll = readDsdf(sss);
+            controls = readDsdf(sss);
         }
-
-        tt = new String[101];
-        ff = new String[101];
-        ss = new String[101];
-        cc = new JComponent[101];
+        controls[100]= new Control(""); // controls[100] is used to capture everything not recognized.
 
     }
 
@@ -342,13 +375,14 @@ public class Das2ServerGUI {
         boolean addedFirst= false;
         boolean extra = false;
         for (int i = 0; i < 100; i++) {
-            String itm = ll[i];
+            Control contrl= controls[i];
+            String itm = contrl.ll;
             if (itm.length() > 0) {
                 if ( addedFirst ) {
                     panel.add( Box.createVerticalStrut( panel.getFont().getSize() ) );
                 }
                 itm = itm.trim();
-                ss = itm.split("\\s*\\|\\s*", -2);
+                String[] ss = itm.split("\\s*\\|\\s*", -2);
                 int narg = ss.length;
                 JComponent c2 = null;
                 JComponent row= null;
@@ -362,7 +396,7 @@ public class Das2ServerGUI {
                     if (vv.length() > 0) {
                         c.setSelected(true);
                     }
-                    tt[i] = "JCheckBox";
+                    contrl.tt = "JCheckBox";
                     panel.add(c);
                     c2 = c;
                 } else if (narg == 2) {
@@ -371,30 +405,39 @@ public class Das2ServerGUI {
                     if (vv.length() > 0) {
                         c.setSelected(true);
                     }
-                    tt[i] = "JCheckBox";
+                    contrl.tt = "JCheckBox";
                     panel.add(c);
                     c2 = c;
                 } else if (narg == 3) {
-                    panel.add( new JLabel(title) );
-                    JTextField c = new JTextField("");
-                    c.setMaximumSize(new Dimension(8000, c.getPreferredSize().height));
-                    String vv = findParamValue(paramsArr, ss[0], null);
-                    ff[i] = ss[2];
-                    vv = findParamValue(paramsArr, ss[0], ss[2]);
-                    if (vv.length() > 0) {
-                        c.setText(vv);
+                    if ( isFlagOrSwitch( ss[2]) ) {
+                        JCheckBox cb= new JCheckBox(title + " (" + ss[2] + ")" );
+                        panel.add( cb );
+                        String vv = findParamValue(paramsArr, ss[2], null);
+                        cb.setSelected(vv.length()>0);
+                        contrl.tt = "JCheckBox";
+                        c2= cb;
+                    } else {
+                        panel.add( new JLabel(title) );
+                        JTextField c = new JTextField("");
+                        c.setMaximumSize(new Dimension(8000, c.getPreferredSize().height));
+                        String vv = findParamValue(paramsArr, ss[0], null);
+                        contrl.ff = ss[2];
+                        vv = findParamValue(paramsArr, ss[0], ss[2]);
+                        if (vv.length() > 0) {
+                            c.setText(vv);
+                        }
+                        contrl.tt = "JTextField";
+                        panel.add(c);
+                        row = getRow( new JLabel(ss[0]+": "), c );
+                        c2= c;
                     }
-                    tt[i] = "JTextField";
-                    panel.add(c);
-                    row = getRow( new JLabel(ss[0]+": "), c );
-                    c2= c;
                 } else if (narg == 4) {
                     if (ss[3].startsWith("set:")) {
                         panel.add(new JLabel(title));
                         String[] sepAllItems = ss[3].substring(4).trim().split("\\s+");
                         String[] allItems = Arrays.copyOfRange(sepAllItems, 1, sepAllItems.length);
                         String sep = sepAllItems[0];
-                        ss[i] = sep;
+                        contrl.ss = sep;
 
                         JPanel panel1 = new JPanel();
                         panel1.setLayout(new BoxLayout(panel1, BoxLayout.X_AXIS));
@@ -415,7 +458,7 @@ public class Das2ServerGUI {
                             String[] items = vv.split(sep);
                             setSelectedListItems(c2, allItems, items);
                         }
-                        tt[i] = "JList";
+                        contrl.tt = "JList";
 
                     } else if ( ss[3].startsWith("option:") ) {
                         panel.add(new JLabel( title ));
@@ -429,12 +472,12 @@ public class Das2ServerGUI {
                         c2= c;
                         c.setMaximumSize(new Dimension(8000, c.getPreferredSize().height));
                         String vv = findParamValue(paramsArr, ss[0], null);
-                        ff[i] = ss[2];
+                        contrl.ff = ss[2];
                         vv = findParamValue(paramsArr, ss[0], ss[2]);
                         if (vv.length() > 0) {
                             c.setSelectedItem(vv);
                         }
-                        tt[i] = "JComboBox";             
+                        contrl.tt = "JComboBox";             
                     } else {
                         panel.add( new JLabel(title) );
                         JTextField c = new JTextField("");
@@ -442,12 +485,12 @@ public class Das2ServerGUI {
                         c2= c;
                         c.setMaximumSize(new Dimension(8000, c.getPreferredSize().height));
                         String vv = findParamValue(paramsArr, ss[0], null);
-                        ff[i] = ss[2];
+                        contrl.ff = ss[2];
                         vv = findParamValue(paramsArr, ss[0], ss[2]);
                         if (vv.length() > 0) {
                             c.setText(vv);
                         }
-                        tt[i] = "JTextField";
+                        contrl.tt = "JTextField";
                     }
                     if ( row==null ) {
                         panel.add(c2);
@@ -465,7 +508,7 @@ public class Das2ServerGUI {
                     } else {
                         panel.add(row);
                     }
-                    cc[i] = c2;
+                    contrl.cc = c2;
                     c2.setAlignmentX(Component.LEFT_ALIGNMENT);
                 }
                 addedFirst= true;
@@ -487,7 +530,7 @@ public class Das2ServerGUI {
             c.setText(extraArgs.toString());
             c.setRows(4);
             panel.add(c);
-            cc[100] = c;
+            controls[100].cc = c;
         }
 
     }
@@ -496,10 +539,10 @@ public class Das2ServerGUI {
         String delim = " ";
         StringBuilder parametersBuilder = new StringBuilder();
         for (int i = 0; i < 100; i++) {
-            if (cc[i] == null) {
-            } else if (tt[i].equals("JCheckBox")) {
-                if (((JCheckBox) cc[i]).isSelected()) {
-                    String txt = ((JCheckBox) cc[i]).getText();
+            if (controls[i].cc == null) {
+            } else if (controls[i].tt.equals("JCheckBox")) {
+                if (((JCheckBox) controls[i].cc).isSelected()) {
+                    String txt = ((JCheckBox) controls[i].cc).getText();
                     int i2 = txt.indexOf(": ");
                     if (i2 > -1) {
                         txt = txt.substring(0, i2);
@@ -507,30 +550,30 @@ public class Das2ServerGUI {
                     parametersBuilder.append(txt);
                     parametersBuilder.append(delim);
                 }
-            } else if (tt[i].equals("JTextField")) {
-                String s = ((JTextField) cc[i]).getText();
+            } else if (controls[i].tt.equals("JTextField")) {
+                String s = ((JTextField) controls[i].cc).getText();
                 if (s.trim().length() > 0) {
-                    s = ff[i].replace("@", s);
+                    s = controls[i].ff.replace("@", s);
                     parametersBuilder.append(s);
                     parametersBuilder.append(delim);
                 }
-            } else if (tt[i].equals("JList")) {
-                List<String> selectedItems = getSelectedListItems(cc[i]);
-                String sep = ss[i];
+            } else if (controls[i].tt.equals("JList")) {
+                List<String> selectedItems = getSelectedListItems(controls[i].cc);
+                String sep = controls[i].ss;
                 parametersBuilder.append(String.join(sep, selectedItems));
                 parametersBuilder.append(delim);
-            } else if (tt[i].equals("JComboBox")) {
-                String s= String.valueOf(((JComboBox)cc[i]).getSelectedItem());
+            } else if (controls[i].tt.equals("JComboBox")) {
+                String s= String.valueOf(((JComboBox)controls[i].cc).getSelectedItem());
                 if ( s.trim().length()>0 ) {
-                    s = ff[i].replace("@", s);
+                    s = controls[i].ff.replace("@", s);
                     parametersBuilder.append(s);
                     parametersBuilder.append(delim);
                 }
             }
         }
-        if (cc[100] != null) {
+        if (controls[100].cc != null) {
             parametersBuilder.append(delim);
-            String txt = ((JTextArea) cc[100]).getText().replace("\n", delim);
+            String txt = ((JTextArea) controls[100].cc).getText().replace("\n", delim);
             txt = txt.trim();
             parametersBuilder.append(txt);
         }
@@ -554,6 +597,16 @@ public class Das2ServerGUI {
         result.add(c);
         result.setAlignmentX(0.0f);
         return result;
+    }
+
+    private boolean isFlagOrSwitch(String ss3) {
+        if (ss3.startsWith("set:")) {
+            return false;
+        } else if ( ss3.startsWith("option:") ) {
+            return false;
+        } else {
+            return true;
+        }
     }
     
 }
