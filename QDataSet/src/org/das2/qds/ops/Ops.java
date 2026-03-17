@@ -13773,7 +13773,7 @@ public final class Ops {
      * @param ds1 null or rank N dataset
      * @param ds2 rank N dataset with compatible geometry.
      * @see #concatenate(org.das2.qds.QDataSet, org.das2.qds.QDataSet) which is the same thing.
-     * @return 
+     * @return dataset with elements of ds2 following elements of ds1
      */
     public static QDataSet append( QDataSet ds1, QDataSet ds2 ) {
         if ( ds1==null ) {
@@ -13837,6 +13837,33 @@ public final class Ops {
         }
     }
     
+    /**
+     * three-arg append. This is introduced to make codes more readable.  TODO: Calculate the total number of elements to avoid
+     * extra copies.
+     * @param ds1 first dataset
+     * @param ds2 second dataset
+     * @param ds3 third dataset
+     * @return dataset with elements ds1, ds2, and then ds3.
+     * @see #append(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
+     */
+    public static QDataSet append( QDataSet ds1, QDataSet ds2, QDataSet ds3 ) {
+        return append( append( ds1, ds2 ), ds3 );
+    }
+    
+    /**
+     * four-arg append.  This is introduced to make codes more readable.  TODO: Calculate the total number of elements to avoid
+     * extra copies.
+     * @param ds1 first dataset
+     * @param ds2 second dataset
+     * @param ds3 third dataset
+     * @param ds4 fourth dataset
+     * @return dataset with elements ds1, ds2, ds3, then ds4.
+     * @see #append(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
+     */
+    public static QDataSet append( QDataSet ds1, QDataSet ds2, QDataSet ds3, QDataSet ds4 ) {
+        return append( append( append( ds1, ds2 ), ds3 ), ds4 );
+    }
+
     /**
      * Shift the DEPEND_0 or the time column of a rank 2 dataset by the amount.  For example, to
      * compare two time series recorded with times from different time zones.
