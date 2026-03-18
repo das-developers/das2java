@@ -159,5 +159,15 @@ public class OsUtil {
         }
     }
 
+    /**
+     * return true if we are on a Windows machine.  This platform will accept
+     * backslashes as forward-slash equivalent.
+     * @return 
+     */
+    public static boolean isWindows() {
+        return System.getProperty("os.name")
+                 .toLowerCase()
+                 .contains("win");
+    }
 }
     
