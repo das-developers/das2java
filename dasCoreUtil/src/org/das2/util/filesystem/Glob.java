@@ -27,7 +27,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 import javax.swing.filechooser.FileFilter;
 
@@ -83,35 +82,200 @@ public class Glob {
     }
     
     /**
-     * converts a glob into a regex.
-     * @param glob, like 'foo*.dat'
-     * @return the regular expression that implements, like 'foo.*\.dat'
+     * converts a glob into a regex.  
+     * @param glob
+     * @return 
+     * @deprecated use globToRegex
      */
-    public static String getRegex( String glob ) {
-        StringTokenizer tk= new StringTokenizer(glob,"*?.+\\", true);
-        StringBuilder result= new StringBuilder();
-        while ( tk.hasMoreElements() ) {
-            String nt= tk.nextToken();
-            if ( nt.equals("*") ) {
-                result.append(".*");
-            } else if ( nt.equals("?") ) {
-                result.append(".");
-            } else if ( nt.equals(".") ) {
-                result.append("\\.");
-            } else if ( nt.equals("+") ) {
-                result.append("\\+");
-            } else if ( nt.equals("\\") ) {
-                result.append("\\\\");
-            } else {
-                result.append(nt);
-            }
-        }
-        return result.toString();
-        //return glob.replaceAll("\\.","\\\\.").replaceAll("\\*","\\.\\*").replaceAll("\\?","\\.");
+    public static String getRegex(String glob) {
+        return globToRegex(glob);
     }
     
     /**
-     * converts regex into a glob, as best it can.
+     * converts a glob into a regex.  Rewritten by ChatGPT in 2026, now
+     * handles more complex examples like data.{cdf,nc}.
+     * @param glob, like 'foo*.dat'
+     * @return the regular expression that implements, like 'foo.*\.dat'
+     */
+    public static String globToRegex(String glob) {
+        StringBuilder out = new StringBuilder();
+        out.append("^");
+        appendGlob(out, glob, 0, glob.length());
+        out.append("$");
+        return out.toString();
+    }
+
+    private static void appendGlob(StringBuilder out, String glob, int start, int end) {
+        int i = start;
+        while (i < end) {
+            char c = glob.charAt(i);
+
+            switch (c) {
+                case '*':
+                    if (i + 1 < end && glob.charAt(i + 1) == '*') {
+                        out.append(".*");
+                        i++;
+                    } else {
+                        out.append(".*");
+                    }
+                    break;
+
+                case '?':
+                    out.append(".");
+                    break;
+
+                case '[': {
+                    int j = i + 1;
+                    if (j >= end) {
+                        out.append("\\[");
+                        break;
+                    }
+
+                    StringBuilder cls = new StringBuilder();
+                    cls.append("[");
+
+                    if (j < end && glob.charAt(j) == '!') {
+                        cls.append("^");
+                        j++;
+                    } else if (j < end && glob.charAt(j) == '^') {
+                        cls.append("\\^");
+                        j++;
+                    }
+
+                    if (j < end && glob.charAt(j) == ']') {
+                        cls.append("]");
+                        j++;
+                    }
+
+                    boolean closed = false;
+                    while (j < end) {
+                        char d = glob.charAt(j);
+                        if (d == ']') {
+                            cls.append("]");
+                            closed = true;
+                            break;
+                        }
+                        if (d == '\\') {
+                            cls.append("\\\\");
+                        } else {
+                            cls.append(d);
+                        }
+                        j++;
+                    }
+
+                    if (closed) {
+                        out.append(cls);
+                        i = j;
+                    } else {
+                        out.append("\\[");
+                    }
+                    break;
+                }
+
+                case '{': {
+                    int close = findMatchingBrace(glob, i, end);
+                    if (close < 0) {
+                        out.append("\\{");
+                    } else {
+                        out.append("(");
+                        appendBraceAlternatives(out, glob, i + 1, close);
+                        out.append(")");
+                        i = close;
+                    }
+                    break;
+                }
+
+                case '\\':
+                    out.append("\\\\");
+                    break;
+
+                case '.':
+                case '(':
+                case ')':
+                case '+':
+                case '|':
+                case '^':
+                case '$':
+                case '@':
+                case '%':
+                    out.append("\\").append(c);
+                    break;
+
+                default:
+                    out.append(c);
+                    break;
+            }
+
+            i++;
+        }
+    }
+
+    private static void appendBraceAlternatives(StringBuilder out, String glob, int start, int end) {
+        int depth = 0;
+        int partStart = start;
+
+        for (int i = start; i < end; i++) {
+            char c = glob.charAt(i);
+            if (c == '{') {
+                depth++;
+            } else if (c == '}') {
+                depth--;
+            } else if (c == ',' && depth == 0) {
+                appendGlob(out, glob, partStart, i);
+                out.append("|");
+                partStart = i + 1;
+            }
+        }
+
+        appendGlob(out, glob, partStart, end);
+    }
+
+    private static int findMatchingBrace(String glob, int openPos, int end) {
+        int depth = 0;
+        for (int i = openPos; i < end; i++) {
+            char c = glob.charAt(i);
+            if (c == '{') {
+                depth++;
+            } else if (c == '}') {
+                depth--;
+                if (depth == 0) {
+                    return i;
+                }
+            }
+        }
+        return -1;
+    }
+
+    public static void main(String[] args) {
+        test("[abc]_data.cdf", "a_data.cdf");
+        test("[abc]_data.cdf", "d_data.cdf");
+
+        test("data.{cdf,png,jpg}", "data.cdf");
+        test("data.{cdf,png,jpg}", "data.png");
+        test("data.{cdf,png,jpg}", "data.txt");
+
+        test("{foo,bar}.cdf", "foo.cdf");
+        test("{foo,bar}.cdf", "bar.cdf");
+        test("{foo,bar}.cdf", "baz.cdf");
+
+        test("x{a,b{1,2}}y.txt", "xay.txt");
+        test("x{a,b{1,2}}y.txt", "xb1y.txt");
+        test("x{a,b{1,2}}y.txt", "xb2y.txt");
+        test("x{a,b{1,2}}y.txt", "xby.txt");
+    }
+
+    private static void test(String glob, String text) {
+        String regex = globToRegex(glob);
+        boolean match = text.matches(regex);
+        System.out.println("glob=" + glob
+                + " regex=" + regex
+                + " text=" + text
+                + " match=" + match);
+    }
+   
+    /**
+     * converts regex into a glob, as best it can.  This does
+     * not reverse all the conversions done by globToRegex.
      * @param regex regular expression like "foo.*\\.dat"
      * @return a glob like "foo*.dat"
      */
