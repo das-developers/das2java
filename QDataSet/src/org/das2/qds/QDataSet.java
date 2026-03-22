@@ -403,6 +403,11 @@ public interface QDataSet {
      * an object that represents
      * the coverage and resolution of the interval covered.  For example, in Autoplot
      * the TimeSeriesBrowse uses this to keep track of what's already been read.
+     * The CACHE_TAG can be located as a property of the DEPEND_0 data or on
+     * the data itself. Ideally it would be on the tags dataset, but existing 
+     * codes do both.  The problem is what if the data is a JOIN, then each joined
+     * dataset would have the tag, even though they might be just one day of a long
+     * interval.
      */
     public final static String CACHE_TAG="CACHE_TAG";
     
