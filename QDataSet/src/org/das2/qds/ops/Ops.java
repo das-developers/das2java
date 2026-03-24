@@ -11834,7 +11834,7 @@ public final class Ops {
      * @param vv rank 1 dataset having length L that is the data to be interpolated.
      * @param findex rank N dataset of fractional indices.  This must be dimensionless, between -0.5 and L-0.5 and is typically calculated by the findex command.
      * @return the result.  
-     * @see #interpolateMod interpolateMod, for data like longitude where 259 deg is 2 degrees away from 1 deg
+     * @see #interpolateMod interpolateMod, for data like longitude where 259 deg and 1 deg are 2 degrees apart.
      */
     public static QDataSet interpolate( QDataSet vv, QDataSet findex ) {
         if ( vv.rank()==2 ) {
@@ -11863,6 +11863,9 @@ public final class Ops {
             throw new IllegalArgumentException("dataset to be interpolated is not rank1");
         }
         if ( !isDimensionless(findex) ) throw new IllegalArgumentException("findex argument should be dimensionless, expected output from findex command.");
+        if ( SemanticOps.isBundle(findex) && !SemanticOps.isBundle(vv) ) {
+            logger.warning("findex looks suspicious, where is a bundle but the data is not.  Check if arguments were reversed.");
+        }
         QDataSet fex0= extent(findex);
         if ( ( fex0.value(1)-vv.length() ) / vv.length() > 100 ) {
             logger.warning("findex looks suspicious, where its max would result in unrealistic extrapolations");
