@@ -2204,13 +2204,25 @@ public final class Ops {
         }
     }
     
-    
-    
     /**
      * return the trim of the dataset ds where its DEPEND_1 (typically ytags) are
      * within the range dr.  For example,
+     * if ds is frequencies from 10 Hz to 1e8 Hz, trim1( ds, datumRange('100Hz to 1000Hz') ) would
+     * return just the data in this range.
+     * @param ds the dataset to be trimmed, with a rank 1 monotonic DEPEND_1.
+     * @param dr the range to trim
+     * @return the subset of the data.
+     * @see #slice1(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
+     */
+    public static QDataSet trim1( QDataSet ds, DatumRange dr ) {
+        return trim1( ds, Ops.dataset(dr.min()), Ops.dataset(dr.max()) );
+    }
+    
+    /**
+     * return the trim of the dataset ds where its DEPEND_1 (typically ytags) are
+     * within the range described by rank 0 data st and en.  For example,
      * if ds was frequencies from 10 Hz to 1e8 Hz, trim1( ds, 100Hz, 1000Hz ) would
-	 * return just the data in this range.
+     * return just the data in this range.
      * @param ds the dataset to be trimmed, with a rank 1 monotonic DEPEND_1.
      * @param st rank 0 min value
      * @param en rank 0 max value
