@@ -223,6 +223,7 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
      */
     public static double[] parseLayoutStr( String s ) throws ParseException {
         double[] result= new double[] { 0, 0, 0 };
+        s= s.trim();
         StringTokenizer tok= new StringTokenizer( s, "%emptx", true );
         int pos=0;
         while ( tok.hasMoreTokens() ) {
