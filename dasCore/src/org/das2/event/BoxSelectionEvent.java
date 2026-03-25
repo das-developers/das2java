@@ -175,6 +175,7 @@ public class BoxSelectionEvent extends DasEvent {
      * @return the keystroke or empty string
      */
     public String getKeyStroke() {
+        if ( planes==null ) return "";
         String s= (String)planes.get("keyChar");
         if ( s==null ) {
             return "";
