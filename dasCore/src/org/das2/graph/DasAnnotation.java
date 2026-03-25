@@ -205,13 +205,13 @@ public class DasAnnotation extends DasCanvasComponent {
                     
                     if ( e.isShiftDown() ) {
                         String xs= getReferenceX().trim();
-                        if ( xs.length()>0 ) {
+                        if ( xs.trim().length()>0 ) {
                             setReferenceX( xs + ";" + x.toString() );
                         } else {
                             setReferenceX( getPointAtX().toString() + ";" + x.toString() );
                         }
                         String ys= getReferenceY().trim();
-                        if ( ys.length()>0 ) {
+                        if ( ys.trim().length()>0 ) {
                             setReferenceY( ys + ";" + y.toString() );
                         } else {
                             setReferenceY( getPointAtY().toString() + ";" + y.toString() );
@@ -508,6 +508,7 @@ public class DasAnnotation extends DasCanvasComponent {
      * @param url 
      */
     public void setUrl(String url) {
+        url= url.trim();
         String oldUrl = this.url;
         if ( url.length()==0 ) {
             this.url= url;
@@ -539,8 +540,9 @@ public class DasAnnotation extends DasCanvasComponent {
     }
 
     public void setPadding(String padding) {
+        padding= padding.trim();
         String oldPadding = this.padding;
-        this.padding = padding;
+        this.padding = padding.trim();
         firePropertyChange(PROP_PADDING, oldPadding, padding);
         resize();
     }
@@ -828,7 +830,7 @@ public class DasAnnotation extends DasCanvasComponent {
             paintOneArrow(g, r, Math.max(12,em2*8), stroke0, fore, pointAtX, pointAtY );
         }
         
-        if ( referenceX.length()>0 || referenceY.length()>0 ) {
+        if ( referenceX.trim().length()>0 || referenceY.trim().length()>0 ) {
             String[] xx= referenceX.split("[;,]",-2);
             String[] yy= referenceY.split("[;,]",-2);
             int n= Math.max( xx.length, yy.length );
@@ -1991,7 +1993,7 @@ public class DasAnnotation extends DasCanvasComponent {
 
     public void setPointAtOffset(String pointAtOffset) {
         String oldPointAtOffset = this.pointAtOffset;
-        this.pointAtOffset = pointAtOffset;
+        this.pointAtOffset = pointAtOffset.trim();
         firePropertyChange(PROP_POINTATOFFSET, oldPointAtOffset, pointAtOffset);
     }
 
@@ -2122,7 +2124,7 @@ public class DasAnnotation extends DasCanvasComponent {
 
     public void setLineThickness(String lineThickness) {
         String oldLineThickness = this.lineThickness;
-        this.lineThickness = lineThickness;
+        this.lineThickness = lineThickness.trim();
         repaint();
         firePropertyChange(PROP_LINETHICKNESS, oldLineThickness, lineThickness);
     }
@@ -2183,7 +2185,7 @@ public class DasAnnotation extends DasCanvasComponent {
      */
     public void setAnchorOffset(String anchorOffset) {
         String oldAnchorOffset = this.anchorOffset;
-        this.anchorOffset = anchorOffset;
+        this.anchorOffset = anchorOffset.trim();
         firePropertyChange(PROP_ANCHOROFFSET, oldAnchorOffset, anchorOffset);
         resize();
     }
