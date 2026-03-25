@@ -34,12 +34,25 @@ import org.das2.graph.DasCanvasComponent;
 public abstract class AbstractDragRenderer implements DragRenderer
 {
  
-    public AbstractDragRenderer(){}
+    public AbstractDragRenderer(){
+        this(false);
+    }
        
     public AbstractDragRenderer(DasCanvasComponent parent) {
-        this.parent= parent;
+        this(parent,false);
     }
+
+    public AbstractDragRenderer( boolean dragEvents ){
+        this.updatingDragSelection= dragEvents;
+    }
+       
+    public AbstractDragRenderer(DasCanvasComponent parent, boolean dragEvents ) {
+        this(dragEvents);
+        this.parent= parent;
+    }    
     
+    private final boolean updatingDragSelection;
+            
     /**
      * return the event for the gesture.  A mouse box event is returned.
      * @param source
@@ -75,7 +88,7 @@ public abstract class AbstractDragRenderer implements DragRenderer
      */
     @Override
     public boolean isUpdatingDragSelection() {
-        return false;
+        return updatingDragSelection;
     }    
     
     private DasCanvasComponent parent;
