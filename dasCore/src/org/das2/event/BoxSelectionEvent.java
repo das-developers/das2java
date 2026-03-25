@@ -165,6 +165,22 @@ public class BoxSelectionEvent extends DasEvent {
     }
     
     /**
+     * return the keystroke in a one-character string if a key was pressed, or empty string if a mouse motion triggered the event.
+     * Note "p" is typically handled elsewhere and is used to "pin" the mouse action.  "c" is sometimes handled as "copy"
+     * and should also not be used.
+     * 
+     * @return the keystroke
+     */
+    public String getKeyStroke() {
+        String s= (String)planes.get("keyChar");
+        if ( s==null ) {
+            return "";
+        } else {
+            return s;
+        }
+    }
+    
+    /**
      * attach a dataset to this event.
      * @param ds a dataset for this event.
      */
