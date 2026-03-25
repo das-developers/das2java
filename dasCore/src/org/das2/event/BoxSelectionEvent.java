@@ -167,7 +167,8 @@ public class BoxSelectionEvent extends DasEvent {
     /**
      * return the keystroke in a one-character string if a key was pressed, or empty string if a mouse motion triggered the event.
      * Note "p" is typically handled elsewhere and is used to "pin" the mouse action.  "c" is sometimes handled as "copy"
-     * and should also not be used.  Also, function keys F1 through F12 will be returned as strings "F1" through "F12".
+     * and should also not be used.  Also, function keys F1 through F12 will be returned as strings "F1" through "F12", and
+     * "insert" and "delete" are returned for those two keys.
      * Note also that keyboards differ internationally, so consider using numbers or letters known
      * to work commonly.
      * 
