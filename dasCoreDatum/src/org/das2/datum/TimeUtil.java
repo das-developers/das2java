@@ -1802,6 +1802,21 @@ public final class TimeUtil {
         return result;
     }
     
+    /**
+     * Format the time string to a specific format specification.Note this is not very efficient for doing many
+     * of these, since <code>tstring</code> must be interpreted each time.  In this case, two TimeParsers for inputs
+     * and outputs should be created.
+     * 
+     * @param format the format string, like $Y-$m-$dT$H-$M
+     * @param tstring
+     * @return the time in a specific format.
+     * @throws java.text.ParseException 
+     */
+    public static String reformatTime( String format, String tstring ) throws ParseException {
+        TimeStruct ts= parseTime(tstring);
+        return TimeParser.create(format).format( toDatum(ts) );
+    }    
+    
     /** Creates a datum from a string
      * @param s
      * @throws ParseException
