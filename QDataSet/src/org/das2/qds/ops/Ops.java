@@ -8312,7 +8312,7 @@ public final class Ops {
         QDataSet findex= Ops.findex( dep, sliceds );
         double f= findex.value();
         //TODO: bug 1234: slice at string appears to mis with FFTPower result
-        if ( f>=0. && f<dep.length() ) {
+        if ( f>=0. && f<dep.length()-1 ) {
             return slice0( ds, (int)Math.round(f) );
         } else if ( f<0 ) {
             return slice0( ds, 0 );
@@ -8349,7 +8349,7 @@ public final class Ops {
         }
         QDataSet findex= Ops.findex( dep, sliceds );
         double f= findex.value();
-        if ( f>=0. && f<dep.length() ) {
+        if ( f>=0. && f<dep.length()-1 ) {
             return slice1( ds, (int)Math.round(f) );
         } else if ( f<0 ) {
             return slice1( ds, 0 );
@@ -8385,7 +8385,7 @@ public final class Ops {
         }
         QDataSet findex= Ops.findex( dep, sliceds );
         double f= findex.value();
-        if ( f>=0. && f<dep.length() ) {
+        if ( f>=0. && f<dep.length()-1 ) {
             return slice2( ds, (int)Math.round(f) );
         } else if ( f<0 ) {
             return slice2( ds, 0 );
@@ -8421,7 +8421,7 @@ public final class Ops {
         }
         QDataSet findex= Ops.findex( dep, sliceds );
         double f= findex.value();
-        if ( f>=0. && f<dep.length() ) {
+        if ( f>=0. && f<dep.length()-1 ) {
             return slice3( ds, (int)Math.round(f) );
         } else if ( f<0 ) {
             return slice3( ds, 0 );
