@@ -1513,8 +1513,8 @@ public class DasAnnotation extends DasCanvasComponent {
         
         int xoffset=0;
         int yoffset=0;
-        if ( anchorOffset.length()>0 ) {
-            String[] ss= anchorOffset.split(",");
+        if ( anchorOffset.trim().length()>0 ) {
+            String[] ss= anchorOffset.trim().split(",");
             if ( ss.length==2 ) {
                 double[] dd;
                 try {
