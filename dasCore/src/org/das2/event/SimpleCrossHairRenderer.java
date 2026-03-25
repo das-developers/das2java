@@ -7,10 +7,27 @@ import java.awt.Rectangle;
 import org.das2.components.propertyeditor.Editable;
 
 /**
- * Draw a cross hair.
+ * Draw a cross hair.  By default, this will send off update events during the drag.  If the
+ * mouse module also 
  * @author jbf
  */
 public class SimpleCrossHairRenderer extends AbstractDragRenderer implements DragRenderer, Editable { 
+    
+    /**
+     * create the SimpleCrossHairRenderer, requesting events be fired during the drag.
+     */
+    public SimpleCrossHairRenderer( ) {
+        this(true);
+    }
+    
+    /**
+     * create the SimpleCrossHairRenderer, possibly firing events.
+     * @param dragEvents if true, will request that events be fired during the drag.
+     */
+    public SimpleCrossHairRenderer( boolean dragEvents ) {
+        super(dragEvents);
+    }
+
     @Override
     public Rectangle[] renderDrag(Graphics g, Point p1, Point p2) {
         Rectangle clip= g.getClipBounds();
