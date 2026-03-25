@@ -218,7 +218,23 @@ public class BoxSelectorMouseModule extends MouseModule {
         if (lastMouseEvent != null) {
             BoxSelectionEvent dpse = getBoxSelectionEvent(lastMouseEvent);
             HashMap planes = new HashMap();
-            planes.put("keyChar", String.valueOf(e.getKeyChar()));
+            String s;
+
+            if ( e.getKeyCode()>=KeyEvent.VK_F1 && e.getKeyCode()<=KeyEvent.VK_F12 ) {
+                s= "F"+(1+e.getKeyCode()-KeyEvent.VK_F1);
+            } else if ( e.getKeyCode()==KeyEvent.VK_INSERT ) {
+                s= "insert";
+            } else if ( e.getKeyCode()==KeyEvent.VK_DELETE ) {
+                s= "delete";
+            } else {
+                if ( e.getKeyChar()=='\uFFFF' ) {
+                    return;
+                } else {
+                    s= String.valueOf(e.getKeyChar());
+                }
+            }
+            
+            planes.put("keyChar", s);
             BoxSelectionEvent dpse2 = new BoxSelectionEvent(this, dpse.getXRange(), dpse.getYRange(), planes);
             dpse2.setStart( dpse.getStartX(), dpse.getStartY() );
             dpse2.setFinish( dpse.getFinishX(), dpse.getFinishY() );
