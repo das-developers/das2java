@@ -29,12 +29,12 @@ public class AboutUtil {
     private static final Logger logger= LoggerManager.getLogger("das2");
     
     /**
-     * return HTML code describing the release version, Java version, build time, etc.
-     * @return 
+     * return the build time, for example 2026-03-22T14:49Z, as an ISO8601
+     * time with the form $Y-$m-$dT$H:$MZ, or "???" if the build time
+     * isn't known.
+     * @return the build time $Y-$m-$dT$H:$MZ or "???"
      */
-    public static String getAboutHtml() {
-        String dasVersion = Splash.getVersion();
-        String javaVersion = System.getProperty("java.version"); // applet okay
+    public static String getBuildTime() {
         String buildTime = "???";
         java.net.URL buildURL = AboutUtil.class.getResource("/buildTime.txt");
         if (buildURL != null) {
@@ -44,6 +44,17 @@ public class AboutUtil {
                 logger.log( Level.WARNING, ex.getMessage(), ex );
             }
         }
+        return buildTime;
+    }
+    
+    /**
+     * return HTML code describing the release version, Java version, build time, etc.
+     * @return 
+     */
+    public static String getAboutHtml() {
+        String dasVersion = Splash.getVersion();
+        String javaVersion = System.getProperty("java.version"); // applet okay
+        String buildTime = getBuildTime();
         String arch = System.getProperty("os.arch"); // applet okay
         DecimalFormat nf = new DecimalFormat("0.0");
         String mem = nf.format(Runtime.getRuntime().maxMemory() / (1024 * 1024));
