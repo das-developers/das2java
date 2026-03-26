@@ -109,7 +109,7 @@ public class GrannyTextEditor extends javax.swing.JPanel implements StringScheme
             }
         }
         String[] misc= new String[] { "&rarr;", "&uarr;", "&#0229;", "&infin;", "&cong;", "&le;", "&ne;", "&ge;", 
-            "&sup2;", "&sup3;", "&dagger;", "&deg;", "&int;", "", "More..." };
+            "&sup2;", "&sup3;", "&dagger;", "&deg;", "&int;", "&plusmn;", "More..." };
         for ( int i=0; i<15; i++ ) {
             if ( i<misc.length ) {
                 JButton b= miscButton(misc[i]);
