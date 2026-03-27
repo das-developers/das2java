@@ -135,6 +135,7 @@ public class QDataSetStreamHandler implements StreamHandler {
                         double v= Double.parseDouble(String.valueOf(value));
                         builder.putProperty( name, v );
                     } else {
+                        logger.log(Level.WARNING, "property \"{0}\" should be type \"{1}\", string is being parsed using its unit", new Object[]{name, SemanticOps.getPropertyType(name)});
                         double v= u.parse(String.valueOf(value)).doubleValue(u);
                         builder.putProperty( name, v );
                     }
