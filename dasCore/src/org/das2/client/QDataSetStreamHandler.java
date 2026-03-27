@@ -120,7 +120,17 @@ public class QDataSetStreamHandler implements StreamHandler {
         if ( SemanticOps.checkPropertyType( name, value, false ) ) {
             builder.putProperty( name, value );
         } else {
-            logger.log(Level.WARNING, "property \"{0}\" should be type \"{1}\"", new Object[]{name, SemanticOps.getPropertyType(name)});
+            if ( ( name.equals("VALID_MIN") || name.equals("VALID_MAX") || name.equals("FILL_VALUE") ) 
+                    && value instanceof String ) {
+                try {
+                    double v= Double.parseDouble(String.valueOf(value));
+                    builder.putProperty( name, v );
+                } catch ( NumberFormatException ex ) {
+                    logger.log(Level.WARNING, "property \"{0}\" should be type \"{1}\" and cannot be parsed as double", new Object[]{name, SemanticOps.getPropertyType(name)});
+                }
+            } else {
+                logger.log(Level.WARNING, "property \"{0}\" should be type \"{1}\"", new Object[]{name, SemanticOps.getPropertyType(name)});
+            }
         }
     }
     
