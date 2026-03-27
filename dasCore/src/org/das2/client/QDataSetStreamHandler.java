@@ -1,6 +1,7 @@
 
 package org.das2.client;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -111,11 +112,18 @@ public class QDataSetStreamHandler implements StreamHandler {
         }
         
     }
-
     private void putProperty( DataSetBuilder builder, String name, Object value ) {
+        putProperty( builder, name, value, null );
+    }
+    
+    private void putProperty( DataSetBuilder builder, String name, Object value, Units u ) {
         if ( value instanceof Datum ) {
-            logger.warning("kludge to fix Datum property values");
-            value= ((Datum)value).doubleValue(((Datum)value).getUnits());
+            if ( u!=null ) {
+                value= ((Datum)value).doubleValue(u);
+            } else {
+                logger.warning("kludge to fix Datum property values");
+                value= ((Datum)value).doubleValue(((Datum)value).getUnits());
+            }
         }
         if ( SemanticOps.checkPropertyType( name, value, false ) ) {
             builder.putProperty( name, value );
@@ -123,9 +131,14 @@ public class QDataSetStreamHandler implements StreamHandler {
             if ( ( name.equals("VALID_MIN") || name.equals("VALID_MAX") || name.equals("FILL_VALUE") ) 
                     && value instanceof String ) {
                 try {
-                    double v= Double.parseDouble(String.valueOf(value));
-                    builder.putProperty( name, v );
-                } catch ( NumberFormatException ex ) {
+                    if ( u==null ) {
+                        double v= Double.parseDouble(String.valueOf(value));
+                        builder.putProperty( name, v );
+                    } else {
+                        double v= u.parse(String.valueOf(value)).doubleValue(u);
+                        builder.putProperty( name, v );
+                    }
+                } catch (ParseException | NumberFormatException ex) {
                     logger.log(Level.WARNING, "property \"{0}\" should be type \"{1}\" and cannot be parsed as double", new Object[]{name, SemanticOps.getPropertyType(name)});
                 }
             } else {
@@ -258,32 +271,35 @@ public class QDataSetStreamHandler implements StreamHandler {
     public void createBuilders( PacketDescriptor pd ) {
         DataSetBuilder[] lbuilders= new DataSetBuilder[pd.getYCount()];
         for ( int i=0; i<pd.getYCount(); i++ ) {
+            Units  u;
             SkeletonDescriptor sd= pd.getYDescriptor(i);
             logger.log(Level.FINER, "got packet: {0}", sd);
             DataSetBuilder builder;
             if ( sd instanceof StreamYScanDescriptor ) {
                 StreamYScanDescriptor yscan= (StreamYScanDescriptor)sd;
                 builder= new DataSetBuilder(2,1000,yscan.getNItems());
-                putProperty( builder, QDataSet.UNITS, yscan.getZUnits() );
+                u= yscan.getZUnits();
+                if ( u==null ) u= Units.dimensionless;
+                putProperty( builder, QDataSet.UNITS, u );
                 putProperty( builder, QDataSet.NAME, yscan.getName() );
                 putProperty( builder, QDataSet.LABEL, findProperty( yscan, "zLabel" ) ); // any of the following may return null.
                 putProperty( builder, QDataSet.TITLE, findProperty( yscan, "zSummary" ) );
-                putProperty( builder, QDataSet.VALID_MIN, findProperty( yscan, "zValidMin" ) );
-                putProperty( builder, QDataSet.VALID_MAX, findProperty( yscan, "zValidMax" ) );
+                putProperty( builder, QDataSet.VALID_MIN, findProperty( yscan, "zValidMin" ), u );
+                putProperty( builder, QDataSet.VALID_MAX, findProperty( yscan, "zValidMax" ), u );
                 DatumRange zRange= (DatumRange)findProperty( yscan, "zRange" );
                 if ( zRange!=null ) {
-                    putProperty( builder, QDataSet.TYPICAL_MIN, zRange.min().doubleValue( zRange.getUnits() ) );
-                    putProperty( builder, QDataSet.TYPICAL_MAX, zRange.max().doubleValue( zRange.getUnits() ) );
+                    putProperty( builder, QDataSet.TYPICAL_MIN, zRange.min().doubleValue( u ) );
+                    putProperty( builder, QDataSet.TYPICAL_MAX, zRange.max().doubleValue( u ) );
                 }                
-                putProperty( builder, QDataSet.FILL_VALUE, findProperty( yscan, "zFill" ) );
+                putProperty( builder, QDataSet.FILL_VALUE, findProperty( yscan, "zFill" ), u );
                 putProperty( builder, QDataSet.SCALE_TYPE, findProperty( yscan, "zScaleType" ) );
                 DDataSet ytags= DDataSet.wrap( yscan.getYTags() );
                 ytags.putProperty( QDataSet.UNITS, yscan.getYUnits() );
                 ytags.putProperty( QDataSet.SCALE_TYPE, findProperty( yscan, "yScaleType") );
                 DatumRange yRange= (DatumRange)findProperty( yscan, "yRange" );
                 if ( yRange!=null ) {
-                    ytags.putProperty( QDataSet.TYPICAL_MIN, yRange.min().doubleValue( yRange.getUnits() ) );
-                    ytags.putProperty( QDataSet.TYPICAL_MAX, yRange.max().doubleValue( yRange.getUnits() ) );
+                    ytags.putProperty( QDataSet.TYPICAL_MIN, yRange.min().doubleValue( u ) );
+                    ytags.putProperty( QDataSet.TYPICAL_MAX, yRange.max().doubleValue( u ) );
                 }                
                 ytags.putProperty( QDataSet.LABEL, findProperty( yscan, "yLabel" ));
                 ytags.putProperty( QDataSet.TITLE, findProperty( yscan, "ySummary" ));
@@ -318,26 +334,28 @@ public class QDataSetStreamHandler implements StreamHandler {
             } else if ( sd instanceof StreamYDescriptor ) {
                 StreamScalarDescriptor multiy= (StreamScalarDescriptor)sd;
                 builder= new DataSetBuilder(1,1000);
-                putProperty( builder, QDataSet.UNITS, multiy.getUnits() );
+                u= multiy.getUnits();
+                if ( u==null ) u= Units.dimensionless;
+                putProperty( builder, QDataSet.UNITS, u );
                 String n= multiy.getName();
                 if ( n.equals("") ) n= "y"; // this is what the old library
                 putProperty( builder, QDataSet.NAME, n );
                 putProperty( builder, QDataSet.LABEL, findProperty( multiy, "yLabel" ) ); // any of the following may return null.
                 putProperty( builder, QDataSet.FORMAT, findProperty( multiy, "yFormat" ) );
                 putProperty( builder, QDataSet.TITLE, findProperty( multiy, "ySummary" ) );
-                putProperty( builder, QDataSet.VALID_MIN, findProperty( multiy, "yValidMin" ) );
-                putProperty( builder, QDataSet.VALID_MAX, findProperty( multiy, "yValidMax" ) );
+                putProperty( builder, QDataSet.VALID_MIN, findProperty( multiy, "yValidMin" ), u );
+                putProperty( builder, QDataSet.VALID_MAX, findProperty( multiy, "yValidMax" ), u );
                 DatumRange yRange= (DatumRange)findProperty( multiy, "yRange" );
                 if ( yRange!=null ) {
-                    putProperty( builder, QDataSet.TYPICAL_MIN, yRange.min().doubleValue( yRange.getUnits() ) );
-                    putProperty( builder, QDataSet.TYPICAL_MAX, yRange.max().doubleValue( yRange.getUnits() ) );
+                    putProperty( builder, QDataSet.TYPICAL_MIN, yRange.min().doubleValue( u ) );
+                    putProperty( builder, QDataSet.TYPICAL_MAX, yRange.max().doubleValue( u ) );
                 } else {
-                    putProperty( builder, QDataSet.TYPICAL_MIN, findProperty( multiy, "yScaleMin" ) );
-                    putProperty( builder, QDataSet.TYPICAL_MAX, findProperty( multiy, "yScaleMax" ) );
+                    putProperty( builder, QDataSet.TYPICAL_MIN, findProperty( multiy, "yScaleMin" ), u );
+                    putProperty( builder, QDataSet.TYPICAL_MAX, findProperty( multiy, "yScaleMax" ), u );
                 }
                 
                 putProperty( builder, QDataSet.SCALE_TYPE, findProperty( multiy, "yScaleType" ) );
-                putProperty( builder, QDataSet.FILL_VALUE, findProperty( multiy, "yFill" ) );
+                putProperty( builder, QDataSet.FILL_VALUE, findProperty( multiy, "yFill" ), u );
                 
                 Object yWarnMin= findProperty( multiy, "yWarnMin" );
                 Object yWarnMax= findProperty( multiy, "yWarnMax" );
@@ -345,7 +363,7 @@ public class QDataSetStreamHandler implements StreamHandler {
                 Object yNominalMax= findProperty( multiy, "yNominalMax" );
 
                 if ( yNominalMax!=null || yWarnMax!=null || yNominalMin!=null || yWarnMin!=null) {
-                    Units u= multiy.getUnits();
+                    u= multiy.getUnits();
                     if ( u==null ) u= Units.dimensionless;
                     Map<String,Object> meta= new HashMap<>();
                     if ( yWarnMin instanceof Datum ) {
@@ -373,20 +391,22 @@ public class QDataSetStreamHandler implements StreamHandler {
             } else if ( sd instanceof StreamZDescriptor ) {
                 StreamScalarDescriptor multiy= (StreamScalarDescriptor)sd;
                 builder= new DataSetBuilder(1,1000);
-                putProperty( builder, QDataSet.UNITS, multiy.getUnits() );
+                u= multiy.getUnits();
+                if ( u==null ) u= Units.dimensionless;
+                putProperty( builder, QDataSet.UNITS, u );
                 putProperty( builder, QDataSet.NAME, multiy.getName() );
                 putProperty( builder, QDataSet.LABEL, findProperty( multiy, "zLabel" ) ); // any of the following may return null.
                 putProperty( builder, QDataSet.FORMAT, findProperty( multiy, "zFormat" ) );
                 putProperty( builder, QDataSet.TITLE, findProperty( multiy, "zSummary" ) );
-                putProperty( builder, QDataSet.VALID_MIN, findProperty( multiy, "zValidMin" ) );
-                putProperty( builder, QDataSet.VALID_MAX, findProperty( multiy, "zValidMax" ) );
+                putProperty( builder, QDataSet.VALID_MIN, findProperty( multiy, "zValidMin" ), u );
+                putProperty( builder, QDataSet.VALID_MAX, findProperty( multiy, "zValidMax" ), u );
                 DatumRange zRange= (DatumRange)findProperty( multiy, "zRange" );
                 if ( zRange!=null ) {
                     putProperty( builder, QDataSet.TYPICAL_MIN, zRange.min().doubleValue( zRange.getUnits() ) );
                     putProperty( builder, QDataSet.TYPICAL_MAX, zRange.max().doubleValue( zRange.getUnits() ) );
                 }                
                 putProperty( builder, QDataSet.SCALE_TYPE, findProperty( multiy, "zScaleType" ) );
-                putProperty( builder, QDataSet.FILL_VALUE, findProperty( multiy, "zFill" ) );
+                putProperty( builder, QDataSet.FILL_VALUE, findProperty( multiy, "zFill" ), u );
                 
             } else {
                 throw new IllegalArgumentException("not supported: "+sd);
