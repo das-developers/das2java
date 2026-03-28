@@ -76,7 +76,7 @@ public class Glob {
      * @return a Pattern for the glob, for example *.dat -> .*\.dat
      */
     public static Pattern getPattern( String glob ) {
-        final String regex= getRegex( glob );
+        final String regex= globToRegex( glob );
         final Pattern absPattern= Pattern.compile(regex);
         return absPattern;
     }
@@ -99,9 +99,7 @@ public class Glob {
      */
     public static String globToRegex(String glob) {
         StringBuilder out = new StringBuilder();
-        out.append("^");
         appendGlob(out, glob, 0, glob.length());
-        out.append("$");
         return out.toString();
     }
 
