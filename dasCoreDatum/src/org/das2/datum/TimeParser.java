@@ -1604,7 +1604,7 @@ public class TimeParser {
                         extra.put( "X", timeString.substring(offs, offs + len) );
                     }
                 } else if (handlers[idigit] == 15) { // "x"
-                    if ( len>=0 ) {
+                    if ( len>=0 ) { //TODO:https://github.com/das-developers/das2java/issues/172 
                         extra.put( "x", timeString.substring(offs, offs + len) );
                     }
                 } else if ( handlers[idigit] == 17 ) { // "Z" 
@@ -2329,7 +2329,11 @@ public class TimeParser {
                     result.insert(offs, nf[len].format(digit));
                     offs += len;
                 }
-                
+            } else if (handlers[idigit] == 15) { // $x .  Note $(x;name=band) is not supported....
+                String ignore= extra.getOrDefault("x","");
+                result.insert(offs, ignore);
+                offs += ignore.length();
+                                
             } else if (handlers[idigit] == 16) { // $N nanoseconds
                 int nanos= timel.millis * 1000000 + timel.micros * 1000 + timel.nanos;
                 result.insert(offs, String.format("%09d",nanos ));
