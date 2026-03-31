@@ -2331,6 +2331,14 @@ public class TimeParser {
                 }
             } else if (handlers[idigit] == 15) { // $x .  Note $(x;name=band) is not supported....
                 String ignore= extra.getOrDefault("x","");
+                String q=qualifiers[idigit];  
+                if ( q!=null ) {
+                    Pattern p= Pattern.compile("name=([a-zA-Z_][a-zA-Z_0-9]*)"); // TODO: multiple qualifiers
+                    Matcher m= p.matcher(q);
+                    if ( m.matches() ) {
+                        ignore=extra.getOrDefault(m.group(1),ignore);
+                    }
+                }
                 result.insert(offs, ignore);
                 offs += ignore.length();
                                 
