@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.TimeZone;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Logger;
@@ -136,7 +137,17 @@ public class TimeParser {
      * @see #handlers
      */
     private String[] fc;
+    
+    /**
+     * extra qualifiers for each field
+     */
     private String[] qualifiers;
+    
+    /**
+     * qualifiers in parsed format
+     */
+    private Map<String,String>[] qualifierMaps;
+    
     private final String regex;
     //private String formatString;
     
@@ -848,6 +859,7 @@ public class TimeParser {
         String[] ss = formatString.split("\\$");
         fc = new String[ss.length];
         qualifiers= new String[ss.length];
+        qualifierMaps= new HashMap[ss.length];
         
         String[] delim = new String[ss.length + 1];
 
@@ -891,6 +903,16 @@ public class TimeParser {
                 if ( semi != -1) {
                     fc[i] = ssi.substring(pp + 1, semi );
                     qualifiers[i]= ssi.substring( semi+1,endIndex );
+                    qualifierMaps[i]= new HashMap<>();
+                    String[] qpairs= qualifiers[i].split(";",-2);
+                    for ( String q : qpairs ) {
+                        int j= q.indexOf("=");
+                        if ( j>-1 ) {
+                            qualifierMaps[i].put( q.substring(0,j).trim(), q.substring(j+1).trim() );
+                        } else {
+                            qualifierMaps[i].put( q.trim(), "" );
+                        }
+                    }
                 } else {
                     fc[i] = ssi.substring(pp + 1, endIndex);
                 }
@@ -954,19 +976,7 @@ public class TimeParser {
                         pos += lengths[i];
                     }
                     FieldHandler fh= fieldHandlers.get(fc[i]);
-                    String args= qualifiers[i];
-                    Map<String,String> argv= new HashMap();
-                    if ( args!=null ) {
-                        String[] ss2= args.split(";",-2);
-                        for (String ss21 : ss2) {
-                            int i3 = ss21.indexOf("=");
-                            if (i3==-1) {
-                                argv.put(ss21.trim(), "");
-                            } else {
-                                argv.put(ss21.substring(0, i3).trim(), ss21.substring(i3+1).trim());
-                            }
-                        }
-                    }
+                    Map<String,String> argv= qualifierMaps[i];
                     String errm= fh.configure(argv);
                     if ( errm!=null ) {
                         throw new IllegalArgumentException(errm);
@@ -1003,18 +1013,17 @@ public class TimeParser {
             }
             
             if ( qualifiers[i]!=null ) {
-                String[] ss2= qualifiers[i].split(";");
-                for ( String ss21 : ss2 ) {
+                for ( Entry<String,String> ent : qualifierMaps[i].entrySet() ) {
                     boolean okay=false;
-                    String qual = ss21.trim();
-                    if ( qual.equals("startTimeOnly") ) {
+                    String name = ent.getKey();
+                    String qual = name;
+                    if ( name.equals("startTimeOnly") ) {
                         startTimeOnly= fc[i].charAt(0);
                         okay= true;
                     }
-                    int idx= qual.indexOf("=");
-                    if ( !okay && idx>-1 ) {
-                        String name= qual.substring(0,idx).trim();
-                        String val= qual.substring(idx+1).trim();
+                    String value= ent.getValue();
+                    if ( !okay && value.length()>0 ) {
+                        String val= ent.getValue();
                         //FieldHandler fh= (FieldHandler) fieldHandlers.get(name);
                         //fh.parse( val, context, timeWidth );
                         switch (name) {
@@ -1134,7 +1143,6 @@ public class TimeParser {
                         }
                         okay= true;
                     } else if ( !okay ) {
-                        String name= qual.trim();
                         if ( name.equals("end") ) {
                             if ( stopTimeDigit==AFTERSTOP_INIT ) {
                                 startLsd= lsd;
@@ -1608,10 +1616,9 @@ public class TimeParser {
                         extra.put( "x", field ); //Note field has been stripped of surrounding whitespace.
                         String q= qualifiers[idigit];
                         if ( q!=null ) {
-                            Pattern p= Pattern.compile("name=([a-zA-Z_][a-zA-Z_0-9]*)"); // TODO: multiple qualifiers
-                            Matcher m= p.matcher(q);
-                            if ( m.matches() ) {
-                                extra.put(m.group(1),field );
+                            String name= qualifierMaps[idigit].get("name");
+                            if ( name!=null ) {
+                                extra.put(name,field );
                             }
                         }
                     }
@@ -2273,19 +2280,17 @@ public class TimeParser {
 
             }
             if (handlers[idigit] < 10) {
-                String qual= qualifiers[idigit];
+                Map<String,String> qualMap= qualifierMaps[idigit];
                 int digit;
                 int span=1;
-                if ( qual!=null ) {
-                    Pattern p= Pattern.compile("span=(\\d+)"); // TODO: multiple qualifiers
-                    Matcher m= p.matcher(qual);
-                    if ( m.matches() ) {
-                        span= Integer.parseInt(m.group(1));
+                if ( qualMap!=null ) {
+                    String sspan= qualMap.get("span");
+                    if ( sspan!=null ) {
+                        span= Integer.parseInt(sspan);
                     }
-                    p= Pattern.compile("delta=(\\d+)"); // TODO: multiple qualifiers
-                    m= p.matcher(qual);
-                    if ( m.matches() ) {
-                        span= Integer.parseInt(m.group(1));
+                    String sdelta= qualMap.get("delta");
+                    if ( sdelta!=null ) {
+                        span= Integer.parseInt(sdelta);
                     }
                 }
                 switch (handlers[idigit]) {
@@ -2339,12 +2344,10 @@ public class TimeParser {
                 }
             } else if (handlers[idigit] == 15) { // $x .  Note $(x;name=band) is not supported....
                 String ignore= extra.getOrDefault("x","");
-                String q=qualifiers[idigit];  
-                if ( q!=null ) {
-                    Pattern p= Pattern.compile("name=([a-zA-Z_][a-zA-Z_0-9]*)"); // TODO: multiple qualifiers
-                    Matcher m= p.matcher(q);
-                    if ( m.matches() ) {
-                        ignore=extra.getOrDefault(m.group(1),ignore);
+                if ( qualifierMaps[idigit]!=null ) {
+                    String q=qualifierMaps[idigit].get("name");
+                    if ( q!=null ) {
+                        ignore=extra.getOrDefault(q,ignore);
                     }
                 }
                 result.insert(offs, ignore);
