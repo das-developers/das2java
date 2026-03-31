@@ -1604,8 +1604,16 @@ public class TimeParser {
                         extra.put( "X", timeString.substring(offs, offs + len) );
                     }
                 } else if (handlers[idigit] == 15) { // "x"
-                    if ( len>=0 ) { //TODO:https://github.com/das-developers/das2java/issues/172 
-                        extra.put( "x", timeString.substring(offs, offs + len) );
+                    if ( len>=0 ) { 
+                        extra.put( "x", field ); //Note field has been stripped of surrounding whitespace.
+                        String q= qualifiers[idigit];
+                        if ( q!=null ) {
+                            Pattern p= Pattern.compile("name=([a-zA-Z_][a-zA-Z_0-9]*)"); // TODO: multiple qualifiers
+                            Matcher m= p.matcher(q);
+                            if ( m.matches() ) {
+                                extra.put(m.group(1),field );
+                            }
+                        }
                     }
                 } else if ( handlers[idigit] == 17 ) { // "Z" 
                     TimeZone tz = TimeZone.getTimeZone( timeString.substring(offs, offs + len) );
