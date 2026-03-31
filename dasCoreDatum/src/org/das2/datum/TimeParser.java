@@ -168,11 +168,6 @@ public class TimeParser {
      * keep track of the least significant digit in the start time of the format, for when "end" modifier is used.
      */
     private int startLsd;
-
-    /**
-     * to avoid repeated allocations of a map in format, this EMPTY_MAP is used.
-     */
-    private Map<String,String> EMPTY_MAP= new HashMap<>();
     
     /**
      * return true if the parser has a field.
@@ -1480,6 +1475,8 @@ public class TimeParser {
         
         logger.log(Level.FINER, "parse {0}", timeString);
         
+        if ( extra==null ) extra= new HashMap<>();
+                
         lock= Thread.currentThread().getName();
         
         int offs = 0;
@@ -2181,7 +2178,7 @@ public class TimeParser {
      * @return formatted string.
      */
     public String format(Datum start) {    
-        return format( start, null,EMPTY_MAP );
+        return format( start, null, null );
     }
     
     /**
@@ -2191,7 +2188,7 @@ public class TimeParser {
      * @return formatted string.
      */
     public String format(Datum start, Datum stop) {
-        return format(start,stop,EMPTY_MAP);
+        return format(start,stop,null);
     }
     
     /**
@@ -2246,7 +2243,7 @@ public class TimeParser {
         copyTime( timeWidth, timeWidthl ); // make a local copy in case future versions allow variable time widths.
         
         if ( extra==null ) {
-            extra= EMPTY_MAP;
+            extra= new HashMap();
         } else {
             extra= new HashMap(extra);
         }
