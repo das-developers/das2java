@@ -802,7 +802,28 @@ public class GitHubFileSystem extends HttpFileSystem {
      * @throws MalformedURLException 
      */
     public URL gitHubMapFile( URI root, String filename ) throws MalformedURLException {
+        
         filename= toCanonicalFilename( filename );       
+        
+        String sroot= root.toString();
+        if ( sroot.startsWith("https://research-git.uiowa.edu/space-physics/") ) {
+            // https://github.com/das-developers/das2java/issues/173
+            String marker= "/main/";  // Too bad canonical Autoplot GitLab URIs don't have -/blob in them!
+            if ( sroot.contains(marker) ) {
+                int i = sroot.indexOf(marker);
+                String rawUrl = sroot.substring(0, i) + "/-/raw"
+                    + sroot.substring(i);
+                return new URL(rawUrl + filename.substring(1));
+            }
+            marker= "/master/";  
+            if ( sroot.contains(marker) ) {
+                int i = sroot.indexOf(marker);
+                String rawUrl = sroot.substring(0, i) + "/-/raw"
+                    + sroot.substring(i);
+                return new URL(rawUrl + filename.substring(1));
+            }
+        }
+        
         // png image "https://github.com/autoplot/app/raw/master/Autoplot/src/resources/badge_ok.png"
         String[] path= root.getPath().split("/",-2);
         String spath= path[0] + '/' + path[1] + '/' + path[2] ;
