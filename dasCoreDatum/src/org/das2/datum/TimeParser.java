@@ -170,6 +170,11 @@ public class TimeParser {
     private int startLsd;
 
     /**
+     * to avoid repeated allocations of a map in format, this EMPTY_MAP is used.
+     */
+    private Map<String,String> EMPTY_MAP= new HashMap<>();
+    
+    /**
      * return true if the parser has a field.
      * @param field e.g. "x"
      * @return true if the parser has a field.
@@ -1480,8 +1485,6 @@ public class TimeParser {
         int offs = 0;
         int len = 0;
 
-        if ( extra==null ) extra= new HashMap();
-        
         orbitDatumRange=null;
 
         TimeStruct time;
@@ -1602,23 +1605,23 @@ public class TimeParser {
                     time.minute -= offset % 100;
                 } else if (handlers[idigit] == 12) { // $(ignore)
                     if ( len>=0 ) {
-                        extra.put( "ignore", timeString.substring(offs, offs + len) );
+                        if ( extra!=null ) extra.put( "ignore", timeString.substring(offs, offs + len) );
                     }
                 } else if (handlers[idigit] == 13) { // month name
                     time.month = TimeUtil.monthNumber(timeString.substring(offs, offs + len));
 
                 } else if (handlers[idigit] == 14) { // "X"
                     if ( len>=0 ) {
-                        extra.put( "X", timeString.substring(offs, offs + len) );
+                        if ( extra!=null ) extra.put( "X", timeString.substring(offs, offs + len) );
                     }
                 } else if (handlers[idigit] == 15) { // "x"
                     if ( len>=0 ) { 
-                        extra.put( "x", field ); //Note field has been stripped of surrounding whitespace.
+                        if ( extra!=null ) extra.put( "x", field ); //Note field has been stripped of surrounding whitespace.
                         String q= qualifiers[idigit];
                         if ( q!=null ) {
                             String name= qualifierMaps[idigit].get("name");
                             if ( name!=null ) {
-                                extra.put(name,field );
+                                if ( extra!=null ) extra.put(name,field );
                             }
                         }
                     }
@@ -2178,7 +2181,7 @@ public class TimeParser {
      * @return formatted string.
      */
     public String format(Datum start) {    
-        return format( start, null );
+        return format( start, null,EMPTY_MAP );
     }
     
     /**
@@ -2188,7 +2191,7 @@ public class TimeParser {
      * @return formatted string.
      */
     public String format(Datum start, Datum stop) {
-        return format(start,stop,new HashMap());
+        return format(start,stop,EMPTY_MAP);
     }
     
     /**
@@ -2241,7 +2244,12 @@ public class TimeParser {
         TimeUtil.TimeStruct timel = TimeUtil.toTimeStruct(start);
         TimeUtil.TimeStruct timeWidthl= new TimeUtil.TimeStruct();        
         copyTime( timeWidth, timeWidthl ); // make a local copy in case future versions allow variable time widths.
-        extra= new HashMap(extra);
+        
+        if ( extra==null ) {
+            extra= EMPTY_MAP;
+        } else {
+            extra= new HashMap(extra);
+        }
 
         TimeUtil.TimeStruct stopTimel;
         if ( stop==null ) {
