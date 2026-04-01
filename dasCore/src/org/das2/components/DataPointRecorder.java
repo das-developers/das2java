@@ -1240,6 +1240,7 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
      */
     public Painter getFeedbackPainter( DasPlot p ) {
         return (Graphics2D g) -> {
+            long t0= System.currentTimeMillis();
             QDataSet ds = DataPointRecorder.this.getDataPoints();
             if (ds!=null) {
                 for (int i = 0; i<ds.length(); i++) {
@@ -1268,6 +1269,7 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
                     g.draw(new Ellipse2D.Double(xd-7,yd-7,14,14));
                 }
             }
+            logger.log(Level.FINER, "feedback paint in {0} ms", System.currentTimeMillis()-t0);
         };
     }
     
