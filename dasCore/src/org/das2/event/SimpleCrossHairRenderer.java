@@ -28,6 +28,13 @@ public class SimpleCrossHairRenderer extends AbstractDragRenderer implements Dra
         super(dragEvents);
     }
 
+    /**
+     * draw a crosshair at the mouse position.
+     * @param g the graphics context
+     * @param p1 the beginning of the drag
+     * @param p2 the current mouse position during the drag
+     * @return null 
+     */
     @Override
     public Rectangle[] renderDrag(Graphics g, Point p1, Point p2) {
         Rectangle clip= g.getClipBounds();
