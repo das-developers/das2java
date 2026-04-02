@@ -11,6 +11,8 @@ import java.util.*;
  * (host, namespace/owner, project/repo, ref, path) plus a canonical "raw" URL when possible.
  *
  * Designed for Autoplot-style "ForgeFileSystem" dispatch (GitHubFileSystem/GitLabFileSystem).
+ * 
+ * Authored by ChatGPT
  */
 public final class ForgeUrlDetector {
 
