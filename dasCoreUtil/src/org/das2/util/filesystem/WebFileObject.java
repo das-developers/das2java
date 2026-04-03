@@ -347,6 +347,12 @@ public class WebFileObject extends FileObject {
         }
     }
 
+    /**
+     * create the new FileObject.  modifiedDate can be new Date(MAX_VALUE)
+     * @param wfs
+     * @param pathname
+     * @param modifiedDate 
+     */
     protected WebFileObject( WebFileSystem wfs, String pathname, Date modifiedDate ) {
 
         this.modifiedDate = modifiedDate;
