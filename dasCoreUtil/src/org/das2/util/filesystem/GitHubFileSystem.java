@@ -70,7 +70,12 @@ public class GitHubFileSystem extends HttpFileSystem {
     
     private String branch= "";
     
-    private String project;
+    private String project="";
+    
+    /**
+     * directory within the Forge.
+     */
+    private String directory="";
     
     private final Forge forge; 
     
@@ -172,11 +177,23 @@ public class GitHubFileSystem extends HttpFileSystem {
         this.forge= detectForge(root);
         this.baseOffset= baseOffset;
         this.branch= branch;
-        this.project= ""; // empty means not known.
-        int islash= root.getPath().indexOf("/-/"); // project end marker. This is new v2026a_4.
-        if ( islash>-1 ) { // new, leave this in 
-            String[] ss= root.getPath().substring(0,islash).split("/");
-            this.project= String.join("/", Arrays.copyOfRange( ss, 1+baseOffset, ss.length ) );
+        if ( branch.length()>0 ) {
+            String sroot= root.toString();
+            int i= sroot.indexOf("/"+branch+"/");
+            int i0= sroot.indexOf("://");
+            i0= sroot.indexOf("/",i0+3);
+            this.project= sroot.substring(i0+1,i);
+            this.directory= sroot.substring(i+branch.length()+2);
+        } else {
+            this.project= ""; // empty means not known.
+            this.directory="";
+        }
+        if ( this.project.length()==0 ) {
+            int islash= root.getPath().indexOf("/-/"); 
+            if ( islash>-1 ) { // new, leave this in 
+                String[] ss= root.getPath().substring(0,islash).split("/");
+                this.project= String.join("/", Arrays.copyOfRange( ss, 1+baseOffset, ss.length ) );
+            }
         }
         this.protocol= new GitHubHttpProtocol();
     }
@@ -929,6 +946,17 @@ public class GitHubFileSystem extends HttpFileSystem {
         String[] path= root.getPath().split("/",-2);
         String spath= path[0] + '/' + path[1] + '/' + path[2] ;
         
+        // Note spath should be the same as "project" variable.
+        
+        if ( this.directory.length()==0 ) {
+            if ( this.project.length()>0 ) {
+                int i= sroot.indexOf(this.project);
+                if ( i>-1 ) { // it really should be
+                    i=i+this.project.length();
+                    this.directory= sroot.substring(i);
+                }
+            }
+        }
         // number of elements after the host to the base.
         int gitPathElements;
         
@@ -962,7 +990,7 @@ public class GitHubFileSystem extends HttpFileSystem {
             if ( path[3+baseOffset].equals(branch) ) {
                 base= 4;
                 gitPathElements= 3;
-            } else if ( path.length>4+baseOffset && path[4+baseOffset].equals(branch) ) { // https://research-git.uiowa.edu/space-physics/juno/ap-script/-/
+            } else if ( path.length>5+baseOffset && path[4+baseOffset].equals(branch) ) { // https://research-git.uiowa.edu/space-physics/juno/ap-script/-/
                 base= 5;
                 gitPathElements= 4;
                 spath= path[0] + '/' + path[1] + '/' + path[2] + '/' + path[3];
@@ -993,7 +1021,32 @@ public class GitHubFileSystem extends HttpFileSystem {
             }
         }
         
-        if ( path[ base+baseOffset].equals("blob") ) {
+        if ( project.length()>0 && directory.length()>0 ) {
+            // https://github.com/autoplot/dev/raw/refs/heads/master/screen/20190704/flag4th.jy
+            // https://github.com/autoplot/dev/raw/screen/20190704/flag4th.jy
+            // https://github.com/autoplot/dev/blob/master/screen/20190704/flag4th.jy
+            // https://github.com/autoplot/dev/raw/refs/heads/master/screen/20190704/flag4th.jy
+            // https://raw.githubusercontent.com/autoplot/dev/refs/heads/master/screen/20190704/flag4th.jy
+            
+            // https://github.umn.edu/FADEN004/test-repo/blob/master/demos/20211005/zipdataset.jyds
+            // https://raw.github.umn.edu/FADEN004/test-repo/refs/heads/master/demos/20211005/zipdataset.jyds?token=GHSAT0AAAAAAAAA7V24LM3FVJXJ7GH7ZEL62OZNP2Q
+            String n;
+            if ( this.forge==Forge.GITLAB ) {
+                // https://research-git.uiowa.edu/jbf/testproject/-/blob/master/script/testScript.jy
+                // https://research-git.uiowa.edu/jbf/testproject/-/raw/master/script/testScript.jy
+                
+                n= root.getScheme() + "://" + root.getHost() + '/' + this.project + "/-/raw/" + this.branch + "/" + this.directory + filename.substring(1);
+            } else if ( this.forge==Forge.GITHUB ) {
+                // https://github.com/autoplot/dev/raw/refs/heads/master/screen/20190704/flag4th.jy
+                n= root.getScheme() + "://" + root.getHost() + '/' + this.project + "/raw/refs/heads/" + this.branch + "/" + this.directory + filename.substring(1);
+            } else {
+                throw new IllegalArgumentException("unsupported forge: "+this.forge);
+            }
+            URL url= new URL( n );
+            return url;
+        }
+        
+        if ( (base+baseOffset)<path.length && path[ base+baseOffset].equals("blob") ) {
             String n= root.getScheme() + "://" + root.getHost() + '/' + spath + "/raw/" + strjoin( path, "/", base + 1 + baseOffset, -1 ) + filename;
             URL url= new URL( n );
             return url;
