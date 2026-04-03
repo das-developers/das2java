@@ -7,18 +7,17 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.InterruptedIOException;
-import java.io.PrintWriter;
 import java.io.PushbackInputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,6 +26,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.locks.Lock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -35,6 +35,7 @@ import java.util.regex.Pattern;
 import org.das2.util.LoggerManager;
 import static org.das2.util.filesystem.FileSystem.loggerUrl;
 import static org.das2.util.filesystem.FileSystem.toCanonicalFilename;
+import org.das2.util.filesystem.ForgeUrlDetector.ForgeRef;
 import static org.das2.util.filesystem.HtmlUtil.getInputStream;
 import static org.das2.util.filesystem.WebFileSystem.localRoot;
 import org.das2.util.monitor.CancelledOperationException;
@@ -67,7 +68,11 @@ public class GitHubFileSystem extends HttpFileSystem {
 
     private static final Logger logger= LoggerManager.getLogger("das2.filesystem.wfs.githubfs");
     
-    private String branch= "master";
+    private String branch= "";
+    
+    private String project;
+    
+    private final Forge forge; 
     
     // mission statement needed.  I believe this is the offset to the first folder/file name.
     private int baseOffset= 0;
@@ -152,7 +157,7 @@ public class GitHubFileSystem extends HttpFileSystem {
      * instance.  The baseOffset is 1 for https://jfaden.net/git.
      * @param root the root of the filesystem
      * @param localRoot the local root where files are downloaded.
-     * @param branch the branch, typically "master".
+     * @param branch the branch, typically "master", and "" if the default branch is not yet known.
      * @param baseOffset index of the first folder of the GitLabs server.
      */
     protected GitHubFileSystem(URI root, File localRoot, String branch, int baseOffset) {
@@ -164,8 +169,15 @@ public class GitHubFileSystem extends HttpFileSystem {
                 setReadOnlyCache( localRoCache );
             }
         }
+        this.forge= detectForge(root);
         this.baseOffset= baseOffset;
         this.branch= branch;
+        this.project= ""; // empty means not known.
+        int islash= root.getPath().indexOf("/-/"); // project end marker. This is new v2026a_4.
+        if ( islash>-1 ) { // new, leave this in 
+            String[] ss= root.getPath().substring(0,islash).split("/");
+            this.project= String.join("/", Arrays.copyOfRange( ss, 1+baseOffset, ss.length ) );
+        }
         this.protocol= new GitHubHttpProtocol();
     }
     
@@ -178,6 +190,24 @@ public class GitHubFileSystem extends HttpFileSystem {
         return createGitHubFileSystem(root,0);
     }
     
+    public static enum Forge { GITHUB, GITLAB }
+    
+    /**
+     * detect if the URI is a GitHub or GitLab instance.  This presently looks for github.com or gitlab.umn.edu.
+     * @param root
+     * @return Forge value.
+     */
+    public static Forge detectForge( URI root ) {
+        String host= root.getHost();
+        switch ( host ) {
+            case "github.com": 
+            case "github.umn.edu":
+                return Forge.GITHUB;
+            default:
+                return Forge.GITLAB;
+        }
+    }
+            
     /**
      * return the location within the file cache of this GitHub filesystem.
      * TODO: There's something with branches that still needs work.  Also the constructor
@@ -231,7 +261,7 @@ public class GitHubFileSystem extends HttpFileSystem {
         } else if ( h.equals("github.umn.edu" ) ) {
             return "";
         } else if ( h.equals("jfaden.net") && path.startsWith("/git") ) {
-            return "/git";
+            return "/git"; // Note this git no longer exists, but the code is left here to show where forge can be in directory.
         } else if ( h.equals("git.jfaden.net") ) {
             return "";
         } else if ( h.equals("gitlab.com") ) {
@@ -252,10 +282,12 @@ public class GitHubFileSystem extends HttpFileSystem {
         File local;
         
         /**
-         * code this as if well support branches, but this won't be done until 
-         * after the next production release.
+         * This is the branch we are using.  For URIs with "/tree/" or "/blob/" or "/raw/", the branch can be
+         * identified.  Otherwise we will set it to "" and wait for the first read to determine the 
+         * default branch.  For GitLab, this may be "master" because we don't use the API.  For GitLab, use
+         * an API call to determine the default branch.
          */
-        String branch= "master";
+        String branch= "";
         
         String suri= root.toString();
         Pattern fsp1= Pattern.compile( "(https?://[a-zA-Z0-9+.\\-]+/)(.*)(tree|blob|raw)/(.*?)/(.*)" );
@@ -266,7 +298,7 @@ public class GitHubFileSystem extends HttpFileSystem {
             if ( project.endsWith("/-/") ) { // strange bug where U. Iowa GitLabs server would add extra "-/"
                 project= project.substring(0,project.length()-2);
             }
-            suri= m1.group(1) + project + branch + "/" + m1.group(5);
+            suri= m1.group(1) + project + branch + "/" + m1.group(5);  // TODO: add slash to make it easier to manage
             try {
                 root= new URI(suri);
             } catch (URISyntaxException ex) {
@@ -276,10 +308,6 @@ public class GitHubFileSystem extends HttpFileSystem {
         
         // Note that getLocalRoot(root) contains a copy of this code.  Both the URI and the 
         // local root must be calculated, so we are unable to just call that routine.
-        
-        //if ( !branch.equals("master") ) {
-        //    throw new IllegalArgumentException("branch must be master (for now)");
-        //}
         
         if (FileSystemSettings.hasAllPermission()) {
             local = localRoot(root);
@@ -321,7 +349,7 @@ public class GitHubFileSystem extends HttpFileSystem {
     /**
      * At some point, Gitlab started returning the filename listing in a 
      * separate JSON response.  TODO: It's impossible to distinguish
-     * files from folders.  On jfaden.net/git, this API does not work.
+     * files from folders.
      * @param directory
      * @return
      * @throws IOException 
@@ -332,21 +360,22 @@ public class GitHubFileSystem extends HttpFileSystem {
         // wget -O - 'https://research-git.uiowa.edu/abbith/juno/-/refs/main/logs_tree/team?format=json&offset=0' | json_pp
         // wget -O - 'https://research-git.uiowa.edu/api/v4/projects/abbith%2Fjuno/repository/tree?path=team/wigglePlot&ref=main'| json_pp
         // wget -O - 'https://research-git.uiowa.edu/api/v4/projects/abbith%2Fjuno/repository/tree?path=main/team/wigglePlot/&ref=main'
-        if ( root.getHost().startsWith("research-git.uiowa.edu") || root.getHost().startsWith("jfaden.net")) {
+        if ( root.getHost().equals("research-git.uiowa.edu") || root.getHost().equals("git.jfaden.net") ) {
             String[] maybeListing= listDirectoryGitLab(directory);
             if ( maybeListing!=null ) {
                 return maybeListing;
             }
         }
         
+        if ( project.length()==0 ) {
+            project= path[1] + path[2];
+        }
         StringBuilder sb= new StringBuilder();
         sb.append(root.getScheme())
                 .append("://")
                 .append(root.getHost())
                 .append('/')
-                .append(path[1])
-                .append('/')
-                .append(path[2])
+                .append(project)
                 .append("/-/refs/")
                 .append(branch)
                 .append("/logs_tree");
@@ -484,10 +513,7 @@ public class GitHubFileSystem extends HttpFileSystem {
             return ss;
         }
         
-        if ( !root.getHost().equals("research-git.uiowa.edu") ) {
-            throw new IllegalArgumentException("only supported for research-git.uiowa.edu");
-        }
-        
+                
         String[] pathComponents= root.getPath().split("/",-2);
         
         if ( pathComponents.length<4 ) { // just use the old method
@@ -499,18 +525,26 @@ public class GitHubFileSystem extends HttpFileSystem {
         // Note ChatGPT says the - in https://research-git.uiowa.edu/space-physics/rbsp/ap-script/-/tree/master/u/ivar/20210416/
         // is a delimiter, so we could probably clean up this logic below.
         if ( pathComponents[1].equals("space-physics") ) {
-            project= String.join( "%2F", Arrays.copyOfRange( pathComponents, 1, 4 ) ); // space-physics/rbsp/ap-script
+            project= String.join( "/", Arrays.copyOfRange( pathComponents, 1, 4 ) ); // space-physics/rbsp/ap-script
             path= String.join( "/", Arrays.copyOfRange( pathComponents, 4, pathComponents.length ) ); // team/digitizing
         } else {
-            project= String.join( "%2F", Arrays.copyOfRange( pathComponents, 1, 3 ) ); // abbith/juno
+            project= String.join( "/", Arrays.copyOfRange( pathComponents, 1, 3 ) ); // abbith/juno
             path= String.join( "/", Arrays.copyOfRange( pathComponents, 3, pathComponents.length ) ); // team/digitizing
+        }
+        
+        if ( this.project.length()==0 ) {
+            this.project= project;
+        }
+        
+        if ( branch.length()==0 ) {
+            branch= getDefaultBranchGitLab(root,project);
         }
         
         if ( path.startsWith(branch+'/') ) {
             path= path.substring(branch.length()+1);
         }
                 
-        URL url= new URL( root.getScheme() + "://" + root.getHost() + "/api/v4/projects/" + project+ "/repository/tree?path=" + path + "&ref=" + branch );
+        URL url= new URL( root.getScheme() + "://" + root.getHost() + "/api/v4/projects/" + project.replace("/","%2F")+ "/repository/tree?path=" + path.replace("/","%2F") + "&ref=" + branch );
         
         String[] result;
         
@@ -545,6 +579,68 @@ public class GitHubFileSystem extends HttpFileSystem {
         return null;
         
     }
+
+    /**
+     * Return the default branch (e.g. main or master) for the project.
+     * @param root the GitLab root (e.g. https://research-git.uiowa.edu/)
+     * @param project the project (e.g. 'space-physics/rbsp/ap-script')
+     * @return the default branch (e.g. 'master')
+     * @throws IOException 
+     */
+    public static String getDefaultBranchGitLab(URI root, String project) throws IOException {
+        String branch;
+        String api_url = root.getScheme() + "://" + root.getHost() + "/api/v4/projects/" + URLEncoder.encode(project,"US-ASCII");
+        try {
+            String text= HtmlUtil.readToString( new URL(api_url) );
+            JSONObject obj = new JSONObject(text);
+            String default_branch = obj.getString("default_branch");
+            branch= default_branch;
+        } catch (CancelledOperationException | JSONException ex) {
+            throw new RuntimeException(ex);
+        }
+        return branch;
+    }
+    
+    /**
+     * Return the default branch (e.g. main or master) for the project.
+     * @param root the GitHub root (e.g. https://github.com/autoplot/)
+     * @param project the project (e.g. 'dev')
+     * @return the default branch (e.g. 'master')
+     * @throws IOException 
+     */
+    public static String getDefaultBranchGitHub(URI root, String project) throws IOException {
+        String branch;
+
+        String api_url = root.getScheme() + "://api." + root.getHost() + "/repos/" + root.getPath().substring(1) + project;
+        try {
+            String text= HtmlUtil.readToString( new URL(api_url) );
+            JSONObject obj = new JSONObject(text);
+            String default_branch = obj.getString("default_branch");
+            branch= default_branch;
+        } catch (CancelledOperationException | JSONException ex) {
+            throw new RuntimeException(ex);
+        }
+        return branch;
+    }
+    
+    /**
+     * return the default branch (e.g. master or main) for the repo
+     * @param root
+     * @param project
+     * @return
+     * @throws IOException 
+     */
+    public static String getDefaultBranch(URI root, String project) throws IOException {
+        Forge forge= detectForge(root);
+        switch (forge) {
+            case GITHUB:
+                return getDefaultBranchGitHub(root, project);
+            case GITLAB:
+                return getDefaultBranchGitLab(root, project);
+            default:
+                throw new IllegalArgumentException("unsupported forge");
+        }
+    }
     
     @Override
     public String[] listDirectory(String directory) throws IOException {
@@ -564,7 +660,7 @@ public class GitHubFileSystem extends HttpFileSystem {
             return ss;
         }
         
-        if ( root.toString().startsWith("https://research-git.uiowa.edu/") ) {
+        if ( forge==Forge.GITLAB ) {
             try {
                 return listDirectoryGitLabHowever( directory );
             } catch ( IOException ex ) {
@@ -575,7 +671,7 @@ public class GitHubFileSystem extends HttpFileSystem {
         
         String[] path= root.getPath().split("/",-2);
         
-        if ( root.toString().startsWith("https://github.com/") ) {
+        if ( forge==Forge.GITHUB ) {
             String[] resultGithubMaybe= listDirectoryGithub(directory);
             if ( resultGithubMaybe!=null ) {
                 return resultGithubMaybe;
@@ -628,6 +724,10 @@ public class GitHubFileSystem extends HttpFileSystem {
             // the root of the project, for example "https://jfaden.net/git/jbfaden/public"
             String projectRoot = getGitProjectRoot();         
                     
+            if ( branch.length()==0 ) {
+                branch= getDefaultBranch(root, projectRoot);
+            }
+
             int ii= sroot.indexOf(spath) + spath.length();
             if ( sroot.substring(ii).startsWith("/" + branch+"/") ) {
                 ii= ii+ branch.length() + 1;
@@ -825,6 +925,7 @@ public class GitHubFileSystem extends HttpFileSystem {
         }
         
         // png image "https://github.com/autoplot/app/raw/master/Autoplot/src/resources/badge_ok.png"
+        // another   "https://research-git.uiowa.edu/space-physics/rbsp/doc/README.md"
         String[] path= root.getPath().split("/",-2);
         String spath= path[0] + '/' + path[1] + '/' + path[2] ;
         
@@ -834,17 +935,41 @@ public class GitHubFileSystem extends HttpFileSystem {
         // base is the position of the "blob" in file URLs.  E.g.:
         // https://github.com/autoplot/dev/blob/master/demos/2017/20170518/readme.md  is the same as
         // https://github.com/autoplot/dev/demos/2017/20170518/readme.md 
+        
+        int idash=-1;
+        for ( int i=0; i<path.length; i++ ) {
+            if ( path[i].equals("-") ) {
+                idash= i;
+                break;
+            }
+        }
+        
         int base;
-        if ( path[3+baseOffset].equals(branch) ) {
-            base= 4;
-            gitPathElements= 3;
-        } else if ( path.length>4+baseOffset && path[4+baseOffset].equals(branch) ) { // https://research-git.uiowa.edu/space-physics/juno/ap-script/-/
-            base= 5;
-            gitPathElements= 4;
-            spath= path[0] + '/' + path[1] + '/' + path[2] + '/' + path[3];
+        if ( idash>-1 ) {
+            if ( path[idash+1].equals(branch) ) {
+                base= idash+1;
+                gitPathElements= idash;
+            } else if ( path.length>4+baseOffset && path[4+baseOffset].equals(branch) ) { // https://research-git.uiowa.edu/space-physics/juno/ap-script/-/
+                base= 5;
+                gitPathElements= 4;
+                spath= path[0] + '/' + path[1] + '/' + path[2] + '/' + path[3];
+            } else {
+                base= 3;
+                gitPathElements= 3;
+            }
+            spath= String.join("/",Arrays.copyOfRange(path,1,idash));
         } else {
-            base= 3;
-            gitPathElements= 3;
+            if ( path[3+baseOffset].equals(branch) ) {
+                base= 4;
+                gitPathElements= 3;
+            } else if ( path.length>4+baseOffset && path[4+baseOffset].equals(branch) ) { // https://research-git.uiowa.edu/space-physics/juno/ap-script/-/
+                base= 5;
+                gitPathElements= 4;
+                spath= path[0] + '/' + path[1] + '/' + path[2] + '/' + path[3];
+            } else {
+                base= 3;
+                gitPathElements= 3;
+            }
         }
 
         for ( int i=0; i<baseOffset; i++ ) {
@@ -852,6 +977,21 @@ public class GitHubFileSystem extends HttpFileSystem {
         }
                 
         if ( spath.startsWith("/") ) spath=spath.substring(1);
+        
+        if ( project.length()==0 ) {
+            project= spath; // calculated path for https://research-git.uiowa.edu/space-physics/rbsp/doc/README.md is wrong, but we already have it
+        }
+        if ( branch.length()==0 ) {
+            try {
+                if ( forge==Forge.GITLAB ) {
+                    branch= getDefaultBranchGitLab(root, project);
+                } else {
+                    branch= getDefaultBranchGitHub(root, project);
+                }
+            } catch ( IOException ex ) {
+                throw new RuntimeException(ex);
+            }
+        }
         
         if ( path[ base+baseOffset].equals("blob") ) {
             String n= root.getScheme() + "://" + root.getHost() + '/' + spath + "/raw/" + strjoin( path, "/", base + 1 + baseOffset, -1 ) + filename;
@@ -872,10 +1012,23 @@ public class GitHubFileSystem extends HttpFileSystem {
                     return url;
                 } else {
                     String pp= strjoin( path, "/", base+baseOffset, -1 );
-                    if ( pp.length()>0 ) pp= "/" + pp; 
-                    String n= root.getScheme() + "://" + root.getHost() + '/' + spath + "/raw/" + branch + pp + filename;
-                    URL url= new URL( n );
-                    return url;
+                    if ( project.length()==0 || branch.length()==0 ) {
+                        String n= root.getScheme() + "://" + root.getHost() + '/' + project + "/raw/" + branch + pp + filename;
+                        URL url= new URL( n );
+                        return url;
+                    } else {
+                        String pathToDir= root.getScheme() + "://" + root.getHost() + '/' + project;
+                        if ( root.toASCIIString().startsWith(pathToDir) ) {
+                            String n= pathToDir + "/raw/" + branch + root.toASCIIString().substring(pathToDir.length()+1) + filename;
+                            URL url= new URL( n );
+                            return url;
+                        } else {
+                            if ( pp.length()>0 ) pp= "/" + pp; 
+                            String n= root.getScheme() + "://" + root.getHost() + '/' + project + "/raw/" + branch + pp + filename;
+                            URL url= new URL( n );
+                            return url;
+                        }
+                    }
                 }
             }
         }
