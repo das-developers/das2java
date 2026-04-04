@@ -1603,23 +1603,25 @@ public class TimeParser {
                     time.minute -= offset % 100;
                 } else if (handlers[idigit] == 12) { // $(ignore)
                     if ( len>=0 ) {
-                        if ( extra!=null ) extra.put( "ignore", timeString.substring(offs, offs + len) );
+                        extra.put( "ignore", timeString.substring(offs, offs + len) );
                     }
                 } else if (handlers[idigit] == 13) { // month name
                     time.month = TimeUtil.monthNumber(timeString.substring(offs, offs + len));
 
                 } else if (handlers[idigit] == 14) { // "X"
                     if ( len>=0 ) {
-                        if ( extra!=null ) extra.put( "X", timeString.substring(offs, offs + len) );
+                        extra.put( "X", timeString.substring(offs, offs + len) );
                     }
                 } else if (handlers[idigit] == 15) { // "x"
                     if ( len>=0 ) { 
-                        if ( extra!=null ) extra.put( "x", field ); //Note field has been stripped of surrounding whitespace.
+                        extra.put( "x", field ); //Note field has been stripped of surrounding whitespace.
                         String q= qualifiers[idigit];
                         if ( q!=null ) {
-                            String name= qualifierMaps[idigit].get("name");
-                            if ( name!=null ) {
-                                if ( extra!=null ) extra.put(name,field );
+                            if ( qualifierMaps[idigit]!=null ) {
+                                String name= qualifierMaps[idigit].get("name");
+                                if ( name!=null ) {
+                                    extra.put(name,field );
+                                }
                             }
                         }
                     }
