@@ -1173,7 +1173,9 @@ public class GitHubFileSystem extends HttpFileSystem {
                 if ( this.directory.equals("/") ) {// https://github.com/autoplot/dev/
                     n= root.getScheme() + "://" + root.getHost() + '/' + this.project + "/raw/" + this.branch + "/" + filename.substring(1);
                 } else {
-                    n= root.getScheme() + "://" + root.getHost() + '/' + this.project + "/raw/refs/heads/" + this.branch + "/" + this.directory + filename.substring(1);
+                    //https://raw.githubuser.com/autoplot/dev/9c8610958f790c8a10503478038abb34393cbbfd/demos/2026/20260331/demoUriTemplateX.jy
+                    n= root.getScheme() + "://raw." + root.getHost() + '/' + this.project + "/" + this.branch + "/" + this.directory + filename.substring(1);
+                    //n= root.getScheme() + "://" + root.getHost() + '/' + this.project + "/raw/refs/heads/" + this.branch + "/" + this.directory + filename.substring(1);
                 }
             } else {
                 throw new IllegalArgumentException("unsupported forge: "+this.forge);
