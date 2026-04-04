@@ -85,6 +85,7 @@ public class WebFileObject extends FileObject {
         Map<String,String> localMetadata;
         synchronized (this){
             localMetadata= this.metadata;
+            //localMetadata= null;  // for debugging, evalute this to clear metadata
         }
         if ( localMetadata==null ) {
             logger.log(Level.FINER, "loading new metadata for {0}", this.pathname);
