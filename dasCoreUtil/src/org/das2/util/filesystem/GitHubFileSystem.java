@@ -654,6 +654,9 @@ public class GitHubFileSystem extends HttpFileSystem {
         if ( project.length()==0 ) {
             project= root.getPath();
             String[] ss= project.split("/");
+            if ( ss.length<3 ) {
+                throw new IllegalArgumentException("note a project:" + project);
+            }
             project= ss[1]+"/"+ss[2];
         }
         String api_url = root.getScheme() + "://api." + root.getHost() + "/repos/" + project;
@@ -690,6 +693,48 @@ public class GitHubFileSystem extends HttpFileSystem {
         }
     }
     
+    private String[] listDirectoryProjectsGitLab( URI root, String projectSlash ) {
+        String api_url = root.getScheme() + "://" + root.getHost() + "/api/v4/projects/";
+        try {
+            String text= HtmlUtil.readToString( new URL(api_url) );
+            JSONArray arr= new JSONArray(text);
+            List<String> result= new ArrayList<>(arr.length());
+            for ( int i=0; i<arr.length(); i++ ) {
+                JSONObject o = arr.getJSONObject(i);
+                String name= o.getString("path_with_namespace");
+                if ( name.startsWith(projectSlash) ) {
+                    result.add(name.substring(projectSlash.length())+"/-/");
+                }
+            }
+            return result.toArray(new String[0]);
+        } catch (CancelledOperationException | JSONException | MalformedURLException ex) {
+            throw new RuntimeException(ex);
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+    
+    private String[] listDirectoryProjectsGitHub( URI root, String projectSlash ) {
+        String api_url = root.getScheme() + "://api." + root.getHost() + "/users/"+projectSlash+"repos?per_page=100&page=1";
+        try {
+            String text= HtmlUtil.readToString( new URL(api_url) );
+            JSONArray arr= new JSONArray(text);
+            List<String> result= new ArrayList<>(arr.length());
+            for ( int i=0; i<arr.length(); i++ ) {
+                JSONObject o = arr.getJSONObject(i);
+                String name= o.getString("full_name");
+                if ( name.startsWith(projectSlash) ) {
+                    result.add(name.substring(projectSlash.length())+"/");
+                }
+            }
+            return result.toArray(new String[0]);
+        } catch (CancelledOperationException | JSONException | MalformedURLException ex) {
+            throw new RuntimeException(ex);
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
+    }    
+    
     private String[] listDirectoryProjects(URI root, String project) {
         if ( project.length()==0 ) {
             project= root.getPath();
@@ -709,23 +754,13 @@ public class GitHubFileSystem extends HttpFileSystem {
             }
         }
         
-        String api_url = root.getScheme() + "://" + root.getHost() + "/api/v4/projects/";
-        try {
-            String text= HtmlUtil.readToString( new URL(api_url) );
-            JSONArray arr= new JSONArray(text);
-            List<String> result= new ArrayList<>(arr.length());
-            for ( int i=0; i<arr.length(); i++ ) {
-                JSONObject o = arr.getJSONObject(i);
-                String name= o.getString("path_with_namespace");
-                if ( name.startsWith(projectSlash) ) {
-                    result.add(name.substring(projectSlash.length())+"/-/");
-                }
-            }
-            return result.toArray(new String[0]);
-        } catch (CancelledOperationException | JSONException | MalformedURLException ex) {
-            throw new RuntimeException(ex);
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
+        switch (forge) {
+            case GITLAB:
+                return listDirectoryProjectsGitLab(root, projectSlash);
+            case GITHUB:
+                return listDirectoryProjectsGitHub(root, projectSlash);
+            default:
+                throw new IllegalStateException("unsupported forge: "+forge);
         }
         
     }
@@ -752,8 +787,8 @@ public class GitHubFileSystem extends HttpFileSystem {
             if ( branch.length()==0 ) {
                 branch= getDefaultBranch(root, project);
             }
-        } catch ( IOException ex ) {
-            if ( forge==Forge.GITLAB ) {
+        } catch ( IOException | IllegalArgumentException ex ) {
+            if ( forge==Forge.GITLAB || forge==Forge.GITHUB ) {
                 return listDirectoryProjects(root,project);
             }
         }
