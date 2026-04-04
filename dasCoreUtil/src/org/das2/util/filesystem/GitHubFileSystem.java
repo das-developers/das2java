@@ -32,6 +32,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.das2.util.FileUtil;
 import org.das2.util.LoggerManager;
 import static org.das2.util.filesystem.FileSystem.loggerUrl;
 import static org.das2.util.filesystem.FileSystem.toCanonicalFilename;
@@ -539,14 +540,27 @@ public class GitHubFileSystem extends HttpFileSystem {
         
         String project,path;
         
-        // Note ChatGPT says the - in https://research-git.uiowa.edu/space-physics/rbsp/ap-script/-/tree/master/u/ivar/20210416/
-        // is a delimiter, so we could probably clean up this logic below.
-        if ( pathComponents[1].equals("space-physics") ) {
-            project= String.join( "/", Arrays.copyOfRange( pathComponents, 1, 4 ) ); // space-physics/rbsp/ap-script
-            path= String.join( "/", Arrays.copyOfRange( pathComponents, 4, pathComponents.length ) ); // team/digitizing
+        int idash=-1;
+        for ( int i=0; i<pathComponents.length; i++ ) {
+            if ( pathComponents[i].equals("-") ) {
+                idash=i;
+                break;
+            }
+        }
+        
+        if ( idash>-1 ) {
+            project= String.join( "/", Arrays.copyOfRange( pathComponents, 1, idash ) );
+            path= String.join( "/", Arrays.copyOfRange( pathComponents, idash+1, pathComponents.length ) );
         } else {
-            project= String.join( "/", Arrays.copyOfRange( pathComponents, 1, 3 ) ); // abbith/juno
-            path= String.join( "/", Arrays.copyOfRange( pathComponents, 3, pathComponents.length ) ); // team/digitizing
+            // Note ChatGPT says the - in https://research-git.uiowa.edu/space-physics/rbsp/ap-script/-/tree/master/u/ivar/20210416/
+            // is a delimiter, so we could probably clean up this logic below.
+            if ( pathComponents[1].equals("space-physics") ) {
+                project= String.join( "/", Arrays.copyOfRange( pathComponents, 1, 4 ) ); // space-physics/rbsp/ap-script
+                path= String.join( "/", Arrays.copyOfRange( pathComponents, 4, pathComponents.length ) ); // team/digitizing
+            } else {
+                project= String.join( "/", Arrays.copyOfRange( pathComponents, 1, 3 ) ); // abbith/juno
+                path= String.join( "/", Arrays.copyOfRange( pathComponents, 3, pathComponents.length ) ); // team/digitizing
+            }
         }
         
         if ( this.project.length()==0 ) {
@@ -606,6 +620,15 @@ public class GitHubFileSystem extends HttpFileSystem {
      */
     public static String getDefaultBranchGitLab(URI root, String project) throws IOException {
         String branch;
+        if ( project.length()==0 ) {
+            project= root.getPath();
+        }
+        if ( project.endsWith("/") ) {
+            project= project.substring(0,project.length()-1);
+        }
+        if ( project.startsWith("/") ) {
+            project= project.substring(1);
+        }
         String api_url = root.getScheme() + "://" + root.getHost() + "/api/v4/projects/" + URLEncoder.encode(project,"US-ASCII");
         try {
             String text= HtmlUtil.readToString( new URL(api_url) );
@@ -621,14 +644,22 @@ public class GitHubFileSystem extends HttpFileSystem {
     /**
      * Return the default branch (e.g. main or master) for the project.
      * @param root the GitHub root (e.g. https://github.com/autoplot/)
-     * @param project the project (e.g. 'dev')
+     * @param project the project (e.g. 'autoplot/dev')
      * @return the default branch (e.g. 'master')
      * @throws IOException 
      */
     public static String getDefaultBranchGitHub(URI root, String project) throws IOException {
         String branch;
 
-        String api_url = root.getScheme() + "://api." + root.getHost() + "/repos/" + root.getPath().substring(1) + project;
+        if ( project.length()==0 ) {
+            project= root.getPath();
+            String[] ss= project.split("/");
+            project= ss[1]+"/"+ss[2];
+        }
+        String api_url = root.getScheme() + "://api." + root.getHost() + "/repos/" + project;
+        if ( api_url.endsWith("/") ) {
+            api_url= api_url.substring(0,api_url.length()-1);
+        }
         try {
             String text= HtmlUtil.readToString( new URL(api_url) );
             JSONObject obj = new JSONObject(text);
@@ -659,6 +690,46 @@ public class GitHubFileSystem extends HttpFileSystem {
         }
     }
     
+    private String[] listDirectoryProjects(URI root, String project) {
+        if ( project.length()==0 ) {
+            project= root.getPath();
+        }
+        if ( project.startsWith("/") ) {
+            project= project.substring(1);
+        }
+        String projectSlash;
+        if ( project.endsWith("/") ) {
+            projectSlash= project;
+        } else {
+            int i= project.lastIndexOf("/");
+            if ( i==-1 ) {
+                projectSlash="/";
+            } else {
+                projectSlash=project.substring(0,i+1);
+            }
+        }
+        
+        String api_url = root.getScheme() + "://" + root.getHost() + "/api/v4/projects/";
+        try {
+            String text= HtmlUtil.readToString( new URL(api_url) );
+            JSONArray arr= new JSONArray(text);
+            List<String> result= new ArrayList<>(arr.length());
+            for ( int i=0; i<arr.length(); i++ ) {
+                JSONObject o = arr.getJSONObject(i);
+                String name= o.getString("path_with_namespace");
+                if ( name.startsWith(projectSlash) ) {
+                    result.add(name.substring(projectSlash.length())+"/-/");
+                }
+            }
+            return result.toArray(new String[0]);
+        } catch (CancelledOperationException | JSONException | MalformedURLException ex) {
+            throw new RuntimeException(ex);
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
+        
+    }
+    
     @Override
     public String[] listDirectory(String directory) throws IOException {
         
@@ -675,6 +746,16 @@ public class GitHubFileSystem extends HttpFileSystem {
                 ss[i]= ss[i] + '/';
             }
             return ss;
+        }
+        
+        try {
+            if ( branch.length()==0 ) {
+                branch= getDefaultBranch(root, project);
+            }
+        } catch ( IOException ex ) {
+            if ( forge==Forge.GITLAB ) {
+                return listDirectoryProjects(root,project);
+            }
         }
         
         if ( forge==Forge.GITLAB ) {
@@ -922,6 +1003,14 @@ public class GitHubFileSystem extends HttpFileSystem {
         
         filename= toCanonicalFilename( filename );       
         
+        if ( this.branch.length()==0 ) {
+            try {
+                this.branch= getDefaultBranch(root, project);
+            } catch ( IOException ex ) {
+                throw new RuntimeException(ex);
+            }
+        }
+        
         String sroot= root.toString();
         if ( sroot.startsWith("https://research-git.uiowa.edu/space-physics/") ) {
             // https://github.com/das-developers/das2java/issues/173
@@ -939,6 +1028,13 @@ public class GitHubFileSystem extends HttpFileSystem {
                     + sroot.substring(i);
                 return new URL(rawUrl + filename.substring(1));
             }
+        }
+        
+        if ( sroot.contains("/-/") ) {
+            // https://git.jfaden.net/jbfaden/public/-/raw/main/2022/20220906/albums/img/IMG_20220903_140040358.jpg?ref_type=heads&inline=false
+            int i = sroot.indexOf("/-/");
+            String rawUrl = sroot.substring(0, i) + "/-/raw/" + branch + "/" + sroot.substring(i+3);
+            return new URL(rawUrl + filename.substring(1));
         }
         
         // png image "https://github.com/autoplot/app/raw/master/Autoplot/src/resources/badge_ok.png"
@@ -1038,7 +1134,12 @@ public class GitHubFileSystem extends HttpFileSystem {
                 n= root.getScheme() + "://" + root.getHost() + '/' + this.project + "/-/raw/" + this.branch + "/" + this.directory + filename.substring(1);
             } else if ( this.forge==Forge.GITHUB ) {
                 // https://github.com/autoplot/dev/raw/refs/heads/master/screen/20190704/flag4th.jy
-                n= root.getScheme() + "://" + root.getHost() + '/' + this.project + "/raw/refs/heads/" + this.branch + "/" + this.directory + filename.substring(1);
+   
+                if ( this.directory.equals("/") ) {// https://github.com/autoplot/dev/
+                    n= root.getScheme() + "://" + root.getHost() + '/' + this.project + "/raw/" + this.branch + "/" + filename.substring(1);
+                } else {
+                    n= root.getScheme() + "://" + root.getHost() + '/' + this.project + "/raw/refs/heads/" + this.branch + "/" + this.directory + filename.substring(1);
+                }
             } else {
                 throw new IllegalArgumentException("unsupported forge: "+this.forge);
             }
@@ -1074,7 +1175,7 @@ public class GitHubFileSystem extends HttpFileSystem {
                         if ( root.toASCIIString().startsWith(pathToDir) ) {
                             String n= pathToDir + "/raw/" + branch + root.toASCIIString().substring(pathToDir.length()+1) + filename;
                             URL url= new URL( n );
-                            return url;
+                            return url; ///HERE
                         } else {
                             if ( pp.length()>0 ) pp= "/" + pp; 
                             String n= root.getScheme() + "://" + root.getHost() + '/' + project + "/raw/" + branch + pp + filename;
