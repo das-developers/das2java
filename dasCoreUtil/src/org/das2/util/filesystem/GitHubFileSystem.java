@@ -1210,7 +1210,11 @@ public class GitHubFileSystem extends HttpFileSystem {
                     } else {
                         String pathToDir= root.getScheme() + "://" + root.getHost() + '/' + project;
                         if ( root.toASCIIString().startsWith(pathToDir) ) {
-                            String n= pathToDir + "/raw/" + branch + root.toASCIIString().substring(pathToDir.length()+1) + filename;
+                            String mm= root.toASCIIString().substring(pathToDir.length()+1);
+                            if ( mm.startsWith(branch) ) {
+                                mm= mm.substring(branch.length()+1);
+                            }
+                            String n= pathToDir + "/raw/" + branch + "/" + mm + filename.substring(1);
                             URL url= new URL( n );
                             return url; ///HERE
                         } else {
