@@ -977,6 +977,7 @@ public class TimeParser {
                     }
                     FieldHandler fh= fieldHandlers.get(fc[i]);
                     Map<String,String> argv= qualifierMaps[i];
+                    if ( argv==null ) argv= new HashMap<>();
                     String errm= fh.configure(argv);
                     if ( errm!=null ) {
                         throw new IllegalArgumentException(errm);
