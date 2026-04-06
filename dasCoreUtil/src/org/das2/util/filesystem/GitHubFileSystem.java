@@ -1152,6 +1152,13 @@ public class GitHubFileSystem extends HttpFileSystem {
             }
         }
         
+        if ( project.length()>0 && branch.length()>0 ) {
+            String check= root.getScheme() + "://"+ root.getHost() + '/' + project + '/' + branch + '/';
+            if ( sroot.startsWith( check ) ) {
+                directory= sroot.substring(check.length());
+            }
+        }
+        
         if ( project.length()>0 && directory.length()>0 ) {
             // https://github.com/autoplot/dev/raw/refs/heads/master/screen/20190704/flag4th.jy
             // https://github.com/autoplot/dev/raw/screen/20190704/flag4th.jy
