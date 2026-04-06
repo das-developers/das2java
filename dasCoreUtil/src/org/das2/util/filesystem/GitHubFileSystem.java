@@ -1014,24 +1014,12 @@ public class GitHubFileSystem extends HttpFileSystem {
             
     /**
      * Given the URI, convert this to the link which will download the file.
-     * github puts directories for each project under "raw/master".
-     * @param root
-     * @param filename
-     * @return
-     * Translate:<pre>%{code
-     * https://abbith.physics.uiowa.edu/jbf/myawesomepublicproject/blob/24dff04b9bcb275d8bfd85b38e0e8b039b21d655/sayAwesome.jy to <br>
-     * https://abbith.physics.uiowa.edu/jbf/myawesomepublicproject/raw/24dff04b9bcb275d8bfd85b38e0e8b039b21d655/sayAwesome.jy
-     * https://github.com/autoplot/app/raw/master/Autoplot/src/resources/badge_ok.png to
-     * https://github.com/autoplot/app/master/Autoplot/src/resources/badge_ok.png
-     * https://jfaden.net/git/jbfaden/public/blob/master/u/jeremy/2019/20191023/updates.jy
-     *
-     * https://research-git.uiowa.edu/space-physics/juno/ap-script/master/test/testap.jy to
-     * https://research-git.uiowa.edu/space-physics/juno/ap-script/-/raw/master/test/testap.jy 
-     *
-     * https://research-git.uiowa.edu/jbf/testproject/-/blob/master/script/testScript.jy to
-     * https://research-git.uiowa.edu/jbf/testproject/master/script/testScript.jy
-     * }
-     * </pre>
+     * github puts directories for each project under "raw/master".  
+     * TODO: verify this works (I don't think it will) when filename contains slash.
+     * @param root the Das2 FileSystem root, which can be a directory within a repo.
+     * @param filename the filename to download, not containing any slashes.
+     * @return the URL to download the file.
+     * @see https://github.com/autoplot/dev/blob/master/bugs/ghdas2/demo173.jy
      * @throws MalformedURLException 
      */
     public URL gitHubMapFile( URI root, String filename ) throws MalformedURLException {
