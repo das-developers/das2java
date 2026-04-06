@@ -74,6 +74,11 @@ public class GitHubFileSystem extends HttpFileSystem {
     private String project="";
     
     /**
+     * GitLabs allows tokens, which allow access to restricted projects.
+     */
+    private String token="";
+    
+    /**
      * directory within the Forge.
      */
     private String directory="";
@@ -1032,6 +1037,20 @@ public class GitHubFileSystem extends HttpFileSystem {
             } catch ( IOException ex ) {
                 throw new RuntimeException(ex);
             }
+        }
+        
+        if ( this.forge==Forge.GITLAB && token!=null && this.branch.length()!=0 && this.project.length()!=0 ) {
+            String url = "https://" 
+                    + this.root.getHost() 
+                    + "/api/v4/projects/" 
+                    + this.project.replaceAll("/","%2F") 
+                    + "/repository/files/"
+                    + this.directory.replaceAll("/","%2F")
+                    + filename.substring(1)
+                    + "/raw?ref="
+                    + this.branch;
+            return new URL( url );
+            
         }
         
         String sroot= root.toString();
