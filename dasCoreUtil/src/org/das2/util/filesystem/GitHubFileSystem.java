@@ -118,6 +118,24 @@ public class GitHubFileSystem extends HttpFileSystem {
             return isLogin;
         }
     }
+
+    @Override
+    protected Map<String, String> getRequestProperties() {
+        if ( token.length()==0 ) {
+            return Collections.emptyMap();
+        } else {
+            switch (forge) {
+                case GITLAB:
+                    return Collections.singletonMap( "PRIVATE-TOKEN", token );
+                case GITHUB:
+                    return Collections.singletonMap( "Authorization", "token "+token );
+                default:
+                    throw new UnsupportedOperationException("not implemented");
+            }
+        }
+    }
+    
+    
     
     private class GitHubHttpProtocol implements WebProtocol {
 
@@ -153,9 +171,10 @@ public class GitHubFileSystem extends HttpFileSystem {
             } else {
                 URL ur= gitHubMapFile( root, fo.getNameExt() );
                 Map<String,String> requestProperties= new HashMap<>();
-                if ( token.length()>0 ) {
-                    requestProperties.put( "PRIVATE-TOKEN", token );
-                }
+                
+                Map<String,String> rp= getRequestProperties();
+                rp.putAll(rp);
+
                 return HttpUtil.getMetadata( ur, requestProperties );
             }
     
@@ -420,9 +439,8 @@ public class GitHubFileSystem extends HttpFileSystem {
         try {
             
             Map<String,String> requestProperties= new HashMap<>();
-            if ( token.length()>0 ) {
-                requestProperties.put( "PRIVATE-TOKEN", token );
-            }
+            requestProperties.putAll( getRequestProperties() );
+
             String s= HtmlUtil.readToString( url, requestProperties );
            
             JSONArray ja= new JSONArray(s);
@@ -592,9 +610,8 @@ public class GitHubFileSystem extends HttpFileSystem {
         try {
 
             Map<String,String> requestProperties= new HashMap<>();
-            if ( token.length()>0 ) {
-                requestProperties.put( "PRIVATE-TOKEN", token );
-            }   
+            requestProperties.putAll( getRequestProperties() );
+
             String jsonListing= HtmlUtil.readToString(url,requestProperties);
         
             JSONArray jo= new JSONArray(jsonListing);
@@ -1048,7 +1065,7 @@ public class GitHubFileSystem extends HttpFileSystem {
             }
         }
         
-        if ( this.forge==Forge.GITLAB && token!=null && this.branch.length()!=0 && this.project.length()!=0 ) {
+        if ( this.forge==Forge.GITLAB && this.branch.length()!=0 && this.project.length()!=0 ) {
             String url = "https://" 
                     + this.root.getHost() 
                     + "/api/v4/projects/" 
