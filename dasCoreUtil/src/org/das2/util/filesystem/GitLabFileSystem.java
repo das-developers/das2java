@@ -1,6 +1,5 @@
 package org.das2.util.filesystem;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -10,7 +9,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -18,8 +16,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.das2.util.FileUtil;
 import org.das2.util.monitor.ProgressMonitor;
 import org.json.JSONArray;
@@ -39,6 +35,8 @@ import org.json.JSONObject;
  *   - if ref is missing, query project metadata and use default_branch
  *   - list directories with /api/v4/projects/:id/repository/tree
  *   - read files with /-/raw/{ref}/{path}
+ * 
+ * This was written by ChatGPT, experimenting to get a cleaner implementation of the filesystem.  It is not in use.
  */
 public class GitLabFileSystem extends WebFileSystem {
 
