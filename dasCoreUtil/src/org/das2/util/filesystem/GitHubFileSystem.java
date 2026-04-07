@@ -1100,6 +1100,18 @@ public class GitHubFileSystem extends HttpFileSystem {
         }
         
         if ( this.forge==Forge.GITLAB && this.branch.length()!=0 && this.project.length()!=0 ) {
+            if ( this.directory.length()==0 ) {
+                String sroot= root.toString();
+                String test= this.root.getScheme() + "://" + this.root.getHost() + "/" + this.project + "/";
+                
+                if ( sroot.startsWith( test  ) ) { // it ought to
+                    String rest= sroot.substring(test.length());
+                    if ( rest.startsWith(branch) ) {
+                        rest= rest.substring(branch.length()+1);
+                    }
+                    this.directory= rest;
+                }
+            }
             String url = "https://" 
                     + this.root.getHost() 
                     + "/api/v4/projects/" 
