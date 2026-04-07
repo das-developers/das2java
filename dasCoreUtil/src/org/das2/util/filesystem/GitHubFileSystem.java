@@ -68,6 +68,9 @@ public class GitHubFileSystem extends HttpFileSystem {
     
     private String branch= "";
     
+    /**
+     * the project name, which should not begin or end with /!
+     */
     private String project="";
     
     /**
@@ -76,7 +79,7 @@ public class GitHubFileSystem extends HttpFileSystem {
     private String token="";
     
     /**
-     * directory within the Forge.
+     * directory within the Forge.  This should not begin or end with /!
      */
     private String directory="";
     
@@ -1058,7 +1061,8 @@ public class GitHubFileSystem extends HttpFileSystem {
      */
     public URL gitHubMapFile( URI root, String filename ) throws MalformedURLException {
         
-        filename= toCanonicalFilename( filename );       
+        filename= toCanonicalFilename( filename );
+        //note filename now starts with a slash.
         
         if ( this.branch.length()==0 ) {
             try {
@@ -1083,16 +1087,32 @@ public class GitHubFileSystem extends HttpFileSystem {
         }
         
         if ( this.forge==Forge.GITHUB && this.branch.length()!=0 && this.project.length()!=0 ) {
-            String url = "https://" 
-                    + this.root.getHost() 
-                    + "/api/v4/projects/" 
-                    + this.project.replaceAll("/","%2F") 
-                    + "/repository/files/"
-                    + this.directory.replaceAll("/","%2F")
-                    + filename.substring(1)
-                    + "/raw?ref="
-                    + this.branch;
-            return new URL( url );
+            if ( this.root.getHost().equals("github.com") ) {
+                if ( this.directory.length()==0 ) {
+                    if ( this.root.getPath().startsWith("/"+this.project) ) {
+                        String dir= this.root.getPath().substring(this.project.length()+1);
+                        if ( dir.startsWith("/"+branch) ) {
+                            dir= dir.substring(branch.length()+1);
+                        }
+                        if ( dir.startsWith("/") ) {
+                            dir= dir.substring(1);
+                        }
+                        if ( dir.endsWith("/") ) {
+                            dir= dir.substring(0,dir.length()-1);
+                        }
+                        this.directory= dir;
+                    } else {
+                        throw new IllegalArgumentException("unable to derive path, please submit this so the problem can be resolved.");
+                    }
+                }
+                String url = "https://" 
+                    + "raw.githubusercontent.com/" 
+                    + this.project + '/'
+                    + this.branch +'/'
+                    + this.directory +'/'
+                    + filename.substring(1);
+                return new URL( url );
+            }
         }
         
         String sroot= root.toString();
