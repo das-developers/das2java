@@ -155,7 +155,11 @@ public class GitHubFileSystem extends HttpFileSystem {
                 
             } else {
                 URL ur= gitHubMapFile( root, fo.getNameExt() );
-                return HttpUtil.getMetadata( ur, null );
+                Map<String,String> requestProperties= new HashMap<>();
+                if ( token.length()>0 ) {
+                    requestProperties.put( "PRIVATE-TOKEN", token );
+                }
+                return HttpUtil.getMetadata( ur, requestProperties );
             }
     
         }
@@ -418,7 +422,11 @@ public class GitHubFileSystem extends HttpFileSystem {
         URL url= new URL(sb.toString());
         try {
             
-            String s= HtmlUtil.readToString( url );
+            Map<String,String> requestProperties= new HashMap<>();
+            if ( token.length()>0 ) {
+                requestProperties.put( "PRIVATE-TOKEN", token );
+            }
+            String s= HtmlUtil.readToString( url, requestProperties );
            
             JSONArray ja= new JSONArray(s);
            
@@ -586,7 +594,11 @@ public class GitHubFileSystem extends HttpFileSystem {
         
         try {
 
-            String jsonListing= HtmlUtil.readToString(url);
+            Map<String,String> requestProperties= new HashMap<>();
+            if ( token.length()>0 ) {
+                requestProperties.put( "PRIVATE-TOKEN", token );
+            }   
+            String jsonListing= HtmlUtil.readToString(url,requestProperties);
         
             JSONArray jo= new JSONArray(jsonListing);
             
@@ -1317,6 +1329,9 @@ public class GitHubFileSystem extends HttpFileSystem {
             URL url= gitHubMapFile( root, filename );
             logger.log(Level.FINE, "downloading {0}", url);
             URLConnection urlc = url.openConnection();
+            if ( forge==Forge.GITLAB && token.length()>0 ) {
+                urlc.setRequestProperty("PRIVATE-TOKEN", token);
+            }
             result= reduceMeta(urlc);
             
             int expectedContentLength= urlc.getContentLength();

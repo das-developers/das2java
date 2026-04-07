@@ -46,6 +46,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -851,6 +852,15 @@ public abstract class WebFileSystem extends FileSystem {
         return new WebFileObject( this, filename, new Date( Long.MAX_VALUE ) );  // note result.modified may be Long.MAX_VALUE, indicating need to load.
     }
 
+    /**
+     * get any request properties before getting the data stream.For example, GitLab may need a PRIVATE-TOKEN and some
+     * websites use Cookies.
+     * @return any request properties to add.
+     */
+    protected Map<String,String> getRequestProperties( ) {
+        return Collections.emptyMap();
+    }
+            
     /**
      * reduce the number of hits to a server by caching last access times for local files.
      * Note subclasses of this must call markAccess to indicate the file is accessed.

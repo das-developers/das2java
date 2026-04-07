@@ -39,8 +39,10 @@ import org.das2.util.monitor.CancelledOperationException;
 import org.das2.util.Base64;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -245,22 +247,37 @@ public class HtmlUtil {
     }
     
     /**
-     * get the inputStream, following redirects if a 301 or 302 is encountered.  
-     * The scientist may be prompted for a password, but only if "user@" is
-     * in the URL.
-     * 
-     * Note this does not explicitly close the connections
-     * to the server, and Java may not know to release the resources.  
+     * get the inputStream, following redirects if a 301 or 302 is encountered.  The scientist 
+     * may be prompted for a password, but only if "user@" is in the URL. 
+     * Note this does not explicitly close the connections to the server, and Java may not know to release the resources.  
      * TODO: fix this by wrapping the input stream and closing the connection
      * when the stream is closed.  This was done in Autoplot's DataSetURI.downloadResourceAsTempFile
-     * @see org.autoplot.datasource.DataSetURI#downloadResourceAsTempFile
      * 
      * @param url
      * @return input stream
      * @throws IOException 
      * @throws org.das2.util.monitor.CancelledOperationException 
-     */
+     * @see org.autoplot.datasource.DataSetURI#downloadResourceAsTempFile
+     */    
     public static InputStream getInputStream( URL url ) throws IOException, CancelledOperationException {
+        return getInputStream( url, Collections.emptyMap() );
+    }
+    
+    /**
+     * get the inputStream, following redirects if a 301 or 302 is encountered.  The scientist 
+     * may be prompted for a password, but only if "user@" is in the URL. 
+     * Note this does not explicitly close the connections to the server, and Java may not know to release the resources.  
+     * TODO: fix this by wrapping the input stream and closing the connection
+     * when the stream is closed.  This was done in Autoplot's DataSetURI.downloadResourceAsTempFile
+     * 
+     * @param url the URL to retrieve
+     * @param requestProperties key-value pairs like "Cookie" or "PRIVATE-TOKEN"
+     * @return input stream
+     * @throws IOException 
+     * @throws org.das2.util.monitor.CancelledOperationException 
+     * @see org.autoplot.datasource.DataSetURI#downloadResourceAsTempFile
+     */
+    public static InputStream getInputStream( URL url, Map<String,String> requestProperties ) throws IOException, CancelledOperationException {
 
         loggerUrl.log(Level.FINE, "getInputStream {0}", new Object[] { url } );
         
@@ -271,7 +288,7 @@ public class HtmlUtil {
         //long t0= System.currentTimeMillis();
         loggerUrl.log(Level.FINE, "openConnect {0}", new Object[] { url } );
         URLConnection urlConnection = url.openConnection();
-
+        
         urlConnection.setAllowUserInteraction(false);
         urlConnection.setConnectTimeout(FileSystem.settings().getConnectTimeoutMs() );
         
@@ -280,32 +297,15 @@ public class HtmlUtil {
             String encode = Base64.getEncoder().encodeToString( userInfo.getBytes());
             urlConnection.setRequestProperty("Authorization", "Basic " + encode);
         }
+        for ( Entry<String,String> rp : requestProperties.entrySet() ) {
+            String t= rp.getValue();
+            if ( t!=null ) urlConnection.setRequestProperty( rp.getKey(), t );
+        }
                 
         urlConnection= HttpUtil.checkRedirect( urlConnection );
         InputStream ins= urlConnection.getInputStream();
-        
-        boolean keepResponseForDebugging=false;
-        
-        if ( !keepResponseForDebugging ) {
-            return ins;
-        } else {
-            StringBuilder keep= new StringBuilder();
-            byte[] buf= new byte[4096];
-            int bytesRead=ins.read(buf);
-            int totalBytesRead=0;
-            while ( bytesRead>0 ) {
-                totalBytesRead+=bytesRead;
-                for ( int i=0; i<bytesRead; i++ ) {
-                    keep.append((char)buf[i]);
-                }
-                bytesRead=ins.read(buf);
-            }
-            long t02= (System.currentTimeMillis()-1718399881869L);
-            File file= new File( "/tmp/ap/"+url.getFile().hashCode()+"."+ String.format("%09d",t02) +".html");
-            FileUtil.writeStringToFile( file, keep.toString() );
-            logger.log(Level.INFO, "writing html listing to {0}", file);
-            return new FileInputStream(file);
-        }
+                
+        return ins;
         
     }
     
@@ -317,7 +317,19 @@ public class HtmlUtil {
      * @throws CancelledOperationException 
      */
     public static String readToString( URL url ) throws IOException, CancelledOperationException {
-        InputStream ins= getInputStream( url );
+        return readToString( url, Collections.emptyMap() );
+    }
+
+    /**
+     * read the contents of the URL into a string, assuming UTF-8 encoding.
+     * @param url
+     * @param requestProperties
+     * @return
+     * @throws IOException
+     * @throws CancelledOperationException 
+     */
+    public static String readToString( URL url, Map<String,String> requestProperties ) throws IOException, CancelledOperationException {
+        InputStream ins= getInputStream( url, requestProperties );
         StringBuilder build= new StringBuilder();
         byte[] buf= new byte[2048];
         int i= ins.read(buf);
@@ -328,7 +340,7 @@ public class HtmlUtil {
         }
         return build.toString();
     }
-
+    
     /**
      * return the metadata about a URL.  This will support http, https,
      * and ftp, and will check for redirects.  This will 

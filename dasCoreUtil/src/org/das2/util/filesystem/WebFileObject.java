@@ -669,10 +669,8 @@ public class WebFileObject extends FileObject {
                     requestProperties.put( "Authorization", "Basic " + encode );
                 }
 
-                String cookie= ((HttpFileSystem)wfs).getCookie();
-                if ( cookie!=null ) {
-                    requestProperties.put( "Cookie", cookie  );
-                }
+                Map<String,String> props= wfs.getRequestProperties();
+                requestProperties.putAll(props);
 
                 meta= HttpUtil.getMetadata( url, requestProperties );
                 if ( meta.containsKey(WebProtocol.HTTP_RESPONSE_CODE) ) {

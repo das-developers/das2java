@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 
 package org.das2.util.filesystem;
 
@@ -16,6 +12,7 @@ import java.util.Map;
 public interface WebProtocol {
     public static final String META_EXIST="exist";
     public static final String META_COOKIE="Cookie";
+    public static final String META_GITLAB_TOKEN="PRIVATE-TOKEN";
     public static final String META_LAST_MODIFIED= "LastModified";
     public static final String META_CONTENT_LENGTH= "ContentLength";
     public static final String META_CONTENT_TYPE= "ContentType";

@@ -51,6 +51,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import org.das2.util.Base64;
 import org.das2.util.monitor.ProgressMonitor;
@@ -376,6 +377,19 @@ public class HttpFileSystem extends WebFileSystem {
             }
         }
     }
+
+    /**
+     * set the cookie if cookies are being used.
+     * @return any properties which should be set with each transaction
+     */
+    @Override
+    protected Map<String,String> getRequestProperties() {
+        if ( getCookie()!=null ) {
+            return Collections.singletonMap( "Cookie", cookie );
+        } else {
+            return Collections.emptyMap();
+        }
+    }
     
     /**
      * pull out some of the headers to record ETag and Content_Type.
@@ -577,8 +591,9 @@ public class HttpFileSystem extends WebFileSystem {
             urlc.setRequestProperty("Authorization", "Basic " + encode);
         }
 
-        if ( cookie!=null ) {
-            urlc.addRequestProperty("Cookie", cookie );
+        Map<String,String> props = getRequestProperties();
+        for ( Entry<String,String> e: props.entrySet() ) {
+            urlc.addRequestProperty( e.getKey(),e.getValue() ); 
         }
         
         URLConnection oldurlc= urlc;
