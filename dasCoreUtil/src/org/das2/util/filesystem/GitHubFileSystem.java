@@ -493,15 +493,9 @@ public class GitHubFileSystem extends HttpFileSystem {
             path= npath;
         }
         
-        if ( path.length<5 ) { // just use the old method
-            return null;
-        }
-        
-        // spath is the directory within the server, pointing the the project directory.
-        String spath= path[0] + '/' + path[1] + '/' + path[2] ;
         String[] pathsub= Arrays.copyOfRange( path, 3, path.length );
                 
-        URL url= new URL("https://api.github.com/repos" + path[0] + "/" + path[1] + "/" +  path[2] + "/contents/" + String.join( "/", pathsub) );
+        URL url= new URL("https://api.github.com/repos/" + this.project + "/contents/" + String.join( "/", pathsub) );
 
         String[] result;
         
@@ -1077,6 +1071,19 @@ public class GitHubFileSystem extends HttpFileSystem {
                     + this.branch;
             return new URL( url );
             
+        }
+        
+        if ( this.forge==Forge.GITHUB && this.branch.length()!=0 && this.project.length()!=0 ) {
+            String url = "https://" 
+                    + this.root.getHost() 
+                    + "/api/v4/projects/" 
+                    + this.project.replaceAll("/","%2F") 
+                    + "/repository/files/"
+                    + this.directory.replaceAll("/","%2F")
+                    + filename.substring(1)
+                    + "/raw?ref="
+                    + this.branch;
+            return new URL( url );
         }
         
         String sroot= root.toString();
