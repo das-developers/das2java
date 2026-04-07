@@ -282,6 +282,11 @@ public class KeyChain {
      * map from URL, without trailing slash, to cookie.
      */
     private final Map<String,String> cookies= new HashMap<>();
+    
+    /**
+     * map from URL, without trailing slash, to token for GitHubFileSyste,
+     */
+    private final Map<URL,String> tokens= new HashMap<>();
 
     /**
      * parent component for password dialog.
@@ -647,6 +652,42 @@ public class KeyChain {
         }
         return userInfo;
     }
+    
+    
+    /**
+     * return the URL like https://github.com/jbf/private-repo
+     * @param url
+     * @return 
+     */
+    public String getToken( URL url ) {
+        if ( tokens.containsKey(url) ) {
+            return tokens.get(url);
+        }
+        GitHubFileSystem.Forge forge;
+        try {
+            forge= GitHubFileSystem.detectForge(url.toURI());
+        } catch ( URISyntaxException ex ) {
+            return "";
+        }
+
+        String sw= "";
+        if ( forge==GitHubFileSystem.Forge.GITLAB ) {
+            sw= "glpat-";
+        } else if ( forge==GitHubFileSystem.Forge.GITHUB ) {
+            sw= "github_pat_";
+        }
+        return JOptionPane.showInputDialog( parent, "Enter Repository key (starts with "+sw+")" );
+    }
+    
+    /**
+     * put the token on the keychain.
+     * @param url
+     * @param token 
+     */
+    public void storeToken( URL url, String token ) {
+        tokens.put( url, token );
+    }
+    
     private static final int CANCEL_PRESS_TIMEOUT = 2000;
 
     /**
