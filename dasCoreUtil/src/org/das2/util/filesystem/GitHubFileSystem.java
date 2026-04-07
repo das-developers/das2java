@@ -480,7 +480,16 @@ public class GitHubFileSystem extends HttpFileSystem {
             throw new IllegalArgumentException("listDirectoryGithub can't be used here");
         }
         
+        if ( branch.length()==0 ) {
+            branch= getDefaultBranch(root, project);
+        }
+        
         String[] path= root.getPath().split("/",-2);
+
+        if ( project.length()==0 ) {
+            project= path[1] + '/' + path[2];
+        }
+        
         
         if ( path.length<4) {
             return null;
@@ -495,7 +504,7 @@ public class GitHubFileSystem extends HttpFileSystem {
         
         String[] pathsub= Arrays.copyOfRange( path, 3, path.length );
                 
-        URL url= new URL("https://api.github.com/repos/" + this.project + "/contents/" + String.join( "/", pathsub) );
+        URL url= new URL("https://api.github.com/repos/" + this.project + "/contents/" + String.join( "/", pathsub) + "?ref=" + branch );
 
         String[] result;
         
