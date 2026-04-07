@@ -128,12 +128,18 @@ public class KeyChain {
                         } else {
                             String hash= ss[0].trim();
                             String storedUserInfo= ss[1].trim();
-                            //TODO: shouldn't "http://ectsoc@www.rbsp-ect.lanl.gov" match "http://www.rbsp-ect.lanl.gov    ectsoc:..."
-                            if ( !hash.endsWith("/") ) {
-                                int k=hash.lastIndexOf("/");
-                                hash= hash.substring(0,k+1);
+                            if ( storedUserInfo.startsWith("glpat-") ) {
+                                tokens.put( new URL(hash), storedUserInfo );
+                            } else if ( storedUserInfo.startsWith("github_pat_") ) {
+                                tokens.put( new URL(hash), storedUserInfo );
+                            } else {
+                                //TODO: shouldn't "http://ectsoc@www.rbsp-ect.lanl.gov" match "http://www.rbsp-ect.lanl.gov    ectsoc:..."
+                                if ( !hash.endsWith("/") ) {
+                                    int k=hash.lastIndexOf("/");
+                                    hash= hash.substring(0,k+1);
+                                }
+                                keys.put( hash, storedUserInfo );
                             }
-                            keys.put( hash, storedUserInfo );
                         }
                     }
                     line= r.readLine();
@@ -234,6 +240,9 @@ public class KeyChain {
             w.println("# "+keysFile );
             for ( Entry<String,String> key : keys.entrySet() ) {
                 w.println( key.getKey() + "\t" + key.getValue() );
+            }
+            for ( Entry<URL,String> ent : tokens.entrySet() ) {
+                w.println( ent.getKey().toString() + "\t" + ent.getValue() );
             }
         } finally {
             if ( w!=null ) w.close();
@@ -660,6 +669,9 @@ public class KeyChain {
      * @return 
      */
     public String getToken( URL url ) {
+        if ( !url.getFile().endsWith("/") ) {
+            throw new IllegalArgumentException("url must end in /");
+        }
         if ( tokens.containsKey(url) ) {
             return tokens.get(url);
         }
@@ -685,6 +697,9 @@ public class KeyChain {
      * @param token 
      */
     public void storeToken( URL url, String token ) {
+        if ( !url.getFile().endsWith("/") ) {
+            throw new IllegalArgumentException("url must end in /");
+        }
         tokens.put( url, token );
     }
     
