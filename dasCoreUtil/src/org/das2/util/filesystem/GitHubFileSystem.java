@@ -631,7 +631,7 @@ public class GitHubFileSystem extends HttpFileSystem {
             try {
                 jsonListing= HtmlUtil.readToString(url,requestProperties);
             } catch ( IOException ex ) {
-                URL tokenURL= new URL( root.getScheme() + "://" + root.getHost() + "/-/" + project + "/");
+                URL tokenURL= new URL( root.getScheme() + "://" + root.getHost() + "/" + project + "/");
                 String s= KeyChain.getDefault().getToken( tokenURL );
                 if ( s!=null ) {
                     token= s;
