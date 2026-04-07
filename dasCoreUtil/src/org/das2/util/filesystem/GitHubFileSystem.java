@@ -6,6 +6,7 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,6 +38,7 @@ import static org.das2.util.filesystem.FileSystem.toCanonicalFilename;
 import static org.das2.util.filesystem.HtmlUtil.getInputStream;
 import static org.das2.util.filesystem.WebFileSystem.localRoot;
 import org.das2.util.monitor.CancelledOperationException;
+import org.das2.util.monitor.NullProgressMonitor;
 import org.das2.util.monitor.ProgressMonitor;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -176,7 +178,7 @@ public class GitHubFileSystem extends HttpFileSystem {
                 Map<String,String> requestProperties= new HashMap<>();
                 
                 Map<String,String> rp= getRequestProperties();
-                rp.putAll(rp);
+                requestProperties.putAll(rp);
 
                 return HttpUtil.getMetadata( ur, requestProperties );
             }
@@ -225,6 +227,13 @@ public class GitHubFileSystem extends HttpFileSystem {
             }
         }
         this.protocol= new GitHubHttpProtocol();
+        
+        try {
+            listDirectory( "/", new NullProgressMonitor() );
+        } catch (IOException ex) {
+            logger.log(Level.SEVERE, null, ex);
+        }
+        
     }
     
     /**
@@ -618,8 +627,24 @@ public class GitHubFileSystem extends HttpFileSystem {
             Map<String,String> requestProperties= new HashMap<>();
             requestProperties.putAll( getRequestProperties() );
 
-            String jsonListing= HtmlUtil.readToString(url,requestProperties);
-        
+            String jsonListing;
+            try {
+                jsonListing= HtmlUtil.readToString(url,requestProperties);
+            } catch ( IOException ex ) {
+                URL tokenURL= new URL( root.getScheme() + "://" + root.getHost() + "/-/" + project + "/");
+                String s= KeyChain.getDefault().getToken( tokenURL );
+                if ( s!=null ) {
+                    token= s;
+                    requestProperties.putAll( getRequestProperties() );
+                    jsonListing= HtmlUtil.readToString(url,requestProperties);
+                    KeyChain.getDefault().storeToken( tokenURL, token );
+                    
+                    
+                } else {
+                    throw ex;
+                }
+            }
+                        
             JSONArray jo= new JSONArray(jsonListing);
             
             result= new String[jo.length()];
@@ -824,6 +849,8 @@ public class GitHubFileSystem extends HttpFileSystem {
             if ( branch.length()==0 ) {
                 branch= getDefaultBranch(root, project);
             }
+        } catch ( FileNotFoundException ex ) {
+            
         } catch ( IOException | IllegalArgumentException ex ) {
             if ( forge==Forge.GITLAB || forge==Forge.GITHUB ) {
                 return listDirectoryProjects(root,project);
