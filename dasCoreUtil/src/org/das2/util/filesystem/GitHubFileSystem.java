@@ -581,7 +581,8 @@ public class GitHubFileSystem extends HttpFileSystem {
             return null;
         }
         
-        String project,path;
+        String project;  // TODO: is this not the same as this.project?
+        String path;   // TODO: is this not the same as this.directory?
         
         int idash=-1;
         for ( int i=0; i<pathComponents.length; i++ ) {
@@ -597,13 +598,12 @@ public class GitHubFileSystem extends HttpFileSystem {
         } else {
             // Note ChatGPT says the - in https://research-git.uiowa.edu/space-physics/rbsp/ap-script/-/tree/master/u/ivar/20210416/
             // is a delimiter, so we could probably clean up this logic below.
-            if ( pathComponents[1].equals("space-physics") ) {
-                project= String.join( "/", Arrays.copyOfRange( pathComponents, 1, 4 ) ); // space-physics/rbsp/ap-script
-                path= String.join( "/", Arrays.copyOfRange( pathComponents, 4, pathComponents.length ) ); // team/digitizing
-            } else {
-                project= String.join( "/", Arrays.copyOfRange( pathComponents, 1, 3 ) ); // abbith/juno
-                path= String.join( "/", Arrays.copyOfRange( pathComponents, 3, pathComponents.length ) ); // team/digitizing
+            int lastPath=3;
+            if ( pathComponents.length>lastPath && pathComponents[lastPath].length()==0 ) {
+                lastPath= 2;
             }
+            project= String.join( "/", Arrays.copyOfRange( pathComponents, 1, lastPath+1 ) ); // space-physics/rbsp/ap-script
+            path= String.join( "/", Arrays.copyOfRange( pathComponents, lastPath+1, pathComponents.length ) ); // team/digitizing
         }
         
         if ( this.project.length()==0 ) {
@@ -619,7 +619,9 @@ public class GitHubFileSystem extends HttpFileSystem {
         }
                 
         URL url= new URL( root.getScheme() + "://" + root.getHost() + "/api/v4/projects/" + project.replace("/","%2F")+ "/repository/tree?path=" + path.replace("/","%2F") + "&ref=" + branch );
-        
+        // e.g. https://research-git.uiowa.edu/api/v4/projects/space-physics%2Fdoc/repository/tree?path=&ref=master
+        // e.g. https://research-git.uiowa.edu/api/v4/projects/abbith%2Fjuno/repository/tree?path=team/wigglePlot&ref=main
+        // e.g. https://research-git.uiowa.edu/api/v4/projects/space-physics%2Fjuno%2Fap-script/repository/tree?path=public%2Fmasafumi%2F&ref=master
         String[] result;
         
         try {
@@ -631,14 +633,15 @@ public class GitHubFileSystem extends HttpFileSystem {
             try {
                 jsonListing= HtmlUtil.readToString(url,requestProperties);
             } catch ( IOException ex ) {
-                URL tokenURL= new URL( root.getScheme() + "://" + root.getHost() + "/" + project + "/");
-                String s= KeyChain.getDefault().getToken( tokenURL );
-                if ( s!=null ) {
-                    token= s;
-                    requestProperties.putAll( getRequestProperties() );
-                    jsonListing= HtmlUtil.readToString(url,requestProperties);
-                    KeyChain.getDefault().storeToken( tokenURL, token );
-                    
+                if ( false ) {
+                    URL tokenURL= new URL( root.getScheme() + "://" + root.getHost() + "/" + project + "/");
+                    String s= KeyChain.getDefault().getToken( tokenURL );
+                    if ( s!=null ) {
+                        token= s;
+                        requestProperties.putAll( getRequestProperties() );
+                        jsonListing= HtmlUtil.readToString(url,requestProperties);
+                        KeyChain.getDefault().storeToken( tokenURL, token );
+                    }
                     
                 } else {
                     throw ex;
@@ -1116,12 +1119,16 @@ public class GitHubFileSystem extends HttpFileSystem {
                     }
                 }
             }
+            
+            String d= this.directory;
+            if ( d.equals("/") ) d= "";
+            
             String url = "https://" 
                     + this.root.getHost() 
                     + "/api/v4/projects/" 
                     + this.project.replaceAll("/","%2F") 
                     + "/repository/files/"
-                    + this.directory.replaceAll("/","%2F") 
+                    + d.replaceAll("/","%2F") 
                     + filename.substring(1)
                     + "/raw?ref="
                     + this.branch;
