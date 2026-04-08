@@ -1711,6 +1711,7 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
                 Runnable run= () -> {
                     deleteSelectionButton.setEnabled( table.getSelectedRowCount()>0 );
                     clearSelectionButton.setEnabled( table.getSelectedRowCount()>0 );
+                    updateStatus();
                 };
                 if (SwingUtilities.isEventDispatchThread()) {
                     run.run();
@@ -1831,6 +1832,11 @@ public final class DataPointRecorder extends JPanel implements DataPointSelectio
         String statusString = (saveFile == null ? "" : (String.valueOf(saveFile) + " ")) +
                 (modified ? "(modified)" : "");
         String t= messageLabel.getText();
+        if ( table.getSelectedRowCount()>0 ) {
+            statusString= statusString + " ("+ table.getSelectedRowCount()+" of "+ table.getRowCount()+")";
+        } else {
+            statusString= statusString + " ("+ table.getRowCount()+" rows)";
+        }
         if ( !statusString.equals(t) ) {
             messageLabel.setText(statusString);
         }
