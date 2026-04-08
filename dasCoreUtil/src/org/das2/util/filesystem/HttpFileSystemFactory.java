@@ -57,7 +57,10 @@ public class HttpFileSystemFactory implements FileSystemFactory {
             
             if (path != null) {
                 // Replace multiple slashes with a single slash
-                path = path.replaceAll("/{2,}", "/");
+                String path1 = path.replaceAll("/{2,}", "/");
+                if ( path1.equals(path) ) {
+                    return uri;
+                }
             }
             
             // Rebuild the URI with the normalized path
