@@ -26,7 +26,11 @@ package org.das2.util.filesystem;
 import java.io.FileNotFoundException;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.UnknownHostException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.das2.util.filesystem.FileSystem.FileSystemOfflineException;
 
 /**
@@ -38,9 +42,43 @@ public class HttpFileSystemFactory implements FileSystemFactory {
     public HttpFileSystemFactory() {
     }
 
+    /**
+     * normalize the URI so that no part of the path contains multiple slashes (//).  Authored by ChatGPT.
+     * @param uri
+     * @return
+     * 
+     */
+    public static URI normalizePath(URI uri) {
+        try {
+            String path = uri.getPath();
+            
+            if (path != null) {
+                // Replace multiple slashes with a single slash
+                path = path.replaceAll("/{2,}", "/");
+            }
+            
+            // Rebuild the URI with the normalized path
+            return new URI(
+                    uri.getScheme(),
+                    uri.getUserInfo(),
+                    uri.getHost(),
+                    uri.getPort(),
+                    path,
+                    uri.getQuery(),
+                    uri.getFragment()
+            );
+        } catch (URISyntaxException ex) {
+            Logger.getLogger(HttpFileSystemFactory.class.getName()).log(Level.SEVERE, null, ex);
+            throw new RuntimeException(ex);
+        }
+    }
+    
     @Override
     public FileSystem createFileSystem(URI root) throws FileSystemOfflineException, UnknownHostException, FileNotFoundException {
         String h;
+        
+        root= normalizePath(root);
+        
         try {
             h= root.toURL().getHost(); // shows issues: http://demo@host:demo@www-pw.physics.uiowa.edu/~jbf/data/restrictAt/
         } catch ( MalformedURLException ex ) {
