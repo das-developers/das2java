@@ -81,7 +81,7 @@ public class GitHubFileSystem extends HttpFileSystem {
     private String token="";
     
     /**
-     * directory within the Forge.  This should not begin or end with /!
+     * directory within the Forge.  This should not begin / and must end with /!
      */
     private String directory="";
     
@@ -1109,7 +1109,11 @@ public class GitHubFileSystem extends HttpFileSystem {
                     if ( rest.startsWith(branch) ) {
                         rest= rest.substring(branch.length()+1);
                     }
-                    this.directory= rest;
+                    if ( rest.endsWith("/") ) {
+                        this.directory= rest;
+                    } else {
+                        this.directory= rest+"/";
+                    }
                 }
             }
             String url = "https://" 
@@ -1117,7 +1121,7 @@ public class GitHubFileSystem extends HttpFileSystem {
                     + "/api/v4/projects/" 
                     + this.project.replaceAll("/","%2F") 
                     + "/repository/files/"
-                    + this.directory.replaceAll("/","%2F")
+                    + this.directory.replaceAll("/","%2F") 
                     + filename.substring(1)
                     + "/raw?ref="
                     + this.branch;
@@ -1136,8 +1140,8 @@ public class GitHubFileSystem extends HttpFileSystem {
                         if ( dir.startsWith("/") ) {
                             dir= dir.substring(1);
                         }
-                        if ( dir.endsWith("/") ) {
-                            dir= dir.substring(0,dir.length()-1);
+                        if ( !dir.endsWith("/") ) {
+                            dir= dir + "/";
                         }
                         this.directory= dir;
                     } else {
@@ -1148,7 +1152,7 @@ public class GitHubFileSystem extends HttpFileSystem {
                     + "raw.githubusercontent.com/" 
                     + this.project + '/'
                     + this.branch +'/'
-                    + this.directory +'/'
+                    + this.directory 
                     + filename.substring(1);
                 return new URL( url );
             }
@@ -1193,6 +1197,9 @@ public class GitHubFileSystem extends HttpFileSystem {
                 if ( i>-1 ) { // it really should be
                     i=i+this.project.length();
                     this.directory= sroot.substring(i);
+                    if ( !this.directory.endsWith("/") ) {
+                        this.directory = this.directory + '/';
+                    }
                 }
             }
         }
@@ -1264,6 +1271,9 @@ public class GitHubFileSystem extends HttpFileSystem {
             String check= root.getScheme() + "://"+ root.getHost() + '/' + project + '/' + branch + '/';
             if ( sroot.startsWith( check ) ) {
                 directory= sroot.substring(check.length());
+                if ( !directory.endsWith("/") ) {
+                    directory= directory+'/';
+                }
             }
         }
         
