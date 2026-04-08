@@ -688,7 +688,7 @@ public class KeyChain {
         } else if ( forge==GitHubFileSystem.Forge.GITHUB ) {
             sw= "github_pat_";
         }
-        return JOptionPane.showInputDialog( parent, "Enter Repository key (starts with "+sw+")" );
+        return JOptionPane.showInputDialog( parent, "Enter Repository token (starts with "+sw+")" );
     }
     
     /**
