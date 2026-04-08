@@ -1123,6 +1123,9 @@ public class GitHubFileSystem extends HttpFileSystem {
             String d= this.directory;
             if ( d.equals("/") ) d= "";
             
+            // https://research-git.uiowa.edu/api/v4/projects/abbith%2Fjuno/repository/files/team%2FangleEyBy%2Fcolorbar.png/raw?ref=main
+            // https://research-git.uiowa.edu/api/v4/projects/space-physics%2Fjuno%2Fap-script/repository/files/public%2Fmasafumi%2FPigtailMoons.jy/raw?ref=master
+            
             String url = "https://" 
                     + this.root.getHost() 
                     + "/api/v4/projects/" 
