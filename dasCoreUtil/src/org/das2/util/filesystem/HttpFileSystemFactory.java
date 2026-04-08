@@ -30,6 +30,7 @@ import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.das2.util.LoggerManager;
 
 import org.das2.util.filesystem.FileSystem.FileSystemOfflineException;
 
@@ -39,6 +40,8 @@ import org.das2.util.filesystem.FileSystem.FileSystemOfflineException;
  */
 public class HttpFileSystemFactory implements FileSystemFactory {
 
+    private static final Logger logger= LoggerManager.getLogger("das2.filesystem.http");
+    
     public HttpFileSystemFactory() {
     }
 
@@ -83,9 +86,24 @@ public class HttpFileSystemFactory implements FileSystemFactory {
             h= root.toURL().getHost(); // shows issues: http://demo@host:demo@www-pw.physics.uiowa.edu/~jbf/data/restrictAt/
         } catch ( MalformedURLException ex ) {
             h= "";  // handle as before github addition.
-        }
+        }        
         String githubPath=GitHubFileSystem.isGithubFileSystem( h, root.getPath() );
         if ( githubPath!=null ) {
+            //kludge in abbith to research-git for UIowa.
+            if ( h.equals("abbith.physics.uiowa.edu") ) {
+                try {
+                    root= new URI( root.getScheme(),
+                            root.getUserInfo(),
+                            "research-git.uiowa.edu",
+                            -1,
+                            "/abbith"+root.getPath().substring(4),
+                            root.getQuery(),
+                            root.getFragment() );
+                    logger.fine("rewrote abbith URI to research-git");
+                } catch (URISyntaxException ex) {
+                    logger.log(Level.SEVERE, null, ex);
+                }
+            }
             int offset = githubPath.split("/").length-1;
             WebFileSystem result= GitHubFileSystem.createGitHubFileSystem(root,offset);
             return result;                          
