@@ -60,6 +60,8 @@ public class HttpFileSystemFactory implements FileSystemFactory {
                 String path1 = path.replaceAll("/{2,}", "/");
                 if ( path1.equals(path) ) {
                     return uri;
+                } else {
+                    path= path1;
                 }
             }
             
