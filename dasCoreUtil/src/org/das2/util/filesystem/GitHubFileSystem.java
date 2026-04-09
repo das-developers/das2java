@@ -198,6 +198,10 @@ public class GitHubFileSystem extends HttpFileSystem {
      */
     protected GitHubFileSystem(URI root, File localRoot, String branch, int baseOffset) {
         super(root, localRoot);
+        
+        if ( root.getPath().contains("//") ) {
+            throw new IllegalArgumentException("root cannot contain // : "+root);
+        }
         File f= this.getReadOnlyCache( );
         if ( f==null ) {
             File localRoCache= lookForROCacheGH(localRoot,branch);
@@ -591,6 +595,14 @@ public class GitHubFileSystem extends HttpFileSystem {
                 break;
             }
         }
+        if ( idash==-1 && branch.length()>0 ) {
+            for ( int i=0; i<pathComponents.length; i++ ) {
+                if ( pathComponents[i].equals(branch) ) {
+                    idash=i;
+                    break;
+                }
+            }
+        }
         
         if ( idash>-1 ) {
             project= String.join( "/", Arrays.copyOfRange( pathComponents, 1, idash ) );
@@ -608,6 +620,10 @@ public class GitHubFileSystem extends HttpFileSystem {
         
         if ( this.project.length()==0 ) {
             this.project= project;
+        }
+        
+        if ( this.directory.length()==0 ) { // TODO: just use these if we already know them.
+            this.directory= path;
         }
         
         if ( branch.length()==0 ) {
