@@ -578,6 +578,10 @@ public class GitHubFileSystem extends HttpFileSystem {
             return ss;
         }
         
+        if ( !directory.equals("/") ) {
+            logger.warning("GitHubFileSystem doesn't support multiple-levels within a GitHubFS");
+            //TODO: support this!
+        }
                 
         String[] pathComponents= root.getPath().split("/",-2);
         
