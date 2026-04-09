@@ -604,26 +604,31 @@ public class GitHubFileSystem extends HttpFileSystem {
             }
         }
         
-        if ( idash>-1 ) {
-            project= String.join( "/", Arrays.copyOfRange( pathComponents, 1, idash ) );
-            path= String.join( "/", Arrays.copyOfRange( pathComponents, idash+1, pathComponents.length ) );
+        if ( this.project.length()>0 && this.directory.length()>0 ) {
+            project= this.project;
+            path= this.directory;
         } else {
-            // Note ChatGPT says the - in https://research-git.uiowa.edu/space-physics/rbsp/ap-script/-/tree/master/u/ivar/20210416/
-            // is a delimiter, so we could probably clean up this logic below.
-            int lastPath=3;
-            if ( pathComponents.length>lastPath && pathComponents[lastPath].length()==0 ) {
-                lastPath= 2;
+            if ( idash>-1 ) {
+                project= String.join( "/", Arrays.copyOfRange( pathComponents, 1, idash ) );
+                path= String.join( "/", Arrays.copyOfRange( pathComponents, idash+1, pathComponents.length ) );
+            } else {
+                // Note ChatGPT says the - in https://research-git.uiowa.edu/space-physics/rbsp/ap-script/-/tree/master/u/ivar/20210416/
+                // is a delimiter, so we could probably clean up this logic below.
+                int lastPath=3;
+                if ( pathComponents.length>lastPath && pathComponents[lastPath].length()==0 ) {
+                    lastPath= 2;
+                }
+                project= String.join( "/", Arrays.copyOfRange( pathComponents, 1, lastPath+1 ) ); // space-physics/rbsp/ap-script
+                path= String.join( "/", Arrays.copyOfRange( pathComponents, lastPath+1, pathComponents.length ) ); // team/digitizing
             }
-            project= String.join( "/", Arrays.copyOfRange( pathComponents, 1, lastPath+1 ) ); // space-physics/rbsp/ap-script
-            path= String.join( "/", Arrays.copyOfRange( pathComponents, lastPath+1, pathComponents.length ) ); // team/digitizing
-        }
-        
-        if ( this.project.length()==0 ) {
-            this.project= project;
-        }
-        
-        if ( this.directory.length()==0 ) { // TODO: just use these if we already know them.
-            this.directory= path;
+
+            if ( this.project.length()==0 ) {
+                this.project= project;
+            }
+
+            if ( this.directory.length()==0 ) { // TODO: just use these if we already know them.
+                this.directory= path;
+            }
         }
         
         if ( branch.length()==0 ) {
