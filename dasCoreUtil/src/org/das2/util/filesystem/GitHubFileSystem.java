@@ -829,7 +829,7 @@ public class GitHubFileSystem extends HttpFileSystem {
         } else {
             int i= project.lastIndexOf("/");
             if ( i==-1 ) {
-                projectSlash="/";
+                projectSlash=project+"/";
             } else {
                 projectSlash=project.substring(0,i+1);
             }
@@ -874,6 +874,10 @@ public class GitHubFileSystem extends HttpFileSystem {
             if ( forge==Forge.GITLAB || forge==Forge.GITHUB ) {
                 return listDirectoryProjects(root,project);
             }
+        }
+        
+        if ( project.length()>0 && !project.contains("/") ) {
+            return listDirectoryProjects(root,project);
         }
         
         if ( forge==Forge.GITLAB ) {
