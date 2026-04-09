@@ -495,6 +495,10 @@ public class GitHubFileSystem extends HttpFileSystem {
         if ( !root.toString().startsWith("https://github.com/") ) {
             throw new IllegalArgumentException("listDirectoryGithub can't be used here");
         }
+        if ( !directory.equals("/") ) {
+            logger.warning("GitHubFileSystem doesn't support multiple-levels within a GitHubFS");
+            //TODO: support this!
+        }
         
         if ( branch.length()==0 ) {
             branch= getDefaultBranch(root, project);
