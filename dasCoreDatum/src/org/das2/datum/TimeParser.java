@@ -1951,11 +1951,12 @@ public class TimeParser {
      * This allows for string split into elements to be interpreted here.  This
      * is to add flexibility to external parsers that have partially parsed the
      * number already.
-     * examples:<code>
+     * examples:
+     * <pre>{@code
      *   TimeParser p= TimeParser.create("%Y %m %d");
      *   p.setDigit(0,2007).setDigit(1,12).setDigit(2,5).getTime( Units.us2000 );
      *   p.format();  // maybe in the future
-     * </code>
+     * }</pre>
      * @param digitNumber, the digit to set (starting with 0).
      * @param digit, value to set the digit.
      * @return the time parser with the digit set.
