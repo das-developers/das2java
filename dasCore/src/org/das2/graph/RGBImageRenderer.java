@@ -131,9 +131,10 @@ public class RGBImageRenderer extends Renderer {
             if ( !d.getUnits().isConvertibleTo(xunits) ) {
                 d= xunits.createDatum(d.value());
             }
-            if ( !DataSetUtil.isMonotonic(dep0) ) {
+            if ( !DataSetUtil.isMonotonic(dep0) ) { // https://sourceforge.net/p/autoplot/bugs/2825/
                 lds= Ops.ensureMonotonic(lds);
                 dep0= (QDataSet)lds.property(QDataSet.DEPEND_0);
+                dx= dep0.value(1)-dep0.value(0);
                 dep1= (QDataSet)lds.property(QDataSet.DEPEND_1);
             }
             if ( dx>0 ) {
