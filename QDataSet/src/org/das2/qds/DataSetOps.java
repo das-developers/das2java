@@ -615,8 +615,10 @@ public class DataSetOps {
             for ( int i=0; i<ssort.length(); i++ ) {
                 int j= (int)ssort.value(i);
                 if ( j!=i ) {
-                    for ( int i2=0; i2<ds.length(0); i2++ ) {
-                        for ( int i3=0; i3<ds.length(0); i3++ ) {
+                    int n2= ds.length(0);
+                    for ( int i2=0; i2<n2; i2++ ) {
+                        int n3= ds.length(0,0);
+                        for ( int i3=0; i3<n3; i3++ ) {
                             double d= ds.value(i,i2,i3);
                             ds.putValue( i, i2, i3, ds.value(j,i2,i3) );
                             ds.putValue( j, i2, i3, d ); 
@@ -629,9 +631,12 @@ public class DataSetOps {
             for ( int i=0; i<ssort.length(); i++ ) {
                 int j= (int)ssort.value(i);
                 if ( j!=i ) {
-                    for ( int i2=0; i2<ds.length(0); i2++ ) {
-                        for ( int i3=0; i3<ds.length(0); i3++ ) {
-                            for ( int i4=0; i4<ds.length(0); i4++ ) {
+                    int n2= ds.length(0);
+                    for ( int i2=0; i2<n2; i2++ ) {
+                        int n3= ds.length(0,0);
+                        for ( int i3=0; i3<n3; i3++ ) {
+                            int n4= ds.length(0,0,0);
+                            for ( int i4=0; i4<n4; i4++ ) {
                                 double d= ds.value(i,i2,i3,i4);
                                 ds.putValue( i, i2, i3, i4, ds.value(j,i2,i3,i4) );
                                 ds.putValue( j, i2, i3, i4, d ); 
