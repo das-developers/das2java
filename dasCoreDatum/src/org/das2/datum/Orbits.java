@@ -86,6 +86,15 @@ public class Orbits {
                 urls.add( new URL( sc ) );  // orbit:http://das2.org/wiki/index.php/Orbits/crres:6 allowed.
             } else {
                 switch (sc) {
+                    case "ts1-roi-list":
+                        urls.add( new URL( "https://tracers-portal.physics.uiowa.edu/ancillary/TS1/events/roi_intervals/ts1_roi-list.csv" ) );
+                        break;
+                    case "ts2-roi-list":
+                        urls.add( new URL( "https://tracers-portal.physics.uiowa.edu/ancillary/TS2/events/roi_intervals/ts2_roi-list.csv" ) );
+                        break;
+                    case "ts-tandem_rois":
+                        urls.add( new URL( "https://tracers-portal.physics.uiowa.edu/ancillary/events/tandem_rois.csv" ) );
+                        break;
                     case "rbspa-pp":
                     case "rbspb-pp":
                         String fsc= sc.replace("-","_");
@@ -226,17 +235,17 @@ public class Orbits {
                             } else {
                                 throw new ParseException("time is too short",0); // nasty way to jump over to other branch
                             }
-                            s0= ss[2];
                             col= 0;
                             labelColumn= ss.length-1;
+                            s0= ss[labelColumn];
                         }
                     } catch ( ParseException ex ) {
                         try {
                             d1= TimeUtil.create(ss[1]);
                             d2= TimeUtil.create(ss[2]);
-                            s0= ss[0];
                             col= 1;
                             labelColumn= 0;
+                            s0= ss[labelColumn];
                         } catch ( ParseException ex1 ) {
                             s= rin.readLine();
                             continue;
@@ -447,6 +456,9 @@ public class Orbits {
         names.put( "junoEntire","Juno (Whole Orbits)");
         names.put( "psp-aa", "Parker Solar Probe aphelion to aphelion");
         names.put( "psp-aa25", "Parker Solar Probe where orbit is within 0.25 AU");
+        names.put( "ts1-roi-list", "TRACERS-1 Region-of-Interest list");
+        names.put( "ts2-roi-list", "TRACERS-2 Region-of-Interest list");
+        names.put( "ts-tandem_rois", "TRACERS 1 and 2 Tandem list" );
         return names;
     }
 
