@@ -339,6 +339,10 @@ public class RGBImageRenderer extends Renderer {
                             imageType = BufferedImage.TYPE_INT_ARGB;
                         } else if ( s0.startsWith("a") && s1.startsWith("b") && s2.startsWith("g") && s3.startsWith("r") ) {
                             imageType = BufferedImage.TYPE_4BYTE_ABGR;
+                        } else if ( s0.startsWith("a") && s1.startsWith("b") && s2.startsWith("g") && s3.startsWith("r") ) {
+                            imageType = BufferedImage.TYPE_4BYTE_ABGR;
+                        } else if ( s0.startsWith("r") && s1.startsWith("g") && s2.startsWith("b") && s3.startsWith("a") ) {
+                            throw new IllegalArgumentException("RGBA is not supported");
                         }
                     }
                 }   break;
