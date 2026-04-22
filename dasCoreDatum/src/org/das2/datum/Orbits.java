@@ -87,7 +87,7 @@ public class Orbits {
             } else {
                 switch (sc) {
                     case "ts1-roi-list":
-                        urls.add( new URL( "https://tracers-portal.physics.uiowa.edu/ancillary/TS1/events/roi_intervals/ts1_roi-list.csv" ) );
+                        urls.add( new URL( "https://tracers-portal.physics.uiowa.edu/ancillary/TS1/events/roi_intervals/ts1_roi-list.csv" ) );  
                         break;
                     case "ts2-roi-list":
                         urls.add( new URL( "https://tracers-portal.physics.uiowa.edu/ancillary/TS2/events/roi_intervals/ts2_roi-list.csv" ) );
