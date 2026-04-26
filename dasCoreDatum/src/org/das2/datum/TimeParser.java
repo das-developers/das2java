@@ -503,6 +503,7 @@ public class TimeParser {
     /**
      * regular intervals are numbered.
      * $(periodic;offset=0;start=2000-001;period=P1D)", "0",  "2000-001"
+     * $(periodic;offset=0;start=1970-001T00:00Z;period=PT1S)
      */
     public static class PeriodicFieldHandler implements TimeParser.FieldHandler {
 
@@ -510,6 +511,7 @@ public class TimeParser {
         int[] start;
         int julday;
         int[] period;
+        boolean periodIsSeconds;
         
         @Override
         public String configure( Map<String, String> args ) {
@@ -536,6 +538,7 @@ public class TimeParser {
             }
             try {
                 period= DatumRangeUtil.parseISO8601Duration( s );
+                periodIsSeconds= s.equals("PT1S");
             } catch ( ParseException ex ) {
                 return "unable to parse period: "+s+"\n"+ex.getMessage();
             }
@@ -552,6 +555,19 @@ public class TimeParser {
         public void parse(String fieldContent, TimeStruct startTime, TimeStruct timeWidth, Map<String, String> extra) throws ParseException {
             int i= Integer.parseInt(fieldContent);
             int addOffset= i-offset;
+            if ( periodIsSeconds && julday==2440588 && offset==0 ) {
+                // https://github.com/uri-templates-time/uri-templates-time-code/issues/32
+                Datum t= Units.t1970.createDatum( Long.parseLong(fieldContent) );
+                TimeStruct ts= TimeUtil.toTimeStruct(t);
+                startTime.year= ts.year;
+                startTime.month= ts.month;
+                startTime.day= ts.day;
+                startTime.hour= ts.hour;
+                startTime.minute= ts.minute;
+                startTime.seconds= ts.seconds;
+                startTime.millis= ts.millis;
+                return;
+            }
             int[] t= new int[7];
             int [] limits= new int[] { -1,-1,0,24,60,60,1000000 };
             timeWidth.day= period[2];
