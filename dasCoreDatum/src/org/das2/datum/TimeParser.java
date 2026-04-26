@@ -92,19 +92,19 @@ public class TimeParser {
     private String[] valid_formatCodes = new String[]{"Y", "y", "j", "m", "d", 
         "H", "M", "S", 
         "milli", "micro",  
-        "p", "z", "ignore", "b", "X", "x", "N", "Z" };
+        "p", "z", "ignore", "b", "X", "x", "N", "Z", "s" };
     private String[] formatName = new String[]{"Year", "2-digit-year", "day-of-year", "month", "day", 
         "Hour", "Minute", "Second", 
         "millisecond", "microsecond",
-        "am/pm", "RFC-822 numeric time zone", "ignore", "3-char-month-name", "ignore", "ignore", "nanoseconds", "alphabetic time zone abbreviation" };
+        "am/pm", "RFC-822 numeric time zone", "ignore", "3-char-month-name", "ignore", "ignore", "nanoseconds", "alphabetic time zone abbreviation", "seconds since 1970-01-01T00:00Z" };
     private int[] formatCode_lengths = new int[]{4, 2, 3, 2, 2, 
         2, 2, 2, 
         3, 3, 
-        2, 5, -1, 3, -1, -1, 9, 3 };
+        2, 5, -1, 3, -1, -1, 9, 3, -1 };
     private int[] precision =          new int[]{0, 0, 2, 1, 2, 
         3, 4, 5, 
         6, 7,
-        -1,-1, -1, 1, -1, -1, 8, -1 };
+        -1,-1, -1, 1, -1, -1, 8, -1, -1 };
     
     /**
      * set of custom handlers to allow for extension
@@ -1344,6 +1344,8 @@ public class TimeParser {
      *  $H   2-digit hour
      *  $M   2-digit minute
      *  $S   2-digit second
+     *  $N   9-digit nanoseconds
+     *  $s   non-leap seconds since 1970-01-01T00:00Z
      *  $(milli)  3-digit milliseconds
      *  $(ignore) skip this field
      *  $x   skip this field
@@ -1650,6 +1652,18 @@ public class TimeParser {
                     time.hour -= minutes / 60; 
 
                     time.minute -= minutes % 60;
+                } else if ( handlers[idigit] == 18 ) { // "s" 
+                    Datum t= Units.t1970.createDatum( Long.parseLong( timeString.substring(offs, offs + len) ) );
+                    TimeStruct ts= TimeUtil.toTimeStruct(t);
+                    time.year= ts.year;
+                    time.month= ts.month;
+                    time.day= ts.day;
+                    time.hour= ts.hour;
+                    time.minute= ts.minute;
+                    time.seconds= ts.seconds;
+                    time.millis= ts.millis;
+                    time.micros= ts.micros;
+                    time.nanos= ts.nanos;
                 }
             } catch ( NumberFormatException ex ) {
                 throw new ParseException( String.format( "fail to parse digit number %d: %s", idigit, field ), offs );
@@ -2383,6 +2397,19 @@ public class TimeParser {
                 result.insert(offs, String.format("%09d",nanos ));
                 offs += 9;
                 
+            } else if (handlers[idigit] == 18) { // $x seconds since 1970-01-01T00:00Z
+                Datum d= TimeUtil.toDatum( timel );
+                String ss= Long.toString((long)d.doubleValue(Units.t1970));
+                if ( len<0 ) {
+                    result.insert(offs, ss);
+                    offs+= ss.length();
+                } else {
+                    String ins= "00000000000000000000".substring(0,len-ss.length());
+                    result.insert(offs, ins );
+                    result.insert(offs+ins.length(),ss);
+                    offs += len;
+                }
+                                
             } else if (handlers[idigit] == 13) { // month names
 
                 result.insert(offs, TimeUtil.monthNameAbbrev(timel.month));
