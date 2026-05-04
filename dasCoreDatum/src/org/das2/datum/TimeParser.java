@@ -104,7 +104,7 @@ public class TimeParser {
     private int[] precision =          new int[]{0, 0, 2, 1, 2, 
         3, 4, 5, 
         6, 7,
-        -1,-1, -1, 1, -1, -1, 8, -1, -1 };
+        -1,-1, -1, 1, -1, -1, 8, -1, 5 };
     
     /**
      * set of custom handlers to allow for extension
@@ -1664,9 +1664,7 @@ public class TimeParser {
                     time.millis= ts.millis;
                     time.micros= ts.micros;
                     time.nanos= ts.nanos;
-                    
-                    timeWidth.year= timeWidth.month= timeWidth.day=0;
-                    timeWidth.seconds=1;
+
                 }
             } catch ( NumberFormatException ex ) {
                 throw new ParseException( String.format( "fail to parse digit number %d: %s", idigit, field ), offs );
@@ -2521,6 +2519,7 @@ public class TimeParser {
     
     public static void main( String[] aa ) throws Exception {
         TimeParser tp;
+        System.err.println( TimeParser.create( "$s" ).parse("1749427200").getTimeRange() );
         //tp= TimeParser.create( "$Y-$m-$dT$H:$M:$S.$(subsec,places=9)" );
         //System.err.println( "tpf: " + tp.format( Units.cdfTT2000.parse( "2016-05-05T12:54:54.002232668") ) );
         tp= TimeParser.create( "$Y-$m-$(d,phasestart=2019-05-12,delta=7)" );
