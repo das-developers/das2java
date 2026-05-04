@@ -1664,6 +1664,9 @@ public class TimeParser {
                     time.millis= ts.millis;
                     time.micros= ts.micros;
                     time.nanos= ts.nanos;
+                    
+                    timeWidth.year= timeWidth.month= timeWidth.day=0;
+                    timeWidth.seconds=1;
                 }
             } catch ( NumberFormatException ex ) {
                 throw new ParseException( String.format( "fail to parse digit number %d: %s", idigit, field ), offs );
@@ -1767,6 +1770,7 @@ public class TimeParser {
      * see setDigit( String format, int value ) to break up fields.
      * @param format like "Y"
      * @param value like 2014
+     * TODO: %s
      */
     public synchronized void setDigit(String format, double value) {
 
@@ -1874,6 +1878,7 @@ public class TimeParser {
      * @param format spec like "%Y%m%d"
      * @param value integer like 20080830.
      * @return
+     * TODO: %s
      */
     public synchronized TimeParser setDigit(String format, int value) {
 
@@ -1992,6 +1997,7 @@ public class TimeParser {
      * @return the time parser with the digit set.
      * @throws IllegalArgumentException if the digit has a custom field handler
      * @throws IllegalArgumentException if the digit does not exist.
+     * TODO: %s
      */
     public synchronized TimeParser setDigit(int digitNumber, int digit) {
         TimeStruct time;
