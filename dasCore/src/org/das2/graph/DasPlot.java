@@ -1597,7 +1597,7 @@ public class DasPlot extends DasCanvasComponent {
 
         if ( this.isPlotVisible() ) {
             if (renderers.isEmpty()) {
-                postMessage(null, "(no renderers)", DasPlot.INFO, null, null);
+                if ( !useCacheImage ) postMessage(null, "(no renderers)", DasPlot.INFO, null, null);
                 logger.fine("dasPlot has no renderers");
             } else {
                 boolean active=false;
@@ -1605,7 +1605,7 @@ public class DasPlot extends DasCanvasComponent {
                     if ( r.isActive() ) active=true;
                 }
                 if ( !active ) {
-                    postMessage(null, "(no active renderers)", DasPlot.INFO, null, null);
+                    if ( !useCacheImage ) postMessage(null, "(no active renderers)", DasPlot.INFO, null, null);
                 }
             }
         }
