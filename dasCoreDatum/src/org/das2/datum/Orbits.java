@@ -93,7 +93,7 @@ public class Orbits {
                         urls.add( new URL( "https://tracers-portal.physics.uiowa.edu/ancillary/TS2/events/roi_intervals/ts2_roi-list.csv" ) );
                         break;
                     case "ts1-orbit":
-                        urls.add( new URL( "https://tracers-portal.physics.uiowa.edu/ancillary/TS1/events/orbit_numbers/ts2_predict_orbit_num.csv" ) );  
+                        urls.add( new URL( "https://tracers-portal.physics.uiowa.edu/ancillary/TS1/events/orbit_numbers/ts1_predict_orbit_num.csv" ) );  
                         break;
                     case "ts2-orbit":
                         urls.add( new URL( "https://tracers-portal.physics.uiowa.edu/ancillary/TS2/events/orbit_numbers/ts2_predict_orbit_num.csv" ) );
@@ -223,13 +223,18 @@ public class Orbits {
                     try {
                         if ( col>-1 ) {
                             try {
-                                d1= TimeUtil.create(ss[col]);
-                                d2= TimeUtil.create(ss[col+1]);
-                                if ( ss.length<=labelColumn ) {
-                                    LOGGER.info("number of columns changes, reverting to old logic");
-                                    labelColumn= 2;
+                                if ( ss.length>col+1 ) {
+                                    d1= TimeUtil.create(ss[col]);
+                                    d2= TimeUtil.create(ss[col+1]);
+                                    if ( ss.length<=labelColumn ) {
+                                        LOGGER.info("number of columns changes, reverting to old logic");
+                                        labelColumn= 2;
+                                    }
+                                    s0= ss[ col==0 ? labelColumn : 0 ];
+                                } else {
+                                    s= rin.readLine();
+                                    continue;
                                 }
-                                s0= ss[ col==0 ? labelColumn : 0 ];
                             } catch ( ParseException ex ) {
                                 s= rin.readLine();
                                 continue;
