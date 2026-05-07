@@ -92,6 +92,12 @@ public class Orbits {
                     case "ts2-roi-list":
                         urls.add( new URL( "https://tracers-portal.physics.uiowa.edu/ancillary/TS2/events/roi_intervals/ts2_roi-list.csv" ) );
                         break;
+                    case "ts1-orbit":
+                        urls.add( new URL( "https://tracers-portal.physics.uiowa.edu/ancillary/TS1/events/orbit_numbers/ts2_predict_orbit_num.csv" ) );  
+                        break;
+                    case "ts2-orbit":
+                        urls.add( new URL( "https://tracers-portal.physics.uiowa.edu/ancillary/TS2/events/orbit_numbers/ts2_predict_orbit_num.csv" ) );
+                        break;
                     case "ts-tandem-rois":
                         urls.add( new URL( "https://tracers-portal.physics.uiowa.edu/ancillary/events/tandem_rois.csv" ) );
                         break;
@@ -458,6 +464,8 @@ public class Orbits {
         names.put( "psp-aa25", "Parker Solar Probe where orbit is within 0.25 AU");
         names.put( "ts1-roi-list", "TRACERS-1 Region-of-Interest list");
         names.put( "ts2-roi-list", "TRACERS-2 Region-of-Interest list");
+        names.put( "ts1-orbit", "TRACERS-1 orbits based on equator crossings");
+        names.put( "ts2-orbit", "TRACERS-2 orbits based on equator crossings");
         names.put( "ts-tandem-rois", "TRACERS 1 and 2 Tandem Region-of-Interest list" );
         return names;
     }
