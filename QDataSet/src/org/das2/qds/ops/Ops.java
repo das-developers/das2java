@@ -8696,7 +8696,7 @@ public final class Ops {
             case "Boxcar":
                 return FFTUtil.getWindowUnity(len);
             default:
-                throw new UnsupportedOperationException("unsupported op: "+type );
+                throw new UnsupportedOperationException("unsupported op: "+type+", must be Hanning, Hann, TenPercentEdgeCosine, Unity, or Boxcar" );
         }
     }
     
