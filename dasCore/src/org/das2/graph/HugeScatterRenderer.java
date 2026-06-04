@@ -395,7 +395,7 @@ public class HugeScatterRenderer extends Renderer {
                             g.fillRect(ix, iy, 1, 1);
                             ix0 = ix;
                             iy0 = iy;
-                            
+                            break;
                         default:
                             logger.log(Level.INFO, "state: {0}", state);                            
                     }

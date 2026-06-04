@@ -59,13 +59,14 @@ public class Entities {
     /**
      * utility method for decoding entities like &amp;rho; into UNICODE.
      * Malformed entities (like &#03B1; instead of &#x03B1;) are formatted as "???"
+     * No entity can be longer that 24 (MAX_ENTITY_LEN) characters.
      * @param str string e.g. "&amp;rho; degrees"
      * @return string with Unicode characters for entities.
      */
     public static String decodeEntities(String str) {
         int i0=0, i;
         
-        int MAX_ENTITY_LEN=10;
+        int MAX_ENTITY_LEN=24;
         StringBuilder result= new StringBuilder();
         while ( true ) {
             i= str.indexOf("&",i0);
