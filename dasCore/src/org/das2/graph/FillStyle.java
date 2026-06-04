@@ -25,15 +25,18 @@ public class FillStyle implements Displayable, Enumeration {
         this.icon= null;
     }
     
+    @Override
     public String getListLabel() {
         return label;
     }
             
+    @Override
     public String toString() {
         return label;
     }
     
     
+    @Override
     public Icon getListIcon() {
         if ( icon==null ) {
             Image i= new BufferedImage(10,10,BufferedImage.TYPE_INT_RGB);
@@ -50,6 +53,7 @@ public class FillStyle implements Displayable, Enumeration {
         return icon;
     }
 
+    @Override
     public void drawListIcon( Graphics2D g, int x, int y ) {
         ImageIcon i= (ImageIcon) getListIcon();
         g.drawImage(i.getImage(), x, y, null);
@@ -60,10 +64,18 @@ public class FillStyle implements Displayable, Enumeration {
      */
     public static final FillStyle STYLE_FILL= new FillStyle( "fill" );
     public static final FillStyle STYLE_SOLID= new FillStyle( "solid" );
+    
+    /**
+     * don't fill in the symbol at all, just draw outline
+     */
     public static final FillStyle STYLE_NONE= new FillStyle( "none" );
     /**
      * @deprecated use none
      */
     public static final FillStyle STYLE_DRAW= new FillStyle( "draw" );
+    
+    /**
+     * draw outline with interior filled with background color
+     */
     public static final FillStyle STYLE_OUTLINE= new FillStyle( "outline" );
 }
