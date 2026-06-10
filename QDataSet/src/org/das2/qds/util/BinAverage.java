@@ -51,7 +51,7 @@ public class BinAverage {
      * are averaged together when they fall into the same bin.  Note the result
      * will have the property WEIGHTS.
      *
-     * @param ds a rank 1 dataset, no fill
+     * @param ds a rank 1 dataset, no fill, containing DEPEND_0.
      * @param newTags0 a rank 1 tags dataset, that must be MONOTONIC.
      * @return rank 1 dataset with DEPEND_0 = newTags.
      * @see #rebin(org.das2.qds.QDataSet, org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
@@ -59,8 +59,9 @@ public class BinAverage {
      * @see #binAverage(QDataSet, QDataSet, QDataSet ) 
      */
     public static DDataSet binAverage(QDataSet ds, QDataSet newTags0 ) {
-        QDataSet dstags = (QDataSet) ds.property(QDataSet.DEPEND_0);
-
+        QDataSet dstags = SemanticOps.xtagsDataSet(ds);
+        ds= SemanticOps.ytagsDataSet(ds);
+        
         QDataSet wds = DataSetUtil.weightsDataSet(ds);
 
         double fill = ((Number) wds.property(QDataSet.FILL_VALUE)).doubleValue();
