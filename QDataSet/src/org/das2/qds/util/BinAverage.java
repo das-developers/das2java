@@ -65,16 +65,35 @@ public class BinAverage {
         QDataSet wds = DataSetUtil.weightsDataSet(ds);
 
         double fill = ((Number) wds.property(QDataSet.FILL_VALUE)).doubleValue();
-
+        
+        QDataSet cadence= DataSetUtil.guessCadenceNew( dstags, ds );
+        
+        double min= newTags0.value(0);
+        double max= newTags0.value(newTags0.length()-1);
+        
+        if ( min>max ) {
+            double t= min; min=max; max=t;
+        }
+        
+        if ( cadence!=null ) {
+            min= min-cadence.value()/2;
+            max= max+cadence.value()/2;
+        }
+        
         DDataSet result = DDataSet.createRank1(newTags0.length());
         DDataSet weights = DDataSet.createRank1(newTags0.length());
         int ibin = -1;
         for (int i = 0; i < ds.length(); i++) {
-            ibin = DataSetUtil.closest(newTags0, dstags.value(i), ibin);
-            double d = ds.value(i);
             double w = wds.value(i);
 
             if ( w>0 ) {
+                double dtag= dstags.value(i);
+                if ( dtag<min || dtag>max ) {
+                    continue;
+                }
+                ibin = DataSetUtil.closest(newTags0, dtag, ibin);
+                double d = ds.value(i);
+                
                 double s = result.value(ibin);
                 result.putValue(ibin, s + d * w);
                 double n = weights.value(ibin);
