@@ -135,7 +135,7 @@ public class BinAverage {
         }
 
         if ( SemanticOps.isBundle(ds) ) {
-            return rebinBundle( ds, newTags0, newTags1 );
+            return binAverageBundle( ds, newTags0, newTags1 );
         }
 
         QDataSet dstags0 = (QDataSet) ds.property(QDataSet.DEPEND_0);
@@ -439,10 +439,14 @@ public class BinAverage {
                     double x= xuc.convert( xlog ? Math.log10( ds.value(ids,0) ) : ds.value(ids,0) );
                     double y= yuc.convert( ylog ? Math.log10( ds.value(ids,1) ) : ds.value(ids,1) );
                     double z= ds.value(ids,2);
-                    int i= (int)( ( x-xbase ) / xscal );
-                    int j= (int)( ( y-ybase ) / yscal );
-                    if ( i<0 || j<0 ) continue;
-                    if ( i>=nx || j>=ny ) continue;
+                    int i= (int)Math.floor( ( x-xbase ) / xscal );
+                    int j= (int)Math.floor( ( y-ybase ) / yscal );
+                    if ( i<0 || j<0 ) {
+                        continue;
+                    }
+                    if ( i>=nx || j>=ny ) {
+                        continue;
+                    }
                     sresult.putValue( i, j, z + sresult.value( i, j ) );
                     nresult.putValue( i, j, w + nresult.value( i, j ) );
                 }
