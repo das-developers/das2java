@@ -66,7 +66,7 @@ public class BinAverage {
 
         double fill = ((Number) wds.property(QDataSet.FILL_VALUE)).doubleValue();
         
-        QDataSet cadence= DataSetUtil.guessCadenceNew( dstags, ds );
+        QDataSet cadence= DataSetUtil.guessCadenceNew( newTags0, null );
         
         double min= newTags0.value(0);
         double max= newTags0.value(newTags0.length()-1);
