@@ -58,7 +58,7 @@ public interface QDataSet {
     
     /**
      * type QDataSet, this dataset is a dependent parameter of the independent parameter represented in this DataSet.
-     * The tags for the DataSet's 3nd index are identified by this tags dataset.  When DEPEND_3 is rank 2,
+     * The tags for the DataSet's 3rd index are identified by this tags dataset.  When DEPEND_3 is rank 2,
      * then it's first dimension goes with DEPEND_0 and it's second are the tags for the second dimension.
      */
     public final static String DEPEND_3="DEPEND_3";
@@ -66,32 +66,35 @@ public interface QDataSet {
     /**
      * type QDataSet describing each of the bundled datasets (Bundle Descriptor).  This dataset describes 
      * how the columns should be split up
-     * into separate parameters.  This rank 2 dataset has a length that is equal to the number
-     * of bundled datasets.  The values(i,*) are the qube dimensions of the dataset,
-     * except for the first dimension.  When all the bundled datasets are rank 1, then
-     * length(*) will be equal to zero.  property(*,UNITS) will yield the unit for each
+     * into separate parameters.  This rank 2 dataset [n,*] has a length that is equal to the number
+     * of bundled indices.  The values [i,*] are the qube dimensions of the dataset,
+     * except for the first dimension.  When all the bundled datasets are rank 1 (a simple bundle), then
+     * length of each index will be equal to zero.  property(i,UNITS) will yield the unit for the i-th
      * dataset.  Bundle dimensions generally add one physical dimension for each
-     * bundled dataset.  property(*,DEPEND_0) is special, because it will return a string
+     * bundled dataset.  property(i,DEPENDNAME_0) will return a string
      * rather than a QDataSet.  This string should refer to one of the bundled datasets by
-     * its NAME property.  (Any property that returns a QDataSet should return a
-     * string referring to another dataset in the bundle.)  Also the dataset is necessarily
-     * a QUBE.
+     * its NAME property.  Also the dataset is necessarily a QUBE.
+     * 
+     * @see org.das2.qds.ops.Ops#unbundle(org.das2.qds.QDataSet, java.lang.String) 
      */
     public final static String BUNDLE_1="BUNDLE_1";
 
     /**
-     * type QDataSet describing each position of the rank 1 dataset (Bundle Descriptor).  This dataset describes how the columns should be split up
+     * type QDataSet describing each position of the rank 1 dataset (Bundle Descriptor).  
+     * This dataset describes how the columns should be split up
      * into separate parameters.  See BUNDLE_1.  Note slicing a dataset on the zeroth
      * dimension will move BUNDLE_1 to BUNDLE_0.  
      * Properties defined in this dataset will be overwritten by the BUNDLE dataset's properties.
-     * For example, if the dataset has property( UNITS, 0 ) defined as "Hz" but the
+     * For example, if the dataset has property( UNITS ) defined as "Hz" but the
      * bundle has property( UNITS,0 ) as "Hertz" then "Hertz" is used.
+     * @see #BUNDLE_1
      */
     public final static String BUNDLE_0="BUNDLE_0";
 
     /**
      * type QDataSet Bundle Descriptor.  When multiple BUNDLES are present, they must be simple bundles, bundling just
      * rank 1 datasets.
+     * @see #BUNDLE_1
      */
     public final static String BUNDLE_2="BUNDLE_2";
     
