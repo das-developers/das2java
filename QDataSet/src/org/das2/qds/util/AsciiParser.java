@@ -1147,8 +1147,8 @@ public class AsciiParser {
                                 acceptRecord= false;
                                 if ( whereEq && icomp==0 ) {
                                     acceptRecord= true;
-                                } else if ( whereNe && icomp!=0 ) {
-                                    acceptRecord= true;
+                                } else if ( whereNe ) {
+                                    acceptRecord= icomp!=0;
                                 } else if ( whereSign==icomp ) {
                                     acceptRecord= true;
                                 }
