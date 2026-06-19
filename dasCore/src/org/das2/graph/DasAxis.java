@@ -1768,6 +1768,22 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
     }
     
+    private TickLabeller tickLabeller = null;
+
+    public static final String PROP_TICKLABELLER = "tickLabeller";
+
+    public TickLabeller getTickLabeller() {
+        return tickLabeller;
+    }
+
+    public void setTickLabeller(TickLabeller tickLabeller) {
+        TickLabeller oldTickLabeller = this.tickLabeller;
+        this.tickLabeller = tickLabeller;
+        firePropertyChange(PROP_TICKLABELLER, oldTickLabeller, tickLabeller);
+        updateTickV();
+    }
+
+    
     /**
      * calculate a set of log spaced ticks.
      * @param dr the range.
@@ -2847,6 +2863,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 return;
             }
             
+            if ( tickLabeller!=null ) tickLabeller.init(ticks);
+            
             String[] labels = tickFormatter(ticks.tickV, getDatumRange());
 
             for (int i = 0; i < ticks.tickV.getLength(); i++) {
@@ -2854,21 +2872,32 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 float ftickPosition= (float)transform(tick1);
                 int tickPosition = (int) Math.floor(ftickPosition);
                 if (DMin <= ftickPosition && ftickPosition <= DMax) {
+                    
                     tickLength = tickLengthMajor;
+                    Line2D.Float tick= new Line2D.Float(ftickPosition, bottomPosition, ftickPosition, bottomPosition + tickLength);
+                    
                     if (bottomTicks && tickLength!=0 ) {
-                        logger.log(Level.FINER, "draw H tick at {0}", ftickPosition);
-                        g.draw( new Line2D.Float(ftickPosition, bottomPosition, ftickPosition, bottomPosition + tickLength) );
-                        //g.drawLine(tickPosition, bottomPosition, tickPosition, bottomPosition + tickLength);                        
+                        logger.log(Level.FINER, "draw H tick at {0}", ftickPosition);                        
+                        g.draw( tick );
                     }
                     if (bottomTickLabels) {
-                        drawLabel(g, tick1, labels[i], i, tickPosition, bottomPosition + Math.max(0,tickLength) );
+                        if ( tickLabeller!=null ) {
+                            tickLabeller.labelMajorTick(g, i, tick );
+                        } else {
+                            drawLabel(g, tick1, labels[i], i, tickPosition, bottomPosition + Math.max(0,tickLength) );
+                        }
                     }
+                    
+                    tick= new Line2D.Float( ftickPosition, topPosition, ftickPosition, topPosition - tickLength + 1 );
                     if (topTicks && tickLength!=0 ) {
-                        g.draw( new Line2D.Float( ftickPosition, topPosition, ftickPosition, topPosition - tickLength + 1 ) );
-                        //g.drawLine(tickPosition, topPosition, tickPosition, topPosition - tickLength);
+                        g.draw( tick );
                     }
                     if (topTickLabels) {
-                        drawLabel(g, tick1, labels[i], i, tickPosition, topPosition - Math.max(0,tickLength) + 1);
+                        if ( tickLabeller!=null ) {
+                            tickLabeller.labelMajorTick( g, i, tick );
+                        } else {
+                            drawLabel(g, tick1, labels[i], i, tickPosition, topPosition - Math.max(0,tickLength) + 1);
+                        }
                     }
                 }
             }
@@ -3055,6 +3084,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             int tickLengthMinor = tickLengthMajor / 2;
             int tickLength;
 
+            if ( tickLabeller!=null ) tickLabeller.init(ticks);
+            
             String[] labels = tickFormatter(ticks.tickV, getDatumRange());
             for (int i = 0; i < ticks.tickV.getLength(); i++) {
                 Datum tick1 = ticks.tickV.get(i);
@@ -3063,20 +3094,31 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 if (DMin <= tickPosition && tickPosition <= DMax) {
 
                     tickLength = tickLengthMajor;
+                    Line2D.Float tick= new Line2D.Float( leftPosition, ftickPosition, leftPosition - tickLength, ftickPosition);
+                    
                     if (leftTicks && tickLength!=0 ) {
                         logger.log(Level.FINER, "draw V tick at {0}", ftickPosition);
-                        g.draw( new Line2D.Float( leftPosition, ftickPosition, leftPosition - tickLength, ftickPosition) );
-                        //g.drawLine(leftPosition, tickPosition, leftPosition - tickLength, tickPosition);
+                        g.draw( tick );
                     }
                     if (leftTickLabels) {
-                        drawLabel(g, tick1, labels[i], i, leftPosition - Math.max( 0,tickLength ), tickPosition);
+                        if ( tickLabeller!=null ) {
+                            assert tick!=null;
+                            tickLabeller.labelMajorTick(g, i, tick );
+                        } else {
+                            drawLabel(g, tick1, labels[i], i, leftPosition - Math.max( 0,tickLength ), tickPosition);
+                        }
                     }
+                    
+                    tick= new Line2D.Float( rightPosition, ftickPosition, rightPosition + tickLength, ftickPosition );
                     if (rightTicks && tickLength!=0 ) {
-                        g.draw( new Line2D.Float( rightPosition, ftickPosition, rightPosition + tickLength, ftickPosition ) );
-                        //g.drawLine(rightPosition, tickPosition, rightPosition + tickLength, tickPosition);
+                        g.draw( tick );
                     }
                     if (rightTickLabels) {
-                        drawLabel(g, tick1, labels[i], i, rightPosition + Math.max( 0,tickLength ), tickPosition);
+                        if ( tickLabeller!=null ) {
+                            tickLabeller.labelMajorTick(g, i, tick );
+                        } else {
+                            drawLabel(g, tick1, labels[i], i, rightPosition + Math.max( 0,tickLength ), tickPosition);
+                        }
                     }
                 }
             }
