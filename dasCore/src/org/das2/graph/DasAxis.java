@@ -2882,7 +2882,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                     }
                     if (bottomTickLabels) {
                         if ( tickLabeller!=null ) {
-                            tickLabeller.labelMajorTick(g, i, tick );
+                            tickLabeller.labelMajorTick(g.create(), i, tick );
                         } else {
                             drawLabel(g, tick1, labels[i], i, tickPosition, bottomPosition + Math.max(0,tickLength) );
                         }
@@ -2894,7 +2894,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                     }
                     if (topTickLabels) {
                         if ( tickLabeller!=null ) {
-                            tickLabeller.labelMajorTick( g, i, tick );
+                            tickLabeller.labelMajorTick( g.create(), i, tick );
                         } else {
                             drawLabel(g, tick1, labels[i], i, tickPosition, topPosition - Math.max(0,tickLength) + 1);
                         }
@@ -3103,7 +3103,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                     if (leftTickLabels) {
                         if ( tickLabeller!=null ) {
                             assert tick!=null;
-                            tickLabeller.labelMajorTick(g, i, tick );
+                            tickLabeller.labelMajorTick(g.create(), i, tick );
                         } else {
                             drawLabel(g, tick1, labels[i], i, leftPosition - Math.max( 0,tickLength ), tickPosition);
                         }
@@ -3115,7 +3115,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                     }
                     if (rightTickLabels) {
                         if ( tickLabeller!=null ) {
-                            tickLabeller.labelMajorTick(g, i, tick );
+                            tickLabeller.labelMajorTick(g.create(), i, tick );
                         } else {
                             drawLabel(g, tick1, labels[i], i, rightPosition + Math.max( 0,tickLength ), tickPosition);
                         }
