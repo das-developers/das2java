@@ -90,7 +90,7 @@ public final class TickCurveRenderer extends Renderer {
     private double[][] ddata; 
 
    /**
-    * current indeces--careful not thread safe.
+    * current indices--careful not thread safe.
     */
     private final int[] index= new int[3];
         
