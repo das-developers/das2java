@@ -2693,7 +2693,7 @@ public class SeriesRenderer extends Renderer {
                     LoggerManager.markTime("trim");
 
                     QDataSet dep1= (QDataSet) vds.property(QDataSet.DEPEND_1);
-                    if ( dep1.rank()==1 ) {
+                    if ( dep1.rank()==1 && simplifyPaths ) {
                         vds= Reduction.reducex( vds,res );  // waveform
                     }
                     LoggerManager.markTime("reducex");
