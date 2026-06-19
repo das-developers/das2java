@@ -567,7 +567,7 @@ public final class TickCurveRenderer extends Renderer {
     //    return ( line.getY2()-line.getY1() ) / ( line.getX2()-line.getX1() );
     //}
     
-    private void drawLabelTick( Graphics2D g, double findex, int tickNumber ) {        
+    private void drawLabelTick( Graphics2D g, double findex, int tickNumber ) {         
         float tl= (float)tickLen;
         if ( tl<0.001 ) tl= 0.001f;
 
@@ -593,7 +593,7 @@ public final class TickCurveRenderer extends Renderer {
 
         tick= normalize( tick, tl + lineWidth );
 
-        tickLabeller.labelMajorTick( g, tickNumber, tick );
+        tickLabeller.labelMajorTick( g.create(), tickNumber, tick );
         
     }
 
