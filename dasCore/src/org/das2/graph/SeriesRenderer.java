@@ -732,7 +732,7 @@ public class SeriesRenderer extends Renderer {
                 return 0;
             }
             GeneralPath lp68= p68;
-            if ( p68!=null ) {
+            if ( lp68!=null && drawError ) {
                 GraphUtil.fillWithTexture( g, lp68, fillColor, fillTexture);
             }            
             g.setStroke(new BasicStroke((float) lineWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ));
@@ -2146,7 +2146,7 @@ public class SeriesRenderer extends Renderer {
             
             if ( drawBackground ) { 
                 psymConnectorElement.renderBackground(graphics);
-                if ( drawError ) {
+                if ( doDrawErrorBars ) {
                     errorElement.renderBackground(graphics);
                 }
             }
@@ -2157,7 +2157,7 @@ public class SeriesRenderer extends Renderer {
             int connectCount= psymConnectorElement.render((Graphics2D)graphics.create(), xAxis, yAxis, dataSet, monitor.getSubtaskMonitor("psymConnectorElement.render")); // vds is only to check units
             logger.log(Level.FINEST, "connectCount: {0}", connectCount);
 
-            if ( drawError ) { // error bars show the extent of the waveform
+            if ( doDrawErrorBars ) { // error bars show the extent of the waveform
                 errorElement.render((Graphics2D)graphics.create(), xAxis, yAxis, dataSet, monitor.getSubtaskMonitor("errorElement.render"));
             }
 
@@ -2182,7 +2182,7 @@ public class SeriesRenderer extends Renderer {
             if ( drawBackground ) {
                 fillElement.renderBackground(g);
                 psymConnectorElement.renderBackground(graphics);
-                if ( drawError ) {
+                if ( doDrawErrorBars ) {
                     errorElement.renderBackground(graphics);
                 }
                 if (psym != DefaultPlotSymbol.NONE) {
@@ -2197,7 +2197,7 @@ public class SeriesRenderer extends Renderer {
             graphics.setColor(color);
             logger.log(Level.FINEST, "drawing psymConnector in {0}", color);
             
-            if ( drawError ) { // error bars
+            if ( doDrawErrorBars ) { // error bars
                 errorElement.render( (Graphics2D)graphics.create(), xAxis, yAxis, theDs, monitor.getSubtaskMonitor("errorElement.render"));
             }
             
@@ -2216,7 +2216,7 @@ public class SeriesRenderer extends Renderer {
             
             if ( drawBackground ) { 
                 psymConnectorElement.renderBackground(graphics);
-                if ( drawError ) {
+                if ( doDrawErrorBars ) {
                     errorElement.renderBackground(graphics);
                 }
             }
@@ -2228,7 +2228,7 @@ public class SeriesRenderer extends Renderer {
 
             logger.log(Level.FINEST, "connectCount: {0}", connectCount);
             
-            if ( drawError ) { // error bars
+            if ( doDrawErrorBars ) { // error bars
                 errorElement.render( (Graphics2D)graphics.create(), xAxis, yAxis, tds, monitor.getSubtaskMonitor("errorElement.render"));
             }
 
@@ -2237,7 +2237,7 @@ public class SeriesRenderer extends Renderer {
             if ( drawBackground ) {
                 fillElement.renderBackground(g);
                 psymConnectorElement.renderBackground(graphics);
-                if ( drawError ) {
+                if ( doDrawErrorBars ) {
                     errorElement.renderBackground(graphics);
                 }
                 if (psym != DefaultPlotSymbol.NONE) {
@@ -2252,7 +2252,7 @@ public class SeriesRenderer extends Renderer {
             graphics.setColor(color);
             logger.log(Level.FINEST, "drawing psymConnector in {0}", color);
             
-            if ( drawError ) { // error bars
+            if ( doDrawErrorBars ) { // error bars
                 errorElement.render( (Graphics2D)graphics.create(), xAxis, yAxis, vds, monitor.getSubtaskMonitor("errorElement.render"));
             }
             
@@ -2518,6 +2518,8 @@ public class SeriesRenderer extends Renderer {
 
         super.incrementUpdateCount();
 
+        doDrawErrorBars= drawError; // note this may be turned on later because of data reduction
+                
         QDataSet dataSet = getDataSet();
         selectionArea= SelectionUtil.NULL;
 
@@ -2694,7 +2696,15 @@ public class SeriesRenderer extends Renderer {
 
                     QDataSet dep1= (QDataSet) vds.property(QDataSet.DEPEND_1);
                     if ( dep1.rank()==1 && simplifyPaths ) {
-                        vds= Reduction.reducex( vds,res );  // waveform
+                        boolean hasErrorBars= vds.property(QDataSet.BIN_MAX)!=null;
+                        if ( hasErrorBars && !drawError ) { // if the data already has error bars, but we don't want to see them.
+                            logger.fine("skipping reduce because data already has error bars");
+                        } else {
+                            vds= Reduction.reducex( vds,res,true );  // waveform
+                            if ( vds.property(QDataSet.BIN_MAX)!=null ) {
+                                doDrawErrorBars= true;
+                            }
+                        }
                     }
                     LoggerManager.markTime("reducex");
                     if ( vds.rank()==2 ) {
@@ -3342,6 +3352,11 @@ public class SeriesRenderer extends Renderer {
         propertyChangeSupport.firePropertyChange("colorByDataSetId", oldVal, colorByDataSetId);
     }
 
+    /**
+     * true if the error bars must be drawn.  This is set in the updatePlotImage loop and used in the render loop.
+     */
+    boolean doDrawErrorBars;
+    
     PropertyChangeListener colorBarListener= new PropertyChangeListener() {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
