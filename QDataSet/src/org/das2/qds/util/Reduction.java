@@ -416,6 +416,7 @@ public class Reduction {
      * This will set the DELTA_PLUS and DELTA_MINUS variables to the extremes of 
      * each bin.  To remove these, use putProperty( QDataSet.DELTA_MINUS, None ) 
      * (None in Jython, null for Java) and putProperty( QDataSet.DELTA_PLUS, None ).
+     * Also BIN_MIN and BIN_MAX.
      * 
      * @param ds rank 1 or rank 2 dataset.  Must have DEPEND_0 (presently) and be a qube.  If this is null, then the result is null.
      * @param xLimit the size of the bins or null to indicate no limit.
@@ -425,7 +426,7 @@ public class Reduction {
     public static QDataSet reducex( QDataSet ds, QDataSet xLimit, boolean xregular ) {
         long t0= System.currentTimeMillis();
         logger.entering( "Reduction", "reducex" );
-        if ( ds==null ) return ds; // Craig 2038937185
+        if ( ds==null ) return ds; 
         
         if ( !DataSetUtil.isQube(ds) ) {
             throw new IllegalArgumentException("rank 2 dataset must be a qube");
