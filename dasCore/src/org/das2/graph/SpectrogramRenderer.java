@@ -1221,9 +1221,11 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                 if ( vSlicer!=null ) vSlicer.dispose();
                 if ( vAverager!=null ) vAverager.dispose();
                 if ( hSlicer!=null ) hSlicer.dispose();
+                if ( hAverager!=null ) hAverager.dispose();
                 mouseAdapter.removeMouseModule( mouseAdapter.getModuleByLabel("Vertical Slice") );
                 mouseAdapter.removeMouseModule( mouseAdapter.getModuleByLabel("Horizontal Slice") );
                 mouseAdapter.removeMouseModule( mouseAdapter.getModuleByLabel("Interval Average") );
+                mouseAdapter.removeMouseModule( mouseAdapter.getModuleByLabel("Horizontal Interval Average") );
                 MouseModule ch = new CrossHairMouseModule(parent, parent.getXAxis(), parent.getYAxis());
                 mouseAdapter.addMouseModule(ch);
             }
