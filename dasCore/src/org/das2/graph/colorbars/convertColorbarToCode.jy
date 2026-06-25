@@ -1,9 +1,9 @@
 
 from org.das2.graph import DasColorBar
 
-which= 'turbo.csv'
+which= getParam( 'which', 'viridis.csv', 'Which colorbar', [ 'inferno.csv', 'magma.csv', 'plasma.csv', 'turbo.csv', 'viridis.csv' ] )
 
-uri= URI(DasColorBar.getResource('colorbars/'+which).toString())
+uri= URI( PWD + which )
 
 ##print rr
 from org.autoplot.csv import CsvDataSource
@@ -20,24 +20,31 @@ while ( ss.hasNext() ):
     
 colors= b.getDataSet()
 
+if ( max(colors[:,3])<=1 ):
+    mult=255
+else:
+    mult=1
+    
 IN= colors[:,0]
-RR= colors[:,1]
-GG= colors[:,2]
-BB= colors[:,3]
+RR= colors[:,1] * mult
+GG= colors[:,2] * mult
+BB= colors[:,3] * mult
+
+decimate= 1
 
 print 'int[] index= {',
-for i in xrange(0,IN.length(),17):
-    print '%d,' % int(IN[i]/17),
+for i in xrange(0,IN.length(),decimate):
+    print '%d,' % int(IN[i]/decimate),
 print '};'
 print 'int[] red= {',
-for i in xrange(0,RR.length(),17):
+for i in xrange(0,RR.length(),decimate):
     print '%d,' % int(RR[i]),
 print '};'
 print 'int[] green= {',
-for i in xrange(0,GG.length(),17):
+for i in xrange(0,GG.length(),decimate):
     print '%d,' % int(GG[i]),
 print '};'
 print 'int[] blue= {',
-for i in xrange(0,BB.length(),17):
+for i in xrange(0,BB.length(),decimate):
     print '%d,' % int(BB[i]),
 print '};'    
