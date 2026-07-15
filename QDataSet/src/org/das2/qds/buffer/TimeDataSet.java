@@ -38,9 +38,10 @@ public class TimeDataSet extends BufferDataSet {
         super(rank, reclen, recoffs, len0, len1, len2, len3, type, back );
         this.lenBytes= Integer.parseInt( type.toString().substring(4) );
         if ( this.lenBytes<16 ) throw new IllegalArgumentException("time16 is the shortest time supported.");
-        if ( this.lenBytes>24 ) throw new IllegalArgumentException("time24 is the longest time supported.");
+        if ( this.lenBytes>30 ) throw new IllegalArgumentException("time24 is the longest time supported."); //TODO: why?
         putProperty( QDataSet.UNITS, UNITS );
         putProperty( QDataSet.FILL_VALUE, fill );
+        // YYYY-MM-DDTHH:MM:SS.SSSSSSSSSZ
     }
     
     public void setLengthBytes( int length ) {
@@ -85,7 +86,11 @@ public class TimeDataSet extends BufferDataSet {
 
     private byte[] getBytes( double d ) {
         String s= UNITS.createDatum(d).toString(); //TODO: 24 byte limit is here.
-        return s.substring(0,lenBytes).getBytes();
+        if ( lenBytes>24 ) {
+            return (s.substring(0,23) + "000000000".substring(0,lenBytes-24) + "Z").getBytes();
+        } else {
+            return s.substring(0,lenBytes).getBytes();
+        }
     }
     
     @Override
