@@ -4065,7 +4065,13 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             trTitleRect = setRectangleBounds(trTitleRect, x, y, width, height);
         }
 
-        bounds = new Rectangle((orientation == BOTTOM) ? blLineRect : trLineRect);
+        Rectangle lineRect = (orientation == BOTTOM) ? blLineRect : trLineRect;
+        if ( lineRect!=null ) {
+            bounds = new Rectangle(lineRect);
+        } else {
+            return new Rectangle( DMin, bottomPosition, 1, 1 );
+        }
+        
         if (bottomTicks && v ) {
             bounds.add(blLineRect);
             bounds.add(blTickRect);
@@ -4213,7 +4219,13 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
         boolean v= isVisible();
 
-        bounds = new Rectangle((orientation == LEFT) ? blLineRect : trLineRect);
+        Rectangle lineRect = (orientation == LEFT) ? blLineRect : trLineRect;
+        if ( lineRect!=null ) {
+            bounds = new Rectangle(lineRect);
+        } else {
+            return new Rectangle( DMin, leftPosition, 1, 1 );
+        }
+        
         if (leftTicks && v ) {
             bounds.add(blLineRect);
             bounds.add(blTickRect);
