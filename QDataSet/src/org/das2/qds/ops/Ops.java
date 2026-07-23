@@ -9444,6 +9444,56 @@ public final class Ops {
     }
 
     /**
+     * return the real part of a dataset's complex numbers, or the dataset itsself if it is not made if complex numbers.
+     * @param ds a datasets of complex numbers (containing a dimension of length 2 for the last index), or real numbers.
+     * @return the real part
+     * @see Schemes#isComplexNumbers(org.das2.qds.QDataSet) 
+     */
+    public static final QDataSet realPart( QDataSet ds ) {
+        if ( ds.rank()>4 ) throw new IllegalArgumentException("ds rank is too high, must be 0, 1, 2, 3, or 4: "+ds );
+        if ( Schemes.isComplexNumbers(ds) ) {
+            switch ( ds.rank() ) {
+                case 1: return ds.slice(0);
+                case 2: return Ops.slice1(ds,0);
+                case 3: return Ops.slice2(ds,0);
+                case 4: return Ops.slice3(ds,0);
+                default: throw new IllegalArgumentException("unsupported rank: "+ds.rank());
+            }
+        } else {
+            return ds;
+        }
+    }
+    
+    /**
+     * return the imaginary part of a dataset's complex numbers, or an array of zeros if the data is not complex numbers. Note
+     * with this behavior one might explicitly check Schemes.isComplexNumbers when code expects the numbers to be complex.
+     * @param ds a dataset of complex numbers (containing a dimension of length 2 for the last index), or real numbers.
+     * @return the imaginary part
+     * @see Schemes#isComplexNumbers(org.das2.qds.QDataSet) 
+     */
+    public static final QDataSet imaginaryPart( QDataSet ds ) {
+        if ( ds.rank()>4 ) throw new IllegalArgumentException("ds rank is too high, must be 0, 1, 2, 3, or 4: "+ds );
+        if ( Schemes.isComplexNumbers(ds) ) {
+            switch ( ds.rank() ) {
+                case 1: return ds.slice(1);
+                case 2: return Ops.slice1(ds,1);
+                case 3: return Ops.slice2(ds,1);
+                case 4: return Ops.slice3(ds,1);
+                default: throw new IllegalArgumentException("unsupported rank: "+ds.rank());
+            }
+        } else {
+            switch ( ds.rank() ) {
+                case 0: return Ops.dataset(0);
+                case 1: return Ops.zeros(ds.length());
+                case 2: return Ops.zeros(ds.length(),ds.length(0));
+                case 3: return Ops.zeros(ds.length(),ds.length(0),ds.length(0,0));
+                case 4: return Ops.zeros(ds.length(),ds.length(0),ds.length(0,0),ds.length(0,0,0));
+                default: throw new IllegalArgumentException("unsupported rank: "+ds.rank());
+            }
+        }
+    }
+    
+    /**
      * return the complex conjugate of the rank 1 or rank 2 QDataSet.
      * @param ds ds[2] or ds[n,2] or ds[n,m,2]
      * @return ds[2] or ds[n,2] or ds[n,m,2]
