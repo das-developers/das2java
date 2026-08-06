@@ -295,12 +295,13 @@ public class QDataSetStreamHandler implements StreamHandler {
                 putProperty( builder, QDataSet.FILL_VALUE, findProperty( yscan, "zFill" ), u );
                 putProperty( builder, QDataSet.SCALE_TYPE, findProperty( yscan, "zScaleType" ) );
                 DDataSet ytags= DDataSet.wrap( yscan.getYTags() );
-                ytags.putProperty( QDataSet.UNITS, yscan.getYUnits() );
+                Units yunits= yscan.getYUnits();
+                ytags.putProperty( QDataSet.UNITS, yunits );
                 ytags.putProperty( QDataSet.SCALE_TYPE, findProperty( yscan, "yScaleType") );
                 DatumRange yRange= (DatumRange)findProperty( yscan, "yRange" );
                 if ( yRange!=null ) {
-                    ytags.putProperty( QDataSet.TYPICAL_MIN, yRange.min().doubleValue( u ) );
-                    ytags.putProperty( QDataSet.TYPICAL_MAX, yRange.max().doubleValue( u ) );
+                    ytags.putProperty( QDataSet.TYPICAL_MIN, yRange.min().doubleValue( yunits ) );
+                    ytags.putProperty( QDataSet.TYPICAL_MAX, yRange.max().doubleValue( yunits ) );
                 }                
                 ytags.putProperty( QDataSet.LABEL, findProperty( yscan, "yLabel" ));
                 ytags.putProperty( QDataSet.TITLE, findProperty( yscan, "ySummary" ));
