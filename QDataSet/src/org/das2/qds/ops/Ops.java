@@ -5329,13 +5329,14 @@ public final class Ops {
     public static QDataSet createEvent( QDataSet append, DatumRange dr, int rgbcolor, String annotation ) {
         
         Units tu;
-        
+        Units cu=null; // color units.
         EnumerationUnits evu;
         
         MutablePropertyDataSet bds=null;
         if ( append!=null ) {
             bds= (MutablePropertyDataSet) append.property( QDataSet.BUNDLE_1 );
             if ( bds==null ) throw new IllegalArgumentException("append argument must be the output of createEvent");
+            cu= (Units)bds.property(QDataSet.UNITS,2);
             evu= (EnumerationUnits) bds.property(QDataSet.UNITS,3);
             tu= (Units)bds.property(QDataSet.UNITS,0);
             if ( bds.property(QDataSet.UNITS,1)!=tu ) {
@@ -5346,11 +5347,13 @@ public final class Ops {
             tu= dr.getUnits();
         }
         
+        if ( cu==null ) cu= Units.rgbColor;
+        
         DataSetBuilder dsb= new DataSetBuilder(2,100,4);
         
         dsb.putValue( -1, 0, dr.min().doubleValue(tu) );
         dsb.putValue( -1, 1, dr.max().doubleValue(tu) );
-        dsb.putValue( -1, 2, rgbcolor );
+        dsb.putValue( -1, 2, cu.createDatum(rgbcolor) );
         dsb.putValue( -1, 3, evu.createDatum(annotation).doubleValue(evu) );
         dsb.nextRecord();
         
@@ -5363,6 +5366,7 @@ public final class Ops {
             bds.putProperty( "NAME__1", "StopTime" );
             bds.putProperty( "UNITS__1", tu );
             bds.putProperty( "NAME__2", "Color" );
+            bds.putProperty( "UNITS__2", cu );
             bds.putProperty( "FORMAT__2", "0x%06x" ); // format as hex
             bds.putProperty( "NAME__3", "Event" );
             bds.putProperty( "UNITS__3", evu );
