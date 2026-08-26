@@ -1159,6 +1159,30 @@ public final class Ops {
                     weights.putValue( i, 1 );
                 }
             }
+        } else if ( ds.rank()==3 && dim==2 ) {
+            int ilen= ds.length();
+            mon.setTaskSize(ilen);
+            mon.started();
+            for ( int i=0; i<ilen; i++ ) {
+                mon.setTaskProgress(i);
+                int jlen= ds.length(i);
+                for ( int j=0; j<jlen; j++ ) {
+                    boolean isfill=false;
+                    int klen= ds.length(i,j);
+                    for ( int k=0; k<klen; k++ ) {
+                        if ( wds.value(i,j,k)==0 ) {
+                            isfill= true;
+                        } else {
+                            result.addValue( i, j, ds.value(i,j,k) );
+                        }
+                    }
+                    if ( isfill ) {
+                        result.putValue( i, j, fill );
+                    } else {
+                        weights.putValue( i, j, 1 );
+                    }
+                }
+            }
         } else {
             QubeDataSetIterator it1 = new QubeDataSetIterator(result);
             it1.setMonitor(mon);
