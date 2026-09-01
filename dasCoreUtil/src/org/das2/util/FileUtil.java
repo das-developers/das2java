@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 
 package org.das2.util;
 
@@ -31,6 +27,8 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.das2.util.filesystem.Glob;
+import org.das2.util.monitor.NullProgressMonitor;
+import org.das2.util.monitor.ProgressMonitor;
 
 /**
  * static utility methods.
@@ -100,7 +98,7 @@ public class FileUtil {
      * @throws IllegalArgumentException if it is unable to delete a file
      */
     public static boolean deleteFileTree(File root) throws IllegalArgumentException {
-        return deleteFileTree( root, null );
+        return deleteFileTree( root, null, new NullProgressMonitor() );
     }
 
     /**
@@ -108,10 +106,11 @@ public class FileUtil {
      * any files named in exclude.  For example, exclude could contain "readme.txt".
      * @param root the root where we start deleting.
      * @param exclude null or a set containing names to exclude.
+     * @param monitor
      * @return true if the operation was successful.
      * @throws IllegalArgumentException if it is unable to delete a file
      */
-    public static boolean deleteFileTree( File root, Set<String> exclude ) throws IllegalArgumentException {
+    public static boolean deleteFileTree( File root, Set<String> exclude, ProgressMonitor monitor ) throws IllegalArgumentException {
         if (!root.exists()) {
             return true;
         }
@@ -124,27 +123,49 @@ public class FileUtil {
         }
         boolean success = true;
         boolean noExclude= true;
-        for (File children1 : children) {
-            if (exclude!=null && exclude.contains(children1.getName())) {
-                noExclude= false;
-                continue;
-            }
-            if (children1.isDirectory()) {
-                success = success && deleteFileTree(children1, exclude);
-            } else {
-                success = success && (!children1.exists() || children1.delete()); // in case file is deleted by another process, check exists again.
-                if (!success) {
-                    throw new IllegalArgumentException("unable to delete file " + children1);
+        
+        monitor.setTaskSize(children.length);
+        monitor.started();
+        
+        try {
+            for (File children1 : children) {
+                monitor.setTaskProgress(monitor.getTaskProgress()+1);
+                if (exclude!=null && exclude.contains(children1.getName())) {
+                    noExclude= false;
+                    continue;
+                }
+                if (children1.isDirectory()) {
+                    success = success && deleteFileTree(children1, exclude, new NullProgressMonitor() );
+                } else {
+                    success = success && (!children1.exists() || children1.delete()); // in case file is deleted by another process, check exists again.
+                    if (!success) {
+                        throw new IllegalArgumentException("unable to delete file " + children1);
+                    }
                 }
             }
+            if ( noExclude ) {
+                // assume any directory still in here is because it contains an exclude.
+                success = success && (!root.exists() || ( root.listFiles().length>0 || root.delete() ) );
+            }
+            if (!success) {
+                throw new IllegalArgumentException("unable to delete folder " + root);
+            }
+            return success;        
+        } finally {
+            monitor.finished();
         }
-        if ( noExclude ) {
-            success = success && (!root.exists() || root.delete());
-        }
-        if (!success) {
-            throw new IllegalArgumentException("unable to delete folder " + root);
-        }
-        return success;        
+    }
+    
+    /**
+     * deletes all files and folders below root, and root, just as "rm -r" would, excluding
+     * any files named in exclude.  For example, exclude could contain "readme.txt".
+     * @param root the root where we start deleting.
+     * @param exclude null or a set containing names to exclude.
+     * @return true if the operation was successful.
+     * @throws IllegalArgumentException if it is unable to delete a file
+     */
+    public static boolean deleteFileTree( File root, Set<String> exclude ) throws IllegalArgumentException {
+        return deleteFileTree( root, exclude, new NullProgressMonitor() );
     }
     
     /**
