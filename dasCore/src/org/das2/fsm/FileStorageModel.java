@@ -506,8 +506,10 @@ public class FileStorageModel {
     public synchronized DatumRange quantize(DatumRange timeRange) {
                 
         try {
-            String tf1= timeParser.format( timeRange.min(), timeRange.min() );
-            String tf2= timeParser.format( timeRange.max(), timeRange.max() );
+            Map<String,String> extras= timeParser.getExampleExtras();
+            
+            String tf1= timeParser.format( timeRange.min(), timeRange.min(), extras );
+            String tf2= timeParser.format( timeRange.max(), timeRange.max(), extras );
             
             DatumRange dr1,dr2;
             try {
