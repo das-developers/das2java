@@ -184,6 +184,21 @@ public class TimeParser {
     }
 
     /**
+     * generate extras for fields like enum where only specific values are allowed.
+     * @return map of extras which can be used with format.
+     */
+    public Map<String, String> getExampleExtras() {
+        HashMap<String,String> result= new HashMap<>();
+        for ( FieldHandler h: fieldHandlers.values() ) {
+            if ( h instanceof EnumFieldHandler ) {
+                EnumFieldHandler eh= (EnumFieldHandler)h;
+                result.put( eh.id, eh.values.iterator().next() );
+            }
+        }
+        return result;
+    }
+
+    /**
      * Interface to add custom handlers for strings with unique formats.  For example, the RPWS group had files with
      * two-hex digits indicating the ten-minute interval covered by the file name.  This is also used for orbits.
      * TODO: FieldHandler needs to report its affect on the LSD.  (Autoplot gets versioning).
@@ -664,7 +679,7 @@ public class TimeParser {
         public String format(TimeStruct startTime, TimeStruct timeWidth, int length, Map<String, String> extra) throws IllegalArgumentException {
             String v= extra.get(id);
             if ( v==null ) {
-                throw new IllegalArgumentException( "\"" + id + " is undefined in extras." );
+                throw new IllegalArgumentException( "\"" + id + "\" is undefined in extras." );
             }
             if ( values.contains(v) ) {
                 return v;
@@ -2248,6 +2263,16 @@ public class TimeParser {
         timel.millis+= millis;
         timel.micros-= millis*1000;
         
+    }
+    
+    /**
+     * to get an example formatted time where there are nominal data fields, like enum, we
+     * need example values.  This supports this.
+     * @return 
+     */
+    public Map<String,String> getExampleExtra() {
+        HashMap<String,String> result= new HashMap<>();
+        return result;
     }
     
     /**
