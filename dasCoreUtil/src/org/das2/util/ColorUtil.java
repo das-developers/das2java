@@ -537,8 +537,7 @@ public class ColorUtil {
     }
     
     /**
-     * decode the color, throwing a RuntimeException when the color 
-     * is not parsable. Valid entries include:<ul>
+     * decode the color, returning deft when the text is not parseable. Valid entries include:<ul>
      * <li>"red" 
      * <li>"RED" 
      * <li>"0xFF0000" 
@@ -555,11 +554,12 @@ public class ColorUtil {
      * <a href="https://wikipedia.org/wiki/X11_color_names#Color_name_chart">X11 color names</a>
      * can be found at wikipedia.
      * @param s the string representation 
+     * @param deft the color to return, or null
      * @return the color
      * @see https://en.wikipedia.org/wiki/X11_color_names
      * @see http://cng.seas.rochester.edu/CNG/docs/x11color.html
      */
-    public static Color decodeColor( String s ) {
+    public static Color decodeColor( String s, Color deft ) {
         s= s.toLowerCase().trim();
         if ( s.endsWith(")") ) {
             int i= s.indexOf("(");
@@ -593,11 +593,38 @@ public class ColorUtil {
                     return r;
                 }
             } catch ( NumberFormatException ex ) {        
-                logger.log(Level.INFO, "unable to find color for \"{0}\"", s);
-                ex.printStackTrace();
-                return Color.GRAY;
+                if ( deft!=null ) {
+                    logger.log(Level.INFO, "unable to find color for \"{0}\"", s);
+                }
+                return deft;
             }
         }
+    }
+    
+    /**
+     * decode the color, or return Color.GRAY if it is not parseable. Valid entries include:<ul>
+     * <li>"red" 
+     * <li>"RED" 
+     * <li>"0xFF0000" 
+     * <li>"0xff0000" 
+     * <li>"#00000000" (transparent)
+     * <li>"0x00ffffff" (transparent)
+     * <li>"#ffeedd"
+     * <li>"LightPink" (X11 color names)
+     * </ul>
+     * This also allows a color name to follow the RGB like so:<ul>
+     * <li>"0xFFFF00 (Purple)"
+     * </ul>
+     * to improve legibility of .vap files.  
+     * <a href="https://wikipedia.org/wiki/X11_color_names#Color_name_chart">X11 color names</a>
+     * can be found at wikipedia.
+     * @param s the string representation 
+     * @return the color or Color.GREY
+     * @see https://en.wikipedia.org/wiki/X11_color_names
+     * @see http://cng.seas.rochester.edu/CNG/docs/x11color.html
+     */
+    public static Color decodeColor( String s ) {
+        return decodeColor(s,Color.GRAY);
     }
     
     /**
