@@ -1,21 +1,15 @@
   <body>
-      
-      <p>QDataSets are less abstract and more flexible data model for das2.  das2's 
-          current data model was developed to deliver spectrogram time series data sets
-          where the dataset structure would change over time, and the interface is highly
-          optimized for that environment.  It's difficult to express many datasets in these
-      terms, so the simpler "quick" QDataSet was introduced.  </p>
- 
-      <p>The QDataSet can be thought of as a fast java array that has name-value metadata
+      <p>QDataSet is the model used to store all data in Das2 (and Autoplot). 
+      The QDataSet can be thought of as a fast Java array that has name-value metadata
           attached to it.  These arrays of data can have arbitrary rank, although currently
-          the interface limits rank to 0, 1, 2, 3, and 4.  (Rank N are proposed but not
-          developed.)  Each dimension's length can vary, like java arrays, and datasets 
+          the interface limits rank to 0, 1, 2, 3, and 4.  (A high-rank Rank N are proposed but not
+          developed.)  Each dimension's length can vary, like Java arrays, and datasets 
       where the dimensions do not vary in length are colloquially called "Qubes."
-      See <a href="http://autoplot.org/QDataSet">http://autoplot.org/QDataSet</a>
+      See <a href="https://autoplot.org/QDataSet">https://autoplot.org/QDataSet</a>
       </p>
  
       <p>QDataSets can have other QDataSets as property values, for example the property
-          QDataSet.DEPEND_0 indicates that the values are dependend parameters of the "tags"
+          QDataSet.DEPEND_0 indicates that the values are dependent parameters of the "tags"
           QDataSet found there.  This how how we get to the same abstraction level of 
       the legacy das2 dataset. </p>
   
