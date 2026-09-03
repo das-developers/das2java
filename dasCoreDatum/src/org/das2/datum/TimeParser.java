@@ -191,7 +191,7 @@ public class TimeParser {
         HashMap<String,String> result= new HashMap<>();
         for ( String fc1 : fc ) {
             if ( fc1==null ) continue;
-            FieldHandler h= fieldHandlers.get(fc1);
+            FieldHandler h= fieldHandlers.get(fc1); //TODO: see https://sourceforge.net/p/autoplot/bugs/2874/#cbd2
             if ( h instanceof EnumFieldHandler ) {
                 EnumFieldHandler eh= (EnumFieldHandler)h;
                 result.put( eh.id, eh.values.iterator().next() );
