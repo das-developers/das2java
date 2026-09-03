@@ -189,7 +189,9 @@ public class TimeParser {
      */
     public Map<String, String> getExampleExtras() {
         HashMap<String,String> result= new HashMap<>();
-        for ( FieldHandler h: fieldHandlers.values() ) {
+        for ( String fc1 : fc ) {
+            if ( fc1==null ) continue;
+            FieldHandler h= fieldHandlers.get(fc1);
             if ( h instanceof EnumFieldHandler ) {
                 EnumFieldHandler eh= (EnumFieldHandler)h;
                 result.put( eh.id, eh.values.iterator().next() );
