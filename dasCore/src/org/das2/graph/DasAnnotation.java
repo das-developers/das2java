@@ -1114,6 +1114,10 @@ public class DasAnnotation extends DasCanvasComponent {
      */
     private void anchorXToData(Rectangle anchorRect) {
         try {
+            if ( plot==null ) {
+                logger.warning("can't anchor to plot since plot is null");
+                return;
+            }
             anchorRect.x= (int)(plot.getXAxis().transform(xrange.min()));
             int x1= (int)(plot.getXAxis().transform(xrange.max()));
             if ( x1<anchorRect.x ) {
@@ -1150,6 +1154,10 @@ public class DasAnnotation extends DasCanvasComponent {
      */
     private void anchorYToData(Rectangle anchorRect) {
         try {
+            if ( plot==null ) {
+                logger.warning("can't anchor to plot since plot is null");
+                return;
+            }
             anchorRect.y= (int)(plot.getYAxis().transform(yrange.min()));
             int y1= (int)(plot.getYAxis().transform(yrange.max()));
             if ( y1<anchorRect.y ) {
