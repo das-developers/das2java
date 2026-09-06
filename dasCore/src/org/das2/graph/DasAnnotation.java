@@ -15,6 +15,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
+import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -867,6 +868,8 @@ public class DasAnnotation extends DasCanvasComponent {
                 }
             } else if ( anchorBorderType==BorderType.ROUNDED_RECTANGLE ) {
                 g.fillRoundRect(anchorRect.x, anchorRect.y, anchorRect.width, anchorRect.height, (int)rounds, (int)rounds);
+            }else if ( anchorBorderType==BorderType.ELLIPSE ) {
+                g.fillOval( anchorRect.x, anchorRect.y, anchorRect.width, anchorRect.height );
             }
             g.setColor( c0 );
         }
@@ -887,6 +890,8 @@ public class DasAnnotation extends DasCanvasComponent {
                 gtext.fill( new Rectangle( 0, 0, bb.width, bb.height ) );
             } else if (borderType == BorderType.ROUNDED_RECTANGLE) {
                 gtext.fillRoundRect( 0, 0, bb.width, bb.height, (int)rounds, (int)rounds );
+            } else if (borderType==BorderType.ELLIPSE){
+                gtext.fillOval( 0, 0, bb.width, bb.height );
             }
 
             g.setColor(ltextColor);
@@ -963,6 +968,8 @@ public class DasAnnotation extends DasCanvasComponent {
                     gtext.drawRoundRect( 0, 0, bb.width, bb.height, (int)rounds, (int)rounds);
                 } else if (borderType==BorderType.UNDERSCORE ) {
                     gtext.drawLine( em, bb.height, bb.x + bb.width-(int)em2, bb.height );
+                } else if (borderType==BorderType.ELLIPSE ) {
+                    gtext.draw( new Ellipse2D.Double( 0, 0, bb.width, bb.height ) );
                 }
             }
             
@@ -980,6 +987,8 @@ public class DasAnnotation extends DasCanvasComponent {
                     g.drawRoundRect(anchorRect.x, anchorRect.y, anchorRect.width, anchorRect.height, rounds, rounds);
                 } else if ( anchorBorderType==BorderType.UNDERSCORE ) {
                     g.draw(anchorRect);
+                } else if ( anchorBorderType==BorderType.ELLIPSE ) {
+                    g.draw( new Ellipse2D.Double( anchorRect.x, anchorRect.y, anchorRect.width, anchorRect.height ) );
                 }
             }
         }
