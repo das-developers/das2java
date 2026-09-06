@@ -2,7 +2,7 @@
 package org.das2.graph;
 
 /**
- * Anchor Type
+ * Anchor Type used with Annotations
  * @author jbf
  */
 public enum AnchorType {
