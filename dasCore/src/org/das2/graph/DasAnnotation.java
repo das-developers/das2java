@@ -16,9 +16,11 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
 import java.awt.geom.Ellipse2D;
+import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -583,10 +585,20 @@ public class DasAnnotation extends DasCanvasComponent {
     public void setAnchorStyle(String anchorStyle) {
         String oldAnchorStyle = this.anchorStyle;
         this.anchorStyle = anchorStyle;
+        recalculateAnchorStyleMap(this.anchorStyle);
+        repaint();
         firePropertyChange(PROP_ANCHORSTYLE, oldAnchorStyle, anchorStyle);
     }
 
-    private Map<String,String> anchorStyleImpl= Collections.emptyMap();
+    private Map<String,String> anchorStyleMap= Collections.emptyMap();
+    
+    private void recalculateAnchorStyleMap( String s ) {
+        anchorStyleMap= GraphUtil.parseControlString(s);
+        if ( anchorStyleMap.containsKey("background") ) {
+            String sback= anchorStyleMap.get("background");
+            anchorBackground= ColorUtil.decodeColor(sback);
+        }
+    }
     
     @Override
     public void resize() {
@@ -875,19 +887,26 @@ public class DasAnnotation extends DasCanvasComponent {
             Color c0= g.getColor();
             g.setColor( anchorBackground );
             Rectangle anchorRect= getAnchorBounds();
-            if ( anchorBorderType== BorderType.RECTANGLE || anchorBorderType==BorderType.NONE ) {
-                if ( anchorRect.width==0 ) {
-                    g.fill( new Line2D.Double( anchorRect.x, anchorRect.y, anchorRect.x, anchorRect.y+anchorRect.height ) );
-                } else if ( anchorRect.height==0 ) {
-                    g.fill( new Line2D.Double( anchorRect.x, anchorRect.y, anchorRect.x+anchorRect.width, anchorRect.y ) );
-                } else {
-                    g.fill(anchorRect);
-                }
-            } else if ( anchorBorderType==BorderType.ROUNDED_RECTANGLE ) {
-                g.fillRoundRect(anchorRect.x, anchorRect.y, anchorRect.width, anchorRect.height, (int)rounds, (int)rounds);
-            }else if ( anchorBorderType==BorderType.ELLIPSE ) {
-                g.fillOval( anchorRect.x, anchorRect.y, anchorRect.width, anchorRect.height );
+            Rectangle bb= anchorRect;
+            
+            Graphics2D g2= (Graphics2D)g.create();
+            g2.translate(anchorRect.x,anchorRect.y);
+            
+            String fillTexture= anchorStyleMap.getOrDefault("fillTexture",null);
+            if ( fillTexture==null ) {
+                fillTexture="solid";
             }
+            
+            GeneralPath gp= new GeneralPath();
+            if (anchorBorderType == BorderType.RECTANGLE || anchorBorderType == BorderType.NONE) {
+                gp.append( new Rectangle( 0, 0, bb.width, bb.height ), false );
+            } else if (anchorBorderType == BorderType.ROUNDED_RECTANGLE) {
+                gp.append( new RoundRectangle2D.Double( 0, 0, bb.width, bb.height, (int)rounds, (int)rounds ), false );
+            } else if (anchorBorderType==BorderType.ELLIPSE){
+                gp.append( new Ellipse2D.Double( 0, 0, bb.width, bb.height ), false );
+            }
+            GraphUtil.fillWithTexture( g2, gp, anchorBackground, fillTexture);
+            
             g.setColor( c0 );
         }
             
@@ -910,7 +929,7 @@ public class DasAnnotation extends DasCanvasComponent {
             } else if (borderType==BorderType.ELLIPSE){
                 gtext.fillOval( 0, 0, bb.width, bb.height );
             }
-
+            
             g.setColor(ltextColor);
                     
             int rot= rotate % 360;
@@ -991,6 +1010,15 @@ public class DasAnnotation extends DasCanvasComponent {
             }
             
             if ( anchorBorderType!=BorderType.NONE ) {
+                String scolor= anchorStyleMap.getOrDefault("color",null);
+                if ( scolor!=null ) {
+                    g.setColor( org.das2.util.ColorUtil.decodeColor(scolor) );
+                }
+                String slineThick= anchorStyleMap.getOrDefault("lineThick",null);
+                if ( slineThick!=null ) {
+                    double dthick= GraphUtil.parseLayoutLength( slineThick, r.width, g.getFontMetrics().getHeight() );
+                    g.setStroke( new BasicStroke((float)dthick) );
+                }
                 Rectangle anchorRect= getAnchorBounds();
                 if ( anchorBorderType== BorderType.RECTANGLE ) {
                     if ( anchorRect.width==0 ) {
