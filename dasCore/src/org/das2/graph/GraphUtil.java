@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Formatter;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -1380,6 +1381,107 @@ public class GraphUtil {
     }
 
     /**
+     * Parses a semicolon-delimited list of name/value pairs into a map.
+     * <p>
+     * Each entry normally has the form {@code name=value}. Entries without an equals sign are also permitted and are stored with an
+     * empty string as their value. For example:
+     * </p>
+     *
+     * <pre>
+     * color=red;bold;width=2
+     * </pre>
+     *
+     * produces entries equivalent to:
+     *
+     * <pre>
+     * color -&gt; Color.RED
+     * bold  -&gt; ""
+     * width -&gt; Double
+     * </pre>
+     *
+     * <p>
+     * Values may be enclosed in double quotes. Semicolons appearing inside quoted values are treated as part of the value rather
+     * than as entry delimiters. The surrounding quotes are removed from the resulting value. For example:
+     * </p>
+     *
+     * <pre>
+     * color=red;label="Hello; world";width=2
+     * </pre>
+     *
+     * <p>
+     * Leading and trailing whitespace around names, values, and entries is ignored. The returned map preserves the order in which
+     * entries appear in the input string.
+     * </p>
+     *
+     * Suggested names and types for parsing are below.  These types should always be used, often with scheme
+     * <ul>
+     * <li>Color color -- color to draw with
+     * <li>Color foreground -- color to draw with
+     * <li>Color background -- background color
+     * <li>Color fillColor -- color to fill space with
+     * <li>String fillTexture -- hash,crosshash,backhash,solid,name
+     * <li>String lineStyle -- Dashes,DashFine,DotDashes,DotFine,Dots,None,Solid
+     * <li>String lineThick -- in pixels, ems, or percent
+     * <li>String width -- width, in pixels, or ems or percent
+     * <li>String height -- height, in pixels, or ems or percent
+     * </ul>
+     * @see Renderer#parseControl(java.lang.String) which should eventually use this.
+     * @see #parseLayoutLength(java.lang.String, double, double) for dimension parsing
+     * @param s the string containing the semicolon-delimited entries
+     * @return a map containing the parsed names and values
+     * @throws IllegalArgumentException if a quoted value is not terminated
+     */
+    public static Map<String, String> parseControlString(String s) {
+        Map<String, String> result = new LinkedHashMap<>();
+
+        int start = 0;
+        boolean quoted = false;
+
+        for (int i = 0; i <= s.length(); i++) {
+            char c = (i < s.length()) ? s.charAt(i) : ';';
+
+            if (c == '"') {
+                quoted = !quoted;
+            }
+
+            if (c == ';' && !quoted) {
+                String item = s.substring(start, i).trim();
+
+                if (item.length() > 0) {
+                    int eq = item.indexOf('=');
+                    String name, value;
+                    Object ovalue;
+                    if (eq < 0) {
+                        name = item.trim();
+                        value = "";
+                    } else {
+                        name = item.substring(0, eq).trim();
+                        value = item.substring(eq + 1).trim();
+                    }
+
+                    // Remove surrounding quotes.
+                    if (value.length() >= 2
+                            && value.charAt(0) == '"'
+                            && value.charAt(value.length() - 1) == '"') {
+                        value = value.substring(1, value.length() - 1);
+                    }
+
+                    result.put(name, value);
+                }
+
+                start = i + 1;
+            }
+        }
+
+        if (quoted) {
+            throw new IllegalArgumentException("Unterminated quoted string");
+        }
+
+        return result;
+    }
+
+    
+    /**
      * parse strings like "14em+2pt" into a length in pixels.
      * <ul>
      * <li>"1em",0,8 -> 8
@@ -1405,8 +1507,14 @@ public class GraphUtil {
                 return newSize;
             }
         } catch (ParseException ex) {
-            logger.log( Level.WARNING, null, ex.getMessage() );
-            return 0.f;
+            try {
+                double d= Double.parseDouble(s);
+                return d;
+            } catch ( NumberFormatException ex2 ) {
+                logger.log( Level.WARNING, null, ex.getMessage() );
+                return 0.f;
+            }
+            
         }
     }
 
