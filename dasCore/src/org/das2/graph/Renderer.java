@@ -575,6 +575,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
      * This will split on ampersand, and when no ampersands are found then it will
      * try semicolons.  This is to support embedding the control string in 
      * other control strings (like Autoplot URIs) which use ampersands.
+     * @see GraphUtil#parseControlString() 
      * @param c the control string or null.
      * @return the control string, parsed.
      */
