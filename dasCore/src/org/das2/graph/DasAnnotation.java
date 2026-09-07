@@ -25,6 +25,7 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.net.URL;
 import java.text.ParseException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -59,7 +60,7 @@ public class DasAnnotation extends DasCanvasComponent {
     
     private static final boolean DEBUG_GRAPHICS = System.getProperty("das2.graph.dasannotation.debuggraphics","false").equals("true");
         
-    String templateString;
+    String templateString;    
     GrannyTextRenderer gtr;
     BufferedImage img;
     
@@ -571,6 +572,22 @@ public class DasAnnotation extends DasCanvasComponent {
         resize();
     }
 
+    private String anchorStyle = "";
+
+    public static final String PROP_ANCHORSTYLE = "anchorStyle";
+
+    public String getAnchorStyle() {
+        return anchorStyle;
+    }
+
+    public void setAnchorStyle(String anchorStyle) {
+        String oldAnchorStyle = this.anchorStyle;
+        this.anchorStyle = anchorStyle;
+        firePropertyChange(PROP_ANCHORSTYLE, oldAnchorStyle, anchorStyle);
+    }
+
+    private Map<String,String> anchorStyleImpl= Collections.emptyMap();
+    
     @Override
     public void resize() {
         Font f= getFont();
