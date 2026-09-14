@@ -1,6 +1,7 @@
 
 package org.das2.graph;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -9,6 +10,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Shape;
+import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
@@ -132,8 +134,94 @@ public class GraphUtil {
             g.setColor(oldColor);
         }
     }
+
+    /**
+     * return the stroke for the name "solid" "dotted".  This supports:
+     * solid
+     * dashed
+     * dotted
+     * dashDot
+     * dashDotDot
+     * longDash
+     * shortDash
+     * longDashDot
+     * sparseDot
+     * @param str string describing the stroke
+     * @param width the stroke width to use
+     * @return 
+     */
+    public static Stroke parseStroke(String str, float width) {
+        if (str == null) {
+            return new BasicStroke(width);
+        }
+
+        str = str.trim().toLowerCase();
+
+        switch (str) {
+            case "solid":
+                return new BasicStroke(width);
+            case "dashed":
+                return new BasicStroke(
+                        width,
+                        BasicStroke.CAP_BUTT,
+                        BasicStroke.JOIN_MITER,
+                        10.0f,
+                        new float[]{6.0f, 4.0f},
+                        0.0f);
+            case "dotted":
+                return new BasicStroke(
+                        width,
+                        BasicStroke.CAP_ROUND,
+                        BasicStroke.JOIN_MITER,
+                        10.0f,
+                        new float[]{0.0f, 3.0f * width},
+                        0.0f);
+            case "dashdot":
+                return new BasicStroke(
+                        width,
+                        BasicStroke.CAP_BUTT,
+                        BasicStroke.JOIN_MITER,
+                        10.0f,
+                        new float[]{6.0f, 3.0f, 1.0f, 3.0f},
+                        0.0f);
+            case "dashdotdot":
+                return new BasicStroke(
+                        width,
+                        BasicStroke.CAP_BUTT,
+                        BasicStroke.JOIN_MITER,
+                        10.0f,
+                        new float[]{6.0f, 3.0f, 1.0f, 3.0f, 1.0f, 3.0f},
+                        0.0f);
+            case "dotfine": //legacy
+                return new BasicStroke( 
+                        width, 
+                        BasicStroke.CAP_ROUND, 
+                        BasicStroke.JOIN_ROUND, 
+                        1.0f, 
+                        new float[] {1.5f,2.0f}, 
+                        0.f );
+            case "dashfine":
+                return new BasicStroke( 
+                        width, 
+                        BasicStroke.CAP_ROUND, 
+                        BasicStroke.JOIN_ROUND, 
+                        1.0f, 
+                        new float[] {3.0f,2.0f}, 
+                        2.5f );
+            case "dashes":
+                return new BasicStroke( 
+                        width, 
+                        BasicStroke.CAP_ROUND, 
+                        BasicStroke.JOIN_ROUND, 
+                        1.0f, 
+                        new float[] {6.0f,4.0f}, 
+                        5.0f );
+            default:
+                throw new IllegalArgumentException("Unknown stroke style: " + str);
+        }
+    }
     
- /**
+    /**
      * implements "!(painter;img;http://autoplot.org/wiki/images/Logo96.png;50%)<br>Autoplot"
      * which is intended to replace the URL property of annotations.
      * 
