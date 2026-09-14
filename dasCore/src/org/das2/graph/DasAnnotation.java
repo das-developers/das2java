@@ -817,7 +817,7 @@ public class DasAnnotation extends DasCanvasComponent {
             ltextColor= textColor;
             back= getBackground();
         }
-         
+        
 //        if ( anchorType==AnchorType.CANVAS ) {
 //            back= Color.PINK;
 //        } else if ( anchorType==AnchorType.PLOT ) {
@@ -895,6 +895,11 @@ public class DasAnnotation extends DasCanvasComponent {
             String fillTexture= anchorStyleMap.getOrDefault("fillTexture",null);
             if ( fillTexture==null ) {
                 fillTexture="solid";
+            }
+            
+            String stroke= anchorStyleMap.getOrDefault("style", "solid"); // solid is default
+            if ( !( stroke.equals("solid") || stroke.length()==0 ) ) {
+                g2.setStroke( GraphUtil.parseStroke(stroke,1.0f) );
             }
             
             GeneralPath gp= new GeneralPath();
