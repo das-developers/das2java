@@ -597,6 +597,8 @@ public class DasAnnotation extends DasCanvasComponent {
         if ( anchorStyleMap.containsKey("background") ) {
             String sback= anchorStyleMap.get("background");
             anchorBackground= ColorUtil.decodeColor(sback);
+        } else {
+            anchorBackground= new Color(0, 0, 0, 0);
         }
     }
     
@@ -897,11 +899,6 @@ public class DasAnnotation extends DasCanvasComponent {
                 fillTexture="solid";
             }
             
-            String stroke= anchorStyleMap.getOrDefault("style", "solid"); // solid is default
-            if ( !( stroke.equals("solid") || stroke.length()==0 ) ) {
-                g2.setStroke( GraphUtil.parseStroke(stroke,1.0f) );
-            }
-            
             GeneralPath gp= new GeneralPath();
             if (anchorBorderType == BorderType.RECTANGLE || anchorBorderType == BorderType.NONE) {
                 gp.append( new Rectangle( 0, 0, bb.width, bb.height ), false );
@@ -1024,6 +1021,11 @@ public class DasAnnotation extends DasCanvasComponent {
                     double dthick= GraphUtil.parseLayoutLength( slineThick, r.width, g.getFontMetrics().getHeight() );
                     g.setStroke( new BasicStroke((float)dthick) );
                 }
+                String stroke= anchorStyleMap.getOrDefault("style", "solid"); // solid is default
+                if ( !( stroke.equals("solid") || stroke.length()==0 ) ) {
+                    g.setStroke( GraphUtil.parseStroke(stroke,1.0f) );
+                }
+            
                 Rectangle anchorRect= getAnchorBounds();
                 if ( anchorBorderType== BorderType.RECTANGLE ) {
                     if ( anchorRect.width==0 ) {
