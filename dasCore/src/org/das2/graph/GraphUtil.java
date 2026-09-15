@@ -100,7 +100,7 @@ public class GraphUtil {
         if (fillTexture.equals("hash") || fillTexture.equals("crosshash")) {
             Shape oldClip = g.getClip();
             Rectangle2D r = pbox.getBounds2D();
-            g.setClip(pbox);
+            g.clip(pbox);
             double xx = r.getX();
             double yy = r.getY();
             double w = r.getHeight();
@@ -115,7 +115,7 @@ public class GraphUtil {
         if (fillTexture.equals("backhash") || fillTexture.equals("crosshash")) {
             Shape oldClip = g.getClip();
             Rectangle2D r = pbox.getBounds2D();
-            g.setClip(pbox);
+            g.clip(pbox);
             double xx = r.getX();
             double yy = r.getY();
             double w = r.getHeight();
@@ -1540,7 +1540,7 @@ public class GraphUtil {
      * <li>Color foreground -- color to draw with
      * <li>Color background -- background color
      * <li>Color fillColor -- color to fill space with
-     * <li>String fillTexture -- hash,crosshash,backhash,solid,name
+     * <li>String fillTexture -- hash,crosshash,backhash,solid,none
      * <li>String lineStyle -- Dashes,DashFine,DotDashes,DotFine,Dots,None,Solid
      * <li>String lineThick -- in pixels, ems, or percent
      * <li>String width -- width, in pixels, or ems or percent
