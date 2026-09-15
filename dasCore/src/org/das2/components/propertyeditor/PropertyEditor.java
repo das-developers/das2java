@@ -107,6 +107,7 @@ public class PropertyEditor extends JComponent {
         PropertyEditor.addStringEditor("title", GraphUtil.newGrannyTextEditor() );
         PropertyEditor.addStringEditor("legendLabel", GraphUtil.newGrannyTextEditor() );         
         PropertyEditor.addStringEditor("org.das2.graph.DasAnnotation","text", GraphUtil.newGrannyTextEditor() );
+        PropertyEditor.addStringEditor("org.das2.graph.DasAnnotation","anchorStyle", new StyleStringSchemeEditor() );
 
     }
     private JTable table;
