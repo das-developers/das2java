@@ -1017,13 +1017,16 @@ public class DasAnnotation extends DasCanvasComponent {
                     g.setColor( org.das2.util.ColorUtil.decodeColor(scolor) );
                 }
                 String slineThick= anchorStyleMap.getOrDefault("lineThick",null);
+                double dthick;
                 if ( slineThick!=null ) {
-                    double dthick= GraphUtil.parseLayoutLength( slineThick, r.width, g.getFontMetrics().getHeight() );
+                    dthick= GraphUtil.parseLayoutLength( slineThick, r.width, g.getFontMetrics().getHeight() );
                     g.setStroke( new BasicStroke((float)dthick) );
+                } else {
+                    dthick= 1.0;
                 }
-                String stroke= anchorStyleMap.getOrDefault("style", "solid"); // solid is default
+                String stroke= anchorStyleMap.getOrDefault("style",anchorStyleMap.getOrDefault("lineStyle", "solid")); // solid is default
                 if ( !( stroke.equals("solid") || stroke.length()==0 ) ) {
-                    g.setStroke( GraphUtil.parseStroke(stroke,1.0f) );
+                    g.setStroke( GraphUtil.parseStroke(stroke,(float)dthick,false) );
                 }
             
                 Rectangle anchorRect= getAnchorBounds();
