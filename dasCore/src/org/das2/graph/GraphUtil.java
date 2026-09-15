@@ -148,15 +148,18 @@ public class GraphUtil {
      * sparseDot
      * @param str string describing the stroke
      * @param width the stroke width to use
+     * @param scale scale the duty cycle length
      * @return 
      */
-    public static Stroke parseStroke(String str, float width) {
+    public static Stroke parseStroke(String str, float width, boolean scale) {
         if (str == null) {
             return new BasicStroke(width);
         }
 
         str = str.trim().toLowerCase();
 
+        float scl= scale ? width : 1.0f;
+                
         switch (str) {
             case "solid":
                 return new BasicStroke(width);
@@ -166,7 +169,7 @@ public class GraphUtil {
                         BasicStroke.CAP_BUTT,
                         BasicStroke.JOIN_MITER,
                         10.0f,
-                        new float[]{6.0f, 4.0f},
+                        new float[]{6.0f*scl, 4.0f*scl},
                         0.0f);
             case "dotted":
                 return new BasicStroke(
@@ -174,7 +177,7 @@ public class GraphUtil {
                         BasicStroke.CAP_ROUND,
                         BasicStroke.JOIN_MITER,
                         10.0f,
-                        new float[]{0.0f, 3.0f * width},
+                        new float[]{0.0f, 3.0f * scl},
                         0.0f);
             case "dashdot":
                 return new BasicStroke(
@@ -182,7 +185,7 @@ public class GraphUtil {
                         BasicStroke.CAP_BUTT,
                         BasicStroke.JOIN_MITER,
                         10.0f,
-                        new float[]{6.0f, 3.0f, 1.0f, 3.0f},
+                        new float[]{6.0f*scl, 3.0f*scl, 1.0f*scl, 3.0f*scl},
                         0.0f);
             case "dashdotdot":
                 return new BasicStroke(
@@ -190,15 +193,45 @@ public class GraphUtil {
                         BasicStroke.CAP_BUTT,
                         BasicStroke.JOIN_MITER,
                         10.0f,
-                        new float[]{6.0f, 3.0f, 1.0f, 3.0f, 1.0f, 3.0f},
+                        new float[]{6.0f*scl, 3.0f*scl, 1.0f*scl, 3.0f*scl, 1.0f*scl, 3.0f*scl},
+                        0.0f);                
+            case "longdash":
+                return new BasicStroke(
+                        width, 
+                        BasicStroke.CAP_BUTT,
+                        BasicStroke.JOIN_MITER, 
+                        10.0f,
+                        new float[]{10*scl, 4*scl}, 
                         0.0f);
+            case "shortdash":
+                    return new BasicStroke(
+                        width, 
+                        BasicStroke.CAP_BUTT,
+                        BasicStroke.JOIN_MITER, 
+                        10.0f,
+                        new float[]{3*scl, 3*scl}, 
+                        0.0f );
+            case "longdashdot":
+                    return new BasicStroke(width,
+                        BasicStroke.CAP_BUTT,
+                        BasicStroke.JOIN_MITER, 
+                        10.0f,
+                        new float[]{10*scl, 3*scl, 1*scl, 3*scl}, 
+                        0.0f);
+            case "sparsedot":
+                return new BasicStroke(width, 
+                        BasicStroke.CAP_ROUND,
+                        BasicStroke.JOIN_MITER, 
+                        10.0f,
+                        new float[]{0, 6*scl}, 
+                        0.0f );
             case "dotfine": //legacy
                 return new BasicStroke( 
                         width, 
                         BasicStroke.CAP_ROUND, 
                         BasicStroke.JOIN_ROUND, 
                         1.0f, 
-                        new float[] {1.5f,2.0f}, 
+                        new float[] {1.5f*scl,2.0f*scl}, 
                         0.f );
             case "dashfine":
                 return new BasicStroke( 
@@ -206,18 +239,18 @@ public class GraphUtil {
                         BasicStroke.CAP_ROUND, 
                         BasicStroke.JOIN_ROUND, 
                         1.0f, 
-                        new float[] {3.0f,2.0f}, 
-                        2.5f );
+                        new float[] {3.0f*scl,2.0f*scl}, 
+                        2.5f*scl );
             case "dashes":
                 return new BasicStroke( 
                         width, 
                         BasicStroke.CAP_ROUND, 
                         BasicStroke.JOIN_ROUND, 
                         1.0f, 
-                        new float[] {6.0f,4.0f}, 
-                        5.0f );
+                        new float[] {6.0f*scl,4.0f*scl}, 
+                        5.0f*scl );
             default:
-                throw new IllegalArgumentException("Unknown stroke style: " + str);
+                return new BasicStroke(width);
         }
     }
     
