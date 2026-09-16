@@ -489,7 +489,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
     public static final String CONTROL_KEY_SPECIAL_COLORS="specialColors";
     
     /**
-     * when filling a region, use this texture (solid,hash,backhash,crosshash) to fill.
+     * when filling a region, use this texture (solid,hatch,backhatch,crosshatch) to fill.
      * @see GraphUtil#fillWithTexture(java.awt.Graphics2D, java.awt.geom.GeneralPath, java.awt.Color, java.lang.String) 
      */
     public static final String CONTROL_KEY_FILL_TEXTURE="fillTexture";
