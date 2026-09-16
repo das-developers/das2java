@@ -99,7 +99,7 @@ public class GraphUtil {
      * @param g the graphics context
      * @param pbox a general path
      * @param fillColor if non-null, set this color to fill and return to the original color
-     * @param fillTexture one of the enumerations: none, hash, crosshash, backhash, and solid (and "" is an alias for solid)
+     * @param fillTexture one of the enumerations: none, hash, crosshash, backhash, hatch, crosshatch, backhatch and solid (and "" is an alias for solid)
      * @see Renderer#CONTROL_KEY_FILL_TEXTURE
      */
     public static void fillWithTexture(Graphics2D g, GeneralPath pbox, Color fillColor, String fillTexture) {
