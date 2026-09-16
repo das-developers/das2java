@@ -892,6 +892,12 @@ public class DasAnnotation extends DasCanvasComponent {
             Rectangle bb= anchorRect;
             
             Graphics2D g2= (Graphics2D)g.create();
+            
+            if ( anchorType==AnchorType.DATA ) {
+                DasPlot p= this.plot;
+                g2.clip( DasDevicePosition.toRectangle( p.getRow(), p.getColumn() ) );
+            }
+            
             g2.translate(anchorRect.x,anchorRect.y);
             
             String fillTexture= anchorStyleMap.getOrDefault("fillTexture",null);
@@ -1029,6 +1035,10 @@ public class DasAnnotation extends DasCanvasComponent {
                     g.setStroke( GraphUtil.parseStroke(stroke,(float)dthick,false) );
                 }
             
+                if ( anchorType==AnchorType.DATA ) {
+                    DasPlot p= this.plot;
+                    g.clip( DasDevicePosition.toRectangle( p.getRow(), p.getColumn() ) );
+                }
                 Rectangle anchorRect= getAnchorBounds();
                 if ( anchorBorderType== BorderType.RECTANGLE ) {
                     if ( anchorRect.width==0 ) {
