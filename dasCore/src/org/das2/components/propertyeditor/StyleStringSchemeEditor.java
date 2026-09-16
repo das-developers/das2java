@@ -5,6 +5,7 @@ import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.swing.JComboBox;
@@ -19,7 +20,7 @@ import org.das2.util.StringSchemeEditor;
  *
  * For example:
  * <pre>
- * background=#ffff00;color=#0000ff;fillTexture=crosshash;
+ * background=#ffff00;color=#0000ff;fillTexture=crosshatch;
  * lineThick=2;lineStyle=dashed
  * </pre>
  *
@@ -66,9 +67,9 @@ public class StyleStringSchemeEditor extends JPanel
 
         fillTextureCombo = new JComboBox<String>(new String[] {
             "solid",
-            "hash",
-            "crosshash",
-            "backhash",
+            "hatch",
+            "crosshatch",
+            "backhatch",
             "none"
         });
 
@@ -172,6 +173,7 @@ public class StyleStringSchemeEditor extends JPanel
         }
 
         String[] ss = value.split(";");
+        Map<String,String> props= new HashMap<>();
 
         for (int j = 0; j < ss.length; j++) {
 
@@ -191,74 +193,50 @@ public class StyleStringSchemeEditor extends JPanel
                 continue;
             }
 
-            String name = s.substring(0, i).trim();
+            String name = s.substring(0, i).trim().toLowerCase();
             String val = s.substring(i + 1).trim();
-
-            if ("background".equalsIgnoreCase(name)) {
-
-                try {
-                    backgroundEditor.setAsText(val);
-                } catch (IllegalArgumentException ex) {
-                    other.put(name, val);
-                }
-
-            } else if ("color".equalsIgnoreCase(name)) {
-
-                try {
-                    colorEditor.setAsText(val);
-                } catch (IllegalArgumentException ex) {
-                    other.put(name, val);
-                }
-
-            } else if ("fillTexture".equalsIgnoreCase(name)) {
-
-                fillTextureCombo.setSelectedItem(val);
-
-            } else if ("lineThick".equalsIgnoreCase(name)) {
-
-                try {
-                    lineThickSpinner.setValue(
-                            Double.valueOf(Double.parseDouble(val)));
-                } catch (NumberFormatException ex) {
-                    other.put(name, val);
-                }
-
-            } else if ("lineStyle".equalsIgnoreCase(name)) {
-
-                lineStyleCombo.setSelectedItem(val);
-
-            } else {
-
-                /*
-                 * Preserve properties that this version of the editor
-                 * doesn't know about.
-                 */
-                other.put(name, val);
-            }
+            props.put( name, val );
         }
+
+        backgroundEditor.setAsText( props.getOrDefault("background", "#00000000" ) );
+        props.remove("background");
+
+        colorEditor.setAsText( props.getOrDefault("color","#00000000" ) );
+        props.remove("color");
+
+        fillTextureCombo.setSelectedItem( props.getOrDefault("filltexture","solid" ) );
+        props.remove("filltexture");
+        
+        lineThickSpinner.setValue( Double.parseDouble( props.getOrDefault("linethick","1.0" ) ) );
+        props.remove("linethick");
+
+        lineStyleCombo.setSelectedItem( props.getOrDefault("linestyle","solid" ) );
+        props.remove("linestyle");
+
+        other.putAll(props);
+
     }
 
     @Override
     public String getValue() {
-
+        String s;
+        
         StringBuilder b = new StringBuilder();
 
         append(b, "background",
-                backgroundEditor.getAsText());
+                backgroundEditor.getAsText(),"");
 
         append(b, "color",
-                colorEditor.getAsText());
+                colorEditor.getAsText(),"");
 
-        append(b, "fillTexture",
-                (String) fillTextureCombo.getSelectedItem());
+        s=(String) fillTextureCombo.getSelectedItem();
+        append(b, "fillTexture",s,"solid");
 
         Number n = (Number) lineThickSpinner.getValue();
 
-        append(b, "lineThick",
-                formatNumber(n.doubleValue()));
+        append(b, "lineThick", formatNumber(n.doubleValue()),"1.0");
 
-        append(b, "lineStyle",
-                (String) lineStyleCombo.getSelectedItem());
+        append(b, "lineStyle", (String) lineStyleCombo.getSelectedItem(),"solid");
 
         /*
          * Append properties we didn't understand.
@@ -284,9 +262,9 @@ public class StyleStringSchemeEditor extends JPanel
      * Append one name=value pair.
      */
     private static void append(
-            StringBuilder b, String name, String value) {
+            StringBuilder b, String name, String value, String deft) {
 
-        if (value == null || value.length() == 0) {
+        if (value == null || value.length() == 0 || value.equals(deft)) {
             return;
         }
 
