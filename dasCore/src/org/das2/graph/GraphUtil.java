@@ -78,9 +78,19 @@ public class GraphUtil {
         };
     }
 
+    /**
+     * legacy misspelling
+     */
     public static String FILL_TEXTURE_CROSSHASH="crosshash";
     public static String FILL_TEXTURE_HASH="hash";
     public static String FILL_TEXTURE_BACKHASH="backhash";
+    
+    /**
+     * these should be used instead
+     */
+    public static String FILL_TEXTURE_CROSSHATCH="crosshatch";
+    public static String FILL_TEXTURE_HATCH="hatch";
+    public static String FILL_TEXTURE_BACKHATCH="backhatch";
     public static String FILL_TEXTURE_SOLID="solid";
     public static String FILL_TEXTURE_NONE="none";
     
@@ -97,7 +107,7 @@ public class GraphUtil {
         if (fillColor != null) {
             g.setColor(fillColor);
         }
-        if (fillTexture.equals("hash") || fillTexture.equals("crosshash")) {
+        if (fillTexture.equals("hatch") || fillTexture.equals("crosshatch") || fillTexture.equals("hash") || fillTexture.equals("crosshash")) {
             Shape oldClip = g.getClip();
             Rectangle2D r = pbox.getBounds2D();
             g.clip(pbox);
@@ -112,7 +122,7 @@ public class GraphUtil {
             }
             g.setClip(oldClip);
         }
-        if (fillTexture.equals("backhash") || fillTexture.equals("crosshash")) {
+        if (fillTexture.equals("backhatch") || fillTexture.equals("crosshatch") || fillTexture.equals("backhash") || fillTexture.equals("crosshash")) {
             Shape oldClip = g.getClip();
             Rectangle2D r = pbox.getBounds2D();
             g.clip(pbox);
