@@ -125,13 +125,7 @@ public final class ColorEditor extends AbstractCellEditor implements java.beans.
             }
             return hex;            
         } else {
-            String hex;
-            if ( rgb==0 ) {
-                hex= "#000000";
-            } else {
-                hex= "#"+Integer.toHexString( rgb ).substring(2); 
-            }
-            hex= ColorUtil.encodeColor(s);
+            String hex= ColorUtil.encodeColor(s);
             return hex;
         }
     }
