@@ -27,6 +27,7 @@ import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.table.TableCellEditor;
+import org.das2.util.ColorUtil;
 import org.das2.util.DesktopColorChooserPanel;
 
 /**
@@ -113,14 +114,26 @@ public final class ColorEditor extends AbstractCellEditor implements java.beans.
     
     @Override
     public String getAsText() { 
-        int rgb= ((Color)editorSupport.getValue()).getRGB();
-        String hex;
-        if ( rgb==0 ) {
-            hex= "#000000";
+        Color s= (Color)editorSupport.getValue();
+        int rgb= s.getRGB();
+        if ( s.getAlpha()<255 ) {
+            String hex;
+            if ( rgb==0 ) {
+                hex= "#"+Integer.toHexString(s.getAlpha())+"000000";
+            } else {
+                hex= "#"+Integer.toHexString(s.getAlpha())+Integer.toHexString( rgb ).substring(2); 
+            }
+            return hex;            
         } else {
-            hex= "#"+Integer.toHexString( rgb ).substring(2); 
+            String hex;
+            if ( rgb==0 ) {
+                hex= "#000000";
+            } else {
+                hex= "#"+Integer.toHexString( rgb ).substring(2); 
+            }
+            hex= ColorUtil.encodeColor(s);
+            return hex;
         }
-        return hex;
     }
 
     private void initCustom() {
@@ -187,7 +200,7 @@ public final class ColorEditor extends AbstractCellEditor implements java.beans.
 
     @Override
     public void setAsText(String str) throws IllegalArgumentException {
-        Color c= Color.decode(str);
+        Color c= ColorUtil.decodeColor(str);
         setValue(c);
     }
 
