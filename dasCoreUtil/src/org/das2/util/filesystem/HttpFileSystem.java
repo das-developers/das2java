@@ -633,11 +633,13 @@ public class HttpFileSystem extends WebFileSystem {
                         } catch (CancelledOperationException ex1) {
                             throw ex;
                         }
+                        loggerUrl.log(Level.FINE, "open connection to {0}", theUrl);
                         HttpURLConnection newConnection= (HttpURLConnection)theUrl.openConnection();
                         HttpUtil.copyConnectProperties( urlc, newConnection );
                         String encode = Base64.getEncoder().encodeToString(userInfo.getBytes());
                         newConnection.setRequestProperty("Authorization", "Basic " + encode);
                         urlc.disconnect();
+                        loggerUrl.log(Level.FINE, "close connection to {0}", remoteURL);
                         urlc= newConnection;
                     } else {
                         throw ex;
@@ -648,8 +650,10 @@ public class HttpFileSystem extends WebFileSystem {
             if ( urlc instanceof HttpURLConnection ) {
                 if ( remoteURL.getPath().endsWith("/") ) {
                     logger.fine("not closing, because it was a listing file.");
+                    loggerUrl.log(Level.FINE, "connection was closed already: {0}", remoteURL);
                 } else {
                     ((HttpURLConnection)urlc).disconnect();
+                    loggerUrl.log(Level.FINE, "close connection to {0}", remoteURL);
                 }
             }
         }
