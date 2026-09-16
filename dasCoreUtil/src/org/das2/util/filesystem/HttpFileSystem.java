@@ -596,6 +596,13 @@ public class HttpFileSystem extends WebFileSystem {
             urlc.addRequestProperty( e.getKey(),e.getValue() ); 
         }
         
+        if ( filename.endsWith("/") && f.getName().equals(".listing") && f.exists() ) {
+            long ageMillis= System.currentTimeMillis()-f.lastModified();
+            if ( ageMillis<10000 ) {
+                System.err.println("*** Couldn't we just use the listing file found???");
+            }
+        }
+        
         URLConnection oldurlc= urlc;
         urlc= (HttpURLConnection)HttpUtil.checkRedirect(urlc);
 
