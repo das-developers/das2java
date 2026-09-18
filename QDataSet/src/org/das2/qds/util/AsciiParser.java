@@ -143,7 +143,7 @@ public class AsciiParser {
     /**
      * detect identifiers for columns.  This is the text leading up to the first [ or (, composed of letters, numbers, spaces, dashes, and underscores.
      */
-    public static final Pattern COLUMN_ID_HEADER_PATTERN = Pattern.compile("\\s*\"?([a-zA-Z0-9][a-zA-Z \\-_\\/\\*0-9\\#]*)([\\(\\[]([a-zA-Z_\\!\\.\\[\\-\\]\\(\\)0-9//\\*\\^\\%\\\u00B0\\#]*)[\\)\\]])?\"?\\s*");
+    public static final Pattern COLUMN_ID_HEADER_PATTERN = Pattern.compile("\\s*\"?([a-zA-Z0-9][a-zA-Z \\-_\\/\\*0-9\\#]*)([\\(\\[]([a-zA-Z_\\!\\.\\[\\-\\]\\(\\)0-9\\*\\^\\%\\\u00B0\\#]*)[\\)\\]])?\"?\\s*");
     /**
      * allow columns to be labeled with some datum ranges, such as 10.0-13.1.  We convert these into an identifier, but depend1labels will present as-is.
      * Note this pattern will match "-999.000" so check groups 2 and 4 for non null.
@@ -424,7 +424,7 @@ public class AsciiParser {
                 //line = reader.readLine(); // note this won't allow newlines.
                 iline++;
                 while ( lines.size()>10 ) {
-                    lines.remove(0);
+                    lines.remove(2);
                 }
                 if ( line!=null ) {
                     // for the delimParser guessed by this line, how many of the last ten lines parse?
@@ -653,7 +653,7 @@ public class AsciiParser {
 
         DelimParser result = createDelimParser(line, fieldSep, lineNumber);
         this.setRecordParser( result );
-
+        
         return result;
 
     }
