@@ -731,6 +731,12 @@ public class TearoffTabbedPane extends JTabbedPane {
         return tornOffComponent;
     }
 
+    /**
+     * remove the tab at the index and put it into a new container.  This might be used in some old Jython scripts or
+     * Das2 application, but there are no external usages found, and its use is discouraged.
+     * @param tabIndex
+     * @param newContainer 
+     */
     public void tearOff(int tabIndex, Container newContainer) {
         logger.log( Level.FINE, "tearOff({0},{1})", new Object[]{tabIndex, newContainer});
         checkEventThread();
