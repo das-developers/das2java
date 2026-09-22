@@ -885,6 +885,28 @@ public class DasAnnotation extends DasCanvasComponent {
 
         g.setColor(back);
 
+        // calculate the clip of the anchorRectangle
+        Rectangle anchorRectangle= new Rectangle( 0, 0, getCanvas().getWidth(), getCanvas().getHeight() );
+        boolean doClip= false;
+        DasPlot p= this.plot;
+        if ( splitAnchorType ) {
+            if ( anchorType==AnchorType.DATA ) {
+                anchorRectangle.x= p.getColumn().getDMinimum();
+                anchorRectangle.width= p.getColumn().getWidth();
+                doClip= true;
+            }
+            if ( verticalAnchorType==AnchorType.DATA ) { // TODO: what about AnchorType.PLOT?
+                anchorRectangle.y= p.getRow().getDMinimum();
+                anchorRectangle.height= p.getRow().getHeight();
+                doClip= true;
+            }
+        } else {
+            if ( anchorType==AnchorType.DATA ) {
+                anchorRectangle= DasDevicePosition.toRectangle( p.getRow(), p.getColumn() );
+                doClip= true;
+            }
+        }
+
         if ( anchorBackground.getAlpha()>0 ) {
             Color c0= g.getColor();
             g.setColor( anchorBackground );
@@ -892,11 +914,9 @@ public class DasAnnotation extends DasCanvasComponent {
             Rectangle bb= anchorRect;
             
             Graphics2D g2= (Graphics2D)g.create();
+            g2.getClip();
             
-            if ( anchorType==AnchorType.DATA ) {
-                DasPlot p= this.plot;
-                g2.clip( DasDevicePosition.toRectangle( p.getRow(), p.getColumn() ) );
-            }
+            if ( doClip ) g2.clip( anchorRectangle );
             
             g2.translate(anchorRect.x,anchorRect.y);
             
@@ -1035,10 +1055,10 @@ public class DasAnnotation extends DasCanvasComponent {
                     g.setStroke( GraphUtil.parseStroke(stroke,(float)dthick,false) );
                 }
             
-                if ( anchorType==AnchorType.DATA ) {
-                    DasPlot p= this.plot;
-                    g.clip( DasDevicePosition.toRectangle( p.getRow(), p.getColumn() ) );
+                if ( doClip ) {
+                    g.clip(anchorRectangle);
                 }
+                
                 Rectangle anchorRect= getAnchorBounds();
                 if ( anchorBorderType== BorderType.RECTANGLE ) {
                     if ( anchorRect.width==0 ) {
