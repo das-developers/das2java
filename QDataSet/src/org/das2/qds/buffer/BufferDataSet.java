@@ -162,7 +162,7 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
      * @param sval the integer expression
      * @return the integer value.
      */
-    public long parseLong( String sval ) {
+    public static long parseLong( String sval ) {
         String[] ssum= sval.split("\\+");
         if ( ssum.length==1 ) {
             String[] sprod= sval.split("\\*");
