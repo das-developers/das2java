@@ -6,6 +6,11 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * Utility class for reading CCSDS telemetry streams
@@ -48,6 +53,8 @@ public class CcsdsReader {
 
     }
 
+    private SortedSet<Integer> appIds= new TreeSet<>();
+    
     public void parse(ByteBuffer buf) throws IOException {
         int packetNumber = 0;
         
@@ -75,6 +82,9 @@ public class CcsdsReader {
             ByteBuffer packet = buf.slice();
             buf.limit(oldLimit);
             buf.position(offset);
+            
+            appIds.add(apid);
+            
             PacketHandler handler = handlers[apid];
             if (handler != null) {
                 handler.packet(apid, packet);
@@ -84,5 +94,13 @@ public class CcsdsReader {
             packetNumber = packetNumber + 1;
         }
 
+    }
+    
+    /**
+     * get the set of appIds.
+     * @return 
+     */
+    public Set<Integer> getAppIds() {
+        return Collections.unmodifiableSortedSet(appIds);
     }
 }
