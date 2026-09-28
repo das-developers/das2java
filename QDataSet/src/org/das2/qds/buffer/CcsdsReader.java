@@ -7,7 +7,6 @@ import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -35,7 +34,18 @@ public class CcsdsReader {
 
     //private Map<Integer,PacketHandler> handlers= new HashMap<>();
     PacketHandler[] handlers = new PacketHandler[65535];
+    
+    int offsetCorrection= 0;
 
+    /**
+     * set the CCSDS offset correction, in case the file has incorrect offsets between packets which can be corrected with
+     * a simple offset.
+     * @param offs 
+     */
+    public void setOffsetCorrection(int offs) {
+        offsetCorrection= offs;
+    }
+    
     public void addPacketHandler(int packetId, PacketHandler h) {
         if (packetId > (65535)) {
             throw new IllegalArgumentException("packetId must be between 0 and 2^16.");
@@ -77,7 +87,7 @@ public class CcsdsReader {
             }
 
             int oldLimit = buf.limit();
-            buf.limit(offset + packetLength);
+            buf.limit(offset + packetLength + offsetCorrection);
             buf.position(offset);
             ByteBuffer packet = buf.slice();
             buf.limit(oldLimit);
@@ -90,7 +100,7 @@ public class CcsdsReader {
                 handler.packet(apid, packet);
             }
 
-            buf.position(offset + packetLength);
+            buf.position(offset + packetLength + offsetCorrection);
             packetNumber = packetNumber + 1;
         }
 
