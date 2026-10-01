@@ -14270,14 +14270,14 @@ public final class Ops {
             }
             QDataSet iff= Ops.round(ff);
             dsSource= interpolate( dsSource, iff );
-            QDataSet tlimit= DataSetUtil.guessCadenceNew( tt1, null );
+            QDataSet tlimit= DataSetUtil.guessCadenceNew( tt1, null ); // Cadence of the data we are interpolating
             if ( tlimit!=null ) {
-                tlimit= Ops.multiply( tlimit, Ops.dataset(1.5) );
+                tlimit= Ops.multiply( tlimit, Ops.dataset(.501) );
                 Number fillValue= (Number) dsSource.property(QDataSet.FILL_VALUE);
                 if ( fillValue==null ) fillValue= Double.NaN;
-                QDataSet tcel= Ops.applyIndex(tt1,Ops.ceil(ff),fillValue);
-                QDataSet tflr= Ops.applyIndex(tt1,Ops.floor(ff),fillValue);
-                QDataSet tdff= Ops.subtract( tcel,tflr );
+                QDataSet tclose= Ops.applyIndex(tt1,iff,fillValue);
+                QDataSet torig= ttTarget;
+                QDataSet tdff= Ops.abs( Ops.subtract( tclose,torig ) );
                 QDataSet r= Ops.where( Ops.gt( tdff, tlimit ) );
                 dsSource= Ops.putValues( dsSource, r, fillValue );
             }            
