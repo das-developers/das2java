@@ -2017,6 +2017,12 @@ public class AsciiParser {
         @Override
         public boolean splitRecord(String input, String[] fields) {
 
+            input= input.trim();
+            
+            if ( input.length()==0 ) {
+                return false;
+            }
+            
             int index = 0;
             int ifield = 0;
 
