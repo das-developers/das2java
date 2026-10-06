@@ -1173,6 +1173,9 @@ public class DasAnnotation extends DasCanvasComponent {
                     if ( verticalAnchorType==AnchorType.CANVAS ) {
                         anchorRect.y= getRow().getDMinimum();
                         anchorRect.height= getRow().getHeight();
+                    } else if ( verticalAnchorType==AnchorType.PLOT ) {
+                        anchorRect.y= plot.getRow().getDMinimum();
+                        anchorRect.height= plot.getRow().getHeight();
                     }
                 }
             } else {
