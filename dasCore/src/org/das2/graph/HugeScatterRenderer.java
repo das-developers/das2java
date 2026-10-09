@@ -722,11 +722,13 @@ public class HugeScatterRenderer extends Renderer {
             logger.fine("wowReduce");
             for (; first0 <= last0; first0++) {
                 int ix = ddx.whichBin( xds.value(first0), xunits );
+                QDataSet wds1= wds.slice(first0);
+                QDataSet vds1= vds.slice(first0);
                 if ( ix!=-1 ) {
                     for ( int j=0; j<nj; j++ ) {
-                        boolean isValid = wds.value(first0,j)>0;
+                        boolean isValid = wds1.value(j)>0;
                         if ( isValid ) {
-                            int iy = ddy.whichBin( vds.value(first0,j), yunits );
+                            int iy = ddy.whichBin( vds1.value(j), yunits );
                             if (iy != -1) {
                                 tds.addValue( ix, iy, 1.0 ); 
                             }
@@ -742,15 +744,16 @@ public class HugeScatterRenderer extends Renderer {
             UnitsConverter yuc= yunits.getConverter(targetYUnits);
             final int xoffsetsRank= xoffsets.rank();
             for (; first0 <= last0; first0++) {
+                double xdsv= xds.value(first0);
                 for ( int j=0; j<nj; j++ ) {
                     boolean isValid = wds.value(first0,j)>0;
                     if ( isValid ) {
                         int ix,iy;
                         if ( xoffsetsRank==1 ) {
-                            ix= ddx.whichBin(xuc.convert(xds.value(first0) + xoffsets.value(j) ), targetXUnits );
+                            ix= ddx.whichBin(xuc.convert( xdsv + xoffsets.value(j) ), targetXUnits );
                             iy = ddy.whichBin( yuc.convert( vds.value(first0,j) ), targetYUnits );
                         } else {
-                            ix= ddx.whichBin(xuc.convert(xds.value(first0) + xoffsets.value(first0,j) ), targetXUnits );
+                            ix= ddx.whichBin(xuc.convert( xdsv + xoffsets.value(first0,j) ), targetXUnits );
                             iy = ddy.whichBin( yuc.convert( vds.value(first0,j) ), targetYUnits );
                         }
                         if (ix != -1 && iy != -1) {
