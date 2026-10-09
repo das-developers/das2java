@@ -583,7 +583,7 @@ public class HugeScatterRenderer extends Renderer {
         logger.exiting( "org.das2.graph.HugeScatterRenderer", "darkenHistogram");
     }
     
-    private FDataSet histogram( FDataSet tds, RebinDescriptor ddx, RebinDescriptor ddy, QDataSet ds, int firstIndex, int lastIndex ) {
+    private DDataSet histogram( DDataSet tds, RebinDescriptor ddx, RebinDescriptor ddy, QDataSet ds, int firstIndex, int lastIndex ) {
         
         logger.entering( "org.das2.graph.HugeScatterRenderer", "histogram");
         
@@ -670,7 +670,7 @@ public class HugeScatterRenderer extends Renderer {
         return tds;
     }
 
-    private static void histogramRank2Waveform( RebinDescriptor ddx, int first0, int last0, int nj, RebinDescriptor ddy, QDataSet vds, Units yunits, FDataSet tds) throws IllegalArgumentException {
+    private static void histogramRank2Waveform( RebinDescriptor ddx, int first0, int last0, int nj, RebinDescriptor ddy, QDataSet vds, Units yunits, DDataSet tds) throws IllegalArgumentException {
         logger.entering("HugeScatterRenderer", "histogramRank2Waveform");
         QDataSet xds= (QDataSet) vds.property( QDataSet.DEPEND_0 );
         Units xunits= SemanticOps.getUnits( xds );
@@ -728,14 +728,15 @@ public class HugeScatterRenderer extends Renderer {
                         if ( isValid ) {
                             int iy = ddy.whichBin( vds.value(first0,j), yunits );
                             if (iy != -1) {
-                                double d = tds.value(ix, iy);
-                                tds.putValue( ix, iy, d+1 );
-                                //tds.addValue( ix, iy, 1 ); this should be faster
+                                //double d = tds.value(ix, iy);
+                                //tds.putValue( ix, iy, d+1 );
+                                tds.addValue( ix, iy, 1 ); // this should be faster
                             }
                         }
                     }
                 }
             }
+            logger.fine("wowReduce done");
         } else {
             Units targetXUnits= ddx.getUnits();
             UnitsConverter xuc= xunits.getConverter(targetXUnits);
@@ -755,9 +756,9 @@ public class HugeScatterRenderer extends Renderer {
                             iy = ddy.whichBin( yuc.convert( vds.value(first0,j) ), targetYUnits );
                         }
                         if (ix != -1 && iy != -1) {
-                            double d = tds.value(ix, iy);
-                            tds.putValue( ix, iy, d+1 );
-                            //tds.addValue( ix, iy, 1 ); this should be faster
+                            //double d = tds.value(ix, iy);
+                            //tds.putValue( ix, iy, d+1 );
+                            tds.addValue( ix, iy, 1 ); // this should be faster
                         }
                     }
                 }
@@ -794,7 +795,7 @@ public class HugeScatterRenderer extends Renderer {
                 yAxis.isLog());
 
 
-        FDataSet tds = FDataSet.createRank2( ddx.numberOfBins(), ddy.numberOfBins() );
+        DDataSet tds = DDataSet.createRank2( ddx.numberOfBins(), ddy.numberOfBins() );
         
         if ( SemanticOps.isRank3JoinOfRank2Waveform(ds) ) {
             for ( int k=0; k<ds.length(); k++ ) {
