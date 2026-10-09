@@ -730,7 +730,7 @@ public class HugeScatterRenderer extends Renderer {
                             if (iy != -1) {
                                 //double d = tds.value(ix, iy);
                                 //tds.putValue( ix, iy, d+1 );
-                                tds.addValue( ix, iy, 1 ); // this should be faster
+                                tds.addValue( ix, iy, 1 ); // this should be faster 
                             }
                         }
                     }
