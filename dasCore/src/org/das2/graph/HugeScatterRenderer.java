@@ -728,9 +728,7 @@ public class HugeScatterRenderer extends Renderer {
                         if ( isValid ) {
                             int iy = ddy.whichBin( vds.value(first0,j), yunits );
                             if (iy != -1) {
-                                //double d = tds.value(ix, iy);
-                                //tds.putValue( ix, iy, d+1 );
-                                tds.addValue( ix, iy, 1 ); // this should be faster 
+                                tds.addValue( ix, iy, 1.0 ); 
                             }
                         }
                     }
@@ -756,9 +754,7 @@ public class HugeScatterRenderer extends Renderer {
                             iy = ddy.whichBin( yuc.convert( vds.value(first0,j) ), targetYUnits );
                         }
                         if (ix != -1 && iy != -1) {
-                            //double d = tds.value(ix, iy);
-                            //tds.putValue( ix, iy, d+1 );
-                            tds.addValue( ix, iy, 1 ); // this should be faster
+                            tds.addValue( ix, iy, 1.0 ); 
                         }
                     }
                 }
