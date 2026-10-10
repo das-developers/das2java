@@ -22,6 +22,7 @@ import org.das2.qds.examples.Schemes;
 import org.das2.qds.ops.Ops;
 import static java.lang.Math.cos;
 import static java.lang.Math.sin;
+import java.util.HashMap;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.das2.qds.SemanticOps;
@@ -137,16 +138,16 @@ public class BoundsRenderer extends Renderer {
 
     public static final String PROP_FILL_COLOR = "fillColor";
         
+    private final Map<String,String> controls=new HashMap<>();
+    
     @Override
     public String getControl() {
         Map<String,String> controls= new LinkedHashMap();
+        controls.putAll(this.controls);
         controls.put( "fillColor", encodeColorControl(fillColor) );
         controls.put( "color", encodeColorControl(color) );
         if ( !fillTexture.isEmpty() ) controls.put( "fillTexture", fillTexture );
         if ( polar ) controls.put( "polar", encodeBooleanControl( polar ) );
-        if ( style.length()>0 ) {
-            controls.put("style",style);
-        }
         return Renderer.formatControl(controls);
     }
     
@@ -155,11 +156,31 @@ public class BoundsRenderer extends Renderer {
     public void setControl(String s) {
         String oldControl= getControl();
         super.setControl(s);
-        this.setStyle(getControl("style",""));
+        this.controls.clear();
+        this.controls.putAll(super.getControls());
         this.color= getColorControl( "color", color );
         this.fillColor= getColorControl( "fillColor", fillColor );
         this.fillTexture= getControl( "fillTexture", fillTexture );
         this.polar= getBooleanControl( "polar", false );
+        
+        if ( controls.containsKey("background") ) {
+            String sback= controls.get("background");
+            setFillColor(org.das2.util.ColorUtil.decodeColor(sback));
+        }        
+        
+        float lineThick= 1.f;
+        if ( controls.containsKey("lineThick") ){
+            String t= controls.get("lineThick");
+            lineThick= Float.parseFloat(t);
+        }     
+        
+        if ( controls.containsKey("lineStyle") ) {
+            String lineStyle= controls.get("lineStyle");
+            this.stroke= GraphUtil.parseStroke( lineStyle, lineThick, false );
+        } else {
+            this.stroke= new BasicStroke(lineThick);
+        }
+        
         if ( !oldControl.equals(s) ) {
             updateCacheImage();
         }
@@ -206,57 +227,6 @@ public class BoundsRenderer extends Renderer {
             updateCacheImage();
         }
         propertyChangeSupport.firePropertyChange(PROP_FILLTEXTURE, old, fillTexture);
-    }
-
-    private String style = "";
-
-    public static final String PROP_STYLE = "style";
-
-    public String getStyle() {
-        return style;
-    }
-
-    public void setStyle(String style) {
-        String oldStyle = this.style;
-        this.style = style;
-        Map<String,String> styleMap= GraphUtil.parseControlString(style);
-        
-        if ( styleMap.containsKey("background") ) {
-            String sback= styleMap.get("background");
-            setFillColor(org.das2.util.ColorUtil.decodeColor(sback));
-        }
-        
-        if ( styleMap.containsKey("fillTexture") ){
-            String t= styleMap.get("fillTexture");
-            setFillTexture((t));
-        }
-        
-        if ( styleMap.containsKey("fillColor") ){
-            String t= styleMap.get("fillColor");
-            setFillColor(org.das2.util.ColorUtil.decodeColor(t));
-        }
-        
-        if ( styleMap.containsKey("color") ){
-            String t= styleMap.get("color");
-            setColor(org.das2.util.ColorUtil.decodeColor(t));
-        }     
-        
-        float lineThick= 1.f;
-        if ( styleMap.containsKey("lineThick") ){
-            String t= styleMap.get("lineThick");
-            lineThick= Float.parseFloat(t);
-        }     
-        
-        if ( styleMap.containsKey("lineStyle") ) {
-            String lineStyle= styleMap.get("lineStyle");
-            this.stroke= GraphUtil.parseStroke( lineStyle, lineThick, false );
-        } else {
-            this.stroke= new BasicStroke(lineThick);
-        }
-        if ( !oldStyle.equals(style) ) {
-            updateCacheImage();
-        }
-        propertyChangeSupport.firePropertyChange(PROP_STYLE, oldStyle, style);
     }
     
     private Stroke stroke= new BasicStroke(1);
