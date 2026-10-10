@@ -73,6 +73,7 @@ import org.das2.util.LoggerManager;
 import org.das2.qds.DataSetUtil;
 import org.das2.qds.QDataSet;
 import org.das2.qds.SemanticOps;
+import org.das2.util.NameValueParser;
 
 public abstract class Renderer implements DataSetConsumer, Editable, Displayable {
 
@@ -565,7 +566,11 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
         boolean amp= false;
         for ( Entry<String,String> ee: c.entrySet() ) {
             if ( amp ) result.append(ampstr); else amp=true;
-            result.append( ee.getKey() ) .append("=").append(ee.getValue() );
+            String v= ee.getValue();
+            if ( v.contains("=") ) {
+                v= '"' + v + '"';
+            } 
+            result.append( ee.getKey() ) .append("=").append(v);
         }
         return result.toString();
     }
@@ -584,27 +589,14 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
         if ( c==null ) {
             return result;
         }
-        String ampstr= "&";
-        if ( c.contains("&amp;") ) {
-            ampstr= "&amp;";
-        }
         if ( c.trim().length()==0 ) return result;
-        String[] ss= c.split(ampstr);
-        if ( ss.length==1 ) {
-            ss= c.split(";");
+        if ( c.contains("&amp;") ) {
+            c= c.replaceAll("&amp;","&");
         }
-        for (String s : ss) {
-            if (s.trim().length() == 0) continue;
-            String[] ss2 = s.split("=", 2);
-            if ( ss2.length==1 ) {
-                result.put( ss2[0].trim(), "T" ); // true
-            } else {
-                String k= ss2[0].trim();
-                String v= ss2[1].trim();
-                result.put( k,v );
-            }
-        }
-        return result;
+        NameValueParser p= new NameValueParser();
+        p.setDelim('&');
+        p.setMissing("T");
+        return p.parse(c);
     }
 
     /**
@@ -618,6 +610,9 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
     public String getControl( String key, String deft ) {
         if ( this.control.trim().length()==0 ) return deft;
         String v= controls.get(key);
+        if ( v!=null && v.startsWith("\"") && v.endsWith("\"") ) {
+            v= v.substring(1,v.length()-1);
+        }
         if ( v!=null ) return v; else return deft;
     }
 
@@ -649,6 +644,14 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
      */
     public static String encodeBooleanControl( boolean v ) {
         return v ? "T" : "F";
+    }
+    
+    public static String encodeStyleControl( String s ) {
+        if ( !s.startsWith("\"") ) {
+            return '"' + s + '"';
+        } else {
+            return s;
+        }
     }
     
     /**
