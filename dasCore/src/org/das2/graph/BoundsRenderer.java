@@ -1,11 +1,13 @@
 
 package org.das2.graph;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.RenderingHints;
 import java.awt.Shape;
+import java.awt.Stroke;
 import java.awt.geom.Arc2D;
 import java.awt.geom.Area;
 import java.awt.geom.GeneralPath;
@@ -77,6 +79,8 @@ public class BoundsRenderer extends Renderer {
         p.closePath();
         
         GraphUtil.fillWithTexture(g, p, fillColor, fillTexture );
+        g.setColor(color);
+        g.setStroke(stroke);
         g.draw(p);
             
         return new ImageIcon(i);
@@ -132,13 +136,17 @@ public class BoundsRenderer extends Renderer {
     public static final String PROP_COLOR = "color";
 
     public static final String PROP_FILL_COLOR = "fillColor";
-        @Override
+        
+    @Override
     public String getControl() {
         Map<String,String> controls= new LinkedHashMap();
         controls.put( "fillColor", encodeColorControl(fillColor) );
         controls.put( "color", encodeColorControl(color) );
         if ( !fillTexture.isEmpty() ) controls.put( "fillTexture", fillTexture );
         if ( polar ) controls.put( "polar", encodeBooleanControl( polar ) );
+        if ( style.length()>0 ) {
+            controls.put("style",style);
+        }
         return Renderer.formatControl(controls);
     }
     
@@ -147,6 +155,7 @@ public class BoundsRenderer extends Renderer {
     public void setControl(String s) {
         String oldControl= getControl();
         super.setControl(s);
+        this.setStyle(getControl("style",""));
         this.color= getColorControl( "color", color );
         this.fillColor= getColorControl( "fillColor", fillColor );
         this.fillTexture= getControl( "fillTexture", fillTexture );
@@ -199,6 +208,59 @@ public class BoundsRenderer extends Renderer {
         propertyChangeSupport.firePropertyChange(PROP_FILLTEXTURE, old, fillTexture);
     }
 
+    private String style = "";
+
+    public static final String PROP_STYLE = "style";
+
+    public String getStyle() {
+        return style;
+    }
+
+    public void setStyle(String style) {
+        String oldStyle = this.style;
+        this.style = style;
+        Map<String,String> styleMap= GraphUtil.parseControlString(style);
+        
+        if ( styleMap.containsKey("background") ) {
+            String sback= styleMap.get("background");
+            setFillColor(org.das2.util.ColorUtil.decodeColor(sback));
+        }
+        
+        if ( styleMap.containsKey("fillTexture") ){
+            String t= styleMap.get("fillTexture");
+            setFillTexture((t));
+        }
+        
+        if ( styleMap.containsKey("fillColor") ){
+            String t= styleMap.get("fillColor");
+            setFillColor(org.das2.util.ColorUtil.decodeColor(t));
+        }
+        
+        if ( styleMap.containsKey("color") ){
+            String t= styleMap.get("color");
+            setColor(org.das2.util.ColorUtil.decodeColor(t));
+        }     
+        
+        float lineThick= 1.f;
+        if ( styleMap.containsKey("lineThick") ){
+            String t= styleMap.get("lineThick");
+            lineThick= Float.parseFloat(t);
+        }     
+        
+        if ( styleMap.containsKey("lineStyle") ) {
+            String lineStyle= styleMap.get("lineStyle");
+            this.stroke= GraphUtil.parseStroke( lineStyle, lineThick, false );
+        } else {
+            this.stroke= new BasicStroke(lineThick);
+        }
+        if ( !oldStyle.equals(style) ) {
+            updateCacheImage();
+        }
+        propertyChangeSupport.firePropertyChange(PROP_STYLE, oldStyle, style);
+    }
+    
+    private Stroke stroke= new BasicStroke(1);
+    
     private boolean polar = false;
 
     public static final String PROP_POLAR = "polar";
@@ -293,6 +355,7 @@ public class BoundsRenderer extends Renderer {
 
             }
             GraphUtil.fillWithTexture(g, pbox, fillColor, fillTexture);
+            g.setStroke(stroke);
             g.setColor( this.getColor() );
             g.draw(pbox);
             context= pbox;
@@ -304,6 +367,7 @@ public class BoundsRenderer extends Renderer {
             path.closePath();
             GraphUtil.fillWithTexture(g, path, fillColor, fillTexture);
             g.setColor( this.getColor() );
+            g.setStroke(stroke);
             g.draw(path);
             context= path;
         } else if ( Schemes.isTrajectory(ds) ) { 
@@ -313,7 +377,8 @@ public class BoundsRenderer extends Renderer {
                 xx, yy, false,false);
             path.closePath();
             GraphUtil.fillWithTexture(g, path, this.fillColor, this.fillTexture);
-            g.setColor( this.getColor() );
+            g.setStroke(stroke);
+            g.setColor(color);
             g.draw(path);
             context= path;
             
@@ -331,7 +396,8 @@ public class BoundsRenderer extends Renderer {
                 Ops.append(mins,Ops.append(Ops.reverse(maxs),s1)),false,false);
             path.closePath();
             GraphUtil.fillWithTexture(g, path, this.fillColor, fillTexture );
-            g.setColor( this.getColor() );
+            g.setStroke(stroke);
+            g.setColor(color);
             g.draw(path);
             context= path;
         }
