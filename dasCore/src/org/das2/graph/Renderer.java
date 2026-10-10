@@ -549,7 +549,10 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
         return this.control;
     }
 
-
+    protected Map<String,String> getControls(){
+        return this.controls;
+    }
+    
     /**
      * convenient and official location for method that formats control string.
      * @param c
