@@ -56,6 +56,7 @@ import org.das2.qds.SemanticOps;
 import org.das2.qds.ops.Ops;
 import org.das2.util.DasMath;
 import org.das2.util.GrannyTextRenderer;
+import org.das2.util.NameValueParser;
 import org.das2.util.filesystem.FileSystemUtil;
 import org.das2.util.monitor.AlertNullProgressMonitor;
 import org.jdesktop.beansbinding.Converter;
@@ -1563,52 +1564,10 @@ public class GraphUtil {
      * @throws IllegalArgumentException if a quoted value is not terminated
      */
     public static Map<String, String> parseControlString(String s) {
-        Map<String, String> result = new LinkedHashMap<>();
-
-        int start = 0;
-        boolean quoted = false;
-
-        for (int i = 0; i <= s.length(); i++) {
-            char c = (i < s.length()) ? s.charAt(i) : ';';
-
-            if (c == '"') {
-                quoted = !quoted;
-            }
-
-            if (c == ';' && !quoted) {
-                String item = s.substring(start, i).trim();
-
-                if (item.length() > 0) {
-                    int eq = item.indexOf('=');
-                    String name, value;
-                    Object ovalue;
-                    if (eq < 0) {
-                        name = item.trim();
-                        value = "";
-                    } else {
-                        name = item.substring(0, eq).trim();
-                        value = item.substring(eq + 1).trim();
-                    }
-
-                    // Remove surrounding quotes.
-                    if (value.length() >= 2
-                            && value.charAt(0) == '"'
-                            && value.charAt(value.length() - 1) == '"') {
-                        value = value.substring(1, value.length() - 1);
-                    }
-
-                    result.put(name, value);
-                }
-
-                start = i + 1;
-            }
-        }
-
-        if (quoted) {
-            throw new IllegalArgumentException("Unterminated quoted string");
-        }
-
-        return result;
+        
+        NameValueParser p= new NameValueParser();
+        return p.parse(s);
+        
     }
 
 
