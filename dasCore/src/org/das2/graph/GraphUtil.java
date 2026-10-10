@@ -146,7 +146,7 @@ public class GraphUtil {
     }
 
     /**
-     * return the stroke for the name "solid" "dotted".  This supports:
+     * return the stroke for the name "solid" "dotted".  This is used for lineStyle and other things.  This supports:
      * solid
      * dashed
      * dotted
@@ -263,7 +263,7 @@ public class GraphUtil {
                 return new BasicStroke(width);
         }
     }
-    
+
     /**
      * implements "!(painter;img;http://autoplot.org/wiki/images/Logo96.png;50%)<br>Autoplot"
      * which is intended to replace the URL property of annotations.
@@ -1611,7 +1611,7 @@ public class GraphUtil {
         return result;
     }
 
-    
+
     /**
      * parse strings like "14em+2pt" into a length in pixels.
      * <ul>
@@ -1690,7 +1690,7 @@ public class GraphUtil {
      * @return translucent white color 
      */
     public static Color getRicePaperColor() {
-        return ColorUtil.getRicePaperColor();
+        return org.das2.util.ColorUtil.getRicePaperColor();
     }
 
     /**
