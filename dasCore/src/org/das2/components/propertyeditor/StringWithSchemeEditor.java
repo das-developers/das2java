@@ -16,12 +16,12 @@ import javax.swing.AbstractAction;
 import javax.swing.AbstractCellEditor;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
-import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.TableCellEditor;
 import javax.swing.text.BadLocationException;
+import org.das2.util.LoggerManager;
 
 /**
  * Experiments with adding an editor where you can click to get a special GUI.
@@ -29,6 +29,8 @@ import javax.swing.text.BadLocationException;
  */
 public class StringWithSchemeEditor extends AbstractCellEditor implements java.beans.PropertyEditor, TableCellEditor {
 
+    private static final Logger logger= LoggerManager.getLogger("das2.gui.propertyeditor.stringwithscheme");
+    
     private String value;
 
     public StringWithSchemeEditor() {
@@ -122,7 +124,7 @@ public class StringWithSchemeEditor extends AbstractCellEditor implements java.b
                 try {
                     setValue(e.getDocument().getText(0,e.getDocument().getLength()));
                 } catch (BadLocationException ex) {
-                    Logger.getLogger(StringWithSchemeEditor.class.getName()).log(Level.SEVERE, null, ex);
+                    logger.log(Level.SEVERE, null, ex);
                 }
             }
 
@@ -131,7 +133,7 @@ public class StringWithSchemeEditor extends AbstractCellEditor implements java.b
                 try {
                     setValue(e.getDocument().getText(0,e.getDocument().getLength()));
                 } catch (BadLocationException ex) {
-                    Logger.getLogger(StringWithSchemeEditor.class.getName()).log(Level.SEVERE, null, ex);
+                    logger.log(Level.SEVERE, null, ex);
                 }
             }
 
@@ -140,30 +142,35 @@ public class StringWithSchemeEditor extends AbstractCellEditor implements java.b
                 try {
                     setValue(e.getDocument().getText(0,e.getDocument().getLength()));
                 } catch (BadLocationException ex) {
-                    Logger.getLogger(StringWithSchemeEditor.class.getName()).log(Level.SEVERE, null, ex);
+                    logger.log(Level.SEVERE, null, ex);
                 }
             }
         });
         javax.swing.JPanel p= new javax.swing.JPanel(new BorderLayout());
         p.add( f, BorderLayout.CENTER );
         final String propName= table.getValueAt( row, 0 ).toString();
-        javax.swing.JButton extraButton= new javax.swing.JButton( new AbstractAction("?") {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Component c;
-                String svalue= (String)StringWithSchemeEditor.this.getValue();
-                StringWithSchemeEditor.this.ssEditor.setValue(svalue);
-                c= StringWithSchemeEditor.this.ssEditor.getComponent();
-                if ( JOptionPane.OK_OPTION==JOptionPane.showConfirmDialog( table, c, "Edit " + propName, JOptionPane.OK_CANCEL_OPTION ) ) {
-                    f.setText( ((StringSchemeEditor)c).getValue() );
-                    ((Component)e.getSource()).getParent().repaint();
+        
+        if ( ssEditor instanceof DefaultStringSchemeEditor ) {
+            logger.fine("No useful editor provided");
+        } else {
+            javax.swing.JButton extraButton= new javax.swing.JButton( new AbstractAction("...") {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    Component c;
+                    String svalue= (String)StringWithSchemeEditor.this.getValue();
+                    StringWithSchemeEditor.this.ssEditor.setValue(svalue);
+                    c= StringWithSchemeEditor.this.ssEditor.getComponent();
+                    if ( JOptionPane.OK_OPTION==JOptionPane.showConfirmDialog( table, c, "Edit " + propName, JOptionPane.OK_CANCEL_OPTION ) ) {
+                        f.setText( ((StringSchemeEditor)c).getValue() );
+                        ((Component)e.getSource()).getParent().repaint();
+                    }
                 }
-            }
-        } );
-        extraButton.setPreferredSize( new Dimension(16,16) );
-        extraButton.setMaximumSize( new Dimension(16,16) );
-        extraButton.setToolTipText("Edit with "+ ssEditor.getLabel() );
-        p.add( extraButton, BorderLayout.EAST );
+            } );
+            extraButton.setPreferredSize( new Dimension(16,16) );
+            extraButton.setMaximumSize( new Dimension(16,16) );
+            extraButton.setToolTipText("Edit with "+ ssEditor.getLabel() );
+            p.add( extraButton, BorderLayout.EAST );
+        }
         return p;
     }
     
