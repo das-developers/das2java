@@ -24,8 +24,62 @@ public final class BooleanSearch {
         if (query == null) {
             throw new IllegalArgumentException("Query must not be null");
         }
-        Parser parser = new Parser(tokenize(query));
-        if (parser.tokens.isEmpty()) {
+        return compileTokens(tokenize(query));
+    }
+
+    /**
+     * Compiles a partially typed query for interactive search fields.
+     * Incomplete trailing operators and empty opening groups are discarded;
+     * unmatched opening parentheses are closed automatically. An unfinished
+     * quoted phrase is treated as a phrase extending to the end of the query.
+     * Other syntax errors are still reported.
+     */
+    public static Predicate<String> compileLenient(String query) {
+        if (query == null) {
+            throw new IllegalArgumentException("Query must not be null");
+        }
+        List<Token> tokens = tokenize(query, true);
+
+        // Strip incomplete suffixes, including "OR (" and "AND NOT".
+        boolean changed;
+        do {
+            changed = false;
+            while (!tokens.isEmpty()) {
+                Type type = tokens.get(tokens.size() - 1).type;
+                if (type == Type.AND || type == Type.OR || type == Type.NOT) {
+                    tokens.remove(tokens.size() - 1);
+                    changed = true;
+                } else {
+                    break;
+                }
+            }
+            if (!tokens.isEmpty()
+                    && tokens.get(tokens.size() - 1).type == Type.LPAREN) {
+                tokens.remove(tokens.size() - 1);
+                changed = true;
+            }
+        } while (changed);
+
+        int depth = 0;
+        for (Token token : tokens) {
+            if (token.type == Type.LPAREN) {
+                depth++;
+            } else if (token.type == Type.RPAREN) {
+                depth--;
+                if (depth < 0) {
+                    throw new IllegalArgumentException("Unexpected closing ')'");
+                }
+            }
+        }
+        while (depth-- > 0) {
+            tokens.add(new Token(Type.RPAREN, ")"));
+        }
+        return compileTokens(tokens);
+    }
+
+    private static Predicate<String> compileTokens(List<Token> tokens) {
+        Parser parser = new Parser(tokens);
+        if (tokens.isEmpty()) {
             return text -> true;
         }
         Predicate<String> result = parser.parseOr();
@@ -52,6 +106,10 @@ public final class BooleanSearch {
     }
 
     private static List<Token> tokenize(String query) {
+        return tokenize(query, false);
+    }
+
+    private static List<Token> tokenize(String query, boolean lenient) {
         List<Token> tokens = new ArrayList<>();
         int i = 0;
         while (i < query.length()) {
@@ -71,11 +129,13 @@ public final class BooleanSearch {
                 while (i < query.length() && query.charAt(i) != '"') {
                     i++;
                 }
-                if (i == query.length()) {
+                if (i == query.length() && !lenient) {
                     throw new IllegalArgumentException("Unterminated quoted phrase");
                 }
                 tokens.add(new Token(Type.WORD, query.substring(start, i)));
-                i++;
+                if (i < query.length()) {
+                    i++;
+                }
                 continue;
             }
             if (ch == '-') {
