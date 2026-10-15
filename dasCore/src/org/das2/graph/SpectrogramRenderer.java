@@ -945,17 +945,29 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         
                         logger.finer("all data type and units checks are complete");
                         
+                        Datum xleft= xAxis.invTransform(plotImageBounds2.x);
+                        Datum xright= xAxis.invTransform(plotImageBounds2.x+plotImageBounds2.width);
+                        Datum ybottom= yAxis.invTransform(plotImageBounds2.y+plotImageBounds2.height);
+                        Datum ytop= yAxis.invTransform(plotImageBounds2.y);
+                        
+                        if ( xleft.getUnits()!=xright.getUnits() || ybottom.getUnits()!=ytop.getUnits() ) {
+                            logger.finer("dataset is not TableDataSet.");
+                            plotImage = null;
+                            plotImageBounds= null;
+                            logger.exiting( "org.das2.graph.SpectrogramRenderer", "updatePlotImage" );
+                        }
+                        
                         RebinDescriptor xRebinDescriptor;
                         xRebinDescriptor = new RebinDescriptor(
-                                xAxis.invTransform(plotImageBounds2.x),
-                                xAxis.invTransform(plotImageBounds2.x+plotImageBounds2.width),
+                                xleft,
+                                xright,
                                 plotImageBounds2.width,
                                 xAxis.isLog());
                         xRebinDescriptor.setOutOfBoundsAction( RebinDescriptor.MINUSONE );
 
                         RebinDescriptor yRebinDescriptor = new RebinDescriptor(
-                                yAxis.invTransform(plotImageBounds2.y+plotImageBounds2.height),
-                                yAxis.invTransform(plotImageBounds2.y),
+                                ybottom,
+                                ytop,
                                 plotImageBounds2.height,
                                 yAxis.isLog());
                         yRebinDescriptor.setOutOfBoundsAction( RebinDescriptor.MINUSONE );
