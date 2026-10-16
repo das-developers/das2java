@@ -1,8 +1,12 @@
 
 package org.das2.datum;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
 import java.text.ParseException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * DatumRange implementation that identifies times by orbit number.  Note orbit numbers are strings, see Cassini for why.
@@ -18,10 +22,12 @@ import java.text.ParseException;
  */
 public class OrbitDatumRange extends DatumRange implements Serializable {
     
+    private static final Logger logger= LoggerManager.getLogger("das2.datum.orbits");
+    
     String sc;
     String orbit;
     Units unitPref;
-    String pwd=null;
+    String pwd;
 
     public OrbitDatumRange( String sc, String orbit ) throws ParseException {
         super( Orbits.getOrbitsFor(sc).getDatumRange(orbit).min(), Orbits.getOrbitsFor(sc).getDatumRange(orbit).max() );
@@ -48,10 +54,36 @@ public class OrbitDatumRange extends DatumRange implements Serializable {
      * @return an OrbitDatumRange with pwd set
      * @throws ParseException 
      */
-    public static OrbitDatumRange createRelative( String pwd, String sc, String orbit, Units unitPref ) throws ParseException {
+    private static OrbitDatumRange createRelative( String pwd, String sc, String orbit, Units unitPref ) throws ParseException {
         OrbitDatumRange result= new OrbitDatumRange( pwd + sc, orbit, unitPref );
         result.pwd=pwd; 
         return result;
+    }
+    
+    /**
+     * return a special OrbitDatumRange which contains metadata which will allow it to be represented as %{PWD}orbit.dat,
+     * so that .vap files can use resources relative to the .vap.  These should not be used outside of this context,
+     * but doing so is harmless.
+     * @param pwd the absolute position
+     * @param odr the OrbitDatumRange to be relativized.
+     * @return either the original OrbitDatumRange, or a new relative one, which will serialize to "orbit:%{PWD}orbit.dat".
+     * @throws IOException 
+     */
+    public static OrbitDatumRange maybeRelativize(String pwd, OrbitDatumRange odr) throws IOException {
+        String sc= odr.getSpacecraft();
+        if ( sc.startsWith("file:") ) {
+            File f1= new File( sc.substring(5) ).getCanonicalFile();
+            if ( f1.getCanonicalPath().startsWith(pwd) ) {
+                try {
+                    String scr= f1.getCanonicalPath().substring(pwd.length());
+                    OrbitDatumRange rel= createRelative( "file:" + pwd, scr, odr.getOrbit(), odr.getUnits() );
+                    return rel;
+                } catch (ParseException ex) {
+                    logger.log(Level.SEVERE, null, ex);
+                }
+            }
+        }
+        return odr;   
     }
     
     @Override
