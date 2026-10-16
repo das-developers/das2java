@@ -28,10 +28,12 @@ public class OrbitDatumRange extends DatumRange implements Serializable {
     String orbit;
     Units unitPref;
     String pwd;
+    String extraFormat;
 
     public OrbitDatumRange( String sc, String orbit ) throws ParseException {
         super( Orbits.getOrbitsFor(sc).getDatumRange(orbit).min(), Orbits.getOrbitsFor(sc).getDatumRange(orbit).max() );
         this.pwd="";
+        this.extraFormat="";
         this.sc= sc;
         this.orbit= Orbits.trimOrbit(orbit);
         this.unitPref= this.min().getUnits();
@@ -40,6 +42,7 @@ public class OrbitDatumRange extends DatumRange implements Serializable {
     public OrbitDatumRange( String sc, String orbit, Units unitPref ) throws ParseException {
         super( Orbits.getOrbitsFor(sc).getDatumRange(orbit).min().convertTo(unitPref), Orbits.getOrbitsFor(sc).getDatumRange(orbit).max().convertTo(unitPref) );
         this.pwd="";
+        this.extraFormat="";
         this.sc= sc;
         this.orbit= Orbits.trimOrbit(orbit);
         this.unitPref= unitPref;
@@ -62,14 +65,16 @@ public class OrbitDatumRange extends DatumRange implements Serializable {
     
     /**
      * return a special OrbitDatumRange which contains metadata which will allow it to be represented as %{PWD}orbit.dat,
-     * so that .vap files can use resources relative to the .vap.  These should not be used outside of this context,
+     * so that .vap files can use resources relative to the .vap.These should not be used outside of this context,
      * but doing so is harmless.
      * @param pwd the absolute position
      * @param odr the OrbitDatumRange to be relativized.
+     * @param extraFormat extra directory that will be used when saved.
      * @return either the original OrbitDatumRange, or a new relative one, which will serialize to "orbit:%{PWD}orbit.dat".
      * @throws IOException 
      */
-    public static OrbitDatumRange maybeRelativize(String pwd, OrbitDatumRange odr) throws IOException {
+    public static OrbitDatumRange maybeRelativize(String pwd, OrbitDatumRange odr, String extraFormat) throws IOException {
+        pwd= new File(pwd).getCanonicalPath()+"/"; //TODO: Sorry Windows.
         String sc= odr.getSpacecraft();
         if ( sc.startsWith("file:") ) {
             File f1= new File( sc.substring(5) ).getCanonicalFile();
@@ -77,13 +82,35 @@ public class OrbitDatumRange extends DatumRange implements Serializable {
                 try {
                     String scr= f1.getCanonicalPath().substring(pwd.length());
                     OrbitDatumRange rel= createRelative( "file:" + pwd, scr, odr.getOrbit(), odr.getUnits() );
+                    rel.setCheat(extraFormat);
                     return rel;
                 } catch (ParseException ex) {
                     logger.log(Level.SEVERE, null, ex);
                 }
             }
+        } else {
+            logger.log(Level.INFO, "fail to relativize: {0} {1}", new Object[]{pwd, sc});
         }
         return odr;   
+    }
+    
+    
+    public static OrbitDatumRange maybeRelativize(String pwd, OrbitDatumRange odr) throws IOException {
+        return maybeRelativize(pwd,odr,"");
+    }
+    
+    /**
+     * add subdirectory to %{PWD} when formatting, so we can embed the orbits file in a zip file under a "cheat" directory.
+     * Though this is public, it should not be used unless you thoroughly understand why this was done.
+     * @param cheat 
+     */
+    public void setCheat( String cheat ) {
+        if ( cheat.length()>0 ) {
+            if ( !( cheat.endsWith("/") || cheat.endsWith("\\") ) ) {
+                throw new IllegalArgumentException("extra cheat directory must end with slash or backslash");
+            }
+        }
+        this.extraFormat= cheat;
     }
     
     @Override
@@ -193,7 +220,7 @@ public class OrbitDatumRange extends DatumRange implements Serializable {
     public String toString() {
         if ( this.pwd.length()>0 ) {
             if ( sc.startsWith(this.pwd) ) {
-                return "orbit:%{PWD}"+sc.substring(this.pwd.length())+":"+orbit;
+                return "orbit:%{PWD}"+ extraFormat + sc.substring(this.pwd.length())+":"+orbit;
             }
             return "orbit:"+sc+":"+orbit;
         } else {
