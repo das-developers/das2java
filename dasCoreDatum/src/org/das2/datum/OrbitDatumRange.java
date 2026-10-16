@@ -21,9 +21,11 @@ public class OrbitDatumRange extends DatumRange implements Serializable {
     String sc;
     String orbit;
     Units unitPref;
+    String pwd=null;
 
     public OrbitDatumRange( String sc, String orbit ) throws ParseException {
         super( Orbits.getOrbitsFor(sc).getDatumRange(orbit).min(), Orbits.getOrbitsFor(sc).getDatumRange(orbit).max() );
+        this.pwd="";
         this.sc= sc;
         this.orbit= Orbits.trimOrbit(orbit);
         this.unitPref= this.min().getUnits();
@@ -31,11 +33,27 @@ public class OrbitDatumRange extends DatumRange implements Serializable {
     
     public OrbitDatumRange( String sc, String orbit, Units unitPref ) throws ParseException {
         super( Orbits.getOrbitsFor(sc).getDatumRange(orbit).min().convertTo(unitPref), Orbits.getOrbitsFor(sc).getDatumRange(orbit).max().convertTo(unitPref) );
+        this.pwd="";
         this.sc= sc;
         this.orbit= Orbits.trimOrbit(orbit);
         this.unitPref= unitPref;
     }
-        
+
+    /**
+     * allow Orbit
+     * @param pwd the absolute location (e.g. file:/home/jbf/tmp/)
+     * @param sc the relative location of the spacecraft id.
+     * @param orbit the orbit number
+     * @param unitPref the preferred units for the range, like us2000 vs cdfTT2000.
+     * @return an OrbitDatumRange with pwd set
+     * @throws ParseException 
+     */
+    public static OrbitDatumRange createRelative( String pwd, String sc, String orbit, Units unitPref ) throws ParseException {
+        OrbitDatumRange result= new OrbitDatumRange( pwd + sc, orbit, unitPref );
+        result.pwd=pwd; 
+        return result;
+    }
+    
     @Override
     public DatumRange next() {
         String next= Orbits.getOrbitsFor(sc).next(this.orbit);
@@ -131,9 +149,24 @@ public class OrbitDatumRange extends DatumRange implements Serializable {
         return this.orbit;
     }
 
+    /**
+     * return the spacecraft for the orbits, which can be a reference to a 3-column file.
+     * @return the spacecraft id.
+     */
+    public String getSpacecraft() {
+        return this.sc;
+    }
+    
     @Override
     public String toString() {
-        return "orbit:"+sc+":"+orbit;
+        if ( this.pwd.length()>0 ) {
+            if ( sc.startsWith(this.pwd) ) {
+                return "orbit:%{PWD}"+sc.substring(this.pwd.length())+":"+orbit;
+            }
+            return "orbit:"+sc+":"+orbit;
+        } else {
+            return "orbit:"+sc+":"+orbit;
+        }
     }
 
 }
