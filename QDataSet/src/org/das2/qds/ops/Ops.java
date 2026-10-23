@@ -9441,14 +9441,14 @@ public final class Ops {
         if ( ds.rank()==3 ) {
             mon.setTaskSize(ds.length(0,0)*100);
             mon.started();
-            QDataSet powx= fftPower( Ops.slice2(ds,0), window, mon );
+            QDataSet powx= fftPower( Ops.slice2(ds,0), window, mon.getSubtaskMonitor(0,100,"fftx") );
             mon.setTaskProgress(100);
-            QDataSet powy= fftPower( Ops.slice2(ds,1), window, mon );
+            QDataSet powy= fftPower( Ops.slice2(ds,1), window, mon.getSubtaskMonitor(100,200,"ffty") );
             mon.setTaskProgress(200);
             QDataSet powz;
             switch (ds.length(0,0)) {
                 case 3:
-                    powz = fftPower( Ops.slice2(ds,2), window, mon );
+                    powz = fftPower( Ops.slice2(ds,2), window, mon.getSubtaskMonitor(200, 300, "fftz") );
                     mon.finished();
                     return Ops.add( powx, powy, powz );
                 case 2:
