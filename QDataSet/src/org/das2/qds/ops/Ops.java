@@ -9406,6 +9406,70 @@ public final class Ops {
 
     }
     
+    /**
+     * Computes the total spectral power of a three-component vector. The power spectrum is computed independently for each
+     * component using fftPower, and the three spectra are summed:
+     * <pre>
+     * Ptotal(f) = Px(f) + Py(f) + Pz(f)
+     * </pre> The result is a power spectrum as a function of frequency, not the integrated power over all frequencies.
+     *
+     * @param ds a rank-2 (ds[:,3]) or rank-3 (ds[:,:,3]) QDataSet containing three vector components
+     * @param len length of the unity window
+     * @param mon a progress monitor
+     * @return the total spectral power spectrum
+     * @throws IllegalArgumentException if the dataset does not have exactly three components
+     */
+    public static QDataSet totalSpectralPower(QDataSet ds, int len, ProgressMonitor mon) {
+        QDataSet unity= ones(len);
+        return totalSpectralPower( ds, unity, mon);
+    }
+
+    /**
+     * Computes the total spectral power of a three-component vector. The power spectrum is computed independently for each
+     * component using fftPower, and the three spectra are summed:
+     * <pre>
+     * Ptotal(f) = Px(f) + Py(f) + Pz(f)
+     * </pre> The result is a power spectrum as a function of frequency, not the integrated power over all frequencies.
+     *
+     * @param ds a rank-2 (ds[:,3]) or rank-3 (ds[:,:,3]) QDataSet containing three vector components
+     * @param window the window to apply
+     * @param mon a progress monitor
+     * @return the total spectral power spectrum
+     * @throws IllegalArgumentException if the dataset does not have exactly three components
+     */
+    public static QDataSet totalSpectralPower(QDataSet ds, QDataSet window, ProgressMonitor mon) {
+        if ( ds.rank()==3 ) {
+            QDataSet powx= fftPower( Ops.slice2(ds,0), window, mon );
+            QDataSet powy= fftPower( Ops.slice2(ds,1), window, mon );
+            QDataSet powz;
+            switch (ds.length(0,0)) {
+                case 3:
+                    powz = fftPower( Ops.slice2(ds,2), window, mon );
+                    return Ops.add( powx, powy, powz );
+                case 2:
+                    return Ops.add( powx, powy );
+                default:
+                    throw new IllegalArgumentException("only 2 or 3 component vector data sets are supported");
+            }
+        } else if ( ds.rank()==2 ) {
+            QDataSet powx= fftPower( Ops.slice1(ds,0), window, mon );
+            QDataSet powy= fftPower( Ops.slice1(ds,1), window, mon );
+            QDataSet powz;
+            switch (ds.length(0)) {
+                case 3:
+                    powz = fftPower( Ops.slice1(ds,2), window, mon );
+                    return Ops.add( powx, powy, powz );
+                case 2:
+                    return Ops.add( powx, powy );
+                default:
+                    throw new IllegalArgumentException("only 2 or 3 component vector data sets are supported");
+            }
+        } else {
+            throw new IllegalArgumentException("only rank 2 or rank 3 vector data sets are supported");
+        }
+        
+    }
+    
     //private static int PEEK=0;
     
     /**
