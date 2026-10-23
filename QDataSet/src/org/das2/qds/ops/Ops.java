@@ -9439,14 +9439,20 @@ public final class Ops {
      */
     public static QDataSet totalSpectralPower(QDataSet ds, QDataSet window, ProgressMonitor mon) {
         if ( ds.rank()==3 ) {
+            mon.setTaskSize(ds.length(0,0)*100);
+            mon.started();
             QDataSet powx= fftPower( Ops.slice2(ds,0), window, mon );
+            mon.setTaskProgress(100);
             QDataSet powy= fftPower( Ops.slice2(ds,1), window, mon );
+            mon.setTaskProgress(200);
             QDataSet powz;
             switch (ds.length(0,0)) {
                 case 3:
                     powz = fftPower( Ops.slice2(ds,2), window, mon );
+                    mon.finished();
                     return Ops.add( powx, powy, powz );
                 case 2:
+                    mon.finished();
                     return Ops.add( powx, powy );
                 default:
                     throw new IllegalArgumentException("only 2 or 3 component vector data sets are supported");
