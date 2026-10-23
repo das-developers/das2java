@@ -414,7 +414,7 @@ public class OperationsProcessor {
                         ds= Ops.reduceMean(ds,dim, mon.getSubtaskMonitor("performing collapse") );
                     }
                     
-                } else if ( cmd.startsWith("|total") && cmd.length()>6 ) {
+                } else if ( cmd.startsWith("|total") && cmd.length()>6 && !cmd.startsWith("|totalSpectral") ) {
                     int dim= cmd.charAt(6)-'0';
                     if ( s.hasNextInt() ) {
                         if ( dim==0 ) {
@@ -612,7 +612,25 @@ public class OperationsProcessor {
                             ds= Ops.fftPowerMultiThread(ds,len, mon.getSubtaskMonitor("fftPower"));
                         }
                     } 
-
+                } else if ( cmd.equals("|totalSpectralPower" ) ) {
+                    if ( ds.length()>0 ) {
+                        if ( s.hasNextInt() ) {
+                            int len= s.nextInt();
+                            if ( s.hasNextInt() ) {
+                                String window= getStringArg( s.next() );
+                                if ( window.length()==0 ) window= "Unity";
+                                Ops.FFTFilterType ff= Ops.FFTFilterType.valueOf(window);
+                                QDataSet wqds= Ops.windowFunction( ff, len );
+                                ds= Ops.totalSpectralPower(ds, wqds, mon.getSubtaskMonitor("fftPower"));
+                            } else {
+                                ds= Ops.totalSpectralPower(ds, len, mon.getSubtaskMonitor("fftPower"));
+                            }
+                        } else {
+                            throw new IllegalArgumentException("not supported");
+                        }
+                    } else {
+                        throw new IllegalArgumentException("not supported");
+                    }
                 } else if ( cmd.startsWith("|fft" ) ) {
                     if ( ds.length()>0 ) {
                         if ( s.hasNextInt() ) {
