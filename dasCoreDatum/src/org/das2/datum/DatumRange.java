@@ -309,6 +309,30 @@ public class DatumRange implements Comparable, Serializable {
     }
     
     /**
+     * add the amount to shift the range
+     * @param d the amount
+     * @return the range shifted
+     */
+    public DatumRange add(Datum d) {
+        if ( d.isFill() ) return this;
+        Datum min= this.min().add(d);
+        Datum max= this.max().add(d);
+        return new DatumRange( min, max );
+    }
+    
+    /**
+     * subtract the amount to shift the range
+     * @param d the amount
+     * @return the range shifted
+     */
+    public DatumRange subtract(Datum d) {
+        if ( d.isFill() ) return this;
+        Datum min= this.min().subtract(d);
+        Datum max= this.max().subtract(d);
+        return new DatumRange( min, max );
+    }
+    
+    /**
      * return this DatumRange in new units.  Note this may cause some functions
      * of a DatumRange to change, such as the next() for a MonthDatumRange, but
      * implementations should attempt to preserve type.
