@@ -1459,9 +1459,8 @@ public class GitHubFileSystem extends HttpFileSystem {
             return Collections.EMPTY_MAP;
         }
         
-        logger.log(Level.WARNING, "Thread {0} downloading {1}", new Object[]{Thread.currentThread(), filename});
+        logger.log(Level.FINE, "The thread {0} calling downloadFile {1}", new Object[]{Thread.currentThread(), filename});
         
-        logger.log(Level.FINE, "downloadFile({0})", filename);
         Map<String,String> result;
         
         FileOutputStream out=null;
