@@ -14784,6 +14784,9 @@ public final class Ops {
                 sdim++;
             } else {
                 if ( args[i] instanceof String ) {
+                    if ( !args[i].equals(":") ) {
+                        throw new IllegalArgumentException("must be :");
+                    }
                     String s= (String)args[i];
                     if ( s.contains("=") ) {
                         throw new IllegalArgumentException("argument not supported in this version: "+s );
