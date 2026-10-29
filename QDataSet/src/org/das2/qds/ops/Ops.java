@@ -14784,10 +14784,13 @@ public final class Ops {
                 sdim++;
             } else {
                 if ( args[i] instanceof String ) {
-                    if ( !args[i].equals(":") ) {
+                    String s= (String)args[i];
+                    if ( s.startsWith("'") && s.endsWith("'") &&  s.length()>1 ) {
+                        s= s.substring(1,s.length()-1);
+                    }
+                    if ( !s.equals(":") ) {
                         throw new IllegalArgumentException("must be :");
                     }
-                    String s= (String)args[i];
                     if ( s.contains("=") ) {
                         throw new IllegalArgumentException("argument not supported in this version: "+s );
                     }
