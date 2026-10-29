@@ -3,6 +3,8 @@ package org.das2.datum;
 import java.io.Serializable;
 import java.util.Locale;
 import java.util.logging.Logger;
+import org.das2.datum.format.DatumFormatUtil;
+import org.das2.datum.format.DatumFormatter;
 
 /**
  * A DatumRange is provided as a means to carry an ordered pair of Datums
@@ -161,8 +163,10 @@ public class DatumRange implements Comparable, Serializable {
         } else {
             Units u= getUnits();
             boolean isDouble= !( UnitsUtil.isTimeLocation(u) || UnitsUtil.isNominalMeasurement(u) );
-            String ss1= this.s1.getFormatter().format(this.s1,u);
-            String ss2= this.s2.getFormatter().format(this.s2,u);
+            DatumFormatter df;        
+            df=DatumFormatUtil.bestFormatter( this.s1.doubleValue(u), this.s2.doubleValue(u) );
+            String ss1= df.format(this.s1,u);
+            String ss2= df.format(this.s2,u);
             Datum w= this.width();
             if ( isDouble && Double.parseDouble(ss1)==Double.parseDouble(ss2) && w.value()>0 ) {
                 Datum d1= Datum.create( this.s1.doubleValue(u), u, w.value()/100 );
