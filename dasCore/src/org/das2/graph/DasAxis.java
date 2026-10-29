@@ -2702,6 +2702,15 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         return text;
     }
 
+    private String resolveString( String text, String name, Object value ) {
+        if ( text.contains("%{" ) ) {
+            text= text.replaceAll("%\\{"+name+"\\}", value.toString() );
+        } else if ( text.contains("$(") ) {
+            text= text.replaceAll("\\$\\("+name+"\\)", value.toString() );
+        }
+        return text;
+    }
+    
     /**
      * resolve %{RANGE} into the formatted time range (for example)
      * %{RANGE_NOORBIT} was a kludge where the orbit number is not identified, 
@@ -2722,7 +2731,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         if ( UnitsUtil.isTimeLocation( dr.getUnits() ) ) {
             sdr= DatumRangeUtil.formatTimeRange(dr,true);
         } else {
-            sdr= dr.toString();
+            sdr= null;
         }
         if ( dr instanceof OrbitDatumRange ) {
             String abbrevName= ((OrbitDatumRange)dr).toString();
@@ -2735,8 +2744,12 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         } else {
             result= resolveString( result, "RANGE_NOORBIT", sdr );
         }
-        result= resolveString( result, "RANGE", sdr );
-        result= resolveString( result, "SCAN_RANGE", String.valueOf(getScanRange()) );
+        if ( sdr!=null ) {
+            result= resolveString( result, "RANGE", sdr );
+        } else {
+            result= resolveString( result, "RANGE", dr );
+        }
+        result= resolveString( result, "SCAN_RANGE", getScanRange() );
 
         return result;
     }
