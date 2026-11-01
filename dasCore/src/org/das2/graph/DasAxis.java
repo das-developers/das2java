@@ -2703,6 +2703,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     }
 
     private String resolveString( String text, String name, Object value ) {
+        if ( value==null ) {
+            return text;
+        }
         if ( text.contains("%{" ) ) {
             text= text.replaceAll("%\\{"+name+"\\}", value.toString() );
         } else if ( text.contains("$(") ) {
