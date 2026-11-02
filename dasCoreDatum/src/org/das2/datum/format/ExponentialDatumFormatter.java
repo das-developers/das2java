@@ -27,11 +27,15 @@ import java.text.NumberFormat;
 import org.das2.datum.Datum;
 import org.das2.datum.Units;
 
-/** Formats Datums forcing a given exponent and number of decimal places.
+/** 
+ * Formats Datums forcing a given exponent and number of decimal places.
  * This is useful for axes where each of the labels should have the same
  * exponent.  Zero is treated specially, just "0" is returned.  This helps
  * one to quickly identify zero on the axis.
  *
+ * df= ExponentialDatumFormatter(3,4)
+ * print df.format(datum(5.1234e5))  # 51.23E4 
+ * 
  * @author  Jeremy Faden
  */
 public class ExponentialDatumFormatter extends DatumFormatter {

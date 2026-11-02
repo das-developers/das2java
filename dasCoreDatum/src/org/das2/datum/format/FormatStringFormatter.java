@@ -4,6 +4,7 @@ package org.das2.datum.format;
 import java.util.IllegalFormatException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import org.das2.datum.Datum;
 import org.das2.datum.LoggerManager;
 import org.das2.datum.TimeParser;
@@ -36,6 +37,8 @@ public class FormatStringFormatter extends DefaultDatumFormatter {
     
     private TimeParser timeFormat=null;
     
+    private boolean cleanExp;
+    
     /**
      * create a new instance based on the Java format string.
      * @param formatStr see http://download.oracle.com/javase/1.5.0/docs/api/java/util/Formatter.html#syntax
@@ -50,9 +53,12 @@ public class FormatStringFormatter extends DefaultDatumFormatter {
             if ( !formatStr.contains("%") ) {
                 throw new IllegalArgumentException("formatStr doesn't contain percent (%)");
             }
+            
             this.format= formatStr;
             this.units= units;
 
+            cleanExp= Pattern.compile("\\%[\\.0-9]+e").matcher(formatStr).matches();
+            
             if ( formatStr.equals("%d") ) { // see if we can avoid the exception by checking for this case.
                 String s= String.format( format, 0 );
                 logger.log( Level.FINEST, "format string results in {0}", s);
@@ -92,7 +98,11 @@ public class FormatStringFormatter extends DefaultDatumFormatter {
             if ( integer ) {
                 return String.format( format, (int)datum.doubleValue(units) );
             } else {
-                return String.format( format, datum.doubleValue(units) );
+                if ( cleanExp ) {
+                    return String.format( format, datum.doubleValue(units) ).replaceAll("e\\+?(-?)0+", "e$1");
+                } else {
+                    return String.format( format, datum.doubleValue(units) );
+                }
             }
         }
     }
