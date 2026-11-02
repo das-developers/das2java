@@ -164,7 +164,7 @@ public class DatumRange implements Comparable, Serializable {
             Units u= getUnits();
             boolean isDouble= !( UnitsUtil.isTimeLocation(u) || UnitsUtil.isNominalMeasurement(u) );
             DatumFormatter df;        
-            df=DatumFormatUtil.bestFormatter( this.s1.doubleValue(u), this.s2.doubleValue(u) );
+            df=DatumFormatUtil.bestFormatter( this.s1, this.s2, u );
             String ss1= df.format(this.s1,u);
             String ss2= df.format(this.s2,u);
             Datum w= this.width();

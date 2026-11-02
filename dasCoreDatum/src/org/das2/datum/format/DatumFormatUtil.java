@@ -1,6 +1,8 @@
 package org.das2.datum.format;
 
 import java.math.BigDecimal ;
+import org.das2.datum.Datum;
+import org.das2.datum.Units;
 
 /**
  *
@@ -9,15 +11,19 @@ import java.math.BigDecimal ;
 public class DatumFormatUtil {
 
     /**
-     * Return a common formatter for two double values. Preserves their decimal significant digits, padding with zeros where
-     * necessary.
+     * Return a common formatter for two double values.Preserves their decimal significant digits, padding with 
+     * zeros where necessary.
      *
-     * @param a first value
-     * @param b second value
+     * @param A first value
+     * @param B second value
+     * @param u
      * @return a formatter suitable for both values
      */
-    public static DatumFormatter bestFormatter(double a, double b) {
+    public static DatumFormatter bestFormatter( Datum A, Datum B, Units u ) {
 
+        double a= A.doubleValue(u);
+        double b= B.doubleValue(u);
+        
         if (!Double.isFinite(a) || !Double.isFinite(b)) {
             return new FormatStringFormatter("%g", false);
         }
@@ -49,5 +55,14 @@ public class DatumFormatUtil {
 
         return new FormatStringFormatter(
                 "%." + decimalPlaces + "f", false);
+    }
+    
+    private static void doTest(Datum a, Datum b) {
+        DatumFormatter df= bestFormatter(a, b, a.getUnits());
+        System.out.println( df.format(a,a.getUnits()) + " " + df.format(b,b.getUnits()) );
+    }
+    
+    public static void main(String[] args) { 
+        doTest( Datum.create(0.04), Datum.create(900) );
     }
 }
