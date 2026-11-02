@@ -45,6 +45,16 @@ public class FormatStringFormatter extends DefaultDatumFormatter {
      * @param units if true, append the units after the formatted string
      */
     public FormatStringFormatter( String formatStr, boolean units ) {
+        this( formatStr, units, false );
+    }    
+    
+    /**
+     * create a new instance based on the Java format string.
+     * @param formatStr see http://download.oracle.com/javase/1.5.0/docs/api/java/util/Formatter.html#syntax
+     * @param units if true, append the units after the formatted string
+     * @param allowClean if true then %e will format 4.3e+04 as 4.3e4.
+     */
+    public FormatStringFormatter( String formatStr, boolean units, boolean allowClean ) {
         if ( TimeParser.isSpec(formatStr) ) {
             timeFormat= TimeParser.create(formatStr);
             this.units= false;
@@ -57,7 +67,7 @@ public class FormatStringFormatter extends DefaultDatumFormatter {
             this.format= formatStr;
             this.units= units;
 
-            cleanExp= Pattern.compile("\\%[\\.0-9]+e").matcher(formatStr).matches();
+            cleanExp= allowClean && Pattern.compile("\\%[\\.0-9]+e").matcher(formatStr).matches();
             
             if ( formatStr.equals("%d") ) { // see if we can avoid the exception by checking for this case.
                 String s= String.format( format, 0 );
