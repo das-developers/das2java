@@ -1,6 +1,8 @@
 package org.das2.datum.format;
 
 import java.math.BigDecimal ;
+import java.math.MathContext;
+import java.math.RoundingMode;
 import org.das2.datum.Datum;
 import org.das2.datum.Units;
 
@@ -10,6 +12,35 @@ import org.das2.datum.Units;
  */
 public class DatumFormatUtil {
 
+    
+    /**
+     * Round away insignificant floating-point noise when
+     * the value is within 0.000001% of a simpler decimal.
+     *
+     * @param value the original value
+     * @return the simplified value
+     */
+    private static double roundNearDecimal(double value) {
+        if (!Double.isFinite(value) || value == 0.0) {
+            return value;
+        }
+
+        double tolerance = Math.abs(value) * 1.0e-8;
+
+        // Try increasingly precise decimal representations.
+        for (int digits = 1; digits <= 15; digits++) {
+            BigDecimal rounded = BigDecimal.valueOf(value)
+                    .round(new MathContext(digits, RoundingMode.HALF_UP));
+
+            double candidate = rounded.doubleValue();
+
+            if (Math.abs(value - candidate) <= tolerance) {
+                return candidate;
+            }
+        }
+
+        return value;
+    }
     /**
      * Return a common formatter for two double values.Preserves their decimal significant digits, padding with 
      * zeros where necessary.
@@ -28,6 +59,9 @@ public class DatumFormatUtil {
             return new FormatStringFormatter("%g", false);
         }
 
+        a= roundNearDecimal(a);
+        b= roundNearDecimal(b);
+        
         BigDecimal aa = BigDecimal.valueOf(a).stripTrailingZeros();
         BigDecimal bb = BigDecimal.valueOf(b).stripTrailingZeros();
 
@@ -63,6 +97,7 @@ public class DatumFormatUtil {
     }
     
     public static void main(String[] args) { 
-        doTest( Datum.create(0.04), Datum.create(900) );
+        //doTest( Datum.create(0.04), Datum.create(900) );
+        doTest( Datum.create(-0.9999999999987663), Datum.create(1.9999999999987663) );
     }
 }
