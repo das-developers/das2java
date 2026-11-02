@@ -109,7 +109,7 @@ public class FormatStringFormatter extends DefaultDatumFormatter {
                 return String.format( format, (int)datum.doubleValue(units) );
             } else {
                 if ( cleanExp ) {
-                    return String.format( format, datum.doubleValue(units) ).replaceAll("e\\+?(-?)0+", "e$1");
+                    return String.format( format, datum.doubleValue(units) ).replaceAll("e\\+?(-?)0", "e$1"); // assumes 5.12e+00 (two zeros)
                 } else {
                     return String.format( format, datum.doubleValue(units) );
                 }
