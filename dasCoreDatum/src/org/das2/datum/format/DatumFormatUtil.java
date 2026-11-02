@@ -50,7 +50,7 @@ public class DatumFormatUtil {
 
         if (scientific) {
             return new FormatStringFormatter(
-                    "%." + (significantDigits - 1) + "e", false);
+                    "%." + (significantDigits - 1) + "e", false, true);
         }
 
         return new FormatStringFormatter(
