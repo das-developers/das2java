@@ -97,7 +97,8 @@ public class DatumFormatUtil {
     }
     
     public static void main(String[] args) { 
-        //doTest( Datum.create(0.04), Datum.create(900) );
+        doTest( Datum.create(0.04), Datum.create(900) );
         doTest( Datum.create(-0.9999999999987663), Datum.create(1.9999999999987663) );
+        doTest( Datum.create(-0.9999999999987663e-10), Datum.create(1.9999999999987663e-10) );
     }
 }
