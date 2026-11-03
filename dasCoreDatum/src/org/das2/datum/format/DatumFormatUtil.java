@@ -72,6 +72,10 @@ public class DatumFormatUtil {
         int decimalPlaces = Math.max(
                 Math.max(0, aa.scale()),
                 Math.max(0, bb.scale()));
+        
+        if ( decimalPlaces==0 && ( A instanceof Datum.Double || B instanceof Datum.Double ) ) {
+            decimalPlaces= 1;
+        }
 
         double max = Math.max(Math.abs(a), Math.abs(b));
         double min = Math.min(Math.abs(a), Math.abs(b));
@@ -93,10 +97,12 @@ public class DatumFormatUtil {
     
     private static void doTest(Datum a, Datum b) {
         DatumFormatter df= bestFormatter(a, b, a.getUnits());
-        System.out.println( df.format(a,a.getUnits()) + " " + df.format(b,b.getUnits()) );
+        System.out.println( df.format(a,a.getUnits()) + " to " + df.format(b,b.getUnits()) );
     }
     
     public static void main(String[] args) { 
+        doTest( Datum.create(5.0), Datum.create(15.0) );
+        doTest( Datum.create(500.0), Datum.create(1500.0) );
         doTest( Datum.create(0.04), Datum.create(900) );
         doTest( Datum.create(-0.9999999999987663), Datum.create(1.9999999999987663) );
         doTest( Datum.create(-0.9999999999987663e-10), Datum.create(1.9999999999987663e-10) );
