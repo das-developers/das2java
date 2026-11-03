@@ -2306,6 +2306,21 @@ public final class Ops {
     }
     
     /**
+     * Set the dataset at DEPEND_0 to have the units specified
+     * @param ds
+     * @param u
+     * @return
+     * @throws ParseException 
+     */
+    public static QDataSet setDepend0Units( QDataSet ds, Units u ) throws ParseException {
+        QDataSet t = (QDataSet)ds.property(QDataSet.DEPEND_0);
+        if ( t==null ) return ds;
+        t = putProperty(t, QDataSet.UNITS, u);
+        ds = putProperty(ds, QDataSet.DEPEND_0, t);
+        return ds;
+    }
+    
+    /**
      * set the cadence property for the DEPEND_0 data.  This allows scripts to 
      * assert that the data is collected at a given rate, and connecting lines should
      * be drawn.
@@ -15626,8 +15641,11 @@ public final class Ops {
             }
         } 
         if ( z.rank()==2 && y.rank()==1 && isBundle(z) ) {
-            QDataSet z1= DataSetOps.unbundle(z,z.length(0)-1);
-            return link( x, y, z1 );
+            if ( z.length(0)==y.length() && ( z.length(0)==x.length() ) ) {
+                logger.info("strange branch with dataset(x,y,z[:,-1])");
+                QDataSet z1= DataSetOps.unbundle(z,z.length(0)-1);
+                return link( x, y, z1 );
+            }
         }
         
         if ( z.rank()==2 && x.rank()==2 && y.rank()==2 ) {
