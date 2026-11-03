@@ -7,11 +7,11 @@ import org.das2.datum.Datum;
 import org.das2.datum.Units;
 
 /**
- *
+ * Utilities for formatting Datums.  This replicates logic buried in codes that should
+ * have been extracted years ago.
  * @author jbf
  */
 public class DatumFormatUtil {
-
     
     /**
      * Round away insignificant floating-point noise when
