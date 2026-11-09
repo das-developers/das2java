@@ -13728,6 +13728,9 @@ public final class Ops {
         if (ds.rank() > 1) {
             throw new IllegalArgumentException("only rank 1");
         }
+        if (ds.length()<1) {
+            throw new IllegalArgumentException("data must have one or more elements");
+        }
         Units u= (Units) ds.property(QDataSet.UNITS);
         if ( u!=null ) {
             if ( UnitsUtil.isNominalMeasurement(u) ) {
