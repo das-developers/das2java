@@ -15,12 +15,14 @@ import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingUtilities;
 import org.das2.datum.Datum;
+import org.das2.datum.TimeUtil;
 import org.das2.datum.Units;
 import org.das2.util.LoggerManager;
 import org.das2.qds.DataSetUtil;
 import org.das2.qds.QDataSet;
 import org.das2.qds.SemanticOps;
 import static org.das2.qds.filters.FilterEditorPanel.PROP_FILTER;
+import org.das2.qds.ops.Ops;
 
 /**
  * Editor panel to replace the original GUI that was a part of the data panel.
@@ -45,6 +47,37 @@ public class SliceFilterEditorPanel extends AbstractFilterEditorPanel implements
         JSpinner.NumberEditor editor = new JSpinner.NumberEditor(sliceIndexSpinner);
         editor.getFormat().setGroupingUsed(false);
         sliceIndexSpinner.setEditor(editor);
+        
+        sliceAtDatumTF.addMouseWheelListener(new java.awt.event.MouseWheelListener() {
+            public void mouseWheelMoved(java.awt.event.MouseWheelEvent evt) {
+                int ix= sliceAtDatumTF.viewToModel(evt.getPoint());
+                Datum t= Ops.datum(sliceAtDatumTF.getText());
+                int inc= -1;
+                if ( ix>=5 && ix<7 ) { // months
+                    inc= TimeUtil.MONTH;
+                } else if ( ix>=8 && ix<10 ) { // days
+                    inc= TimeUtil.DAY;
+                } else if ( ix>=11 && ix<13 ) { // hours
+                    inc= TimeUtil.HOUR;
+                } else if ( ix>=15 && ix<17 ) { // minutes
+                    inc= TimeUtil.MINUTE;
+                } else if ( ix>=18 ) { // seconds 
+                    inc= TimeUtil.SECOND;
+                }
+                if ( inc>-1 ) {
+                    int ir= evt.getWheelRotation();
+                    while ( ir<0 ) {
+                        t= TimeUtil.next( inc, t );
+                        ir=ir+1;
+                    }
+                    while ( ir>0 ) {
+                        t= TimeUtil.prev( inc, t );
+                        ir=ir-1;
+                    }
+                    sliceAtDatumTF.setText( t.toString() );
+                }
+            }
+        });
         
         setName("sliceFilterEditorPanel" + String.format( "%04d", (System.currentTimeMillis()-t0)/100 ));
     }
