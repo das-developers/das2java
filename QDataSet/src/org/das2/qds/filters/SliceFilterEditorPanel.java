@@ -77,6 +77,7 @@ public class SliceFilterEditorPanel extends AbstractFilterEditorPanel implements
                             ir=ir-1;
                         }
                         sliceAtDatumTF.setText( t.toString() );
+                        updateFeedback();
                     }
                 }
             }
