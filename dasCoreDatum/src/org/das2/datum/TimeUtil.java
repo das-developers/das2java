@@ -1180,7 +1180,12 @@ public final class TimeUtil {
     private static TimeStruct next( int step, TimeStruct array ) {
         switch (step) {
             case SECOND: 
-                array.seconds= Math.ceil(array.seconds+array.nanos/1e9);
+                double newSeconds= Math.ceil(array.seconds+array.nanos/1e9);
+                if ( array.seconds==newSeconds ) {
+                    array.seconds= newSeconds + 1;
+                } else {
+                    array.seconds= newSeconds;
+                }
                 array.nanos= 0;
                 break;
             case MINUTE: 
