@@ -287,6 +287,8 @@ public class SliceFilterEditorPanel extends AbstractFilterEditorPanel implements
                     }
                 } else {
                     sliceAtDatumButton.setEnabled(true);
+                    sliceAtDatumTF.setEnabled( ! getIndexMode() );
+                    
                 }
             }
         };
