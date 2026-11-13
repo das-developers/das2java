@@ -119,8 +119,8 @@ public class BoundsRenderer extends Renderer {
             yy= Ops.rescaleRangeLogLin( yy, -0.1, 1.1 );
             return Ops.join( xx, yy );
         } else {
-            QDataSet xxx= Ops.slice1( ds,0 );
-            QDataSet yyy= Ops.slice1( ds,1 );
+            QDataSet xxx= Ops.xtags(ds);
+            QDataSet yyy= Ops.ytags(ds);
             QDataSet yext= Ops.extent( yyy );
             QDataSet xext= Ops.extent( xxx );
             yext= Ops.rescaleRangeLogLin( yext, -0.1, 1.1 );
