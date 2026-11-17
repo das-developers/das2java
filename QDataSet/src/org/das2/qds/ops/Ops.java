@@ -1859,6 +1859,11 @@ public final class Ops {
      * @return the averaged dataset
      */
     public static QDataSet collapse1( QDataSet ds ) {
+        int[] qube = DataSetUtil.qubeDims(ds);
+        if ( qube==null ) {
+            ds= Ops.reduceMean(ds,1);
+            return ds;
+        }        
         if ( ds.rank()==4 ) {
             return collapse1R4(ds,new NullProgressMonitor());
         } else {
@@ -1874,6 +1879,11 @@ public final class Ops {
      * @return the averaged dataset
      */
     public static QDataSet collapse2( QDataSet fillDs ) {
+        int[] qube = DataSetUtil.qubeDims(fillDs);
+        if ( qube==null ) {
+            fillDs= Ops.reduceMean(fillDs,2);
+            return fillDs;
+        }
         switch (fillDs.rank()) {
             case 4:
                 return collapse2R4(fillDs,new NullProgressMonitor());
@@ -2011,6 +2021,11 @@ public final class Ops {
      * @return the averaged dataset
      */
     public static QDataSet collapse3( QDataSet fillDs ) {
+        int[] qube = DataSetUtil.qubeDims(fillDs);
+        if ( qube==null ) {
+            fillDs= Ops.reduceMean(fillDs,3);
+            return fillDs;
+        }
         if ( fillDs.rank()==4 ) {
             return collapse3R4( fillDs, new NullProgressMonitor() );
         } else {
