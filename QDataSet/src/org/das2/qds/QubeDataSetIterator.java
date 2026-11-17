@@ -758,10 +758,6 @@ public final class QubeDataSetIterator implements DataSetIterator {
                 }
             }
         } else {
-            this.toString();
-            if ( debugMe ) {
-                boolean wow=true;
-            }
             boolean proceed= false;
             while ( !proceed && i>0) {
                 for (int j = i - 1; j >= 0; j--) {
