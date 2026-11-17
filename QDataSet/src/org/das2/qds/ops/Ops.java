@@ -1874,14 +1874,75 @@ public final class Ops {
      * @return the averaged dataset
      */
     public static QDataSet collapse2( QDataSet fillDs ) {
-        if ( fillDs.rank()==4 ) {
-            return collapse2R4(fillDs,new NullProgressMonitor());
-        } else {
-            fillDs= Ops.reduceMean(fillDs,2);
-            return fillDs;
+        switch (fillDs.rank()) {
+            case 4:
+                return collapse2R4(fillDs,new NullProgressMonitor());
+            case 3:
+                return collapse2R3(fillDs,new NullProgressMonitor());
+            default:
+                fillDs= Ops.reduceMean(fillDs,2);
+                return fillDs;
         }
     }
 
+    /**
+     * Collapse the rank 3 dataset on the second index.  This was introduced after seeing
+     * how slow this operation is with the QubeDataSetIterator
+     * @param ds rank 3 qube dataset
+     * @param mon
+     * @return rank 2 dataset
+     */
+    public static QDataSet collapse2R3( QDataSet ds, ProgressMonitor mon ) {
+        if ( ds.rank()==3 ) {
+            int[] qube = DataSetUtil.qubeDims(ds);
+            if ( qube==null ) throw new IllegalArgumentException("dataset is not a qube");
+            int[] newQube = DataSetOps.removeElement(qube, 2);
+            //MutablePropertyDataSet mpds= DataSetOps.makePropertiesMutable(ds);
+            //mpds.putProperty(QDataSet.BUNDLE_1,null);
+            QDataSet mpds= ds;
+            QDataSet wds = DataSetUtil.weightsDataSet(mpds);
+            DDataSet result = DDataSet.create(newQube);
+            DDataSet wresult= DDataSet.create(newQube);
+            mon.setTaskSize(qube[0]);
+            mon.started();
+            for ( int i0= 0; i0<qube[0]; i0++ ) {
+                mon.setTaskProgress(i0);
+                for ( int i1= 0; i1<qube[1]; i1++ ) {
+                    for ( int i2=0; i2<qube[2]; i2++ ) {
+                        double w= wds.value(i0,i1,i2);
+                        if ( w>0 ) {
+                            result.addValue(i0, i1, w*ds.value(i0,i1,i2));
+                            wresult.addValue(i0, i1, w );
+                        }
+                    }
+                }
+            }
+            double fill= Double.NaN;
+            for ( int i0= 0; i0<qube[0]; i0++ ) {
+                for ( int i1= 0; i1<qube[1]; i1++ ) {
+                    double w= wresult.value(i0, i1);
+                    if ( w>0 ) {
+                        double n= result.value(i0, i1 );
+                        result.putValue(i0, i1, n/w);
+                    } else {
+                        result.putValue(i0, i1, fill );
+                    }
+                }
+            }
+            mon.finished();
+            Map<String,Object> props= DataSetUtil.getProperties(ds);
+            props= DataSetOps.sliceProperties( props, 2 );
+            DataSetUtil.putProperties( props, result );
+            result.putProperty(QDataSet.WEIGHTS,wresult);
+            return result;
+            
+        } else {
+            throw new IllegalArgumentException("only rank 3");
+        }
+        
+    }    
+
+    
     /**
      * Collapse the rank 4 dataset on the second index.
      * @see org.das2.qds.OperationsProcessor#sprocess(java.lang.String, org.das2.qds.QDataSet, org.das2.util.monitor.ProgressMonitor) 
