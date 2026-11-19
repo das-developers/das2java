@@ -14244,12 +14244,14 @@ public final class Ops {
      * Note that when one of the dataset's DEPEND_0 is not monotonic, a 
      * monotonic subset of its points will be used.
      * Ordinal units use the nearest neighbor interpolation.
+     * Interpolation will respect QDataSet.AVERAGE_TYPE when it is found in the dsSource. 
      * @param ds1 the dataset providing timetags, or the timetags themselves.
      * @param ds the single datasets to synch up.
      * @return the single dataset evaluated at the other dataset's timetags.
      * @see #synchronizeNN(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      * @see #synchronize(org.das2.qds.QDataSet, org.das2.qds.QDataSet...) 
      * @see #flattenWaveform(org.das2.qds.QDataSet) 
+     * @see QDataSet#AVERAGE_TYPE
      */
     public static QDataSet synchronize( QDataSet ds1, QDataSet ds ) {
         List<QDataSet> dss= synchronize( ds1, new QDataSet[] { ds } );
@@ -14263,13 +14265,15 @@ public final class Ops {
      * Note that when one of the dataset's DEPEND_0 is not monotonic, a 
      * monotonic subset of its points will be used.
      * Ordinal units use the nearest neighbor interpolation.
-     * Note in the case where dsTarget is the set of timeTags, then it must be monotonic. (TODO: why?)
+     * Note in the case where dsTarget is the set of timeTags, then it must be monotonic. 
+     * Interpolation will respect QDataSet.AVERAGE_TYPE when it is found in the dsSource.
      * @param dsTarget the dataset providing timetags, or the timetags themselves.  
      * @param dsSources the N datasets to synch up, where each should have monotonic timetags.
      * @return a list of N datasets, synchronized
      * @see #synchronizeNN(org.das2.qds.QDataSet, org.das2.qds.QDataSet...) 
      * @see #synchronize(org.das2.qds.QDataSet, org.das2.qds.QDataSet) 
      * @see #flattenWaveform(org.das2.qds.QDataSet) 
+     * @see QDataSet#AVERAGE_TYPE
      */
     public static List<QDataSet> synchronize( QDataSet dsTarget, QDataSet ... dsSources ) {
         QDataSet ttTarget= (QDataSet) dsTarget.property( QDataSet.DEPEND_0 );
