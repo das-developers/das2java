@@ -3101,6 +3101,7 @@ public final class Ops {
     /**
      * element-wise mod of two datasets with compatible geometry.
      * This should support Units.t2000 mod "24 hours" to get result in hours.
+     * For 24, 360, PI, and TAU QDataSet.AVERAGE_TYPE is set.
      * @param ds1 the numerator
      * @param ds2 the divisor 
      * @return the remainder after the division
