@@ -567,7 +567,7 @@ public class FileUtil {
 
         return false;
     }
-   
+       
     /**
      * returns a JFileChooser, ideally adding a Git Pull action.
      * @return 
@@ -605,6 +605,25 @@ public class FileUtil {
             }
         } );
         
+        chooser.addPropertyChangeListener(
+            JFileChooser.DIRECTORY_CHANGED_PROPERTY,
+            e -> {
+                SwingWorker<Integer, Void> worker =
+                    new SwingWorker<Integer, Void>() {
+                        @Override
+                        protected Integer doInBackground() throws Exception {
+                            File dir = chooser.getCurrentDirectory();
+                            gitPull.setEnabled( GitCommand.canGitPull(dir));
+                            return 0;
+                        }
+                        @Override
+                        protected void done() {
+                            logger.fine("done checking if git exists");
+                        }    
+                };
+                worker.execute();
+            }
+        );
      
         return chooser;
     }
