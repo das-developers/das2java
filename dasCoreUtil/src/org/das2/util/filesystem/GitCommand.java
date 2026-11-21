@@ -1,8 +1,13 @@
 
 package org.das2.util.filesystem;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.util.FileUtil;
@@ -202,5 +207,62 @@ public class GitCommand {
         
     }
 
+    /**
+     * return true if the directory is part of a local git repo.
+     * @param directory the directory
+     * @return true if the directory is part of a local git repo.
+     */
+    public static boolean canGitPull(File directory) {
+        if (directory == null || !directory.isDirectory()) {
+            return false;
+        }
 
+        try {
+            // Check that we're inside a Git working tree.
+            if (!gitCheck(directory,
+                    "rev-parse", "--is-inside-work-tree")) {
+                return false;
+            }
+
+            // Check that HEAD is on a branch with an upstream.
+            if (!gitCheck(directory,
+                    "rev-parse", "--abbrev-ref",
+                    "--symbolic-full-name", "@{upstream}")) {
+                return false;
+            }
+
+            return true;
+
+        } catch (IOException ex) {
+            // Git not installed, not executable, etc.
+            return false;
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            return false;
+        }
+    }
+
+    private static boolean gitCheck(File directory, String... args)
+            throws IOException, InterruptedException {
+
+        List<String> command = new ArrayList<String>();
+        command.add("git");
+        Collections.addAll(command, args);
+
+        ProcessBuilder pb = new ProcessBuilder(command);
+        pb.directory(directory);
+        pb.redirectErrorStream(true);
+        pb.environment().put("GIT_TERMINAL_PROMPT", "0");
+
+        Process process = pb.start();
+
+        try (BufferedReader reader = new BufferedReader(
+                new InputStreamReader(process.getInputStream()))) {
+            while (reader.readLine() != null) {
+                // Drain output.
+            }
+        }
+
+        return process.waitFor() == 0;
+    }
 }
