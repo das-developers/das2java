@@ -52,6 +52,10 @@ public class GitCommand {
         }
     }
     
+    /**
+     * create the GitCommand in the current directory.
+     * @param pwd 
+     */
     public GitCommand(File pwd) {
         this.pwd= pwd;
     }
