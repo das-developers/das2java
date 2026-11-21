@@ -1,6 +1,9 @@
 
 package org.das2.util;
 
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.event.ActionEvent;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -21,11 +24,21 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import javax.swing.AbstractAction;
+import javax.swing.AbstractButton;
+import javax.swing.Action;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
+import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
+import org.das2.util.filesystem.GitCommand;
 import org.das2.util.filesystem.Glob;
 import org.das2.util.monitor.NullProgressMonitor;
 import org.das2.util.monitor.ProgressMonitor;
@@ -506,5 +519,93 @@ public class FileUtil {
             bytesRead= in.read( buf, 0, buf.length );
         }
         return totalBytesRead;
+    }
+    
+    private static boolean addGitPullButton(
+            JFileChooser chooser, Action gitPullAction) {
+
+        if ( !addNextToRefresh(chooser,gitPullAction) ) {
+            return addNextToRefresh(chooser.getComponentPopupMenu(), gitPullAction);
+        } else {
+            return true;
+        }
+
+    }
+
+    private static boolean addNextToRefresh(
+            Container parent, Action action) {
+
+        Component[] children = parent.getComponents();
+
+        for (Component child : children) {
+            if (child instanceof AbstractButton) {
+                AbstractButton button = (AbstractButton) child;
+                String tip = button.getToolTipText() + " " + button.getText();
+
+                if (tip != null &&
+                        tip.toLowerCase(Locale.ROOT)
+                           .contains("create new folder")) {
+
+                    JButton gitButton = new JButton(action);
+                    gitButton.setText(null);
+                    gitButton.setToolTipText("Git Pull");
+
+                    int index = parent.getComponentZOrder(child);
+                    parent.add(gitButton, index + 1);
+                    parent.revalidate();
+                    parent.repaint();
+                    return true;
+                }
+            }
+
+            if (child instanceof Container) {
+                if (addNextToRefresh((Container) child, action)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+   
+    /**
+     * returns a JFileChooser, ideally adding a Git Pull action.
+     * @return 
+     */
+    public static JFileChooser createDecoratedFileChooser() {
+        final JFileChooser chooser= new JFileChooser();
+        Action gitPull = new AbstractAction("",new ImageIcon(FileUtil.class.getResource("/images/git-pull-16.png")) ) {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                File dir = chooser.getCurrentDirectory();
+                GitCommand gc= new GitCommand(dir);
+                SwingWorker<Integer, Void> worker =
+                    new SwingWorker<Integer, Void>() {
+                        @Override
+                        protected Integer doInBackground() throws Exception {
+                            return gc.pull().getExitCode();
+                        }
+                        @Override
+                        protected void done() {
+                            chooser.rescanCurrentDirectory();
+                        }    
+                };
+                worker.execute();
+            }
+        };
+
+        SwingUtilities.invokeLater( new Runnable() {
+            public void run() {
+                boolean installed = addGitPullButton(chooser, gitPull);    
+                if ( installed ) {
+                    logger.info("installed git pull action");
+                } else {
+                    logger.info("failed to install git pull action");
+                }
+            }
+        } );
+        
+     
+        return chooser;
     }
 }
