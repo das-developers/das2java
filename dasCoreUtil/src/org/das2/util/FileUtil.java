@@ -1,8 +1,10 @@
 
 package org.das2.util;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.io.BufferedReader;
 import java.io.File;
@@ -33,11 +35,20 @@ import java.util.stream.Collectors;
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
+import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JFileChooser;
+import javax.swing.JLayer;
+import javax.swing.JList;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
+import javax.swing.Timer;
+import javax.swing.border.Border;
 import org.das2.util.filesystem.GitCommand;
 import org.das2.util.filesystem.Glob;
 import org.das2.util.monitor.NullProgressMonitor;
@@ -567,27 +578,75 @@ public class FileUtil {
 
         return false;
     }
-       
+
+    private static void flashChooser(
+            JComponent component, Color color) {
+
+        Color c0= component.getBackground();
+        Color c20= component.getForeground();
+        component.setBackground(color);
+        component.setForeground(color);
+        component.repaint();
+        
+        Timer timer = new Timer(500, e -> {
+            component.setBackground(c0);
+            component.setForeground(c20);
+        });
+        timer.setRepeats(false);
+        timer.start();
+    }
+
+    private static <T extends Component> T findComponent(
+        Container parent, Class<T> type) {
+
+        for (Component c : parent.getComponents()) {
+            if (type.isInstance(c)) {
+                return type.cast(c);
+            }
+            if (c instanceof Container) {
+                T result = findComponent((Container) c, type);
+                if (result != null) {
+                    return result;
+                }
+            }
+        }   
+        return null;
+    }
+    
     /**
      * returns a JFileChooser, ideally adding a Git Pull action.
      * @return 
      */
     public static JFileChooser createDecoratedFileChooser() {
         final JFileChooser chooser= new JFileChooser();
+        
+        FlashLayerUI flashUI = new FlashLayerUI();
+                
         Action gitPull = new AbstractAction("",new ImageIcon(FileUtil.class.getResource("/images/git-pull-16.png")) ) {
             @Override
             public void actionPerformed(ActionEvent e) {
+                chooser.setCursor(
+                    Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 File dir = chooser.getCurrentDirectory();
                 GitCommand gc= new GitCommand(dir);
                 SwingWorker<Integer, Void> worker =
                     new SwingWorker<Integer, Void>() {
+                        int exitCode;
                         @Override
                         protected Integer doInBackground() throws Exception {
-                            return gc.pull().getExitCode();
+                            exitCode= gc.pull().getExitCode();
+                            return exitCode;
                         }
                         @Override
                         protected void done() {
-                            chooser.rescanCurrentDirectory();
+                            JLayer flashLayer= (JLayer)chooser.getClientProperty("flash-layer");
+                            if ( exitCode==0 ) {
+                                chooser.rescanCurrentDirectory();
+                                if ( flashLayer!=null ) flashUI.flash(flashLayer, new Color(60, 180, 80));
+                            } else {
+                                if ( flashLayer!=null ) flashUI.flash(flashLayer, new Color(220, 60, 60));
+                            }
+                            chooser.setCursor(Cursor.getDefaultCursor());
                         }    
                 };
                 worker.execute();
@@ -604,7 +663,7 @@ public class FileUtil {
                 }
             }
         } );
-        
+
         chooser.addPropertyChangeListener(
             JFileChooser.DIRECTORY_CHANGED_PROPERTY,
             e -> {
@@ -624,7 +683,35 @@ public class FileUtil {
                 worker.execute();
             }
         );
-     
+        
+        JTable table = findComponent(chooser, JTable.class);
+        JList list = findComponent(chooser, JList.class);
+
+        JScrollPane scrollPane=null;
+        if ( table!=null ) {
+            scrollPane= (JScrollPane) SwingUtilities.getAncestorOfClass(
+                JScrollPane.class, table);
+        } else if ( list!=null ) {
+            scrollPane= (JScrollPane) SwingUtilities.getAncestorOfClass(
+                JScrollPane.class, list);
+        } else {
+            scrollPane= null;
+        }
+        
+        if ( scrollPane!=null ) {
+            Container parent = scrollPane.getParent();
+            int index = parent.getComponentZOrder(scrollPane);
+
+            parent.remove(scrollPane);
+            
+            JLayer<JComponent> flashLayer = new JLayer<JComponent>(scrollPane, flashUI);
+
+            parent.add(flashLayer, index);
+            parent.revalidate();
+            parent.repaint();
+            chooser.putClientProperty( "flash-layer", flashLayer );
+        }
+        
         return chooser;
     }
 }
