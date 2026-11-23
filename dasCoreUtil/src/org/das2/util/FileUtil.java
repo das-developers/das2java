@@ -583,7 +583,8 @@ public class FileUtil {
     }
 
     /**
-     * returns a JFileChooser, ideally adding a Git Pull action.
+     * returns a JFileChooser, ideally adding a Git Pull action.  Note this does 
+     * not add a button on Mac desktops.
      * @return 
      */
     public static JFileChooser createDecoratedFileChooser() {
