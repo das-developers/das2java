@@ -1,6 +1,7 @@
 
 package org.das2.util;
 
+import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
@@ -42,6 +43,8 @@ import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JLayer;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JViewport;
@@ -579,40 +582,6 @@ public class FileUtil {
         return false;
     }
 
-    private static void flashChooser(
-            JComponent component, Color color) {
-
-        Color c0= component.getBackground();
-        Color c20= component.getForeground();
-        component.setBackground(color);
-        component.setForeground(color);
-        component.repaint();
-        
-        Timer timer = new Timer(500, e -> {
-            component.setBackground(c0);
-            component.setForeground(c20);
-        });
-        timer.setRepeats(false);
-        timer.start();
-    }
-
-    private static <T extends Component> T findComponent(
-        Container parent, Class<T> type) {
-
-        for (Component c : parent.getComponents()) {
-            if (type.isInstance(c)) {
-                return type.cast(c);
-            }
-            if (c instanceof Container) {
-                T result = findComponent((Container) c, type);
-                if (result != null) {
-                    return result;
-                }
-            }
-        }   
-        return null;
-    }
-    
     /**
      * returns a JFileChooser, ideally adding a Git Pull action.
      * @return 
@@ -620,7 +589,7 @@ public class FileUtil {
     public static JFileChooser createDecoratedFileChooser() {
         final JFileChooser chooser= new JFileChooser();
         
-        FlashLayerUI flashUI = new FlashLayerUI();
+        //FlashLayerUI flashUI = new FlashLayerUI();
                 
         Action gitPull = new AbstractAction("",new ImageIcon(FileUtil.class.getResource("/images/git-pull-16.png")) ) {
             @Override
@@ -629,40 +598,44 @@ public class FileUtil {
                     Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 File dir = chooser.getCurrentDirectory();
                 GitCommand gc= new GitCommand(dir);
+                
                 SwingWorker<Integer, Void> worker =
                     new SwingWorker<Integer, Void>() {
                         int exitCode;
+                        GitCommand.GitResponse gr=null;
                         @Override
                         protected Integer doInBackground() throws Exception {
-                            exitCode= gc.pull().getExitCode();
+                            gr= gc.pull();
+                            exitCode= gr.getExitCode();
                             return exitCode;
                         }
                         @Override
                         protected void done() {
-                            JLayer flashLayer= (JLayer)chooser.getClientProperty("flash-layer");
+                            String msg= gr==null ? "???" : gr.getResponse();
+                            //JLayer flashLayer= (JLayer)chooser.getClientProperty("flash-layer");
                             if ( exitCode==0 ) {
                                 chooser.rescanCurrentDirectory();
-                                if ( flashLayer!=null ) flashUI.flash(flashLayer, new Color(60, 180, 80));
+                                //if ( flashLayer!=null ) flashUI.flash(flashLayer, new Color(60, 180, 80));
                             } else {
-                                if ( flashLayer!=null ) flashUI.flash(flashLayer, new Color(220, 60, 60));
+                                //if ( flashLayer!=null ) flashUI.flash(flashLayer, new Color(220, 60, 60));
                             }
                             chooser.setCursor(Cursor.getDefaultCursor());
+                            JOptionPane.showMessageDialog(chooser, msg);
+                            
                         }    
                 };
                 worker.execute();
             }
         };
 
-        SwingUtilities.invokeLater( new Runnable() {
-            public void run() {
-                boolean installed = addGitPullButton(chooser, gitPull);    
-                if ( installed ) {
-                    logger.info("installed git pull action");
-                } else {
-                    logger.info("failed to install git pull action");
-                }
+        SwingUtilities.invokeLater(() -> {
+            boolean installed = addGitPullButton(chooser, gitPull);
+            if ( installed ) {
+                logger.info("installed git pull action");
+            } else {
+                logger.info("failed to install git pull action");
             }
-        } );
+        });
 
         chooser.addPropertyChangeListener(
             JFileChooser.DIRECTORY_CHANGED_PROPERTY,
@@ -684,34 +657,24 @@ public class FileUtil {
             }
         );
         
-        JTable table = findComponent(chooser, JTable.class);
-        JList list = findComponent(chooser, JList.class);
+//        JPanel cardPanel= findCardPanel(chooser);
+//        
+//        if ( cardPanel!=null ) {
+//            Container parent = cardPanel.getParent();
+//            int index = parent.getComponentZOrder(cardPanel);
+//
+//            parent.remove(cardPanel);
+//
+//            JLayer<JComponent> layer =
+//                new JLayer<JComponent>(cardPanel, flashUI);
+//
+//            chooser.putClientProperty( "flash-layer", flashUI );
+//
+//            parent.add(layer, index);
+//            parent.revalidate();
+//            parent.repaint();
+//        }            
 
-        JScrollPane scrollPane=null;
-        if ( table!=null ) {
-            scrollPane= (JScrollPane) SwingUtilities.getAncestorOfClass(
-                JScrollPane.class, table);
-        } else if ( list!=null ) {
-            scrollPane= (JScrollPane) SwingUtilities.getAncestorOfClass(
-                JScrollPane.class, list);
-        } else {
-            scrollPane= null;
-        }
-        
-        if ( scrollPane!=null ) {
-            Container parent = scrollPane.getParent();
-            int index = parent.getComponentZOrder(scrollPane);
-
-            parent.remove(scrollPane);
-            
-            JLayer<JComponent> flashLayer = new JLayer<JComponent>(scrollPane, flashUI);
-
-            parent.add(flashLayer, index);
-            parent.revalidate();
-            parent.repaint();
-            chooser.putClientProperty( "flash-layer", flashLayer );
-        }
-        
         return chooser;
     }
 }
